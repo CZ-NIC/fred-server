@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  header of mojeid2 public request classes
+ *  header of mojeid public request classes
  */
 
 #ifndef MOJEID_PUBLIC_REQUEST_H_77C5F1C5C56F30200BE16A2E48A104EB//date "+%s"|md5sum|tr "[a-f]" "[A-F]"

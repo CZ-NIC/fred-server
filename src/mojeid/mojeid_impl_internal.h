@@ -18,13 +18,13 @@
 
 /**
  *  @file
- *  header of mojeid2 implementation internals
+ *  header of mojeid implementation internals
  */
 
 #ifndef MOJEID_IMPL_INTERNAL_H_89048D6E69724FBA9BA759D543C86AF9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID_IMPL_INTERNAL_H_89048D6E69724FBA9BA759D543C86AF9
 
-#include "src/mojeid/mojeid2_checkers.h"
+#include "src/mojeid/mojeid_checkers.h"
 
 namespace Registry {
 namespace MojeIDImplInternal {

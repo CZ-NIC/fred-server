@@ -18,7 +18,7 @@
 
 /**
 *  @file
-*  header of mojeid2 service name usable for client and server
+*  header of mojeid service name usable for client and server
 */
 #ifndef SERVICE_NAME_H_32A1860923ABB8446632FBA70955C28A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define SERVICE_NAME_H_32A1860923ABB8446632FBA70955C28A

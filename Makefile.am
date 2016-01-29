@@ -31,9 +31,9 @@ CLEANFILES = \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
 		src/corba/Messages.hh \
-		src/corba/MojeID2SK.cc \
-		src/corba/MojeID2DynSK.cc \
-		src/corba/MojeID2.hh \
+		src/corba/MojeIDSK.cc \
+		src/corba/MojeIDDynSK.cc \
+		src/corba/MojeID.hh \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/AdministrativeBlockingDynSK.cc \
 		src/corba/AdministrativeBlockingSK.h \
@@ -237,7 +237,7 @@ noinst_LIBRARIES = \
 		src/fredlib/banking/libbanking.a \
 		src/corba/libcorba.a \
 		src/corba/libcorbamessages.a \
-		src/corba/libcorbamojeid2.a \
+		src/corba/libcorbamojeid.a \
 		src/corba/libcorbazone.a \
 		src/corba/libfilemanager.a \
 		src/corba/libmailer.a \
@@ -1142,7 +1142,7 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 
 BUILT_SOURCES = \
 		src/corba/MessagesSK.cc \
-		src/corba/MojeID2SK.cc \
+		src/corba/MojeIDSK.cc \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/FileManagerSK.cc \
 		src/corba/MailerSK.cc \
@@ -1194,9 +1194,9 @@ nodist_src_corba_libcorbamessages_a_SOURCES = \
 		src/corba/MessagesDynSK.cc \
 		src/corba/Messages.hh
 
-nodist_src_corba_libcorbamojeid2_a_SOURCES = \
-		src/corba/MojeID2SK.cc \
-		src/corba/MojeID2DynSK.cc
+nodist_src_corba_libcorbamojeid_a_SOURCES = \
+		src/corba/MojeIDSK.cc \
+		src/corba/MojeIDDynSK.cc
 
 nodist_src_corba_libfilemanager_a_SOURCES = \
 		src/corba/FileManagerSK.cc \
@@ -1304,7 +1304,7 @@ nodist_src_corba_libcorba_conversion_test_a_SOURCES = \
 # idl build
 #
 src/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
-src/corba/MojeID2SK.cc: $(IDLDIR)/MojeID2.idl
+src/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl
 src/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl
 src/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
 src/corba/MailerSK.cc: $(IDLDIR)/Mailer.idl $(IDLDIR)/_dataTypes.idl
@@ -1746,23 +1746,23 @@ src_corba_messages_fred_msgd_LDADD = \
 # src/corba/messages/fred-msgd
 
 
-# src/corba/mojeid/fred-mifd2
+# src/corba/mojeid/fred-mifd
 #
 src_corba_mojeid_fred_mifd_SOURCES = \
-		src/mojeid/mojeid2.cc \
+		src/mojeid/mojeid.cc \
 		src/mojeid/mojeid_impl_data_conversion.cc \
 		src/mojeid/mojeid_impl_internal.cc \
 		src/mojeid/mojeid_public_request.cc \
 		src/mojeid/messages/generate.cc \
 		src/corba/nameservice.cc \
-		src/corba/mojeid/server2_i.cc \
+		src/corba/mojeid/server_i.cc \
 		util/corba_conversion.cc \
 		src/corba/mojeid/mojeid_corba_conversion.cc \
 		src/corba/mojeid/service_name.cc \
-		src/corba/mojeid/fred-mifd2.cc
+		src/corba/mojeid/fred-mifd.cc
 
 nodist_src_corba_mojeid_fred_mifd_SOURCES = \
-		src/corba/MojeID2SK.cc \
+		src/corba/MojeIDSK.cc \
 		src/corba/MailerSK.cc
 
 src_corba_mojeid_fred_mifd_LDFLAGS = \
@@ -1795,7 +1795,7 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB)
 #
-# src/corba/mojeid/fred-mifd2
+# src/corba/mojeid/fred-mifd
 
 # src/corba/mojeid/messages/fred-mojeid-msggen
 #
@@ -1804,7 +1804,7 @@ src_corba_mojeid_messages_fred_mojeid_msggen_SOURCES = \
 		src/corba/mojeid/messages/client.cc
 
 nodist_src_corba_mojeid_messages_fred_mojeid_msggen_SOURCES = \
-		src/corba/MojeID2SK.cc
+		src/corba/MojeIDSK.cc
 
 src_corba_mojeid_messages_fred_mojeid_msggen_LDFLAGS = \
 		$(AM_LDFLAGS)
@@ -2578,7 +2578,7 @@ tests_test_corba_conversion_LDFLAGS = \
 
 tests_test_corba_conversion_LDADD = \
 		src/corba/libcorba_conversion_test.a \
-		src/corba/libcorbamojeid2.a \
+		src/corba/libcorbamojeid.a \
 		src/fredlib/libfred.a \
 		util/libutil.a \
 		util/log/liblog.a \

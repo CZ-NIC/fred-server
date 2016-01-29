@@ -24,7 +24,7 @@
 #ifndef MOJEID_IMPL_DATA_H_7C7FD17C00D041F4BDAF5CE5A8CE5337//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID_IMPL_DATA_H_7C7FD17C00D041F4BDAF5CE5A8CE5337
 
-#include "src/corba/MojeID2.hh"
+#include "src/corba/MojeID.hh"
 #include "util/db/nullable.h"
 #include <sstream>
 

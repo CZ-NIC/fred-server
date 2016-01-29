@@ -328,10 +328,10 @@ AC_CHECK_FILE(
 )
 
 AC_CHECK_FILE(
-	[$IDLDIR/MojeID2.idl],
+	[$IDLDIR/MojeID.idl],
 	[],
 	[AC_MSG_ERROR(
-		[directory "$IDLDIR" does not contain MojeID2.idl
+		[directory "$IDLDIR" does not contain MojeID.idl
 		(use --with-idldir)]
 	)]
 )

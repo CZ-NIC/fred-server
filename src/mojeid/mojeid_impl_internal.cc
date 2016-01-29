@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  implementation of mojeid2 internals
+ *  implementation of mojeid internals
  */
 
 #include "src/mojeid/mojeid_impl_internal.h"

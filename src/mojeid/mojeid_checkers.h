@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  header of mojeid2 checkers
+ *  header of mojeid checkers
  */
 
 #ifndef MOJEID2_CHECKERS_H_3F3071E19E8ADD1CB7438F97BBE37530//date "+%s"|md5sum|tr "[a-f]" "[A-F]"

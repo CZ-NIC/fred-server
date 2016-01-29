@@ -18,7 +18,7 @@
 
 /**
  *  @file
- *  header of mojeid2 implementation
+ *  header of ssn type enum
  */
 
 #ifndef SSNTYPE_H_4E9ED0E9B9EB357A6C4A3A774E87A1FE//date "+%s"|md5sum|tr "[a-f]" "[A-F]"

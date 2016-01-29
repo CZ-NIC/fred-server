@@ -26,7 +26,7 @@
 
 #include "util/corba_conversion.h"
 #include "util/db/nullable.h"
-#include "src/corba/MojeID2.hh"
+#include "src/corba/MojeID.hh"
 #include "src/mojeid/mojeid_impl_data.h"
 
 namespace CorbaConversion

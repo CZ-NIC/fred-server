@@ -18,13 +18,13 @@
 
 /**
  *  @file
- *  header of mojeid2 implementation
+ *  header of mojeid implementation
  */
 
-#ifndef MOJEID2_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define MOJEID2_H_06D795C17DD0FF3D98B375032F99493A
+#ifndef MOJEID_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define MOJEID_H_06D795C17DD0FF3D98B375032F99493A
 
-#include "src/mojeid/mojeid2_checkers.h"
+#include "src/mojeid/mojeid_checkers.h"
 #include "src/mojeid/mojeid_impl_data_conversion.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/messages/messages_impl.h"
@@ -38,14 +38,14 @@
 namespace Registry {
 namespace MojeID {
 
-class MojeID2Impl
+class MojeIDImpl
 {
 public:
     typedef unsigned long long ContactId;
     typedef unsigned long long MessageId;
     typedef unsigned long long LogRequestId;
-    MojeID2Impl(const std::string &_server_name);
-    ~MojeID2Impl();
+    MojeIDImpl(const std::string &_server_name);
+    ~MojeIDImpl();
 
     const std::string& get_server_name()const;
 
@@ -143,9 +143,9 @@ private:
     const std::string server_name_;
     const std::string mojeid_registrar_handle_;
     const ::size_t mojeid_registrar_id_;
-};//class MojeID2Impl
+};//class MojeIDImpl
 
 }//namespace Registry::MojeID
 }//namespace Registry
 
-#endif // MOJEID2_H_06D795C17DD0FF3D98B375032F99493A
+#endif//MOJEID_H_06D795C17DD0FF3D98B375032F99493A

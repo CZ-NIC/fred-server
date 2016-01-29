@@ -4,7 +4,7 @@
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/mojeid/mojeid_public_request.h"
-#include "src/mojeid/mojeid2.h"
+#include "src/mojeid/mojeid.h"
 #include "src/corba/mailer_manager.h"
 #include "util/cfg/config_handler_decl.h"
 #include "util/cfg/handle_corbanameservice_args.h"

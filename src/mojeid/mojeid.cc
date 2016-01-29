@@ -18,10 +18,10 @@
 
 /**
  *  @file
- *  mojeid2 implementation
+ *  mojeid implementation
  */
 
-#include "src/mojeid/mojeid2.h"
+#include "src/mojeid/mojeid.h"
 #include "src/mojeid/mojeid_impl_internal.h"
 #include "src/mojeid/safe_data_storage.h"
 #include "src/mojeid/mojeid_public_request.h"
@@ -85,7 +85,7 @@ std::string create_ctx_function_name(const char *fnc)
 class LogContext
 {
 public:
-    LogContext(const MojeID2Impl &_impl, const std::string &_op_name)
+    LogContext(const MojeIDImpl &_impl, const std::string &_op_name)
     :   ctx_server_(create_ctx_name(_impl.get_server_name())),
         ctx_operation_(_op_name)
     {
@@ -209,7 +209,7 @@ void set_create_contact_arguments(
 }
 
 void check_sent_letters_limit(Fred::OperationContext &_ctx,
-                              MojeID2Impl::ContactId _contact_id,
+                              MojeIDImpl::ContactId _contact_id,
                               unsigned _max_sent_letters,
                               unsigned _watched_period_in_days)
 {
@@ -512,7 +512,7 @@ namespace MojeID {
 namespace {
 
 template < MessageType::Value MT, CommType::Value CT >
-::size_t cancel_message_sending(Fred::OperationContext &_ctx, MojeID2Impl::ContactId _contact_id)
+::size_t cancel_message_sending(Fred::OperationContext &_ctx, MojeIDImpl::ContactId _contact_id)
 {
     const Database::Result result = _ctx.get_conn().exec_params(
         "UPDATE message_archive ma "
@@ -579,29 +579,29 @@ bool identified_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoC
     return false;
 }
 
-typedef data_storage< std::string, MojeID2Impl::ContactId >::safe prepare_transaction_storage;
+typedef data_storage< std::string, MojeIDImpl::ContactId >::safe prepare_transaction_storage;
 typedef prepare_transaction_storage::object_type::data_not_found prepare_transaction_data_not_found;
 
 }//Registry::MojeID::{anonymous}
 
-MojeID2Impl::MojeID2Impl(const std::string &_server_name)
+MojeIDImpl::MojeIDImpl(const std::string &_server_name)
 :   server_name_(_server_name),
     mojeid_registrar_handle_(get_mojeid_registrar_handle()),
     mojeid_registrar_id_(get_mojeid_registrar_id(mojeid_registrar_handle_))
 {
     LogContext log_ctx(*this, "init");
-}//MojeID2Impl::MojeID2Impl
+}//MojeIDImpl::MojeIDImpl
 
-MojeID2Impl::~MojeID2Impl()
+MojeIDImpl::~MojeIDImpl()
 {
 }
 
-const std::string& MojeID2Impl::get_server_name()const
+const std::string& MojeIDImpl::get_server_name()const
 {
     return server_name_;
 }
 
-void MojeID2Impl::get_unregistrable_contact_handles(
+void MojeIDImpl::get_unregistrable_contact_handles(
         MojeIDImplData::ContactHandleList &_result)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
@@ -636,7 +636,7 @@ void MojeID2Impl::get_unregistrable_contact_handles(
     }
 }
 
-MojeID2Impl::ContactId MojeID2Impl::create_contact_prepare(
+MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         const MojeIDImplData::CreateContact &_contact,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
@@ -712,7 +712,7 @@ Fred::CreatePublicRequestAuth::Result action_transfer_contact_prepare(
 
 }
 
-void MojeID2Impl::transfer_contact_prepare(
+void MojeIDImpl::transfer_contact_prepare(
         const std::string &_handle,
         const std::string &_trans_id,
         LogRequestId _log_request_id,
@@ -878,7 +878,7 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
 
 }
 
-void MojeID2Impl::update_contact_prepare(
+void MojeIDImpl::update_contact_prepare(
         const MojeIDImplData::InfoContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const
@@ -1018,7 +1018,7 @@ void MojeID2Impl::update_contact_prepare(
     }
 }
 
-MojeIDImplData::InfoContact MojeID2Impl::update_transfer_contact_prepare(
+MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         const std::string &_username,
         const MojeIDImplData::SetContact &_new_data,
         const std::string &_trans_id,
@@ -1197,7 +1197,7 @@ Fred::UpdatePublicRequest::Result set_status(
     const Fred::PublicRequestLockGuard &_locked_request,
     Fred::PublicRequest::Status::Value _status,
     const std::string &_reason,
-    MojeID2Impl::LogRequestId _log_request_id)
+    MojeIDImpl::LogRequestId _log_request_id)
 {
     Fred::UpdatePublicRequest op_update_public_request;
     op_update_public_request.set_status(_status);
@@ -1214,7 +1214,7 @@ Fred::UpdatePublicRequest::Result answer(
     Fred::OperationContext &_ctx,
     const Fred::PublicRequestLockGuard &_locked_request,
     const std::string &_reason = "",
-    MojeID2Impl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+    MojeIDImpl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
 {
     return set_status(_ctx, _locked_request, Fred::PublicRequest::Status::ANSWERED, _reason, _log_request_id);
 }
@@ -1223,14 +1223,14 @@ Fred::UpdatePublicRequest::Result invalidate(
     Fred::OperationContext &_ctx,
     const Fred::PublicRequestLockGuard &_locked_request,
     const std::string &_reason = "",
-    MojeID2Impl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+    MojeIDImpl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
 {
     return set_status(_ctx, _locked_request, Fred::PublicRequest::Status::INVALIDATED, _reason, _log_request_id);
 }
 
 }//namespace Registry::MojeID::{anonymous}
 
-void MojeID2Impl::info_contact(
+void MojeIDImpl::info_contact(
         const std::string &_username,
         MojeIDImplData::InfoContact &_result)const
 {
@@ -1259,7 +1259,7 @@ void MojeID2Impl::info_contact(
     }
 }
 
-MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
+MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,
         LogRequestId _log_request_id)const
@@ -1381,7 +1381,7 @@ MojeID2Impl::ContactId MojeID2Impl::process_registration_request(
     }
 }
 
-void MojeID2Impl::process_identification_request(
+void MojeIDImpl::process_identification_request(
         ContactId _contact_id,
         const std::string &_password,
         LogRequestId _log_request_id)const
@@ -1477,7 +1477,7 @@ void MojeID2Impl::process_identification_request(
     }
 }
 
-void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)const
+void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1505,7 +1505,7 @@ void MojeID2Impl::commit_prepared_transaction(const std::string &_trans_id)const
     }
 }
 
-void MojeID2Impl::rollback_prepared_transaction(const std::string &_trans_id)const
+void MojeIDImpl::rollback_prepared_transaction(const std::string &_trans_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1546,7 +1546,7 @@ std::string birthdate_into_czech_date(const std::string &_birthdate)
 
 }
 
-std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
+std::string MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1642,9 +1642,9 @@ std::string MojeID2Impl::get_validation_pdf(ContactId _contact_id)const
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw;
     }
-}//MojeID2Impl::get_validation_pdf
+}//MojeIDImpl::get_validation_pdf
 
-void MojeID2Impl::create_validation_request(
+void MojeIDImpl::create_validation_request(
         ContactId _contact_id,
         LogRequestId _log_request_id)const
 {
@@ -1749,7 +1749,7 @@ IsNotNull add_state(const Database::Value &_valid_from, Fred::Object::State::Val
 
 }
 
-void MojeID2Impl::get_contacts_state_changes(
+void MojeIDImpl::get_contacts_state_changes(
     unsigned long _last_hours,
     MojeIDImplData::ContactStateInfoList &_result)const
 {
@@ -1829,7 +1829,7 @@ void MojeID2Impl::get_contacts_state_changes(
     }
 }
 
-void MojeID2Impl::get_contact_state(
+void MojeIDImpl::get_contact_state(
     ContactId _contact_id,
     MojeIDImplData::ContactStateInfo &_result)const
 {
@@ -1908,7 +1908,7 @@ void MojeID2Impl::get_contact_state(
     }
 }
 
-void MojeID2Impl::cancel_account_prepare(
+void MojeIDImpl::cancel_account_prepare(
         ContactId _contact_id,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const
@@ -1991,7 +1991,7 @@ void MojeID2Impl::cancel_account_prepare(
     }
 }
 
-void MojeID2Impl::send_new_pin3(
+void MojeIDImpl::send_new_pin3(
     ContactId _contact_id,
     LogRequestId _log_request_id)const
 {
@@ -2103,7 +2103,7 @@ void MojeID2Impl::send_new_pin3(
     }
 }
 
-void MojeID2Impl::send_mojeid_card(
+void MojeIDImpl::send_mojeid_card(
     ContactId _contact_id,
     LogRequestId _log_request_id)const
 {
@@ -2122,7 +2122,7 @@ void MojeID2Impl::send_mojeid_card(
                                                             get_handler_ptr_by_type< HandleMojeIDArgs >();
         const Fred::InfoContactData data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
         const Fred::Messages::ManagerPtr manager_ptr = Fred::Messages::create_manager();
-        MojeID2Impl::send_mojeid_card(
+        MojeIDImpl::send_mojeid_card(
             ctx,
             manager_ptr.get(),
             data,
@@ -2151,7 +2151,7 @@ void MojeID2Impl::send_mojeid_card(
     }
 }
 
-void MojeID2Impl::generate_sms_messages()const
+void MojeIDImpl::generate_sms_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2172,7 +2172,7 @@ void MojeID2Impl::generate_sms_messages()const
     }
 }
 
-void MojeID2Impl::enable_sms_messages_generation(bool enable)const
+void MojeIDImpl::enable_sms_messages_generation(bool enable)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2192,7 +2192,7 @@ void MojeID2Impl::enable_sms_messages_generation(bool enable)const
     }
 }
 
-void MojeID2Impl::generate_letter_messages()const
+void MojeIDImpl::generate_letter_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2214,7 +2214,7 @@ void MojeID2Impl::generate_letter_messages()const
     }
 }
 
-void MojeID2Impl::enable_letter_messages_generation(bool enable)const
+void MojeIDImpl::enable_letter_messages_generation(bool enable)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2234,7 +2234,7 @@ void MojeID2Impl::enable_letter_messages_generation(bool enable)const
     }
 }
 
-void MojeID2Impl::generate_email_messages()const
+void MojeIDImpl::generate_email_messages()const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2262,7 +2262,7 @@ void MojeID2Impl::generate_email_messages()const
     }
 }
 
-void MojeID2Impl::enable_email_messages_generation(bool enable)const
+void MojeIDImpl::enable_email_messages_generation(bool enable)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -2282,7 +2282,7 @@ void MojeID2Impl::enable_email_messages_generation(bool enable)const
     }
 }
 
-MojeID2Impl::MessageId MojeID2Impl::send_mojeid_card(
+MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
     Fred::OperationContext &_ctx,
     Fred::Messages::Manager *_msg_manager_ptr,
     const Fred::InfoContactData &_data,

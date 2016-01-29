@@ -1,4 +1,4 @@
-#include "src/corba/MojeID2.hh"
+#include "src/corba/MojeID.hh"
 #include "src/corba/mojeid/service_name.h"
 #include "config.h"
 #include "util/cfg/config_handler.h"
