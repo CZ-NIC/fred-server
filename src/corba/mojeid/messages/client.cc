@@ -24,7 +24,7 @@ struct CommChannel
 };
 
 //config args processing
-HandlerPtrVector global_hpv =
+const HandlerPtrVector global_hpv =
 boost::assign::list_of
     (HandleArgsPtr(new HandleHelpArg("\nUsage: fred-mojeid-msggen <switches>\n")))
     (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
@@ -39,6 +39,8 @@ CORBA::Object_ptr get_object_reference(CORBA::ORB_ptr orb,
 int main (int argc, char **argv)
 {
     try {
+        CORBA::ORB_var orb = CORBA::ORB_init(argc, argv);
+        CfgArgs::init< HandleHelpArg >(global_hpv)->handle(argc, argv);
         typedef std::set< CommChannel::Value > SetOfChannels;
         SetOfChannels channels;
         for (char **arg_ptr = argv + 1; *arg_ptr != NULL; ++arg_ptr) {
@@ -65,23 +67,16 @@ int main (int argc, char **argv)
                 }
             }
         }
-        FakedArgs fa = CfgArgs::init< HandleHelpArg >(global_hpv)->handle(argc, argv);
         if (channels.empty()) {
             throw std::invalid_argument("no channel specified");
         }
         const HandleCorbaNameServiceArgs *const nameservice_conf_ptr = CfgArgs::instance()->
             get_handler_ptr_by_type< HandleCorbaNameServiceArgs >();
-        int arg_cnt = fa.get_argc();
-        CORBA::ORB_var orb = CORBA::ORB_init(arg_cnt, fa.get_argv());
         CORBA::Object_var obj = get_object_reference(orb,
             nameservice_conf_ptr->nameservice_host,
             nameservice_conf_ptr->nameservice_port,
             nameservice_conf_ptr->nameservice_context);
         Registry::MojeID::Server_var server = Registry::MojeID::Server::_narrow(obj);
-        if (CORBA::is_nil(server)) {
-            std::cerr << "Registry::MojeID::Server::_narrow failure: NULL" << std::endl;
-            return EXIT_FAILURE;
-        }
         for (SetOfChannels::const_iterator channel_ptr = channels.begin(); channel_ptr != channels.end(); ++channel_ptr) {
             switch (*channel_ptr) {
             case CommChannel::SMS:
