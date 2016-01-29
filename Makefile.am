@@ -31,9 +31,6 @@ CLEANFILES = \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
 		src/corba/Messages.hh \
-		src/corba/MojeIDSK.cc \
-		src/corba/MojeIDDynSK.cc \
-		src/corba/MojeID.hh \
 		src/corba/MojeID2SK.cc \
 		src/corba/MojeID2DynSK.cc \
 		src/corba/MojeID2.hh \
@@ -1146,7 +1143,6 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 
 BUILT_SOURCES = \
 		src/corba/MessagesSK.cc \
-		src/corba/MojeIDSK.cc \
 		src/corba/MojeID2SK.cc \
 		src/corba/AdministrativeBlockingSK.cc \
 		src/corba/FileManagerSK.cc \
@@ -1198,11 +1194,6 @@ nodist_src_corba_libcorbamessages_a_SOURCES = \
 		src/corba/MessagesSK.cc \
 		src/corba/MessagesDynSK.cc \
 		src/corba/Messages.hh
-
-nodist_src_corba_libcorbamojeid_a_SOURCES = \
-		src/corba/MojeIDSK.cc \
-		src/corba/MojeIDDynSK.cc \
-		src/corba/MojeID.hh
 
 nodist_src_corba_libcorbamojeid2_a_SOURCES = \
 		src/corba/MojeID2SK.cc \
@@ -1314,7 +1305,6 @@ nodist_src_corba_libcorba_conversion_test_a_SOURCES = \
 # idl build
 #
 src/corba/MessagesSK.cc: $(IDLDIR)/Messages.idl
-src/corba/MojeIDSK.cc: $(IDLDIR)/MojeID.idl
 src/corba/MojeID2SK.cc: $(IDLDIR)/MojeID2.idl
 src/corba/AdministrativeBlockingSK.cc: $(IDLDIR)/AdministrativeBlocking.idl
 src/corba/FileManagerSK.cc: $(IDLDIR)/FileManager.idl $(IDLDIR)/_dataTypes.idl
