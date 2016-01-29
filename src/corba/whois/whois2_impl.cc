@@ -756,7 +756,13 @@ namespace Whois {
             {
                 NameServer temp;
                 temp.fqdn = Corba::wrap_string_to_corba_string(ns_fqdn);
-                //temp.ip_addresses;//TODO missing implementation #13722
+                /*
+                 * Because of grouping nameservers NSSet we don't include
+                 * IP address in output (given nameserver can be in different
+                 * NSSets with different IP addresses)
+                 *
+                 * temp.ip_addresses;
+                 */
                 return new NameServer(temp);
             }
             else
