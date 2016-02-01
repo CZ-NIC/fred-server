@@ -170,7 +170,7 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
     {
         log_and_rethrow_exception_handler(ctx);
     }
-    return RegistrarGroupList();
+    return std::vector<RegistrarGroup>;
 }
 
 RegistrarCertificationList Server_impl::get_registrar_certification_list()
@@ -187,27 +187,27 @@ RegistrarCertificationList Server_impl::get_registrar_certification_list()
     {
         log_and_rethrow_exception_handler(ctx);
     }
+    return RegistrarCertificationList();
 }
 
-ZoneFqdnList* Server_impl::get_managed_zone_list()
+std::vector<std::string> Server_impl::get_managed_zone_list()
 {
     try
     {
-        ZoneFqdnList_var zone_seq = new ZoneFqdnList;
+        std::vector<std::string> zone_seq;
         Fred::OperationContext ctx;
-        set_corba_seq<ZoneFqdnList, CORBA::String_var>
+        set_corba_seq<std::vector<std::string>, std::string>
             (zone_seq, ::Whois::get_managed_zone_list(ctx));
-        return zone_seq._retn();
+        return zone_seq;
     }
     catch (...)
-    {}
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    {
+        log_and_rethrow_exception_handler(ctx);
+    }
+    return std::vector<std::string>;
 }
 
-
-Contact* Server_impl::get_contact_by_handle(const char* handle)
+Contact Server_impl::get_contact_by_handle(const std::string& handle)
 {
     try
     {
@@ -247,7 +247,7 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-NSSet* Server_impl::get_nsset_by_handle(const char* handle)
+NSSet* Server_impl::get_nsset_by_handle(const std::string& handle)
 {
     try
     {
@@ -283,7 +283,7 @@ NSSet* Server_impl::get_nsset_by_handle(const char* handle)
 }
 
 NSSetSeq* Server_impl::get_nssets_by_ns(
-    const char* handle,
+    const std::string& handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
@@ -325,7 +325,7 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
 }
 
 NSSetSeq* Server_impl::get_nssets_by_tech_c(
-    const char* handle,
+    const std::string& handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
@@ -370,7 +370,7 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
 }
 
 
-NameServer* Server_impl::get_nameserver_by_fqdn(const char* fqdn)
+NameServer* Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
 {
     try
     {
@@ -405,7 +405,7 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* fqdn)
     throw INTERNAL_SERVER_ERROR();
 }
 
-KeySet* Server_impl::get_keyset_by_handle(const char* handle)
+KeySet* Server_impl::get_keyset_by_handle(const std::string& handle)
 {
     try
     {
@@ -442,7 +442,7 @@ KeySet* Server_impl::get_keyset_by_handle(const char* handle)
 }
 
 KeySetSeq* Server_impl::get_keysets_by_tech_c(
-    const char* handle,
+    const std::string& handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
@@ -487,7 +487,7 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
     throw INTERNAL_SERVER_ERROR();
 }
 
-Domain* Server_impl::get_domain_by_handle(const char* handle)
+Domain* Server_impl::get_domain_by_handle(const std::string& handle)
 {
     try
     {
@@ -571,7 +571,7 @@ void set_domains_seq(DomainSeq& domain_seq, const std::vector<Fred::InfoDomainOu
 }
 
 DomainSeq* Server_impl::get_domains_by_registrant(
-    const char* handle,
+    const std::string& handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
@@ -617,7 +617,7 @@ DomainSeq* Server_impl::get_domains_by_registrant(
 }
 
 DomainSeq* Server_impl::get_domains_by_admin_contact(
-    const char* handle,
+    const std::string& handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
@@ -662,7 +662,7 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
 }
 
 DomainSeq* Server_impl::get_domains_by_nsset(
-    const char* handle,
+    const std::string& handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
@@ -708,7 +708,7 @@ DomainSeq* Server_impl::get_domains_by_nsset(
 }
 
 DomainSeq* Server_impl::get_domains_by_keyset(
-    const char* handle,
+    const std::string& handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
@@ -779,7 +779,7 @@ ObjectStatusDesc, std::pair<std::string, std::string> >(const std::pair<std::str
     return temp;
 }
 
-ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang)
+ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const std::string& lang)
 {
     try
     {
@@ -800,7 +800,7 @@ ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lan
     throw INTERNAL_SERVER_ERROR();
 }
 
-ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang)
+ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const std::string& lang)
 {
     try
     {
@@ -820,7 +820,7 @@ ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* la
     // default exception handling
     throw INTERNAL_SERVER_ERROR();
 }
-ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang)
+ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const std::string& lang)
 {
     try
     {
@@ -840,4 +840,4 @@ ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang
     // default exception handling
     throw INTERNAL_SERVER_ERROR();
 }
-ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lang)
+ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const std::string& lang)
