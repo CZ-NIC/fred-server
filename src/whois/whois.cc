@@ -88,6 +88,19 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
     return Registrar();
 }
 
+template<class CORBA_SEQ_ELEMENT, class IN_LIST_ELEMENT>
+        CORBA_SEQ_ELEMENT set_element_of_corba_seq(const IN_LIST_ELEMENT& ile);
+
+template<> RegistrarGroup
+set_element_of_corba_seq<RegistrarGroup, std::pair<std::string, std::string> >
+(const std::pair<std::string, std::string>& ile)
+{
+    RegistrarGroup temp;
+    temp.name = ile.first;
+    temp.members = ile.second;
+    return temp;
+}
+
 template<class CORBA_SEQ, class CORBA_SEQ_ELEMENT, class IN_LIST>
 void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
 {
@@ -115,8 +128,8 @@ RegistrarSeq Server_impl::get_registrars()
             registrar_data_list.push_back(it->info_registrar_data);
         }
 
-        set_corba_seq<RegistrarSeq, Registrar>(
-                registrar_seq, registrar_data_list);
+        set_corba_seq<RegistrarSeq, Registrar>(registrar_seq,
+                registrar_data_list);
 
         return registrar_seq;
     }
@@ -127,40 +140,53 @@ RegistrarSeq Server_impl::get_registrars()
     return RegistrarSeq();
 }
 
-RegistrarGroupList* Server_impl::get_registrar_groups()
+std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
 {
     try
     {
-        RegistrarGroupList_var reg_grp_seq = new RegistrarGroupList;
+        std::vector<RegistrarGroup> reg_grp_seq;
         Fred::OperationContext ctx;
 
-        set_corba_seq<RegistrarGroupList, RegistrarGroup>(
-            reg_grp_seq, ::Whois::get_registrar_groups(ctx));
+//        set_corba_seq<std::vector<std::string>, RegistrarGroup>(reg_grp_seq,
+//            ::Whois::get_registrar_groups(ctx));
 
-        return reg_grp_seq._retn();
+        reg_grp_seq.reserve(::Whois::get_registrar_groups(ctx).size());
+
+        unsigned long long i = 0;
+        for(typename std::vector<RegistrarGroup>::const_iterator ci = reg_grp_seq.begin() ; ci != reg_grp_seq.end(); ++ci,++i)
+        {
+             RegistrarGroup temp;
+             temp.name = ci->name;
+
+             set_corba_seq<std::vector<std::string>, std::vector<std::string>>
+                 (temp.members, ci->members);
+             reg_grp_seq[i] = temp;
+//           set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename std::vector<RegistrarGroup>::value_type >(*ci);
+        }
+
+        return reg_grp_seq;
     }
     catch (...)
-    {}
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    {
+        log_and_rethrow_exception_handler(ctx);
+    }
+    return RegistrarGroupList();
 }
 
-RegistrarCertificationList* Server_impl::get_registrar_certification_list()
+RegistrarCertificationList Server_impl::get_registrar_certification_list()
 {
     try
     {
-        RegistrarCertificationList_var reg_cert_seq = new RegistrarCertificationList;
+        RegistrarCertificationList reg_cert_seq;
         Fred::OperationContext ctx;
         set_corba_seq<RegistrarCertificationList, RegistrarCertification>
             (reg_cert_seq, ::Whois::get_registrar_certifications(ctx));
-        return reg_cert_seq._retn();
+        return reg_cert_seq;
     }
     catch (...)
-    {}
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    {
+        log_and_rethrow_exception_handler(ctx);
+    }
 }
 
 ZoneFqdnList* Server_impl::get_managed_zone_list()
