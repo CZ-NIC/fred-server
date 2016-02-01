@@ -147,23 +147,15 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
         std::vector<RegistrarGroup> reg_grp_seq;
         Fred::OperationContext ctx;
 
-//        set_corba_seq<std::vector<std::string>, RegistrarGroup>(reg_grp_seq,
-//            ::Whois::get_registrar_groups(ctx));
+        std::map<std::string, std::vector<std::string> > groups = ::Whois::get_registrar_groups(ctx);
+        reg_grp_seq.reserve(groups.size());
 
-        reg_grp_seq.reserve(::Whois::get_registrar_groups(ctx).size());
-
-        unsigned long long i = 0;
         for(typename std::vector<RegistrarGroup>::const_iterator ci = reg_grp_seq.begin() ; ci != reg_grp_seq.end(); ++ci,++i)
         {
              RegistrarGroup temp;
              temp.name = ci->name;
-
-             set_corba_seq<std::vector<std::string>, std::vector<std::string>>
-                 (temp.members, ci->members);
-             reg_grp_seq[i] = temp;
-//           set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename std::vector<RegistrarGroup>::value_type >(*ci);
+             temp.members = ci->members;
         }
-
         return reg_grp_seq;
     }
     catch (...)
