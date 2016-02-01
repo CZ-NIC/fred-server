@@ -2,6 +2,8 @@
 
 #include "src/corba/admin/common.h"
 
+#include "src/fredlib/registrar/info_registrar_output.h"
+
 //#include "util/db/manager_tss.h"
 
 //#include "log/logger.h"
@@ -51,7 +53,6 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
             Fred::InfoRegistrarData ird = Fred::InfoRegistrarByHandle(handle)
                                           .exec(ctx, output_timezone)
                                           .info_registrar_data;
-            //TODO put ifs
             reg.address.city = ird.city;
             reg.address.country_code = ird.country.get_value_or_default()();
             reg.address.postal_code = ird.postalcode.get_value_or_default();
@@ -81,39 +82,49 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
             }
         }
     }
-//    catch(const ::CORBA::UserException& )
-//    {
-//        throw;
-//    }
     catch (...) {
         log_and_rethrow_exception_handler(ctx);
     }
     return Registrar();
 }
 
+template<class CORBA_SEQ, class CORBA_SEQ_ELEMENT, class IN_LIST>
+void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
+{
+    cs.length(il.size());
+    unsigned long long i = 0;
+    for(typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
+    {
+        cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename IN_LIST::value_type >(*ci);
+    }
+}
+
 RegistrarSeq Server_impl::get_registrars()
 {
     try
     {
-        RegistrarSeq_var registrar_seq = new RegistrarSeq;
+        RegistrarSeq registrar_seq;
         std::vector<Fred::InfoRegistrarData> registrar_data_list;
         Fred::OperationContext ctx;
 
-        BOOST_FOREACH(const Fred::InfoRegistrarOutput& registrar_output, Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone))
+//        BOOST_FOREACH(const Fred::InfoRegistrarOutput& registrar_output,
+//                Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone))
+        std::vector<Fred::InfoRegistrarOutput> v = Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone);
+        for(std::vector<Fred::InfoRegistrarOutput>::iterator it = v.begin(); it!=v.end(); ++it)
         {
-            registrar_data_list.push_back(registrar_output.info_registrar_data);
+            registrar_data_list.push_back(it->info_registrar_data);
         }
 
         set_corba_seq<RegistrarSeq, Registrar>(
                 registrar_seq, registrar_data_list);
 
-        return registrar_seq._retn();
+        return registrar_seq;
     }
     catch (...)
-    {}
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    {
+        log_and_rethrow_exception_handler(ctx);
+    }
+    return RegistrarSeq();
 }
 
 RegistrarGroupList* Server_impl::get_registrar_groups()
