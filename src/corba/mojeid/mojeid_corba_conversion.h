@@ -214,14 +214,6 @@ namespace CorbaConversion
 
     //Registry::MojeID::Date
     template < >
-    struct DEFAULT_UNWRAPPER< Registry::MojeID::Date, boost::gregorian::date >
-    {
-        typedef Registry::MojeID::Date CORBA_TYPE;
-        typedef boost::gregorian::date NON_CORBA_TYPE;
-        static void unwrap(const CORBA_TYPE &src, NON_CORBA_TYPE &dst);
-    };
-
-    template < >
     struct DEFAULT_WRAPPER< boost::gregorian::date, Registry::MojeID::Date >
     {
         typedef boost::gregorian::date NON_CORBA_TYPE;
@@ -229,14 +221,34 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
     };
 
-    //Registry::MojeID::NullableDate
     template < >
-    struct DEFAULT_UNWRAPPER< Registry::MojeID::NullableDate*, Nullable< boost::gregorian::date > >
-    :   Unwrapper_ptr_into_Nullable< Registry::MojeID::NullableDate, boost::gregorian::date > { };
+    struct DEFAULT_UNWRAPPER< Registry::MojeID::Date, Registry::MojeIDImplData::Date >
+    {
+        typedef Registry::MojeID::Date         CORBA_TYPE;
+        typedef Registry::MojeIDImplData::Date NON_CORBA_TYPE;
+        static void unwrap(const CORBA_TYPE &src, NON_CORBA_TYPE &dst);
+    };
 
+    template < >
+    struct DEFAULT_WRAPPER< Registry::MojeIDImplData::Date, Registry::MojeID::Date >
+    {
+        typedef Registry::MojeIDImplData::Date NON_CORBA_TYPE;
+        typedef Registry::MojeID::Date         CORBA_TYPE;
+        static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
+    };
+
+    //Registry::MojeID::NullableDate
     template < >
     struct DEFAULT_WRAPPER< boost::gregorian::date, Registry::MojeID::NullableDate >
     :   Wrapper_value_into_Nullable< boost::gregorian::date, Registry::MojeID::NullableDate > { };
+
+    template < >
+    struct DEFAULT_UNWRAPPER< Registry::MojeID::NullableDate*, Nullable< Registry::MojeIDImplData::Date > >
+    :   Unwrapper_ptr_into_Nullable< Registry::MojeID::NullableDate, Registry::MojeIDImplData::Date > { };
+
+    template < >
+    struct DEFAULT_WRAPPER< Registry::MojeIDImplData::Date, Registry::MojeID::NullableDate >
+    :   Wrapper_value_into_Nullable< Registry::MojeIDImplData::Date, Registry::MojeID::NullableDate > { };
 
 
     //Registry::MojeID::DateTime

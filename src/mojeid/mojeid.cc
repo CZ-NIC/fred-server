@@ -145,12 +145,11 @@ public:
         }
         return *this;
     }
-    typedef boost::gregorian::date Date;
-    set_ssn& operator()(const Nullable< Date > &_ssn, Fred::SSNType::Value _ssn_type)
+    set_ssn& operator()(const Nullable< MojeIDImplData::Date > &_ssn, Fred::SSNType::Value _ssn_type)
     {
         if ((out_ptr != NULL) && !_ssn.isnull()) {
             out_ptr->set_ssntype(Conversion::Enums::into< std::string >(_ssn_type));
-            out_ptr->set_ssn(boost::gregorian::to_iso_extended_string(_ssn.get_value()));
+            out_ptr->set_ssn(_ssn.get_value().value);
             out_ptr = NULL;
         }
         return *this;

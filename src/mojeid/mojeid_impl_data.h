@@ -197,68 +197,73 @@ struct ProcessRegistrationValidationResult
     ValidationResult phone;
 };
 
+struct Date
+{
+    std::string value;
+};
+
 struct CreateContact
 {
-    std::string                        username;
-    std::string                        first_name;
-    std::string                        last_name;
-    Nullable< std::string >            organization;
-    Nullable< std::string >            vat_reg_num;
-    Nullable< boost::gregorian::date > birth_date;
-    Nullable< std::string >            id_card_num;
-    Nullable< std::string >            passport_num;
-    Nullable< std::string >            ssn_id_num;
-    Nullable< std::string >            vat_id_num;
-    Address                            permanent;
-    Nullable< Address >                mailing;
-    Nullable< Address >                billing;
-    Nullable< ShippingAddress >        shipping;
-    Nullable< ShippingAddress >        shipping2;
-    Nullable< ShippingAddress >        shipping3;
-    std::string                        email;
-    Nullable< std::string >            notify_email;
-    std::string                        telephone;
-    Nullable< std::string >            fax;
+    std::string                 username;
+    std::string                 first_name;
+    std::string                 last_name;
+    Nullable< std::string >     organization;
+    Nullable< std::string >     vat_reg_num;
+    Nullable< Date >            birth_date;
+    Nullable< std::string >     id_card_num;
+    Nullable< std::string >     passport_num;
+    Nullable< std::string >     ssn_id_num;
+    Nullable< std::string >     vat_id_num;
+    Address                     permanent;
+    Nullable< Address >         mailing;
+    Nullable< Address >         billing;
+    Nullable< ShippingAddress > shipping;
+    Nullable< ShippingAddress > shipping2;
+    Nullable< ShippingAddress > shipping3;
+    std::string                 email;
+    Nullable< std::string >     notify_email;
+    std::string                 telephone;
+    Nullable< std::string >     fax;
 };
 
 struct UpdateContact
 {
-    ContactId                          id;
-    std::string                        first_name;
-    std::string                        last_name;
-    Nullable< std::string >            organization;
-    Nullable< std::string >            vat_reg_num;
-    Nullable< boost::gregorian::date > birth_date;
-    Nullable< std::string >            id_card_num;
-    Nullable< std::string >            passport_num;
-    Nullable< std::string >            ssn_id_num;
-    Nullable< std::string >            vat_id_num;
-    Address                            permanent;
-    Nullable< Address >                mailing;
-    Nullable< Address >                billing;
-    Nullable< ShippingAddress >        shipping;
-    Nullable< ShippingAddress >        shipping2;
-    Nullable< ShippingAddress >        shipping3;
-    std::string                        email;
-    Nullable< std::string >            notify_email;
-    Nullable< std::string >            telephone;
-    Nullable< std::string >            fax;
+    ContactId                   id;
+    std::string                 first_name;
+    std::string                 last_name;
+    Nullable< std::string >     organization;
+    Nullable< std::string >     vat_reg_num;
+    Nullable< Date >            birth_date;
+    Nullable< std::string >     id_card_num;
+    Nullable< std::string >     passport_num;
+    Nullable< std::string >     ssn_id_num;
+    Nullable< std::string >     vat_id_num;
+    Address                     permanent;
+    Nullable< Address >         mailing;
+    Nullable< Address >         billing;
+    Nullable< ShippingAddress > shipping;
+    Nullable< ShippingAddress > shipping2;
+    Nullable< ShippingAddress > shipping3;
+    std::string                 email;
+    Nullable< std::string >     notify_email;
+    Nullable< std::string >     telephone;
+    Nullable< std::string >     fax;
 };
 
 typedef UpdateContact InfoContact; ///< XXX
 
 struct SetContact
 {
-    Nullable< std::string >            organization;
-    Nullable< std::string >            vat_reg_num;
-    Nullable< boost::gregorian::date > birth_date;
-    Nullable< std::string >            vat_id_num;
-    Address                            permanent;
-    Nullable< Address >                mailing;
-    std::string                        email;
-    Nullable< std::string >            notify_email;
-    std::string                        telephone;
-    Nullable< std::string >            fax;
+    Nullable< std::string > organization;
+    Nullable< std::string > vat_reg_num;
+    Nullable< Date >        birth_date;
+    Nullable< std::string > vat_id_num;
+    Address                 permanent;
+    Nullable< Address >     mailing;
+    std::string             email;
+    Nullable< std::string > notify_email;
+    std::string             telephone;
+    Nullable< std::string > fax;
 };
 
 struct ContactStateInfo

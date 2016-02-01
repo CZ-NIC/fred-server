@@ -84,7 +84,7 @@ void minimal_common_conversion_into_fred(const SRC_INFO_TYPE &src, Fred::InfoCon
     dst.vat          = src.vat_reg_num;
     if (!src.birth_date.isnull()) {
         dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY);
-        dst.ssn     = boost::gregorian::to_iso_extended_string(src.birth_date.get_value());
+        dst.ssn     = src.birth_date.get_value().value;
     }
     else if (!src.vat_id_num.isnull()) {
         dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::ICO);
@@ -110,8 +110,13 @@ void minimal_common_conversion_from_fred(const Fred::InfoContactData &src, DST_I
     if (!src.ssn.isnull() && !src.ssntype.isnull()) {
         switch (Fred::SSNType::from(src.ssntype.get_value())) {
             case Fred::SSNType::BIRTHDAY:
-                dst.birth_date = birthdate_from_string_to_date(src.ssn.get_value());
+            {
+                Registry::MojeIDImplData::Date birthdate;
+                birthdate.value = boost::gregorian::to_iso_extended_string(
+                                      birthdate_from_string_to_date(src.ssn.get_value()));
+                dst.birth_date = birthdate;
                 break;
+            }
             case Fred::SSNType::ICO:
                 dst.vat_id_num = src.ssn.get_value();
                 break;

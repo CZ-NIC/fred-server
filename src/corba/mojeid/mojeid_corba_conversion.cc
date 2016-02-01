@@ -37,19 +37,6 @@ namespace CorbaConversion
         }
     }
 
-    void DEFAULT_UNWRAPPER< Registry::MojeID::Date,
-                            boost::gregorian::date >::unwrap(const CORBA_TYPE &src,
-                                                             NON_CORBA_TYPE &dst)
-    {
-        std::string value;
-        unwrap_holder(src.value, value);
-        dst = boost::gregorian::from_simple_string(value);
-
-        if (dst.is_special()) {
-            throw ArgumentIsSpecial();
-        }
-    }
-
     void DEFAULT_WRAPPER< boost::gregorian::date,
                           Registry::MojeID::Date >::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
     {
@@ -58,6 +45,20 @@ namespace CorbaConversion
         }
 
         wrap_into_holder(boost::gregorian::to_iso_extended_string(src), dst.value);
+    }
+
+    void DEFAULT_UNWRAPPER< Registry::MojeID::Date,
+                            Registry::MojeIDImplData::Date >::unwrap(const CORBA_TYPE &src,
+                                                                     NON_CORBA_TYPE &dst)
+    {
+        unwrap_holder(src.value, dst.value);
+    }
+
+    void DEFAULT_WRAPPER< Registry::MojeIDImplData::Date,
+                          Registry::MojeID::Date >::wrap(const NON_CORBA_TYPE &src,
+                                                         CORBA_TYPE &dst)
+    {
+        wrap_into_holder(src.value, dst.value);
     }
 
     void DEFAULT_UNWRAPPER< Registry::MojeID::DateTime,
