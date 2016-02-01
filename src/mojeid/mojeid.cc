@@ -1491,6 +1491,7 @@ void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
         LOGGER(PACKAGE).error("request failed (unknown error)");
         throw;
     }
+
     try {
         const ContactId contact_id = prepare_transaction_storage()->get(_trans_id);
         Fred::OperationContextCreator ctx;
@@ -1501,6 +1502,44 @@ void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
     catch (const prepare_transaction_data_not_found&) {
         LOGGER(PACKAGE).error("request failed (cannot retrieve saved transaction data "
                               "using transaction identifier " + _trans_id + ")");
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+
+    try {
+        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+        if (server_conf_ptr->auto_sms_generation) {
+            this->generate_sms_messages();
+        }
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+
+    try {
+        const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >();
+        if (server_conf_ptr->auto_email_generation) {
+            this->generate_email_messages();
+        }
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
     }
 }
 

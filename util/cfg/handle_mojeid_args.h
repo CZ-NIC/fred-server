@@ -52,6 +52,8 @@ public:
     boost::posix_time::time_duration uho_scavenger_object_max_idle_period;
     unsigned letter_limit_count;
     unsigned letter_limit_interval;
+    bool auto_sms_generation;
+    bool auto_email_generation;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -86,10 +88,17 @@ public:
                  "maximum number of letters sent by one contact in a letter_limit_interval days")
                 ("mojeid.letter_limit_interval",
                  po::value<unsigned>()->default_value(30),
-                 "interval for checking number of sent letters");
+                 "interval for checking number of sent letters")
+                ("mojeid.auto_sms_generation",
+                 po::value< bool >()->default_value(true),
+                 "turn on/off sms generation after two phase commit")
+                ("mojeid.auto_email_generation",
+                 po::value< bool >()->default_value(true),
+                 "turn on/off email generation after two phase commit");
 
         return cfg_opts;
     }//get_options_description
+
     void handle( int argc, char* argv[],  FakedArgs &fa)
     {
         boost::program_options::variables_map vm;
@@ -105,6 +114,8 @@ public:
                 vm["mojeid.uho_scavenger_object_max_idle_period"].as<int>());
         letter_limit_count    = vm["mojeid.letter_limit_count"   ].as<unsigned>();
         letter_limit_interval = vm["mojeid.letter_limit_interval"].as<unsigned>();
+        auto_sms_generation   = vm["mojeid.auto_sms_generation"].as< bool >();
+        auto_email_generation = vm["mojeid.auto_email_generation"].as< bool >();
     }//handle
 };
 
