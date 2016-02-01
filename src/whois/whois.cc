@@ -88,50 +88,35 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
     return Registrar();
 }
 
-template<class CORBA_SEQ_ELEMENT, class IN_LIST_ELEMENT>
-        CORBA_SEQ_ELEMENT set_element_of_corba_seq(const IN_LIST_ELEMENT& ile);
-
-template<> RegistrarGroup
-set_element_of_corba_seq<RegistrarGroup, std::pair<std::string, std::string> >
-(const std::pair<std::string, std::string>& ile)
-{
-    RegistrarGroup temp;
-    temp.name = ile.first;
-    temp.members = ile.second;
-    return temp;
-}
-
-template<class CORBA_SEQ, class CORBA_SEQ_ELEMENT, class IN_LIST>
-void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
-{
-    cs.length(il.size());
-    unsigned long long i = 0;
-    for(typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
-    {
-        cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename IN_LIST::value_type >(*ci);
-    }
-}
-
-RegistrarSeq Server_impl::get_registrars()
+std::vector<Registrar> Server_impl::get_registrars()
 {
     try
     {
-        RegistrarSeq registrar_seq;
-        std::vector<Fred::InfoRegistrarData> registrar_data_list;
+        std::vector<Registrar> result;
         Fred::OperationContext ctx;
 
-//        BOOST_FOREACH(const Fred::InfoRegistrarOutput& registrar_output,
-//                Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone))
         std::vector<Fred::InfoRegistrarOutput> v = Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone);
+        Registrar temp;
         for(std::vector<Fred::InfoRegistrarOutput>::iterator it = v.begin(); it!=v.end(); ++it)
         {
-            registrar_data_list.push_back(it->info_registrar_data);
+            temp.address.city = it->info_registrar_data.city.get_value_or_default();
+            temp.address.country_code = it->info_registrar_data.country.get_value_or_default();
+            temp.address.postal_code = it->info_registrar_data.postalcode.get_value_or_default();
+            temp.address.stateorprovince = it->info_registrar_data.stateorprovince.get_value_or_default();
+            temp.address.street1 = it->info_registrar_data.street1.get_value_or_default();
+            temp.address.street2 = it->info_registrar_data.street2.get_value_or_default();
+            temp.address.street3 = it->info_registrar_data.street3.get_value_or_default();
+            temp.fax = it->info_registrar_data.fax.get_value_or_default();
+            temp.handle = it->info_registrar_data.handle;
+            temp.id = it->info_registrar_data.id;
+            temp.name = it->info_registrar_data.name.get_value_or_default();
+            temp.organization = it->info_registrar_data.organization.get_value_or_default();
+            temp.phone = it->info_registrar_data.telephone.get_value_or_default();
+            temp.url = it->info_registrar_data.url.get_value_or_default();
+            result.push_back(temp);
         }
 
-        set_corba_seq<RegistrarSeq, Registrar>(registrar_seq,
-                registrar_data_list);
-
-        return registrar_seq;
+        return result;
     }
     catch (...)
     {
@@ -165,15 +150,23 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
     return std::vector<RegistrarGroup>;
 }
 
-RegistrarCertificationList Server_impl::get_registrar_certification_list()
+std::vector<RegistrarCertification> Server_impl::get_registrar_certification_list()
 {
     try
     {
-        RegistrarCertificationList reg_cert_seq;
+        std::vector<RegistrarCertification> result;
         Fred::OperationContext ctx;
-        set_corba_seq<RegistrarCertificationList, RegistrarCertification>
-            (reg_cert_seq, ::Whois::get_registrar_certifications(ctx));
-        return reg_cert_seq;
+        typedef std::vector<::Whois::RegistrarCertificationData> certificate_list;
+        certificate_list v_rcd= ::Whois::get_registrar_certifications(ctx);
+        RegistrarCertification temp;
+        for(certificate_list::iterator it = v_rcd.begin(); it != v_rcd.end(); ++it)
+        {
+            temp.evaluation_file_id = it->get_registrar_evaluation_file_id();
+            temp.registrar_handle = it->get_registrar_handle();
+            temp.score = it->get_registrar_score();
+            result.push_back(temp);
+        }
+        return result;
     }
     catch (...)
     {
@@ -186,10 +179,9 @@ std::vector<std::string> Server_impl::get_managed_zone_list()
 {
     try
     {
-        std::vector<std::string> zone_seq;
         Fred::OperationContext ctx;
-        set_corba_seq<std::vector<std::string>, std::string>
-            (zone_seq, ::Whois::get_managed_zone_list(ctx));
+        std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
+
         return zone_seq;
     }
     catch (...)
