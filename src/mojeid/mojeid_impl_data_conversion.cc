@@ -147,17 +147,19 @@ void common_conversion_into_fred(const SRC_INFO_TYPE &src, Fred::InfoContactData
     minimal_common_conversion_into_fred(src, dst);
     dst.name = src.first_name + " " + src.last_name;
 
-    if (!src.id_card_num.isnull()) {
-        dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY);
-        dst.ssn     = src.id_card_num.get_value();
-    }
-    else if (!src.passport_num.isnull()) {
-        dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::PASS);
-        dst.ssn     = src.passport_num.get_value();
-    }
-    else if (!src.ssn_id_num.isnull()) {
-        dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::MPSV);
-        dst.ssn     = src.ssn_id_num.get_value();
+    if (dst.ssntype.isnull() || dst.ssn.isnull()) {
+        if (!src.id_card_num.isnull()) {
+            dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::OP);
+            dst.ssn     = src.id_card_num.get_value();
+        }
+        else if (!src.passport_num.isnull()) {
+            dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::PASS);
+            dst.ssn     = src.passport_num.get_value();
+        }
+        else if (!src.ssn_id_num.isnull()) {
+            dst.ssntype = Conversion::Enums::into< std::string >(Fred::SSNType::MPSV);
+            dst.ssn     = src.ssn_id_num.get_value();
+        }
     }
 
     if (!src.billing.isnull()) {
