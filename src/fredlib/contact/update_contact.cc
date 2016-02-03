@@ -313,7 +313,7 @@ namespace Fred
             if (personal_id_.isset()) {
                 const Nullable< PersonalIdUnion > nullable_personal_id = personal_id_.get_value();
                 if (nullable_personal_id.isnull()) {
-                    sql << set_separator.get() << "ssntype=NULL::text,"
+                    sql << set_separator.get() << "ssntype=NULL::integer,"
                                                   "ssn=NULL::text";
                 }
                 else {
