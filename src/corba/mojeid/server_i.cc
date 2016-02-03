@@ -297,7 +297,7 @@ Buffer* Server_i::get_validation_pdf(
         ContactId _contact_id)
 {
     try {
-        const std::string pdf_content = impl_ptr_->get_validation_pdf(_contact_id);
+        const MojeIDImplData::Buffer pdf_content = impl_ptr_->get_validation_pdf(_contact_id);
         return result_as< Buffer >(pdf_content);
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {

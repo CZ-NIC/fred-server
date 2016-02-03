@@ -84,7 +84,7 @@ public:
 
     void rollback_prepared_transaction(const std::string &_trans_id)const;
 
-    std::string get_validation_pdf(ContactId _contact_id)const;
+    MojeIDImplData::Buffer get_validation_pdf(ContactId _contact_id)const;
 
     void create_validation_request(
         ContactId contact_id,

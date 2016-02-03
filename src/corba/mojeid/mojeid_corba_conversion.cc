@@ -367,4 +367,11 @@ namespace CorbaConversion
         wrap_nullable_into_holder(src.linked_date,                       dst.linked_date);
     }
 
+    void DEFAULT_WRAPPER< Registry::MojeIDImplData::Buffer,
+                          Registry::MojeID::Buffer >::wrap(const NON_CORBA_TYPE &src,
+                                                           CORBA_TYPE &dst)
+    {
+        CorbaConversion::wrap(src.value, dst.value);
+    }
+
 }

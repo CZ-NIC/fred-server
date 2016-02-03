@@ -1584,7 +1584,7 @@ std::string birthdate_into_czech_date(const std::string &_birthdate)
 
 }
 
-std::string MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
+MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1658,7 +1658,9 @@ std::string MojeIDImpl::get_validation_pdf(ContactId _contact_id)const
 
         doc_gen->getInput() << letter_xml;
         doc_gen->closeInput();
-        return pdf_document.str();
+        MojeIDImplData::Buffer content;
+        content.value = pdf_document.str();
+        return content;
     }
     catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {

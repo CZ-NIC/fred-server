@@ -474,8 +474,16 @@ namespace CorbaConversion
                                              Registry::MojeID::ContactStateInfoList > { };
 
     template < >
-    struct DEFAULT_WRAPPER< std::string, Registry::MojeID::Buffer >
-    :   Wrapper_container_into_OctetSeq< std::string, Registry::MojeID::Buffer > { };
+    struct DEFAULT_WRAPPER< Registry::MojeIDImplData::Buffer, Registry::MojeID::Buffer >
+    {
+        typedef Registry::MojeIDImplData::Buffer NON_CORBA_TYPE;
+        typedef Registry::MojeID::Buffer         CORBA_TYPE;
+        static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst);
+    };
+
+    template < >
+    struct DEFAULT_WRAPPER< std::string, Registry::MojeID::BufferValue >
+    :   Wrapper_container_into_OctetSeq< std::string, Registry::MojeID::BufferValue > { };
 
     template < >
     struct DEFAULT_WRAPPER< std::string, char* >

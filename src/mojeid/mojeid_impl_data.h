@@ -276,6 +276,11 @@ struct ContactStateInfo
     Nullable< boost::gregorian::date > linked_date;
 };
 
+struct Buffer
+{
+    std::string value;
+};
+
 typedef std::vector< ContactStateInfo > ContactStateInfoList;
 
 typedef std::vector< std::string > ContactHandleList;
