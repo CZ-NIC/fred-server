@@ -94,6 +94,7 @@ ContactId Server_i::create_contact_prepare(
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
         CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
+        throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -132,6 +133,7 @@ InfoContact* Server_i::transfer_contact_prepare(
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
         CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
+        throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -187,6 +189,7 @@ InfoContact* Server_i::update_transfer_contact_prepare(
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
         CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
+        throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();

@@ -156,11 +156,7 @@ namespace CorbaConversion
      * Wraps @param src into EXCEPTION_CLASS instance and throws it.
      * @throw EXCEPTION_CLASS if conversion is successful
      * @throw DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception if conversion failed
-     * @note __noreturn__ doesn't mean "returns nothing" but "never returns"
      */
-    template < class EXCEPTION_CLASS, class SRC_TYPE >
-    void raise(const SRC_TYPE &src) __attribute__ ((__noreturn__));
-
     template < class EXCEPTION_CLASS, class SRC_TYPE >
     void raise(const SRC_TYPE &src)
     {
