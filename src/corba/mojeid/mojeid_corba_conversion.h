@@ -31,69 +31,112 @@
 
 namespace CorbaConversion
 {
-    namespace Internal
+    //class for wrapping into type which holds (owns and manages) true CORBA types declared in idl
+    //example: true CORBA type name is Buffer
+    //         so its holder types are Buffer_var, Buffer_member, Buffer_out
+    //each of holder types offers method out() which returns reference to an "empty" storage where
+    //is it safe to store CORBA object created via new operator
+    //the crucial benefit is that I don't need any default wrappers for CORBA holder types, I only
+    //have to define default wrapper for true CORBA type
+    class corba_holder_type_wrapper
     {
-        struct SafeStorageNotEmpty:std::runtime_error
+    public:
+        //obtains reference to safe storage from CORBA holder type
+        //initializes it and
+        //converts source value into it by using DEFAULT_CORBA_WRAPPER
+        template < class SRC_TYPE, class CORBA_HOLDER_TYPE >
+        static void wrap(const SRC_TYPE &src, CORBA_HOLDER_TYPE &dst)
         {
-            SafeStorageNotEmpty():std::runtime_error("Storage has to be NULL initialized.") { }
-            virtual ~SafeStorageNotEmpty() throw() { }
-        };
+            wrap_into_result_of_out_method(src, dst.out());
+        }
 
+        //it's the same with one difference only: the source type offers nullable semantics
+        template < class SRC_TYPE, class CORBA_HOLDER_TYPE >
+        static void wrap(const Nullable< SRC_TYPE > &src, CORBA_HOLDER_TYPE &dst)
+        {
+            wrap_nullable_into_result_of_out_method(src, dst.out());
+        }
+
+        //exception class which signals that there is a reasonable suspicion of memory leaking
+        struct DangerOfMemoryLeaking:std::runtime_error
+        {
+            DangerOfMemoryLeaking():std::runtime_error("There is a danger of memory leaking.") { }
+            virtual ~DangerOfMemoryLeaking() throw() { }
+        };
+    private:
+        //storage should be "empty" before an assignment
+        //it's not necessary but it's cheap defensive check
         template < class DST_TYPE >
-        void check_empty_storage(const DST_TYPE *const &safe_dst)
+        static void check_readiness_for_assignment(const DST_TYPE *const &storage)
         {
-            if (safe_dst != NULL) {
-                throw SafeStorageNotEmpty();
+            if (storage != NULL) {
+                throw DangerOfMemoryLeaking();
             }
         }
 
-        template < class SRC_TYPE, class DST_TYPE >
-        struct into_safe_storage
+        //operations on result of out method of CORBA holder types
+        template < class SRC_TYPE, class DST_TYPE, bool = false >
+        class result_of_out_method
         {
-            static void wrap(const SRC_TYPE &src, DST_TYPE *&safe_dst)
+        public:
+            //inits storage by new object pointer and sets it to the converted value via default wrapper
+            static void init_and_set(const SRC_TYPE &src, DST_TYPE *&storage)
             {
-                check_empty_storage(safe_dst);
-                safe_dst = new DST_TYPE;
-                CorbaConversion::wrap(src, *safe_dst);
+                CorbaConversion::wrap(src, *init(storage));
+            }
+        private:
+            static DST_TYPE* init(DST_TYPE *&storage)
+            {
+                check_readiness_for_assignment(storage);
+                return storage = new DST_TYPE;
             }
         };
 
-        template < >
-        struct into_safe_storage< std::string, char >
+        //specialization for CORBA string which is represented by plain char pointer type and
+        //which unfortunately deserves other handling
+        template < bool X >
+        class result_of_out_method< std::string, char, X >
         {
-            static void wrap(const std::string &src, char *&safe_dst);
+        public:
+            static void init_and_set(const std::string &src, char *&storage);
         };
 
+        //a way how to distinguish between common source type
         template < class SRC_TYPE, class DST_TYPE >
-        static void wrap_into_safe_storage(const SRC_TYPE &src, DST_TYPE *&safe_dst)
+        static void wrap_into_result_of_out_method(const SRC_TYPE &src, DST_TYPE *&storage)
         {
-            into_safe_storage< SRC_TYPE, DST_TYPE >::wrap(src, safe_dst);
+            result_of_out_method< SRC_TYPE, DST_TYPE >::init_and_set(src, storage);
         }
 
+        //and source type with nullable semantics
         template < class SRC_TYPE, class DST_TYPE >
-        static void wrap_nullable_into_safe_storage(const Nullable< SRC_TYPE > &src, DST_TYPE *&safe_dst)
+        static void wrap_nullable_into_result_of_out_method(const Nullable< SRC_TYPE > &src, DST_TYPE *&storage)
         {
             if (!src.isnull()) {
-                into_safe_storage< SRC_TYPE, DST_TYPE >::wrap(src.get_value(), safe_dst);
+                result_of_out_method< SRC_TYPE, DST_TYPE >::init_and_set(src.get_value(), storage);
             }
             else {
-                check_empty_storage(safe_dst);
+                check_readiness_for_assignment(storage);
             }
         }
-    }//namespace CorbaConversion::Internal
+    };
 
-    template < class SRC_TYPE, class DST_HOLDER_TYPE >
-    void wrap_into_holder(const SRC_TYPE &src, DST_HOLDER_TYPE &dst)
+    //from instance of CORBA holder type autodeduces and call default wrapper for corresponding true CORBA type
+    template < class SRC_TYPE, class CORBA_HOLDER_TYPE >
+    void wrap_into_holder(const SRC_TYPE &src, CORBA_HOLDER_TYPE &dst)
     {
-        Internal::wrap_into_safe_storage(src, dst.out());
+        corba_holder_type_wrapper::wrap(src, dst);
     }
 
-    template < class SRC_TYPE, class DST_HOLDER_TYPE >
-    void wrap_nullable_into_holder(const Nullable< SRC_TYPE > &src, DST_HOLDER_TYPE &dst)
+    //it's the same with one difference only: the source type offers nullable semantics
+    template < class SRC_TYPE, class CORBA_HOLDER_TYPE >
+    void wrap_nullable_into_holder(const Nullable< SRC_TYPE > &src, CORBA_HOLDER_TYPE &dst)
     {
-        Internal::wrap_nullable_into_safe_storage(src, dst.out());
+        corba_holder_type_wrapper::wrap(src, dst);
     }
 
+    //looks like default wrapper class for wrapping common source type without nullable semantics
+    //into CORBA valuetype using default wrapper for corresponding true CORBA type
     template < class SRC_TYPE, class DST_NULLABLE_TYPE >
     struct Wrapper_value_into_Nullable
     {
@@ -105,6 +148,7 @@ namespace CorbaConversion
         }
     };
 
+    //its member type 'exception' is used to signal common wrapper conversion trouble
     template < class EXCEPTION_CLASS, class SRC_TYPE >
     struct DEFAULT_WRAPPER_FAILURE;
 
@@ -112,6 +156,7 @@ namespace CorbaConversion
      * Wraps @param src into EXCEPTION_CLASS instance and throws it.
      * @throw EXCEPTION_CLASS if conversion is successful
      * @throw DEFAULT_WRAPPER_FAILURE< EXCEPTION_CLASS, SRC_TYPE >::exception if conversion failed
+     * @note __noreturn__ doesn't mean "returns nothing" but "never returns"
      */
     template < class EXCEPTION_CLASS, class SRC_TYPE >
     void raise(const SRC_TYPE &src) __attribute__ ((__noreturn__));
@@ -129,19 +174,22 @@ namespace CorbaConversion
         throw e;
     };
 
+    //in common cases is it INTERNAL_SERVER_ERROR
     template < class EXCEPTION_CLASS, class SRC_TYPE >
     struct DEFAULT_WRAPPER_FAILURE
     {
         typedef Registry::MojeID::Server::INTERNAL_SERVER_ERROR exception;
     };
 
-
+    //calls default unwrapper for corresponding true CORBA type
     template < class SRC_HOLDER_TYPE, class DST_TYPE >
     void unwrap_holder(const SRC_HOLDER_TYPE &src, DST_TYPE &dst)
     {
         unwrap(src.in(), dst);
     }
 
+    //looks like default unwrapper class for unwrapping CORBA valuetype represented by plain pointer
+    //into common type gifted with nullable semantics
     template < class SRC_TYPE_PTR, class DST_TYPE >
     struct Unwrapper_ptr_into_Nullable
     {
@@ -158,6 +206,16 @@ namespace CorbaConversion
         }
     };
 
+    //looks like default wrapper class for wrapping common vector type into CORBA sequence
+    //using default wrapper for corresponding true CORBA type of sequence items where operator[]
+    //of sequence returns reference to the true CORBA type of item
+    //example:
+    //    template < >
+    //    struct DEFAULT_WRAPPER< Impl::VectorOfStructures,
+    //                            IDL::SequenceOfStructures >
+    //    :   Wrapper_std_vector_into_Seq_of_refs< Impl::VectorOfStructures,
+    //                                             IDL::SequenceOfStructures > { };
+    //    for each item of Impl::VectorOfStructures calls default wrapper< Impl::Structure, IDL::Structure >
     template < class NON_CORBA_CONTAINER, class CORBA_SEQ >
     struct Wrapper_std_vector_into_Seq_of_refs
     {
@@ -176,6 +234,16 @@ namespace CorbaConversion
         }
     };
 
+    //looks like default wrapper class for wrapping common vector type into CORBA sequence
+    //using default wrapper for corresponding true CORBA type of sequence items where method out()
+    //of sequence item returns reference to the true CORBA type of item
+    //example:
+    //    template < >
+    //    struct DEFAULT_WRAPPER< Impl::VectorOfStrings,
+    //                            IDL::SequenceOfStrings >
+    //    :   Wrapper_std_vector_into_Seq_of_holders< Impl::VectorOfStrings,
+    //                                                IDL::SequenceOfStrings > { };
+    //    for each item of Impl::VectorOfStructures calls default wrapper< Impl::Strings, char* >
     template < class NON_CORBA_CONTAINER, class CORBA_SEQ >
     struct Wrapper_std_vector_into_Seq_of_holders
     {

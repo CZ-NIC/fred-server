@@ -25,17 +25,22 @@
 
 namespace CorbaConversion
 {
-    namespace Internal
+    template < bool X >
+    void corba_holder_type_wrapper::
+             result_of_out_method< std::string, char, X >::
+                 init_and_set(const std::string &src, char *&storage)
     {
-        void into_safe_storage< std::string, char >::wrap(const std::string &src, char *&safe_dst)
-        {
-            //some string holders are initialized to the special value
-            if (safe_dst != _CORBA_String_helper::empty_string) {
-                check_empty_storage(safe_dst);
-            }
-            CorbaConversion::wrap(src, safe_dst);
+        //some string corba helpers are initialized to the special value
+        if (storage != _CORBA_String_helper::empty_string) {
+            check_readiness_for_assignment(storage);
         }
+        CorbaConversion::wrap(src, storage);
     }
+
+    template
+    void corba_holder_type_wrapper::
+             result_of_out_method< std::string, char, false >::
+                 init_and_set(const std::string&, char*&);
 
     void DEFAULT_WRAPPER< boost::gregorian::date,
                           Registry::MojeID::Date >::wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
