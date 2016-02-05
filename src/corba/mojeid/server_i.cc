@@ -52,7 +52,8 @@ struct Wrapper_into_result< std::string, char* >
     typedef char* result_type;
     static char* from(const std::string &src)
     {
-        return CorbaConversion::wrap_into< char* >(src);
+        CORBA::String_var dst = src.c_str();
+        return dst._retn();
     }
 };
 

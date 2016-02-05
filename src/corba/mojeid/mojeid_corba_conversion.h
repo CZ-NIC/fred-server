@@ -31,6 +31,11 @@
 
 namespace CorbaConversion
 {
+    inline void store_copy_of_string_into_storage_with_responsibility_for_releasing(const std::string &src, char *&storage)
+    {
+        storage = CORBA::string_dup(src.c_str());
+    }
+
     //class for wrapping into type which holds (owns and manages) true CORBA types declared in idl
     //example: true CORBA type name is Buffer
     //         so its holder types are Buffer_var, Buffer_member, Buffer_out
@@ -94,7 +99,8 @@ namespace CorbaConversion
             static void init_and_set(const std::string &src, char *&storage)
             {
                 check_readiness_for_assignment(storage);
-                CorbaConversion::wrap(src, storage);
+                //unsafe default wrapper doesn't exist
+                store_copy_of_string_into_storage_with_responsibility_for_releasing(src, storage);
             }
         };
 
@@ -105,7 +111,7 @@ namespace CorbaConversion
             result_of_out_method< SRC_TYPE, DST_TYPE >::init_and_set(src, storage);
         }
 
-        //and source type with nullable semantics
+        //and source type with nullable semantics without function overloading
         template < class SRC_TYPE, class DST_TYPE >
         static void wrap_nullable_into_result_of_out_method(const Nullable< SRC_TYPE > &src, DST_TYPE *&storage)
         {
@@ -118,7 +124,7 @@ namespace CorbaConversion
         }
     };
 
-    //from instance of CORBA holder type autodeduces and call default wrapper for corresponding true CORBA type
+    //from instance of CORBA holder type autodeduces and calls default wrapper for corresponding true CORBA type
     template < class SRC_TYPE, class CORBA_HOLDER_TYPE >
     void wrap_into_holder(const SRC_TYPE &src, CORBA_HOLDER_TYPE &dst)
     {
@@ -142,6 +148,19 @@ namespace CorbaConversion
         static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
         {
             CorbaConversion::wrap(src, dst._boxed_inout());
+        }
+    };
+
+    //specialization for string because unsafe default wrapper into char* doesn't exist
+    template < class DST_NULLABLE_STRING >
+    struct Wrapper_string_into_NullableString
+    {
+        typedef std::string         NON_CORBA_TYPE;
+        typedef DST_NULLABLE_STRING CORBA_TYPE;
+        static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
+        {
+            //unsafe default wrapper doesn't exist
+            store_copy_of_string_into_storage_with_responsibility_for_releasing(src, dst._boxed_inout());
         }
     };
 
@@ -250,8 +269,20 @@ namespace CorbaConversion
             for (typename NON_CORBA_CONTAINER::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
                  ++src_ptr, ++dst_idx)
             {
-                CorbaConversion::wrap(*src_ptr, dst[dst_idx].out());
+                convert(*src_ptr, dst[dst_idx].out());
             }
+        }
+    private:
+        template < class SRC_TYPE, class DST_TYPE >
+        static void convert(const SRC_TYPE &src, DST_TYPE &dst)
+        {
+            CorbaConversion::wrap(src, dst);
+        }
+
+        //"specialization" for std::string -> char* because unsafe default wrapper doesn't exist
+        static void convert(const std::string &src, char* &dst)
+        {
+            store_copy_of_string_into_storage_with_responsibility_for_releasing(src, dst);
         }
     };
 
@@ -261,7 +292,7 @@ namespace CorbaConversion
 
     template < >
     struct DEFAULT_WRAPPER< std::string, Registry::MojeID::NullableString >
-    :   Wrapper_value_into_Nullable< std::string, Registry::MojeID::NullableString > { };
+    :   Wrapper_string_into_NullableString< Registry::MojeID::NullableString > { };
 
     /**
      * Exception if argument is special
@@ -545,17 +576,6 @@ namespace CorbaConversion
     template < >
     struct DEFAULT_WRAPPER< std::string, Registry::MojeID::BufferValue >
     :   Wrapper_container_into_OctetSeq< std::string, Registry::MojeID::BufferValue > { };
-
-    template < >
-    struct DEFAULT_WRAPPER< std::string, char* >
-    {
-        typedef std::string NON_CORBA_TYPE;
-        typedef char*       CORBA_TYPE;
-        static void wrap(const NON_CORBA_TYPE &src, CORBA_TYPE &dst)
-        {
-            dst = CORBA::string_dup(src.c_str());
-        }
-    };
 
     template < >
     struct DEFAULT_WRAPPER< std::vector< std::string >, Registry::MojeID::ContactHandleList >

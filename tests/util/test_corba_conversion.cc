@@ -70,7 +70,7 @@ namespace CorbaConversion
 
     template < >
     struct DEFAULT_WRAPPER< std::string, Test::NullableString >
-    :   Wrapper_value_into_Nullable< std::string, Test::NullableString > { };
+    :   Wrapper_string_into_NullableString< Test::NullableString > { };
 
     template < >
     struct DEFAULT_UNWRAPPER< Test::NullableString*, Nullable< std::string > >
