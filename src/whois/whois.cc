@@ -746,7 +746,7 @@ std::vector< std::pair<std::string, std::string> > get_object_status_desc(
     std::vector<Fred::ObjectStateDescription> states = Fred::GetObjectStateDescriptions(
         lang).set_object_type(type).set_external().exec(ctx);
 
-    if(states.empty()) throw MISSING_LOCALIZATION();
+    if(states.empty()) throw MissingLocalization();
 
     std::vector< std::pair<std::string, std::string> > temp;
     for(std::vector<Fred::ObjectStateDescription>::const_iterator ci
@@ -758,37 +758,33 @@ std::vector< std::pair<std::string, std::string> > get_object_status_desc(
     return temp;
 }
 
-template<> ObjectStatusDesc set_element_of_corba_seq<
-ObjectStatusDesc, std::pair<std::string, std::string> >(const std::pair<std::string, std::string>& ile)
-{
-    ObjectStatusDesc temp;
-    temp.handle = Corba::wrap_string_to_corba_string(ile.first);
-    temp.name = Corba::wrap_string_to_corba_string(ile.second);
-    return temp;
-}
-
-ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const std::string& lang)
+ObjectStatusDescSeq Server_impl::get_domain_status_descriptions(const std::string& lang)
 {
     try
     {
-        ObjectStatusDescSeq_var state_seq;
+        ObjectStatusDescSeq state_seq;
         Fred::OperationContext ctx;
-        set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-        (state_seq, get_object_status_desc(
-            Corba::unwrap_string_from_const_char_ptr(lang),"domain", ctx));
-        return state_seq._retn();
+        ObjectStatusDesc tmp;
+        std::vector< std::pair<std::string, std::string> > osd = get_object_status_desc(lang,"domain", ctx);
+        for(std::vector< std::pair<std::string, std::string> >::iterator it = osd.begin(); it != osd.end(); ++it)
+        {
+            tmp.handle = it->first;
+            tmp.name = it->second;
+            state_seq.osds.push_back(tmp);
+        }
+        return state_seq;
     }
-    catch(const MISSING_LOCALIZATION&)
+    catch(const MissingLocalization&)
     {
         throw;
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
+    }
+    return ObjectStatusDescSeq();
 }
 
-ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const std::string& lang)
+ObjectStatusDescSeq Server_impl::get_contact_status_descriptions(const std::string& lang)
 {
     try
     {
@@ -799,14 +795,14 @@ ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const std::str
             Corba::unwrap_string_from_const_char_ptr(lang),"contact", ctx));
         return state_seq._retn();
     }
-    catch(const MISSING_LOCALIZATION&)
+    catch(const MissingLocalization&)
     {
         throw;
     }
     catch (...) { }
 
     // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw InternalServerError();
 }
 ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const std::string& lang)
 {
@@ -819,13 +815,13 @@ ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const std::strin
             Corba::unwrap_string_from_const_char_ptr(lang),"nsset", ctx));
         return state_seq._retn();
     }
-    catch(const MISSING_LOCALIZATION&)
+    catch(const MissingLocalization&)
     {
         throw;
     }
     catch (...) { }
 
     // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    throw InternalServerError();
 }
 ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const std::string& lang)
