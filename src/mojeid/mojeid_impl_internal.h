@@ -74,7 +74,7 @@ typedef Fred::Check< boost::mpl::list< check_mojeid_registration,
                                        check_mojeid_registration_ctx,
                                        check_transfer_contact_prepare_presence > > CheckMojeIDRegistration;
 
-void raise(const CheckMojeIDRegistration &result) __attribute__ ((__noreturn__));
+void raise(const CheckMojeIDRegistration &result);
 
 
 typedef boost::mpl::list< Fred::MojeID::check_contact_username,
@@ -96,7 +96,7 @@ typedef boost::mpl::list< Fred::MojeID::check_contact_username_availability,
 typedef Fred::Check< boost::mpl::list< check_mojeid_create_contact,
                                        check_mojeid_create_contact_ctx > > CheckCreateContactPrepare;
 
-void raise(const CheckCreateContactPrepare &result) __attribute__ ((__noreturn__));
+void raise(const CheckCreateContactPrepare &result);
 
 
 typedef boost::mpl::list< Fred::check_contact_name,
@@ -112,7 +112,7 @@ typedef boost::mpl::list< Fred::check_contact_name,
 
 typedef Fred::Check< check_update_contact_prepare > CheckUpdateContactPrepare;
 
-void raise(const CheckUpdateContactPrepare &result) __attribute__ ((__noreturn__));
+void raise(const CheckUpdateContactPrepare &result);
 
 
 typedef boost::mpl::list< Fred::check_contact_name,
@@ -126,7 +126,7 @@ typedef boost::mpl::list< Fred::check_contact_name,
 
 typedef Fred::Check< check_create_validation_request > CheckCreateValidationRequest;
 
-void raise(const CheckCreateValidationRequest &result) __attribute__ ((__noreturn__));
+void raise(const CheckCreateValidationRequest &result);
 
 
 typedef boost::mpl::list< Fred::MojeID::check_contact_username,
@@ -145,7 +145,7 @@ typedef Fred::Check< boost::mpl::list< check_update_transfer_contact_prepare,
                                        check_update_transfer_contact_prepare_ctx,
                                        check_transfer_contact_prepare_presence > > CheckUpdateTransferContactPrepare;
 
-void raise(const CheckUpdateTransferContactPrepare &result) __attribute__ ((__noreturn__));
+void raise(const CheckUpdateTransferContactPrepare &result);
 
 }//namespace Registry::MojeIDImplInternal
 }//namespace Registry
