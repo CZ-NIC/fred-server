@@ -704,17 +704,14 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle,
     return DomainSeq();
 }
 
-DomainSeq* Server_impl::get_domains_by_keyset(
-    const std::string& handle,
-    unsigned long limit,
-    bool limit_exceeded)
+DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
+                                             unsigned long limit,
+                                             bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
-
         DomainSeq domain_seq;
-
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
             handle).set_limit(limit + 1).exec(ctx, output_timezone);
 
@@ -735,18 +732,12 @@ DomainSeq* Server_impl::get_domains_by_keyset(
             domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
         }
 
-        set_domains_seq(domain_seq.inout(),domain_info,ctx);
-
-        return domain_seq._retn();
+        return domain_seq;
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return DomainSeq();
 }
 
 std::vector< std::pair<std::string, std::string> > get_object_status_desc(
