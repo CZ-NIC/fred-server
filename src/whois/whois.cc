@@ -238,32 +238,55 @@ NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
         try
         {
             Fred::OperationContext ctx;
-            return new NSSet(wrap_nsset(Fred::InfoNssetByHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-                    ).exec(ctx, output_timezone).info_nsset_data));
+            Fred::InfoNssetData ind = Fred::InfoNssetByHandle(handle).exec(ctx, output_timezone).info_nsset_data;
+            NSSet ns_set;
+            if(!ind.update_time.isnull())
+                ns_set.changed.get_value();
+            ns_set.created = ind.creation_time;
+            ns_set.handle = ind.handle;
+            if(!ind.transfer_time.isnull())
+                ns_set.last_transfer = ind.transfer_time.get_value()
+            NameServer ns;
+            for(std::vector<Fred::DnsHost>::iterator it = ind.dns_hosts.begin(); it != ind.dns_hosts.end(); ++i)
+            {
+                ns.fqdn = it->get_fqdn();
+                std::vector<boost::asio::ip::address> ip_addresses = it->get_inet_addr();
+                IPAddress ipa;
+                for(std::vector<boost::asio::ip::address>::iterator addr_it = ip_addresses.begin(); addr_it != ip_addresses.end(); ++addr_it)
+                {
+                    ipa.address = addr_it->to_string();
+                    ipa.version = addr_it->is_v4() ? IPVersion::IPv4 : IPVersion::IPv6;
+                    ns.ip_adadresses.push_back(ipa);
+                }
+                ns_set.nservers.push_back(ns);
+            }
+            ns_set.registrar_handle = ind.sponsoring_registrar_handle;
+            std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(ind.id).exec(ctx);
+            for(std::vector<Fred::ObjectStateData>::iterator it = v_osd.begin(); it != v_osd.end(); ++it)
+            {
+                if(it->is_external)
+                    ns_set.statuses.push_back(it->state_name);
+            }
+
         }
         catch(const Fred::InfoNssetByHandle::Exception& e)
         {
             if(e.is_set_unknown_handle())
             {
-                if(Fred::CheckNsset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if(Fred::CheckNsset(handle).is_invalid_handle())
                 {
-                    throw INVALID_HANDLE();
+                    throw InvalidHandle();
                 }
 
-                throw OBJECT_NOT_FOUND();
+                throw ObjectNotExists();
             }
         }
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...)
-    { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    {
+        log_and_rethrow_exception_handler(ctx);
+    }
+    return NSSet();
 }
 
 NSSetSeq* Server_impl::get_nssets_by_ns(
