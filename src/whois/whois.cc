@@ -477,70 +477,98 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
     return KeySetSeq();
 }
 
-Domain* Server_impl::get_domain_by_handle(const std::string& handle)
+Domain generate_obfuscate_domain_delete_candidate(const std::string& _handle)
+{
+    Domain temp;
+    temp.fqdn = Corba::wrap_string_to_corba_string(_handle);
+    temp.registrant_handle = Corba::wrap_string_to_corba_string("");
+    temp.nsset_handle = NULL;
+    temp.keyset_handle = NULL;
+    temp.registrar_handle = Corba::wrap_string_to_corba_string("");
+    temp.registered = Corba::wrap_time(boost::posix_time::ptime());
+    temp.changed = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
+    temp.last_transfer = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
+    temp.expire = Corba::wrap_date(boost::gregorian::date());
+    temp.validated_to = NULL;
+    {
+        std::vector<std::string> statuses;
+        statuses.push_back("deleteCandidate");
+    }
+    return temp;
+}
+
+Domain Server_impl::get_domain_by_handle(const std::string& handle)
 {
     try
     {
-        std::string fqdn;
         Fred::OperationContext ctx;
         try
         {
-            fqdn = handle;
-
             //check general name rules
-            if(Fred::CheckDomain(fqdn).is_invalid_syntax())
+            if(Fred::CheckDomain(handle).is_invalid_syntax())
             {
-                throw INVALID_LABEL();
+                throw InvalidLabel();
             }
 
-            if(Fred::CheckDomain(fqdn).is_bad_zone(ctx))
+            if(Fred::CheckDomain(handle).is_bad_zone(ctx))
             {
-                throw UNMANAGED_ZONE();
+                throw UnmanagedZone();
             }
 
-            if(Fred::CheckDomain(fqdn).is_bad_length(ctx))
+            if(Fred::CheckDomain(handle).is_bad_length(ctx))
             {
-                throw TOO_MANY_LABELS();
+                throw TooManyLabels();
             }
 
-            Domain tmp_domain(wrap_domain(
-                        Fred::InfoDomainByHandle(
-                            handle
-                        ).exec(ctx, output_timezone)//this will throw if object not found
-                        .info_domain_data
-                    ));
-
+            Domain tmp_domain;
+            Fred::InfoDomainData idd = Fred::InfoDomainByHandle(handle)
+                .exec(ctx, output_timezone).info_domain_data;
+            for(std::vector<Fred::ObjectIdHandlePair>::iterator it = idd.admin_contacts.begin(); it != idd.admin_contacts.end(); ++it)
+                tmp_domain.admin_contact_handles.push_back(it->handle);
+            if(!idd.update_time.isnull())
+                tmp_domain.changed = idd.update_time.get_value();
+            tmp_domain.expire = idd.expiration_date;
+            tmp_domain.fqdn = idd.fqdn;
+            if(!idd.keyset.isnull())
+                tmp_domain.keyset_handle = idd.keyset.get_value();
+            if(!idd.transfer_time.isnull())
+                tmp_domain.last_transfer = idd.transfer_time.get_value();
+            if(!idd.nsset.isnull())
+                tmp_domain.nsset_handle = idd.nsset.get_value().handle;
+            tmp_domain.registered = idd.creation_time;
+            tmp_domain.registrant_handle = idd.registrant.handle;
+            std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
+            for(std::vector<Fred::ObjectStateData>::iterator it = v_osd.begin(); it != v_osd.end(); ++it)
+            {
+                tmp_domain.statuses.push_back(it->state_name);
+            }
+            if(!idd.enum_domain_validation.isnull())
+                tmp_domain.validated_to = idd.enum_domain_validation.get_value().validation_expiration;
             if(::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
-                return new Domain(generate_obfuscate_domain_delete_candidate(
-                        handle));
+                return Domain(generate_obfuscate_domain_delete_candidate(handle));
             }
 
-            return new Domain(tmp_domain);
-
+            return tmp_domain;
         }
         catch(const Fred::InfoDomainByHandle::Exception& e)
         {
             if(e.is_set_unknown_fqdn())
             {
                 //check current registry name rules (that might change over time)
-                if(Fred::CheckDomain(fqdn).is_invalid_handle(ctx))
+                if(Fred::CheckDomain(handle).is_invalid_handle(ctx))
                 {
-                    throw INVALID_LABEL();
+                    throw InvalidLabel();
                 }
 
                 throw ObjectNotExists();
             }
         }
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return Domain();
 }
 
 /**
