@@ -62,11 +62,11 @@ namespace CorbaConversion
             wrap_nullable_into_result_of_out_method(src, dst.out());
         }
 
-        //exception class which signals that there is a reasonable suspicion of memory leaking
-        struct DangerOfMemoryLeaking:std::runtime_error
+        //exception class which signals that storage isn't ready for assignment
+        struct StorageOccupied:std::runtime_error
         {
-            DangerOfMemoryLeaking():std::runtime_error("There is a danger of memory leaking.") { }
-            virtual ~DangerOfMemoryLeaking() throw() { }
+            StorageOccupied():std::runtime_error("There is a danger of memory leaking.") { }
+            virtual ~StorageOccupied() throw() { }
         };
     private:
         //storage should be "empty" before an assignment
@@ -75,7 +75,7 @@ namespace CorbaConversion
         static void check_readiness_for_assignment(const DST_TYPE *const &storage)
         {
             if (storage != NULL) {
-                throw DangerOfMemoryLeaking();
+                throw StorageOccupied();
             }
         }
 
