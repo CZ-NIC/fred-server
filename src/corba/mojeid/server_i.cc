@@ -34,26 +34,48 @@ typedef Server IDL;
 namespace
 {
 
+template < class T >
+class SafePtr
+{
+public:
+    typedef T type;
+    struct Ptr
+    {
+        explicit Ptr(type *ptr):ptr_(ptr) { }
+        type *ptr_;
+    };
+    explicit SafePtr(type *src):ptr_(src) { }
+    SafePtr(SafePtr &src):ptr_(src.ptr_) { }
+    SafePtr(Ptr src):ptr_(src.ptr_) { }
+    SafePtr& operator=(SafePtr &src) { ptr_ = src.ptr_; return *this; }
+    operator Ptr() { return Ptr(this->release()); }
+    type& operator*() { return *ptr_; }
+    type* release() { return ptr_.release(); }
+private:
+    typedef std::auto_ptr< type > auto_ptr_type;
+    auto_ptr_type ptr_;
+};
+
 template < class SRC_TYPE, class DST_TYPE >
 struct Wrapper_into_result
 {
-    typedef DST_TYPE* result_type;
-    static DST_TYPE* from(const SRC_TYPE &src)
+    typedef SafePtr< DST_TYPE > result_type;
+    static result_type from(const SRC_TYPE &src)
     {
-        std::auto_ptr< DST_TYPE > dst(new DST_TYPE);
+        result_type dst(new DST_TYPE);
         CorbaConversion::wrap(src, *dst);
-        return dst.release();
+        return dst;
     }
 };
 
 template < >
 struct Wrapper_into_result< std::string, char* >
 {
-    typedef char* result_type;
-    static char* from(const std::string &src)
+    typedef SafePtr< char > result_type;
+    static result_type from(const std::string &src)
     {
-        CORBA::String_var dst = src.c_str();
-        return dst._retn();
+        result_type dst(CORBA::string_dup(src.c_str()));
+        return dst;
     }
 };
 
@@ -90,7 +112,7 @@ ContactId Server_i::create_contact_prepare(
             _trans_id,
             _log_request_id,
             ident);
-        _identification = result_as< char* >(ident);
+        _identification = result_as< char* >(ident).release();
         return contact_id;
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
@@ -117,8 +139,8 @@ InfoContact* Server_i::transfer_contact_prepare(
             _log_request_id,
             contact,
             ident);
-        _identification = result_as< char* >(ident);
-        return result_as< Registry::MojeID::InfoContact >(contact);
+        _identification = result_as< char* >(ident).release();
+        return result_as< Registry::MojeID::InfoContact >(contact).release();
     }
     catch (const MojeIDImplData::AlreadyMojeidContact&) {
         throw IDL::ALREADY_MOJEID_CONTACT();
@@ -177,7 +199,7 @@ InfoContact* Server_i::update_transfer_contact_prepare(
         CorbaConversion::unwrap(_contact_data, contact_data);
         const MojeIDImplData::InfoContact info_contact =
         impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id);
-        return result_as< Registry::MojeID::InfoContact >(info_contact);
+        return result_as< Registry::MojeID::InfoContact >(info_contact).release();
     }
     catch (const MojeIDImplData::ObjectDoesntExist &e) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -203,7 +225,7 @@ InfoContact* Server_i::info_contact(
     try {
         MojeIDImplData::InfoContact contact;
         impl_ptr_->info_contact(username, contact);
-        return result_as< Registry::MojeID::InfoContact >(contact);
+        return result_as< Registry::MojeID::InfoContact >(contact).release();
     }
     catch (const MojeIDImplData::ObjectDoesntExist &e) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -302,7 +324,7 @@ Buffer* Server_i::get_validation_pdf(
 {
     try {
         const MojeIDImplData::Buffer pdf_content = impl_ptr_->get_validation_pdf(_contact_id);
-        return result_as< Buffer >(pdf_content);
+        return result_as< Buffer >(pdf_content).release();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -342,7 +364,7 @@ ContactStateInfoList* Server_i::get_contacts_state_changes(
     try {
         MojeIDImplData::ContactStateInfoList contacts_state_changes;
         impl_ptr_->get_contacts_state_changes(_last_hours, contacts_state_changes);
-        return result_as< ContactStateInfoList >(contacts_state_changes);
+        return result_as< ContactStateInfoList >(contacts_state_changes).release();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -355,7 +377,7 @@ ContactStateInfo* Server_i::get_contact_state(
     try {
         MojeIDImplData::ContactStateInfo data;
         impl_ptr_->get_contact_state(_contact_id, data);
-        return result_as< ContactStateInfo >(data);
+        return result_as< ContactStateInfo >(data).release();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -387,7 +409,7 @@ ContactHandleList* Server_i::get_unregistrable_handles()
     try {
         MojeIDImplData::ContactHandleList unregistrable_handles;
         impl_ptr_->get_unregistrable_contact_handles(unregistrable_handles);
-        return result_as< ContactHandleList >(unregistrable_handles);
+        return result_as< ContactHandleList >(unregistrable_handles).release();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
