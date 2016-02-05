@@ -1959,11 +1959,15 @@ void MojeIDImpl::cancel_account_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
-        if (!(states.presents(Fred::Object::State::MOJEID_CONTACT) &&
-                 (states.presents(Fred::Object::State::VALIDATED_CONTACT)  ||
-                  states.presents(Fred::Object::State::IDENTIFIED_CONTACT) ||
-                  states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT))
-             )) {
+
+        if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
+            throw MojeIDImplData::ObjectDoesntExist();
+        }
+
+        if (!(states.presents(Fred::Object::State::VALIDATED_CONTACT)  ||
+              states.presents(Fred::Object::State::IDENTIFIED_CONTACT) ||
+              states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT))
+           ) {
             throw std::runtime_error("bad mojeID contact");
         }
 
