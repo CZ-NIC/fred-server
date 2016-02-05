@@ -327,10 +327,9 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
     return NSSetSeq();
 }
 
-NSSetSeq Server_impl::get_nssets_by_tech_c(
-    const std::string& handle,
-    unsigned long limit,
-    bool limit_exceeded)
+NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
+                                           unsigned long limit,
+                                           bool limit_exceeded)
 {
     try
     {
@@ -367,75 +366,76 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(
 }
 
 
-NameServer* Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
+NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
 {
     try
     {
-        std::string ns_fqdn = Corba::unwrap_string_from_const_char_ptr(fqdn);
-
         Fred::OperationContext ctx;
 
-        if(::Whois::nameserver_exists(ns_fqdn,ctx))
+        if(::Whois::nameserver_exists(fqdn,ctx))
         {
             NameServer temp;
-            temp.fqdn = Corba::wrap_string_to_corba_string(ns_fqdn);
-            //temp.ip_addresses;//TODO missing implementation #13722
-            return new NameServer(temp);
+            temp.fqdn = fqdn;
+            return temp;
         }
         else
         {
-            if(Fred::CheckDomain(ns_fqdn).is_invalid_syntax())
+            if(Fred::CheckDomain(fqdn).is_invalid_syntax())
             {
-                throw INVALID_HANDLE();
+                throw InvalidHandle();
             }
 
-            throw OBJECT_NOT_FOUND();
+            throw ObjectNotExists();
         }
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch(...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch(...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return NameServer();
 }
 
-KeySet* Server_impl::get_keyset_by_handle(const std::string& handle)
+KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
 {
     try
     {
         try
         {
             Fred::OperationContext ctx;
-
-            return new KeySet(wrap_keyset(Fred::InfoKeysetByHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-                ).exec(ctx, output_timezone).info_keyset_data));
+            Fred::InfoKeysetData ikd = Fred::InfoKeysetByHandle(handle)
+                .exec(ctx, output_timezone).info_keyset_data;
+            KeySet ks;
+            if(!ikd.update_time.isnull())
+                ks.changed = ikd.update_time.get_value();
+            ks.created = ikd.creation_time;
+            DNSKey dns_k;
+            for(std::vector<Fred::DnsKey>::iterator it = ikd.dns_keys.begin(); it != ikd.dns_keys.end(); ++it)
+            {
+                dns_k.alg = it->get_alg();
+                dns_k.flags = it->get_flags();
+                dns_k.protocol = it->get_protocol();
+                dns_k.public_key = it->get_key();
+                ks.dns_keys.push_back(dns_k);
+            }
+            return ks;
 
         }
         catch(const Fred::InfoKeysetByHandle::Exception& e)
         {
             if(e.is_set_unknown_handle())
             {
-                if(Fred::CheckKeyset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if(Fred::CheckKeyset(handle).is_invalid_handle())
                 {
-                    throw INVALID_HANDLE();
+                    throw InvalidHandle();
                 }
 
-                throw OBJECT_NOT_FOUND();
+                throw ObjectNotExists();
             }
         }
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return KeySet();
 }
 
 KeySetSeq* Server_impl::get_keysets_by_tech_c(
