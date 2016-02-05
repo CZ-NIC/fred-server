@@ -790,8 +790,14 @@ ObjectStatusDescSeq Server_impl::get_contact_status_descriptions(const std::stri
     {
         ObjectStatusDescSeq state_seq;
         Fred::OperationContext ctx;
-        set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-        (state_seq, get_object_status_desc(lang,"contact", ctx));
+        ObjectStatusDesc tmp;
+        std::vector< std::pair<std::string, std::string> > osd = get_object_status_desc(lang,"contact", ctx);
+        for(std::vector< std::pair<std::string, std::string> >::iterator it = osd.begin(); it != osd.end(); ++it)
+        {
+            tmp.handle = it->first;
+            tmp.name = it->second;
+            state_seq.osds.push_back(tmp);
+        }
         return state_seq;
     }
     catch(const MissingLocalization&)
@@ -804,24 +810,32 @@ ObjectStatusDescSeq Server_impl::get_contact_status_descriptions(const std::stri
     throw InternalServerError();
     return ObjectStatusDescSeq();
 }
-ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const std::string& lang)
+
+ObjectStatusDescSeq Server_impl::get_nsset_status_descriptions(const std::string& lang)
 {
     try
     {
-        ObjectStatusDescSeq_var state_seq;
+        ObjectStatusDescSeq state_seq;
         Fred::OperationContext ctx;
-        set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-        (state_seq, get_object_status_desc(
-            Corba::unwrap_string_from_const_char_ptr(lang),"nsset", ctx));
-        return state_seq._retn();
+        ObjectStatusDesc tmp;
+        std::vector< std::pair<std::string, std::string> > osd = get_object_status_desc(lang,"nsset", ctx);
+        for(std::vector< std::pair<std::string, std::string> >::iterator it = osd.begin(); it != osd.end(); ++it)
+        {
+            tmp.handle = it->first;
+            tmp.name = it->second;
+            state_seq.osds.push_back(tmp);
+        }
+        return state_seq;
     }
     catch(const MissingLocalization&)
     {
         throw;
     }
-    catch (...) { }
-
-    // default exception handling
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
+    }
     throw InternalServerError();
+    return ObjectStatusDescSeq();
 }
-ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const std::string& lang)
+
+ObjectStatusDescSeq Server_impl::get_keyset_status_descriptions(const std::string& lang);//TODO check why
