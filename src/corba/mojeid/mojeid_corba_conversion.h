@@ -76,29 +76,26 @@ namespace CorbaConversion
 
         //operations on result of out method of CORBA holder types
         template < class SRC_TYPE, class DST_TYPE, bool = false >
-        class result_of_out_method
+        struct result_of_out_method
         {
-        public:
             //inits storage by new object pointer and sets it to the converted value via default wrapper
             static void init_and_set(const SRC_TYPE &src, DST_TYPE *&storage)
             {
-                CorbaConversion::wrap(src, *init(storage));
-            }
-        private:
-            static DST_TYPE* init(DST_TYPE *&storage)
-            {
                 check_readiness_for_assignment(storage);
-                return storage = new DST_TYPE;
+                CorbaConversion::wrap(src, *(storage = new DST_TYPE));
             }
         };
 
         //specialization for CORBA string which is represented by plain char pointer type and
         //which unfortunately deserves other handling
         template < bool X >
-        class result_of_out_method< std::string, char, X >
+        struct result_of_out_method< std::string, char, X >
         {
-        public:
-            static void init_and_set(const std::string &src, char *&storage);
+            static void init_and_set(const std::string &src, char *&storage)
+            {
+                check_readiness_for_assignment(storage);
+                CorbaConversion::wrap(src, storage);
+            }
         };
 
         //a way how to distinguish between common source type
