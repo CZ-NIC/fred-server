@@ -621,7 +621,6 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
         }
 
         set_domains_seq(domain_seq,domain_info,ctx);
-
         return domain_seq;
     }
     catch (...) {
@@ -630,17 +629,14 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
     return DomainSeq();
 }
 
-DomainSeq* Server_impl::get_domains_by_admin_contact(
-    const std::string& handle,
-    unsigned long limit,
-    bool limit_exceeded)
+DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
+                                                    unsigned long limit,
+                                                    bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
-
         DomainSeq domain_seq;
-
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
             handle).set_limit(limit + 1).exec(ctx, output_timezone);
 
@@ -661,18 +657,12 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
             domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
         }
 
-        set_domains_seq(domain_seq.inout(),domain_info,ctx);
-
-        return domain_seq._retn();
+        return domain_seq;
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return DomainSeq();
 }
 
 DomainSeq* Server_impl::get_domains_by_nsset(
