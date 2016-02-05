@@ -327,28 +327,28 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
     return NSSetSeq();
 }
 
-NSSetSeq* Server_impl::get_nssets_by_tech_c(
+NSSetSeq Server_impl::get_nssets_by_tech_c(
     const std::string& handle,
-    ::CORBA::ULong limit,
-    ::CORBA::Boolean& limit_exceeded)
+    unsigned long limit,
+    bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
-        NSSetSeq_var nss_seq = new NSSetSeq;
+        NSSetSeq nss_seq;
 
-        std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByTechContactHandle(
-            Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1)
+        std::vector<Fred::InfoNssetOutput> nss_info =
+                Fred::InfoNssetByTechContactHandle(handle).set_limit(limit + 1)
                 .exec(ctx, output_timezone);
 
         if(nss_info.empty())
         {
-            if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+            if(Fred::CheckContact(handle).is_invalid_handle())
             {
-                throw INVALID_HANDLE();
+                throw InvalidHandle();
             }
 
-            throw OBJECT_NOT_FOUND();
+            throw ObjectNotExists();
         }
 
         limit_exceeded = false;
@@ -358,18 +358,12 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
             nss_info.erase(nss_info.begin());//depends on InfoNsset ordering
         }
 
-        set_corba_seq<NSSetSeq, NSSet>(nss_seq.inout(), nss_info);
-
-        return nss_seq._retn();
+        return nss_seq;
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return NSSetSeq();
 }
 
 
