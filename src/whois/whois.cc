@@ -497,6 +497,33 @@ Domain generate_obfuscate_domain_delete_candidate(const std::string& _handle)
     return temp;
 }
 
+Domain make_domain_from_info_data(Fred::InfoDomainData& idd, Fred::OperationContext& ctx)
+{
+    Domain result;
+    for(std::vector<Fred::ObjectIdHandlePair>::iterator it = idd.admin_contacts.begin(); it != idd.admin_contacts.end(); ++it)
+        result.admin_contact_handles.push_back(it->handle);
+    if(!idd.update_time.isnull())
+        result.changed = idd.update_time.get_value();
+    result.expire = idd.expiration_date;
+    result.fqdn = idd.fqdn;
+    if(!idd.keyset.isnull())
+        result.keyset_handle = idd.keyset.get_value();
+    if(!idd.transfer_time.isnull())
+        result.last_transfer = idd.transfer_time.get_value();
+    if(!idd.nsset.isnull())
+        result.nsset_handle = idd.nsset.get_value().handle;
+    result.registered = idd.creation_time;
+    result.registrant_handle = idd.registrant.handle;
+    std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
+    for(std::vector<Fred::ObjectStateData>::iterator it = v_osd.begin(); it != v_osd.end(); ++it)
+    {
+        result.statuses.push_back(it->state_name);
+    }
+    if(!idd.enum_domain_validation.isnull())
+        result.validated_to = idd.enum_domain_validation.get_value().validation_expiration;
+    return result;
+}
+
 Domain Server_impl::get_domain_by_handle(const std::string& handle)
 {
     try
@@ -509,47 +536,23 @@ Domain Server_impl::get_domain_by_handle(const std::string& handle)
             {
                 throw InvalidLabel();
             }
-
             if(Fred::CheckDomain(handle).is_bad_zone(ctx))
             {
                 throw UnmanagedZone();
             }
-
             if(Fred::CheckDomain(handle).is_bad_length(ctx))
             {
                 throw TooManyLabels();
             }
-
-            Domain tmp_domain;
-            Fred::InfoDomainData idd = Fred::InfoDomainByHandle(handle)
-                .exec(ctx, output_timezone).info_domain_data;
-            for(std::vector<Fred::ObjectIdHandlePair>::iterator it = idd.admin_contacts.begin(); it != idd.admin_contacts.end(); ++it)
-                tmp_domain.admin_contact_handles.push_back(it->handle);
-            if(!idd.update_time.isnull())
-                tmp_domain.changed = idd.update_time.get_value();
-            tmp_domain.expire = idd.expiration_date;
-            tmp_domain.fqdn = idd.fqdn;
-            if(!idd.keyset.isnull())
-                tmp_domain.keyset_handle = idd.keyset.get_value();
-            if(!idd.transfer_time.isnull())
-                tmp_domain.last_transfer = idd.transfer_time.get_value();
-            if(!idd.nsset.isnull())
-                tmp_domain.nsset_handle = idd.nsset.get_value().handle;
-            tmp_domain.registered = idd.creation_time;
-            tmp_domain.registrant_handle = idd.registrant.handle;
-            std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
-            for(std::vector<Fred::ObjectStateData>::iterator it = v_osd.begin(); it != v_osd.end(); ++it)
-            {
-                tmp_domain.statuses.push_back(it->state_name);
-            }
-            if(!idd.enum_domain_validation.isnull())
-                tmp_domain.validated_to = idd.enum_domain_validation.get_value().validation_expiration;
             if(::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
                 return Domain(generate_obfuscate_domain_delete_candidate(handle));
             }
 
-            return tmp_domain;
+            Fred::InfoDomainData idd = Fred::InfoDomainByHandle(handle)
+                .exec(ctx, output_timezone).info_domain_data;
+
+            return make_domain_from_info_data(idd, ctx);
         }
         catch(const Fred::InfoDomainByHandle::Exception& e)
         {
@@ -571,38 +574,35 @@ Domain Server_impl::get_domain_by_handle(const std::string& handle)
     return Domain();
 }
 
-/**
- * get_domains_by_* implementation of allocation and setting CORBA sequence
- */
 void set_domains_seq(DomainSeq& domain_seq, const std::vector<Fred::InfoDomainOutput>& il, Fred::OperationContext& ctx)
 {
-    std::vector<DomainInfoWithDeleteCandidate> didclist;
-    didclist.reserve(il.size());
-
-    BOOST_FOREACH(const Fred::InfoDomainOutput& i, il)
+    domain_seq.ds.reserve(il.size());
+    for(std::vector<Fred::InfoDomainOutput>::iterator it = il.begin(); it != il.end(); ++it)
     {
-        didclist.push_back(DomainInfoWithDeleteCandidate(i,
-            ::Whois::is_domain_delete_pending(i.info_domain_data.fqdn, ctx, "Europe/Prague")));
+        if(::Whois::is_domain_delete_pending(it->info_domain_data.fqdn, ctx, "Europe/Prague") )
+        {
+            domain_seq.ds.push_back(generate_obfuscate_domain_delete_candidate(it->info_domain_data.fqdn));
+        }
+        else
+        {
+            domain_seq.ds.push_back(make_domain_from_info_data(it->info_domain_data, ctx));
+        }
     }
-
-    set_corba_seq<DomainSeq, Domain>(domain_seq, didclist);
 }
 
-DomainSeq* Server_impl::get_domains_by_registrant(
-    const std::string& handle,
-    unsigned long limit,
-    bool limit_exceeded)
+//TODO reserve for all vectors where possible
+DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
+                                                 unsigned long limit,
+                                                 bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
+        DomainSeq domain_seq;
 
-        DomainSeq domain_seq = new DomainSeq;
-
-        std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByRegistrantHandle(
-            handle
-        ).set_limit(limit + 1).exec(ctx, output_timezone);
-
+        std::vector<Fred::InfoDomainOutput> domain_info =
+                Fred::InfoDomainByRegistrantHandle(handle).set_limit(limit + 1)
+                .exec(ctx, output_timezone);
         if(domain_info.empty())
         {
             if(Fred::CheckContact(handle).is_invalid_handle())
@@ -620,18 +620,14 @@ DomainSeq* Server_impl::get_domains_by_registrant(
             domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
         }
 
-        set_domains_seq(domain_seq.inout(),domain_info,ctx);
+        set_domains_seq(domain_seq,domain_info,ctx);
 
-        return domain_seq._retn();
+        return domain_seq;
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return DomainSeq();
 }
 
 DomainSeq* Server_impl::get_domains_by_admin_contact(
@@ -643,7 +639,7 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
     {
         Fred::OperationContext ctx;
 
-        DomainSeq domain_seq = new DomainSeq;
+        DomainSeq domain_seq;
 
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
             handle).set_limit(limit + 1).exec(ctx, output_timezone);
@@ -688,7 +684,7 @@ DomainSeq* Server_impl::get_domains_by_nsset(
     {
         Fred::OperationContext ctx;
 
-        DomainSeq domain_seq = new DomainSeq;
+        DomainSeq domain_seq;
 
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
             handle
@@ -734,7 +730,7 @@ DomainSeq* Server_impl::get_domains_by_keyset(
     {
         Fred::OperationContext ctx;
 
-        DomainSeq domain_seq = new DomainSeq;
+        DomainSeq domain_seq;
 
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
             handle).set_limit(limit + 1).exec(ctx, output_timezone);
@@ -801,7 +797,7 @@ ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const std::stri
 {
     try
     {
-        ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
+        ObjectStatusDescSeq_var state_seq;
         Fred::OperationContext ctx;
         set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
         (state_seq, get_object_status_desc(
@@ -822,7 +818,7 @@ ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const std::str
 {
     try
     {
-        ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
+        ObjectStatusDescSeq state_seq;
         Fred::OperationContext ctx;
         set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
         (state_seq, get_object_status_desc(
@@ -842,7 +838,7 @@ ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const std::strin
 {
     try
     {
-        ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
+        ObjectStatusDescSeq_var state_seq;
         Fred::OperationContext ctx;
         set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
         (state_seq, get_object_status_desc(
