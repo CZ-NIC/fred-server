@@ -438,29 +438,28 @@ KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
     return KeySet();
 }
 
-KeySetSeq* Server_impl::get_keysets_by_tech_c(
-    const std::string& handle,
-    ::CORBA::ULong limit,
-    ::CORBA::Boolean& limit_exceeded)
+KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
+                                             unsigned long limit,
+                                             bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
 
-        KeySetSeq_var ks_seq = new KeySetSeq;
+        KeySetSeq ks_seq;
 
-        std::vector<Fred::InfoKeysetOutput> ks_info = Fred::InfoKeysetByTechContactHandle(
-            Corba::unwrap_string_from_const_char_ptr(handle)
-            ).set_limit(limit + 1).exec(ctx, output_timezone);
+        std::vector<Fred::InfoKeysetOutput> ks_info =
+                Fred::InfoKeysetByTechContactHandle(handle).set_limit(limit + 1)
+                .exec(ctx, output_timezone);
 
         if(ks_info.empty())
         {
-            if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+            if(Fred::CheckContact(handle).is_invalid_handle())
             {
-                throw INVALID_HANDLE();
+                throw InvalidHandle();
             }
 
-            throw OBJECT_NOT_FOUND();
+            throw ObjectNotExists();
         }
 
         limit_exceeded = false;
@@ -470,18 +469,12 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
             ks_info.erase(ks_info.begin());//depends on InfoKeyset ordering
         }
 
-        set_corba_seq<KeySetSeq, KeySet>(ks_seq.inout(), ks_info);
-
-        return ks_seq._retn();
+        return ks_seq;
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
     }
-    catch (...) { }
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    return KeySetSeq();
 }
 
 Domain* Server_impl::get_domain_by_handle(const std::string& handle)
@@ -492,7 +485,7 @@ Domain* Server_impl::get_domain_by_handle(const std::string& handle)
         Fred::OperationContext ctx;
         try
         {
-            fqdn = Corba::unwrap_string_from_const_char_ptr(handle);
+            fqdn = handle;
 
             //check general name rules
             if(Fred::CheckDomain(fqdn).is_invalid_syntax())
@@ -512,15 +505,15 @@ Domain* Server_impl::get_domain_by_handle(const std::string& handle)
 
             Domain tmp_domain(wrap_domain(
                         Fred::InfoDomainByHandle(
-                            Corba::unwrap_string_from_const_char_ptr(handle)
+                            handle
                         ).exec(ctx, output_timezone)//this will throw if object not found
                         .info_domain_data
                     ));
 
-            if(::Whois::is_domain_delete_pending(Corba::unwrap_string_from_const_char_ptr(handle), ctx, "Europe/Prague"))
+            if(::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
                 return new Domain(generate_obfuscate_domain_delete_candidate(
-                        Corba::unwrap_string_from_const_char_ptr(handle)));
+                        handle));
             }
 
             return new Domain(tmp_domain);
@@ -536,7 +529,7 @@ Domain* Server_impl::get_domain_by_handle(const std::string& handle)
                     throw INVALID_LABEL();
                 }
 
-                throw OBJECT_NOT_FOUND();
+                throw ObjectNotExists();
             }
         }
     }
@@ -569,27 +562,27 @@ void set_domains_seq(DomainSeq& domain_seq, const std::vector<Fred::InfoDomainOu
 
 DomainSeq* Server_impl::get_domains_by_registrant(
     const std::string& handle,
-    ::CORBA::ULong limit,
-    ::CORBA::Boolean& limit_exceeded)
+    unsigned long limit,
+    bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
 
-        DomainSeq_var domain_seq = new DomainSeq;
+        DomainSeq domain_seq = new DomainSeq;
 
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByRegistrantHandle(
-            Corba::unwrap_string_from_const_char_ptr(handle)
+            handle
         ).set_limit(limit + 1).exec(ctx, output_timezone);
 
         if(domain_info.empty())
         {
-            if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+            if(Fred::CheckContact(handle).is_invalid_handle())
             {
-                throw INVALID_HANDLE();
+                throw InvalidHandle();
             }
 
-            throw OBJECT_NOT_FOUND();
+            throw ObjectNotExists();
         }
 
         limit_exceeded = false;
@@ -615,26 +608,26 @@ DomainSeq* Server_impl::get_domains_by_registrant(
 
 DomainSeq* Server_impl::get_domains_by_admin_contact(
     const std::string& handle,
-    ::CORBA::ULong limit,
-    ::CORBA::Boolean& limit_exceeded)
+    unsigned long limit,
+    bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
 
-        DomainSeq_var domain_seq = new DomainSeq;
+        DomainSeq domain_seq = new DomainSeq;
 
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
-            Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+            handle).set_limit(limit + 1).exec(ctx, output_timezone);
 
         if(domain_info.empty())
         {
-            if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+            if(Fred::CheckContact(handle).is_invalid_handle())
             {
-                throw INVALID_HANDLE();
+                throw InvalidHandle();
             }
 
-            throw OBJECT_NOT_FOUND();
+            throw ObjectNotExists();
         }
 
         limit_exceeded = false;
@@ -660,27 +653,27 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
 
 DomainSeq* Server_impl::get_domains_by_nsset(
     const std::string& handle,
-    ::CORBA::ULong limit,
-    ::CORBA::Boolean& limit_exceeded)
+    unsigned long limit,
+    bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
 
-        DomainSeq_var domain_seq = new DomainSeq;
+        DomainSeq domain_seq = new DomainSeq;
 
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
-            Corba::unwrap_string_from_const_char_ptr(handle)
+            handle
         ).set_limit(limit + 1).exec(ctx, output_timezone);
 
         if(domain_info.empty())
         {
-            if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+            if(Fred::CheckContact(handle).is_invalid_handle())
             {
-                throw INVALID_HANDLE();
+                throw InvalidHandle();
             }
 
-            throw OBJECT_NOT_FOUND();
+            throw ObjectNotExists();
         }
 
         limit_exceeded = false;
@@ -706,26 +699,26 @@ DomainSeq* Server_impl::get_domains_by_nsset(
 
 DomainSeq* Server_impl::get_domains_by_keyset(
     const std::string& handle,
-    ::CORBA::ULong limit,
-    ::CORBA::Boolean& limit_exceeded)
+    unsigned long limit,
+    bool limit_exceeded)
 {
     try
     {
         Fred::OperationContext ctx;
 
-        DomainSeq_var domain_seq = new DomainSeq;
+        DomainSeq domain_seq = new DomainSeq;
 
         std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
-            Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
+            handle).set_limit(limit + 1).exec(ctx, output_timezone);
 
         if(domain_info.empty())
         {
-            if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+            if(Fred::CheckContact(handle).is_invalid_handle())
             {
-                throw INVALID_HANDLE();
+                throw InvalidHandle();
             }
 
-            throw OBJECT_NOT_FOUND();
+            throw ObjectNotExists();
         }
 
         limit_exceeded = false;
