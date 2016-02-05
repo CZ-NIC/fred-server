@@ -303,13 +303,17 @@ check_contact_ssn::check_contact_ssn(const InfoContactData &_data)
                                         _data.organization.get_value().empty();
     if (ssn_has_to_be_birthday) {
         const check_contact_birthday check(_data);
-        absent = check.absent;
-        invalid = check.invalid;
+        birthdate_absent = check.absent;
+        birthdate_invalid = check.invalid;
+        vat_id_num_absent = false;
+        vat_id_num_invalid = false;
     }
     else {
         const check_contact_vat_id_presence check(_data);
-        absent = check.absent;
-        invalid = false;
+        birthdate_absent = false;
+        birthdate_invalid = false;
+        vat_id_num_absent = check.absent;
+        vat_id_num_invalid = false;
     }
 }
 

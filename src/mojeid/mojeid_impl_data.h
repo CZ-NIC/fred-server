@@ -105,13 +105,10 @@ struct ShippingAddressValidationResult
 struct MessageLimitExceeded
 {
     boost::gregorian::date limit_expire_date;
-    unsigned short         limit_count;
-    unsigned short         limit_days;
     std::string as_string()const
     {
         std::ostringstream out;
-        out << "MessageLimitExceeded: limit_expire_date = " << limit_expire_date << ", "
-               "limit_count = " << limit_count << ", limit_days = " << limit_days;
+        out << "MessageLimitExceeded: limit_expire_date = " << limit_expire_date;
         return out.str();
     }
 };
@@ -177,7 +174,8 @@ struct CreateValidationRequestValidationResult
         phone       (Registry::MojeID::OK),
         notify_email(Registry::MojeID::OK),
         fax         (Registry::MojeID::OK),
-        ssn         (Registry::MojeID::OK) { }
+        birth_date  (Registry::MojeID::OK),
+        vat_id_num  (Registry::MojeID::OK) { }
     ValidationResult                 first_name;
     ValidationResult                 last_name;
     MandatoryAddressValidationResult permanent;
@@ -185,7 +183,8 @@ struct CreateValidationRequestValidationResult
     ValidationResult                 phone;
     ValidationResult                 notify_email;
     ValidationResult                 fax;
-    ValidationResult                 ssn;
+    ValidationResult                 birth_date;
+    ValidationResult                 vat_id_num;
 };
 
 struct ProcessRegistrationValidationResult
@@ -270,7 +269,6 @@ struct ContactStateInfo
 {
     ContactId                          contact_id;
     boost::posix_time::ptime           mojeid_activation_datetime;
-    boost::gregorian::date             conditionally_identification_date;
     Nullable< boost::gregorian::date > identification_date;
     Nullable< boost::gregorian::date > validation_date;
     Nullable< boost::gregorian::date > linked_date;

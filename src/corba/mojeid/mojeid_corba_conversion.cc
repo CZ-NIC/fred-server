@@ -179,8 +179,6 @@ namespace CorbaConversion
                                                                                    CORBA_TYPE &dst)
     {
         CorbaConversion::wrap(src.limit_expire_date, dst.limit_expire_date);
-        CorbaConversion::wrap(src.limit_count,       dst.limit_count);
-        CorbaConversion::wrap(src.limit_days,        dst.limit_days);
     }
 
     void DEFAULT_WRAPPER< Registry::MojeIDImplData::RegistrationValidationResult,
@@ -239,7 +237,8 @@ namespace CorbaConversion
         CorbaConversion::wrap(src.phone,        dst.phone);
         CorbaConversion::wrap(src.notify_email, dst.notify_email);
         CorbaConversion::wrap(src.fax,          dst.fax);
-        CorbaConversion::wrap(src.ssn,          dst.ssn);
+        CorbaConversion::wrap(src.birth_date,   dst.birth_date);
+        CorbaConversion::wrap(src.vat_id_num,   dst.vat_id_num);
     }
 
     void DEFAULT_WRAPPER< Registry::MojeIDImplData::ProcessRegistrationValidationResult,
@@ -348,12 +347,11 @@ namespace CorbaConversion
                           Registry::MojeID::ContactStateInfo >::wrap(const NON_CORBA_TYPE &src,
                                                                      CORBA_TYPE &dst)
     {
-        CorbaConversion::wrap    (src.contact_id,                        dst.contact_id);
-        CorbaConversion::wrap    (src.mojeid_activation_datetime,        dst.mojeid_activation_datetime);
-        CorbaConversion::wrap    (src.conditionally_identification_date, dst.conditionally_identification_date);
-        wrap_nullable_into_holder(src.identification_date,               dst.identification_date);
-        wrap_nullable_into_holder(src.validation_date,                   dst.validation_date);
-        wrap_nullable_into_holder(src.linked_date,                       dst.linked_date);
+        CorbaConversion::wrap    (src.contact_id,                 dst.contact_id);
+        CorbaConversion::wrap    (src.mojeid_activation_datetime, dst.mojeid_activation_datetime);
+        wrap_nullable_into_holder(src.identification_date,        dst.identification_date);
+        wrap_nullable_into_holder(src.validation_date,            dst.validation_date);
+        wrap_nullable_into_holder(src.linked_date,                dst.linked_date);
     }
 
     void DEFAULT_WRAPPER< Registry::MojeIDImplData::Buffer,

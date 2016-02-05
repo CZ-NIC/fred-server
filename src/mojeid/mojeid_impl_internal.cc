@@ -282,11 +282,15 @@ void raise(const CheckCreateValidationRequest &result)
 
     set_validity_result(result.Fred::check_contact_fax_validity::success(), e.fax);
 
-    if (result.Fred::MojeID::check_contact_ssn::absent) {
-        e.ssn = MojeID::REQUIRED;
+    if (result.Fred::MojeID::check_contact_ssn::birthdate_absent) {
+        e.birth_date = MojeID::REQUIRED;
     }
-    else if (result.Fred::MojeID::check_contact_ssn::invalid) {
-        e.ssn = MojeID::INVALID;
+    else if (result.Fred::MojeID::check_contact_ssn::birthdate_invalid) {
+        e.birth_date = MojeID::INVALID;
+    }
+
+    if (result.Fred::MojeID::check_contact_ssn::vat_id_num_absent) {
+        e.vat_id_num = MojeID::REQUIRED;
     }
 
     throw e;

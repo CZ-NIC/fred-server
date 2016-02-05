@@ -587,9 +587,12 @@ struct check_contact_vat_id_presence:GeneralCheck::MojeID::contact_vat_id_presen
 struct check_contact_ssn
 {
     check_contact_ssn(const InfoContactData &_data);
-    bool success()const { return !(absent || invalid); }
-    bool absent:1;
-    bool invalid:1;
+    bool success()const { return !(birthdate_absent || birthdate_invalid ||
+                                   vat_id_num_absent || vat_id_num_invalid); }
+    bool birthdate_absent:1;
+    bool birthdate_invalid:1;
+    bool vat_id_num_absent:1;
+    bool vat_id_num_invalid:1;
 };
 
 }//Fred::MojeID

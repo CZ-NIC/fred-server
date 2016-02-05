@@ -232,8 +232,6 @@ void check_sent_letters_limit(Fred::OperationContext &_ctx,
     if (0 < result.size()) {
         MojeIDImplData::MessageLimitExceeded e;
         e.limit_expire_date = boost::gregorian::from_simple_string(static_cast< std::string >(result[0][0]));
-        e.limit_count       = _max_sent_letters;
-        e.limit_days        = _watched_period_in_days;
         throw e;
     }
 }
@@ -654,7 +652,7 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
                 Fred::make_args(info_contact_data, ctx));
 
             if (!check_contact_data.success()) {
-                throw check_contact_data;
+                MojeIDImplInternal::raise(check_contact_data);
             }
         }
 
@@ -674,9 +672,9 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         ctx.commit_transaction();
         return new_contact.object_id;
     }
-    catch (const MojeIDImplInternal::CheckCreateContactPrepare &e) {
+    catch (const MojeIDImplData::RegistrationValidationResult &e) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
-        MojeIDImplInternal::raise(e);
+        throw;
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
@@ -1765,10 +1763,6 @@ IsNotNull add_state(const Database::Value &_valid_from, Fred::Object::State::Val
     const std::string db_timestamp = static_cast< std::string >(_valid_from);//2014-12-11 09:28:45.741828
     boost::posix_time::ptime valid_from = boost::posix_time::time_from_string(db_timestamp);
     switch (_state) {
-        case Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT:
-            _data.conditionally_identification_date = boost::gregorian::date_from_tm(
-                                                          boost::posix_time::to_tm(valid_from));
-            break;
         case Fred::Object::State::IDENTIFIED_CONTACT:
             _data.identification_date = boost::gregorian::date_from_tm(boost::posix_time::to_tm(valid_from));
             break;

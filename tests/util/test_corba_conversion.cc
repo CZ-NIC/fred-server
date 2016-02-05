@@ -516,16 +516,12 @@ BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
 
     Registry::MojeIDImplData::MessageLimitExceeded msg;
     msg.limit_expire_date = boost::gregorian::date(2015,12,10);
-    msg.limit_count = 11;
-    msg.limit_days = 12;
 
     Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res = CorbaConversion::wrap_into<
                     Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED>(msg);
 
     BOOST_CHECK(CorbaConversion::unwrap_into< Registry::MojeIDImplData::Date >(
         res.limit_expire_date).value == boost::gregorian::to_iso_extended_string(msg.limit_expire_date));
-    BOOST_CHECK(res.limit_count == msg.limit_count);
-    BOOST_CHECK(res.limit_days == msg.limit_days);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
@@ -761,7 +757,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
     crr_val_err_impl.notify_email = Registry::MojeID::REQUIRED;
     crr_val_err_impl.phone        = Registry::MojeID::INVALID;
     crr_val_err_impl.fax          = Registry::MojeID::NOT_AVAILABLE;
-    crr_val_err_impl.ssn          = Registry::MojeID::INVALID;
+    crr_val_err_impl.birth_date   = Registry::MojeID::INVALID;
+    crr_val_err_impl.vat_id_num   = Registry::MojeID::REQUIRED;
 
     crr_val_err_impl.permanent = mandatory_addr_err_impl;
 
@@ -774,7 +771,8 @@ BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
     BOOST_CHECK(res.notify_email == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
     BOOST_CHECK(res.fax          == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(res.ssn          == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.birth_date   == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.vat_id_num   == Registry::MojeID::REQUIRED);
 
     BOOST_CHECK(res.permanent.address_presence == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.permanent.street1          == Registry::MojeID::INVALID);
@@ -1769,7 +1767,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
 
     info_impl.contact_id = 6;
     info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
-    info_impl.conditionally_identification_date = boost::gregorian::date(2015,12,11);
     info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,12));
     info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,13));
     info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,14));
@@ -1780,8 +1777,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
     BOOST_CHECK(info->contact_id == 6);
     BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
         info->mojeid_activation_datetime) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
-    BOOST_CHECK(CorbaConversion::unwrap_into< Registry::MojeIDImplData::Date >(
-        info->conditionally_identification_date).value == boost::gregorian::to_iso_extended_string(boost::gregorian::date(2015,12,11)));
     BOOST_CHECK(CorbaConversion::unwrap_into< Nullable< Registry::MojeIDImplData::Date > >(
         info->identification_date.in()).get_value().value == boost::gregorian::to_iso_extended_string(boost::gregorian::date(2015,12,12)));
     BOOST_CHECK(CorbaConversion::unwrap_into< Nullable< Registry::MojeIDImplData::Date > >(
@@ -1860,7 +1855,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
         Registry::MojeIDImplData::ContactStateInfo info_impl;
         info_impl.contact_id = 5;
         info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
-        info_impl.conditionally_identification_date = boost::gregorian::date(2015,12,11);
         info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,12));
         info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,13));
         info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,14));
@@ -1870,7 +1864,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
         Registry::MojeIDImplData::ContactStateInfo info_impl;
         info_impl.contact_id = 6;
         info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2016,12,10));
-        info_impl.conditionally_identification_date = boost::gregorian::date(2016,12,11);
         info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,12));
         info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,13));
         info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,14));
@@ -1884,8 +1877,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
     BOOST_CHECK(res[0].contact_id == 5);
     BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
         res[0].mojeid_activation_datetime) == boost::posix_time::ptime(boost::gregorian::date(2015,12,10)));
-    BOOST_CHECK(CorbaConversion::unwrap_into< Registry::MojeIDImplData::Date >(
-        res[0].conditionally_identification_date).value == boost::gregorian::to_iso_extended_string(boost::gregorian::date(2015,12,11)));
     BOOST_CHECK(CorbaConversion::unwrap_into< Nullable< Registry::MojeIDImplData::Date > >(
         res[0].identification_date.in()).get_value().value == boost::gregorian::to_iso_extended_string(boost::gregorian::date(2015,12,12)));
     BOOST_CHECK(CorbaConversion::unwrap_into< Nullable< Registry::MojeIDImplData::Date > >(
@@ -1896,8 +1887,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
     BOOST_CHECK(res[1].contact_id == 6);
     BOOST_CHECK(CorbaConversion::unwrap_into<boost::posix_time::ptime>(
         res[1].mojeid_activation_datetime) == boost::posix_time::ptime(boost::gregorian::date(2016,12,10)));
-    BOOST_CHECK(CorbaConversion::unwrap_into< Registry::MojeIDImplData::Date >(
-        res[1].conditionally_identification_date).value == boost::gregorian::to_iso_extended_string(boost::gregorian::date(2016,12,11)));
     BOOST_CHECK(CorbaConversion::unwrap_into< Nullable< Registry::MojeIDImplData::Date > >(
         res[1].identification_date.in()).get_value().value == boost::gregorian::to_iso_extended_string(boost::gregorian::date(2016,12,12)));
     BOOST_CHECK(CorbaConversion::unwrap_into< Nullable< Registry::MojeIDImplData::Date > >(
