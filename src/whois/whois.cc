@@ -791,18 +791,18 @@ ObjectStatusDescSeq Server_impl::get_contact_status_descriptions(const std::stri
         ObjectStatusDescSeq state_seq;
         Fred::OperationContext ctx;
         set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-        (state_seq, get_object_status_desc(
-            Corba::unwrap_string_from_const_char_ptr(lang),"contact", ctx));
-        return state_seq._retn();
+        (state_seq, get_object_status_desc(lang,"contact", ctx));
+        return state_seq;
     }
     catch(const MissingLocalization&)
     {
         throw;
     }
-    catch (...) { }
-
-    // default exception handling
+    catch (...) {
+        log_and_rethrow_exception_handler(ctx);
+    }
     throw InternalServerError();
+    return ObjectStatusDescSeq();
 }
 ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const std::string& lang)
 {
