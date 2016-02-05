@@ -135,7 +135,7 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
         std::map<std::string, std::vector<std::string> > groups = ::Whois::get_registrar_groups(ctx);
         reg_grp_seq.reserve(groups.size());
 
-        for(typename std::vector<RegistrarGroup>::const_iterator ci = reg_grp_seq.begin() ; ci != reg_grp_seq.end(); ++ci,++i)
+        for(typename std::vector<RegistrarGroup>::const_iterator ci = reg_grp_seq.begin() ; ci != reg_grp_seq.end(); ++ci)
         {
              RegistrarGroup temp;
              temp.name = ci->name;
@@ -198,40 +198,40 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
         try
         {
             Fred::OperationContext ctx;
-            return new Contact(
-                wrap_contact(
-                    Fred::InfoContactByHandle(
-                        Corba::unwrap_string_from_const_char_ptr(handle)
-                    ).exec(ctx, output_timezone)
-                    .info_contact_data
-                ));
+            Fred::InfoContactData icd = Fred::InfoContactByHandle(handle)
+                .exec(ctx, output_timezone).info_contact_data;
+            Contact con;
+            con.address.city = icd.place.get_value_or_default().city;
+            con.address.country_code = icd.place.get_value_or_default().country;
+            con.address.postal_code = icd.place.get_value_or_default().postalcode;
+            con.address.stateorprovince = icd.place.get_value_or_default().stateorprovince;
+            con.address.street1 = icd.place.get_value_or_default().street1;
+            con.address.street2 = icd.place.get_value_or_default().street2.get_value_or_default();
+            con.address.street3 = icd.place.get_value_or_default().street3.get_value_or_default();
 
+            return con;
         }
         catch(const Fred::InfoContactByHandle::Exception& e)
         {
             if(e.is_set_unknown_contact_handle())
             {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if(Fred::CheckContact(handle).is_invalid_handle())
                 {
-                    throw INVALID_HANDLE();
+                    throw InvalidHandle();
                 }
 
-                throw OBJECT_NOT_FOUND();
+                throw ObjectNotExists();
             }
         }
     }
-    catch(const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...)
-    {}
-
-    // default exception handling
-    throw INTERNAL_SERVER_ERROR();
+    {
+        log_and_rethrow_exception_handler(ctx);
+    }
+    return Contact();
 }
 
-NSSet* Server_impl::get_nsset_by_handle(const std::string& handle)
+NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
 {
     try
     {
