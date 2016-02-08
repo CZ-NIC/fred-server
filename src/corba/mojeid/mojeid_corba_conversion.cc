@@ -362,3 +362,65 @@ namespace CorbaConversion
     }
 
 }
+
+namespace {
+
+void wrap(const Registry::MojeIDImplData::Date &src,
+          Registry::MojeID::Date &dst)
+{
+    dst.value = src.value.c_str();
+}
+
+void wrap(const Registry::MojeIDImplData::InfoContact &src,
+          Registry::MojeID::InfoContact &dst)
+{
+    dst.id = src.id;
+    dst.first_name   = src.first_name.c_str();
+    dst.last_name    = src.last_name.c_str();
+    dst.organization = src.organization.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.organization.get_value().c_str());
+    dst.vat_reg_num  = src.vat_reg_num.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.vat_reg_num.get_value().c_str());
+    if (src.birth_date.isnull()) {
+        dst.birth_date = NULL;
+    }
+    else {
+        Registry::MojeID::NullableDate_var nd(new Registry::MojeID::NullableDate());
+        wrap(src.birth_date.get_value(), nd.in()->_value());
+        dst.birth_date = nd._retn();
+    }
+    dst.id_card_num  = src.id_card_num.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.id_card_num.get_value().c_str());
+    dst.passport_num = src.passport_num.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.passport_num.get_value().c_str());
+    dst.ssn_id_num   = src.ssn_id_num.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.ssn_id_num.get_value().c_str());
+    dst.vat_id_num   = src.vat_id_num.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.vat_id_num.get_value().c_str());
+    dst.email        = src.email.c_str();
+    dst.notify_email = src.notify_email.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.notify_email.get_value().c_str());
+    dst.notify_email = src.notify_email.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.notify_email.get_value().c_str());
+    dst.telephone    = src.telephone.isnull()
+                       ? NULL
+                       : new Registry::MojeID::NullableString(src.telephone.get_value().c_str());
+#if 0
+    CorbaConversion::wrap    (src.permanent,    dst.permanent);
+    wrap_nullable_into_holder(src.mailing,      dst.mailing);
+    wrap_nullable_into_holder(src.billing,      dst.billing);
+    wrap_nullable_into_holder(src.shipping,     dst.shipping);
+    wrap_nullable_into_holder(src.shipping2,    dst.shipping2);
+    wrap_nullable_into_holder(src.shipping3,    dst.shipping3);
+#endif
+}
+
+}
