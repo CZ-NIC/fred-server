@@ -4,7 +4,7 @@
 
 #include "src/fredlib/registrar/info_registrar_output.h"
 
-//#include "src/domain_browser/domain_browser.cc"
+#include "src/domain_browser/domain_browser.cc"
 
 //#include "util/db/manager_tss.h"
 
@@ -13,7 +13,7 @@
 
 #include <boost/foreach.hpp>
 
-using Registry::DomainBrowserImpl::log_and_rethrow_exception_handler;
+using Registry::DomainBrowserImpl::log_and_rethrow_exception_handler; //is this fine?
 //static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)//code duplication?
 //{
 //    try
@@ -45,6 +45,25 @@ using Registry::DomainBrowserImpl::log_and_rethrow_exception_handler;
 //    }
 //}
 
+void make_registrar_from_info_data(Registrar& reg, Fred::InfoRegistrarData& ird)
+{
+    reg.address.city = ird.city;
+    reg.address.country_code = ird.country.get_value_or_default()();
+    reg.address.postal_code = ird.postalcode.get_value_or_default();
+    reg.address.stateorprovince =
+            ird.stateorprovince.get_value_or_default();
+    reg.address.street1 = ird.street1.get_value_or_default();
+    reg.address.street2 = ird.street2.get_value_or_default();
+    reg.address.street3 = ird.street3.get_value_or_default();
+    reg.fax = ird.fax.get_value_or_default();
+    reg.handle = ird.handle;
+    reg.id = ird.id;
+    reg.name = ird.name.get_value_or_default();
+    reg.organization = ird.organization.get_value_or_default();
+    reg.phone = ird.telephone.get_value_or_default();
+    reg.url = ird.url.get_value_or_default();
+}
+
 Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
 {
     try
@@ -56,21 +75,7 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
             Fred::InfoRegistrarData ird =
                     Fred::InfoRegistrarByHandle(handle).exec(ctx, output_timezone)
                     .info_registrar_data;
-            reg.address.city = ird.city;
-            reg.address.country_code = ird.country.get_value_or_default()();
-            reg.address.postal_code = ird.postalcode.get_value_or_default();
-            reg.address.stateorprovince =
-                    ird.stateorprovince.get_value_or_default();
-            reg.address.street1 = ird.street1.get_value_or_default();
-            reg.address.street2 = ird.street2.get_value_or_default();
-            reg.address.street3 = ird.street3.get_value_or_default();
-            reg.fax = ird.fax.get_value_or_default();
-            reg.handle = ird.handle;
-            reg.id = ird.id;
-            reg.name = ird.name.get_value_or_default();
-            reg.organization = ird.organization.get_value_or_default();
-            reg.phone = ird.telephone.get_value_or_default();
-            reg.url = ird.url.get_value_or_default();
+            make_registrar_from_info_data(reg, ird);
             return reg;
         }
         catch(const Fred::InfoRegistrarByHandle::Exception& e)
@@ -106,29 +111,7 @@ std::vector<Registrar> Server_impl::get_registrars()
         for(std::vector<Fred::InfoRegistrarOutput>::iterator it = v.begin();
                 it!=v.end(); ++it)
         {
-            //TODO refactor^^^
-            temp.address.city =
-                    it->info_registrar_data.city.get_value_or_default();
-            temp.address.country_code =
-                    it->info_registrar_data.country.get_value_or_default();
-            temp.address.postal_code =
-                    it->info_registrar_data.postalcode.get_value_or_default();
-            temp.address.stateorprovince =
-                    it->info_registrar_data.stateorprovince.get_value_or_default();
-            temp.address.street1 =
-                    it->info_registrar_data.street1.get_value_or_default();
-            temp.address.street2 =
-                    it->info_registrar_data.street2.get_value_or_default();
-            temp.address.street3 =
-                    it->info_registrar_data.street3.get_value_or_default();
-            temp.fax = it->info_registrar_data.fax.get_value_or_default();
-            temp.handle = it->info_registrar_data.handle;
-            temp.id = it->info_registrar_data.id;
-            temp.name = it->info_registrar_data.name.get_value_or_default();
-            temp.organization =
-                    it->info_registrar_data.organization.get_value_or_default();
-            temp.phone = it->info_registrar_data.telephone.get_value_or_default();
-            temp.url = it->info_registrar_data.url.get_value_or_default();
+            make_registrar_from_info_data(temp, it->info_registrar_data);
             result.push_back(temp);
         }
 

@@ -1,12 +1,14 @@
-sdklfjsdf#ifndef _WHOIS_H_
+#ifndef _WHOIS_H_
 #define _WHOIS_H_
 
 #include <string>
 #include <vector>
 
 //#include "src/corba/Whois2.hh"
+
 //namespace Registry {
 //namespace Whois {
+
 struct PlaceAddress {
     std::string street1;
     std::string street2;
@@ -36,7 +38,6 @@ struct Registrar
 struct RegistrarSeq
 {
     std::vector<Registrar> rdl;/**< list of registrar data */
-
 };
 
 struct ContactIdentification {
