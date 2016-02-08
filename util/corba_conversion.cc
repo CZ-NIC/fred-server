@@ -26,13 +26,72 @@
 namespace CorbaConversion
 {
 
-    void Unwrapper_const_char_ptr_into_std_string::unwrap(CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
-    {
-        if(ct_in == NULL)
-        {
-            throw PointerIsNULL();
-        }
-        nct_out = std::string(ct_in);
+template < class SOURCE_INTEGRAL_TYPE, class TARGET_INTEGRAL_TYPE >
+void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
+{
+    typedef boost::integer_traits< SOURCE_INTEGRAL_TYPE > source_integral_type_traits;
+    typedef boost::integer_traits< TARGET_INTEGRAL_TYPE > target_integral_type_traits;
+
+    BOOST_MPL_ASSERT_MSG(source_integral_type_traits::is_integral, source_type_have_to_be_integral, (SOURCE_INTEGRAL_TYPE));
+    BOOST_MPL_ASSERT_MSG(target_integral_type_traits::is_integral, target_type_have_to_be_integral, (TARGET_INTEGRAL_TYPE));
+
+    try {
+        dst = boost::numeric_cast< TARGET_INTEGRAL_TYPE >(src);
     }
+    catch (const boost::numeric::negative_overflow &e) {
+        throw IntegralConversionOutOfRange(e.what());
+    }
+    catch (const boost::numeric::positive_overflow &e) {
+        throw IntegralConversionOutOfRange(e.what());
+    }
+}
+
+IntegralConversionOutOfRange::IntegralConversionOutOfRange()
+:   std::invalid_argument("Converted value is out of range")
+{
+}
+
+IntegralConversionOutOfRange::IntegralConversionOutOfRange(const std::string &msg)
+:   std::invalid_argument(msg)
+{
+}
+
+//int_to_int< SRC_TYPE, DST_TYPE > template function instantiation
+#define INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, DST_TYPE) \
+    template void int_to_int(SRC_TYPE, DST_TYPE&)
+
+//int_to_int< SRC_TYPE, any integer type > template function instantiation
+#define INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(SRC_TYPE) \
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, bool);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, char);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, signed char);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, unsigned char);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, wchar_t);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, short);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, unsigned short);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, int);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, unsigned int);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, long);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, unsigned long);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, long long);\
+    INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES(SRC_TYPE, unsigned long long)
+
+//int_to_int< any integer type, any integer type > template function instantiation
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(bool);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(char);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(signed char);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(unsigned char);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(wchar_t);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(short);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(unsigned short);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(int);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(unsigned int);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(long);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(unsigned long);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(long long);
+INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES(unsigned long long);
+
+#undef INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_ANY_DST_TYPES
+#undef INSTANTIATE_INT_TO_INT_CONVERTER_FOR_GIVEN_SRC_AND_DST_TYPES
 
 }

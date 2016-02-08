@@ -24,7 +24,6 @@
 #ifndef MOJEID_IMPL_DATA_H_7C7FD17C00D041F4BDAF5CE5A8CE5337//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID_IMPL_DATA_H_7C7FD17C00D041F4BDAF5CE5A8CE5337
 
-#include "src/corba/MojeID.hh"
 #include "util/db/nullable.h"
 #include <sstream>
 
@@ -59,47 +58,56 @@ struct ShippingAddress
     std::string             country;
 };
 
-typedef Registry::MojeID::ValidationResult ValidationResult;
+struct ValidationResult
+{
+    enum Value
+    {
+        OK,
+        NOT_AVAILABLE,
+        INVALID,
+        REQUIRED
+    };
+};
 
 struct AddressValidationResult
 {
     AddressValidationResult()
-    :   street1    (Registry::MojeID::OK),
-        city       (Registry::MojeID::OK),
-        postal_code(Registry::MojeID::OK),
-        country    (Registry::MojeID::OK) { }
-    ValidationResult street1;
-    ValidationResult city;
-    ValidationResult postal_code;
-    ValidationResult country;
+    :   street1    (ValidationResult::OK),
+        city       (ValidationResult::OK),
+        postal_code(ValidationResult::OK),
+        country    (ValidationResult::OK) { }
+    ValidationResult::Value street1;
+    ValidationResult::Value city;
+    ValidationResult::Value postal_code;
+    ValidationResult::Value country;
 };
 
 struct MandatoryAddressValidationResult
 {
     MandatoryAddressValidationResult()
-    :   address_presence(Registry::MojeID::OK),
-        street1         (Registry::MojeID::OK),
-        city            (Registry::MojeID::OK),
-        postal_code     (Registry::MojeID::OK),
-        country         (Registry::MojeID::OK) { }
-    ValidationResult address_presence;
-    ValidationResult street1;
-    ValidationResult city;
-    ValidationResult postal_code;
-    ValidationResult country;
+    :   address_presence(ValidationResult::OK),
+        street1         (ValidationResult::OK),
+        city            (ValidationResult::OK),
+        postal_code     (ValidationResult::OK),
+        country         (ValidationResult::OK) { }
+    ValidationResult::Value address_presence;
+    ValidationResult::Value street1;
+    ValidationResult::Value city;
+    ValidationResult::Value postal_code;
+    ValidationResult::Value country;
 };
 
 struct ShippingAddressValidationResult
 {
     ShippingAddressValidationResult()
-    :   street1    (Registry::MojeID::OK),
-        city       (Registry::MojeID::OK),
-        postal_code(Registry::MojeID::OK),
-        country    (Registry::MojeID::OK) { }
-    ValidationResult street1;
-    ValidationResult city;
-    ValidationResult postal_code;
-    ValidationResult country;
+    :   street1    (ValidationResult::OK),
+        city       (ValidationResult::OK),
+        postal_code(ValidationResult::OK),
+        country    (ValidationResult::OK) { }
+    ValidationResult::Value street1;
+    ValidationResult::Value city;
+    ValidationResult::Value postal_code;
+    ValidationResult::Value country;
 };
 
 struct MessageLimitExceeded
@@ -116,22 +124,22 @@ struct MessageLimitExceeded
 struct RegistrationValidationResult
 {
     RegistrationValidationResult()
-    :   username    (Registry::MojeID::OK),
-        first_name  (Registry::MojeID::OK),
-        last_name   (Registry::MojeID::OK),
-        birth_date  (Registry::MojeID::OK),
-        email       (Registry::MojeID::OK),
-        notify_email(Registry::MojeID::OK),
-        phone       (Registry::MojeID::OK),
-        fax         (Registry::MojeID::OK) { }
-    ValidationResult                username;
-    ValidationResult                first_name;
-    ValidationResult                last_name;
-    ValidationResult                birth_date;
-    ValidationResult                email;
-    ValidationResult                notify_email;
-    ValidationResult                phone;
-    ValidationResult                fax;
+    :   username    (ValidationResult::OK),
+        first_name  (ValidationResult::OK),
+        last_name   (ValidationResult::OK),
+        birth_date  (ValidationResult::OK),
+        email       (ValidationResult::OK),
+        notify_email(ValidationResult::OK),
+        phone       (ValidationResult::OK),
+        fax         (ValidationResult::OK) { }
+    ValidationResult::Value         username;
+    ValidationResult::Value         first_name;
+    ValidationResult::Value         last_name;
+    ValidationResult::Value         birth_date;
+    ValidationResult::Value         email;
+    ValidationResult::Value         notify_email;
+    ValidationResult::Value         phone;
+    ValidationResult::Value         fax;
     AddressValidationResult         permanent;
     AddressValidationResult         mailing;
     AddressValidationResult         billing;
@@ -143,20 +151,20 @@ struct RegistrationValidationResult
 struct UpdateContactPrepareValidationResult
 {
     UpdateContactPrepareValidationResult()
-    :   first_name  (Registry::MojeID::OK),
-        last_name   (Registry::MojeID::OK),
-        birth_date  (Registry::MojeID::OK),
-        email       (Registry::MojeID::OK),
-        notify_email(Registry::MojeID::OK),
-        phone       (Registry::MojeID::OK),
-        fax         (Registry::MojeID::OK) { }
-    ValidationResult                first_name;
-    ValidationResult                last_name;
-    ValidationResult                birth_date;
-    ValidationResult                email;
-    ValidationResult                notify_email;
-    ValidationResult                phone;
-    ValidationResult                fax;
+    :   first_name  (ValidationResult::OK),
+        last_name   (ValidationResult::OK),
+        birth_date  (ValidationResult::OK),
+        email       (ValidationResult::OK),
+        notify_email(ValidationResult::OK),
+        phone       (ValidationResult::OK),
+        fax         (ValidationResult::OK) { }
+    ValidationResult::Value         first_name;
+    ValidationResult::Value         last_name;
+    ValidationResult::Value         birth_date;
+    ValidationResult::Value         email;
+    ValidationResult::Value         notify_email;
+    ValidationResult::Value         phone;
+    ValidationResult::Value         fax;
     AddressValidationResult         permanent;
     AddressValidationResult         mailing;
     AddressValidationResult         billing;
@@ -168,32 +176,32 @@ struct UpdateContactPrepareValidationResult
 struct CreateValidationRequestValidationResult
 {
     CreateValidationRequestValidationResult()
-    :   first_name  (Registry::MojeID::OK),
-        last_name   (Registry::MojeID::OK),
-        email       (Registry::MojeID::OK),
-        phone       (Registry::MojeID::OK),
-        notify_email(Registry::MojeID::OK),
-        fax         (Registry::MojeID::OK),
-        birth_date  (Registry::MojeID::OK),
-        vat_id_num  (Registry::MojeID::OK) { }
-    ValidationResult                 first_name;
-    ValidationResult                 last_name;
+    :   first_name  (ValidationResult::OK),
+        last_name   (ValidationResult::OK),
+        email       (ValidationResult::OK),
+        phone       (ValidationResult::OK),
+        notify_email(ValidationResult::OK),
+        fax         (ValidationResult::OK),
+        birth_date  (ValidationResult::OK),
+        vat_id_num  (ValidationResult::OK) { }
+    ValidationResult::Value          first_name;
+    ValidationResult::Value          last_name;
     MandatoryAddressValidationResult permanent;
-    ValidationResult                 email;
-    ValidationResult                 phone;
-    ValidationResult                 notify_email;
-    ValidationResult                 fax;
-    ValidationResult                 birth_date;
-    ValidationResult                 vat_id_num;
+    ValidationResult::Value          email;
+    ValidationResult::Value          phone;
+    ValidationResult::Value          notify_email;
+    ValidationResult::Value          fax;
+    ValidationResult::Value          birth_date;
+    ValidationResult::Value          vat_id_num;
 };
 
 struct ProcessRegistrationValidationResult
 {
     ProcessRegistrationValidationResult()
-    :   email(Registry::MojeID::OK),
-        phone(Registry::MojeID::OK) { }
-    ValidationResult email;
-    ValidationResult phone;
+    :   email(ValidationResult::OK),
+        phone(ValidationResult::OK) { }
+    ValidationResult::Value email;
+    ValidationResult::Value phone;
 };
 
 struct Date

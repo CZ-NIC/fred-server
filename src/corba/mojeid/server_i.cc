@@ -31,62 +31,6 @@ namespace MojeID {
 
 typedef Server IDL;
 
-namespace
-{
-
-template < class T >
-class SafePtr
-{
-public:
-    typedef T type;
-    struct Ptr
-    {
-        explicit Ptr(type *ptr):ptr_(ptr) { }
-        type *ptr_;
-    };
-    explicit SafePtr(type *src):ptr_(src) { }
-    SafePtr(SafePtr &src):ptr_(src.ptr_) { }
-    SafePtr(Ptr src):ptr_(src.ptr_) { }
-    SafePtr& operator=(SafePtr &src) { ptr_ = src.ptr_; return *this; }
-    operator Ptr() { return Ptr(this->release()); }
-    type& operator*() { return *ptr_; }
-    type* release() { return ptr_.release(); }
-private:
-    typedef std::auto_ptr< type > auto_ptr_type;
-    auto_ptr_type ptr_;
-};
-
-template < class SRC_TYPE, class DST_TYPE >
-struct Wrapper_into_result
-{
-    typedef SafePtr< DST_TYPE > result_type;
-    static result_type from(const SRC_TYPE &src)
-    {
-        result_type dst(new DST_TYPE);
-        CorbaConversion::wrap(src, *dst);
-        return dst;
-    }
-};
-
-template < >
-struct Wrapper_into_result< std::string, char* >
-{
-    typedef SafePtr< char > result_type;
-    static result_type from(const std::string &src)
-    {
-        result_type dst(CORBA::string_dup(src.c_str()));
-        return dst;
-    }
-};
-
-template < class DST_TYPE, class SRC_TYPE >
-typename Wrapper_into_result< SRC_TYPE, DST_TYPE >::result_type result_as(const SRC_TYPE &src)
-{
-    return Wrapper_into_result< SRC_TYPE, DST_TYPE >::from(src);
-}
-
-}
-
 Server_i::Server_i(const std::string &_server_name)
 :   impl_ptr_(new MojeIDImpl(_server_name))
 {
@@ -105,18 +49,18 @@ ContactId Server_i::create_contact_prepare(
 {
     try {
         MojeIDImplData::CreateContact contact;
-        CorbaConversion::unwrap(_contact, contact);
+        CorbaConversion::unwrap_CreateContact(_contact, contact);
         std::string ident;
         const ContactId contact_id = impl_ptr_->create_contact_prepare(
             contact,
             _trans_id,
             _log_request_id,
             ident);
-        _identification = result_as< char* >(ident).release();
+        _identification = CorbaConversion::wrap_string(ident)._retn();
         return contact_id;
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
-        CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
+        CorbaConversion::raise_REGISTRATION_VALIDATION_ERROR(e);
         throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
     catch (...) {
@@ -139,8 +83,8 @@ InfoContact* Server_i::transfer_contact_prepare(
             _log_request_id,
             contact,
             ident);
-        _identification = result_as< char* >(ident).release();
-        return result_as< Registry::MojeID::InfoContact >(contact).release();
+        _identification = CorbaConversion::wrap_string(ident)._retn();
+        return CorbaConversion::wrap_InfoContact(contact)._retn();
     }
     catch (const MojeIDImplData::AlreadyMojeidContact&) {
         throw IDL::ALREADY_MOJEID_CONTACT();
@@ -155,7 +99,7 @@ InfoContact* Server_i::transfer_contact_prepare(
         throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
-        CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
+        CorbaConversion::raise_REGISTRATION_VALIDATION_ERROR(e);
         throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
     catch (...) {
@@ -170,15 +114,15 @@ void Server_i::update_contact_prepare(
 {
     try {
         MojeIDImplData::InfoContact new_data;
-        CorbaConversion::unwrap(_new_data, new_data);
+        CorbaConversion::unwrap_InfoContact(_new_data, new_data);
         impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
         return;
     }
     catch (const MojeIDImplData::UpdateContactPrepareValidationResult &e) {
-        CorbaConversion::raise< IDL::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR >(e);
+        CorbaConversion::raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(e);
     }
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
-        CorbaConversion::raise< IDL::MESSAGE_LIMIT_EXCEEDED >(e);
+        CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(e);
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -196,10 +140,10 @@ InfoContact* Server_i::update_transfer_contact_prepare(
 {
     try {
         MojeIDImplData::SetContact contact_data;
-        CorbaConversion::unwrap(_contact_data, contact_data);
+        CorbaConversion::unwrap_SetContact(_contact_data, contact_data);
         const MojeIDImplData::InfoContact info_contact =
         impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id);
-        return result_as< Registry::MojeID::InfoContact >(info_contact).release();
+        return CorbaConversion::wrap_InfoContact(info_contact)._retn();
     }
     catch (const MojeIDImplData::ObjectDoesntExist &e) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -211,7 +155,7 @@ InfoContact* Server_i::update_transfer_contact_prepare(
         throw IDL::OBJECT_USER_BLOCKED();
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
-        CorbaConversion::raise< IDL::REGISTRATION_VALIDATION_ERROR >(e);
+        CorbaConversion::raise_REGISTRATION_VALIDATION_ERROR(e);
         throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
     catch (...) {
@@ -225,7 +169,7 @@ InfoContact* Server_i::info_contact(
     try {
         MojeIDImplData::InfoContact contact;
         impl_ptr_->info_contact(username, contact);
-        return result_as< Registry::MojeID::InfoContact >(contact).release();
+        return CorbaConversion::wrap_InfoContact(contact)._retn();
     }
     catch (const MojeIDImplData::ObjectDoesntExist &e) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -290,7 +234,7 @@ void Server_i::process_identification_request(
         throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
     }
     catch (const MojeIDImplData::UpdateContactPrepareValidationResult &e) {
-        CorbaConversion::raise< IDL::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR >(e);
+        CorbaConversion::raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(e);
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -324,7 +268,7 @@ Buffer* Server_i::get_validation_pdf(
 {
     try {
         const MojeIDImplData::Buffer pdf_content = impl_ptr_->get_validation_pdf(_contact_id);
-        return result_as< Buffer >(pdf_content).release();
+        return CorbaConversion::wrap_Buffer(pdf_content)._retn();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -351,7 +295,7 @@ void Server_i::create_validation_request(
         throw IDL::VALIDATION_ALREADY_PROCESSED();
     }
     catch (const MojeIDImplData::CreateValidationRequestValidationResult &e) {
-        CorbaConversion::raise< IDL::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR >(e);
+        CorbaConversion::raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(e);
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -364,7 +308,7 @@ ContactStateInfoList* Server_i::get_contacts_state_changes(
     try {
         MojeIDImplData::ContactStateInfoList contacts_state_changes;
         impl_ptr_->get_contacts_state_changes(_last_hours, contacts_state_changes);
-        return result_as< ContactStateInfoList >(contacts_state_changes).release();
+        return CorbaConversion::wrap_ContactStateInfoList(contacts_state_changes)._retn();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -377,7 +321,7 @@ ContactStateInfo* Server_i::get_contact_state(
     try {
         MojeIDImplData::ContactStateInfo data;
         impl_ptr_->get_contact_state(_contact_id, data);
-        return result_as< ContactStateInfo >(data).release();
+        return CorbaConversion::wrap_ContactStateInfo(data)._retn();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
@@ -393,7 +337,7 @@ void Server_i::cancel_account_prepare(
         LogRequestId _log_request_id)
 {
     try {
-        const std::string trans_id = CorbaConversion::unwrap_into< std::string >(_trans_id);
+        const std::string trans_id = _trans_id;
         impl_ptr_->cancel_account_prepare(_contact_id, trans_id, _log_request_id);
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
@@ -409,7 +353,7 @@ ContactHandleList* Server_i::get_unregistrable_handles()
     try {
         MojeIDImplData::ContactHandleList unregistrable_handles;
         impl_ptr_->get_unregistrable_contact_handles(unregistrable_handles);
-        return result_as< ContactHandleList >(unregistrable_handles).release();
+        return CorbaConversion::wrap_ContactHandleList(unregistrable_handles)._retn();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -424,7 +368,7 @@ void Server_i::send_new_pin3(
         impl_ptr_->send_new_pin3(contact_id, log_request_id);
     }
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
-        CorbaConversion::raise< IDL::MESSAGE_LIMIT_EXCEEDED >(e);
+        CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(e);
     }
     catch (const MojeIDImplData::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
@@ -445,7 +389,7 @@ void Server_i::send_mojeid_card(
         impl_ptr_->send_mojeid_card(contact_id, log_request_id);
     }
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
-        CorbaConversion::raise< IDL::MESSAGE_LIMIT_EXCEEDED >(e);
+        CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(e);
     }
     catch (const MojeIDImplData::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();

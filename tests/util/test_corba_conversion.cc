@@ -48,26 +48,7 @@
 
 namespace CorbaConversion
 {
-    /* DEFAULT_UNWRAPPER redefinition error
-
-    //strange string unwrap
-    struct Unwrapper_strange_const_char_ptr_into_std_string
-    {
-        typedef const char* CORBA_TYPE;
-        typedef std::string NON_CORBA_TYPE;
-        static void unwrap( CORBA_TYPE ct_in, NON_CORBA_TYPE& nct_out)
-        {
-            nct_out = "strange";
-        }
-    };
-    template <> struct DEFAULT_UNWRAPPER<
-    Unwrapper_strange_const_char_ptr_into_std_string::CORBA_TYPE,
-    Unwrapper_strange_const_char_ptr_into_std_string::NON_CORBA_TYPE>
-    {
-        typedef Unwrapper_strange_const_char_ptr_into_std_string type;
-    };
-     */
-
+#if 0
     template < >
     struct DEFAULT_WRAPPER< std::string, Test::NullableString >
     :   Wrapper_string_into_NullableString< Test::NullableString > { };
@@ -93,13 +74,14 @@ namespace CorbaConversion
     struct DEFAULT_UNWRAPPER< Test::StringSeq, std::vector< std::string > >
     :   Unwrapper_Seq_of_holders_into_std_vector< Test::StringSeq,
                                                   std::vector< std::string > > { };
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE(TestCorbaConversion)
 
 const std::string server_name = "test-corba-conversion";
 
-
+#if 0
 BOOST_AUTO_TEST_CASE(test_string_wrap_by_unwrap_by)
 {
     CORBA::String_var sv1;
@@ -1917,5 +1899,5 @@ BOOST_AUTO_TEST_CASE(test_mojeid_constact_handle_list)
     BOOST_CHECK(std::string(ssv1[2]) == "test3");
 
 }
-
+#endif
 BOOST_AUTO_TEST_SUITE_END();
