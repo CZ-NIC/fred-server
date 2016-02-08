@@ -1,14 +1,12 @@
-#ifndef _WHOIS_H_
+sdklfjsdf#ifndef _WHOIS_H_
 #define _WHOIS_H_
 
 #include <string>
 #include <vector>
 
 //#include "src/corba/Whois2.hh"
-
 //namespace Registry {
 //namespace Whois {
-
 struct PlaceAddress {
     std::string street1;
     std::string street2;
@@ -38,11 +36,7 @@ struct Registrar
 struct RegistrarSeq
 {
     std::vector<Registrar> rdl;/**< list of registrar data */
-    bool limit_exceeded;/**< there are more data to get using higher offset in next call*/
 
-    RegistrarSeq()
-    : limit_exceeded(false)
-    {}
 };
 
 struct ContactIdentification {
@@ -103,7 +97,7 @@ struct IPAddress
 struct NameServer
 {
     std::string fqdn;
-    std::vector<IPAddress> ip_adadresses;
+    std::vector<IPAddress> ip_addresses;
 };
 
 struct NSSet{
@@ -157,7 +151,7 @@ struct KeySetSeq
 };
 
 struct Domain{
-    std::string handle;
+    std::string fqdn;
     std::string registrant_handle;
     std::vector<std::string> admin_contact_handles;
     std::string nsset_handle;
@@ -186,14 +180,9 @@ struct RegistrarGroup{
     std::vector<std::string> members;
 };
 
-struct RegistrarGroupList{
-    std::vector<RegistrarGroup> rgl;
-    bool limit_exceeded;
-
-    RegistrarGroupList()
-    : limit_exceeded(false)
-    {}
-};
+//struct RegistrarGroupList{
+//    std::vector<RegistrarGroup> rgl;
+//};
 
 struct RegistrarCertification
 {
@@ -205,22 +194,12 @@ struct RegistrarCertification
 struct RegistrarCertificationList
 {
     std::vector<RegistrarCertification> rcl;
-    bool limit_exceeded;
-
-    RegistrarCertificationList()
-    : limit_exceeded(false)
-    {}
 };
 
-struct ZoneFqdnList
-{
-    std::vector<std::string> zfl;
-    bool limit_exceeded;
-
-    ZoneFqdnList()
-    : limit_exceeded(false)
-    {}
-};
+//struct ZoneFqdnList
+//{
+//    std::vector<std::string> zfl;
+//};
 
 struct ObjectStatusDesc
 {
@@ -231,11 +210,6 @@ struct ObjectStatusDesc
 struct ObjectStatusDescSeq
 {
     std::vector<ObjectStatusDesc> osds;
-    bool limit_exceeded;
-
-    ObjectStatusDescSeq()
-    : limit_exceeded(false)
-    {}
 };
 
 struct ObjectNotExists
@@ -250,22 +224,55 @@ struct InvalidHandle
     const char* what() const throw() {return "registry object with specified handle does not exist";}
 };
 
+struct InternalServerError
+: virtual std::exception
+{
+    const char* what() const throw() {return "internal server error";}
+};
+
+struct InvalidLabel
+: virtual std::exception
+{
+    const char* what() const throw() {return "the label is invalid";}
+};
+
+struct UnmanagedZone
+: virtual std::exception
+{
+    const char* what() const throw() {return "this zone is not managed";}
+};
+
+struct TooManyLabels
+: virtual std::exception
+{
+    const char* what() const throw() {return "domain has too many labels";}
+};
+
+struct MissingLocalization
+: virtual std::exception
+{
+    const char* what() const throw() {return "the localization is missing";}
+};
+
 class Server_impl //: public POA_Registry::Whois::WhoisIntf
 {
 private:
     static const std::string output_timezone;
+    ObjectStatusDescSeq get_object_status_descriptions(const std::string& lang,
+                                                       const std::string& type);
 public:
     virtual ~Server_impl() {};
 
     Registrar get_registrar_by_handle(const std::string& handle);
 
-    RegistrarSeq get_registrars();
+    std::vector<Registrar> get_registrars();
 
-    RegistrarGroupList get_registrar_groups();
 
-    RegistrarCertificationList get_registrar_certification_list();
+    std::vector<RegistrarGroup> get_registrar_groups();
 
-    ZoneFqdnList get_managed_zone_list();
+    std::vector<RegistrarCertification> get_registrar_certification_list();
+
+    std::vector<std::string> get_managed_zone_list();
 
     Contact get_contact_by_handle(const std::string& handle);
 
