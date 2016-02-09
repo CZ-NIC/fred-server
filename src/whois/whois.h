@@ -6,10 +6,11 @@
 
 //#include "src/corba/Whois2.hh"
 
-//namespace Registry {
-//namespace Whois {
+namespace Registry {
+namespace WhoisImpl {
 
-struct PlaceAddress {
+struct PlaceAddress
+{
     std::string street1;
     std::string street2;
     std::string street3;
@@ -34,13 +35,14 @@ struct Registrar
     : id(0)
     {}
 };
+//
+//struct RegistrarSeq
+//{
+//    std::vector<Registrar> rdl;/**< list of registrar data */
+//};
 
-struct RegistrarSeq
+struct ContactIdentification
 {
-    std::vector<Registrar> rdl;/**< list of registrar data */
-};
-
-struct ContactIdentification {
     std::string identification_type;
     std::string identification_data;
 };
@@ -87,22 +89,23 @@ struct Contact
     {}
 };
 
-enum IPVersion { IPv4, IPv6 };
-
-struct IPAddress
-{
-    std::string address;
-    IPVersion version;
-};
+//enum IPVersion { IPv4, IPv6 };
+//
+//struct IPAddress
+//{
+//    std::string address;
+//    IPVersion version;
+//};
 
 struct NameServer
 {
     std::string fqdn;
-    std::vector<IPAddress> ip_addresses;
+    std::vector<boost::asio::ip::address> ip_addresses;
 };
 
-struct NSSet{
-    std:: string handle;
+struct NSSet
+{
+    std::string handle;
     std::vector<NameServer> nservers;
     std::vector<std::string> tech_contact_handles;
     std::string registrar_handle;
@@ -114,7 +117,7 @@ struct NSSet{
 
 struct NSSetSeq
 {
-    std::vector<NSSet> nsss;
+    std::vector<NSSet> content;
     bool limit_exceeed;
 
     NSSetSeq()
@@ -130,7 +133,8 @@ struct DNSKey
     std::string public_key;
 };
 
-struct KeySet{
+struct KeySet
+{
     std::string handle;
     std::vector<DNSKey> dns_keys;
     std::vector<std::string> tech_contact_handles;
@@ -143,7 +147,7 @@ struct KeySet{
 
 struct KeySetSeq
 {
-    std::vector<KeySet> kss;
+    std::vector<KeySet> content;
     bool limit_exceeded;
 
     KeySetSeq()
@@ -151,7 +155,8 @@ struct KeySetSeq
     {}
 };
 
-struct Domain{
+struct Domain
+{
     std::string fqdn;
     std::string registrant_handle;
     std::vector<std::string> admin_contact_handles;
@@ -168,7 +173,7 @@ struct Domain{
 
 struct DomainSeq
 {
-    std::vector<Domain> ds;
+    std::vector<Domain> content;
     bool limit_exceeded;
 
     DomainSeq()
@@ -176,7 +181,8 @@ struct DomainSeq
     {}
 };
 
-struct RegistrarGroup{
+struct RegistrarGroup
+{
     std::string name;
     std::vector<std::string> members;
 };
@@ -191,11 +197,11 @@ struct RegistrarCertification
     short score;
     unsigned long long evaluation_file_id;
 };
-
-struct RegistrarCertificationList
-{
-    std::vector<RegistrarCertification> rcl;
-};
+//
+//struct RegistrarCertificationList
+//{
+//    std::vector<RegistrarCertification> rcl;
+//};
 
 //struct ZoneFqdnList
 //{
@@ -207,11 +213,11 @@ struct ObjectStatusDesc
     std::string handle;
     std::string name;
 };
-
-struct ObjectStatusDescSeq
-{
-    std::vector<ObjectStatusDesc> osds;
-};
+//
+//struct ObjectStatusDescSeq
+//{
+//    std::vector<ObjectStatusDesc> osds;
+//};
 
 struct ObjectNotExists
 : virtual std::exception
@@ -255,11 +261,11 @@ struct MissingLocalization
     const char* what() const throw() {return "the localization is missing";}
 };
 
-class Server_impl //: public POA_Registry::Whois::WhoisIntf
+class Server_impl
 {
 private:
     static const std::string output_timezone;
-    ObjectStatusDescSeq get_object_status_descriptions(const std::string& lang,
+    std::vector<ObjectStatusDesc> get_object_status_descriptions(const std::string& lang,
                                                        const std::string& type);
 public:
     virtual ~Server_impl() {};
@@ -307,10 +313,13 @@ public:
     DomainSeq get_domains_by_keyset(const std::string& handle, unsigned long limit,
                                     bool limit_exceeded);
 
-    ObjectStatusDescSeq get_domain_status_descriptions(const std::string& lang);
-    ObjectStatusDescSeq get_contact_status_descriptions(const std::string& lang);
-    ObjectStatusDescSeq get_nsset_status_descriptions(const std::string& lang);
-    ObjectStatusDescSeq get_keyset_status_descriptions(const std::string& lang);
+    std::vector<ObjectStatusDesc> get_domain_status_descriptions(const std::string& lang);
+    std::vector<ObjectStatusDesc> get_contact_status_descriptions(const std::string& lang);
+    std::vector<ObjectStatusDesc> get_nsset_status_descriptions(const std::string& lang);
+    std::vector<ObjectStatusDesc> get_keyset_status_descriptions(const std::string& lang);
 };//Server_impl
+
+}//WhoisImpl
+}//Registry
 
 #endif /* _WHOIS_H_ */
