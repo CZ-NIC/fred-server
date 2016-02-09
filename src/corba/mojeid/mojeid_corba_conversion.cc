@@ -22,6 +22,7 @@
  */
 #include "src/corba/mojeid/mojeid_corba_conversion.h"
 #include <string>
+#include <boost/lexical_cast.hpp>
 
 namespace CorbaConversion {
 
@@ -214,8 +215,12 @@ ArgumentIsSpecial::ArgumentIsSpecial()
 void unwrap_DateTime(const Registry::MojeID::DateTime &src, boost::posix_time::ptime &dst)
 {
     const std::string value = src.value.in();
-    dst = boost::date_time::parse_delimited_time< ptime >(value, 'T');
-
+    try {
+        dst = boost::date_time::parse_delimited_time< ptime >(value, 'T');
+    }
+    catch (const boost::bad_lexical_cast &e) {//special values usually lead to bad_lexical_cast exception
+        throw ArgumentIsSpecial();//really special :-)
+    }
     if (dst.is_special()) {
         throw ArgumentIsSpecial();
     }
@@ -242,16 +247,16 @@ void wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::Value src
     switch (src) {
     case Registry::MojeIDImplData::ValidationResult::OK:
         dst = Registry::MojeID::OK;
-        break;
+        return;
     case Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE:
         dst = Registry::MojeID::NOT_AVAILABLE;
-        break;
+        return;
     case Registry::MojeIDImplData::ValidationResult::INVALID:
         dst = Registry::MojeID::INVALID;
-        break;
+        return;
     case Registry::MojeIDImplData::ValidationResult::REQUIRED:
         dst = Registry::MojeID::REQUIRED;
-        break;
+        return;
     }
     throw NotEnumValidationResultValue();
 }
@@ -445,6 +450,7 @@ void unwrap_InfoContact(const Registry::MojeID::InfoContact &src, Registry::Moje
     dst.last_name  = src.last_name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
+    unwrap_NullableString(src.vat_reg_num.in(),   dst.vat_reg_num);
 
     unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
 
@@ -479,6 +485,7 @@ Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplDat
     result->last_name  = wrap_string(src.last_name)._retn();
 
     result->organization = wrap_Nullable_string(src.organization);
+    result->vat_reg_num  = wrap_Nullable_string(src.vat_reg_num);
 
     result->birth_date = wrap_Nullable_Date(src.birth_date)._retn();
 

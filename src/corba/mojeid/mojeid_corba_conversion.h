@@ -63,7 +63,7 @@ struct ArgumentIsSpecial:std::invalid_argument
 };
 
 void unwrap_DateTime(const Registry::MojeID::DateTime &src, boost::posix_time::ptime &dst);
-Registry::MojeID::DateTime_var wrap_DateTime(const boost::posix_time::ptime &src, Registry::MojeID::DateTime &dst);
+Registry::MojeID::DateTime_var wrap_DateTime(const boost::posix_time::ptime &src);
 
 /**
  * Exception if argument value is not enum ValidationResult value
