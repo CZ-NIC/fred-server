@@ -36,6 +36,7 @@ namespace Notification {
  * Due to model inconsistency _object_historyid_post_change for notification of object deletion is actually not "post change" but "pre change".
  * It represents last history version of object before delete. Reason is that delete is not represented by separate history version.
  *
+ * @param _svtrid Is result of Util::make_svtrid() called with appropriate Logger request id.
  */
 void enqueue_notification(
     Fred::OperationContext& _ctx,
