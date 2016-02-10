@@ -451,11 +451,12 @@ BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
 {
-    Registry::MojeIDImplData::AddressValidationResult permanent_addr_err_impl;
-    permanent_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
-    permanent_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    permanent_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    permanent_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Registry::MojeIDImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
+    permanent_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
+    permanent_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 
     Registry::MojeIDImplData::AddressValidationResult mailing_addr_err_impl;
     mailing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
@@ -469,19 +470,19 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
     billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
     billing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
 
-    Registry::MojeIDImplData::ShippingAddressValidationResult shipping_addr_err_impl;
+    Registry::MojeIDImplData::AddressValidationResult shipping_addr_err_impl;
     shipping_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
     shipping_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
     shipping_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::ShippingAddressValidationResult shipping2_addr_err_impl;
+    Registry::MojeIDImplData::AddressValidationResult shipping2_addr_err_impl;
     shipping2_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
     shipping2_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
     shipping2_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::ShippingAddressValidationResult shipping3_addr_err_impl;
+    Registry::MojeIDImplData::AddressValidationResult shipping3_addr_err_impl;
     shipping3_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
     shipping3_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
@@ -517,10 +518,11 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
     BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
     BOOST_CHECK(res.fax          == Registry::MojeID::NOT_AVAILABLE);
 
-    BOOST_CHECK(res.permanent.street1     == Registry::MojeID::INVALID);
-    BOOST_CHECK(res.permanent.city        == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(res.permanent.postal_code == Registry::MojeID::REQUIRED);
-    BOOST_CHECK(res.permanent.country     == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.permanent.address_presence == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.street1          == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.permanent.city             == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.permanent.postal_code      == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.country          == Registry::MojeID::NOT_AVAILABLE);
 
     BOOST_CHECK(res.mailing.street1     == Registry::MojeID::NOT_AVAILABLE);
     BOOST_CHECK(res.mailing.city        == Registry::MojeID::REQUIRED);
@@ -550,11 +552,12 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
 {
-    Registry::MojeIDImplData::AddressValidationResult permanent_addr_err_impl;
-    permanent_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
-    permanent_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    permanent_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
-    permanent_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    Registry::MojeIDImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
+    permanent_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
+    permanent_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 
     Registry::MojeIDImplData::AddressValidationResult mailing_addr_err_impl;
     mailing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
@@ -568,19 +571,19 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
     billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
     billing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
 
-    Registry::MojeIDImplData::ShippingAddressValidationResult shipping_addr_err_impl;
+    Registry::MojeIDImplData::AddressValidationResult shipping_addr_err_impl;
     shipping_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
     shipping_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
     shipping_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::ShippingAddressValidationResult shipping2_addr_err_impl;
+    Registry::MojeIDImplData::AddressValidationResult shipping2_addr_err_impl;
     shipping2_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
     shipping2_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
     shipping2_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 
-    Registry::MojeIDImplData::ShippingAddressValidationResult shipping3_addr_err_impl;
+    Registry::MojeIDImplData::AddressValidationResult shipping3_addr_err_impl;
     shipping3_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
     shipping3_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
@@ -614,10 +617,11 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
     BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
     BOOST_CHECK(res.fax          == Registry::MojeID::NOT_AVAILABLE);
 
-    BOOST_CHECK(res.permanent.street1     == Registry::MojeID::INVALID);
-    BOOST_CHECK(res.permanent.city        == Registry::MojeID::NOT_AVAILABLE);
-    BOOST_CHECK(res.permanent.postal_code == Registry::MojeID::REQUIRED);
-    BOOST_CHECK(res.permanent.country     == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.permanent.address_presence == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.street1          == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.permanent.city             == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.permanent.postal_code      == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.country          == Registry::MojeID::NOT_AVAILABLE);
 
     BOOST_CHECK(res.mailing.street1     == Registry::MojeID::NOT_AVAILABLE);
     BOOST_CHECK(res.mailing.city        == Registry::MojeID::REQUIRED);

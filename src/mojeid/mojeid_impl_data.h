@@ -97,19 +97,6 @@ struct MandatoryAddressValidationResult
     ValidationResult::Value country;
 };
 
-struct ShippingAddressValidationResult
-{
-    ShippingAddressValidationResult()
-    :   street1    (ValidationResult::OK),
-        city       (ValidationResult::OK),
-        postal_code(ValidationResult::OK),
-        country    (ValidationResult::OK) { }
-    ValidationResult::Value street1;
-    ValidationResult::Value city;
-    ValidationResult::Value postal_code;
-    ValidationResult::Value country;
-};
-
 struct MessageLimitExceeded
 {
     boost::gregorian::date limit_expire_date;
@@ -132,20 +119,20 @@ struct RegistrationValidationResult
         notify_email(ValidationResult::OK),
         phone       (ValidationResult::OK),
         fax         (ValidationResult::OK) { }
-    ValidationResult::Value         username;
-    ValidationResult::Value         first_name;
-    ValidationResult::Value         last_name;
-    ValidationResult::Value         birth_date;
-    ValidationResult::Value         email;
-    ValidationResult::Value         notify_email;
-    ValidationResult::Value         phone;
-    ValidationResult::Value         fax;
-    AddressValidationResult         permanent;
-    AddressValidationResult         mailing;
-    AddressValidationResult         billing;
-    ShippingAddressValidationResult shipping;
-    ShippingAddressValidationResult shipping2;
-    ShippingAddressValidationResult shipping3;
+    ValidationResult::Value          username;
+    ValidationResult::Value          first_name;
+    ValidationResult::Value          last_name;
+    ValidationResult::Value          birth_date;
+    ValidationResult::Value          email;
+    ValidationResult::Value          notify_email;
+    ValidationResult::Value          phone;
+    ValidationResult::Value          fax;
+    MandatoryAddressValidationResult permanent;
+    AddressValidationResult          mailing;
+    AddressValidationResult          billing;
+    AddressValidationResult          shipping;
+    AddressValidationResult          shipping2;
+    AddressValidationResult          shipping3;
 };
 
 struct UpdateContactPrepareValidationResult
@@ -158,19 +145,19 @@ struct UpdateContactPrepareValidationResult
         notify_email(ValidationResult::OK),
         phone       (ValidationResult::OK),
         fax         (ValidationResult::OK) { }
-    ValidationResult::Value         first_name;
-    ValidationResult::Value         last_name;
-    ValidationResult::Value         birth_date;
-    ValidationResult::Value         email;
-    ValidationResult::Value         notify_email;
-    ValidationResult::Value         phone;
-    ValidationResult::Value         fax;
-    AddressValidationResult         permanent;
-    AddressValidationResult         mailing;
-    AddressValidationResult         billing;
-    ShippingAddressValidationResult shipping;
-    ShippingAddressValidationResult shipping2;
-    ShippingAddressValidationResult shipping3;
+    ValidationResult::Value          first_name;
+    ValidationResult::Value          last_name;
+    ValidationResult::Value          birth_date;
+    ValidationResult::Value          email;
+    ValidationResult::Value          notify_email;
+    ValidationResult::Value          phone;
+    ValidationResult::Value          fax;
+    MandatoryAddressValidationResult permanent;
+    AddressValidationResult          mailing;
+    AddressValidationResult          billing;
+    AddressValidationResult          shipping;
+    AddressValidationResult          shipping2;
+    AddressValidationResult          shipping3;
 };
 
 struct CreateValidationRequestValidationResult

@@ -82,9 +82,6 @@ void wrap_AddressValidationResult(const Registry::MojeIDImplData::AddressValidat
 void wrap_MandatoryAddressValidationResult(const Registry::MojeIDImplData::MandatoryAddressValidationResult &src,
                                            Registry::MojeID::MandatoryAddressValidationResult &dst);
 
-void wrap_ShippingAddressValidationResult(const Registry::MojeIDImplData::ShippingAddressValidationResult &src,
-                                  Registry::MojeID::ShippingAddressValidationResult &dst);
-
 void wrap_RegistrationValidationResult(const Registry::MojeIDImplData::RegistrationValidationResult &src,
                                        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR &dst);
 

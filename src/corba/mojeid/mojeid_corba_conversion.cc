@@ -280,15 +280,6 @@ void wrap_MandatoryAddressValidationResult(const Registry::MojeIDImplData::Manda
     wrap_ValidationResult(src.country,          dst.country);
 }
 
-void wrap_ShippingAddressValidationResult(const Registry::MojeIDImplData::ShippingAddressValidationResult &src,
-                                  Registry::MojeID::ShippingAddressValidationResult &dst)
-{
-    wrap_ValidationResult(src.street1,     dst.street1);
-    wrap_ValidationResult(src.city,        dst.city);
-    wrap_ValidationResult(src.postal_code, dst.postal_code);
-    wrap_ValidationResult(src.country,     dst.country);
-}
-
 void wrap_RegistrationValidationResult(const Registry::MojeIDImplData::RegistrationValidationResult &src,
                                        Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR &dst)
 {
@@ -301,13 +292,13 @@ void wrap_RegistrationValidationResult(const Registry::MojeIDImplData::Registrat
     wrap_ValidationResult(src.phone,        dst.phone);
     wrap_ValidationResult(src.fax,          dst.fax);
 
-    wrap_AddressValidationResult(src.permanent, dst.permanent);
+    wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
+
     wrap_AddressValidationResult(src.mailing,   dst.mailing);
     wrap_AddressValidationResult(src.billing,   dst.billing);
-
-    wrap_ShippingAddressValidationResult(src.shipping,  dst.shipping);
-    wrap_ShippingAddressValidationResult(src.shipping2, dst.shipping2);
-    wrap_ShippingAddressValidationResult(src.shipping3, dst.shipping3);
+    wrap_AddressValidationResult(src.shipping,  dst.shipping);
+    wrap_AddressValidationResult(src.shipping2, dst.shipping2);
+    wrap_AddressValidationResult(src.shipping3, dst.shipping3);
 }
 
 void wrap_UpdateContactPrepareValidationResult(const Registry::MojeIDImplData::UpdateContactPrepareValidationResult &src,
@@ -321,13 +312,13 @@ void wrap_UpdateContactPrepareValidationResult(const Registry::MojeIDImplData::U
     wrap_ValidationResult(src.phone,        dst.phone);
     wrap_ValidationResult(src.fax,          dst.fax);
 
-    wrap_AddressValidationResult(src.permanent, dst.permanent);
+    wrap_MandatoryAddressValidationResult(src.permanent, dst.permanent);
+
     wrap_AddressValidationResult(src.mailing,   dst.mailing);
     wrap_AddressValidationResult(src.billing,   dst.billing);
-
-    wrap_ShippingAddressValidationResult(src.shipping,  dst.shipping);
-    wrap_ShippingAddressValidationResult(src.shipping2, dst.shipping2);
-    wrap_ShippingAddressValidationResult(src.shipping3, dst.shipping3);
+    wrap_AddressValidationResult(src.shipping,  dst.shipping);
+    wrap_AddressValidationResult(src.shipping2, dst.shipping2);
+    wrap_AddressValidationResult(src.shipping3, dst.shipping3);
 }
 
 void wrap_CreateValidationRequestValidationResult(const Registry::MojeIDImplData::CreateValidationRequestValidationResult &src,
