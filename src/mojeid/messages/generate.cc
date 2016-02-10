@@ -273,64 +273,67 @@ struct Parameter< CommChannel::EMAIL >
     }
 };
 
-template < CommChannel::Value COMM_CHANNEL >
-struct GetData;
+struct DbCommand
+{
+    std::string query;
+    Database::query_param_list params;
+};
 
 template < CommChannel::Value COMM_CHANNEL >
-struct CollectFor
+DbCommand collect_query_for()
 {
-    static std::string query(Database::query_param_list &_params)
-    {
-        return "WITH required_status AS ("
-                        "SELECT id FROM enum_public_request_status "
-                        "WHERE name=" + RequiredStatus< COMM_CHANNEL >::value(_params) +
-                    "),"
-                    "possible_types AS ("
-                        "SELECT id FROM enum_public_request_type "
-                        "WHERE name IN (" + PossibleRequestTypes< COMM_CHANNEL >::value(_params) + ")"
-                    "),"
-                    "channel_type AS ("
-                        "SELECT id FROM comm_type "
-                        "WHERE type=" + ChannelType< COMM_CHANNEL >::value(_params) +
-                    "),"
-                    "generation AS ("
-                        "SELECT COALESCE((SELECT LOWER(val) NOT IN ('disabled','disable','false','f','0') "
-                                         "FROM enum_parameters "
-                                         "WHERE name=" + Parameter< COMM_CHANNEL >::name(_params) + "),"
-                                        "true) AS enabled"
-                    "),"
-                    "to_generate AS ("
-                        "SELECT id AS public_request_id,"
-                               "create_time AS public_request_create_time,"
-                               "request_type AS public_request_type_id,"
-                               "(SELECT object_id FROM public_request_objects_map prom "
-                                "WHERE request_id=pr.id AND "
-                                      "EXISTS(SELECT * FROM contact WHERE id=prom.object_id)"
-                               ") AS contact_id "
-                        "FROM public_request pr,"
-                             "generation "
-                        "WHERE generation.enabled AND "
-                              "status=(SELECT id FROM required_status) AND "
-                              "(NOW()::DATE-'1DAY'::INTERVAL)<create_time AND "
-                              "request_type IN (SELECT id FROM possible_types) AND "
-                              "NOT " + Exists< COMM_CHANNEL >::messages_associated_with("pr.id") +
-                    ") "
-               "SELECT public_request_id,"
-                      "(SELECT name FROM enum_public_request_type "
-                       "WHERE id=tg.public_request_type_id) AS public_request_type,"
-                      "contact_id,"
-                      "(SELECT historyid FROM contact_history ch "
-                       "WHERE id=tg.contact_id AND "
-                             "(SELECT valid_from<=tg.public_request_create_time AND "
-                                                "(tg.public_request_create_time<valid_to OR valid_to IS NULL) "
-                              "FROM history "
-                              "WHERE id=ch.historyid)"
-                      ") AS contact_history_id,"
-                      "lock_public_request_lock(contact_id) "
-               "FROM to_generate tg "
-               "WHERE contact_id IS NOT NULL";
-    }
-};
+    DbCommand cmd;
+    cmd.query =
+        "WITH required_status AS ("
+                 "SELECT id FROM enum_public_request_status "
+                 "WHERE name=" + RequiredStatus< COMM_CHANNEL >::value(cmd.params) +
+             "),"
+             "possible_types AS ("
+                 "SELECT id FROM enum_public_request_type "
+                 "WHERE name IN (" + PossibleRequestTypes< COMM_CHANNEL >::value(cmd.params) + ")"
+             "),"
+             "channel_type AS ("
+                 "SELECT id FROM comm_type "
+                 "WHERE type=" + ChannelType< COMM_CHANNEL >::value(cmd.params) +
+             "),"
+             "generation AS ("
+                 "SELECT COALESCE((SELECT LOWER(val) NOT IN ('disabled','disable','false','f','0') "
+                                  "FROM enum_parameters "
+                                  "WHERE name=" + Parameter< COMM_CHANNEL >::name(cmd.params) + "),"
+                                 "true) AS enabled"
+             "),"
+             "to_generate AS ("
+                 "SELECT id AS public_request_id,"
+                        "create_time AS public_request_create_time,"
+                        "request_type AS public_request_type_id,"
+                        "(SELECT object_id FROM public_request_objects_map prom "
+                         "WHERE request_id=pr.id AND "
+                               "EXISTS(SELECT * FROM contact WHERE id=prom.object_id)"
+                        ") AS contact_id "
+                 "FROM public_request pr,"
+                      "generation "
+                 "WHERE generation.enabled AND "
+                       "status=(SELECT id FROM required_status) AND "
+                       "(NOW()::DATE-'1DAY'::INTERVAL)<create_time AND "
+                       "request_type IN (SELECT id FROM possible_types) AND "
+                       "NOT " + Exists< COMM_CHANNEL >::messages_associated_with("pr.id") +
+             ") "
+        "SELECT public_request_id,"
+               "(SELECT name FROM enum_public_request_type "
+                "WHERE id=tg.public_request_type_id) AS public_request_type,"
+               "contact_id,"
+               "(SELECT historyid FROM contact_history ch "
+                "WHERE id=tg.contact_id AND "
+                      "(SELECT valid_from<=tg.public_request_create_time AND "
+                                         "(tg.public_request_create_time<valid_to OR valid_to IS NULL) "
+                       "FROM history "
+                       "WHERE id=ch.historyid)"
+               ") AS contact_history_id,"
+               "lock_public_request_lock(contact_id) "
+        "FROM to_generate tg "
+        "WHERE contact_id IS NOT NULL";
+    return cmd;
+}
 
 template < CommChannel::Value COMM_CHANNEL >
 struct JoinMessage
@@ -962,9 +965,8 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part)
 {
-    static Database::query_param_list params;
-    static const std::string sql = CollectFor< COMM_CHANNEL >::query(params);
-    const Database::Result dbres = _ctx.get_conn().exec_params(sql, params);
+    static DbCommand cmd = collect_query_for< COMM_CHANNEL >();
+    const Database::Result dbres = _ctx.get_conn().exec_params(cmd.query, cmd.params);
     for (::size_t idx = 0; idx < dbres.size(); ++idx) {
         try {
             const PublicRequestLocked       locked_request       (static_cast< GeneralId   >(dbres[idx][0]));
