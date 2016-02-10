@@ -338,18 +338,15 @@ bool notification_enabled()
     return value;
 }
 
-static const Fred::PublicRequestId _unused_request_id = 0;
-
 void notify(Fred::OperationContext&        _ctx,
         const Notification::notified_event _event,
         unsigned long long                 _done_by_registrar,
         unsigned long long                 _object_historyid_post_change,
-        Fred::PublicRequestId              _request_id = _unused_request_id)
+        LogRequestId                       _log_request_id)
 {
     if (notification_enabled()) {
         Notification::enqueue_notification(_ctx, _event, _done_by_registrar, _object_historyid_post_change,
-            _request_id == _unused_request_id ? std::string()
-                                              : Util::make_svtrid(_request_id));
+                                           Util::make_svtrid(_log_request_id));
     }
 }
 
@@ -666,7 +663,7 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
             const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
             _ident = result.identification;
             notify(ctx, Notification::created,
-                   mojeid_registrar_id_, new_contact.history_id, result.public_request_id);
+                   mojeid_registrar_id_, new_contact.history_id, _log_request_id);
         }
         prepare_transaction_storage()->store(_trans_id, new_contact.object_id);
         ctx.commit_transaction();
@@ -765,7 +762,7 @@ void MojeIDImpl::transfer_contact_prepare(
             update_contact_op.set_sponsoring_registrar(mojeid_registrar_handle_);
             const unsigned long long history_id = update_contact_op.exec(ctx);
             notify(ctx, Notification::transferred,
-                   mojeid_registrar_id_, history_id, pub_req_result.public_request_id);
+                   mojeid_registrar_id_, history_id, _log_request_id);
         }
         from_into(contact, _contact);
         ctx.commit_transaction();
@@ -916,7 +913,6 @@ void MojeIDImpl::update_contact_prepare(
         if (drop_identification || differs(current_data.email, new_data.email)) {
             cancel_message_sending< MessageType::MOJEID_CARD, CommType::LETTER >(ctx, new_data.id);
         }
-        Fred::PublicRequestId request_id = _unused_request_id;
         if (drop_identification) {
             const bool reidentification_needed = states.presents(Fred::Object::State::IDENTIFIED_CONTACT);
             if (reidentification_needed) {
@@ -933,7 +929,7 @@ void MojeIDImpl::update_contact_prepare(
                                         : Fred::MojeID::PublicRequest::ContactIdentification::iface());
             create_public_request_op.set_reason("data changed");
             create_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
-            request_id = create_public_request_op.exec(ctx, locked_contact, _log_request_id).public_request_id;
+            create_public_request_op.exec(ctx, locked_contact, _log_request_id).public_request_id;
         }
         {
             const MojeIDImplInternal::CheckUpdateContactPrepare check_contact_data(new_data);
@@ -976,7 +972,7 @@ void MojeIDImpl::update_contact_prepare(
         }
         const unsigned long long history_id = update_contact_op.exec(ctx);
 
-        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, request_id);
+        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
 
         if (object_states_changed) {
             prepare_transaction_storage()->store(_trans_id, new_data.id);
@@ -1134,9 +1130,9 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         const Fred::CreatePublicRequestAuth::Result result =
             op_create_pub_req.exec(ctx, locked_contact, _log_request_id);
 
-        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, result.public_request_id);
+        notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
         if (do_transfer) {
-            notify(ctx, Notification::transferred, mojeid_registrar_id_, history_id, result.public_request_id);
+            notify(ctx, Notification::transferred, mojeid_registrar_id_, history_id, _log_request_id);
         }
         //second phase commit will change contact states
         prepare_transaction_storage()->store(_trans_id, current_data.id);
