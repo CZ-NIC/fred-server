@@ -965,7 +965,7 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part)
 {
-    static DbCommand cmd = collect_query_for< COMM_CHANNEL >();
+    static const DbCommand cmd = collect_query_for< COMM_CHANNEL >();
     const Database::Result dbres = _ctx.get_conn().exec_params(cmd.query, cmd.params);
     for (::size_t idx = 0; idx < dbres.size(); ++idx) {
         try {
