@@ -273,9 +273,10 @@ contact_vat_id_presence::contact_vat_id_presence(
 }//Fred::GeneralCheck
 
 check_contact_place_address::check_contact_place_address(const InfoContactData &_data)
-:   GeneralCheck::contact_optional_address(false)
+:   GeneralCheck::contact_optional_address(_data.place.isnull()),
+    absent(_data.place.isnull())
 {
-    if (!_data.place.isnull()) {
+    if (!absent) {
         this->GeneralCheck::contact_optional_address::operator()(_data.place.get_value().street1,
                                                                  _data.place.get_value().city,
                                                                  _data.place.get_value().postalcode,

@@ -53,18 +53,6 @@ void set_optional_address_validation_result(
 }
 
 template < class EXCEPTION_CLASS >
-void set_mandatory_address_validation_result(
-    const Fred::check_contact_place_address_mandatory &result,
-    EXCEPTION_CLASS &e)
-{
-    if (result.absent) {
-        e.address_presence = MojeIDImplData::ValidationResult::REQUIRED;
-    }
-
-    set_optional_address_validation_result(result, e);
-}
-
-template < class EXCEPTION_CLASS >
 void set_optional_addresses_validation_result(
     const check_contact_optional_addresses &result,
     EXCEPTION_CLASS &e)
@@ -82,8 +70,14 @@ void set_optional_addresses_validation_result(
 }
 
 template < class EXCEPTION_CLASS >
-void set_permanent_address_validation_result(const Fred::check_contact_place_address &result, EXCEPTION_CLASS &e)
+void set_permanent_address_validation_result(
+    const Fred::check_contact_place_address &result,
+    EXCEPTION_CLASS &e)
 {
+    if (result.absent) {
+        e.permanent.address_presence = MojeIDImplData::ValidationResult::REQUIRED;
+    }
+
     set_optional_address_validation_result(result, e.permanent);
 }
 
@@ -271,7 +265,7 @@ void raise(const CheckCreateValidationRequest &result)
 
     set_contact_name_result(result, e);
 
-    set_mandatory_address_validation_result(result, e.permanent);
+    set_permanent_address_validation_result(result, e);
 
     set_presence_validity_result<
         Fred::check_contact_email_presence,

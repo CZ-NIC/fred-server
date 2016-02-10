@@ -438,15 +438,7 @@ struct check_contact_mailing_address:check_place_address
 struct check_contact_place_address:GeneralCheck::contact_optional_address
 {
     check_contact_place_address(const InfoContactData &_data);
-};
-
-struct check_contact_place_address_mandatory:check_contact_place_address
-{
-    check_contact_place_address_mandatory(const InfoContactData &_data)
-    :   check_contact_place_address(_data),
-        absent(_data.place.isnull())
-    { }
-    bool success()const { return !(absent || !this->check_contact_place_address::success()); }
+    bool success()const { return !(absent || !this->GeneralCheck::contact_optional_address::success()); }
     bool absent:1; ///< contact place address doesn't present
 };
 

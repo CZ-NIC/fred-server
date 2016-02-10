@@ -116,7 +116,7 @@ void raise(const CheckUpdateContactPrepare &result);
 
 
 typedef boost::mpl::list< Fred::check_contact_name,
-                          Fred::check_contact_place_address_mandatory,
+                          Fred::check_contact_place_address,
                           Fred::check_contact_email_presence,
                           Fred::check_contact_email_validity,
                           Fred::check_contact_phone_validity,
