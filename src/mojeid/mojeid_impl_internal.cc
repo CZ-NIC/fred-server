@@ -157,16 +157,6 @@ void set_availability_result(bool available, MojeIDImplData::ValidationResult::V
 
 void raise(const CheckMojeIDRegistration &result)
 {
-    if (result.Fred::MojeID::Check::states_before_transfer_into_mojeid::mojeid_contact_present) {
-        throw MojeIDImplData::AlreadyMojeidContact();
-    }
-    if (result.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_admin_blocked) {
-        throw MojeIDImplData::ObjectAdminBlocked();
-    }
-    if (result.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_user_blocked) {
-        throw MojeIDImplData::ObjectUserBlocked();
-    }
-
     MojeIDImplData::RegistrationValidationResult e;
 
     set_validity_result(!result.Fred::MojeID::check_contact_username::invalid, e.username);
@@ -193,6 +183,19 @@ void raise(const CheckMojeIDRegistration &result)
     set_optional_addresses_validation_result(result, e);
 
     throw e;
+}
+
+void raise(const CheckTransferContactPrepareStates &result)
+{
+    if (result.Fred::MojeID::Check::states_before_transfer_into_mojeid::mojeid_contact_present) {
+        throw MojeIDImplData::AlreadyMojeidContact();
+    }
+    if (result.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_admin_blocked) {
+        throw MojeIDImplData::ObjectAdminBlocked();
+    }
+    if (result.Fred::MojeID::Check::states_before_transfer_into_mojeid::server_user_blocked) {
+        throw MojeIDImplData::ObjectUserBlocked();
+    }
 }
 
 void raise(const CheckCreateContactPrepare &result)

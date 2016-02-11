@@ -720,10 +720,18 @@ void MojeIDImpl::transfer_contact_prepare(
         const Fred::InfoContactData contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
         const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact.id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(contact.id).exec(ctx));
-        const MojeIDImplInternal::CheckMojeIDRegistration check_result(
-            Fred::make_args(contact), Fred::make_args(contact, ctx), Fred::make_args(states));
-        if (!check_result.success()) {
-            MojeIDImplInternal::raise(check_result);
+        {
+            const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);
+            if (!check_result.success()) {
+                MojeIDImplInternal::raise(check_result);
+            }
+        }
+        {
+            const MojeIDImplInternal::CheckMojeIDRegistration check_result(
+                Fred::make_args(contact), Fred::make_args(contact, ctx));
+            if (!check_result.success()) {
+                MojeIDImplInternal::raise(check_result);
+            }
         }
 
         Fred::CreatePublicRequestAuth::Result pub_req_result;
@@ -1093,13 +1101,20 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                 Fred::CancelObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
             }
 
-            const MojeIDImplInternal::CheckUpdateTransferContactPrepare check_contact_data(
-                Fred::make_args(new_data),
-                Fred::make_args(new_data, ctx),
-                Fred::make_args(states));
+            {
+                const MojeIDImplInternal::CheckTransferContactPrepareStates result_of_check(states);
+                if (!result_of_check.success()) {
+                    MojeIDImplInternal::raise(result_of_check);
+                }
+            }
+            {
+                const MojeIDImplInternal::CheckUpdateTransferContactPrepare result_of_check(
+                    Fred::make_args(new_data),
+                    Fred::make_args(new_data, ctx));
 
-            if (!check_contact_data.success()) {
-                MojeIDImplInternal::raise(check_contact_data);
+                if (!result_of_check.success()) {
+                    MojeIDImplInternal::raise(result_of_check);
+                }
             }
             //perform changes
             Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);

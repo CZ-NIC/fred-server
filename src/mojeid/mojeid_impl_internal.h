@@ -68,13 +68,17 @@ typedef boost::mpl::list< Fred::MojeID::check_contact_username,
 typedef boost::mpl::list< Fred::check_contact_email_availability,
                           Fred::check_contact_phone_availability > check_mojeid_registration_ctx;
 
-typedef boost::mpl::list< Fred::MojeID::Check::states_before_transfer_into_mojeid > check_transfer_contact_prepare_presence;
-
 typedef Fred::Check< boost::mpl::list< check_mojeid_registration,
-                                       check_mojeid_registration_ctx,
-                                       check_transfer_contact_prepare_presence > > CheckMojeIDRegistration;
+                                       check_mojeid_registration_ctx > > CheckMojeIDRegistration;
 
 void raise(const CheckMojeIDRegistration &result);
+
+
+typedef boost::mpl::list< Fred::MojeID::Check::states_before_transfer_into_mojeid > check_transfer_contact_prepare_presence;
+
+typedef Fred::Check< check_transfer_contact_prepare_presence > CheckTransferContactPrepareStates;
+
+void raise(const CheckTransferContactPrepareStates &result);
 
 
 typedef boost::mpl::list< Fred::MojeID::check_contact_username,
@@ -142,8 +146,7 @@ typedef boost::mpl::list< Fred::check_contact_email_availability,
                           Fred::check_contact_phone_availability > check_update_transfer_contact_prepare_ctx;
 
 typedef Fred::Check< boost::mpl::list< check_update_transfer_contact_prepare,
-                                       check_update_transfer_contact_prepare_ctx,
-                                       check_transfer_contact_prepare_presence > > CheckUpdateTransferContactPrepare;
+                                       check_update_transfer_contact_prepare_ctx > > CheckUpdateTransferContactPrepare;
 
 void raise(const CheckUpdateTransferContactPrepare &result);
 
