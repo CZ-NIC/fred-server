@@ -737,8 +737,7 @@ void MojeIDImpl::transfer_contact_prepare(
         Fred::CreatePublicRequestAuth::Result pub_req_result;
         if (states.absents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
             states.absents(Fred::Object::State::IDENTIFIED_CONTACT) &&
-            states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
-            states.absents(Fred::Object::State::MOJEID_CONTACT))
+            states.absents(Fred::Object::State::VALIDATED_CONTACT))
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface(),
@@ -746,8 +745,7 @@ void MojeIDImpl::transfer_contact_prepare(
         }
         else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                  states.absents(Fred::Object::State::IDENTIFIED_CONTACT) &&
-                 states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
-                 states.absents(Fred::Object::State::MOJEID_CONTACT))
+                 states.absents(Fred::Object::State::VALIDATED_CONTACT))
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer::iface(),
@@ -755,8 +753,7 @@ void MojeIDImpl::transfer_contact_prepare(
         }
         else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                  states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
-                 states.absents(Fred::Object::State::VALIDATED_CONTACT) &&
-                 states.absents(Fred::Object::State::MOJEID_CONTACT))
+                 states.absents(Fred::Object::State::VALIDATED_CONTACT))
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::IdentifiedContactTransfer::iface(),
