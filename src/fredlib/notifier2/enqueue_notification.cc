@@ -43,7 +43,7 @@ void enqueue_notification(
             "svtrid "
         ") "
         "VALUES( "
-            "$" + p.add(to_db_handle(_event)) + "::notificated_event, "
+            "$" + p.add(to_db_handle(_event)) + "::notified_event, "
             "$" + p.add(_done_by_registrar) + "::integer, "
             "$" + p.add(_object_historyid_post_change) + "::integer, "
             "$" + p.add(_svtrid) + "::text "
