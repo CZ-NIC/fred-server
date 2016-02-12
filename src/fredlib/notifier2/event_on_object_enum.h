@@ -36,7 +36,7 @@ enum notified_event {
     created,
     updated,
     transferred,
-    deleted,    /* unfortunately delete is keyword therefore using past tense for all */
+    deleted,    /* unfortunately delete is a C++ keyword therefore using past tense for all */
     renewed
 };
 
