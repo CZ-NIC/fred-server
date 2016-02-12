@@ -1034,19 +1034,11 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         new_data.handle = current_data.handle;
         new_data.name   = current_data.name;
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
-        //check contact is 'mojeidContact', if true throw ALREADY_MOJEID_CONTACT
-        if (states.presents(Fred::Object::State::MOJEID_CONTACT)) {
-            throw MojeIDImplData::AlreadyMojeidContact();
-        }
-        //throw OBJECT_ADMIN_BLOCKED if contact is administrative blocked
-        if (states.presents(Fred::Object::State::SERVER_BLOCKED)) {
-            throw MojeIDImplData::ObjectAdminBlocked();
-        }
-        //throw OBJECT_USER_BLOCKED if contact is blocked by user
-        if (states.presents(Fred::Object::State::SERVER_TRANSFER_PROHIBITED) ||
-            states.presents(Fred::Object::State::SERVER_UPDATE_PROHIBITED) ||
-            states.presents(Fred::Object::State::SERVER_DELETE_PROHIBITED)) {
-            throw MojeIDImplData::ObjectUserBlocked();
+        {
+            const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);
+            if (!check_result.success()) {
+                MojeIDImplInternal::raise(check_result);
+            }
         }
         check_limits::sent_letters()(ctx, current_data.id);
         const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
