@@ -100,7 +100,6 @@ void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::
 
 void unwrap_SetContact(const Registry::MojeID::UpdateTransferContact &src, Registry::MojeIDImplData::UpdateTransferContact &dst);
 
-void unwrap_InfoContact(const Registry::MojeID::InfoContact &src, Registry::MojeIDImplData::InfoContact &dst);
 Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplData::InfoContact &src);
 
 void wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src, Registry::MojeID::ContactStateInfo &dst);

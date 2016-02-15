@@ -378,39 +378,6 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::
     unwrap_NullableString(src.fax.in(), dst.fax);
 }
 
-void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::MojeIDImplData::UpdateContact &dst)
-{
-    int_to_int(src.id, dst.id);
-
-    dst.first_name = src.first_name.in();
-    dst.last_name  = src.last_name.in();
-
-    unwrap_NullableString(src.organization.in(), dst.organization);
-    unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
-
-    unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
-
-    unwrap_NullableString(src.id_card_num.in(),  dst.id_card_num);
-    unwrap_NullableString(src.passport_num.in(), dst.passport_num);
-    unwrap_NullableString(src.ssn_id_num.in(),   dst.ssn_id_num);
-    unwrap_NullableString(src.vat_id_num.in(),   dst.vat_id_num);
-
-    unwrap_Address(src.permanent, dst.permanent);
-
-    unwrap_NullableAddress(src.mailing.in(), dst.mailing);
-    unwrap_NullableAddress(src.billing.in(), dst.billing);
-
-    unwrap_NullableShippingAddress(src.shipping.in(),  dst.shipping);
-    unwrap_NullableShippingAddress(src.shipping2.in(), dst.shipping2);
-    unwrap_NullableShippingAddress(src.shipping3.in(), dst.shipping3);
-
-    dst.email = src.email.in();
-
-    unwrap_NullableString(src.notify_email.in(), dst.notify_email);
-    unwrap_NullableString(src.telephone.in(),    dst.telephone);
-    unwrap_NullableString(src.fax.in(),          dst.fax);
-}
-
 void unwrap_SetContact(const Registry::MojeID::UpdateTransferContact &src, Registry::MojeIDImplData::UpdateTransferContact &dst)
 {
     unwrap_NullableString(src.organization.in(), dst.organization);
@@ -433,7 +400,7 @@ void unwrap_SetContact(const Registry::MojeID::UpdateTransferContact &src, Regis
     unwrap_NullableString(src.fax.in(), dst.fax);
 }
 
-void unwrap_InfoContact(const Registry::MojeID::InfoContact &src, Registry::MojeIDImplData::InfoContact &dst)
+void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::MojeIDImplData::UpdateContact &dst)
 {
     int_to_int(src.id, dst.id);
 

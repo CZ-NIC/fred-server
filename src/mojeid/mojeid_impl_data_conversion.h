@@ -41,9 +41,9 @@ void from_into(const CreateContact &src,         Fred::InfoContactData &dst);
 void from_into(const UpdateContact &src,         Fred::InfoContactData &dst);
 void from_into(const UpdateTransferContact &src, Fred::InfoContactData &dst);
 
-void from_into(const Fred::InfoContactData &src, CreateContact &dst);
-void from_into(const Fred::InfoContactData &src, UpdateContact &dst);
-void from_into(const Fred::InfoContactData &src, UpdateTransferContact    &dst);
+void from_into(const Fred::InfoContactData &src, CreateContact         &dst);
+void from_into(const Fred::InfoContactData &src, InfoContact           &dst);
+void from_into(const Fred::InfoContactData &src, UpdateTransferContact &dst);
 
 }//namespace Registry::MojeIDImplData
 }//namespace Registry

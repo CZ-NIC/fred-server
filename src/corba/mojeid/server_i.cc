@@ -113,8 +113,8 @@ void Server_i::update_contact_prepare(
         LogRequestId _log_request_id)
 {
     try {
-        MojeIDImplData::InfoContact new_data;
-        CorbaConversion::unwrap_InfoContact(_new_data, new_data);
+        MojeIDImplData::UpdateContact new_data;
+        CorbaConversion::unwrap_UpdateContact(_new_data, new_data);
         impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
         return;
     }

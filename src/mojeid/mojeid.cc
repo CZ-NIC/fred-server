@@ -878,7 +878,7 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
 }
 
 void MojeIDImpl::update_contact_prepare(
-        const MojeIDImplData::InfoContact &_new_data,
+        const MojeIDImplData::UpdateContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const
 {
