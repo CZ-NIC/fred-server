@@ -140,7 +140,7 @@ InfoContact* Server_i::update_transfer_contact_prepare(
 {
     try {
         MojeIDImplData::UpdateTransferContact contact_data;
-        CorbaConversion::unwrap_SetContact(_contact_data, contact_data);
+        CorbaConversion::unwrap_UpdateTransferContact(_contact_data, contact_data);
         const MojeIDImplData::InfoContact info_contact =
         impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id);
         return CorbaConversion::wrap_InfoContact(info_contact)._retn();
