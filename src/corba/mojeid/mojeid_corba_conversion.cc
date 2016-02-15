@@ -380,6 +380,8 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::
 
 void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact &src, Registry::MojeIDImplData::UpdateTransferContact &dst)
 {
+    dst.full_name = src.full_name.in();
+
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
 
