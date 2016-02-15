@@ -5,7 +5,12 @@
 #include <vector>
 
 //#include "src/corba/Whois2.hh"
+#include "util/db/nullable.h"
 
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/gregorian/greg_date.hpp>
+
+#include <boost/asio/ip/address.hpp>
 namespace Registry {
 namespace WhoisImpl {
 
@@ -64,10 +69,10 @@ struct Contact
     bool disclose_email;
     std::string notify_email;
     bool disclose_notify_email;
-    std::string vat_number;
-    bool disclose_vat_number;
     ContactIdentification identification;
     bool disclose_identification;
+    std::string vat_number;
+    bool disclose_vat_number;
     std::string creating_registrar_handle;
     std::string sponsoring_registrar_handle;
     boost::posix_time::ptime created;
@@ -84,8 +89,7 @@ struct Contact
       disclose_email(false),
       disclose_notify_email(false),
       disclose_identification(false),
-      disclose_vat_number(false),
-      disclose_notify_email(false)
+      disclose_vat_number(false)
     {}
 };
 
@@ -264,10 +268,11 @@ struct MissingLocalization
 class Server_impl
 {
 private:
-    static const std::string output_timezone;
     std::vector<ObjectStatusDesc> get_object_status_descriptions(const std::string& lang,
                                                        const std::string& type);
 public:
+    static const std::string output_timezone;
+
     virtual ~Server_impl() {};
 
     Registrar get_registrar_by_handle(const std::string& handle);
