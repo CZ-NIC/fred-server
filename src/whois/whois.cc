@@ -325,6 +325,7 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
 
                 throw ObjectNotExists();
             }
+            throw;
         }
     }
     catch (...)
@@ -483,6 +484,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
 
                 throw ObjectNotExists();
             }
+            throw;
         }
     }
     catch (...) {
@@ -653,6 +655,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
 
                 throw ObjectNotExists();
             }
+            throw;
         }
     }
     catch (...) {
