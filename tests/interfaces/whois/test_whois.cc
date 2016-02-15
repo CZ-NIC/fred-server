@@ -74,7 +74,7 @@ BOOST_FIXTURE_TEST_CASE(get_registar_no_registrar, get_registar_no_registrar_fix
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContext ctx; //needed?
         Fred::InfoRegistrarOutput ird = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
         Registry::WhoisImpl::Registrar reg = impl.get_registrar_by_handle("reg-");
         BOOST_ERROR("unreported missing registrar");
@@ -85,7 +85,21 @@ BOOST_FIXTURE_TEST_CASE(get_registar_no_registrar, get_registar_no_registrar_fix
         BOOST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
-//invalid handle case
+
+//using same fixture, as it's not needed
+BOOST_FIXTURE_TEST_CASE(get_registrar_wrong_handle, get_registar_no_registrar_fixuture)
+{
+    try
+    {
+        Registry::WhoisImpl::Registrar reg = impl.get_registrar_by_handle("");
+        BOOST_ERROR("registrar handle rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END();//get_registrar_by_handle
 
