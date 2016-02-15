@@ -76,7 +76,7 @@ void from_into_nullable(const SRC_TYPE &src, Nullable< DST_TYPE > &dst)
     dst = value;
 }
 
-// SRC_INFO_TYPE ~ SetContact without telephone
+// SRC_INFO_TYPE ~ UpdateTransferContact without telephone
 template < class SRC_INFO_TYPE >
 void minimal_common_conversion_into_fred(const SRC_INFO_TYPE &src, Fred::InfoContactData &dst)
 {
@@ -101,7 +101,7 @@ void minimal_common_conversion_into_fred(const SRC_INFO_TYPE &src, Fred::InfoCon
     dst.fax         = src.fax;
 }
 
-// DST_INFO_TYPE ~ SetContact without telephone
+// DST_INFO_TYPE ~ UpdateTransferContact without telephone
 template < class DST_INFO_TYPE >
 void minimal_common_conversion_from_fred(const Fred::InfoContactData &src, DST_INFO_TYPE &dst)
 {
@@ -277,7 +277,7 @@ void from_into(const UpdateContact &src, Fred::InfoContactData &dst)
     dst.telephone = src.telephone;
 }
 
-void from_into(const SetContact &src, Fred::InfoContactData &dst)
+void from_into(const UpdateTransferContact &src, Fred::InfoContactData &dst)
 {
     minimal_common_conversion_into_fred(src, dst);
     dst.telephone = src.telephone;
@@ -299,7 +299,7 @@ void from_into(const Fred::InfoContactData &src, UpdateContact &dst)
     dst.telephone = src.telephone;
 }
 
-void from_into(const Fred::InfoContactData &src, SetContact &dst)
+void from_into(const Fred::InfoContactData &src, UpdateTransferContact &dst)
 {
     minimal_common_conversion_from_fred(src, dst);
     if (!src.telephone.isnull()) {

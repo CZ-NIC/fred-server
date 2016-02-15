@@ -63,7 +63,7 @@ public:
 
     InfoContact* update_transfer_contact_prepare(
         const char *username,
-        const SetContact& contact_data,
+        const UpdateTransferContact& contact_data,
         const char *trans_id,
         LogRequestId request_id);
 

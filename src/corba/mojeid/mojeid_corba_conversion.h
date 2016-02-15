@@ -98,7 +98,7 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::
 
 void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::MojeIDImplData::UpdateContact &dst);
 
-void unwrap_SetContact(const Registry::MojeID::SetContact &src, Registry::MojeIDImplData::SetContact &dst);
+void unwrap_SetContact(const Registry::MojeID::UpdateTransferContact &src, Registry::MojeIDImplData::UpdateTransferContact &dst);
 
 void unwrap_InfoContact(const Registry::MojeID::InfoContact &src, Registry::MojeIDImplData::InfoContact &dst);
 Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplData::InfoContact &src);

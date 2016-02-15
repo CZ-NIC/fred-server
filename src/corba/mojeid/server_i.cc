@@ -134,12 +134,12 @@ void Server_i::update_contact_prepare(
 
 InfoContact* Server_i::update_transfer_contact_prepare(
         const char *_username,
-        const SetContact& _contact_data,
+        const UpdateTransferContact& _contact_data,
         const char *_trans_id,
         ::CORBA::ULongLong _log_request_id)
 {
     try {
-        MojeIDImplData::SetContact contact_data;
+        MojeIDImplData::UpdateTransferContact contact_data;
         CorbaConversion::unwrap_SetContact(_contact_data, contact_data);
         const MojeIDImplData::InfoContact info_contact =
         impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id);

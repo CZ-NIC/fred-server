@@ -72,7 +72,7 @@ public:
 
     MojeIDImplData::InfoContact update_transfer_contact_prepare(
         const std::string &_username,
-        const MojeIDImplData::SetContact &_new_data,
+        const MojeIDImplData::UpdateTransferContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const;
 

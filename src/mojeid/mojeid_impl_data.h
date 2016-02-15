@@ -246,7 +246,7 @@ struct UpdateContact
 
 typedef UpdateContact InfoContact; ///< XXX
 
-struct SetContact
+struct UpdateTransferContact
 {
     Nullable< std::string > organization;
     Nullable< std::string > vat_reg_num;

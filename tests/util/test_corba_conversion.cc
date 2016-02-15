@@ -1397,7 +1397,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
 
 BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
 {
-    Registry::MojeID::SetContact sc;
+    Registry::MojeID::UpdateTransferContact sc;
 
     sc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
     sc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
@@ -1430,7 +1430,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
     sc.telephone = CorbaConversion::wrap_string("telephone")._retn();
     sc.fax = CorbaConversion::wrap_Nullable_string("fax")._retn();
 
-    Registry::MojeIDImplData::SetContact sc_impl;
+    Registry::MojeIDImplData::UpdateTransferContact sc_impl;
     CorbaConversion::unwrap_SetContact(sc, sc_impl);
 
     BOOST_CHECK(sc_impl.organization.get_value() == "org");

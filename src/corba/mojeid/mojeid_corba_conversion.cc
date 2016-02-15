@@ -411,7 +411,7 @@ void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::
     unwrap_NullableString(src.fax.in(),          dst.fax);
 }
 
-void unwrap_SetContact(const Registry::MojeID::SetContact &src, Registry::MojeIDImplData::SetContact &dst)
+void unwrap_SetContact(const Registry::MojeID::UpdateTransferContact &src, Registry::MojeIDImplData::UpdateTransferContact &dst)
 {
     unwrap_NullableString(src.organization.in(), dst.organization);
     unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
