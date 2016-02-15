@@ -99,11 +99,11 @@ struct MandatoryAddressValidationResult
 
 struct MessageLimitExceeded
 {
-    boost::gregorian::date limit_expire_date;
+    boost::posix_time::ptime limit_expire_datetime;
     std::string as_string()const
     {
         std::ostringstream out;
-        out << "MessageLimitExceeded: limit_expire_date = " << limit_expire_date;
+        out << "MessageLimitExceeded: limit_expire_datetime = " << limit_expire_datetime;
         return out.str();
     }
 };

@@ -576,7 +576,7 @@ Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::M
 
 void wrap_MessageLimitExceeded(const Registry::MojeIDImplData::MessageLimitExceeded &src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED &dst)
 {
-    wrap_boost_gregorian_date(src.limit_expire_date, dst.limit_expire_date);
+    dst.limit_expire_datetime = wrap_DateTime(src.limit_expire_datetime);
 }
 
 void raise_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::RegistrationValidationResult &src)

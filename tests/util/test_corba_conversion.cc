@@ -439,14 +439,14 @@ BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
     BOOST_CHECK_THROW(CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(msg),
                       Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
 
-    msg.limit_expire_date = boost::gregorian::date(2015,12,10);
+    msg.limit_expire_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
 
     Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res;
     CorbaConversion::wrap_MessageLimitExceeded(msg, res);
 
-    Registry::MojeIDImplData::Date limit_expire_date;
-    CorbaConversion::unwrap_Date(res.limit_expire_date, limit_expire_date);
-    BOOST_CHECK(limit_expire_date.value == boost::gregorian::to_iso_extended_string(msg.limit_expire_date));
+    boost::posix_time::ptime limit_expire_datetime;
+    CorbaConversion::unwrap_DateTime(res.limit_expire_datetime, limit_expire_datetime);
+    BOOST_CHECK(limit_expire_datetime == msg.limit_expire_datetime);
 }
 
 BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)

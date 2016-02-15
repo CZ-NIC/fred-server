@@ -217,7 +217,7 @@ void check_sent_letters_limit(Fred::OperationContext &_ctx,
              "message_types AS (SELECT id FROM message_type WHERE type IN ('mojeid_pin3',"
                                                                           "'mojeid_card')),"
              "send_states_ignore AS (SELECT id FROM enum_send_status WHERE status_name='no_processing') "
-        "SELECT (ma.moddate+($3::TEXT||'DAYS')::INTERVAL)::DATE "
+        "SELECT ma.moddate+($3::TEXT||'DAYS')::INTERVAL "
         "FROM message_archive ma "
         "JOIN message_contact_history_map mc ON mc.message_archive_id=ma.id "
         "WHERE ma.message_type_id IN (SELECT id FROM message_types) AND "
@@ -231,7 +231,7 @@ void check_sent_letters_limit(Fred::OperationContext &_ctx,
                                   (_watched_period_in_days)); // used as $3::TEXT
     if (0 < result.size()) {
         MojeIDImplData::MessageLimitExceeded e;
-        e.limit_expire_date = boost::gregorian::from_simple_string(static_cast< std::string >(result[0][0]));
+        e.limit_expire_datetime = boost::posix_time::from_iso_string(static_cast< std::string >(result[0][0]));
         throw e;
     }
 }
