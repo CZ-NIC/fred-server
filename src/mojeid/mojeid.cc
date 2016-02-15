@@ -1034,7 +1034,6 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         const Fred::InfoContactData current_data = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
         new_data.id     = current_data.id;
         new_data.handle = current_data.handle;
-        new_data.name   = current_data.name;
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
         {
             const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);

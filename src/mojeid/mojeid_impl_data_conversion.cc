@@ -279,16 +279,8 @@ void from_into(const UpdateContact &src, Fred::InfoContactData &dst)
 void from_into(const UpdateTransferContact &src, Fred::InfoContactData &dst)
 {
     minimal_common_conversion_into_fred(src, dst);
+    dst.name      = src.full_name;
     dst.telephone = src.telephone;
-}
-
-void from_into(const Fred::InfoContactData &src, CreateContact &dst)
-{
-    common_conversion_from_fred(src, dst);
-    dst.username  = src.handle;
-    if (!src.telephone.isnull()) {
-        dst.telephone = src.telephone.get_value();
-    }
 }
 
 void from_into(const Fred::InfoContactData &src, InfoContact &dst)
@@ -306,14 +298,6 @@ void from_into(const Fred::InfoContactData &src, InfoContact &dst)
     dst.disclose_telephone    = src.disclosetelephone;
     dst.disclose_fax          = src.disclosefax;
     dst.disclose_permanent    = src.discloseaddress;
-}
-
-void from_into(const Fred::InfoContactData &src, UpdateTransferContact &dst)
-{
-    minimal_common_conversion_from_fred(src, dst);
-    if (!src.telephone.isnull()) {
-        dst.telephone = src.telephone.get_value();
-    }
 }
 
 }//namespace Registry::MojeIDImplData

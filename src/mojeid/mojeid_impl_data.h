@@ -278,6 +278,7 @@ struct InfoContact
 
 struct UpdateTransferContact
 {
+    std::string             full_name;
     Nullable< std::string > organization;
     Nullable< std::string > vat_reg_num;
     Nullable< Date >        birth_date;
