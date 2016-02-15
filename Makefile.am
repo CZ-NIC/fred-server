@@ -1461,7 +1461,9 @@ src_corba_whois_libwhois2_impl_a_SOURCES = \
 		src/whois/registrar_certification.h \
 		src/whois/registrar_certification.cc \
 		src/whois/zone_list.h \
-		src/whois/zone_list.cc
+		src/whois/zone_list.cc \
+		src/whois/whois.h \
+		src/whois/whois.cc
 
 #
 # src/corba/whois/libwhois2_impl.a
@@ -2164,11 +2166,11 @@ SERVER_TESTS = \
 		tests/interfaces/test-admin-contact-verification \
 		tests/interfaces/test-admin-contact-automerge \
 		tests/interfaces/test-epp \
+		tests/interfaces/test-whois \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
-		tests/test-optys \
-		tests/test-corba-conversion
+		tests/test-optys 
 
 # tests/interfaces/test-admin-contact-verification
 #
@@ -2302,6 +2304,50 @@ tests_interfaces_test_epp_LDADD = \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # tests/interfaces/test-epp
+
+# tests/interfaces/test-whois
+#
+tests_interfaces_test_whois_SOURCES = \
+		tests/interfaces/whois/main.cc \
+		tests/interfaces/whois/test_whois.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_whois_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_whois_LDADD = \
+		src/corba/libcorbadatatypes.a \
+		src/corba/whois/libwhois2_impl.a \
+		src/fredlib/libfred.a \
+		src/model/libmodel.a \
+		src/corba/libcorba.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libfilemanager.a \
+		src/fredlib/requests/librequests.a \
+		util/log/liblog.a \
+		util/types/libtypes.a \
+		util/db/libdb.a \
+		src/old_utils/liboldutils.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/interfaces/test-whois
 
 # tests/test_server
 #
