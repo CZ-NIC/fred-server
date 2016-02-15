@@ -24,12 +24,12 @@ struct test_registrar_fixture
     std::string test_registrar_handle;
 
     test_registrar_fixture()
-    :xmark(RandomDataGenerator().xnumstring(6))
-    , test_registrar_handle(std::string("TEST-REGISTRAR-HANDLE")+xmark)
+    : xmark(RandomDataGenerator().xnumstring(6)),
+      test_registrar_handle(std::string("TEST-REGISTRAR-HANDLE")+xmark)
     {
         Fred::OperationContext ctx;
 
-        Fred::CreateRegistrar(test_registrar_handle).set_name(std::string("TEST-REGISTRAR NAME")+xmark)
+        Fred::CreateRegistrar(test_registrar_handle)
             .set_name(std::string("TEST-REGISTRAR NAME")+xmark)
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
