@@ -296,6 +296,16 @@ void from_into(const Fred::InfoContactData &src, InfoContact &dst)
     common_conversion_from_fred(src, dst);
     dst.id        = src.id;
     dst.telephone = src.telephone;
+
+    dst.disclose_name         = src.disclosename;
+    dst.disclose_organization = src.discloseorganization;
+    dst.disclose_vat_reg_num  = src.disclosevat;
+    dst.disclose_ident        = src.discloseident;
+    dst.disclose_email        = src.discloseemail;
+    dst.disclose_notify_email = src.disclosenotifyemail;
+    dst.disclose_telephone    = src.disclosetelephone;
+    dst.disclose_fax          = src.disclosefax;
+    dst.disclose_permanent    = src.discloseaddress;
 }
 
 void from_into(const Fred::InfoContactData &src, UpdateTransferContact &dst)
