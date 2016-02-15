@@ -402,13 +402,11 @@ void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact 
 
 void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::MojeIDImplData::UpdateContact &dst)
 {
-    int_to_int(src.id, dst.id);
-
     dst.first_name = src.first_name.in();
     dst.last_name  = src.last_name.in();
 
     unwrap_NullableString(src.organization.in(), dst.organization);
-    unwrap_NullableString(src.vat_reg_num.in(),   dst.vat_reg_num);
+    unwrap_NullableString(src.vat_reg_num.in(),  dst.vat_reg_num);
 
     unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
 

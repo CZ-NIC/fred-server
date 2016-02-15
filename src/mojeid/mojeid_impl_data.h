@@ -222,7 +222,6 @@ struct CreateContact
 
 struct UpdateContact
 {
-    ContactId                   id;
     std::string                 first_name;
     std::string                 last_name;
     Nullable< std::string >     organization;

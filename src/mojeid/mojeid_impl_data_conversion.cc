@@ -273,7 +273,6 @@ void from_into(const CreateContact &src, Fred::InfoContactData &dst)
 void from_into(const UpdateContact &src, Fred::InfoContactData &dst)
 {
     common_conversion_into_fred(src, dst);
-    dst.id        = src.id;
     dst.telephone = src.telephone;
 }
 

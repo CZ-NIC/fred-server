@@ -878,6 +878,7 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
 }
 
 void MojeIDImpl::update_contact_prepare(
+        ContactId _contact_id,
         const MojeIDImplData::UpdateContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const
@@ -887,6 +888,7 @@ void MojeIDImpl::update_contact_prepare(
     try {
         Fred::InfoContactData new_data;
         from_into(_new_data, new_data);
+        new_data.id = _contact_id;
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
         if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {

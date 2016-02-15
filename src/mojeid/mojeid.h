@@ -66,6 +66,7 @@ public:
         std::string &_ident)const;
 
     void update_contact_prepare(
+        ContactId contact_id,
         const MojeIDImplData::UpdateContact &_new_data,
         const std::string &_trans_id,
         LogRequestId _log_request_id)const;

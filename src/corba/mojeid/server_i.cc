@@ -108,6 +108,7 @@ InfoContact* Server_i::transfer_contact_prepare(
 }//transfer_contact_prepare
 
 void Server_i::update_contact_prepare(
+        ContactId _contact_id,
         const UpdateContact &_new_data,
         const char *_trans_id,
         LogRequestId _log_request_id)
@@ -115,7 +116,7 @@ void Server_i::update_contact_prepare(
     try {
         MojeIDImplData::UpdateContact new_data;
         CorbaConversion::unwrap_UpdateContact(_new_data, new_data);
-        impl_ptr_->update_contact_prepare(new_data, _trans_id, _log_request_id);
+        impl_ptr_->update_contact_prepare(_contact_id, new_data, _trans_id, _log_request_id);
         return;
     }
     catch (const MojeIDImplData::UpdateContactPrepareValidationResult &e) {

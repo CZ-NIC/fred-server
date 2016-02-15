@@ -1246,7 +1246,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
 {
     Registry::MojeID::UpdateContact uc;
 
-    CorbaConversion::int_to_int(5ull, uc.id);
     uc.first_name = CorbaConversion::wrap_string("first_name")._retn();
     uc.last_name = CorbaConversion::wrap_string("last_name")._retn();
     uc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
@@ -1332,7 +1331,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
     Registry::MojeIDImplData::UpdateContact uc_impl;
     CorbaConversion::unwrap_UpdateContact(uc, uc_impl);
 
-    BOOST_CHECK(uc_impl.id == 5);
     BOOST_CHECK(uc_impl.first_name == std::string("first_name"));
     BOOST_CHECK(uc_impl.last_name == std::string("last_name"));
     BOOST_CHECK(uc_impl.organization.get_value() == "org");
