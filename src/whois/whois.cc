@@ -10,7 +10,6 @@
 #include "src/whois/nameserver_exists.h"
 #include "src/whois/registrar_group.h"
 #include "src/whois/registrar_certification.h"
-//#include "src/domain_browser/domain_browser.cc"
 #include "src/fredlib/registrar/check_registrar.h"
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/info_domain.h"
@@ -30,11 +29,6 @@
 #include "src/fredlib/keyset/keyset_dns_key.h"
 #include "src/fredlib/nsset/check_nsset.h"
 
-//#include "util/db/manager_tss.h"
-
-//#include "log/logger.h"
-//#include "src/old_utils/log.h"
-
 #include <boost/foreach.hpp>
 
 
@@ -43,7 +37,7 @@ namespace WhoisImpl{
 
 const std::string Server_impl::output_timezone("UTC");
 
-static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)//code duplication?
+static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
 {
     try
     {
@@ -161,11 +155,12 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
                 ::Whois::get_registrar_groups(ctx);
         reg_grp_seq.reserve(groups.size());
         typename std::vector<RegistrarGroup>::const_iterator ci = reg_grp_seq.begin();
+        RegistrarGroup temp;
         for(; ci != reg_grp_seq.end(); ++ci)
         {
-             RegistrarGroup temp;
              temp.name = ci->name;
              temp.members = ci->members;
+             reg_grp_seq.push_back(temp);
         }
         return reg_grp_seq;
     }
@@ -277,16 +272,14 @@ WhoisImpl::NSSet make_nsset_from_info_data(const Fred::InfoNssetData& ind, Fred:
         ns.fqdn = it->get_fqdn();
         std::vector<boost::asio::ip::address> ip_addresses =
                 it->get_inet_addr();
+
         ns.ip_addresses.reserve(ip_addresses.size());
-//                IPAddress ipa;
         for(std::vector<boost::asio::ip::address>::iterator addr_it =
                 ip_addresses.begin(); addr_it != ip_addresses.end(); ++addr_it)
         {
-//                    ipa.address = addr_it->to_string();
-//                    ipa.version = addr_it->is_v4() ? IPVersion::IPv4
-//                                                   : IPVersion::IPv6;
             ns.ip_addresses.push_back(*addr_it);
         }
+
         nss.nservers.push_back(ns);
     }
     nss.registrar_handle = ind.sponsoring_registrar_handle;
