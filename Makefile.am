@@ -1445,17 +1445,13 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/epp_impl.h \
 		src/corba/epp/messages.cc \
 		src/corba/epp/messages.h \
-		src/corba/epp/notifier.cc \
-		src/corba/epp/notifier.h \
 		src/corba/epp/tech_check.cc \
 		src/corba/epp/tech_check.h \
 		src/corba/epp/countrycode.cc \
 		src/corba/epp/countrycode.h \
 		src/corba/epp/action.h \
 		src/corba/epp/reason.h \
-		src/corba/epp/response.h \
-		src/corba/epp/notifier_changes.cc \
-		src/corba/epp/notifier_changes.h
+		src/corba/epp/response.h
 #
 # src/corba/epp/libepp_impl.a
 
