@@ -50,9 +50,9 @@ struct info_keyset_fixture : public Test::Fixture::instantiate_db_template
     , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
     , test_keyset_history_handle(std::string("TEST-KEYSET-HISTORY-HANDLE")+xmark)
     {
-        Fred::OperationContextCreator fixture_ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
-            "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
+            "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
 
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
 
@@ -204,7 +204,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_wrong_handle, info_keyset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(wrong_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -227,7 +227,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_wrong_id, info_keyset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetById(wrong_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -250,7 +250,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_history_wrong_historyid, info_keyset_fixture
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetHistoryByHistoryid(wrong_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -271,7 +271,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset_tech_c_unknown_handle, info_keyset_fixture)
 {
     std::string bad_tech_c_handle = admin_contact6_handle+xmark;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoKeysetOutput> info = Fred::InfoKeysetByTechContactHandle(bad_tech_c_handle).exec(ctx);
     BOOST_CHECK(info.empty());
 }
@@ -318,7 +318,7 @@ struct info_keyset_history_order_fixture : public info_keyset_fixture
 {
     info_keyset_history_order_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::UpdateKeyset(test_keyset_history_handle, registrar_handle)
             .rem_tech_contact(admin_contact6_handle)
             .exec(ctx);

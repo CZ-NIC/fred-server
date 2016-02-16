@@ -230,7 +230,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_wrong_handle, test_domain_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(wrong_fqdn).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -253,7 +253,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_wrong_id, test_domain_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainById(wrong_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -276,7 +276,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_wrong_historyid, test_domain_fixture
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainHistoryByHistoryid(wrong_historyid).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -297,7 +297,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_registrant_handle, test_domain_fixtu
 {
     std::string bad_handle = registrant_contact_handle + xmark;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoDomainOutput> info_data = Fred::InfoDomainByRegistrantHandle(bad_handle).exec(ctx);
     BOOST_CHECK(info_data.empty());
 }
@@ -309,7 +309,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_admin_handle, test_domain_fixture)
 {
     std::string bad_handle = admin_contact1_handle + xmark;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoDomainOutput> info_data = Fred::InfoDomainByAdminContactHandle(bad_handle).exec(ctx);
     BOOST_CHECK(info_data.empty());
 }
@@ -320,7 +320,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_admin_handle, test_domain_fixture)
 BOOST_FIXTURE_TEST_CASE(info_domain_unknown_nsset_handle, test_domain_fixture)
 {
     std::string bad_handle = test_nsset_handle + xmark;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoDomainOutput> info_data = Fred::InfoDomainByNssetHandle(bad_handle).exec(ctx);
     BOOST_CHECK(info_data.empty());
 }
@@ -331,7 +331,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_nsset_handle, test_domain_fixture)
 BOOST_FIXTURE_TEST_CASE(info_domain_unknown_keyset_handle, test_domain_fixture)
 {
     std::string bad_handle = test_keyset_handle + xmark;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoDomainOutput> info_data = Fred::InfoDomainByKeysetHandle(bad_handle).exec(ctx);
     BOOST_CHECK(info_data.empty());
 }
@@ -379,7 +379,7 @@ struct test_info_domain_order_fixture : public test_domain_fixture
 {
     test_info_domain_order_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::UpdateDomain(test_fqdn//fqdn
             , registrar_handle//registrar
             , Optional<std::string>()//sponsoring registrar

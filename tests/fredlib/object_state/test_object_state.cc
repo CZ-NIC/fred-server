@@ -190,7 +190,7 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
             (Fred::ObjectStateDescription(27,"contactFailedManualVerification", "Contact has failed the verification by CZ.NIC customer support"))
         )
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         ctx.get_conn().exec(
             "TRUNCATE TABLE enum_object_states CASCADE; "

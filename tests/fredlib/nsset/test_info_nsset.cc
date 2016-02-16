@@ -200,7 +200,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_wrong_handle, info_nsset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(wrong_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -223,7 +223,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_wrong_id, info_nsset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetById(wrong_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -246,7 +246,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_history_wrong_historyid, info_nsset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetHistoryByHistoryid(wrong_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -267,7 +267,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_ns_unknown_ns, info_nsset_fixture)
 {
     std::string bad_ns_fqdn = xmark+test_nsset_dnsname;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoNssetOutput> info = Fred::InfoNssetByDNSFqdn(bad_ns_fqdn).exec(ctx);
     BOOST_CHECK(info.empty());
 }
@@ -279,7 +279,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_tech_c_unknown_handle, info_nsset_fixture)
 {
     std::string bad_tech_c_handle = admin_contact3_handle+xmark;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoNssetOutput> info = Fred::InfoNssetByTechContactHandle(bad_tech_c_handle).exec(ctx);
     BOOST_CHECK(info.empty());
 }
@@ -327,7 +327,7 @@ struct info_nsset_history_fixture : public info_nsset_fixture
 {
     info_nsset_history_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
             Fred::UpdateNsset(test_nsset_history_handle, registrar_handle)
             .rem_tech_contact(admin_contact3_handle)
             .exec(ctx);
