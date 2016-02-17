@@ -127,37 +127,6 @@ std::string get_mojeid_registrar_handle()
     throw std::runtime_error("missing dedicated registrar");
 }
 
-class set_ssn
-{
-public:
-    template < typename T >
-    set_ssn(const Nullable< T > &_ssn, Fred::SSNType::Value _ssn_type, Fred::CreateContact &_out)
-    :   out_ptr(&_out)
-    {
-        this->operator()(_ssn, _ssn_type);
-    }
-    set_ssn& operator()(const Nullable< std::string > &_ssn, Fred::SSNType::Value _ssn_type)
-    {
-        if ((out_ptr != NULL) && !_ssn.isnull()) {
-            out_ptr->set_ssntype(Conversion::Enums::into< std::string >(_ssn_type));
-            out_ptr->set_ssn(_ssn.get_value());
-            out_ptr = NULL;
-        }
-        return *this;
-    }
-    set_ssn& operator()(const Nullable< MojeIDImplData::Date > &_ssn, Fred::SSNType::Value _ssn_type)
-    {
-        if ((out_ptr != NULL) && !_ssn.isnull()) {
-            out_ptr->set_ssntype(Conversion::Enums::into< std::string >(_ssn_type));
-            out_ptr->set_ssn(_ssn.get_value().value);
-            out_ptr = NULL;
-        }
-        return *this;
-    }
-private:
-    Fred::CreateContact *out_ptr;
-};
-
 void set_create_contact_arguments(
     const MojeIDImplData::CreateContact &_contact,
     Fred::CreateContact &_arguments)
@@ -199,12 +168,30 @@ void set_create_contact_arguments(
         }
     }
 
-    (_contact.organization.isnull()
-     ? set_ssn(_contact.birth_date,   Fred::SSNType::BIRTHDAY, _arguments) //person
-     : set_ssn(_contact.vat_id_num,   Fred::SSNType::ICO,      _arguments))//company
-              (_contact.id_card_num,  Fred::SSNType::OP)
-              (_contact.passport_num, Fred::SSNType::PASS)
-              (_contact.ssn_id_num,   Fred::SSNType::MPSV);
+    if (_contact.organization.isnull()) {
+        if (!_contact.birth_date.isnull()) {
+            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY));
+            _arguments.set_ssn(_contact.birth_date.get_value().value);
+        }
+    }
+    else {
+        if (!_contact.vat_id_num.isnull()) {
+            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::ICO));
+            _arguments.set_ssn(_contact.vat_id_num.get_value());
+        }
+        else if (!_contact.id_card_num.isnull()) {
+            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::OP));
+            _arguments.set_ssn(_contact.id_card_num.get_value());
+        }
+        else if (!_contact.passport_num.isnull()) {
+            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::PASS));
+            _arguments.set_ssn(_contact.passport_num.get_value());
+        }
+        else if (!_contact.ssn_id_num.isnull()) {
+            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::MPSV));
+            _arguments.set_ssn(_contact.ssn_id_num.get_value());
+        }
+    }
 }
 
 void check_sent_letters_limit(Fred::OperationContext &_ctx,
