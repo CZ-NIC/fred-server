@@ -99,30 +99,22 @@ private:
 
 std::string get_mojeid_registrar_handle()
 {
-    try {
-        const std::string handle =
-            CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->registrar_handle;
-        if (!handle.empty()) {
-            return handle;
-        }
-    }
-    catch (...) {
+    const std::string handle =
+        CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->registrar_handle;
+    if (!handle.empty()) {
+        return handle;
     }
     throw std::runtime_error("missing configuration for dedicated registrar");
 }
 
 ::size_t get_mojeid_registrar_id(const std::string &registrar_handle)
 {
-    try {
-        Fred::OperationContextCreator ctx;
-        Database::Result dbres = ctx.get_conn().exec_params(
-            "SELECT id FROM registrar WHERE handle=$1::TEXT", Database::query_param_list(registrar_handle));
-        if (0 < dbres.size()) {
-            ctx.commit_transaction();
-            return static_cast< ::size_t >(dbres[0][0]);
-        }
-    }
-    catch (...) {
+    Fred::OperationContextCreator ctx;
+    Database::Result dbres = ctx.get_conn().exec_params(
+        "SELECT id FROM registrar WHERE handle=$1::TEXT", Database::query_param_list(registrar_handle));
+    if (0 < dbres.size()) {
+        ctx.commit_transaction();
+        return static_cast< ::size_t >(dbres[0][0]);
     }
     throw std::runtime_error("missing dedicated registrar");
 }
