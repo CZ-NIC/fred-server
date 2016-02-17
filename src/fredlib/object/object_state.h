@@ -77,7 +77,7 @@ public:
      */
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::operate< Value >::into_enum(_str);
+        return Conversion::Enums::into< Value >(_str);
     }
 };
 

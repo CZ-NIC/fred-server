@@ -351,9 +351,8 @@ struct MessageType
     }
 };
 
-class CommType
+struct CommType
 {
-public:
     enum Value
     {
         EMAIL,
@@ -363,13 +362,12 @@ public:
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::operate< Value >::into_enum(_str);
+        return Conversion::Enums::into< Value >(_str);
     }
 };
 
-class SendStatus
+struct SendStatus
 {
-public:
     enum Value
     {
         READY,
@@ -382,7 +380,7 @@ public:
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::operate< Value >::into_enum(_str);
+        return Conversion::Enums::into< Value >(_str);
     }
 };
 
@@ -396,7 +394,7 @@ struct PubReqType
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::operate< Value >::into_enum(_str);
+        return Conversion::Enums::into< Value >(_str);
     }
 };
 
