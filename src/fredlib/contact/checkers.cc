@@ -238,7 +238,7 @@ bool ssntype_present(
     SSNType::Value _ssntype_required)
 {
     return !_ssntype_current.isnull() &&
-           (_ssntype_current.get_value() == Conversion::Enums::into< std::string >(_ssntype_required));
+           (_ssntype_current.get_value() == Conversion::Enums::into_string(_ssntype_required));
 }
 
 }//Fred::GeneralCheck::MojeID::{anonymous}

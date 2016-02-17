@@ -162,25 +162,25 @@ void set_create_contact_arguments(
 
     if (_contact.organization.isnull()) {
         if (!_contact.birth_date.isnull()) {
-            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY));
+            _arguments.set_ssntype(Conversion::Enums::into_string(Fred::SSNType::BIRTHDAY));
             _arguments.set_ssn(_contact.birth_date.get_value().value);
         }
     }
     else {
         if (!_contact.vat_id_num.isnull()) {
-            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::ICO));
+            _arguments.set_ssntype(Conversion::Enums::into_string(Fred::SSNType::ICO));
             _arguments.set_ssn(_contact.vat_id_num.get_value());
         }
         else if (!_contact.id_card_num.isnull()) {
-            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::OP));
+            _arguments.set_ssntype(Conversion::Enums::into_string(Fred::SSNType::OP));
             _arguments.set_ssn(_contact.id_card_num.get_value());
         }
         else if (!_contact.passport_num.isnull()) {
-            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::PASS));
+            _arguments.set_ssntype(Conversion::Enums::into_string(Fred::SSNType::PASS));
             _arguments.set_ssn(_contact.passport_num.get_value());
         }
         else if (!_contact.ssn_id_num.isnull()) {
-            _arguments.set_ssntype(Conversion::Enums::into< std::string >(Fred::SSNType::MPSV));
+            _arguments.set_ssntype(Conversion::Enums::into_string(Fred::SSNType::MPSV));
             _arguments.set_ssn(_contact.ssn_id_num.get_value());
         }
     }
@@ -298,7 +298,7 @@ bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoCo
     }
 
     if (differs(_c1.ssn, _c2.ssn)) {
-        if (_c1.ssntype.get_value_or_default() != Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY)) {
+        if (_c1.ssntype.get_value_or_default() != Conversion::Enums::into_string(Fred::SSNType::BIRTHDAY)) {
             return true;
         }
         const Nullable< boost::gregorian::date > bd1 = convert_as_birthdate(_c1.ssn);
@@ -348,7 +348,7 @@ public:
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+        return Conversion::Enums::operate< Value >::into_enum(_str);
     }
 };
 
@@ -364,7 +364,7 @@ public:
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+        return Conversion::Enums::operate< Value >::into_enum(_str);
     }
 };
 
@@ -383,7 +383,7 @@ public:
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+        return Conversion::Enums::operate< Value >::into_enum(_str);
     }
 };
 
@@ -397,7 +397,7 @@ struct PubReqType
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+        return Conversion::Enums::operate< Value >::into_enum(_str);
     }
 };
 
@@ -411,62 +411,62 @@ namespace Enums {
 template < >
 struct tools_for< Registry::MojeID::MessageType::Value >
 {
-    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::MessageType::Value, const std::string&))
+    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Registry::MojeID::MessageType::Value, const std::string&))
     {
         using Registry::MojeID::MessageType;
-        set_relation(MessageType::DOMAIN_EXPIRATION,         "domain_expiration");
-        set_relation(MessageType::MOJEID_PIN2,               "mojeid_pin2");
-        set_relation(MessageType::MOJEID_PIN3,               "mojeid_pin3");
-        set_relation(MessageType::MOJEID_SMS_CHANGE,         "mojeid_sms_change");
-        set_relation(MessageType::MONITORING,                "monitoring");
-        set_relation(MessageType::CONTACT_VERIFICATION_PIN2, "contact_verification_pin2");
-        set_relation(MessageType::CONTACT_VERIFICATION_PIN3, "contact_verification_pin3");
-        set_relation(MessageType::MOJEID_PIN3_REMINDER,      "mojeid_pin3_reminder");
-        set_relation(MessageType::CONTACT_CHECK_NOTICE,      "contact_check_notice");
-        set_relation(MessageType::CONTACT_CHECK_THANK_YOU,   "contact_check_thank_you");
-        set_relation(MessageType::MOJEID_CARD,               "mojeid_card");
+        set_matching_string_counterpart(MessageType::DOMAIN_EXPIRATION,         "domain_expiration");
+        set_matching_string_counterpart(MessageType::MOJEID_PIN2,               "mojeid_pin2");
+        set_matching_string_counterpart(MessageType::MOJEID_PIN3,               "mojeid_pin3");
+        set_matching_string_counterpart(MessageType::MOJEID_SMS_CHANGE,         "mojeid_sms_change");
+        set_matching_string_counterpart(MessageType::MONITORING,                "monitoring");
+        set_matching_string_counterpart(MessageType::CONTACT_VERIFICATION_PIN2, "contact_verification_pin2");
+        set_matching_string_counterpart(MessageType::CONTACT_VERIFICATION_PIN3, "contact_verification_pin3");
+        set_matching_string_counterpart(MessageType::MOJEID_PIN3_REMINDER,      "mojeid_pin3_reminder");
+        set_matching_string_counterpart(MessageType::CONTACT_CHECK_NOTICE,      "contact_check_notice");
+        set_matching_string_counterpart(MessageType::CONTACT_CHECK_THANK_YOU,   "contact_check_thank_you");
+        set_matching_string_counterpart(MessageType::MOJEID_CARD,               "mojeid_card");
     }
 };
 
 template < >
 struct tools_for< Registry::MojeID::CommType::Value >
 {
-    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::CommType::Value, const std::string&))
+    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Registry::MojeID::CommType::Value, const std::string&))
     {
         using Registry::MojeID::CommType;
-        set_relation(CommType::EMAIL,             "email");
-        set_relation(CommType::LETTER,            "letter");
-        set_relation(CommType::SMS,               "sms");
-        set_relation(CommType::REGISTERED_LETTER, "registered_letter");
+        set_matching_string_counterpart(CommType::EMAIL,             "email");
+        set_matching_string_counterpart(CommType::LETTER,            "letter");
+        set_matching_string_counterpart(CommType::SMS,               "sms");
+        set_matching_string_counterpart(CommType::REGISTERED_LETTER, "registered_letter");
     }
 };
 
 template < >
 struct tools_for< Registry::MojeID::SendStatus::Value >
 {
-    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::SendStatus::Value, const std::string&))
+    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Registry::MojeID::SendStatus::Value, const std::string&))
     {
         using Registry::MojeID::SendStatus;
-        set_relation(SendStatus::READY,                "ready");
-        set_relation(SendStatus::WAITING_CONFIRMATION, "waiting_confirmation");
-        set_relation(SendStatus::NO_PROCESSING,        "no_processing");
-        set_relation(SendStatus::SEND_FAILED,          "send_failed");
-        set_relation(SendStatus::SENT,                 "sent");
-        set_relation(SendStatus::BEING_SENT,           "being_sent");
-        set_relation(SendStatus::UNDELIVERED,          "undelivered");
+        set_matching_string_counterpart(SendStatus::READY,                "ready");
+        set_matching_string_counterpart(SendStatus::WAITING_CONFIRMATION, "waiting_confirmation");
+        set_matching_string_counterpart(SendStatus::NO_PROCESSING,        "no_processing");
+        set_matching_string_counterpart(SendStatus::SEND_FAILED,          "send_failed");
+        set_matching_string_counterpart(SendStatus::SENT,                 "sent");
+        set_matching_string_counterpart(SendStatus::BEING_SENT,           "being_sent");
+        set_matching_string_counterpart(SendStatus::UNDELIVERED,          "undelivered");
     }
 };
 
 template < >
 struct tools_for< Registry::MojeID::PubReqType::Value >
 {
-    static void enum_to_other_init(void (*set_relation)(Registry::MojeID::PubReqType::Value, const std::string&))
+    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Registry::MojeID::PubReqType::Value, const std::string&))
     {
         typedef Registry::MojeID::PubReqType ET;
         using namespace Fred::MojeID::PublicRequest;
-        set_relation(ET::CONTACT_CONDITIONAL_IDENTIFICATION,        as_string< ContactConditionalIdentification >());
-        set_relation(ET::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER, as_string< ConditionallyIdentifiedContactTransfer >());
-        set_relation(ET::IDENTIFIED_CONTACT_TRANSFER,               as_string< IdentifiedContactTransfer >());
+        set_matching_string_counterpart(ET::CONTACT_CONDITIONAL_IDENTIFICATION,        as_string< ContactConditionalIdentification >());
+        set_matching_string_counterpart(ET::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER, as_string< ConditionallyIdentifiedContactTransfer >());
+        set_matching_string_counterpart(ET::IDENTIFIED_CONTACT_TRANSFER,               as_string< IdentifiedContactTransfer >());
     }
 private:
     template < class PUB_REQ >
@@ -501,11 +501,11 @@ template < MessageType::Value MT, CommType::Value CT >
               "ma.message_type_id=(SELECT id FROM message_type WHERE type=$3::TEXT) "
         "RETURNING ma.id",
         Database::query_param_list(_contact_id)                                                      //$1::BIGINT
-                                  (Conversion::Enums::into< std::string >(CT))                       //$2::TEXT
-                                  (Conversion::Enums::into< std::string >(MT))                       //$3::TEXT
-                                  (Conversion::Enums::into< std::string >(SendStatus::NO_PROCESSING))//$4::TEXT
-                                  (Conversion::Enums::into< std::string >(SendStatus::SEND_FAILED))  //$5::TEXT
-                                  (Conversion::Enums::into< std::string >(SendStatus::READY)));      //$6::TEXT
+                                  (Conversion::Enums::into_string(CT))                       //$2::TEXT
+                                  (Conversion::Enums::into_string(MT))                       //$3::TEXT
+                                  (Conversion::Enums::into_string(SendStatus::NO_PROCESSING))//$4::TEXT
+                                  (Conversion::Enums::into_string(SendStatus::SEND_FAILED))  //$5::TEXT
+                                  (Conversion::Enums::into_string(SendStatus::READY)));      //$6::TEXT
     return result.size();
 }
 
@@ -539,7 +539,7 @@ bool identified_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoC
     }
 
     if (differs(_c1.ssn, _c2.ssn)) {
-        if (_c1.ssntype.get_value_or_default() != Conversion::Enums::into< std::string >(Fred::SSNType::BIRTHDAY)) {
+        if (_c1.ssntype.get_value_or_default() != Conversion::Enums::into_string(Fred::SSNType::BIRTHDAY)) {
             return true;
         }
         const Nullable< boost::gregorian::date > bd1 = convert_as_birthdate(_c1.ssn);
@@ -892,7 +892,7 @@ void MojeIDImpl::update_contact_prepare(
         if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
             drop_validation = validated_data_changed(current_data, new_data);
             if (drop_validation) {
-                to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
+                to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::VALIDATED_CONTACT));
             }
         }
         const bool drop_identification = identified_data_changed(current_data, new_data);
@@ -902,7 +902,7 @@ void MojeIDImpl::update_contact_prepare(
         if (drop_identification) {
             const bool reidentification_needed = states.presents(Fred::Object::State::IDENTIFIED_CONTACT);
             if (reidentification_needed) {
-                to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
+                to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::IDENTIFIED_CONTACT));
             }
             const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
                                                                 get_handler_ptr_by_type< HandleMojeIDArgs >();
@@ -936,10 +936,10 @@ void MojeIDImpl::update_contact_prepare(
                                                     data_changes.fax.isset();
             if (cancel_manual_verification) {
                 if (states.presents(Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION)) {
-                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION));
+                    to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION));
                 }
                 if (states.presents(Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION)) {
-                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION));
+                    to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION));
                 }
             }
         }
@@ -1061,11 +1061,11 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                 Fred::StatusList to_cancel;
                 //drop conditionally identified flag if e-mail or mobile changed
                 if (drop_cond_identification) {
-                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
+                    to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
                 }
                 //drop identified flag if name, mailing address, e-mail or mobile changed
                 if (drop_identification) {
-                    to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
+                    to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::IDENTIFIED_CONTACT));
                 }
                 Fred::CancelObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
             }
@@ -1261,7 +1261,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             Fred::StatusList to_set;
             switch (pub_req_type) {
             case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
-                to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
+                to_set.insert(Conversion::Enums::into_string(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
                 break;
             case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
             case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
@@ -1294,10 +1294,10 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 throw MojeIDImplData::IdentificationFailed();
             }
 
-            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_DELETE_PROHIBITED));
-            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_TRANSFER_PROHIBITED));
-            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_UPDATE_PROHIBITED));
-            to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));
+            to_set.insert(Conversion::Enums::into_string(Fred::Object::State::SERVER_DELETE_PROHIBITED));
+            to_set.insert(Conversion::Enums::into_string(Fred::Object::State::SERVER_TRANSFER_PROHIBITED));
+            to_set.insert(Conversion::Enums::into_string(Fred::Object::State::SERVER_UPDATE_PROHIBITED));
+            to_set.insert(Conversion::Enums::into_string(Fred::Object::State::MOJEID_CONTACT));
             Fred::CreateObjectStateRequestId(contact_id, to_set).exec(ctx);
             Fred::PerformObjectStateRequest(contact_id).exec(ctx);
 
@@ -1419,7 +1419,7 @@ void MojeIDImpl::process_identification_request(
             throw MojeIDImplData::IdentificationFailed();
         }
         Fred::StatusList to_set;
-        to_set.insert(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));
+        to_set.insert(Conversion::Enums::into_string(Fred::Object::State::IDENTIFIED_CONTACT));
         Fred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         Fred::PerformObjectStateRequest(_contact_id).exec(ctx);
         answer(ctx, locked_request, "successfully processed", _log_request_id);
@@ -1770,11 +1770,11 @@ void MojeIDImpl::get_contacts_state_changes(
         Fred::OperationContextCreator ctx;
         Database::query_param_list params(mojeid_registrar_handle_);             //$1::TEXT
         params(_last_hours);                                                     //$2::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));//$3::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));              //$4::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));               //$5::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));                  //$6::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::LINKED));                          //$7::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));//$3::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::IDENTIFIED_CONTACT));              //$4::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::VALIDATED_CONTACT));               //$5::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::MOJEID_CONTACT));                  //$6::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::LINKED));                          //$7::TEXT
         const Database::Result rcontacts = ctx.get_conn().exec_params(// observe interval <now - last_hours, now)
             "WITH cic AS (SELECT id FROM enum_object_states WHERE name=$3::TEXT),"
                   "ic AS (SELECT id FROM enum_object_states WHERE name=$4::TEXT),"
@@ -1814,7 +1814,7 @@ void MojeIDImpl::get_contacts_state_changes(
             if (!add_state(rcontacts[idx][1], Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT, data)) {
                 std::ostringstream msg;
                 msg << "contact " << data.contact_id << " hasn't "
-                    << Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
+                    << Conversion::Enums::into_string(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
                 LOGGER(PACKAGE).error(msg.str());
                 continue;
             }
@@ -1823,7 +1823,7 @@ void MojeIDImpl::get_contacts_state_changes(
             if (!add_state(rcontacts[idx][4], Fred::Object::State::MOJEID_CONTACT, data)) {
                 std::ostringstream msg;
                 msg << "contact " << data.contact_id << " doesn't have "
-                    << Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT) << " state";
+                    << Conversion::Enums::into_string(Fred::Object::State::MOJEID_CONTACT) << " state";
                 throw std::runtime_error(msg.str());
             }
             add_state(rcontacts[idx][5], Fred::Object::State::LINKED, data);
@@ -1850,11 +1850,11 @@ void MojeIDImpl::get_contact_state(
         Fred::OperationContextCreator ctx;
         Database::query_param_list params(mojeid_registrar_handle_);                                          //$1::TEXT
         params(_contact_id);                                                                                  //$2::BIGINT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));                  //$3::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));//$4::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::IDENTIFIED_CONTACT));              //$5::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));               //$6::TEXT
-        params(Conversion::Enums::into< std::string >(Fred::Object::State::LINKED));                          //$7::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::MOJEID_CONTACT));                  //$3::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));//$4::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::IDENTIFIED_CONTACT));              //$5::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::VALIDATED_CONTACT));               //$6::TEXT
+        params(Conversion::Enums::into_string(Fred::Object::State::LINKED));                          //$7::TEXT
         const Database::Result rcontact = ctx.get_conn().exec_params(
             "SELECT r.id IS NULL,"                         // 0
                    "(SELECT valid_from FROM object_state " // 1
@@ -1898,7 +1898,7 @@ void MojeIDImpl::get_contact_state(
         if (!add_state(rcontact[0][2], Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT, _result)) {
             std::ostringstream msg;
             msg << "contact " << _contact_id << " doesn't have "
-                << Conversion::Enums::into< std::string >(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
+                << Conversion::Enums::into_string(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) << " state";
             throw std::runtime_error(msg.str());
         }
         add_state(rcontact[0][3], Fred::Object::State::IDENTIFIED_CONTACT, _result);
@@ -1949,18 +1949,18 @@ void MojeIDImpl::cancel_account_prepare(
         }
 
         Fred::StatusList to_cancel;
-        to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::MOJEID_CONTACT));
+        to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::MOJEID_CONTACT));
         if (states.presents(Fred::Object::State::SERVER_UPDATE_PROHIBITED)) {
-            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_UPDATE_PROHIBITED));
+            to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::SERVER_UPDATE_PROHIBITED));
         }
         if (states.presents(Fred::Object::State::SERVER_TRANSFER_PROHIBITED)) {
-            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_TRANSFER_PROHIBITED));
+            to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::SERVER_TRANSFER_PROHIBITED));
         }
         if (states.presents(Fred::Object::State::SERVER_DELETE_PROHIBITED)) {
-            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::SERVER_DELETE_PROHIBITED));
+            to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::SERVER_DELETE_PROHIBITED));
         }
         if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
-            to_cancel.insert(Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
+            to_cancel.insert(Conversion::Enums::into_string(Fred::Object::State::VALIDATED_CONTACT));
         }
         Fred::CancelObjectStateRequestId(_contact_id, to_cancel).exec(ctx);
 
@@ -2337,7 +2337,7 @@ MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
                              "(SELECT country FROM enum_country WHERE id=$1::TEXT)";
     if (!_validated_contact.isset()) {
         params(_data.id)
-              (Conversion::Enums::into< std::string >(Fred::Object::State::VALIDATED_CONTACT));
+              (Conversion::Enums::into_string(Fred::Object::State::VALIDATED_CONTACT));
         sql.append(",EXISTS(SELECT * FROM object_state "
                            "WHERE object_id=$2::BIGINT AND "
                                  "state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "

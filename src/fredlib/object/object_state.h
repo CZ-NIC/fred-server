@@ -77,7 +77,7 @@ public:
      */
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+        return Conversion::Enums::operate< Value >::into_enum(_str);
     }
 };
 
@@ -90,36 +90,36 @@ namespace Enums {
 template < >
 struct tools_for< Fred::Object::State::Value >
 {
-    static void enum_to_other_init(void (*enum_to_other_set)(Fred::Object::State::Value, const std::string&))
+    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Fred::Object::State::Value, const std::string&))
     {
         using Fred::Object::State;
-        enum_to_other_set(State::CONDITIONALLY_IDENTIFIED_CONTACT,    "conditionallyIdentifiedContact");
-        enum_to_other_set(State::CONTACT_FAILED_MANUAL_VERIFICATION,  "contactFailedManualVerification");
-        enum_to_other_set(State::CONTACT_IN_MANUAL_VERIFICATION,      "contactInManualVerification");
-        enum_to_other_set(State::CONTACT_PASSED_MANUAL_VERIFICATION,  "contactPassedManualVerification");
-        enum_to_other_set(State::DELETE_CANDIDATE,                    "deleteCandidate");
-        enum_to_other_set(State::DELETE_WARNING,                      "deleteWarning");
-        enum_to_other_set(State::EXPIRATION_WARNING,                  "expirationWarning");
-        enum_to_other_set(State::EXPIRED,                             "expired");
-        enum_to_other_set(State::IDENTIFIED_CONTACT,                  "identifiedContact");
-        enum_to_other_set(State::LINKED,                              "linked");
-        enum_to_other_set(State::MOJEID_CONTACT,                      "mojeidContact");
-        enum_to_other_set(State::NOT_VALIDATED,                       "notValidated");
-        enum_to_other_set(State::NSSET_MISSING,                       "nssetMissing");
-        enum_to_other_set(State::OUTZONE,                             "outzone");
-        enum_to_other_set(State::OUTZONE_UNGUARDED,                   "outzoneUnguarded");
-        enum_to_other_set(State::SERVER_BLOCKED,                      "serverBlocked");
-        enum_to_other_set(State::SERVER_DELETE_PROHIBITED,            "serverDeleteProhibited");
-        enum_to_other_set(State::SERVER_INZONE_MANUAL,                "serverInzoneManual");
-        enum_to_other_set(State::SERVER_OUTZONE_MANUAL,               "serverOutzoneManual");
-        enum_to_other_set(State::SERVER_REGISTRANT_CHANGE_PROHIBITED, "serverRegistrantChangeProhibited");
-        enum_to_other_set(State::SERVER_RENEW_PROHIBITED,             "serverRenewProhibited");
-        enum_to_other_set(State::SERVER_TRANSFER_PROHIBITED,          "serverTransferProhibited");
-        enum_to_other_set(State::SERVER_UPDATE_PROHIBITED,            "serverUpdateProhibited");
-        enum_to_other_set(State::UNGUARDED,                           "unguarded");
-        enum_to_other_set(State::VALIDATED_CONTACT,                   "validatedContact");
-        enum_to_other_set(State::VALIDATION_WARNING1,                 "validationWarning1");
-        enum_to_other_set(State::VALIDATION_WARNING2,                 "validationWarning2");
+        set_matching_string_counterpart(State::CONDITIONALLY_IDENTIFIED_CONTACT,    "conditionallyIdentifiedContact");
+        set_matching_string_counterpart(State::CONTACT_FAILED_MANUAL_VERIFICATION,  "contactFailedManualVerification");
+        set_matching_string_counterpart(State::CONTACT_IN_MANUAL_VERIFICATION,      "contactInManualVerification");
+        set_matching_string_counterpart(State::CONTACT_PASSED_MANUAL_VERIFICATION,  "contactPassedManualVerification");
+        set_matching_string_counterpart(State::DELETE_CANDIDATE,                    "deleteCandidate");
+        set_matching_string_counterpart(State::DELETE_WARNING,                      "deleteWarning");
+        set_matching_string_counterpart(State::EXPIRATION_WARNING,                  "expirationWarning");
+        set_matching_string_counterpart(State::EXPIRED,                             "expired");
+        set_matching_string_counterpart(State::IDENTIFIED_CONTACT,                  "identifiedContact");
+        set_matching_string_counterpart(State::LINKED,                              "linked");
+        set_matching_string_counterpart(State::MOJEID_CONTACT,                      "mojeidContact");
+        set_matching_string_counterpart(State::NOT_VALIDATED,                       "notValidated");
+        set_matching_string_counterpart(State::NSSET_MISSING,                       "nssetMissing");
+        set_matching_string_counterpart(State::OUTZONE,                             "outzone");
+        set_matching_string_counterpart(State::OUTZONE_UNGUARDED,                   "outzoneUnguarded");
+        set_matching_string_counterpart(State::SERVER_BLOCKED,                      "serverBlocked");
+        set_matching_string_counterpart(State::SERVER_DELETE_PROHIBITED,            "serverDeleteProhibited");
+        set_matching_string_counterpart(State::SERVER_INZONE_MANUAL,                "serverInzoneManual");
+        set_matching_string_counterpart(State::SERVER_OUTZONE_MANUAL,               "serverOutzoneManual");
+        set_matching_string_counterpart(State::SERVER_REGISTRANT_CHANGE_PROHIBITED, "serverRegistrantChangeProhibited");
+        set_matching_string_counterpart(State::SERVER_RENEW_PROHIBITED,             "serverRenewProhibited");
+        set_matching_string_counterpart(State::SERVER_TRANSFER_PROHIBITED,          "serverTransferProhibited");
+        set_matching_string_counterpart(State::SERVER_UPDATE_PROHIBITED,            "serverUpdateProhibited");
+        set_matching_string_counterpart(State::UNGUARDED,                           "unguarded");
+        set_matching_string_counterpart(State::VALIDATED_CONTACT,                   "validatedContact");
+        set_matching_string_counterpart(State::VALIDATION_WARNING1,                 "validationWarning1");
+        set_matching_string_counterpart(State::VALIDATION_WARNING2,                 "validationWarning2");
     }
 };
 

@@ -42,7 +42,7 @@ public:
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
+        return Conversion::Enums::operate< Value >::into_enum(_str);
     }
 };
 
@@ -54,7 +54,7 @@ namespace Enums {
 template < >
 struct tools_for< Fred::SSNType::Value >
 {
-    static void enum_to_other_init(void (*set_relation)(Fred::SSNType::Value, const std::string&))
+    static void define_enum_to_string_relation(void (*set_relation)(Fred::SSNType::Value, const std::string&))
     {
         using Fred::SSNType;
         set_relation(SSNType::RC,       "RC");

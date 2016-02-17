@@ -27,71 +27,116 @@
 #include <map>
 #include <boost/thread/once.hpp>
 
+///< conversion tools
 namespace Conversion {
+///< enum conversion tools
 namespace Enums {
 
+/**
+ * Contains routine for one direction of conversion definition. It has to be specialized for each enum type.
+ * @tparam ENUM_TYPE enum type which conversion this class operates
+ */
 template < typename ENUM_TYPE > struct tools_for;
 
-template < typename ENUM_TYPE, typename OTHER_TYPE = std::string >
-struct into_from
+/**
+ * Use @ref tools_for< ENUM_TYPE > for definition of both conversion directions.
+ * @tparam ENUM_TYPE enum type which this class operates
+ */
+template < typename ENUM_TYPE >
+class operate
 {
-    typedef ENUM_TYPE enum_type;
-    typedef OTHER_TYPE other_type;
-    static enum_type into_enum_from(const other_type &_src)
+public:
+    typedef ENUM_TYPE enum_type;///< enum type which this class operates
+
+    /**
+     * Converts string into enum.
+     * @param _src string which has to be converted to its enum counterpart
+     * @return matching enum counterpart
+     * @throw std::invalid_argument in case that conversion fails
+     */
+    static enum_type into_enum(const std::string &_src)
     {
-        boost::call_once(other_to_enum_init, other_to_enum_init_called_);
-        const typename OtherToEnum::const_iterator ptr = other_to_enum_.find(_src);
-        if (ptr != other_to_enum_.end()) {
+        boost::call_once(init_to_enum_direction, init_to_enum_direction_called_);
+        const typename ToEnum::const_iterator ptr = to_enum_.find(_src);
+        if (ptr != to_enum_.end()) {
+            return ptr->second;
+        }
+        throw std::invalid_argument("invalid value '" + _src + "'");
+    }
+
+    /**
+     * Converts enum into string.
+     * @param _src enum which has to be converted to its string counterpart
+     * @return matching string counterpart
+     * @throw std::invalid_argument in case that conversion fails
+     */
+    static std::string into_string(enum_type _src)
+    {
+        boost::call_once(init_to_string_direction, init_to_string_direction_called_);
+        const typename ToString::const_iterator ptr = to_string_.find(_src);
+        if (ptr != to_string_.end()) {
             return ptr->second;
         }
         throw std::invalid_argument("invalid value");
     }
-    static other_type into_other_from(enum_type _src)
+private:
+    typedef std::map< std::string, enum_type > ToEnum;
+    typedef std::map< enum_type, std::string > ToString;
+    static boost::once_flag init_to_enum_direction_called_;
+    static boost::once_flag init_to_string_direction_called_;
+    static ToEnum to_enum_;
+    static ToString to_string_;
+    static void init_to_string_direction()
     {
-        boost::call_once(enum_to_other_init, enum_to_other_init_called_);
-        const typename EnumToOther::const_iterator ptr = enum_to_other_.find(_src);
-        if (ptr != enum_to_other_.end()) {
-            return ptr->second;
-        }
-        throw std::invalid_argument("invalid value");
+        tools_for< enum_type >::define_enum_to_string_relation(set_string_representation_of_enum_value);
     }
-    typedef std::map< other_type, enum_type > OtherToEnum;
-    typedef std::map< enum_type, other_type > EnumToOther;
-    static boost::once_flag other_to_enum_init_called_;
-    static boost::once_flag enum_to_other_init_called_;
-    static OtherToEnum other_to_enum_;
-    static EnumToOther enum_to_other_;
-    static void enum_to_other_init()
+    static void init_to_enum_direction()
     {
-        tools_for< enum_type >::enum_to_other_init(enum_to_other);
-    }
-    static void other_to_enum_init()
-    {
-        boost::call_once(enum_to_other_init, enum_to_other_init_called_);
-        for (typename EnumToOther::const_iterator ptr = enum_to_other_.begin(); ptr != enum_to_other_.end(); ++ptr) {
-            other_to_enum_.insert(std::make_pair(ptr->second, ptr->first));
+        boost::call_once(init_to_string_direction, init_to_string_direction_called_);
+        for (typename ToString::const_iterator ptr = to_string_.begin(); ptr != to_string_.end(); ++ptr) {
+            to_enum_.insert(std::make_pair(ptr->second, ptr->first));
         }
     }
-    static void enum_to_other(enum_type _first, const other_type &_second)
+    static void set_string_representation_of_enum_value(enum_type _key, const std::string &_value)
     {
-        enum_to_other_.insert(std::make_pair(_first, _second));
+        to_string_.insert(std::make_pair(_key, _value));
     }
 };
 
-template < typename INTO, typename FROM >
-INTO into(FROM value)
+/**
+ * Converts enum into string.
+ * @tparam ENUM_TYPE autodeducted enum type which this function operates
+ * @param value enum which has to be converted to its string counterpart
+ * @return matching string counterpart
+ * @throw std::invalid_argument in case that conversion fails
+ */
+template < typename ENUM_TYPE >
+std::string into_string(ENUM_TYPE value)
 {
-    return into_from< FROM, INTO >::into_other_from(value);
+    return operate< ENUM_TYPE >::into_string(value);
 }
 
-template < typename ET, typename OT >
-boost::once_flag into_from< ET, OT >::other_to_enum_init_called_ = BOOST_ONCE_INIT;
-template < typename ET, typename OT >
-boost::once_flag into_from< ET, OT >::enum_to_other_init_called_ = BOOST_ONCE_INIT;
-template < typename ET, typename OT >
-typename into_from< ET, OT >::OtherToEnum into_from< ET, OT >::other_to_enum_;
-template < typename ET, typename OT >
-typename into_from< ET, OT >::EnumToOther into_from< ET, OT >::enum_to_other_;
+/**
+ * Converts string into enum.
+ * @tparam ENUM_TYPE enum type which this function operates
+ * @param value string which has to be converted to its enum counterpart
+ * @return matching enum counterpart
+ * @throw std::invalid_argument in case that conversion fails
+ */
+template < typename ENUM_TYPE >
+ENUM_TYPE into(const std::string &value)
+{
+    return operate< ENUM_TYPE >::into_enum(value);
+}
+
+template < typename ET >
+boost::once_flag operate< ET >::init_to_enum_direction_called_ = BOOST_ONCE_INIT;
+template < typename ET >
+boost::once_flag operate< ET >::init_to_string_direction_called_ = BOOST_ONCE_INIT;
+template < typename ET >
+typename operate< ET >::ToEnum operate< ET >::to_enum_;
+template < typename ET >
+typename operate< ET >::ToString operate< ET >::to_string_;
 
 }//namespace Conversion::Enums
 }//namespace Conversion
