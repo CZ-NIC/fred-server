@@ -1265,7 +1265,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         if (pub_req_info.get_object_id().isnull()) {
             static const std::string msg = "no object associated with this public request";
             invalidate(ctx, locked_request, msg, _log_request_id);
-            throw MojeIDImplData::IdentificationFailed();
+            throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
         const Fred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
         const PubReqType::Value pub_req_type(PubReqType::from(pub_req_info.get_type()));
@@ -1342,6 +1342,9 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             ctx.commit_transaction();
             throw;
         }
+    }
+    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+        throw;
     }
     catch (const MojeIDImplData::IdentificationFailed&) {
         throw;
@@ -2042,7 +2045,6 @@ void MojeIDImpl::send_new_pin3(
         if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
-//        const occurred event(ctx, _contact_id, mojeid_registrar_handle_, _log_request_id);
         bool has_identification_request = false;
         try {
             const Fred::PublicRequestTypeIface &type = Fred::MojeID::PublicRequest::ContactIdentification::iface();
@@ -2147,9 +2149,6 @@ void MojeIDImpl::send_mojeid_card(
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
         if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
             throw MojeIDImplData::ObjectDoesntExist();
-        }
-        if (states.absents(Fred::Object::State::IDENTIFIED_CONTACT)) {
-//            throw IdentificationRequestDoesntExist("contact already identified");
         }
         const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
                                                             get_handler_ptr_by_type< HandleMojeIDArgs >();
