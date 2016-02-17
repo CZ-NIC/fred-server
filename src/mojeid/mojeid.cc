@@ -215,34 +215,34 @@ void check_sent_letters_limit(Fred::OperationContext &_ctx,
     }
 }
 
-struct check_limits
+namespace check_limits {
+
+class sent_letters:public ::MojeID::Messages::Generate::message_checker
 {
-    class sent_letters:public ::MojeID::Messages::Generate::message_checker
+public:
+    sent_letters(unsigned _max_sent_letters,
+                 unsigned _watched_period_in_days)
+    :   max_sent_letters_(_max_sent_letters),
+        watched_period_in_days_(_watched_period_in_days)
+    { }
+    sent_letters(const HandleMojeIDArgs *_server_conf_ptr = CfgArgs::instance()->
+                                                            get_handler_ptr_by_type< HandleMojeIDArgs >())
+    :   max_sent_letters_(_server_conf_ptr->letter_limit_count),
+        watched_period_in_days_(_server_conf_ptr->letter_limit_interval)
+    { }
+    void operator()(Fred::OperationContext &_ctx, Fred::ObjectId _object_id)const
     {
-    public:
-        sent_letters(unsigned _max_sent_letters,
-                     unsigned _watched_period_in_days)
-        :   max_sent_letters_(_max_sent_letters),
-            watched_period_in_days_(_watched_period_in_days)
-        { }
-        sent_letters(const HandleMojeIDArgs *_server_conf_ptr = CfgArgs::instance()->
-                                                                get_handler_ptr_by_type< HandleMojeIDArgs >())
-        :   max_sent_letters_(_server_conf_ptr->letter_limit_count),
-            watched_period_in_days_(_server_conf_ptr->letter_limit_interval)
-        { }
-        void operator()(Fred::OperationContext &_ctx, Fred::ObjectId _object_id)const
-        {
-            check_sent_letters_limit(_ctx,
-                                     _object_id,
-                                     max_sent_letters_,
-                                     watched_period_in_days_);
-        }
-        ~sent_letters() { }
-    private:
-        const unsigned max_sent_letters_;
-        const unsigned watched_period_in_days_;
-    };
+        check_sent_letters_limit(_ctx,
+                                 _object_id,
+                                 max_sent_letters_,
+                                 watched_period_in_days_);
+    }
+private:
+    const unsigned max_sent_letters_;
+    const unsigned watched_period_in_days_;
 };
+
+}//namespace Registry::MojeID::check_limits
 
 template < typename T >
 bool differs(const Nullable< T > &a, const Nullable< T > &b)
@@ -329,9 +329,8 @@ void notify(Fred::OperationContext&        _ctx,
     }
 }
 
-class MessageType
+struct MessageType
 {
-public:
     enum Value
     {
         DOMAIN_EXPIRATION,
@@ -348,7 +347,7 @@ public:
     };
     static Value from(const std::string &_str)
     {
-        return Conversion::Enums::operate< Value >::into_enum(_str);
+        return Conversion::Enums::into< Value >(_str);
     }
 };
 
