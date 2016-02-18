@@ -122,10 +122,10 @@ struct NSSet
 struct NSSetSeq
 {
     std::vector<NSSet> content;
-    bool limit_exceeed;
+    bool limit_exceeded;
 
     NSSetSeq()
-    : limit_exceeed(false)
+    : limit_exceeded(false)
     {}
 };
 
@@ -268,8 +268,12 @@ struct MissingLocalization
 class Server_impl
 {
 private:
-    std::vector<ObjectStatusDesc> get_object_status_descriptions(const std::string& lang,
-                                                       const std::string& type);
+    std::vector<ObjectStatusDesc> get_object_status_descriptions(
+            const std::string& lang, const std::string& type);
+    DomainSeq get_domains_by_(Fred::OperationContext& ctx,
+                              const std::string& handle,
+                              unsigned long limit,
+                              const InfoDomainOutputList& domain_info);
 public:
     static const std::string output_timezone;
 
@@ -278,7 +282,6 @@ public:
     Registrar get_registrar_by_handle(const std::string& handle);
 
     std::vector<Registrar> get_registrars();
-
 
     std::vector<RegistrarGroup> get_registrar_groups();
 
@@ -290,33 +293,26 @@ public:
 
     NSSet get_nsset_by_handle(const std::string& handle);
 
-    NSSetSeq get_nssets_by_ns(const std::string& handle, unsigned long limit,
-                              bool limit_exceeded);
+    NSSetSeq get_nssets_by_ns(const std::string& handle, unsigned long limit);
 
-    NSSetSeq get_nssets_by_tech_c(const std::string& handle, unsigned long limit,
-                                  bool limit_exceeded);
+    NSSetSeq get_nssets_by_tech_c(const std::string& handle, unsigned long limit);
 
     NameServer get_nameserver_by_fqdn(const std::string& handle);
 
     KeySet get_keyset_by_handle(const std::string& handle);
 
-    KeySetSeq get_keysets_by_tech_c(const std::string& handle, unsigned long limit,
-                                    bool limit_exceeded);
+    KeySetSeq get_keysets_by_tech_c(const std::string& handle, unsigned long limit);
 
     Domain get_domain_by_handle(const std::string& handle);
 
-    DomainSeq get_domains_by_registrant(const std::string& handle, unsigned long limit,
-                                        bool limit_exceeded);
+    DomainSeq get_domains_by_registrant(const std::string& handle, unsigned long limit);
 
     DomainSeq get_domains_by_admin_contact(const std::string& handle,
-                                           unsigned long limit,
-                                           bool limit_exceeded);
+                                           unsigned long limit);
 
-    DomainSeq get_domains_by_nsset(const std::string& handle, unsigned long limit,
-                                   bool limit_exceeded);
+    DomainSeq get_domains_by_nsset(const std::string& handle, unsigned long limit);
 
-    DomainSeq get_domains_by_keyset(const std::string& handle, unsigned long limit,
-                                    bool limit_exceeded);
+    DomainSeq get_domains_by_keyset(const std::string& handle, unsigned long limit);
 
     std::vector<ObjectStatusDesc> get_domain_status_descriptions(const std::string& lang);
     std::vector<ObjectStatusDesc> get_contact_status_descriptions(const std::string& lang);
