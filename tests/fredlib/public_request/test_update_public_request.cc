@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
     for (int idx = 0; idx < NUMBER_OF_STATES; ++idx) {
         BOOST_CHECK(status_names.count(known_status[idx]) == 1);
         const Fred::PublicRequest::Status::Value enum_status = Fred::PublicRequest::Status::from(known_status[idx]);
-        BOOST_CHECK(Fred::PublicRequest::Status(enum_status).into< std::string >() == known_status[idx]);
+        BOOST_CHECK(Conversion::Enums::into_string(enum_status) == known_status[idx]);
     }
 
     BOOST_CHECK_EXCEPTION(
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
         BOOST_CHECK(Fred::PublicRequest::Status::NEW < bad_enum_status);
         BOOST_CHECK(Fred::PublicRequest::Status::ANSWERED < bad_enum_status);
         BOOST_CHECK(Fred::PublicRequest::Status::INVALIDATED < bad_enum_status);
-        Fred::PublicRequest::Status(bad_enum_status).into< std::string >();
+        Conversion::Enums::into_string(bad_enum_status);
     }
     catch(const std::runtime_error &e) {
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
     Fred::OperationContextCreator ctx;
     Fred::PublicRequestLockGuardById locked_request(ctx, create_result.public_request_id);
     const Fred::PublicRequest::Status::Value enum_status = Fred::PublicRequest::Status::ANSWERED;
-    const std::string str_status = Fred::PublicRequest::Status(enum_status).into< std::string >();
+    const std::string str_status = Conversion::Enums::into_string(enum_status);
     const std::string reason = "Prostě proto.";
     const std::string email = "noreply@nic.cz";
     const Fred::UpdatePublicRequest::EmailId email_id =

@@ -68,7 +68,7 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
         else {
             params(Database::QPNull);                                                       // $6::BIGINT
         }
-        static const std::string prs_new = PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >();
+        params(Conversion::Enums::into_string(PublicRequest::Status::NEW));                 // $7::TEXT
         const Database::Result res = _ctx.get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
@@ -78,7 +78,7 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
                 "FROM enum_public_request_type eprt,"
                      "enum_public_request_status eprs "
                 "WHERE eprt.name=$1::TEXT AND "
-                      "eprs.name='" + prs_new + "' "
+                      "eprs.name=$7::TEXT "
                 "RETURNING id) "
             "INSERT INTO public_request_objects_map (request_id,object_id) "
                 "SELECT id,$2::BIGINT FROM request "
@@ -103,9 +103,9 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
                                                   const Optional< RegistrarId > _registrar_id,
                                                   const Optional< LogRequestId > &_log_request_id)
 {
-    Database::query_param_list params(_locked_object.get_object_id());              // $1::BIGINT
-    params(_type);                                                                  // $2::TEXT
-    params(PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >());// $3::TEXT
+    Database::query_param_list params(_locked_object.get_object_id()); // $1::BIGINT
+    params(_type);                                                     // $2::TEXT
+    params(Conversion::Enums::into_string(PublicRequest::Status::NEW));// $3::TEXT
     const Database::Result res = _ctx.get_conn().exec_params(
         "SELECT pr.id "
         "FROM public_request pr "

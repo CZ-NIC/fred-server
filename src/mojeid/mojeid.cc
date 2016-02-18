@@ -1582,7 +1582,7 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
                   "c.id=$3::BIGINT AND "
                   "EXISTS(SELECT 1 FROM public_request_objects_map WHERE request_id=pr.id AND object_id=c.id)",
             Database::query_param_list
-                (Fred::PublicRequest::Status(Fred::PublicRequest::Status::NEW).into< std::string >())
+                (Conversion::Enums::into_string(Fred::PublicRequest::Status::NEW))
                 (Fred::MojeID::PublicRequest::ContactValidation::iface().get_public_request_type())
                 (_contact_id));
         if (res.size() <= 0) {

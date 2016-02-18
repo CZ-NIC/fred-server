@@ -266,10 +266,9 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
         BOOST_CHECK(static_cast< Fred::PublicRequestId >(res[idx][0]) == public_request_id[idx]);
         BOOST_CHECK(!res[idx][1].isnull() && static_cast< bool >(res[idx][1]));
         BOOST_CHECK(!res[idx][2].isnull() && static_cast< bool >(res[idx][2]));
-        const std::string status = Fred::PublicRequest::Status(idx == 0
-                                                               ? Fred::PublicRequest::Status::INVALIDATED
-                                                               : Fred::PublicRequest::Status::NEW)
-                                       .into< std::string >();
+        const std::string status = Conversion::Enums::into_string(idx == 0
+                                                                  ? Fred::PublicRequest::Status::INVALIDATED
+                                                                  : Fred::PublicRequest::Status::NEW);
         BOOST_CHECK(!res[idx][3].isnull() && (static_cast< std::string >(res[idx][3]) == status));
         BOOST_CHECK(static_cast< bool >(res[idx][4]) == (idx != 0));
         BOOST_CHECK(!res[idx][5].isnull() && static_cast< bool >(res[idx][5]));

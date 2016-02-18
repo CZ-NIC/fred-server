@@ -65,8 +65,8 @@ namespace {
 ::size_t stop_letter_sending(OperationContext &_ctx,
                              PublicRequestId _public_request_id)
 {
-    Database::query_param_list params(_public_request_id);                          //$1::BIGINT
-    params(PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >());//$2::TEXT
+    Database::query_param_list params(_public_request_id);                   //$1::BIGINT
+    params(Conversion::Enums::into_string(Fred::PublicRequest::Status::NEW));//$2::TEXT
     const Database::Result res = _ctx.get_conn().exec_params(
         "UPDATE message_archive ma "
         "SET status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing'),"
@@ -143,10 +143,10 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
                 throw std::runtime_error("unable to set other public request state than 'answered' or 'invalidated'");
             }
             sql_set << "status=(SELECT id FROM enum_public_request_status WHERE name=$"
-                    << params.add(PublicRequest::Status(status_.get_value()).into< std::string >())
+                    << params.add(Conversion::Enums::into_string(status_.get_value()))
                     << "::TEXT),"
                        "resolve_time=CASE WHEN status=(SELECT id FROM enum_public_request_status WHERE name=$"
-                    << params.add(PublicRequest::Status(PublicRequest::Status::NEW).into< std::string >())
+                    << params.add(Conversion::Enums::into_string(PublicRequest::Status::NEW))
                     << "::TEXT) "
                                          "THEN NOW() "
                                          "ELSE resolve_time "

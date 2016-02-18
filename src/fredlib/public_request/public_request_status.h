@@ -23,8 +23,7 @@
 #ifndef PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E
 
-#include <map>
-#include <stdexcept>
+#include "util/enum_conversion.h"
 
 /// Fred matters
 namespace Fred {
@@ -34,9 +33,8 @@ namespace PublicRequest {
 /**
  * Bidirectional conversions between string and enum representation of public request status.
  */
-class Status
+struct Status
 {
-public:
     /**
      * Names of particular public request status.
      */
@@ -47,11 +45,6 @@ public:
         INVALIDATED,
     };
     /**
-     * From enum value creates object having methods for conversion to its string representation.
-     * @param _value enum value
-     */
-    explicit Status(Value _value):value_(_value) { }
-    /**
      * String value converts to its enum equivalent.
      * @param _str database representation of public request status
      * @return its enum equivalent
@@ -59,72 +52,29 @@ public:
      */
     static Value from(const std::string &_str)
     {
-        const StrToValue& str2val = str_to_value();
-        StrToValue::const_iterator item_ptr = str2val.find(_str);
-        if (item_ptr != str2val.end()) {
-            return item_ptr->second;
-        }
-        throw std::runtime_error("Unknown public request status '" + _str + "'");
-    }
-    /**
-     * Enum value converts to its string representation.
-     * @param _str where store the result
-     * @return its string representation
-     * @throw std::runtime_error if conversion is impossible
-     */
-    std::string& into(std::string &_str)const
-    {
-        const ValueToStr& val2str = value_to_str();
-        ValueToStr::const_iterator item_ptr = val2str.find(value_);
-        if (item_ptr != val2str.end()) {
-            return _str = item_ptr->second;
-        }
-        throw std::runtime_error("Invalid public request status value");
-    }
-    /**
-     * Enum value converts to value of other type.
-     * @tparam T destination type
-     * @return converted value
-     * @throw std::runtime_error if conversion is impossible
-     */
-    template < typename T >
-    T into()const
-    {
-        T result;
-        this->into(result);
-        return result;
-    }
-private:
-    Value value_;
-    typedef std::map< std::string, Value > StrToValue;
-    typedef std::map< Value, std::string > ValueToStr;
-    static const StrToValue& str_to_value()
-    {
-        static StrToValue result;
-        if (result.empty()) {
-            result["new"]         = NEW;
-            result["answered"]    = ANSWERED;
-            result["invalidated"] = INVALIDATED;
-        }
-        return result;
-    }
-    static const ValueToStr& value_to_str()
-    {
-        static ValueToStr result;
-        if (result.empty()) {
-            const StrToValue &str2val = str_to_value();
-            for (StrToValue::const_iterator ptr = str2val.begin(); ptr != str2val.end(); ++ptr) {
-                result[ptr->second] = ptr->first;
-            }
-            if (str2val.size() != result.size()) {
-                throw std::runtime_error("Status::str_to_value() returns map with non-unique values");
-            }
-        }
-        return result;
+        return Conversion::Enums::into< Value >(_str);
     }
 };
 
 }//Fred::PublicRequest
 }//Fred
+
+namespace Conversion {
+namespace Enums {
+
+template < >
+struct tools_for< Fred::PublicRequest::Status::Value >
+{
+    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Fred::PublicRequest::Status::Value, const std::string&))
+    {
+        using Fred::PublicRequest::Status;
+        set_matching_string_counterpart(Status::NEW,         "new");
+        set_matching_string_counterpart(Status::ANSWERED,    "answered");
+        set_matching_string_counterpart(Status::INVALIDATED, "invalidated");
+    }
+};
+
+}//namespace Conversion::Enums
+}//namespace Conversion
 
 #endif//PUBLIC_REQUEST_STATUS_H_648D4833B94F11152913135FA0FE767E

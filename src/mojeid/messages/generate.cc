@@ -28,9 +28,7 @@ struct RequiredStatus
 {
     static std::string value(Database::query_param_list &_params)
     {
-        typedef Fred::PublicRequest::Status FPRS;
-        static const std::string status_new = FPRS(FPRS::NEW).into< std::string >();
-        return "$" + _params.add(status_new) + "::TEXT";
+        return "$" + _params.add(Conversion::Enums::into_string(Fred::PublicRequest::Status::NEW)) + "::TEXT";
     }
 };
 
