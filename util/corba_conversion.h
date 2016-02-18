@@ -57,6 +57,12 @@ public:
 template < class SOURCE_INTEGRAL_TYPE, class TARGET_INTEGRAL_TYPE >
 void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst);
 
+/**
+ * Converts C++ string into CORBA specific string class.
+ * @note In most cases is c_str() enough.
+ */
+CORBA::String_var wrap_string(const std::string &src);
+
 }
 
 #endif//CORBA_CONVERSION_H_4402374c71c24ba88a4dfc1886eeebb5

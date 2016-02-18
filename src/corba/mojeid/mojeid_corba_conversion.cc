@@ -26,11 +26,6 @@
 
 namespace CorbaConversion {
 
-CORBA::String_var wrap_string(const std::string &src)
-{
-    return src.c_str();
-}
-
 void unwrap_NullableString(const Registry::MojeID::NullableString *src_ptr, Nullable< std::string > &dst)
 {
     if (src_ptr == NULL) {
