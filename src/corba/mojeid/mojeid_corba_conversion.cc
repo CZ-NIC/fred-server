@@ -507,29 +507,24 @@ Registry::MojeID::ContactStateInfoList_var wrap_ContactStateInfoList(const Regis
     return result._retn();
 }
 
+AllocbufFailed::AllocbufFailed()
+:   std::invalid_argument("cannot allocate requested amount of memory")
+{
+}
+
 Registry::MojeID::Buffer_var wrap_Buffer(const Registry::MojeIDImplData::Buffer &src)
 {
     Registry::MojeID::Buffer_var result(new Registry::MojeID::Buffer());
-    wrap_string(src.value, result->value);
-    return result._retn();
-}
-
-AllocbufFailed::AllocbufFailed()
-:   std::invalid_argument("cannot allocate the requested memory")
-{
-}
-
-void wrap_string(const std::string &src, Registry::MojeID::BufferValue &dst)
-{
     try {
-        dst.length(src.size());
-        if (!src.empty()) {
-            std::memcpy(dst.get_buffer(), &(src[0]), src.size());
+        result->value.length(src.value.size());
+        if (!src.value.empty()) {
+            std::memcpy(result->value.get_buffer(), src.value.c_str(), src.value.size());
         }
     }
     catch (...) {
         throw AllocbufFailed();
     }
+    return result._retn();
 }
 
 Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::MojeIDImplData::ContactHandleList &src)

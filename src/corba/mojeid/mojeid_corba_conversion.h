@@ -117,8 +117,6 @@ struct AllocbufFailed:std::invalid_argument
     virtual ~AllocbufFailed() throw() {}
 };
 
-void wrap_string(const std::string &src, Registry::MojeID::BufferValue &dst);
-
 Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::MojeIDImplData::ContactHandleList &src);
 
 void wrap_MessageLimitExceeded(const Registry::MojeIDImplData::MessageLimitExceeded &src, Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED &dst);

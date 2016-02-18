@@ -1660,21 +1660,6 @@ BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
     BOOST_CHECK(idl_info.linked_date->_value().value.in() == boost::gregorian::to_iso_extended_string(impl_info.linked_date.get_value()));
 }
 
-BOOST_AUTO_TEST_CASE(test_string_octet_seq_tmpl)
-{
-    Registry::MojeID::BufferValue out_seq;
-    CorbaConversion::wrap_string("test", out_seq);
-    BOOST_CHECK(std::string(reinterpret_cast< const char* >(out_seq.get_buffer()), out_seq.length()) == "test");
-}
-
-
-BOOST_AUTO_TEST_CASE(test_empty_octet_seq_tmpl)
-{
-    Registry::MojeID::BufferValue out_seq;
-    CorbaConversion::wrap_string(std::string(), out_seq);
-    BOOST_CHECK(out_seq.length() == 0);
-}
-
 BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
 {
     Registry::MojeIDImplData::ContactStateInfoList impl_list;
