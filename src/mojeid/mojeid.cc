@@ -1277,7 +1277,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                                           (contact_id));                          //$2::BIGINT
 
             if (dbres.size() != 1) {
-                throw std::runtime_error("something wrong happened database is crazy");
+                throw std::runtime_error("something wrong happened, database looks to be crazy, this query has to return exactly one row");
             }
 
             const bool contact_changed = static_cast< bool >(dbres[0][0]);
