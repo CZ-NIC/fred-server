@@ -37,10 +37,7 @@ namespace WhoisImpl{
 
 const std::string Server_impl::output_timezone("UTC");
 
-typedef std::vector< std::pair<std::string, std::string> > str_str_vector;
-typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
-typedef std::vector<Fred::InfoNssetOutput> InfoNssetOutputList;
-typedef std::vector<Fred::InfoDomainOutput> InfoDomainOutputList;
+
 
 
 static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
@@ -260,7 +257,9 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
     return Contact();
 }
 
-WhoisImpl::NSSet make_nsset_from_info_data(const Fred::InfoNssetData& ind, Fred::OperationContext& ctx)
+WhoisImpl::NSSet Server_impl::make_nsset_from_info_data(
+        const Fred::InfoNssetData& ind,
+        Fred::OperationContext& ctx)
 {
     WhoisImpl::NSSet nss;
     nss.changed = Nullable<boost::posix_time::ptime>(ind.update_time.get_value_or_default());
@@ -316,7 +315,6 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
                 {
                     throw InvalidHandle();
                 }
-
                 throw ObjectNotExists();
             }
             throw;
@@ -329,6 +327,30 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
     return WhoisImpl::NSSet();
 }
 
+NSSetSeq Server_impl::get_nssets_by_(Fred::OperationContext& ctx,
+                                     const InfoNssetOutputList& nss_info,
+                                     const std::string& handle,
+                                     unsigned long limit)
+{
+    NSSetSeq nss_seq;
+    nss_seq.content.reserve(nss_info.size());
+    InfoNssetOutputList::const_iterator it = nss_info.begin(), end;
+    if(nss_info.size() > limit)
+    {
+        nss_seq.limit_exceeded = true;
+        end = nss_info.begin() + limit;
+    }
+    else
+    {
+        end = nss_info.end();
+    }
+    for(; it != end; ++it)
+    {
+        nss_seq.content.push_back(make_nsset_from_info_data(it->info_nsset_data, ctx));
+    }
+    return nss_seq;
+}
+
 NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
                                        unsigned long limit)
 {
@@ -339,10 +361,6 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
                 Fred::InfoNssetByDNSFqdn(handle)
                 .set_limit(limit + 1)
                 .exec(ctx, output_timezone);
-        NSSetSeq nss_seq;
-        nss_seq.content.reserve(nss_info.size());
-        WhoisImpl::NSSet temp;
-        InfoNssetOutputList::const_iterator it = nss_info.begin(), end;
         if(nss_info.empty())
         {
             if(Fred::CheckDomain(handle).is_invalid_syntax())
@@ -351,20 +369,7 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
             }
             throw ObjectNotExists();
         }
-        if(nss_info.size() > limit)
-        {
-            end = nss_info.begin() + limit;
-            nss_seq.limit_exceeded = true;
-        }
-        else
-        {
-            end = nss_info.end();
-        }
-        for(; it != end; ++it)
-        {
-            nss_seq.content.push_back(make_nsset_from_info_data(it->info_nsset_data, ctx));
-        }
-        return nss_seq;
+        return get_nssets_by_(ctx, nss_info, handle, limit);
     }
     catch (...)
     {
@@ -383,9 +388,6 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
                 Fred::InfoNssetByTechContactHandle(handle)
                 .set_limit(limit + 1)
                 .exec(ctx, output_timezone);
-        NSSetSeq nss_seq;
-        nss_seq.content.reserve(nss_info.size());
-        InfoNssetOutputList::const_iterator it = nss_info.begin(), end;
         if(nss_info.empty())
         {
             if(Fred::CheckContact(handle).is_invalid_handle())
@@ -394,22 +396,10 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
             }
             throw ObjectNotExists();
         }
-        if(nss_info.size() > limit)
-        {
-            nss_seq.limit_exceeded = true;
-            end = nss_info.begin() + limit;
-        }
-        else
-        {
-            end = nss_info.end();
-        }
-        for (; it != end; ++it)
-        {
-            nss_seq.content.push_back(make_nsset_from_info_data(it->info_nsset_data, ctx));
-        }
-        return nss_seq;
+        return get_nssets_by_(ctx, nss_info, handle, limit);
     }
-    catch (...) {
+    catch (...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return NSSetSeq();
@@ -578,7 +568,7 @@ WhoisImpl::Domain generate_obfuscate_domain_delete_candidate(const std::string& 
     return temp;
 }
 
-WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& idd, Fred::OperationContext& ctx)
+WhoisImpl::Domain Server_impl::make_domain_from_info_data(const Fred::InfoDomainData& idd, Fred::OperationContext& ctx)
 {
     WhoisImpl::Domain result;
     result.admin_contact_handles.reserve(idd.admin_contacts.size());
@@ -809,9 +799,9 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
     return DomainSeq();
 }
 
-str_str_vector get_object_status_desc(const std::string& lang,
-                                      const std::string& type,
-                                      Fred::OperationContext& ctx)
+str_str_vector Server_impl::get_object_status_desc(const std::string& lang,
+                                                   const std::string& type,
+                                                   Fred::OperationContext& ctx)
 {
     const std::vector<Fred::ObjectStateDescription> states =
             Fred::GetObjectStateDescriptions(lang).set_object_type(type)

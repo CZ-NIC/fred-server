@@ -265,8 +265,13 @@ struct MissingLocalization
     const char* what() const throw() {return "the localization is missing";}
 };
 
+typedef std::vector< std::pair<std::string, std::string> > str_str_vector;
+
 class Server_impl
 {
+    typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
+    typedef std::vector<Fred::InfoNssetOutput> InfoNssetOutputList;
+    typedef std::vector<Fred::InfoDomainOutput> InfoDomainOutputList;
 private:
     std::vector<ObjectStatusDesc> get_object_status_descriptions(
             const std::string& lang, const std::string& type);
@@ -274,6 +279,17 @@ private:
                               const std::string& handle,
                               unsigned long limit,
                               const InfoDomainOutputList& domain_info);
+    NSSetSeq get_nssets_by_(Fred::OperationContext& ctx,
+                            const InfoNssetOutputList& nss_info,
+                            const std::string& handle,
+                            unsigned long limit);
+    WhoisImpl::NSSet make_nsset_from_info_data(const Fred::InfoNssetData& ind,
+                                               Fred::OperationContext& ctx);
+    WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& idd,
+                                                 Fred::OperationContext& ctx);
+    str_str_vector get_object_status_desc(const std::string& lang,
+                                          const std::string& type,
+                                          Fred::OperationContext& ctx);
 public:
     static const std::string output_timezone;
 
