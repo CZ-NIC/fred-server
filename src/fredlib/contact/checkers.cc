@@ -196,6 +196,8 @@ contact_fax_validity::contact_fax_validity(const Nullable< std::string > &_fax)
 
 namespace MojeID {
 
+const boost::regex username_pattern("[0-9A-Za-z](-?[0-9A-Za-z])*");
+
 contact_username::contact_username(const std::string &_handle)
 :   absent(nothing_else_whitespaces(_handle))
 {
@@ -204,7 +206,7 @@ contact_username::contact_username(const std::string &_handle)
     }
     else {
         invalid = (USERNAME_LENGTH_LIMIT < _handle.length()) ||
-                  !match(_handle, username_pattern());
+                  !match(_handle, username_pattern);
     }
 }
 

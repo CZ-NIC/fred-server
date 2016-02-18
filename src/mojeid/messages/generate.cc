@@ -17,6 +17,7 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace MojeID {  //MojeID
 namespace Messages {//MojeID::Messages
@@ -41,9 +42,9 @@ struct PossibleRequestTypes< CommChannel::SMS >
     typedef Fred::MojeID::PublicRequest::ContactConditionalIdentification PubReqCCI;
     static std::string value(Database::query_param_list &_params)
     {
-        static const std::string type[] = {
-            Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface().get_public_request_type() };
-        return "$" + _params.add(type[0]) + "::TEXT";
+        const std::string type =
+            Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface().get_public_request_type();
+        return "$" + _params.add(type) + "::TEXT";
     }
     static Generate::MessageId generate_message(
         Fred::OperationContextCreator &_ctx,
@@ -77,7 +78,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
     typedef Fred::MojeID::PublicRequest::ContactReidentification PubReqCR;
     static std::string value(Database::query_param_list &_params)
     {
-        static const std::string type[] = {
+        const std::string type[] = {
             PubReqCI::iface().get_public_request_type(),
             PubReqCR::iface().get_public_request_type() };
         return "$" + _params.add(type[0]) + "::TEXT,"
@@ -128,7 +129,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
     typedef Fred::MojeID::PublicRequest::IdentifiedContactTransfer              PubReqICT;
     static std::string value(Database::query_param_list &_params)
     {
-        static const std::string type[] = {
+        const std::string type[] = {
             PubReqCCI::iface().get_public_request_type(),
             PubReqCICT::iface().get_public_request_type(),
             PubReqICT::iface().get_public_request_type() };
@@ -278,60 +279,67 @@ struct DbCommand
 };
 
 template < CommChannel::Value COMM_CHANNEL >
-DbCommand collect_query_for()
+struct collect_query_for
 {
-    DbCommand cmd;
-    cmd.query =
-        "WITH required_status AS ("
-                 "SELECT id FROM enum_public_request_status "
-                 "WHERE name=" + RequiredStatus< COMM_CHANNEL >::value(cmd.params) +
-             "),"
-             "possible_types AS ("
-                 "SELECT id FROM enum_public_request_type "
-                 "WHERE name IN (" + PossibleRequestTypes< COMM_CHANNEL >::value(cmd.params) + ")"
-             "),"
-             "channel_type AS ("
-                 "SELECT id FROM comm_type "
-                 "WHERE type=" + ChannelType< COMM_CHANNEL >::value(cmd.params) +
-             "),"
-             "generation AS ("
-                 "SELECT COALESCE((SELECT LOWER(val) NOT IN ('disabled','disable','false','f','0') "
-                                  "FROM enum_parameters "
-                                  "WHERE name=" + Parameter< COMM_CHANNEL >::name(cmd.params) + "),"
-                                 "true) AS enabled"
-             "),"
-             "to_generate AS ("
-                 "SELECT id AS public_request_id,"
-                        "create_time AS public_request_create_time,"
-                        "request_type AS public_request_type_id,"
-                        "(SELECT object_id FROM public_request_objects_map prom "
-                         "WHERE request_id=pr.id AND "
-                               "EXISTS(SELECT * FROM contact WHERE id=prom.object_id)"
-                        ") AS contact_id "
-                 "FROM public_request pr,"
-                      "generation "
-                 "WHERE generation.enabled AND "
-                       "status=(SELECT id FROM required_status) AND "
-                       "(NOW()::DATE-'1DAY'::INTERVAL)<create_time AND "
-                       "request_type IN (SELECT id FROM possible_types) AND "
-                       "NOT " + Exists< COMM_CHANNEL >::messages_associated_with("pr.id") +
-             ") "
-        "SELECT public_request_id,"
-               "(SELECT name FROM enum_public_request_type "
-                "WHERE id=tg.public_request_type_id) AS public_request_type,"
-               "contact_id,"
-               "(SELECT historyid FROM contact_history ch "
-                "WHERE id=tg.contact_id AND "
-                      "(SELECT valid_from<=tg.public_request_create_time AND "
-                                         "(tg.public_request_create_time<valid_to OR valid_to IS NULL) "
-                       "FROM history "
-                       "WHERE id=ch.historyid)"
-               ") AS contact_history_id,"
-               "lock_public_request_lock(contact_id) "
-        "FROM to_generate tg "
-        "WHERE contact_id IS NOT NULL";
-    return cmd;
-}
+    static DbCommand init()
+    {
+        DbCommand cmd;
+        cmd.query =
+            "WITH required_status AS ("
+                     "SELECT id FROM enum_public_request_status "
+                     "WHERE name=" + RequiredStatus< COMM_CHANNEL >::value(cmd.params) +
+                 "),"
+                 "possible_types AS ("
+                     "SELECT id FROM enum_public_request_type "
+                     "WHERE name IN (" + PossibleRequestTypes< COMM_CHANNEL >::value(cmd.params) + ")"
+                 "),"
+                 "channel_type AS ("
+                     "SELECT id FROM comm_type "
+                     "WHERE type=" + ChannelType< COMM_CHANNEL >::value(cmd.params) +
+                 "),"
+                 "generation AS ("
+                     "SELECT COALESCE((SELECT LOWER(val) NOT IN ('disabled','disable','false','f','0') "
+                                      "FROM enum_parameters "
+                                      "WHERE name=" + Parameter< COMM_CHANNEL >::name(cmd.params) + "),"
+                                     "true) AS enabled"
+                 "),"
+                 "to_generate AS ("
+                     "SELECT id AS public_request_id,"
+                            "create_time AS public_request_create_time,"
+                            "request_type AS public_request_type_id,"
+                            "(SELECT object_id FROM public_request_objects_map prom "
+                             "WHERE request_id=pr.id AND "
+                                   "EXISTS(SELECT * FROM contact WHERE id=prom.object_id)"
+                            ") AS contact_id "
+                     "FROM public_request pr,"
+                          "generation "
+                     "WHERE generation.enabled AND "
+                           "status=(SELECT id FROM required_status) AND "
+                           "(NOW()::DATE-'1DAY'::INTERVAL)<create_time AND "
+                           "request_type IN (SELECT id FROM possible_types) AND "
+                           "NOT " + Exists< COMM_CHANNEL >::messages_associated_with("pr.id") +
+                 ") "
+            "SELECT public_request_id,"
+                   "(SELECT name FROM enum_public_request_type "
+                    "WHERE id=tg.public_request_type_id) AS public_request_type,"
+                   "contact_id,"
+                   "(SELECT historyid FROM contact_history ch "
+                    "WHERE id=tg.contact_id AND "
+                          "(SELECT valid_from<=tg.public_request_create_time AND "
+                                             "(tg.public_request_create_time<valid_to OR valid_to IS NULL) "
+                           "FROM history "
+                           "WHERE id=ch.historyid)"
+                   ") AS contact_history_id,"
+                   "lock_public_request_lock(contact_id) "
+            "FROM to_generate tg "
+            "WHERE contact_id IS NOT NULL";
+        return cmd;
+    }
+    static const DbCommand sql;
+};
+
+template < CommChannel::Value COMM_CHANNEL >
+const DbCommand collect_query_for< COMM_CHANNEL >::sql = collect_query_for< COMM_CHANNEL >::init();
 
 template < CommChannel::Value COMM_CHANNEL >
 struct JoinMessage
@@ -471,8 +479,8 @@ Generate::MessageId send_auth_owner_letter(
     pa.country = addr.country;
 
     Database::query_param_list params(pa.country);
-    static const std::string sql = "SELECT (SELECT country_cs FROM enum_country WHERE id=$1::TEXT OR country=$1::TEXT),"
-                                          "(SELECT country FROM enum_country WHERE id=$1::TEXT)";
+    const std::string sql = "SELECT (SELECT country_cs FROM enum_country WHERE id=$1::TEXT OR country=$1::TEXT),"
+                                   "(SELECT country FROM enum_country WHERE id=$1::TEXT)";
     const Database::Result dbres = _ctx.get_conn().exec_params(sql, params);
     const std::string addr_country = dbres[0][0].isnull()
                                      ? pa.country
@@ -527,7 +535,7 @@ Generate::MessageId send_auth_owner_letter(
         file_name,
         FILETYPE_MOJEID_CONTACT_IDENTIFICATION_REQUEST, "");
 
-    static const std::string comm_type = "letter";
+    const std::string comm_type = "letter";
     static const char *const message_type = "mojeid_card";
     const Generate::MessageId message_id =
         _msg_manager.save_letter_to_send(
@@ -556,7 +564,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
     {
         typedef Fred::Object::State FOS;
         const std::string state_validated_contact = Conversion::Enums::into_string(FOS::VALIDATED_CONTACT);
-        static const std::string message_type_mojeid_pin3 = "mojeid_pin3";
+        const std::string message_type_mojeid_pin3 = "mojeid_pin3";
         Database::query_param_list params;
         params(_locked_request.get_public_request_id())
               (_locked_contact.get_object_id())
@@ -840,7 +848,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Contac
         const Optional< GeneralId > &_contact_history_id)
     {
         //db table mail_type: 21,'mojeid_identification','[mojeID] Založení účtu - PIN1 pro aktivaci mojeID'
-        static const std::string mail_template = "mojeid_identification";
+        const std::string mail_template = "mojeid_identification";
         return send_email(mail_template,
                          _ctx,
                          _multimanager,
@@ -865,7 +873,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Condit
         const Optional< GeneralId > &_contact_history_id)
     {
         //db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
-        static const std::string mail_template = "mojeid_verified_contact_transfer";
+        const std::string mail_template = "mojeid_verified_contact_transfer";
         return send_email(mail_template,
                          _ctx,
                          _multimanager,
@@ -890,7 +898,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Identi
         const Optional< GeneralId > &_contact_history_id)
     {
         //db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
-        static const std::string mail_template = "mojeid_verified_contact_transfer";
+        const std::string mail_template = "mojeid_verified_contact_transfer";
         return send_email(mail_template,
                          _ctx,
                          _multimanager,
@@ -928,32 +936,61 @@ MANAGER& Multimanager::select()const
     return *traits< MANAGER, false >::get(this);
 }
 
+namespace {
+
+class GuardManagerPtrAccess:private boost::lock_guard< boost::mutex >
+{
+public:
+    GuardManagerPtrAccess()
+    :   boost::lock_guard< boost::mutex >(mutex) { }
+private:
+    boost::mutex mutex;
+};
+
+typedef std::auto_ptr< Fred::Document::Manager > DocumentManagerPtr;
+DocumentManagerPtr document_manager_ptr;
+
+typedef std::auto_ptr< Fred::Mailer::Manager > MailerManagerPtr;
+MailerManagerPtr mailer_manager_ptr;
+
+typedef Fred::Messages::ManagerPtr MessagesManagerPtr;
+MessagesManagerPtr messages_manager_ptr;
+
+}
+
 Fred::Document::Manager* DefaultMultimanager::document()const
 {
-    static const HandleRegistryArgs *const rconf =
-        CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
-    typedef std::auto_ptr< Fred::Document::Manager > ManagerPtr;
-    static const ManagerPtr manager_ptr =
-        Fred::Document::Manager::create(
-            rconf->docgen_path,
-            rconf->docgen_template_path,
-            rconf->fileclient_path,
-            CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
-                ->get_nameservice_host_port());
-    return manager_ptr.get();
+    if (document_manager_ptr.get() == NULL) {
+        const HandleRegistryArgs *const rconf =
+            CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
+        GuardManagerPtrAccess guard;
+        document_manager_ptr =
+            Fred::Document::Manager::create(
+                rconf->docgen_path,
+                rconf->docgen_template_path,
+                rconf->fileclient_path,
+                CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
+                    ->get_nameservice_host_port());
+    }
+    return document_manager_ptr.get();
 }
 
 Fred::Mailer::Manager* DefaultMultimanager::mailer()const
 {
-    typedef std::auto_ptr< Fred::Mailer::Manager > ManagerPtr;
-    static const ManagerPtr manager_ptr(new MailerManager(CorbaContainer::get_instance()->getNS()));
-    return manager_ptr.get();
+    if (mailer_manager_ptr.get() == NULL) {
+        GuardManagerPtrAccess guard;
+        mailer_manager_ptr = MailerManagerPtr(new MailerManager(CorbaContainer::get_instance()->getNS()));
+    }
+    return mailer_manager_ptr.get();
 }
 
 Fred::Messages::Manager* DefaultMultimanager::messages()const
 {
-    static Fred::Messages::ManagerPtr const manager_ptr = Fred::Messages::create_manager();
-    return manager_ptr.get();
+    if (messages_manager_ptr.get() == NULL) {
+        GuardManagerPtrAccess guard;
+        messages_manager_ptr = Fred::Messages::create_manager();
+    }
+    return messages_manager_ptr.get();
 }
 
 template < CommChannel::Value COMM_CHANNEL >
@@ -963,7 +1000,7 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part)
 {
-    static const DbCommand cmd = collect_query_for< COMM_CHANNEL >();
+    static const DbCommand cmd = collect_query_for< COMM_CHANNEL >::sql;
     const Database::Result dbres = _ctx.get_conn().exec_params(cmd.query, cmd.params);
     for (::size_t idx = 0; idx < dbres.size(); ++idx) {
         try {

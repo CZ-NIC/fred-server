@@ -296,11 +296,7 @@ enum { USERNAME_LENGTH_LIMIT = 30 };
  * Regular expression which match correct mojeID contact handle.
  * @return pattern usable in boost::regex_match for checking correct username format
  */
-inline const boost::regex& username_pattern()
-{
-    static const boost::regex pattern("[0-9A-Za-z](-?[0-9A-Za-z])*");
-    return pattern;
-};
+extern const boost::regex username_pattern;
 
 /**
  * MojeID contact handle verification.
