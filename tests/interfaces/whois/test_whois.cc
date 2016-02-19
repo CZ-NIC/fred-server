@@ -221,7 +221,9 @@ struct test_contact_fixture
 
     test_contact_fixture()
     : test_registrar_fixture(),
-      test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
+      test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark),
+      no_contact_handle("fine-handle"),
+      wrong_contact_handle("")
     {
         Fred::OperationContext ctx;
         contact_place.city = "Praha";
@@ -284,10 +286,15 @@ struct get_nsset_by_handle_fixture
         : test_registrar_fixture
 {
     std::string test_nsset_handle;
+    std::string no_nsset_handle;
+    std::string wrong_nsset_handle;
+
 
     get_nsset_by_handle_fixture()
     : test_registrar_fixture(),
-      test_nsset_handle(std::string("TEST-NSSET-HANDLE")+xmark)
+      test_nsset_handle(std::string("TEST-NSSET-HANDLE")+xmark),
+      no_nsset_handle("fine-nsset-handle"),
+      wrong_nsset_handle("")
     {
         Fred::OperationContext ctx;
         std::vector<Fred::DnsHost> v_dns;
@@ -322,15 +329,11 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
     BOOST_CHECK(nss.tech_contact_handles.at(0) == ind.tech_contacts.at(0).handle);
 }
 
-struct get_no_nsset_by_handle_fixture
-        : whois_impl_instance_fixture
-{};
-
-BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_no_nsset, get_no_nsset_by_handle_fixture)
+BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_no_nsset, get_nsset_by_handle_fixture)
 {
     try
     {
-        Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle("abc");
+        Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle(no_nsset_handle);
         BOOST_ERROR("unreported dangling nsset");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
@@ -340,11 +343,11 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_no_nsset, get_no_nsset_by_handle_fix
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_wrong_nsset, get_no_nsset_by_handle_fixture)
+BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_wrong_nsset, get_nsset_by_handle_fixture)
 {
     try
     {
-        Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle("");//[a-zA-Z0-9_:.-]{1,63}
+        Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle(wrong_nsset_handle);
         BOOST_ERROR("nsset handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
@@ -364,15 +367,15 @@ struct get_nssets_by_ns_fixture
 {
 //        std::map<std::string,Fred::InfoNssetOutput> nsset_info;
     std::string test_fqdn;
-    std::string test_wrong_fqdn;
     std::string test_no_fqdn;
+    std::string test_wrong_fqdn;
     unsigned long test_limit;
 
     get_nssets_by_ns_fixture()
         : test_registrar_fixture(),
           test_fqdn(std::string("TEST-FQDN") + xmark),
+          test_no_fqdn("fine-fqdn"),
           test_wrong_fqdn("."),
-          test_no_fqdn("fine-handle"),
           test_limit(10)
     {
         Fred::OperationContext ctx;
@@ -444,7 +447,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, get_nssets_by_ns_fixture)
     try
     {
         Fred::OperationContext ctx;
-        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_wrong_fqdn, test_limit);
+        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_no_fqdn, test_limit);
         BOOST_ERROR("unreported dangling NSSets");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
@@ -455,5 +458,104 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, get_nssets_by_ns_fixture)
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_ns
+
+BOOST_AUTO_TEST_SUITE(get_nssets_by_tech_c)
+
+struct get_nssets_by_tech_c_fixture
+        : test_registrar_fixture
+{
+    std::string test_c_handle;
+    std::string test_no_handle;
+    std::string test_wrong_handle;
+    unsigned long test_limit;
+
+    get_nssets_by_tech_c_fixture()
+        : test_registrar_fixture(),
+          test_c_handle(std::string("TEST-CONTACT-HANDLE") + xmark),
+          test_no_handle("fine-tech-c-handle"),
+          test_wrong_handle(""),
+          test_limit(10)
+    {
+        Fred::OperationContext ctx;
+        for(int i = 0; i < test_limit; ++i)
+        {
+            std::ostringstream test_handles;
+            test_handles << "n" << i;
+            std::vector<Fred::DnsHost> v_dns;
+            v_dns.push_back(Fred::DnsHost(test_c_handle,
+                            boost::asio::ip::address()));
+            std::vector<std::string> tech_contacts;
+            tech_contacts.push_back("TEST-TECH-CONTACT" + xmark);
+
+            Fred::CreateNsset(test_handles.str(), test_registrar_handle + i,
+                              Optional<std::string>(), Optional<short>(), v_dns,
+                              tech_contacts, Optional<unsigned long long>())
+                .exec(ctx);
+            //any extra setting here?
+        }
+        ctx.commit_transaction();
+    }
+
+    ~get_nssets_by_tech_c_fixture() {}
+};
+
+BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
+{
+    Fred::OperationContext ctx;
+    std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_c_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
+    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_c_handle, test_limit);
+    for(int i = 0; i < test_limit; ++i)
+    {
+        std::vector<Fred::InfoNssetOutput>::iterator it = v_ino.begin(), end = v_ino.end();
+        while(it != end)
+        {
+            if(it->info_nsset_data.handle == nss_s.content.at(i).handle) break;
+            ++it;
+        }
+        BOOST_CHECK(nss_s.content.at(i).handle == it->info_nsset_data.handle);
+        Fred::InfoNssetData found = it->info_nsset_data;
+        BOOST_CHECK(nss_s.content.at(i).changed.isnull());
+        BOOST_CHECK(nss_s.content.at(i).last_transfer.isnull());
+        BOOST_CHECK(nss_s.content.at(i).created == found.creation_time);//as that or greater than __
+        BOOST_CHECK(nss_s.content.at(i).handle == found.handle);
+        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).fqdn == found.dns_hosts.at(0).get_fqdn());
+        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0)); //comparing two boost::address'es
+        BOOST_CHECK(nss_s.content.at(i).registrar_handle == found.create_registrar_handle);
+        BOOST_CHECK(nss_s.content.at(i).tech_contact_handles.at(0) == found.tech_contacts.at(0).handle);
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_wrong_ns, get_nssets_by_tech_c_fixture)
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_wrong_handle, test_limit);
+        BOOST_ERROR("domain handle rules is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_no_ns, get_nssets_by_tech_c_fixture)
+{
+    try
+    {
+        Fred::OperationContext ctx;
+        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_no_handle, test_limit);
+        BOOST_ERROR("unreported dangling NSSets");
+    }
+    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_tech_c
+
 
 BOOST_AUTO_TEST_SUITE_END();//TestWhois
