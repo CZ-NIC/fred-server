@@ -1062,7 +1062,7 @@ namespace Whois {
 
             if(domain_info.empty())
             {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if(Fred::CheckNsset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
                 {
                     throw INVALID_HANDLE();
                 }
@@ -1108,7 +1108,7 @@ namespace Whois {
 
             if(domain_info.empty())
             {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if(Fred::CheckKeyset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
                 {
                     throw INVALID_HANDLE();
                 }
