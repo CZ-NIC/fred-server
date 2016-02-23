@@ -111,6 +111,9 @@ BOOST_FIXTURE_TEST_CASE(get_wrong_registrar, get_registrar_fixture)
 
 BOOST_AUTO_TEST_SUITE_END();//get_registrar_by_handle
 
+
+BOOST_AUTO_TEST_SUITE(get_registrars)
+
 struct get_my_registrar_list_fixture
         : test_registrar_fixture
 {
@@ -143,8 +146,6 @@ struct get_my_registrar_list_fixture
     }
     ~get_my_registrar_list_fixture() {}
 };
-
-BOOST_AUTO_TEST_SUITE(get_registrars)
 
 BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
 {
@@ -707,5 +708,12 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle_wrong_nsset, get_keyset_by_handle_f
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_keyset_by_handle
+
+
+BOOST_AUTO_TEST_SUITE(get_keysets_by_tech_c)
+
+
+
+BOOST_AUTO_TEST_SUITE_END()//get_keysets_by_tech_c
 
 BOOST_AUTO_TEST_SUITE_END();//TestWhois
