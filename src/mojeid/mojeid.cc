@@ -1226,6 +1226,80 @@ void MojeIDImpl::info_contact(
     }
 }
 
+void MojeIDImpl::get_contact_info_publish_flags(
+        ContactId _contact_id,
+        MojeIDImplData::InfoContactPublishFlags &_flags)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoContactData data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        
+        _flags.id = data.id;
+        if (states.presents(Fred::Object::State::LINKED)) {
+            _flags.first_name   = data.disclosename;
+            _flags.last_name    = data.disclosename;
+            _flags.organization = data.discloseorganization;
+            _flags.vat_reg_num  = data.discloseident;
+            _flags.birth_date   = data.discloseident;
+            _flags.id_card_num  = data.discloseident;
+            _flags.passport_num = data.discloseident;
+            _flags.ssn_id_num   = data.discloseident;
+            _flags.vat_id_num   = data.discloseident;
+            _flags.email        = data.discloseemail;
+            _flags.notify_email = data.disclosenotifyemail;
+            _flags.telephone    = data.disclosetelephone;
+            _flags.fax          = data.disclosefax;
+            _flags.permanent    = data.discloseaddress;
+            _flags.mailing      = false;
+            _flags.billing      = false;
+            _flags.shipping     = false;
+            _flags.shipping2    = false;
+            _flags.shipping3    = false;
+        }
+        else {
+            _flags.first_name   = data.disclosename;
+            _flags.last_name    = data.disclosename;
+            _flags.organization = false;
+            _flags.vat_reg_num  = false;
+            _flags.birth_date   = false;
+            _flags.id_card_num  = false;
+            _flags.passport_num = false;
+            _flags.ssn_id_num   = false;
+            _flags.vat_id_num   = false;
+            _flags.email        = false;
+            _flags.notify_email = false;
+            _flags.telephone    = false;
+            _flags.fax          = false;
+            _flags.permanent    = false;
+            _flags.mailing      = false;
+            _flags.billing      = false;
+            _flags.shipping     = false;
+            _flags.shipping2    = false;
+            _flags.shipping3    = false;
+        }
+        ctx.commit_transaction();
+        return;
+    }
+    catch (const Fred::InfoContactById::Exception &e) {
+        if (e.is_set_unknown_object_id()) {
+            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            throw MojeIDImplData::ObjectDoesntExist();
+        }
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
 MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,

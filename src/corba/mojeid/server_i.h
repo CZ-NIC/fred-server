@@ -71,6 +71,9 @@ public:
     InfoContact* info_contact(
         const char *username);
 
+    InfoContactPublishFlags get_contact_info_publish_flags(
+        ContactId contact_id);
+
     ContactId process_registration_request(
         const char *ident_request_id,
         const char *password,

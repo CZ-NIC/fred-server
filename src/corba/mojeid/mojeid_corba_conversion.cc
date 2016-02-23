@@ -462,17 +462,33 @@ Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplDat
     result->telephone    = wrap_Nullable_string(src.telephone);
     result->fax          = wrap_Nullable_string(src.fax);
 
-    int_to_int(src.disclose_name,         result->disclose_name);
-    int_to_int(src.disclose_organization, result->disclose_organization);
-    int_to_int(src.disclose_vat_reg_num,  result->disclose_vat_reg_num);
-    int_to_int(src.disclose_ident,        result->disclose_ident);
-    int_to_int(src.disclose_email,        result->disclose_email);
-    int_to_int(src.disclose_notify_email, result->disclose_notify_email);
-    int_to_int(src.disclose_telephone,    result->disclose_telephone);
-    int_to_int(src.disclose_fax,          result->disclose_fax);
-    int_to_int(src.disclose_permanent,    result->disclose_permanent);
-
     return result._retn();
+}
+
+void wrap_InfoContactPublishFlags(const Registry::MojeIDImplData::InfoContactPublishFlags &src,
+                                  Registry::MojeID::InfoContactPublishFlags &dst)
+{
+    int_to_int(src.id, dst.id);
+
+    dst.first_name   = src.first_name;
+    dst.last_name    = src.last_name;
+    dst.organization = src.organization;
+    dst.vat_reg_num  = src.vat_reg_num;
+    dst.birth_date   = src.birth_date;
+    dst.id_card_num  = src.id_card_num;
+    dst.passport_num = src.passport_num;
+    dst.ssn_id_num   = src.ssn_id_num;
+    dst.vat_id_num   = src.vat_id_num;
+    dst.email        = src.email;
+    dst.notify_email = src.notify_email;
+    dst.telephone    = src.telephone;
+    dst.fax          = src.fax;
+    dst.permanent    = src.permanent;
+    dst.mailing      = src.mailing;
+    dst.billing      = src.billing;
+    dst.shipping     = src.shipping;
+    dst.shipping2    = src.shipping2;
+    dst.shipping3    = src.shipping3;
 }
 
 void wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src, Registry::MojeID::ContactStateInfo &dst)

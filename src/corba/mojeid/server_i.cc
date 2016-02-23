@@ -180,6 +180,24 @@ InfoContact* Server_i::info_contact(
     }
 }
 
+InfoContactPublishFlags Server_i::get_contact_info_publish_flags(
+    ContactId contact_id)
+{
+    try {
+        MojeIDImplData::InfoContactPublishFlags flags;
+        impl_ptr_->get_contact_info_publish_flags(contact_id, flags);
+        InfoContactPublishFlags retval;
+        CorbaConversion::wrap_InfoContactPublishFlags(flags, retval);
+        return retval;
+    }
+    catch (const MojeIDImplData::ObjectDoesntExist &e) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
+}
+
 ContactId Server_i::process_registration_request(
         const char *ident_request_id,
         const char *password,

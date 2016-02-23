@@ -265,15 +265,30 @@ struct InfoContact
     Nullable< std::string >     notify_email;
     Nullable< std::string >     telephone;
     Nullable< std::string >     fax;
-    bool                        disclose_name;
-    bool                        disclose_organization;
-    bool                        disclose_vat_reg_num;
-    bool                        disclose_ident;
-    bool                        disclose_email;
-    bool                        disclose_notify_email;
-    bool                        disclose_telephone;
-    bool                        disclose_fax;
-    bool                        disclose_permanent;
+};
+
+struct InfoContactPublishFlags
+{
+    ContactId id;
+    bool      first_name;
+    bool      last_name;
+    bool      organization;
+    bool      vat_reg_num;
+    bool      birth_date;
+    bool      id_card_num;
+    bool      passport_num;
+    bool      ssn_id_num;
+    bool      vat_id_num;
+    bool      email;
+    bool      notify_email;
+    bool      telephone;
+    bool      fax;
+    bool      permanent;
+    bool      mailing;
+    bool      billing;
+    bool      shipping;
+    bool      shipping2;
+    bool      shipping3;
 };
 
 struct UpdateTransferContact

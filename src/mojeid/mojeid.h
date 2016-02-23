@@ -81,6 +81,10 @@ public:
         const std::string &_username,
         MojeIDImplData::InfoContact &_result)const;
 
+    void get_contact_info_publish_flags(
+        ContactId _contact_id,
+        MojeIDImplData::InfoContactPublishFlags &_flags)const;
+
     void commit_prepared_transaction(const std::string &_trans_id)const;
 
     void rollback_prepared_transaction(const std::string &_trans_id)const;
