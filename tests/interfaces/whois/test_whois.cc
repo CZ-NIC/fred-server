@@ -318,9 +318,8 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
     Fred::OperationContext ctx;
     Fred::InfoNssetData ind = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_nsset_data;
     Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle(test_nsset_handle);
-    //new nsset has to be unchanged and not being transferred
-    BOOST_CHECK(nss.changed.isnull());
-    BOOST_CHECK(nss.last_transfer.isnull());
+    BOOST_CHECK(nss.changed.isnull());//new nsset has to be unchanged
+    BOOST_CHECK(nss.last_transfer.isnull());//new nsset has to not transferred
     BOOST_CHECK(nss.created == ind.creation_time);//as that or greater than __
     BOOST_CHECK(nss.handle == ind.handle);
     BOOST_CHECK(nss.nservers.at(0).fqdn == ind.dns_hosts.at(0).get_fqdn());
@@ -465,7 +464,7 @@ struct get_nssets_by_tech_c_fixture
         : test_registrar_fixture
 {
     std::string test_c_handle;
-    std::string test_no_handle;
+    std::string test_no_handle;//better name
     std::string test_wrong_handle;
     unsigned long test_limit;
 
@@ -557,5 +556,156 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_no_ns, get_nssets_by_tech_c_fixture
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_tech_c
 
+//    BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)
+//
+//    struct get_nameserver_by_fqdn_fixture
+//            : test_registrar_fixture
+//    {
+//        std::string test_c_handle;
+//        std::string test_no_handle;
+//        std::string test_wrong_handle;
+//
+//        get_nameserver_by_fqdn_fixture()
+//            : test_registrar_fixture(),
+//              test_c_handle(std::string("TEST-NAMESERVER-FQDN") + xmark),
+//              test_no_handle("fine-tech-c-handle"),
+//              test_wrong_handle("")
+//        {
+//            Fred::OperationContext ctx;
+//            Fred::Create().exec(ctx);
+//                //any extra setting here?
+//            }
+//            ctx.commit_transaction();
+//        }
+//
+//        ~get_nameserver_by_fqdn_fixture() {}
+//    };
+//
+//    BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
+//    {
+//        Fred::OperationContext ctx;
+//        std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_c_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
+//        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_c_handle, test_limit);
+//
+//        BOOST_CHECK(nss_s.content.at(i).changed.isnull());
+//        BOOST_CHECK(nss_s.content.at(i).last_transfer.isnull());
+//        BOOST_CHECK(nss_s.content.at(i).created == found.creation_time);//as that or greater than __
+//        BOOST_CHECK(nss_s.content.at(i).handle == found.handle);
+//        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).fqdn == found.dns_hosts.at(0).get_fqdn());
+//        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0)); //comparing two boost::address'es
+//        BOOST_CHECK(nss_s.content.at(i).registrar_handle == found.create_registrar_handle);
+//        BOOST_CHECK(nss_s.content.at(i).tech_contact_handles.at(0) == found.tech_contacts.at(0).handle);
+//
+//    }
+//
+//    BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_wrong_ns, get_nameserver_by_fqdn_fixture)
+//    {
+//        try
+//        {
+//            Fred::OperationContext ctx;
+//            Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_wrong_handle, test_limit);
+//            BOOST_ERROR("domain handle rules is wrong");
+//        }
+//        catch(const Registry::WhoisImpl::InvalidHandle& ex)
+//        {
+//            BOOST_CHECK(true);
+//            BOOST_MESSAGE(boost::diagnostic_information(ex));
+//        }
+//    }
+//
+//    BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, get_nameserver_by_fqdn_fixture)
+//    {
+//        try
+//        {
+//            Fred::OperationContext ctx;
+//            Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_no_handle, test_limit);
+//            BOOST_ERROR("unreported dangling NSSets");
+//        }
+//        catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+//        {
+//            BOOST_CHECK(true);
+//            BOOST_MESSAGE(boost::diagnostic_information(ex));
+//        }
+//    }
+//
+//    BOOST_AUTO_TEST_SUITE_END()//get_nameserver_by_fqdn
+
+BOOST_AUTO_TEST_SUITE(get_keyset_by_handle)
+
+struct get_keyset_by_handle_fixture
+        : test_registrar_fixture
+{
+    std::string test_keyset_handle;
+    std::string no_keyset_handle;
+    std::string wrong_keyset_handle;
+
+    get_keyset_by_handle_fixture()
+    : test_registrar_fixture(),
+      test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark),
+      no_keyset_handle("fine-keyset-handle"),
+      wrong_keyset_handle("")
+    {
+        Fred::OperationContext ctx;
+
+        std::vector<Fred::DnsKey> test_dns_keys;
+        test_dns_keys.push_back(Fred::DnsKey(0, 0, 0, "any-key"));
+        std::vector<std::string> test_tech_contacts;
+        test_tech_contacts.push_back("TEST-TECH-CONTACT");
+        Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
+            .set_dns_keys(test_dns_keys)
+            .set_tech_contacts(test_tech_contacts)
+            .exec(ctx);
+
+        ctx.commit_transaction();
+        BOOST_MESSAGE(test_keyset_handle);
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoKeysetData ikd = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
+    Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle(test_keyset_handle);
+    BOOST_CHECK(ks.changed.isnull());//new has to be unchanged
+    BOOST_CHECK(ks.created == ikd.creation_time);
+    BOOST_CHECK(ks.dns_keys.at(0).alg == ikd.dns_keys.at(0).get_alg());
+    BOOST_CHECK(ks.dns_keys.at(0).flags == ikd.dns_keys.at(0).get_flags());
+    BOOST_CHECK(ks.dns_keys.at(0).protocol == ikd.dns_keys.at(0).get_protocol());
+    BOOST_CHECK(ks.dns_keys.at(0).public_key == ikd.dns_keys.at(0).get_key());
+    BOOST_CHECK(ks.handle == ikd.handle);
+    BOOST_CHECK(ks.last_transfer.isnull());//new has to have no transfer
+    BOOST_CHECK(ks.registrar_handle == ikd.create_registrar_handle);
+    BOOST_CHECK(ks.tech_contact_handles.at(0) == ikd.tech_contacts.at(0));
+}
+
+BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle_no_keyset, get_keyset_by_handle_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle(no_keyset_handle);
+        BOOST_ERROR("unreported dangling keyset");
+    }
+    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle_wrong_nsset, get_keyset_by_handle_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle(wrong_keyset_handle);
+        BOOST_ERROR("keyset handle rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END()//get_keyset_by_handle
 
 BOOST_AUTO_TEST_SUITE_END();//TestWhois
