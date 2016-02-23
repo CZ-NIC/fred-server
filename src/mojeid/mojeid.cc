@@ -313,8 +313,7 @@ bool validated_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoCo
 
 bool notification_enabled()
 {
-    static const bool value = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->notify_commands;
-    return value;
+    return CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->notify_commands;
 }
 
 void notify(Fred::OperationContext&        _ctx,
@@ -1239,8 +1238,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         const Fred::PublicRequestLockGuardByIdentification locked_request(ctx, _ident_request_id);
         const Fred::PublicRequestAuthInfo pub_req_info(ctx, locked_request);
         if (pub_req_info.get_object_id().isnull()) {
-            static const std::string msg = "no object associated with this public request";
-            invalidate(ctx, locked_request, msg, _log_request_id);
+            invalidate(ctx, locked_request, "no object associated with this public request", _log_request_id);
             throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
         const Fred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
@@ -1282,8 +1280,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
 
             const bool contact_changed = static_cast< bool >(dbres[0][0]);
             if (contact_changed) {
-                static const std::string msg = "contact data changed after the public request had been created";
-                invalidate(ctx, locked_request, msg, _log_request_id);
+                invalidate(ctx, locked_request, "contact data changed after the public request had been created", _log_request_id);
                 throw MojeIDImplData::ContactChanged();
             }
 
@@ -1599,7 +1596,7 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
                 reg_conf->fileclient_path,
                 //doc_manager config dependence
                 cn_conf->get_nameservice_host_port()));
-        static const std::string czech_language = "cs";
+        const std::string czech_language = "cs";
         std::ostringstream pdf_document;
         std::auto_ptr< Fred::Document::Generator > doc_gen(
             doc_manager->createOutputGenerator(Fred::Document::GT_CONTACT_VALIDATION_REQUEST_PIN3,
@@ -2249,9 +2246,7 @@ void MojeIDImpl::generate_email_messages()const
     try {
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        static const std::string link_hostname_part = CfgArgs::instance()
-                                                          ->get_handler_ptr_by_type< HandleMojeIDArgs >()
-                                                              ->hostname;
+        const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->hostname;
         ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(
             ctx,
             ::MojeID::Messages::DefaultMultimanager(),
@@ -2398,7 +2393,7 @@ MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
                          boost::lexical_cast< std::string >(::time(NULL)) + ".pdf",
         FILETYPE_MOJEID_CARD, "");
 
-    static const std::string comm_type = "letter";
+    static const char *const comm_type = "letter";
     static const char *const message_type = "mojeid_card";
     const MessageId message_id =
         _msg_manager_ptr->save_letter_to_send(

@@ -12,7 +12,7 @@ enum { CHUNK_LENGTH = 8 };
 
 std::string generate(::size_t _length = CHUNK_LENGTH)
 {
-    static const std::string set_of_possible_values = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    const std::string set_of_possible_values = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     return Random::string_from(_length, set_of_possible_values);
 }
 
@@ -22,26 +22,26 @@ namespace {
 
 std::string get_demo_pin1()//11111111
 {
-    static const std::string pin1(Password::CHUNK_LENGTH, '1');
+    const std::string pin1(Password::CHUNK_LENGTH, '1');
     return pin1;
 }
 
 std::string get_demo_pin2()//22222222
 {
-    static const std::string pin2(Password::CHUNK_LENGTH, '2');
+    const std::string pin2(Password::CHUNK_LENGTH, '2');
     return pin2;
 }
 
 std::string get_demo_pin3()//33333333
 {
-    static const std::string pin3(Password::CHUNK_LENGTH, '3');
+    const std::string pin3(Password::CHUNK_LENGTH, '3');
     return pin3;
 }
 
 std::string get_demo_pin1_pin2()
 {
-    static const std::string pin1_pin2 = get_demo_pin1() +
-                                         get_demo_pin2();
+    const std::string pin1_pin2 = get_demo_pin1() +
+                                  get_demo_pin2();
     return pin1_pin2;
 }
 
@@ -74,7 +74,7 @@ std::string generate_pin1_pin2()
 
 std::string conditional_contact_identification_generate_passwords()
 {
-    static const bool runs_in_demo_mode =
+    const bool runs_in_demo_mode =
         CfgArgs::instance()->get_handler_ptr_by_type< HandleContactVerificationArgs >()->demo_mode;
 
     return runs_in_demo_mode ? get_demo_pin1_pin2()
@@ -85,7 +85,7 @@ namespace MojeID {
 
 std::string contact_transfer_request_generate_passwords()
 {
-    static const bool runs_in_demo_mode =
+    const bool runs_in_demo_mode =
         CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->demo_mode;
 
     return runs_in_demo_mode ? get_demo_pin1()
@@ -94,7 +94,7 @@ std::string contact_transfer_request_generate_passwords()
 
 std::string contact_identification_generate_passwords()
 {
-    static const bool runs_in_demo_mode =
+    const bool runs_in_demo_mode =
         CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->demo_mode;
 
     return runs_in_demo_mode ? get_demo_pin3()
@@ -115,8 +115,7 @@ std::string ContactConditionalIdentification::get_pin2_part(const std::string &_
 
 std::string ContactConditionalIdentification::get_public_request_type()const
 {
-    static const std::string type = "mojeid_contact_conditional_identification";
-    return type;
+    return "mojeid_contact_conditional_identification";
 }
 
 std::string ContactConditionalIdentification::generate_passwords()const
@@ -129,8 +128,7 @@ std::string ContactConditionalIdentification::generate_passwords()const
 
 std::string ContactIdentification::get_public_request_type()const
 {
-    static const std::string type = "mojeid_contact_identification";
-    return type;
+    return "mojeid_contact_identification";
 }
 
 std::string ContactIdentification::generate_passwords()const
@@ -141,8 +139,7 @@ std::string ContactIdentification::generate_passwords()const
 
 std::string ContactReidentification::get_public_request_type()const
 {
-    static const std::string type = "mojeid_contact_reidentification";
-    return type;
+    return "mojeid_contact_reidentification";
 }
 
 std::string ContactReidentification::generate_passwords()const
@@ -153,14 +150,12 @@ std::string ContactReidentification::generate_passwords()const
 
 std::string ContactValidation::get_public_request_type()const
 {
-    static const std::string type = "mojeid_contact_validation";
-    return type;
+    return "mojeid_contact_validation";
 }
 
 std::string ConditionallyIdentifiedContactTransfer::get_public_request_type()const
 {
-    static const std::string type = "mojeid_conditionally_identified_contact_transfer";
-    return type;
+    return "mojeid_conditionally_identified_contact_transfer";
 }
 
 std::string ConditionallyIdentifiedContactTransfer::generate_passwords()const
@@ -170,8 +165,7 @@ std::string ConditionallyIdentifiedContactTransfer::generate_passwords()const
 
 std::string IdentifiedContactTransfer::get_public_request_type()const
 {
-    static const std::string type = "mojeid_identified_contact_transfer";
-    return type;
+    return "mojeid_identified_contact_transfer";
 }
 
 std::string IdentifiedContactTransfer::generate_passwords()const
