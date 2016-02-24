@@ -42,7 +42,11 @@ namespace Fred
     ///check handle syntax
     bool TestHandle::is_invalid_handle() const
     {
-        static const boost::regex HANDLE_SYNTAX("[a-zA-Z0-9_:.-]{1,63}");
+        static const boost::regex HANDLE_SYNTAX("[a-zA-Z0-9](-?[a-zA-Z0-9])*");
+        if (handle_.length() > 30)
+        {
+            return true;
+        }
         return !boost::regex_match(handle_, HANDLE_SYNTAX);
     }
 
