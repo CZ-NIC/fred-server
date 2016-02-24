@@ -45,12 +45,12 @@ struct check_handle_fixture : public Test::Fixture::instantiate_db_template
 
     check_handle_fixture()
     : xmark(RandomDataGenerator().xnumstring(6))
-    , admin_contact_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
-    , admin_contact_handle_rem(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark+"-REM")
-    , test_nsset_handle ( std::string("TEST-NSSET-")+xmark+"-HANDLE")
-    , test_nsset_handle_rem ( std::string("TEST-NSSET-")+xmark+"-HANDLE-REM")
-    , test_keyset_handle ( std::string("TEST-KEYSET-")+xmark+"-HANDLE")
-    , test_keyset_handle_rem ( std::string("TEST-KEYSET-")+xmark+"-HANDLE-REM")
+    , admin_contact_handle(std::string("TEST-ADMIN-C-") + xmark)
+    , admin_contact_handle_rem(std::string("TEST-ADMIN-C-") + xmark + "-REM")
+    , test_nsset_handle(std::string("TEST-NSSET-") + xmark)
+    , test_nsset_handle_rem(std::string("TEST-NSSET-") + xmark + "-REM")
+    , test_keyset_handle(std::string("TEST-KEYSET-") + xmark)
+    , test_keyset_handle_rem(std::string("TEST-KEYSET-") + xmark + "-REM")
     {
         namespace ip = boost::asio::ip;
 
