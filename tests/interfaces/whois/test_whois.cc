@@ -299,15 +299,14 @@ struct get_nsset_by_handle_fixture
       wrong_nsset_handle("")
     {
         Fred::OperationContext ctx;
-        std::vector<Fred::DnsHost> v_dns;
-        v_dns.push_back(Fred::DnsHost(std::string("TEST-FQDN")+xmark,
-                        boost::asio::ip::address()));
         std::vector<std::string> tech_contacts;
         tech_contacts.push_back("TEST-TECH-CONTACT");
 
-        Fred::CreateNsset(test_nsset_handle, test_registrar_handle,
-                          Optional<std::string>(), Optional<short>(), v_dns,
-                          tech_contacts, Optional<unsigned long long>())
+        Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>(
+                    Fred::DnsHost(std::string("TEST-FQDN")+xmark,
+                    boost::asio::ip::address())))
+            .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
             .exec(ctx);
 
         ctx.commit_transaction();//commit fixture
@@ -646,16 +645,10 @@ struct get_keyset_by_handle_fixture
       wrong_keyset_handle("")
     {
         Fred::OperationContext ctx;
-
-        std::vector<Fred::DnsKey> test_dns_keys;
-        test_dns_keys.push_back(Fred::DnsKey(0, 0, 0, "any-key"));
-        std::vector<std::string> test_tech_contacts;
-        test_tech_contacts.push_back("TEST-TECH-CONTACT");
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
-            .set_dns_keys(test_dns_keys)
-            .set_tech_contacts(test_tech_contacts)
+            .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
+            .set_tech_contacts(Util::vector_of<std::string>("TEST-ADMIN-CONTACT")("TEST-TECH-CONTACT"))
             .exec(ctx);
-
         ctx.commit_transaction();
         BOOST_MESSAGE(test_keyset_handle);
     }
