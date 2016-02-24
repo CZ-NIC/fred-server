@@ -117,7 +117,8 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
             }
         }
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return Registrar();
@@ -140,7 +141,7 @@ std::vector<Registrar> Server_impl::get_registrars()
 
         return result;
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -166,7 +167,7 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
         }
         return reg_grp_seq;
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -192,7 +193,7 @@ std::vector<RegistrarCertification> Server_impl::get_registrar_certification_lis
         }
         return result;
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -207,7 +208,7 @@ std::vector<std::string> Server_impl::get_managed_zone_list()
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         return zone_seq;
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -250,7 +251,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             throw;
         }
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -320,7 +321,7 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
             throw;
         }
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -371,7 +372,7 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
         }
         return get_nssets_by_(ctx, nss_info, handle, limit);
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -398,7 +399,7 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
         }
         return get_nssets_by_(ctx, nss_info, handle, limit);
     }
-    catch (...)
+    catch(...)
     {
         log_and_rethrow_exception_handler(ctx);
     }
@@ -426,7 +427,8 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
             throw ObjectNotExists();
         }
     }
-    catch(...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return NameServer();
@@ -472,7 +474,8 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
             throw;
         }
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return KeySet();
@@ -551,7 +554,8 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
         }
         return ks_seq;
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return KeySetSeq();
@@ -639,7 +643,8 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             throw;
         }
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return Domain();
@@ -693,7 +698,8 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
         }
         return domain_seq;
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();
@@ -743,7 +749,8 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
         }
         return get_domains_by_(ctx, handle, limit, domain_info);
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();
@@ -768,7 +775,8 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle,
         }
         return get_domains_by_(ctx, handle, limit, domain_info);
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();
@@ -793,7 +801,8 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
         }
         return get_domains_by_(ctx, handle, limit, domain_info);
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();
@@ -841,7 +850,8 @@ std::vector<ObjectStatusDesc> Server_impl::get_object_status_descriptions(
     {
         throw;
     }
-    catch (...) {
+    catch(...)
+    {
         log_and_rethrow_exception_handler(ctx);
     }
     return std::vector<ObjectStatusDesc>();
