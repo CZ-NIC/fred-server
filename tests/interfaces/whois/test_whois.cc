@@ -28,7 +28,7 @@ struct test_registrar_fixture
 
     test_registrar_fixture()
     : xmark(RandomDataGenerator().xnumstring(6)),
-      test_registrar_handle(std::string("TEST-REGISTRAR-HANDLE")+xmark)
+      test_registrar_handle(std::string("TEST-REGISTRAR")+xmark)//from 3 to 16
     {
         Fred::OperationContext ctx;
 
@@ -40,7 +40,7 @@ struct test_registrar_fixture
             .set_country("CZ")
             .exec(ctx);
 
-        ctx.commit_transaction();//commit fixture
+        ctx.commit_transaction();
         BOOST_MESSAGE(test_registrar_handle);
     }
     ~test_registrar_fixture()
@@ -55,8 +55,8 @@ struct get_registrar_fixture
     std::string no_registrar_handle;
     std::string wrong_registrar_handle;
     get_registrar_fixture()
-        : no_registrar_handle("REG-"),
-          wrong_registrar_handle("")
+    : no_registrar_handle("absent-registrar"),
+      wrong_registrar_handle("")
     {}
 };
 
@@ -125,7 +125,7 @@ struct get_my_registrar_list_fixture
         for(int i=0; i<10; ++i)
         {
             std::ostringstream test_handles;
-            test_handles << "n" << i << test_registrar_handle;
+            test_handles << test_registrar_handle << i;
             Fred::CreateRegistrar& cr = Fred::CreateRegistrar(test_handles.str())
                 .set_name(std::string("TEST-REGISTRAR NAME")+xmark)
                 .set_street1(std::string("STR1")+xmark)
@@ -234,7 +234,7 @@ struct test_contact_fixture
         Fred::CreateContact(test_contact_handle, test_registrar_handle)
             .set_place(contact_place).exec(ctx);
 
-        ctx.commit_transaction();//commit fixture
+        ctx.commit_transaction();
         BOOST_MESSAGE(test_contact_handle);
     }
 };
@@ -309,7 +309,7 @@ struct get_nsset_by_handle_fixture
             .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
             .exec(ctx);
 
-        ctx.commit_transaction();//commit fixture
+        ctx.commit_transaction();
         BOOST_MESSAGE(test_nsset_handle);
     }
 };
@@ -396,7 +396,7 @@ struct get_nssets_by_ns_fixture
                 .exec(ctx);
             //any extra setting here?
         }
-        ctx.commit_transaction();//commit fixture
+        ctx.commit_transaction();
     }
 
     ~get_nssets_by_ns_fixture() {}
