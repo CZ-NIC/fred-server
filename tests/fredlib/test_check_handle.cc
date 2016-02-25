@@ -125,10 +125,6 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
     BOOST_CHECK(Fred::CheckContact(admin_contact_handle+"@").is_invalid_handle());
     BOOST_CHECK(Fred::CheckContact(admin_contact_handle_rem).is_protected(ctx));
     BOOST_CHECK(Fred::CheckContact(admin_contact_handle+xmark).is_free(ctx));
-    BOOST_CHECK(Fred::CheckRegistrar("RE-132").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckRegistrar("REG132").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckRegistrar("REG_132").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckRegistrar("re-132").is_invalid_handle());
 }
 
 /**
@@ -143,8 +139,6 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_false, check_handle_fixture)
     BOOST_CHECK(conflicting_handle.empty());
     BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_protected(ctx));
     BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_free(ctx));
-    BOOST_CHECK(!Fred::CheckRegistrar("REG-132").is_invalid_handle());
-    BOOST_CHECK(!Fred::CheckRegistrar("reg-132").is_invalid_handle());
 }
 
 /**
@@ -256,6 +250,59 @@ BOOST_FIXTURE_TEST_CASE(check_keyset_handle_false, check_handle_fixture)
     BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle).is_free(ctx));
 }
 
+/**
+ * test CheckRegistrar - invalid cases
+ */
+BOOST_AUTO_TEST_CASE(check_registrar_handle_invalid)
+{
+    BOOST_CHECK(Fred::CheckRegistrar("").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("1").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("12").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("12345678901234567").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123!").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123@").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123#").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123$").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123%").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123^").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123&").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123*").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123(").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123)").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123[").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123]").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123/").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123.").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123,").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123:").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123{").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123}").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123~").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123'").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123+").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123-").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123\"").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("123\\").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("-FOOBAR").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("FOOBAR-").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckRegistrar("FOO--BAR").is_invalid_handle());
+}
+
+/**
+ * test CheckRegistrar - ok cases
+ */
+BOOST_AUTO_TEST_CASE(check_registrar_handle_ok)
+{
+    BOOST_CHECK(!Fred::CheckRegistrar("FOOBAR").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("FOO-BAR").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("MO-O").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("foobar-42").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("REG-FOOBAR").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("REG-FOO-BAR").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("REG-FOO-BAR-42").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("123").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckRegistrar("1234567890123456").is_invalid_handle());
+}
 
 
 BOOST_AUTO_TEST_SUITE_END();//TestCheckHandle

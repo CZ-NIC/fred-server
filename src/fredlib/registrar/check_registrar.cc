@@ -39,7 +39,11 @@ namespace Fred
     {}
     bool CheckRegistrar::is_invalid_handle() const
     {
-        static const boost::regex REGISTRAR_HANDLE_SYNTAX("[rR][eE][gG]-.*");
+        static const boost::regex REGISTRAR_HANDLE_SYNTAX("[a-zA-Z0-9](-?[a-zA-Z0-9])*");
+        if (handle_.length() < 3 || handle_.length() > 16)
+        {
+            return true;
+        }
         return !boost::regex_match(handle_, REGISTRAR_HANDLE_SYNTAX);
     }
 
