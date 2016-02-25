@@ -45,12 +45,12 @@ struct check_handle_fixture : public Test::Fixture::instantiate_db_template
 
     check_handle_fixture()
     : xmark(RandomDataGenerator().xnumstring(6))
-    , admin_contact_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
-    , admin_contact_handle_rem(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark+"-REM")
-    , test_nsset_handle ( std::string("TEST-NSSET-")+xmark+"-HANDLE")
-    , test_nsset_handle_rem ( std::string("TEST-NSSET-")+xmark+"-HANDLE-REM")
-    , test_keyset_handle ( std::string("TEST-KEYSET-")+xmark+"-HANDLE")
-    , test_keyset_handle_rem ( std::string("TEST-KEYSET-")+xmark+"-HANDLE-REM")
+    , admin_contact_handle(std::string("TEST-ADMIN-C-") + xmark)
+    , admin_contact_handle_rem(std::string("TEST-ADMIN-C-") + xmark + "-REM")
+    , test_nsset_handle(std::string("TEST-NSSET-") + xmark)
+    , test_nsset_handle_rem(std::string("TEST-NSSET-") + xmark + "-REM")
+    , test_keyset_handle(std::string("TEST-KEYSET-") + xmark)
+    , test_keyset_handle_rem(std::string("TEST-KEYSET-") + xmark + "-REM")
     {
         namespace ip = boost::asio::ip;
 
@@ -145,6 +145,56 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_false, check_handle_fixture)
     BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_free(ctx));
     BOOST_CHECK(!Fred::CheckRegistrar("REG-132").is_invalid_handle());
     BOOST_CHECK(!Fred::CheckRegistrar("reg-132").is_invalid_handle());
+}
+
+/**
+ * test CheckContact handle - invalid cases
+ */
+BOOST_AUTO_TEST_CASE(check_contact_handle_validity_invalid)
+{
+    BOOST_CHECK(Fred::CheckContact("").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("!").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("@").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("#").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("$").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("%").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("^").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("&").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("*").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("(").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact(")").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("[").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("]").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("/").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact(".").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact(",").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact(":").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("{").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("}").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("~").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("'").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("+").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("-").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("\"").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("\\").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("FOO--BAR").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("-FOOBAR").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("FOOBAR-").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("FOOBAR-").is_invalid_handle());
+    BOOST_CHECK(Fred::CheckContact("1234567890123456789012345678901").is_invalid_handle());
+}
+
+/**
+ * test CheckContact handle - ok cases
+ */
+BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
+{
+    BOOST_CHECK(!Fred::CheckContact("F").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckContact("FOOBAR").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckContact("FOO-BAR").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckContact("123-BAR").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckContact("FOO-BAR-BAZ").is_invalid_handle());
+    BOOST_CHECK(!Fred::CheckContact("123456789012345678901234567890").is_invalid_handle());
 }
 
 /**
