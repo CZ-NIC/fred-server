@@ -47,6 +47,17 @@ struct test_registrar_fixture
     {}
 };
 
+struct test_contact_fixture
+{
+    std::string test_admin;
+    std::string test_contact;
+
+    test_contact_fixture()
+    : test_admin("TEST-ADMIN"),
+      test_contact("TEST-CONTACT")
+    {}
+}
+
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
 struct get_registrar_fixture
@@ -632,7 +643,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_nameserver_by_fqdn
 BOOST_AUTO_TEST_SUITE(get_keyset_by_handle)
 
 struct get_keyset_by_handle_fixture
-        : test_registrar_fixture
+        : test_registrar_fixture, test_contact_fixture
 {
     std::string test_keyset_handle;
     std::string no_keyset_handle;
@@ -640,6 +651,7 @@ struct get_keyset_by_handle_fixture
 
     get_keyset_by_handle_fixture()
     : test_registrar_fixture(),
+      test_contact_fixture(),
       test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark),
       no_keyset_handle("fine-keyset-handle"),
       wrong_keyset_handle("")
@@ -647,7 +659,7 @@ struct get_keyset_by_handle_fixture
         Fred::OperationContext ctx;
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
             .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
-            .set_tech_contacts(Util::vector_of<std::string>("TEST-ADMIN-CONTACT")("TEST-TECH-CONTACT"))
+            .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact))
             .exec(ctx);
         ctx.commit_transaction();
         BOOST_MESSAGE(test_keyset_handle);
@@ -705,20 +717,17 @@ BOOST_AUTO_TEST_SUITE_END()//get_keyset_by_handle
 BOOST_AUTO_TEST_SUITE(get_keysets_by_tech_c)
 
 struct get_keysets_by_tech_c_fixture
-        : test_registrar_fixture
+        : test_registrar_fixture, test_contact_fixture
 {
     std::string test_keyset_handle;
-    std::string test_admin_handle;
-    std::string test_tech_c_handle;
     std::string test_no_handle;
     std::string test_wrong_handle;
     unsigned long test_limit;
 
     get_keysets_by_tech_c_fixture()
     : test_registrar_fixture(),
+      test_contact_fixture(),
       test_keyset_handle(std::string("TEST_KEYSET_HANDLE") + xmark),
-      test_admin_handle("TEST-ADMIN-CONTACT"),
-      test_tech_c_handle("TEST-TECH-CONTACT"),
       test_no_handle("fine-tech-c-handle"),
       test_wrong_handle(""),
       test_limit(10)
@@ -731,7 +740,7 @@ struct get_keysets_by_tech_c_fixture
 
             Fred::CreateKeyset(test_handles.str(), test_registrar_handle + i)
                 .set_dns_keys(Util::vector_of<Fred::DnsKey>(42, 777, 13, "any-key"))
-                .set_tech_contacts(Util::vector_of<std::string>(test_admin_handle)(test_tech_c_handle))
+                .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact))
                 .exec(ctx);
         }
         ctx.commit_transaction();
@@ -743,8 +752,8 @@ struct get_keysets_by_tech_c_fixture
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
 {
     Fred::OperationContext ctx;
-    std::vector<Fred::InfoKeysetOutput> v_iko = Fred::InfoKeysetByTechContactHandle(test_admin_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
-    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(test_admin_handle, test_limit);
+    std::vector<Fred::InfoKeysetOutput> v_iko = Fred::InfoKeysetByTechContactHandle(test_admin).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
+    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(test_admin, test_limit);
     for(int i = 0; i < test_limit; ++i)
     {
         std::vector<Fred::InfoKeysetOutput>::iterator it = v_iko.begin(), end = v_iko.end();
