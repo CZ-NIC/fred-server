@@ -373,11 +373,11 @@ struct get_nssets_by_ns_fixture
     unsigned long test_limit;
 
     get_nssets_by_ns_fixture()
-        : test_registrar_fixture(),
-          test_fqdn(std::string("TEST-FQDN") + xmark),
-          test_no_fqdn("fine-fqdn"),
-          test_wrong_fqdn("."),
-          test_limit(10)
+    : test_registrar_fixture(),
+      test_fqdn(std::string("test") + xmark + ".cz"),
+      test_no_fqdn("fine-fqdn.cz"),
+      test_wrong_fqdn("."),
+      test_limit(10)
     {
         Fred::OperationContext ctx;
         for(int i = 0; i < test_limit; ++i)
@@ -472,11 +472,11 @@ struct get_nssets_by_tech_c_fixture
     unsigned long test_limit;
 
     get_nssets_by_tech_c_fixture()
-        : test_registrar_fixture(),
-          test_c_handle(std::string("TEST-CONTACT-HANDLE") + xmark),
-          test_no_handle("fine-tech-c-handle"),
-          test_wrong_handle(""),
-          test_limit(10)
+    : test_registrar_fixture(),
+      test_c_handle(std::string("TEST-CONTACT-HANDLE") + xmark),
+      test_no_handle("fine-tech-c-handle"),
+      test_wrong_handle(""),
+      test_limit(10)
     {
         Fred::OperationContext ctx;
         for(int i = 0; i < test_limit; ++i)
@@ -570,10 +570,10 @@ struct get_nameserver_by_fqdn_fixture
     std::string test_wrong_handle;
 
     get_nameserver_by_fqdn_fixture()
-        : test_registrar_fixture(),
-          test_nameserver_fqdn(std::string("TEST-NAMESERVER-FQDN") + xmark),
-          test_no_handle("fine-tech-c-handle"),
-          test_wrong_handle("")
+    : test_registrar_fixture(),
+      test_nameserver_fqdn(std::string("test-nameserver") + xmark + ".cz"),
+      test_no_handle("fine-fqdn.cz"),
+      test_wrong_handle("")
     {
         Fred::OperationContext ctx;
         Fred::CreateNsset("TEST-NSSET-HANDLE", test_registrar_handle)
@@ -715,13 +715,13 @@ struct get_keysets_by_tech_c_fixture
     unsigned long test_limit;
 
     get_keysets_by_tech_c_fixture()
-        : test_registrar_fixture(),
-          test_keyset_handle(std::string("TEST_KEYSET_HANDLE") + xmark),
-          test_admin_handle("TEST-ADMIN-CONTACT"),
-          test_tech_c_handle("TEST-TECH-CONTACT"),
-          test_no_handle("fine-tech-c-handle"),
-          test_wrong_handle(""),
-          test_limit(10)
+    : test_registrar_fixture(),
+      test_keyset_handle(std::string("TEST_KEYSET_HANDLE") + xmark),
+      test_admin_handle("TEST-ADMIN-CONTACT"),
+      test_tech_c_handle("TEST-TECH-CONTACT"),
+      test_no_handle("fine-tech-c-handle"),
+      test_wrong_handle(""),
+      test_limit(10)
     {
         Fred::OperationContext ctx;
         for(int i = 0; i < test_limit; ++i)
