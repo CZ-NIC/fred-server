@@ -651,9 +651,12 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            const std::string fqdn = Fred::Zone::rem_trailing_dot(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-            );
+            const std::string fqdn_input = Corba::unwrap_string_from_const_char_ptr(handle);
+            /* remove optional trailing dot for db search
+             * XXX: this should be handled by passing appropriate data type for domain name
+             *      (more occurences in methods bellow)
+             **/
+            const std::string fqdn = Fred::Zone::rem_trailing_dot(fqdn_input);
 
             Fred::OperationContext ctx;
             NSSetSeq_var nss_seq = new NSSetSeq;
@@ -664,7 +667,7 @@ namespace Whois {
 
             if(nss_info.empty())
             {
-                if(Fred::CheckDomain(fqdn).is_invalid_syntax())
+                if(Fred::CheckDomain(fqdn_input).is_invalid_syntax())
                 {
                     throw INVALID_HANDLE();
                 }
@@ -746,9 +749,9 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            const std::string ns_fqdn = Fred::Zone::rem_trailing_dot(
-                Corba::unwrap_string_from_const_char_ptr(fqdn)
-            );
+            const std::string ns_fqdn_input = Corba::unwrap_string_from_const_char_ptr(fqdn);
+            /* remove optional trailing dot for db search */
+            const std::string ns_fqdn = Fred::Zone::rem_trailing_dot(ns_fqdn_input);
 
             Fred::OperationContext ctx;
 
@@ -757,7 +760,7 @@ namespace Whois {
                 NameServer temp;
                 temp.fqdn = Corba::wrap_string_to_corba_string(ns_fqdn);
                 /*
-                 * Because of grouping nameservers NSSet we don't include
+                 * Because of grouping nameservers in NSSet we don't include
                  * IP address in output (given nameserver can be in different
                  * NSSets with different IP addresses)
                  *
@@ -767,7 +770,7 @@ namespace Whois {
             }
             else
             {
-                if(Fred::CheckDomain(ns_fqdn).is_invalid_syntax())
+                if(Fred::CheckDomain(ns_fqdn_input).is_invalid_syntax())
                 {
                     throw INVALID_HANDLE();
                 }
@@ -875,25 +878,26 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            const std::string fqdn = Fred::Zone::rem_trailing_dot(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-            );
+            const std::string fqdn_input = Corba::unwrap_string_from_const_char_ptr(handle);
+            /* remove optional trailing dot for db search */
+            const std::string fqdn = Fred::Zone::rem_trailing_dot(fqdn_input);
+
 
             Fred::OperationContext ctx;
             try
             {
                 //check general name rules
-                if(Fred::CheckDomain(fqdn).is_invalid_syntax())
+                if(Fred::CheckDomain(fqdn_input).is_invalid_syntax())
                 {
                     throw INVALID_LABEL();
                 }
 
-                if(Fred::CheckDomain(fqdn).is_bad_zone(ctx))
+                if(Fred::CheckDomain(fqdn_input).is_bad_zone(ctx))
                 {
                     throw UNMANAGED_ZONE();
                 }
 
-                if(Fred::CheckDomain(fqdn).is_bad_length(ctx))
+                if(Fred::CheckDomain(fqdn_input).is_bad_length(ctx))
                 {
                     throw TOO_MANY_LABELS();
                 }
@@ -915,7 +919,7 @@ namespace Whois {
                 if(e.is_set_unknown_fqdn())
                 {
                     //check current registry name rules (that might change over time)
-                    if(Fred::CheckDomain(fqdn).is_invalid_handle(ctx))
+                    if(Fred::CheckDomain(fqdn_input).is_invalid_handle(ctx))
                     {
                         throw INVALID_LABEL();
                     }
