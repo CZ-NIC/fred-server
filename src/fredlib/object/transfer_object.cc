@@ -62,15 +62,14 @@ namespace Fred
                 "trdate = now(), "
                 "clid = $1::integer, "
                 "authinfopw = $2::text "
-            "WHERE id = $3::integer "
-            "RETURNING 1",
+            "WHERE id = $3::integer ",
             Database::query_param_list
                 (registrar_id)
                 (_new_authinfopw.password_)
                 (_object_id)
         );
 
-        if(transfer_res.size() != 1) {
+        if(transfer_res.rows_affected() != 1) {
             throw std::runtime_error("transfer failed");
         }
 
