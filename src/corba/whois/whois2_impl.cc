@@ -651,14 +651,17 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            const std::string fqdn = Fred::Zone::rem_trailing_dot(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-            );
+            const std::string fqdn = Corba::unwrap_string_from_const_char_ptr(handle);
+            /* remove optional trailing dot for db search
+             * XXX: this should be handled by passing appropriate data type for domain name
+             *      (more occurences in methods bellow)
+             **/
+            const std::string fqdn_ntd = Fred::Zone::rem_trailing_dot(fqdn);
 
             Fred::OperationContext ctx;
             NSSetSeq_var nss_seq = new NSSetSeq;
 
-            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(fqdn)
+            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(fqdn_ntd)
                 .set_limit(limit + 1)
                 .exec(ctx, output_timezone);
 
@@ -746,18 +749,18 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            const std::string ns_fqdn = Fred::Zone::rem_trailing_dot(
-                Corba::unwrap_string_from_const_char_ptr(fqdn)
-            );
+            const std::string ns_fqdn = Corba::unwrap_string_from_const_char_ptr(fqdn);
+            /* remove optional trailing dot for db search */
+            const std::string ns_fqdn_ntd = Fred::Zone::rem_trailing_dot(ns_fqdn);
 
             Fred::OperationContext ctx;
 
-            if(::Whois::nameserver_exists(ns_fqdn, ctx))
+            if(::Whois::nameserver_exists(ns_fqdn_ntd, ctx))
             {
                 NameServer temp;
-                temp.fqdn = Corba::wrap_string_to_corba_string(ns_fqdn);
+                temp.fqdn = Corba::wrap_string_to_corba_string(ns_fqdn_ntd);
                 /*
-                 * Because of grouping nameservers NSSet we don't include
+                 * Because of grouping nameservers in NSSet we don't include
                  * IP address in output (given nameserver can be in different
                  * NSSets with different IP addresses)
                  *
@@ -875,9 +878,10 @@ namespace Whois {
         {
             LOGGING_CONTEXT(log_ctx);
 
-            const std::string fqdn = Fred::Zone::rem_trailing_dot(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-            );
+            const std::string fqdn = Corba::unwrap_string_from_const_char_ptr(handle);
+            /* remove optional trailing dot for db search */
+            const std::string fqdn_ntd = Fred::Zone::rem_trailing_dot(fqdn);
+
 
             Fred::OperationContext ctx;
             try
@@ -899,12 +903,12 @@ namespace Whois {
                 }
 
                 Domain tmp_domain(wrap_domain(
-                    Fred::InfoDomainByHandle(fqdn).exec(ctx, output_timezone).info_domain_data
+                    Fred::InfoDomainByHandle(fqdn_ntd).exec(ctx, output_timezone).info_domain_data
                 ));
 
-                if(::Whois::is_domain_delete_pending(fqdn, ctx, "Europe/Prague"))
+                if(::Whois::is_domain_delete_pending(fqdn_ntd, ctx, "Europe/Prague"))
                 {
-                    return new Domain(generate_obfuscate_domain_delete_candidate(fqdn));
+                    return new Domain(generate_obfuscate_domain_delete_candidate(fqdn_ntd));
                 }
 
                 return new Domain(tmp_domain);
