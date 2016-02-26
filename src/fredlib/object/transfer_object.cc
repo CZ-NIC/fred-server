@@ -33,7 +33,8 @@ namespace Fred
             if(sponsoring_registrar_res.size() < 1) {
                 throw ExceptionUnknownObjectId();
 
-            } else if(sponsoring_registrar_res.size() > 1) {
+            }
+            if(sponsoring_registrar_res.size() > 1) {
                 throw std::runtime_error("something is really broken - nonunique record in object_registry");
             }
 
