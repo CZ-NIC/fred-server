@@ -5,11 +5,13 @@
 
 namespace Fred
 {
-    class GeneratedAuthInfoPassword {
-        public:
-            /** @throws InvalidGeneratedAuthInfoPassword */
-            explicit GeneratedAuthInfoPassword(const std::string& _password);
-            const std::string password_;
+    /**
+     * Represents newly generated authinfo that is valid according to our rules.
+     */
+    struct GeneratedAuthInfoPassword {
+        /** @throws InvalidGeneratedAuthInfoPassword */
+        explicit GeneratedAuthInfoPassword(const std::string& _password);
+        const std::string password_;
     };
 }
 
