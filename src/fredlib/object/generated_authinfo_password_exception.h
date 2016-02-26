@@ -6,7 +6,7 @@
 namespace Fred
 {
     struct InvalidGeneratedAuthInfoPassword : Exception {
-        const char* const what() const { return "invalid generated auth info password"; }
+        const char* what() const { return "invalid generated auth info password"; }
     };
 }
 
