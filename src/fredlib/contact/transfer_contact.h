@@ -40,7 +40,7 @@ namespace Fred
             );
 
             /**
-             * @throws ContactId
+             * @throws UnknownContactId
              * @throws UnknownRegistrar
              * @throws IncorrectAuthInfoPw
              * @throws NewRegistrarIsAlreadySponsoring
