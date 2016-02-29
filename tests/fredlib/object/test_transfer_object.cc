@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(test_unknown_registrar, Test::has_contact_and_a_differen
 BOOST_FIXTURE_TEST_CASE(test_unknown_object, Test::has_contact_and_a_different_registrar)
 {
     BOOST_CHECK_THROW(
-        Fred::transfer_object(ctx, 42 /* <= !!! */, the_different_registrar.handle, Fred::GeneratedAuthInfoPassword("abcdefgh")),
+        Fred::transfer_object(ctx, Test::get_nonexistent_object_id(ctx) /* <= !!! */, the_different_registrar.handle, Fred::GeneratedAuthInfoPassword("abcdefgh")),
         Fred::UnknownObjectId
     );
 }

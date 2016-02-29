@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(test_unknown_registrar)
 BOOST_AUTO_TEST_CASE(test_unknown_object)
 {
     Fred::TransferContact transfer(
-        42, /* <= !!! */
+        Test::get_nonexistent_object_id(ctx), /* <= !!! */
         the_different_registrar.handle,
         contact.authinfopw
     );
