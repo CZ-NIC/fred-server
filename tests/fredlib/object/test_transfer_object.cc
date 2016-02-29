@@ -90,8 +90,8 @@ BOOST_FIXTURE_TEST_CASE(test_unknown_object, Test::has_contact_and_a_different_r
 BOOST_FIXTURE_TEST_CASE(test_registrar_is_already_sponsoring, Test::has_contact_and_a_different_registrar)
 {
     BOOST_CHECK_THROW(
-        Fred::transfer_object(ctx, registrar.id /* <= !!! */, the_different_registrar.handle, Fred::GeneratedAuthInfoPassword("abcdefgh")),
-        Fred::UnknownObjectId
+        Fred::transfer_object(ctx, contact.id, registrar.handle, Fred::GeneratedAuthInfoPassword("abcdefgh")),
+        Fred::NewRegistrarIsAlreadySponsoring
     );
 }
 
