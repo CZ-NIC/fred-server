@@ -14,15 +14,15 @@ namespace Fred
         const char* what() const throw() { return "incorrect AuthInfoPw"; }
     };
 
-    struct ExceptionUnknownRegistrar : Exception {
+    struct UnknownRegistrar : Exception {
         const char* what() const throw() { return "unknown registrar"; }
     };
 
-    struct ExceptionUnknownObjectId : Exception {
+    struct UnknownObjectId : Exception {
         const char* what() const throw() { return "unknown object id"; }
     };
 
-    struct UnknownContactId : ExceptionUnknownObjectId {
+    struct UnknownContactId : UnknownObjectId {
         const char* what() const throw() { return "unknown contact id"; }
     };
 }

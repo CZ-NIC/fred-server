@@ -40,10 +40,10 @@ namespace Fred
             );
 
             /**
-             * @throws UnknownContactId
-             * @throws ExceptionUnknownRegistrar
+             * @throws ContactId
+             * @throws UnknownRegistrar
              * @throws IncorrectAuthInfoPw
-             * @throws ExceptionNewRegistrarIsAlreadySponsoring
+             * @throws NewRegistrarIsAlreadySponsoring
              */
             void exec(OperationContext& _ctx);
 

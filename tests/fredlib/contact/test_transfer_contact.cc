@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(test_unknown_registrar)
 
     BOOST_CHECK_THROW(
         transfer.exec(ctx),
-        Fred::ExceptionUnknownRegistrar
+        Fred::UnknownRegistrar
     );
 }
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_registrar_is_already_sponsoring)
     );
     BOOST_CHECK_THROW(
         transfer.exec(ctx),
-        Fred::ExceptionNewRegistrarIsAlreadySponsoring
+        Fred::NewRegistrarIsAlreadySponsoring
     );
 }
 

@@ -75,7 +75,7 @@ BOOST_FIXTURE_TEST_CASE(test_unknown_registrar, Test::has_contact_and_a_differen
 {
     BOOST_CHECK_THROW(
         Fred::transfer_object(ctx, contact.id, "nonexistentregistrar" /* <= !!! */, Fred::GeneratedAuthInfoPassword("abcdefgh")),
-        Fred::ExceptionUnknownRegistrar
+        Fred::UnknownRegistrar
     );
 }
 
@@ -83,7 +83,7 @@ BOOST_FIXTURE_TEST_CASE(test_unknown_object, Test::has_contact_and_a_different_r
 {
     BOOST_CHECK_THROW(
         Fred::transfer_object(ctx, 42 /* <= !!! */, the_different_registrar.handle, Fred::GeneratedAuthInfoPassword("abcdefgh")),
-        Fred::ExceptionUnknownObjectId
+        Fred::UnknownObjectId
     );
 }
 
@@ -91,7 +91,7 @@ BOOST_FIXTURE_TEST_CASE(test_registrar_is_already_sponsoring, Test::has_contact_
 {
     BOOST_CHECK_THROW(
         Fred::transfer_object(ctx, registrar.id /* <= !!! */, the_different_registrar.handle, Fred::GeneratedAuthInfoPassword("abcdefgh")),
-        Fred::ExceptionUnknownObjectId
+        Fred::UnknownObjectId
     );
 }
 

@@ -9,9 +9,9 @@
 namespace Fred
 {
     /**
-     * @throws ExceptionUnknownRegistrar
-     * @throws ExceptionUnknownObjectId
-     * @throws ExceptionNewRegistrarIsAlreadySponsoring
+     * @throws UnknownRegistrar
+     * @throws UnknownObjectId
+     * @throws NewRegistrarIsAlreadySponsoring
      */
     void transfer_object(
         Fred::OperationContext& _ctx,

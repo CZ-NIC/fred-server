@@ -19,7 +19,7 @@ namespace Fred
 
         } catch(const Fred::InfoRegistrarByHandle::Exception& e) {
             if(e.is_set_unknown_registrar_handle()) {
-                throw ExceptionUnknownRegistrar();
+                throw UnknownRegistrar();
             }
             throw;
         }
@@ -31,7 +31,7 @@ namespace Fred
             );
 
             if(sponsoring_registrar_res.size() < 1) {
-                throw ExceptionUnknownObjectId();
+                throw UnknownObjectId();
 
             }
             if(sponsoring_registrar_res.size() > 1) {
@@ -39,7 +39,7 @@ namespace Fred
             }
 
             if(static_cast<unsigned long long>(sponsoring_registrar_res[0]["clid"]) == registrar_id) {
-                throw ExceptionNewRegistrarIsAlreadySponsoring();
+                throw NewRegistrarIsAlreadySponsoring();
             }
         }
 
@@ -50,7 +50,7 @@ namespace Fred
             );
 
             if(existence_check_res.size() < 1) {
-                throw ExceptionUnknownObjectId();
+                throw UnknownObjectId();
             } else if(existence_check_res.size() > 1) {
                 throw std::runtime_error("something is really broken - nonunique record in object_registry");
             }
