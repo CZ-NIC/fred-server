@@ -794,10 +794,21 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/contact/info_contact_output.h \
 		src/fredlib/contact/place_address.cc \
 		src/fredlib/contact/place_address.h \
+		src/fredlib/contact/transfer_contact.h \
+		src/fredlib/contact/transfer_contact.cc \
 		src/fredlib/object/object.h \
 		src/fredlib/object/object.cc \
 		src/fredlib/object/object_impl.h \
 		src/fredlib/object/object_impl.cc \
+		src/fredlib/object/generate_authinfo_password.h \
+		src/fredlib/object/generate_authinfo_password.cc \
+		src/fredlib/object/generated_authinfo_password.h \
+		src/fredlib/object/generated_authinfo_password.cc \
+		src/fredlib/object/generated_authinfo_password_exception.h \
+		src/fredlib/object/transfer_object.h \
+		src/fredlib/object/transfer_object.cc \
+		src/fredlib/object/transfer_object_exception.h \
+		src/fredlib/object/object.cc \
 		src/fredlib/poll/message_types.h \
 		src/fredlib/poll/create_poll_message_impl.h \
 		src/fredlib/poll/create_poll_message_impl.cc \
@@ -862,6 +873,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/check_keyset.h \
 		src/fredlib/object/check_handle.cc \
 		src/fredlib/object/check_handle.h\
+		src/fredlib/object/transfer_object.cc \
+		src/fredlib/object/transfer_object.h\
 		src/fredlib/keyset/delete_keyset.cc \
 		src/fredlib/keyset/delete_keyset.h \
 		src/fredlib/registrar/registrar_impl.h \
@@ -2404,6 +2417,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/test_merge_contact_fixture.h \
 		tests/fredlib/contact/test_update_contact.cc \
 		tests/fredlib/contact/test_copy_contact.cc \
+		tests/fredlib/contact/test_transfer_contact.cc \
 		tests/fredlib/domain/test_update_domain.cc \
 		tests/fredlib/domain/test_info_domain.cc \
 		tests/fredlib/domain/test_delete_domain.cc \
@@ -2430,6 +2444,9 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/poll/test_create_delete_contact_poll_message.cc \
 		tests/fredlib/poll/test_create_delete_domain_poll_message.cc \
 		tests/fredlib/poll/test_create_update_object_poll_message.cc \
+		tests/fredlib/object/test_generate_authinfo_password.cc \
+		tests/fredlib/object/test_generated_authinfo_password.cc \
+		tests/fredlib/object/test_transfer_object.cc \
 		tests/fredlib/object_state/test_object_state.cc \
 		tests/fredlib/object_state/test_create_object_state_request_id.cc \
 		tests/fredlib/object_state/test_create_admin_object_block_request_id.cc \
