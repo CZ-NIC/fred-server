@@ -21,7 +21,7 @@ namespace Fred
     }
 
     GeneratedAuthInfoPassword generate_authinfo_pw() {
-        static const std::string alphabet("ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
+        static const std::string alphabet = get_chars_allowed_in_generated_authinfopw();
 
         static boost::variate_generator<boost::mt19937, boost::uniform_int<> > random_alphabet_idx_generator(
             boost::mt19937(msseed()),

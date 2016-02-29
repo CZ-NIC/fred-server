@@ -13,7 +13,7 @@ namespace Fred
     static inline std::string::size_type max_length() { return 300; }
     /* This is not the most efficient solution. Expecting to be optimized in case it is an issue (but avoiding less clear and potentially unnecessary premature optimization for now). */
     static inline std::set<char> get_allowed_chars() {
-        const std::string allowed_chars_as_string("ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
+        const std::string allowed_chars_as_string = get_chars_allowed_in_generated_authinfopw();
 
         return std::set<char>(
             allowed_chars_as_string.begin(),
