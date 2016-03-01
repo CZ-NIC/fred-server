@@ -101,7 +101,8 @@ namespace Fred
         " , kobr.crhistoryid AS ")(GetAlias::first_historyid())(
         " , h.request_id AS ")(GetAlias::logd_request_id())(
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        /* CURRENT_TIMESTAMP is of type TIMESTAMP WITH TIME ZONE Ticket #15178 */
+        " , (CURRENT_TIMESTAMP AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
         " FROM object_registry kobr ");
         if(history_query_)
         {

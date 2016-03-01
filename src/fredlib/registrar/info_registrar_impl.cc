@@ -90,7 +90,8 @@ namespace Fred
         " , r.system AS ")(GetAlias::system())(
         " , r.regex AS ")(GetAlias::memo_regex())(
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param_text(local_timestamp_pg_time_zone_name)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        /* CURRENT_TIMESTAMP is of type TIMESTAMP WITH TIME ZONE Ticket #15178 */
+        " , (CURRENT_TIMESTAMP AT TIME ZONE ").param_text(local_timestamp_pg_time_zone_name)(")::timestamp AS ")(GetAlias::local_timestamp())(
         " FROM registrar r ");
 
         if(info_registrar_id_filter_cte_.isset())

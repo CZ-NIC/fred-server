@@ -122,7 +122,8 @@ namespace Fred
         " , ct.discloseident AS ")(GetAlias::discloseident())(
         " , ct.disclosenotifyemail  AS ")(GetAlias::disclosenotifyemail())(
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        /* CURRENT_TIMESTAMP is of type TIMESTAMP WITH TIME ZONE Ticket #15178 */
+        " , (CURRENT_TIMESTAMP AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
         " , ct.warning_letter AS ")(GetAlias::domain_expiration_letter_preference())(
         " FROM object_registry cobr ");
         if(history_query_)
