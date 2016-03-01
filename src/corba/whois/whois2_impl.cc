@@ -15,6 +15,7 @@
 
 #include "src/whois/nameserver_exists.h"
 #include "src/whois/is_domain_delete_pending.h"
+#include "src/whois/domain_expiration_datetime.h"
 #include "src/whois/registrar_group.h"
 #include "src/whois/registrar_certification.h"
 #include "src/whois/zone_list.h"
@@ -311,6 +312,8 @@ namespace Whois {
         temp.changed = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
         temp.last_transfer = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
         temp.expire = Corba::wrap_date(boost::gregorian::date());
+        temp.expire_time_estimate = Corba::wrap_time(boost::posix_time::ptime());
+        temp.expire_time_actual = NULL;
         temp.validated_to = NULL;
         {
             std::vector<std::string> statuses;
@@ -320,7 +323,11 @@ namespace Whois {
         return temp;
     }
 
-    Domain wrap_domain(const Fred::InfoDomainData& in)
+    Domain wrap_domain(
+        const Fred::InfoDomainData& in,
+        const boost::posix_time::ptime &_expire_time_estimate,
+        const Optional<boost::posix_time::ptime> &_expire_time_actual
+    )
     {
         Domain temp;
         temp.handle = Corba::wrap_string_to_corba_string(in.fqdn);
@@ -340,6 +347,8 @@ namespace Whois {
         temp.changed = Corba::wrap_nullable_datetime(in.update_time);
         temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
         temp.expire = Corba::wrap_date(in.expiration_date);
+        temp.expire_time_estimate = Corba::wrap_time(_expire_time_estimate);
+        temp.expire_time_actual = Corba::wrap_optional_datetime(_expire_time_actual);
         if(! in.enum_domain_validation.isnull()) {
             temp.validated_to = new Registry::NullableDate(
                 Corba::wrap_date(in.enum_domain_validation.get_value().validation_expiration)
@@ -353,17 +362,25 @@ namespace Whois {
         return temp;
     }
 
-    class DomainInfoWithDeleteCandidate
+    class DomainInfo
     {
         Fred::InfoDomainOutput info;
         bool delete_candidate;
+        boost::posix_time::ptime expire_time_estimate;
+        Optional<boost::posix_time::ptime> expire_time_actual;
 
     public:
-
-        DomainInfoWithDeleteCandidate(const Fred::InfoDomainOutput& _info, bool _delete_candidate)
-        : info(_info)
-        , delete_candidate(_delete_candidate)
-        {}
+        DomainInfo(
+            const Fred::InfoDomainOutput& _info,
+            bool _delete_candidate,
+            const boost::posix_time::ptime& _expire_time_estimate,
+            const Optional<boost::posix_time::ptime>& _expire_time_actual)
+        : info(_info),
+          delete_candidate(_delete_candidate),
+          expire_time_estimate(_expire_time_estimate),
+          expire_time_actual(_expire_time_actual)
+        {
+        }
 
         Fred::InfoDomainOutput get_info() const
         {
@@ -374,10 +391,20 @@ namespace Whois {
         {
             return delete_candidate;
         }
+
+        boost::posix_time::ptime get_expire_time_estimate() const
+        {
+            return expire_time_estimate;
+        }
+
+        Optional<boost::posix_time::ptime> get_expire_time_actual() const
+        {
+            return expire_time_actual;
+        }
     };
 
-    template<> Domain set_element_of_corba_seq<Domain,  DomainInfoWithDeleteCandidate>
-        (const DomainInfoWithDeleteCandidate& ile)
+    template<> Domain set_element_of_corba_seq<Domain,  DomainInfo>
+        (const DomainInfo& ile)
     {
         if(ile.get_delete_candidate())
         {
@@ -385,7 +412,11 @@ namespace Whois {
         }
         else
         {
-            return wrap_domain(ile.get_info().info_domain_data);
+            return wrap_domain(
+                ile.get_info().info_domain_data,
+                ile.get_expire_time_estimate(),
+                ile.get_expire_time_actual()
+            );
         }
     }
 
@@ -902,8 +933,11 @@ namespace Whois {
                     throw TOO_MANY_LABELS();
                 }
 
+                Fred::InfoDomainData domain = Fred::InfoDomainByHandle(fqdn).exec(ctx, output_timezone).info_domain_data;
                 Domain tmp_domain(wrap_domain(
-                    Fred::InfoDomainByHandle(fqdn).exec(ctx, output_timezone).info_domain_data
+                    domain,
+                    ::Whois::domain_expiration_datetime_estimate(ctx, domain.expiration_date),
+                    ::Whois::domain_expiration_datetime_actual(ctx, domain.id)
                 ));
 
                 if(::Whois::is_domain_delete_pending(fqdn, ctx, "Europe/Prague"))
@@ -943,16 +977,20 @@ namespace Whois {
      */
     void set_domains_seq(DomainSeq& domain_seq, const std::vector<Fred::InfoDomainOutput>& il, Fred::OperationContext& ctx)
     {
-        std::vector<DomainInfoWithDeleteCandidate> didclist;
-        didclist.reserve(il.size());
+        std::vector<DomainInfo> aux_list;
+        aux_list.reserve(il.size());
 
         BOOST_FOREACH(const Fred::InfoDomainOutput& i, il)
         {
-            didclist.push_back(DomainInfoWithDeleteCandidate(i,
-                ::Whois::is_domain_delete_pending(i.info_domain_data.fqdn, ctx, "Europe/Prague")));
+            aux_list.push_back(DomainInfo(
+                i,
+                ::Whois::is_domain_delete_pending(i.info_domain_data.fqdn, ctx, "Europe/Prague"),
+                ::Whois::domain_expiration_datetime_estimate(ctx, i.info_domain_data.expiration_date),
+                ::Whois::domain_expiration_datetime_actual(ctx, i.info_domain_data.id)
+            ));
         }
 
-        set_corba_seq<DomainSeq, Domain>(domain_seq, didclist);
+        set_corba_seq<DomainSeq, Domain>(domain_seq, aux_list);
     }
 
     DomainSeq* Server_impl::get_domains_by_registrant(
