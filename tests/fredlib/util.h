@@ -19,7 +19,7 @@ namespace Test
 {
 
 struct autocommitting_context : virtual Fixture::instantiate_db_template {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     virtual ~autocommitting_context() {
         ctx.commit_transaction();
