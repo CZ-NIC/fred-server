@@ -978,9 +978,9 @@ struct invalid_unmanaged_fixture
         std::ostringstream prefix;
         for(int i=0; i < 256 - test_fqdn_bad_zone.size(); ++i)//exceed the size of valid label
         {
-            prefix << "1";
+            prefix << "1";//invalid part
         }
-        prefix << test_fqdn_bad_zone;
+        prefix << test_fqdn_bad_zone;//unmanaged part
         invalid_unmanaged_fqdn = prefix.str();
     }
 };
@@ -1007,7 +1007,6 @@ struct unmanaged_toomany_fixture
         : wrong_zone_fixture
 {
     std::vector<std::string> domain_list;
-    std::string unmanaged_toomany_fqdn;
 
     std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
     {
@@ -1023,9 +1022,9 @@ struct unmanaged_toomany_fixture
         std::ostringstream labeled_zone;
         for(int i=0; i < zone_data.dots_max + 1; ++i)
         {
-            labeled_zone << "1.";
+            labeled_zone << "1.";//toomany part
         }
-        labeled_zone << test_fqdn_bad_zone; //unmanaged zone appended
+        labeled_zone << test_fqdn_bad_zone; //unmanaged zone part
         return labeled_zone.str();
     }
     unmanaged_toomany_fixture()
@@ -1057,6 +1056,136 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_unmanaged_toomany, unmanaged_tooman
         catch(const Registry::WhoisImpl::TooManyLabels& ex)
         {
             BOOST_ERROR("domain must check managed zone first");
+        }
+    }
+}
+
+struct invalid_toomany_fixture
+: whois_impl_instance_fixture
+{
+    std::vector<std::string> domain_list;
+
+    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
+    {
+        Fred::Zone::Data zone_data;
+        try
+        {
+            zone_data = Fred::Zone::find_zone_in_fqdn(ctx, zone);
+        }
+        catch(const Fred::Zone::Exception& ex)
+        {
+            BOOST_ERROR("test zone was not created properly");
+        }
+        std::ostringstream labeled_zone, invalid_offset;
+        for(int i=0; i < zone_data.dots_max + 1; ++i)
+        {
+            labeled_zone << "1.";//toomany part
+        }
+        for(int i=0; i < 256 - labeled_zone.tellp(); ++i)
+        {
+            invalid_offset << '1';//invalid part
+        }
+        labeled_zone << zone_data.name;
+        invalid_offset << labeled_zone.str() << zone_data.name;
+        return invalid_offset.str();
+    }
+    invalid_toomany_fixture()
+    : whois_impl_instance_fixture()
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
+        domain_list.reserve(zone_seq.size());
+        for(std::vector<std::string>::iterator it = zone_seq.begin(); it != zone_seq.end(); ++it)
+        {
+            domain_list.push_back(prepare_zone(ctx, *it));
+        }
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_invalid_toomany, invalid_toomany_fixture)
+{
+    for(std::vector<std::string>::iterator it = domain_list.begin(); it != domain_list.end(); ++it)
+    {
+        try
+        {
+            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(*it);
+            BOOST_ERROR("domain must have invalid handle and exceeded number of labels");
+        }
+        catch(const Registry::WhoisImpl::InvalidLabel& ex)
+        {
+            BOOST_CHECK(true);
+            BOOST_MESSAGE(boost::diagnostic_information(ex));
+        }
+        catch(const Registry::WhoisImpl::TooManyLabels& ex)
+        {
+            BOOST_ERROR("domain must check name validity first");
+        }
+    }
+}
+
+struct invalid_unmanaged_toomany_fixture
+: wrong_zone_fixture
+{
+    std::vector<std::string> domain_list;
+
+    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
+    {
+        Fred::Zone::Data zone_data;
+        try
+        {
+            zone_data = Fred::Zone::find_zone_in_fqdn(ctx, zone);
+        }
+        catch(const Fred::Zone::Exception& ex)
+        {
+            BOOST_ERROR("test zone was not created properly");
+        }
+        std::ostringstream labeled_zone, invalid_offset;
+        for(int i=0; i < zone_data.dots_max + 1; ++i)
+        {
+            labeled_zone << "1.";//toomany part
+        }
+        for(int i=0; i < 256 - labeled_zone.tellp(); ++i)
+        {
+            invalid_offset << '1';//invalid part
+        }
+        labeled_zone << test_fqdn_bad_zone; //unmanaged zone part
+        invalid_offset << labeled_zone.str();
+        return invalid_offset.str();
+    }
+    invalid_unmanaged_toomany_fixture()
+    : wrong_zone_fixture()
+    {
+        Fred::OperationContext ctx;
+        std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
+        domain_list.reserve(zone_seq.size());
+        for(std::vector<std::string>::iterator it = zone_seq.begin(); it != zone_seq.end(); ++it)
+        {
+            domain_list.push_back(prepare_zone(ctx, *it));
+        }
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_invalid_unmanaged_toomany, invalid_unmanaged_toomany_fixture)
+{
+    for(std::vector<std::string>::iterator it = domain_list.begin(); it != domain_list.end(); ++it)
+    {
+        try
+        {
+            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(*it);
+            BOOST_ERROR("domain must have invalid handle, unmanaged zone and exceeded number of labels");
+        }
+        catch(const Registry::WhoisImpl::InvalidLabel& ex)
+        {
+            BOOST_CHECK(true);
+            BOOST_MESSAGE(boost::diagnostic_information(ex));
+        }
+        catch(const Registry::WhoisImpl::UnmanagedZone& ex)
+        {
+            BOOST_ERROR("domain must check name validity first");
+        }
+        catch(const Registry::WhoisImpl::TooManyLabels& ex)
+        {
+            BOOST_ERROR("domain must check name validity first, then managed zone");
         }
     }
 }
