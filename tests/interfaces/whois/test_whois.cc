@@ -47,7 +47,6 @@ struct test_registrar_fixture
     {}
 };
 
-
 struct test_registrant_fixture
 {
     std::string test_registrant_handle;
@@ -816,6 +815,7 @@ struct test_domain_fixture
     std::string test_fqdn;
     std::string no_fqdn;
     std::string wrong_fqdn;
+    std::string invalid_fqdn;
 
     test_domain_fixture()
     : test_registrar_fixture(),
@@ -823,7 +823,8 @@ struct test_domain_fixture
       test_contact_fixture(),
       test_fqdn(std::string("test") + xmark + ".cz"),
       no_fqdn("fine-handle.cz"),
-      wrong_fqdn("")
+      wrong_fqdn(""),
+      invalid_fqdn("a-.cz")
     {
         Fred::OperationContext ctx;
         Fred::CreateDomain(test_fqdn, test_registrar_handle, test_registrant_handle)
@@ -966,7 +967,16 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_no_handle, test_domain_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_invalid_handle, test_domain_fixture)
 {
-//TODO
+    try
+    {
+        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(invalid_fqdn);
+        BOOST_ERROR("domain checker rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidLabel& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
 }
 
 struct invalid_unmanaged_fixture
