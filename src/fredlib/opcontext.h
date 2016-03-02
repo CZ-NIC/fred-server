@@ -30,9 +30,6 @@
 #include <string>
 #include <boost/utility.hpp>
 
-/**
- * What's need in Fred.
- */
 namespace Fred
 {
 
