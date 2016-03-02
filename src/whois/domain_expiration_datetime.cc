@@ -35,12 +35,12 @@ namespace {
                 " )"
                 " SELECT"
                     " (($1::date + (SELECT value FROM proc_hour)::interval)::timestamp"
-                        " AT TIME ZONE (SELECT value FROM proc_tz))::timestamp AS expiration_datetime",
+                        " AT TIME ZONE (SELECT value FROM proc_tz))::timestamp AS next_run_datetime",
             Database::query_param_list(_date)
         );
         if (r.size() == 1)
         {
-            return time_from_string(static_cast<std::string>(r[0]["expiration_datetime"]));
+            return time_from_string(static_cast<std::string>(r[0]["next_run_datetime"]));
         }
         throw std::runtime_error("object state procedure run datetime estimation failed");
     }
