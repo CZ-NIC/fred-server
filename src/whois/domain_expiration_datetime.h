@@ -24,6 +24,7 @@ namespace Whois
     /**
      * @param   _domain_id   id of domain
      * @return  domain 'expired' status valid from date time if this status is active
+     *          if _domain_id or active status is not found it returns ''not set'' optional value
      */
     Optional<boost::posix_time::ptime> domain_expiration_datetime_actual(
         Fred::OperationContext &_ctx,
@@ -47,6 +48,7 @@ namespace Whois
     /**
      * @param   _domain_id   id of domain
      * @return  domain 'not_validated' status valid from date time if this status is active
+     *          if _domain_id or active status is not found it returns ''not set'' optional value
      */
     Optional<boost::posix_time::ptime> domain_validation_expiration_datetime_actual(
         Fred::OperationContext &_ctx,
