@@ -30,6 +30,7 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
+#include "src/fredlib/contact/transfer_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/contact/ssntype.h"
@@ -735,15 +736,6 @@ void MojeIDImpl::transfer_contact_prepare(
                 _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
         }
 
-        if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
-            Fred::UpdateContactById update_contact_op(contact.id, mojeid_registrar_handle_);
-            update_contact_op.set_logd_request_id(_log_request_id);
-            //transfer contact to 'REG-MOJEID' sponsoring registrar
-            update_contact_op.set_sponsoring_registrar(mojeid_registrar_handle_);
-            const unsigned long long history_id = update_contact_op.exec(ctx);
-            notify(ctx, Notification::transferred,
-                   mojeid_registrar_id_, history_id, _log_request_id);
-        }
         from_into(contact, _contact);
         ctx.commit_transaction();
         _ident = pub_req_result.identification;
@@ -1021,7 +1013,6 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         bool drop_identification      = false;
         bool drop_cond_identification = false;
         unsigned long long history_id;
-        bool do_transfer = false;
         {
             if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
                 const Fred::InfoContactData &c1 = current_data;
@@ -1079,11 +1070,6 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
             set_update_contact_op(Fred::diff_contact_data(current_data, new_data), update_contact_op);
             update_contact_op.set_logd_request_id(_log_request_id);
-            do_transfer = current_data.sponsoring_registrar_handle != mojeid_registrar_handle_;
-            if (do_transfer) {
-                //transfer contact to 'REG-MOJEID' sponsoring registrar
-                update_contact_op.set_sponsoring_registrar(mojeid_registrar_handle_);
-            }
             history_id = update_contact_op.exec(ctx);
         }
         const bool is_identified      = states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
@@ -1105,9 +1091,6 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             op_create_pub_req.exec(ctx, locked_contact, _log_request_id);
 
         notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
-        if (do_transfer) {
-            notify(ctx, Notification::transferred, mojeid_registrar_id_, history_id, _log_request_id);
-        }
         //second phase commit will change contact states
         prepare_transaction_storage()->store(_trans_id, current_data.id);
 
@@ -1368,6 +1351,14 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             Fred::CreateObjectStateRequestId(contact_id, to_set).exec(ctx);
             Fred::PerformObjectStateRequest(contact_id).exec(ctx);
 
+            const Fred::InfoContactData contact = Fred::InfoContactById(contact_id).exec(ctx).info_contact_data;
+            if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
+                Fred::TransferContact transfer_contact_op(contact.id, mojeid_registrar_handle_, contact.authinfopw);
+                //transfer contact to 'REG-MOJEID' sponsoring registrar
+                const unsigned long long history_id = 0;transfer_contact_op.exec(ctx);
+                notify(ctx, Notification::transferred,
+                       mojeid_registrar_id_, history_id, _log_request_id);
+            }
             answer(ctx, locked_request, "successfully processed", _log_request_id);
 
             if (pub_req_type != PubReqType::IDENTIFIED_CONTACT_TRANSFER) {
