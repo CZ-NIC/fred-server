@@ -286,9 +286,6 @@ private:
                                                Fred::OperationContext& ctx);
     WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& idd,
                                                  Fred::OperationContext& ctx);
-    str_str_vector get_object_status_desc(const std::string& lang,
-                                          const std::string& type,
-                                          Fred::OperationContext& ctx);
 public:
     static const std::string output_timezone;
 

@@ -807,25 +807,6 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
     return DomainSeq();
 }
 
-str_str_vector Server_impl::get_object_status_desc(const std::string& lang,
-                                                   const std::string& type,
-                                                   Fred::OperationContext& ctx)
-{
-    const std::vector<Fred::ObjectStateDescription> states =
-            Fred::GetObjectStateDescriptions(lang).set_object_type(type)
-            .set_external().exec(ctx);
-    if(states.empty())
-        throw MissingLocalization();
-    str_str_vector result;
-    result.reserve(states.size());
-    for(std::vector<Fred::ObjectStateDescription>::const_iterator ci
-            = states.begin(); ci != states.end(); ++ci)
-    {
-        result.push_back(std::make_pair(ci->handle, ci->description));
-    }
-    return result;
-}
-
 std::vector<ObjectStatusDesc> Server_impl::get_object_status_descriptions(
         const std::string& lang,
         const std::string& type)
@@ -833,14 +814,24 @@ std::vector<ObjectStatusDesc> Server_impl::get_object_status_descriptions(
     Fred::OperationContext ctx;
     try
     {
-        str_str_vector osd = get_object_status_desc(lang, type, ctx);
+        const std::vector<Fred::ObjectStateDescription> states =
+                    Fred::GetObjectStateDescriptions(lang)
+                    .set_object_type(type)
+                    .set_external()
+                    .exec(ctx);
+        if(states.empty())
+            throw MissingLocalization();
+
         std::vector<ObjectStatusDesc> state_seq;
-        state_seq.reserve(osd.size());
+        state_seq.reserve(states.size());
         ObjectStatusDesc tmp;
-        for(str_str_vector::iterator it = osd.begin(); it != osd.end(); ++it)
+        for(std::vector<Fred::ObjectStateDescription>::const_iterator c_it =
+                states.begin();
+            c_it != states.end();
+            ++c_it)
         {
-            tmp.handle = it->first;
-            tmp.name = it->second;
+            tmp.handle = c_it->handle;
+            tmp.name = c_it->description;
             state_seq.push_back(tmp);
         }
         return state_seq;
