@@ -276,7 +276,6 @@ private:
     std::vector<ObjectStatusDesc> get_object_status_descriptions(
             const std::string& lang, const std::string& type);
     DomainSeq get_domains_by_(Fred::OperationContext& ctx,
-                              const std::string& handle,
                               unsigned long limit,
                               const InfoDomainOutputList& domain_info);
     NSSetSeq get_nssets_by_(Fred::OperationContext& ctx,

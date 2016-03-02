@@ -706,7 +706,6 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
 }
 
 DomainSeq Server_impl::get_domains_by_(Fred::OperationContext& ctx,
-                                       const std::string& handle,
                                        unsigned long limit,
                                        const InfoDomainOutputList& domain_info)
 {
@@ -747,7 +746,7 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
             }
             throw ObjectNotExists();
         }
-        return get_domains_by_(ctx, handle, limit, domain_info);
+        return get_domains_by_(ctx, limit, domain_info);
     }
     catch(...)
     {
@@ -773,7 +772,7 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle,
             }
             throw ObjectNotExists();
         }
-        return get_domains_by_(ctx, handle, limit, domain_info);
+        return get_domains_by_(ctx, limit, domain_info);
     }
     catch(...)
     {
@@ -799,7 +798,7 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
             }
             throw ObjectNotExists();
         }
-        return get_domains_by_(ctx, handle, limit, domain_info);
+        return get_domains_by_(ctx, limit, domain_info);
     }
     catch(...)
     {
