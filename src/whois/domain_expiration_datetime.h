@@ -30,6 +30,29 @@ namespace Whois
         unsigned long long _domain_id
     );
 
+
+    /**
+    * From domain validation expiration and object state procedure parameters computes
+    * datetime when status 'not_validated' should be set
+    *
+    * @param   _exdate    domain validation expiration date
+    * @return  domain validation expiration datetime
+    */
+    boost::posix_time::ptime domain_validation_expiration_datetime_estimate(
+        Fred::OperationContext &_ctx,
+        const boost::gregorian::date &_exdate
+    );
+
+
+    /**
+     * @param   _domain_id   id of domain
+     * @return  domain 'not_validated' status valid from date time if this status is active
+     */
+    Optional<boost::posix_time::ptime> domain_validation_expiration_datetime_actual(
+        Fred::OperationContext &_ctx,
+        unsigned long long _domain_id
+    );
+
 }
 
 
