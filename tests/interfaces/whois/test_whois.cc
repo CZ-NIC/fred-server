@@ -1378,7 +1378,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
 {
     Fred::OperationContext ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
-        Fred::InfoDomainByRegistrantHandle(test_registrant_handle)
+        Fred::InfoDomainByAdminContactHandle(test_admin)
             .set_limit(regular_domains + 1)
             .exec(ctx, impl.output_timezone);
     Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_admin_contact(test_admin, regular_domains);
@@ -1408,7 +1408,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
 {
     Fred::OperationContext ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
-        Fred::InfoDomainByRegistrantHandle(test_registrant_handle)
+        Fred::InfoDomainByAdminContactHandle(test_admin)
             .set_limit(regular_domains + 1)
             .exec(ctx, impl.output_timezone);
     Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_admin_contact(test_admin, regular_domains);
@@ -1462,7 +1462,146 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_no_contact, domains_by_admi
     }
 }
 
-
 BOOST_AUTO_TEST_SUITE_END();//get_domains_by_admin_contact
+
+
+BOOST_AUTO_TEST_SUITE(get_domains_by_nsset)
+
+struct domains_by_nsset_fixture
+: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+{
+    std::string test_fqdn;
+    std::string test_nsset;
+    std::string wrong_nsset;
+    std::string no_nsset;
+    int regular_domains;
+
+    domains_by_nsset_fixture()
+    : test_contact_fixture(),
+      test_fqdn(std::string("test") + xmark + ".cz"),
+      test_nsset("test-nsset" + xmark),
+      wrong_nsset(""),
+      no_nsset("absent-nsset"),
+      regular_domains(6)
+    {
+        Fred::OperationContext ctx;
+        for(int i=0; i < regular_domains - 1; ++i)
+        {
+            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+                .set_nsset(test_nsset)
+                .set_admin_contacts(Util::vector_of<std::string>(test_admin))
+                .exec(ctx);
+        }
+        for(int i=0; i < 3; ++i)//3 different domains for another nsset
+        {
+            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+                .set_nsset(std::string("different-nsset"))
+                .set_admin_contacts(Util::vector_of<std::string>("different admin"))
+                .exec(ctx);
+
+        }
+        //1 with no nsset
+        Fred::CreateDomain(test_fqdn + ".cz", test_registrar_handle, test_registrant_handle)
+                .set_admin_contacts(Util::vector_of<std::string>(test_admin))
+                .exec(ctx);
+        Fred::CreateDomain(test_fqdn + ".cz", test_registrar_handle, test_registrant_handle)
+                .set_nsset(test_nsset)
+                .set_admin_contacts(Util::vector_of<std::string>(test_admin))
+                .exec(ctx);
+        ctx.commit_transaction();
+        BOOST_MESSAGE(test_fqdn);
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
+{
+    Fred::OperationContext ctx;
+    const std::vector<Fred::InfoDomainOutput> domain_info =
+        Fred::InfoDomainByNssetHandle(test_nsset)
+            .set_limit(regular_domains + 1)
+            .exec(ctx, impl.output_timezone);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_nsset(test_nsset, regular_domains);
+    BOOST_CHECK(!domain_seq.limit_exceeded);
+
+    std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
+    BOOST_CHECK(domain_vec.size() == regular_domains);
+    std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
+    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
+    {
+        while(found != end)
+        {
+            if(it->fqdn == found->info_domain_data.fqdn) break;
+            ++found;
+        }
+        BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->changed.isnull());
+        BOOST_CHECK(it->last_transfer.isnull());
+        BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
+        BOOST_CHECK(it->registrant_handle == found->info_domain_data.registrant.handle);
+        BOOST_CHECK(it->registrar_handle == found->info_domain_data.create_registrar_handle);
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fixture)
+{
+    Fred::OperationContext ctx;
+    const std::vector<Fred::InfoDomainOutput> domain_info =
+        Fred::InfoDomainByNssetHandle(test_nsset)
+            .set_limit(regular_domains + 1)
+            .exec(ctx, impl.output_timezone);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_nsset(test_nsset, regular_domains);
+    BOOST_CHECK(domain_seq.limit_exceeded);
+
+    std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
+    BOOST_CHECK(domain_vec.size() != regular_domains);
+    std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
+    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
+    {
+        while(found != end)
+        {
+            if(it->fqdn == found->info_domain_data.fqdn) break;
+            ++found;
+        }
+        BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->changed.isnull());
+        BOOST_CHECK(it->last_transfer.isnull());
+        BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
+        BOOST_CHECK(it->registrant_handle == found->info_domain_data.registrant.handle);
+        BOOST_CHECK(it->registrar_handle == found->info_domain_data.create_registrar_handle);
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_wrong_nsset, domains_by_nsset_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_nsset(wrong_nsset, 0);
+        BOOST_ERROR("nsset handle rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_no_nsset, domains_by_nsset_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_nsset(no_nsset, 0);
+        BOOST_ERROR("unreported dangling nsset");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+
+BOOST_AUTO_TEST_SUITE_END();//get_domains_by_nsset
 
 BOOST_AUTO_TEST_SUITE_END();//TestWhois
