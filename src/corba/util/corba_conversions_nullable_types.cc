@@ -42,10 +42,10 @@ namespace Corba {
 
     Registry::NullableDateTime_var wrap_optional_datetime(const Optional<boost::posix_time::ptime>& in) {
         if (!in.isset()) {
-            return NULL;
+            return Registry::NullableDateTime_var();
         }
 
-        return new Registry::NullableDateTime(wrap_time(in.get_value()));
+        return Registry::NullableDateTime_var(new Registry::NullableDateTime(wrap_time(in.get_value())));
     }
 
     Nullable<unsigned long long> unwrap_nullable_ulonglong(const Registry::NullableULongLong * in) {
