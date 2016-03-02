@@ -52,10 +52,9 @@ using namespace Database;
 
 std::auto_ptr< StandaloneConnection > get_database_conn()
 {
-    StandaloneConnectionFactory *const factory =
-        new StandaloneConnectionFactory(Manager::getConnectionString());
-    StandaloneConnection *const conn_ptr = StandaloneManager(factory).acquire();
-    return std::auto_ptr< StandaloneConnection >(conn_ptr);
+    //manager is responsible for a factory destroying
+    StandaloneManager manager(new StandaloneConnectionFactory(Manager::getConnectionString()));
+    return std::auto_ptr< StandaloneConnection >(manager.acquire());
 }
 
 }//Fred::{anonymous}
