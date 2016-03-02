@@ -468,27 +468,25 @@ Registry::MojeID::InfoContact_var wrap_InfoContact(const Registry::MojeIDImplDat
 void wrap_InfoContactPublishFlags(const Registry::MojeIDImplData::InfoContactPublishFlags &src,
                                   Registry::MojeID::InfoContactPublishFlags &dst)
 {
-    int_to_int(src.id, dst.id);
-
-    dst.first_name   = src.first_name;
-    dst.last_name    = src.last_name;
-    dst.organization = src.organization;
-    dst.vat_reg_num  = src.vat_reg_num;
-    dst.birth_date   = src.birth_date;
-    dst.id_card_num  = src.id_card_num;
-    dst.passport_num = src.passport_num;
-    dst.ssn_id_num   = src.ssn_id_num;
-    dst.vat_id_num   = src.vat_id_num;
-    dst.email        = src.email;
-    dst.notify_email = src.notify_email;
-    dst.telephone    = src.telephone;
-    dst.fax          = src.fax;
-    dst.permanent    = src.permanent;
-    dst.mailing      = src.mailing;
-    dst.billing      = src.billing;
-    dst.shipping     = src.shipping;
-    dst.shipping2    = src.shipping2;
-    dst.shipping3    = src.shipping3;
+    int_to_int(src.first_name,   dst.first_name);
+    int_to_int(src.last_name,    dst.last_name);
+    int_to_int(src.organization, dst.organization);
+    int_to_int(src.vat_reg_num,  dst.vat_reg_num);
+    int_to_int(src.birth_date,   dst.birth_date);
+    int_to_int(src.id_card_num,  dst.id_card_num);
+    int_to_int(src.passport_num, dst.passport_num);
+    int_to_int(src.ssn_id_num,   dst.ssn_id_num);
+    int_to_int(src.vat_id_num,   dst.vat_id_num);
+    int_to_int(src.email,        dst.email);
+    int_to_int(src.notify_email, dst.notify_email);
+    int_to_int(src.telephone,    dst.telephone);
+    int_to_int(src.fax,          dst.fax);
+    int_to_int(src.permanent,    dst.permanent);
+    int_to_int(src.mailing,      dst.mailing);
+    int_to_int(src.billing,      dst.billing);
+    int_to_int(src.shipping,     dst.shipping);
+    int_to_int(src.shipping2,    dst.shipping2);
+    int_to_int(src.shipping3,    dst.shipping3);
 }
 
 void wrap_ContactStateInfo(const Registry::MojeIDImplData::ContactStateInfo &src, Registry::MojeID::ContactStateInfo &dst)

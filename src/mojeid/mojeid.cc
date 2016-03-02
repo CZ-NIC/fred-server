@@ -1236,8 +1236,7 @@ void MojeIDImpl::get_contact_info_publish_flags(
         Fred::OperationContextCreator ctx;
         const Fred::InfoContactData data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
-        
-        _flags.id = data.id;
+
         if (states.presents(Fred::Object::State::LINKED)) {
             _flags.first_name   = data.disclosename;
             _flags.last_name    = data.disclosename;

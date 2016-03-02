@@ -269,7 +269,6 @@ struct InfoContact
 
 struct InfoContactPublishFlags
 {
-    ContactId id;
     bool      first_name;
     bool      last_name;
     bool      organization;
