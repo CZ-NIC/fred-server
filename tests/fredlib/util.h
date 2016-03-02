@@ -9,10 +9,9 @@
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 
-static bool check_std_exception(std::exception const & ex)
+inline bool check_std_exception(const std::exception &e)
 {
-    std::string ex_msg(ex.what());
-    return (ex_msg.length() != 0);
+    return e.what()[0] != '\0';
 }
 
 namespace Test
