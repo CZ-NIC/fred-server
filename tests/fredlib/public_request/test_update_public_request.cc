@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
         BOOST_CHECK(status_names.count(bad_status) == 0);
         Fred::PublicRequest::Status::from(bad_status);
     }
-    catch(const std::runtime_error &e) {
+    catch(const std::invalid_argument &e) {
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
         throw;
     }
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
         BOOST_ERROR("unexpected exception occurs");
         throw;
     },
-    std::exception,
+    std::invalid_argument,
     check_std_exception);
 
     BOOST_CHECK_EXCEPTION(
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
         BOOST_CHECK(Fred::PublicRequest::Status::INVALIDATED < bad_enum_status);
         Conversion::Enums::into_string(bad_enum_status);
     }
-    catch(const std::runtime_error &e) {
+    catch(const std::invalid_argument &e) {
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
         throw;
     }
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
         BOOST_ERROR("unexpected exception occurs");
         throw;
     },
-    std::exception,
+    std::invalid_argument,
     check_std_exception);
 }
 
