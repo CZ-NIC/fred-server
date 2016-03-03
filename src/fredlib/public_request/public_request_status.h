@@ -38,22 +38,12 @@ struct Status
     /**
      * Names of particular public request status.
      */
-    enum Value
+    enum Enum//enum_public_request_status table
     {
         NEW,
         ANSWERED,
         INVALIDATED,
     };
-    /**
-     * String value converts to its enum equivalent.
-     * @param _str database representation of public request status
-     * @return its enum equivalent
-     * @throw std::runtime_error if conversion is impossible
-     */
-    static Value from(const std::string &_str)
-    {
-        return Conversion::Enums::into< Value >(_str);
-    }
 };
 
 }//Fred::PublicRequest
@@ -62,17 +52,28 @@ struct Status
 namespace Conversion {
 namespace Enums {
 
-template < >
-struct tools_for< Fred::PublicRequest::Status::Value >
+inline std::string to_db_handle(Fred::PublicRequest::Status::Enum value)
 {
-    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Fred::PublicRequest::Status::Value, const std::string&))
+    switch (value)
     {
-        using Fred::PublicRequest::Status;
-        set_matching_string_counterpart(Status::NEW,         "new");
-        set_matching_string_counterpart(Status::ANSWERED,    "answered");
-        set_matching_string_counterpart(Status::INVALIDATED, "invalidated");
+        case Fred::PublicRequest::Status::NEW:         return "new";
+        case Fred::PublicRequest::Status::ANSWERED:    return "answered";
+        case Fred::PublicRequest::Status::INVALIDATED: return "invalidated";
     }
-};
+    throw std::invalid_argument("value doesn't exist in Fred::PublicRequest::Status::Enum");
+}
+
+template < >
+inline Fred::PublicRequest::Status::Enum from_db_handle< Fred::PublicRequest::Status >(const std::string &db_handle)
+{
+    static const Fred::PublicRequest::Status::Enum values[] =
+    {
+        Fred::PublicRequest::Status::NEW,
+        Fred::PublicRequest::Status::ANSWERED,
+        Fred::PublicRequest::Status::INVALIDATED
+    };
+    return from_db_handle_impl(db_handle, values, "Fred::PublicRequest::Status::Enum");
+}
 
 }//namespace Conversion::Enums
 }//namespace Conversion

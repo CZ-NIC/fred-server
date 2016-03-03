@@ -29,7 +29,7 @@ struct RequiredStatus
 {
     static std::string value(Database::query_param_list &_params)
     {
-        return "$" + _params.add(Conversion::Enums::into_string(Fred::PublicRequest::Status::NEW)) + "::TEXT";
+        return "$" + _params.add(Conversion::Enums::to_db_handle(Fred::PublicRequest::Status::NEW)) + "::TEXT";
     }
 };
 
@@ -563,7 +563,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const Optional< GeneralId > &_contact_history_id)
     {
         typedef Fred::Object::State FOS;
-        const std::string state_validated_contact = Conversion::Enums::into_string(FOS::VALIDATED_CONTACT);
+        const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::VALIDATED_CONTACT);
         const std::string message_type_mojeid_pin3 = "mojeid_pin3";
         Database::query_param_list params;
         params(_locked_request.get_public_request_id())
@@ -644,7 +644,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const Optional< GeneralId > &_contact_history_id)
     {
         typedef Fred::Object::State FOS;
-        const std::string state_validated_contact = Conversion::Enums::into_string(FOS::VALIDATED_CONTACT);
+        const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::VALIDATED_CONTACT);
         Database::query_param_list params;
         params(_locked_request.get_public_request_id())
               (_locked_contact.get_object_id())

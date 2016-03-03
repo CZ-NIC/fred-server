@@ -68,7 +68,7 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
         else {
             params(Database::QPNull);                                                       // $6::BIGINT
         }
-        params(Conversion::Enums::into_string(PublicRequest::Status::NEW));                 // $7::TEXT
+        params(Conversion::Enums::to_db_handle(PublicRequest::Status::NEW));                // $7::TEXT
         const Database::Result res = _ctx.get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
@@ -103,9 +103,9 @@ PublicRequestId CreatePublicRequest::exec(OperationContext &_ctx,
                                                   const Optional< RegistrarId > _registrar_id,
                                                   const Optional< LogRequestId > &_log_request_id)
 {
-    Database::query_param_list params(_locked_object.get_object_id()); // $1::BIGINT
-    params(_type);                                                     // $2::TEXT
-    params(Conversion::Enums::into_string(PublicRequest::Status::NEW));// $3::TEXT
+    Database::query_param_list params(_locked_object.get_object_id());  // $1::BIGINT
+    params(_type);                                                      // $2::TEXT
+    params(Conversion::Enums::to_db_handle(PublicRequest::Status::NEW));// $3::TEXT
     const Database::Result res = _ctx.get_conn().exec_params(
         "SELECT pr.id "
         "FROM public_request pr "

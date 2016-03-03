@@ -66,7 +66,7 @@ PublicRequestInfo::PublicRequestInfo(OperationContext &_ctx, const PublicRequest
         const Database::Row row = res[0];
         set(type_,               row[0]);
         set(create_time_,        row[1], boost::posix_time::time_from_string);
-        set(status_,             row[2], PublicRequest::Status::from);
+        set(status_,             row[2], Conversion::Enums::from_db_handle< PublicRequest::Status >);
         set(resolve_time_,       row[3], boost::posix_time::time_from_string);
         set(reason_,             row[4]);
         set(email_to_answer_,    row[5]);

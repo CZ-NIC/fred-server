@@ -47,7 +47,7 @@ public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);///< exception members in case of bad public_request_id
     DECLARE_EXCEPTION_DATA(unknown_email_id, EmailId);///< exception members in case of bad answer_email_id
     DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members in case of bad registrar_id
-    DECLARE_EXCEPTION_DATA(bad_public_request_status, PublicRequest::Status::Value);///< exception members in case of invalid value of status
+    DECLARE_EXCEPTION_DATA(bad_public_request_status, PublicRequest::Status::Enum);///< exception members in case of invalid value of status
     struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_nothing_to_do< Exception >,
@@ -70,7 +70,7 @@ public:
      * @param _answer_email_id can set the email id
      * @param _registrar_id can set but I don't know relationship between this registrar and public request!
      */
-    UpdatePublicRequest(const Optional< PublicRequest::Status::Value > &_status,
+    UpdatePublicRequest(const Optional< PublicRequest::Status::Enum > &_status,
                         const Optional< Nullable< std::string > > &_reason,
                         const Optional< Nullable< std::string > > &_email_to_answer,
                         const Optional< Nullable< EmailId > > &_answer_email_id,
@@ -82,7 +82,7 @@ public:
      * @param _status sets status of public request
      * @return operation instance reference to allow method chaining
      */
-    UpdatePublicRequest& set_status(PublicRequest::Status::Value _status);
+    UpdatePublicRequest& set_status(PublicRequest::Status::Enum _status);
 
     /**
      * Sets reason of last public request operation.
@@ -153,7 +153,7 @@ private:
     Result update(OperationContext &_ctx,
                   PublicRequestId _public_request_id,
                   const Optional< LogRequestId > &_resolve_log_request_id)const;
-    Optional< PublicRequest::Status::Value > status_;
+    Optional< PublicRequest::Status::Enum > status_;
     Optional< Nullable< std::string > > reason_;
     Optional< Nullable< std::string > > email_to_answer_;
     Optional< Nullable< EmailId > > answer_email_id_;

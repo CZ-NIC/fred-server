@@ -5,7 +5,7 @@
 
 namespace Fred {
 
-UpdatePublicRequest::UpdatePublicRequest(const Optional< PublicRequest::Status::Value > &_status,
+UpdatePublicRequest::UpdatePublicRequest(const Optional< PublicRequest::Status::Enum > &_status,
                                          const Optional< Nullable< std::string > > &_reason,
                                          const Optional< Nullable< std::string > > &_email_to_answer,
                                          const Optional< Nullable< EmailId > > &_answer_email_id,
@@ -18,7 +18,7 @@ UpdatePublicRequest::UpdatePublicRequest(const Optional< PublicRequest::Status::
 {
 }
 
-UpdatePublicRequest& UpdatePublicRequest::set_status(PublicRequest::Status::Value _status)
+UpdatePublicRequest& UpdatePublicRequest::set_status(PublicRequest::Status::Enum _status)
 {
     status_ = _status;
     return *this;
@@ -65,8 +65,8 @@ namespace {
 ::size_t stop_letter_sending(OperationContext &_ctx,
                              PublicRequestId _public_request_id)
 {
-    Database::query_param_list params(_public_request_id);                   //$1::BIGINT
-    params(Conversion::Enums::into_string(Fred::PublicRequest::Status::NEW));//$2::TEXT
+    Database::query_param_list params(_public_request_id);                    //$1::BIGINT
+    params(Conversion::Enums::to_db_handle(Fred::PublicRequest::Status::NEW));//$2::TEXT
     const Database::Result res = _ctx.get_conn().exec_params(
         "UPDATE message_archive ma "
         "SET status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing'),"
@@ -143,10 +143,10 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
                 throw std::runtime_error("unable to set other public request state than 'answered' or 'invalidated'");
             }
             sql_set << "status=(SELECT id FROM enum_public_request_status WHERE name=$"
-                    << params.add(Conversion::Enums::into_string(status_.get_value()))
+                    << params.add(Conversion::Enums::to_db_handle(status_.get_value()))
                     << "::TEXT),"
                        "resolve_time=CASE WHEN status=(SELECT id FROM enum_public_request_status WHERE name=$"
-                    << params.add(Conversion::Enums::into_string(PublicRequest::Status::NEW))
+                    << params.add(Conversion::Enums::to_db_handle(PublicRequest::Status::NEW))
                     << "::TEXT) "
                                          "THEN NOW() "
                                          "ELSE resolve_time "

@@ -40,19 +40,19 @@ public:
     explicit StatesInfo(const ObjectStates &_data)
     {
         for (ObjectStates::const_iterator ptr = _data.begin(); ptr != _data.end(); ++ptr) {
-            presents_.insert(State::from(ptr->state_name));
+            presents_.insert(Conversion::Enums::from_db_handle< State >(ptr->state_name));
         }
     }
-    bool presents(State::Value _state)const
+    bool presents(State::Enum _state)const
     {
         return presents_.find(_state) != presents_.end();
     }
-    bool absents(State::Value _state)const
+    bool absents(State::Enum _state)const
     {
         return !this->presents(_state);
     }
 private:
-    typedef std::set< State::Value > SetOfStates;
+    typedef std::set< State::Enum > SetOfStates;
     SetOfStates presents_;
 };
 

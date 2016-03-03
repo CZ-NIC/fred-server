@@ -75,7 +75,7 @@ public:
 
     const std::string&              get_type()const               { return type_; }
     const Time&                     get_create_time()const        { return create_time_; }
-    PublicRequest::Status::Value    get_status()const             { return status_; }
+    PublicRequest::Status::Enum     get_status()const             { return status_; }
     const Nullable< Time >&         get_resolve_time()const       { return resolve_time_; }
     const Nullable< std::string >&  get_reason()const             { return reason_; }
     const Nullable< std::string >&  get_email_to_answer()const    { return email_to_answer_; }
@@ -85,18 +85,18 @@ public:
     const Nullable< LogRequestId >& get_resolve_request_id()const { return resolve_request_id_; }
     const Nullable< ObjectId >&     get_object_id()const          { return object_id_; }
 private:
-    PublicRequestId              id_;
-    std::string                  type_;
-    Time                         create_time_;
-    PublicRequest::Status::Value status_;
-    Nullable< Time >             resolve_time_;
-    Nullable< std::string >      reason_;
-    Nullable< std::string >      email_to_answer_;
-    Nullable< EmailId >          answer_email_id_;
-    Nullable< RegistrarId >      registrar_id_;
-    Nullable< LogRequestId >     create_request_id_;
-    Nullable< LogRequestId >     resolve_request_id_;
-    Nullable< ObjectId >         object_id_;
+    PublicRequestId             id_;
+    std::string                 type_;
+    Time                        create_time_;
+    PublicRequest::Status::Enum status_;
+    Nullable< Time >            resolve_time_;
+    Nullable< std::string >     reason_;
+    Nullable< std::string >     email_to_answer_;
+    Nullable< EmailId >         answer_email_id_;
+    Nullable< RegistrarId >     registrar_id_;
+    Nullable< LogRequestId >    create_request_id_;
+    Nullable< LogRequestId >    resolve_request_id_;
+    Nullable< ObjectId >        object_id_;
     friend class PublicRequestAuthInfo;
     friend bool ::operator==(const Fred::PublicRequestLockGuard&, const Fred::PublicRequestInfo&);
 };

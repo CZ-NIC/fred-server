@@ -28,10 +28,9 @@
 
 namespace Fred {
 
-class SSNType
+struct SSNType
 {
-public:
-    enum Value
+    enum Enum//enum_ssntype table
     {
         RC,
         OP,
@@ -40,10 +39,6 @@ public:
         MPSV,
         BIRTHDAY
     };
-    static Value from(const std::string &_str)
-    {
-        return Conversion::Enums::into< Value >(_str);
-    }
 };
 
 }//namespace Fred
@@ -51,20 +46,34 @@ public:
 namespace Conversion {
 namespace Enums {
 
-template < >
-struct tools_for< Fred::SSNType::Value >
+inline std::string to_db_handle(Fred::SSNType::Enum value)
 {
-    static void define_enum_to_string_relation(void (*set_relation)(Fred::SSNType::Value, const std::string&))
+    switch (value)
     {
-        using Fred::SSNType;
-        set_relation(SSNType::RC,       "RC");
-        set_relation(SSNType::OP,       "OP");
-        set_relation(SSNType::PASS,     "PASS");
-        set_relation(SSNType::ICO,      "ICO");
-        set_relation(SSNType::MPSV,     "MPSV");
-        set_relation(SSNType::BIRTHDAY, "BIRTHDAY");
+        case Fred::SSNType::RC:       return "RC";
+        case Fred::SSNType::OP:       return "OP";
+        case Fred::SSNType::PASS:     return "PASS";
+        case Fred::SSNType::ICO:      return "ICO";
+        case Fred::SSNType::MPSV:     return "MPSV";
+        case Fred::SSNType::BIRTHDAY: return "BIRTHDAY";
     }
-};
+    throw std::invalid_argument("value doesn't exist in Fred::SSNType::Enum");
+}
+
+template < >
+inline Fred::SSNType::Enum from_db_handle< Fred::SSNType >(const std::string &db_handle)
+{
+    static const Fred::SSNType::Enum values[] =
+    {
+        Fred::SSNType::RC,
+        Fred::SSNType::OP,
+        Fred::SSNType::PASS,
+        Fred::SSNType::ICO,
+        Fred::SSNType::MPSV,
+        Fred::SSNType::BIRTHDAY
+    };
+    return from_db_handle_impl(db_handle, values, "Fred::SSNType::Enum");
+}
 
 }//namespace Conversion::Enums
 }//namespace Conversion

@@ -39,7 +39,7 @@ public:
     /**
      * Names of particular object states.
      */
-    enum Value
+    enum Enum//enum_object_states table
     {
         CONDITIONALLY_IDENTIFIED_CONTACT,   ///< means database `conditionallyIdentifiedContact` state
         CONTACT_FAILED_MANUAL_VERIFICATION, ///< means database `contactFailedManualVerification` state
@@ -69,16 +69,6 @@ public:
         VALIDATION_WARNING1,                ///< means database `validationWarning1` state
         VALIDATION_WARNING2,                ///< means database `validationWarning2` state
     };
-    /**
-     * String value converts to its enum equivalent.
-     * @param _str database representation of object state
-     * @return its enum equivalent
-     * @throw std::invalid_argument if conversion is impossible
-     */
-    static Value from(const std::string &_str)
-    {
-        return Conversion::Enums::into< Value >(_str);
-    }
 };
 
 }//Fred::Object
@@ -87,41 +77,76 @@ public:
 namespace Conversion {
 namespace Enums {
 
-template < >
-struct tools_for< Fred::Object::State::Value >
+inline std::string to_db_handle(Fred::Object::State::Enum value)
 {
-    static void define_enum_to_string_relation(void (*set_matching_string_counterpart)(Fred::Object::State::Value, const std::string&))
+    switch (value)
     {
-        using Fred::Object::State;
-        set_matching_string_counterpart(State::CONDITIONALLY_IDENTIFIED_CONTACT,    "conditionallyIdentifiedContact");
-        set_matching_string_counterpart(State::CONTACT_FAILED_MANUAL_VERIFICATION,  "contactFailedManualVerification");
-        set_matching_string_counterpart(State::CONTACT_IN_MANUAL_VERIFICATION,      "contactInManualVerification");
-        set_matching_string_counterpart(State::CONTACT_PASSED_MANUAL_VERIFICATION,  "contactPassedManualVerification");
-        set_matching_string_counterpart(State::DELETE_CANDIDATE,                    "deleteCandidate");
-        set_matching_string_counterpart(State::DELETE_WARNING,                      "deleteWarning");
-        set_matching_string_counterpart(State::EXPIRATION_WARNING,                  "expirationWarning");
-        set_matching_string_counterpart(State::EXPIRED,                             "expired");
-        set_matching_string_counterpart(State::IDENTIFIED_CONTACT,                  "identifiedContact");
-        set_matching_string_counterpart(State::LINKED,                              "linked");
-        set_matching_string_counterpart(State::MOJEID_CONTACT,                      "mojeidContact");
-        set_matching_string_counterpart(State::NOT_VALIDATED,                       "notValidated");
-        set_matching_string_counterpart(State::NSSET_MISSING,                       "nssetMissing");
-        set_matching_string_counterpart(State::OUTZONE,                             "outzone");
-        set_matching_string_counterpart(State::OUTZONE_UNGUARDED,                   "outzoneUnguarded");
-        set_matching_string_counterpart(State::SERVER_BLOCKED,                      "serverBlocked");
-        set_matching_string_counterpart(State::SERVER_DELETE_PROHIBITED,            "serverDeleteProhibited");
-        set_matching_string_counterpart(State::SERVER_INZONE_MANUAL,                "serverInzoneManual");
-        set_matching_string_counterpart(State::SERVER_OUTZONE_MANUAL,               "serverOutzoneManual");
-        set_matching_string_counterpart(State::SERVER_REGISTRANT_CHANGE_PROHIBITED, "serverRegistrantChangeProhibited");
-        set_matching_string_counterpart(State::SERVER_RENEW_PROHIBITED,             "serverRenewProhibited");
-        set_matching_string_counterpart(State::SERVER_TRANSFER_PROHIBITED,          "serverTransferProhibited");
-        set_matching_string_counterpart(State::SERVER_UPDATE_PROHIBITED,            "serverUpdateProhibited");
-        set_matching_string_counterpart(State::UNGUARDED,                           "unguarded");
-        set_matching_string_counterpart(State::VALIDATED_CONTACT,                   "validatedContact");
-        set_matching_string_counterpart(State::VALIDATION_WARNING1,                 "validationWarning1");
-        set_matching_string_counterpart(State::VALIDATION_WARNING2,                 "validationWarning2");
+        case Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT:    return "conditionallyIdentifiedContact";
+        case Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION:  return "contactFailedManualVerification";
+        case Fred::Object::State::CONTACT_IN_MANUAL_VERIFICATION:      return "contactInManualVerification";
+        case Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION:  return "contactPassedManualVerification";
+        case Fred::Object::State::DELETE_CANDIDATE:                    return "deleteCandidate";
+        case Fred::Object::State::DELETE_WARNING:                      return "deleteWarning";
+        case Fred::Object::State::EXPIRATION_WARNING:                  return "expirationWarning";
+        case Fred::Object::State::EXPIRED:                             return "expired";
+        case Fred::Object::State::IDENTIFIED_CONTACT:                  return "identifiedContact";
+        case Fred::Object::State::LINKED:                              return "linked";
+        case Fred::Object::State::MOJEID_CONTACT:                      return "mojeidContact";
+        case Fred::Object::State::NOT_VALIDATED:                       return "notValidated";
+        case Fred::Object::State::NSSET_MISSING:                       return "nssetMissing";
+        case Fred::Object::State::OUTZONE:                             return "outzone";
+        case Fred::Object::State::OUTZONE_UNGUARDED:                   return "outzoneUnguarded";
+        case Fred::Object::State::SERVER_BLOCKED:                      return "serverBlocked";
+        case Fred::Object::State::SERVER_DELETE_PROHIBITED:            return "serverDeleteProhibited";
+        case Fred::Object::State::SERVER_INZONE_MANUAL:                return "serverInzoneManual";
+        case Fred::Object::State::SERVER_OUTZONE_MANUAL:               return "serverOutzoneManual";
+        case Fred::Object::State::SERVER_REGISTRANT_CHANGE_PROHIBITED: return "serverRegistrantChangeProhibited";
+        case Fred::Object::State::SERVER_RENEW_PROHIBITED:             return "serverRenewProhibited";
+        case Fred::Object::State::SERVER_TRANSFER_PROHIBITED:          return "serverTransferProhibited";
+        case Fred::Object::State::SERVER_UPDATE_PROHIBITED:            return "serverUpdateProhibited";
+        case Fred::Object::State::UNGUARDED:                           return "unguarded";
+        case Fred::Object::State::VALIDATED_CONTACT:                   return "validatedContact";
+        case Fred::Object::State::VALIDATION_WARNING1:                 return "validationWarning1";
+        case Fred::Object::State::VALIDATION_WARNING2:                 return "validationWarning2";
     }
-};
+    throw std::invalid_argument("value doesn't exist in Fred::Object::State::Enum");
+}
+
+template < >
+inline Fred::Object::State::Enum from_db_handle< Fred::Object::State >(const std::string &db_handle)
+{
+    static const Fred::Object::State::Enum values[] =
+    {
+        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
+        Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION,
+        Fred::Object::State::CONTACT_IN_MANUAL_VERIFICATION,
+        Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION,
+        Fred::Object::State::DELETE_CANDIDATE,
+        Fred::Object::State::DELETE_WARNING,
+        Fred::Object::State::EXPIRATION_WARNING,
+        Fred::Object::State::EXPIRED,
+        Fred::Object::State::IDENTIFIED_CONTACT,
+        Fred::Object::State::LINKED,
+        Fred::Object::State::MOJEID_CONTACT,
+        Fred::Object::State::NOT_VALIDATED,
+        Fred::Object::State::NSSET_MISSING,
+        Fred::Object::State::OUTZONE,
+        Fred::Object::State::OUTZONE_UNGUARDED,
+        Fred::Object::State::SERVER_BLOCKED,
+        Fred::Object::State::SERVER_DELETE_PROHIBITED,
+        Fred::Object::State::SERVER_INZONE_MANUAL,
+        Fred::Object::State::SERVER_OUTZONE_MANUAL,
+        Fred::Object::State::SERVER_REGISTRANT_CHANGE_PROHIBITED,
+        Fred::Object::State::SERVER_RENEW_PROHIBITED,
+        Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
+        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
+        Fred::Object::State::UNGUARDED,
+        Fred::Object::State::VALIDATED_CONTACT,
+        Fred::Object::State::VALIDATION_WARNING1,
+        Fred::Object::State::VALIDATION_WARNING2,
+    };
+    return from_db_handle_impl(db_handle, values, "Fred::Object::State::Enum");
+}
 
 }//namespace Conversion::Enums
 }//namespace Conversion

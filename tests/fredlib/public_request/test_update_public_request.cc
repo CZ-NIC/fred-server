@@ -36,7 +36,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
     update_public_request_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
         public_request_type(*this),
-        bad_enum_status(static_cast< Fred::PublicRequest::Status::Value >(NUMBER_OF_STATES))
+        bad_enum_status(static_cast< Fred::PublicRequest::Status::Enum >(NUMBER_OF_STATES))
     {
         Fred::OperationContextCreator ctx;
         Database::Result dbres = ctx.get_conn().exec(
@@ -85,7 +85,7 @@ protected:
     Fred::CreatePublicRequestAuth::Result create_result;
     const Fred::PublicRequestAuthTypeIface &public_request_type;
     enum { NUMBER_OF_STATES = 3 };
-    const Fred::PublicRequest::Status::Value bad_enum_status;
+    const Fred::PublicRequest::Status::Enum bad_enum_status;
 private:
     std::string get_public_request_type()const { return type_name_; }
     std::string generate_passwords()const { return "h*vno kleslo"; }
@@ -114,15 +114,15 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
     static const std::string known_status[NUMBER_OF_STATES] = {"new", "answered", "invalidated"};
     for (int idx = 0; idx < NUMBER_OF_STATES; ++idx) {
         BOOST_CHECK(status_names.count(known_status[idx]) == 1);
-        const Fred::PublicRequest::Status::Value enum_status = Fred::PublicRequest::Status::from(known_status[idx]);
-        BOOST_CHECK(Conversion::Enums::into_string(enum_status) == known_status[idx]);
+        const Fred::PublicRequest::Status::Enum enum_status = Conversion::Enums::from_db_handle< Fred::PublicRequest::Status >(known_status[idx]);
+        BOOST_CHECK(Conversion::Enums::to_db_handle(enum_status) == known_status[idx]);
     }
 
     BOOST_CHECK_EXCEPTION(
     try {
         const std::string bad_status = "newx";
         BOOST_CHECK(status_names.count(bad_status) == 0);
-        Fred::PublicRequest::Status::from(bad_status);
+        Conversion::Enums::from_db_handle< Fred::PublicRequest::Status >(bad_status);
     }
     catch(const std::invalid_argument &e) {
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(public_request_status_conversions)
         BOOST_CHECK(Fred::PublicRequest::Status::NEW < bad_enum_status);
         BOOST_CHECK(Fred::PublicRequest::Status::ANSWERED < bad_enum_status);
         BOOST_CHECK(Fred::PublicRequest::Status::INVALIDATED < bad_enum_status);
-        Conversion::Enums::into_string(bad_enum_status);
+        Conversion::Enums::to_db_handle(bad_enum_status);
     }
     catch(const std::invalid_argument &e) {
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
@@ -444,8 +444,8 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
 {
     Fred::OperationContextCreator ctx;
     Fred::PublicRequestLockGuardById locked_request(ctx, create_result.public_request_id);
-    const Fred::PublicRequest::Status::Value enum_status = Fred::PublicRequest::Status::ANSWERED;
-    const std::string str_status = Conversion::Enums::into_string(enum_status);
+    const Fred::PublicRequest::Status::Enum enum_status = Fred::PublicRequest::Status::ANSWERED;
+    const std::string str_status = Conversion::Enums::to_db_handle(enum_status);
     const std::string reason = "Prostě proto.";
     const std::string email = "noreply@nic.cz";
     const Fred::UpdatePublicRequest::EmailId email_id =

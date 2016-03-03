@@ -237,10 +237,10 @@ namespace {
 
 bool ssntype_present(
     const Nullable< std::string > &_ssntype_current,
-    SSNType::Value _ssntype_required)
+    SSNType::Enum _ssntype_required)
 {
     return !_ssntype_current.isnull() &&
-           (_ssntype_current.get_value() == Conversion::Enums::into_string(_ssntype_required));
+           (_ssntype_current.get_value() == Conversion::Enums::to_db_handle(_ssntype_required));
 }
 
 }//Fred::GeneralCheck::MojeID::{anonymous}
