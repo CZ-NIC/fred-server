@@ -16,14 +16,16 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <string>
-
 #include "src/fredlib/contact/checkers.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/ssntype.h"
 #include "tests/setup/fixtures.h"
 #include "util/idn_utils.h"
+#include "tests/fredlib/enum_to_db_handle_conversion.h"
+
+#include <boost/test/unit_test.hpp>
+#include <string>
 
 const std::string server_name = "test-contact-checkers";
 
@@ -131,6 +133,16 @@ struct test_contact_checkers_fixture : public Test::Fixture::instantiate_db_temp
 
 
 BOOST_FIXTURE_TEST_SUITE(TestContactCheckers, test_contact_checkers_fixture)
+
+/**
+ * test Fred::SSNType conversion functions
+ */
+BOOST_AUTO_TEST_CASE(fred_ssntype_conversions)
+{
+    Fred::OperationContextCreator ctx;
+    static const char *const sql = "SELECT type FROM enum_ssntype";
+    enum_to_db_handle_conversion_test< Fred::SSNType, 6 >(ctx, sql);
+}
 
 /**
  * test call SumCheck

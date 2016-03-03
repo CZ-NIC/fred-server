@@ -24,6 +24,7 @@
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 #include "tests/fredlib/util.h"
+#include "tests/fredlib/enum_to_db_handle_conversion.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -88,6 +89,16 @@ private:
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestCreatePublicRequestAuth, create_public_request_auth_fixture)
+
+/**
+ * test public_request_status conversion functions
+ */
+BOOST_AUTO_TEST_CASE(public_request_status_conversions)
+{
+    Fred::OperationContextCreator ctx;
+    static const char *const sql = "SELECT name FROM enum_public_request_status";
+    enum_to_db_handle_conversion_test< Fred::PublicRequest::Status, 3 >(ctx, sql);
+}
 
 /**
  * test CreatePublicRequestAuth with wrong registrar

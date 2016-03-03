@@ -23,6 +23,8 @@
 #ifndef ENUM_TO_DB_HANDLE_CONVERSION_H_F3B6053D340D5F1A2523AFCF3B705697//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define ENUM_TO_DB_HANDLE_CONVERSION_H_F3B6053D340D5F1A2523AFCF3B705697
 
+#include "tests/fredlib/util.h"
+
 #include <map>
 #include <boost/test/unit_test.hpp>
 
