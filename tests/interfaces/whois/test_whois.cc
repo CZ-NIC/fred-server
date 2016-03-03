@@ -1347,7 +1347,7 @@ struct domains_by_admin_contact_fixture
 
     domains_by_admin_contact_fixture()
     : test_contact_fixture(),
-      test_fqdn(std::string("test") + xmark + ".cz"),
+      test_fqdn(std::string("test") + xmark),
       wrong_contact(""),
       no_contact("absent-contact"),
       regular_domains(6)
@@ -1478,7 +1478,7 @@ struct domains_by_nsset_fixture
 
     domains_by_nsset_fixture()
     : test_contact_fixture(),
-      test_fqdn(std::string("test") + xmark + ".cz"),
+      test_fqdn(std::string("test") + xmark),
       test_nsset("test-nsset" + xmark),
       wrong_nsset(""),
       no_nsset("absent-nsset"),
@@ -1617,7 +1617,7 @@ struct domains_by_keyset_fixture
 
     domains_by_keyset_fixture()
     : test_contact_fixture(),
-      test_fqdn(std::string("test") + xmark + ".cz"),
+      test_fqdn(std::string("test") + xmark),
       test_keyset("test-nsset" + xmark),
       wrong_keyset(""),
       no_keyset("absent-nsset"),
@@ -1741,5 +1741,70 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_no_keyset, domains_by_keyset_fixtu
 }
 
 BOOST_AUTO_TEST_SUITE_END();//get_domains_by_nsset
+
+
+BOOST_AUTO_TEST_SUITE(get_domain_status_descriptions)
+
+struct domain_status_descriptions_fixture
+: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+{
+    std::string test_fqdn;
+    std::string test_lang;
+    std::string no_lang;
+
+    domain_status_descriptions_fixture()
+    : test_contact_fixture(),
+      test_fqdn(std::string("test") + xmark + ".cz"),
+      test_lang("EN")
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateDomain(test_fqdn, test_registrar_handle, test_registrant_handle)
+            .set_admin_contacts(Util::vector_of<std::string>(test_admin))
+            .exec(ctx);
+    }
+};
+
+template <class T>
+bool private_sort(T o1, T o2)
+{
+    return o1.handle < o2.handle;
+}
+
+BOOST_FIXTURE_TEST_CASE(get_domain_status_descriptions, domain_status_descriptions_fixture)
+{
+    Fred::OperationContext ctx;
+    std::vector<Fred::ObjectStateDescription> states =
+                        Fred::GetObjectStateDescriptions(test_lang)
+                        .set_object_type(std::string("domain"))
+                        .set_external()
+                        .exec(ctx);
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = impl.get_domain_status_descriptions(test_lang);
+    BOOST_CHECK(states.size() == vec_osd.size());
+    std::sort(states.begin(), states.end(), private_sort<Fred::ObjectStateDescription>);
+    std::sort(vec_osd.begin(), vec_osd.end(), private_sort<Registry::WhoisImpl::ObjectStatusDesc>);
+    std::vector<Fred::ObjectStateDescription>::iterator it;
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it2;
+    for(it = states.begin(), it2 = vec_osd.begin(); it != states.end(); ++it, ++it2)
+    {
+        BOOST_CHECK(it->handle == it2->handle);
+        BOOST_CHECK(it->description == it2->name);
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_domain_status_descriptions_missing, domain_status_descriptions_fixture)
+{
+    try
+    {
+        std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = impl.get_domain_status_descriptions(no_lang);
+        BOOST_ERROR("this domain must not have a localization");
+    }
+    catch(const Registry::WhoisImpl::MissingLocalization& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();//get_domain_status_descriptions
 
 BOOST_AUTO_TEST_SUITE_END();//TestWhois
