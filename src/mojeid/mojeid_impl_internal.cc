@@ -35,6 +35,11 @@ void set_optional_address_validation_result(
     const Fred::GeneralCheck::contact_optional_address &result,
     EXCEPTION_CLASS &e)
 {
+    if (result.success()) {
+        e.set(MojeIDImplData::ValidationResult::OK);
+        return;
+    }
+
     if (result.street1_absent) {
         e.street1 = MojeIDImplData::ValidationResult::REQUIRED;
     }
@@ -74,9 +79,8 @@ void set_permanent_address_validation_result(
     const Fred::check_contact_place_address &result,
     EXCEPTION_CLASS &e)
 {
-    if (result.absent) {
-        e.permanent.address_presence = MojeIDImplData::ValidationResult::REQUIRED;
-    }
+    e.permanent.address_presence = result.absent ? MojeIDImplData::ValidationResult::REQUIRED
+                                                 : MojeIDImplData::ValidationResult::OK;
 
     set_optional_address_validation_result(result, e.permanent);
 }
@@ -97,6 +101,9 @@ void set_presence_validity_availability_result(
     else if (!check.AVAILABILITY_ANCESTRAL_CLASS::success()) {
         result = MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     }
+    else {
+        result = MojeIDImplData::ValidationResult::OK;
+    }
 }
 
 template < class PRESENCE_ANCESTRAL_CLASS,
@@ -110,6 +117,9 @@ void set_presence_validity_result(
     }
     else if (!check.VALIDITY_ANCESTRAL_CLASS::success()) {
         result = MojeIDImplData::ValidationResult::INVALID;
+    }
+    else {
+        result = MojeIDImplData::ValidationResult::OK;
     }
 }
 
@@ -125,32 +135,33 @@ void set_validity_availability_result(
     else if (!check.AVAILABILITY_ANCESTRAL_CLASS::success()) {
         result = MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     }
+    else {
+        result = MojeIDImplData::ValidationResult::OK;
+    }
 }
 
 template < class CHECK_CLASS, class EXCEPTION_CLASS >
 void set_contact_name_result(const CHECK_CLASS &result, EXCEPTION_CLASS &e)
 {
-    if (result.Fred::check_contact_name::first_name_absent) {
-        e.first_name = MojeIDImplData::ValidationResult::REQUIRED;
-    }
+    e.first_name = result.Fred::check_contact_name::first_name_absent
+                   ? MojeIDImplData::ValidationResult::REQUIRED
+                   : MojeIDImplData::ValidationResult::OK;
 
-    if (result.Fred::check_contact_name::last_name_absent) {
-        e.last_name = MojeIDImplData::ValidationResult::REQUIRED;
-    }
+    e.last_name = result.Fred::check_contact_name::last_name_absent
+                   ? MojeIDImplData::ValidationResult::REQUIRED
+                   : MojeIDImplData::ValidationResult::OK;
 }
 
 void set_validity_result(bool valid, MojeIDImplData::ValidationResult::Value &result)
 {
-    if (!valid) {
-        result = MojeIDImplData::ValidationResult::INVALID;
-    }
+    result = valid ? MojeIDImplData::ValidationResult::OK
+                   : MojeIDImplData::ValidationResult::INVALID;
 }
 
 void set_availability_result(bool available, MojeIDImplData::ValidationResult::Value &result)
 {
-    if (!available) {
-        result = MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-    }
+    result = available ? MojeIDImplData::ValidationResult::OK
+                       : MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 }
 
 }//namespace Registry::MojeIDImplInternal::{anonymous}
@@ -210,6 +221,9 @@ void raise(const CheckCreateContactPrepare &result)
     }
     else if (result.Fred::MojeID::check_contact_username::invalid) {
         e.username = MojeIDImplData::ValidationResult::INVALID;
+    }
+    else {
+        e.username = MojeIDImplData::ValidationResult::OK;
     }
 
     set_contact_name_result(result, e);
@@ -286,9 +300,15 @@ void raise(const CheckCreateValidationRequest &result)
     else if (result.Fred::MojeID::check_contact_ssn::birthdate_invalid) {
         e.birth_date = MojeIDImplData::ValidationResult::INVALID;
     }
+    else {
+        e.birth_date = MojeIDImplData::ValidationResult::OK;
+    }
 
     if (result.Fred::MojeID::check_contact_ssn::vat_id_num_absent) {
         e.vat_id_num = MojeIDImplData::ValidationResult::REQUIRED;
+    }
+    else {
+        e.vat_id_num = MojeIDImplData::ValidationResult::OK;
     }
 
     throw e;

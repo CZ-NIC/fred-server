@@ -73,6 +73,15 @@ struct NotEnumValidationResultValue:std::invalid_argument
     virtual ~NotEnumValidationResultValue() throw() {}
 };
 
+/**
+ * Exception if argument value indicate that its value was never set
+ */
+struct ValidationResultWasNotSet:std::invalid_argument
+{
+    ValidationResultWasNotSet();
+    virtual ~ValidationResultWasNotSet() throw() {}
+};
+
 void wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult &dst);
 
 void wrap_AddressValidationResult(const Registry::MojeIDImplData::AddressValidationResult &src,

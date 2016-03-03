@@ -237,6 +237,11 @@ NotEnumValidationResultValue::NotEnumValidationResultValue()
 {
 }
 
+ValidationResultWasNotSet::ValidationResultWasNotSet()
+:   std::invalid_argument("argument value was never set")
+{
+}
+
 void wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult &dst)
 {
     switch (src) {
@@ -252,6 +257,8 @@ void wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::Value src
     case Registry::MojeIDImplData::ValidationResult::REQUIRED:
         dst = Registry::MojeID::REQUIRED;
         return;
+    case Registry::MojeIDImplData::ValidationResult::UNKNOWN:
+        throw ValidationResultWasNotSet();
     }
     throw NotEnumValidationResultValue();
 }
