@@ -62,11 +62,11 @@ struct ValidationResult
 {
     enum Value
     {
+        UNKNOWN,//the first value represented by 0 is most likely set when explicit initialization is missing
         OK,
         NOT_AVAILABLE,
         INVALID,
         REQUIRED,
-        UNKNOWN
     };
 };
 
