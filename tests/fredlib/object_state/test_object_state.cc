@@ -16,23 +16,25 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-#include <string>
-#include <algorithm>
-
 #include "src/fredlib/opcontext.h"
-#include <fredlib/contact.h>
+#include "include/fredlib/contact.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/object/object_state.h"
 
 #include "util/util.h"
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
+#include "tests/fredlib/enum_to_db_handle_conversion.h"
+
+#include <boost/test/unit_test.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <string>
+#include <algorithm>
 
 BOOST_FIXTURE_TEST_SUITE(TestObjectState, Test::Fixture::instantiate_db_template)
 
@@ -300,6 +302,16 @@ void check_object_state_desc_data(std::vector<Fred::ObjectStateDescription> test
         == std::make_pair(test_osd.end(), fixture_osd.end()));
 }
 
+
+/**
+ * test Fred::Object::State conversion functions
+ */
+BOOST_AUTO_TEST_CASE(fred_object_state_conversions)
+{
+    Fred::OperationContextCreator ctx;
+    static const char *const sql = "SELECT name FROM enum_object_states";
+    enum_to_db_handle_conversion_test< Fred::Object::State, 27 >(ctx, sql);
+}
 
 BOOST_FIXTURE_TEST_CASE(get_object_state_descriptions, object_state_description_fixture)
 {
