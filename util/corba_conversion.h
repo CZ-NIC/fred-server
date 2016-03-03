@@ -27,12 +27,7 @@
 #include <stdexcept>
 #include <string>
 #include <omniORB4/CORBA.h>
-#include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/mpl/assert.hpp>
-#include <boost/type_traits.hpp>
 #include <boost/numeric/conversion/cast.hpp>
-#include <boost/integer_traits.hpp>
 
 /**
  * CORBA conversions
@@ -43,9 +38,8 @@ namespace CorbaConversion
 /**
  * Converted value is out of range
  */
-class IntegralConversionOutOfRange : public std::invalid_argument
+struct IntegralConversionOutOfRange : std::invalid_argument
 {
-public:
     IntegralConversionOutOfRange();
     explicit IntegralConversionOutOfRange(const std::string &msg);
     virtual ~IntegralConversionOutOfRange() throw() {}
@@ -55,7 +49,15 @@ public:
  * Basic integral types conversion with overflow detection
  */
 template < class SOURCE_INTEGRAL_TYPE, class TARGET_INTEGRAL_TYPE >
-void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst);
+void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
+{
+    try {
+        dst = boost::numeric_cast< TARGET_INTEGRAL_TYPE >(src);
+    }
+    catch (const boost::numeric::bad_numeric_cast &e) {
+        throw IntegralConversionOutOfRange(e.what());
+    }
+}
 
 /**
  * Converts C++ string into CORBA specific string class.
