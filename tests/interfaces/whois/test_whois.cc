@@ -1201,6 +1201,52 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_invalid_unmanaged_toomany, invalid_
     }
 }
 
+struct delete_candidate_fixture //Jiri: check carefully
+: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+{
+    std::string delete_fqdn;
+    std::string delete_status;
+
+    delete_candidate_fixture()
+    : delete_status("deleteCandidate")
+    {
+        Fred::OperationContext ctx;
+        Fred::CreateDomain(delete_fqdn, test_registrar_handle, test_registrant_handle)
+            .set_admin_contacts(Util::vector_of<std::string>(test_admin))
+            .exec(ctx);
+        ctx.commit_transaction();
+        ctx.get_conn().exec_params(
+            "UPDATE domain_history "
+            "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                    "FROM enum_parameters"
+                    "WHERE name = 'expiration_registration_protection_period')"
+            "WHERE id = (SELECT id FROM object_registry WHERE name = $1::text)"
+
+            "UPDATE domain"
+            "SET exdate = now() -"
+                "(SELECT val::int * '1 day'::interval"
+                    "FROM enum_parameters"
+                    "WHERE name = 'expiration_registration_protection_period')"
+            "WHERE id = (SELECT id FROM object_registry WHERE name = $1::text)",
+            Database::query_param_list(delete_fqdn));
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, impl.output_timezone);
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+        BOOST_MESSAGE(delete_fqdn);
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_delete_candidate, delete_candidate_fixture)
+{
+    Fred::OperationContext ctx;
+    Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_domain_data;
+    Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(delete_fqdn);
+    BOOST_CHECK(dom.fqdn == idd.fqdn);
+    BOOST_CHECK(dom.changed.isnull());
+    BOOST_CHECK(dom.last_transfer.isnull());
+    BOOST_CHECK(dom.statuses.end() != std::find(dom.statuses.begin(), dom.statuses.end(), delete_status));
+}
+
 BOOST_AUTO_TEST_SUITE_END()//get_domain_by_handle
 
 
@@ -1791,7 +1837,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_status_descriptions, domain_status_descriptio
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domain_status_descriptions_missing, domain_status_descriptions_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domain_status_descriptions_missing, domain_status_descriptions_fixture)//not sure if done correctly
 {
     try
     {
