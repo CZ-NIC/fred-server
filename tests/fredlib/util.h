@@ -55,6 +55,6 @@ struct has_contact_and_a_different_registrar : has_contact {
     }
 };
 
-}
+}//namespace Test
 
 #endif // #include guard end
