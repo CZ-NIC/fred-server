@@ -24,8 +24,8 @@
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 #include "tests/fredlib/util.h"
+#include "tests/fredlib/enum_to_db_handle_conversion.h"
 
-#include <map>
 #include <boost/test/unit_test.hpp>
 
 const std::string server_name = "test-update-public-request";
@@ -35,8 +35,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
 {
     update_public_request_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
-        public_request_type(*this),
-        bad_enum_status(static_cast< Fred::PublicRequest::Status::Enum >(NUMBER_OF_STATES))
+        public_request_type(*this)
     {
         Fred::OperationContextCreator ctx;
         Database::Result dbres = ctx.get_conn().exec(
@@ -84,8 +83,6 @@ protected:
     Fred::ObjectId contact_id;
     Fred::CreatePublicRequestAuth::Result create_result;
     const Fred::PublicRequestAuthTypeIface &public_request_type;
-    enum { NUMBER_OF_STATES = 3 };
-    const Fred::PublicRequest::Status::Enum bad_enum_status;
 private:
     std::string get_public_request_type()const { return type_name_; }
     std::string generate_passwords()const { return "h*vno kleslo"; }
@@ -100,66 +97,8 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdatePublicRequest, update_public_request_fixture)
 BOOST_AUTO_TEST_CASE(public_request_status_conversions)
 {
     Fred::OperationContextCreator ctx;
-
-    typedef std::set< std::string > StatusName;
-    StatusName status_names;
-    {
-        const Database::Result res = ctx.get_conn().exec("SELECT name FROM enum_public_request_status ORDER BY id");
-        BOOST_CHECK(res.size() == NUMBER_OF_STATES);
-        for (::size_t idx = 0; idx < res.size(); ++idx) {
-            status_names.insert(static_cast< std::string >(res[idx][0]));
-        }
-        BOOST_CHECK(status_names.size() == res.size());
-    }
-    static const std::string known_status[NUMBER_OF_STATES] = {"new", "answered", "invalidated"};
-    for (int idx = 0; idx < NUMBER_OF_STATES; ++idx) {
-        BOOST_CHECK(status_names.count(known_status[idx]) == 1);
-        const Fred::PublicRequest::Status::Enum enum_status = Conversion::Enums::from_db_handle< Fred::PublicRequest::Status >(known_status[idx]);
-        BOOST_CHECK(Conversion::Enums::to_db_handle(enum_status) == known_status[idx]);
-    }
-
-    BOOST_CHECK_EXCEPTION(
-    try {
-        const std::string bad_status = "newx";
-        BOOST_CHECK(status_names.count(bad_status) == 0);
-        Conversion::Enums::from_db_handle< Fred::PublicRequest::Status >(bad_status);
-    }
-    catch(const std::invalid_argument &e) {
-        BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
-        throw;
-    }
-    catch(const std::exception &e) {
-        BOOST_ERROR(boost::diagnostic_information(e));
-        throw;
-    }
-    catch(...) {
-        BOOST_ERROR("unexpected exception occurs");
-        throw;
-    },
-    std::invalid_argument,
-    check_std_exception);
-
-    BOOST_CHECK_EXCEPTION(
-    try {
-        BOOST_CHECK(Fred::PublicRequest::Status::NEW < bad_enum_status);
-        BOOST_CHECK(Fred::PublicRequest::Status::ANSWERED < bad_enum_status);
-        BOOST_CHECK(Fred::PublicRequest::Status::INVALIDATED < bad_enum_status);
-        Conversion::Enums::to_db_handle(bad_enum_status);
-    }
-    catch(const std::invalid_argument &e) {
-        BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
-        throw;
-    }
-    catch(const std::exception &e) {
-        BOOST_ERROR(boost::diagnostic_information(e));
-        throw;
-    }
-    catch(...) {
-        BOOST_ERROR("unexpected exception occurs");
-        throw;
-    },
-    std::invalid_argument,
-    check_std_exception);
+    static const char *const sql = "SELECT name FROM enum_public_request_status";
+    enum_to_db_handle_conversion_test< Fred::PublicRequest::Status, 3 >(ctx, sql);
 }
 
 /**
@@ -408,10 +347,12 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_status)
     Fred::OperationContextCreator ctx;
 
     const std::string email = "noreply@nic.cz";
+    static const Fred::PublicRequest::Status::Enum incorrect_status_value =
+        static_cast< Fred::PublicRequest::Status::Enum >(-123456789);
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::UpdatePublicRequest()
-            .set_status(bad_enum_status)
+            .set_status(incorrect_status_value)
             .set_email_to_answer(email)
             .exec(ctx, Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
     }
@@ -421,7 +362,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_status)
         BOOST_CHECK(!e.is_set_unknown_email_id());
         BOOST_CHECK(!e.is_set_unknown_registrar_id());
         BOOST_CHECK(e.is_set_bad_public_request_status());
-        BOOST_CHECK(e.get_bad_public_request_status() == bad_enum_status);
+        BOOST_CHECK(e.get_bad_public_request_status() == incorrect_status_value);
         BOOST_TEST_MESSAGE(boost::diagnostic_information(e));
         throw;
     }

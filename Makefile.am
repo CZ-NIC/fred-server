@@ -195,6 +195,7 @@ noinst_HEADERS = \
 		src/corba/util/corba_conversions_string.h \
 		util/is_equal_optional_nullable.h \
 		tests/fredlib/util.h \
+		tests/fredlib/enum_to_db_handle_conversion.h \
 		tests/mockup/logger_client_dummy.h \
 		src/fredlib/contact/verification/enum_testsuite_handle.h \
 		src/fredlib/contact/verification/enum_check_status.h \
