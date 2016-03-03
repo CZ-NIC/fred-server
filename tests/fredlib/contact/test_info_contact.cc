@@ -125,6 +125,44 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture_6da88b63b0bc46e29f6d0
 
 }
 
+BOOST_FIXTURE_TEST_CASE(test_info_contact_output_timestamp, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
+{
+    const std::string timezone = "Europe/Prague";
+    Fred::OperationContext ctx;
+    const Fred::InfoContactOutput contact_output_by_handle              = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, timezone);
+    const Fred::InfoContactOutput contact_output_by_id                  = Fred::InfoContactById(contact_output_by_handle.info_contact_data.id).exec(ctx, timezone);
+    const Fred::InfoContactOutput contact_output_history_by_historyid   = Fred::InfoContactHistoryByHistoryid(contact_output_by_handle.info_contact_data.historyid).exec(ctx, timezone);
+    const Fred::InfoContactOutput contact_output_history_by_id          = Fred::InfoContactHistoryById(contact_output_by_handle.info_contact_data.id).exec(ctx, timezone).at(0);
+    const Fred::InfoContactOutput contact_output_history_by_roid        = Fred::InfoContactHistoryByRoid(contact_output_by_handle.info_contact_data.roid).exec(ctx, timezone).at(0);
+
+    /* all are equal amongst themselves ... */
+    BOOST_CHECK(
+            contact_output_by_handle.utc_timestamp              == contact_output_by_id.utc_timestamp
+        &&  contact_output_by_id.utc_timestamp                  == contact_output_history_by_historyid.utc_timestamp
+        &&  contact_output_history_by_historyid.utc_timestamp   == contact_output_history_by_id.utc_timestamp
+        &&  contact_output_history_by_id.utc_timestamp          == contact_output_history_by_roid.utc_timestamp
+        &&
+            contact_output_by_handle.local_timestamp              == contact_output_by_id.local_timestamp
+        &&  contact_output_by_id.local_timestamp                  == contact_output_history_by_historyid.local_timestamp
+        &&  contact_output_history_by_historyid.local_timestamp   == contact_output_history_by_id.local_timestamp
+        &&  contact_output_history_by_id.local_timestamp          == contact_output_history_by_roid.local_timestamp
+    );
+
+    /* ... and one of them is equal to correct constant value */
+    BOOST_CHECK_EQUAL(
+        contact_output_by_handle.utc_timestamp,
+        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
+    );
+
+    BOOST_CHECK_EQUAL(
+        contact_output_by_handle.local_timestamp,
+        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec_params(
+            "SELECT now() AT TIME ZONE $1::text",
+            Database::query_param_list(timezone)
+        )[0][0] ) )
+    );
+}
+
 /**
  * test call InfoContactDiff
 */
