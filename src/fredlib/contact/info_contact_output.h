@@ -41,7 +41,6 @@ namespace Fred
     {
         InfoContactData info_contact_data;/**< data of the contact */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the contact data in UTC */
-        boost::posix_time::ptime local_timestamp;/**< timestamp of getting the contact data in local time zone viz @ref local_timestamp_pg_time_zone_name */
 
         Nullable<unsigned long long> next_historyid; /**< next historyid of the contact history*/
         boost::posix_time::ptime history_valid_from;/**< history data valid from time in local time zone viz @ref local_timestamp_pg_time_zone_name*/

@@ -122,7 +122,8 @@ namespace Fred
         " , ct.discloseident AS ")(GetAlias::discloseident())(
         " , ct.disclosenotifyemail  AS ")(GetAlias::disclosenotifyemail())(
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        /* CURRENT_TIMESTAMP is of type TIMESTAMP WITH TIME ZONE Ticket #15178 */
+        " , (CURRENT_TIMESTAMP AT TIME ZONE ").param(p_local_zone)(")::timestamp AS ")(GetAlias::local_timestamp())(
         " , ct.warning_letter AS ")(GetAlias::domain_expiration_letter_preference())(
         " FROM object_registry cobr ");
         if(history_query_)
@@ -275,8 +276,6 @@ namespace Fred
 
             info_contact_output.utc_timestamp = query_result[i][GetAlias::utc_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
             : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::utc_timestamp()]));
-            info_contact_output.local_timestamp = query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-            : boost::posix_time::time_from_string(static_cast<std::string>(query_result[i][GetAlias::local_timestamp()]));
 
             info_contact_output.info_contact_data.warning_letter = query_result[i][GetAlias::domain_expiration_letter_preference()].isnull() ? Nullable<bool>()
                     : Nullable<bool>(static_cast<bool>(query_result[i][GetAlias::domain_expiration_letter_preference()]));

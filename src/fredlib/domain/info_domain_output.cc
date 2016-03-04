@@ -37,7 +37,6 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_domain_data",info_domain_data.to_string()))
         (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))
-        (std::make_pair("local_timestamp",boost::lexical_cast<std::string>(local_timestamp)))
         (std::make_pair("next_historyid",next_historyid.print_quoted()))
         (std::make_pair("history_valid_from",boost::lexical_cast<std::string>(history_valid_from)))
         (std::make_pair("history_valid_to",history_valid_to.print_quoted()))

@@ -9,15 +9,17 @@
 namespace Fred
 {
     /**
+     * @returns historyid of transferred object
      * @throws UnknownRegistrar
      * @throws UnknownObjectId
      * @throws NewRegistrarIsAlreadySponsoring
      */
-    void transfer_object(
+    unsigned long long transfer_object(
         Fred::OperationContext& _ctx,
         const unsigned long long _object_id,
         const std::string& _new_registrar_handle,
-        const GeneratedAuthInfoPassword& _new_authinfopw
+        const GeneratedAuthInfoPassword& _new_authinfopw,
+        const Nullable<unsigned long long>& _logd_request_id = Nullable<unsigned long long>()
     );
 }
 

@@ -46,7 +46,6 @@ namespace Fred
     {
         InfoRegistrarData info_registrar_data;/**< data of the registrar */
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the registrar data in UTC */
-        boost::posix_time::ptime local_timestamp;/**< timestamp of getting the registrar data in local time zone viz @ref local_timestamp_pg_time_zone_name */
 
         /**
         * Empty constructor of the registrar info data structure.

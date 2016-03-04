@@ -166,6 +166,31 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture)
 
 }
 
+BOOST_FIXTURE_TEST_CASE(test_info_nsset_output_timestamp, info_nsset_fixture)
+{
+    const std::string timezone = "Europe/Prague";
+    Fred::OperationContext ctx;
+    const Fred::InfoNssetOutput nsset_output_by_handle              = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, timezone);
+    const Fred::InfoNssetOutput nsset_output_by_id                  = Fred::InfoNssetById(nsset_output_by_handle.info_nsset_data.id).exec(ctx, timezone);
+    const Fred::InfoNssetOutput nsset_output_history_by_historyid   = Fred::InfoNssetHistoryByHistoryid(nsset_output_by_handle.info_nsset_data.historyid).exec(ctx, timezone);
+    const Fred::InfoNssetOutput nsset_output_history_by_id          = Fred::InfoNssetHistoryById(nsset_output_by_handle.info_nsset_data.id).exec(ctx, timezone).at(0);
+    const Fred::InfoNssetOutput nsset_output_history_by_roid        = Fred::InfoNssetHistoryByRoid(nsset_output_by_handle.info_nsset_data.roid).exec(ctx, timezone).at(0);
+
+    /* all are equal amongst themselves ... */
+    BOOST_CHECK(
+            nsset_output_by_handle.utc_timestamp              == nsset_output_by_id.utc_timestamp
+        &&  nsset_output_by_id.utc_timestamp                  == nsset_output_history_by_historyid.utc_timestamp
+        &&  nsset_output_history_by_historyid.utc_timestamp   == nsset_output_history_by_id.utc_timestamp
+        &&  nsset_output_history_by_id.utc_timestamp          == nsset_output_history_by_roid.utc_timestamp
+    );
+
+    /* ... and one of them is equal to correct constant value */
+    BOOST_CHECK_EQUAL(
+        nsset_output_by_handle.utc_timestamp,
+        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
+    );
+}
+
 /**
  * test InfoNssetByHandle with wrong handle
  */

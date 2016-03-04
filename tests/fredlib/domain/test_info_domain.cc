@@ -195,6 +195,31 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
     BOOST_CHECK(Fred::InfoDomainHistoryById(0).exec(ctx).empty());
 }
 
+BOOST_FIXTURE_TEST_CASE(test_info_domain_output_timestamp, test_domain_fixture)
+{
+    const std::string timezone = "Europe/Prague";
+    Fred::OperationContext ctx;
+    const Fred::InfoDomainOutput domain_output_by_handle              = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, timezone);
+    const Fred::InfoDomainOutput domain_output_by_id                  = Fred::InfoDomainById(domain_output_by_handle.info_domain_data.id).exec(ctx, timezone);
+    const Fred::InfoDomainOutput domain_output_history_by_historyid   = Fred::InfoDomainHistoryByHistoryid(domain_output_by_handle.info_domain_data.historyid).exec(ctx, timezone);
+    const Fred::InfoDomainOutput domain_output_history_by_id          = Fred::InfoDomainHistoryById(domain_output_by_handle.info_domain_data.id).exec(ctx, timezone).at(0);
+    const Fred::InfoDomainOutput domain_output_history_by_roid        = Fred::InfoDomainHistoryByRoid(domain_output_by_handle.info_domain_data.roid).exec(ctx, timezone).at(0);
+
+    /* all are equal amongst themselves ... */
+    BOOST_CHECK(
+            domain_output_by_handle.utc_timestamp              == domain_output_by_id.utc_timestamp
+        &&  domain_output_by_id.utc_timestamp                  == domain_output_history_by_historyid.utc_timestamp
+        &&  domain_output_history_by_historyid.utc_timestamp   == domain_output_history_by_id.utc_timestamp
+        &&  domain_output_history_by_id.utc_timestamp          == domain_output_history_by_roid.utc_timestamp
+    );
+
+    /* ... and one of them is equal to correct constant value */
+    BOOST_CHECK_EQUAL(
+        domain_output_by_handle.utc_timestamp,
+        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
+    );
+}
+
 /**
  * test InfoDomainByHandle with wrong fqdn
  */

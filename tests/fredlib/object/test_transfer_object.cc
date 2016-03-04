@@ -31,43 +31,61 @@ BOOST_FIXTURE_TEST_CASE(test_transfer, Test::has_contact_and_a_different_registr
 {
     const Fred::GeneratedAuthInfoPassword new_authinfo("abcdefgh");
 
-    BOOST_CHECK_NO_THROW(
-        Fred::transfer_object(ctx, contact.id, the_different_registrar.handle, new_authinfo)
+    const unsigned long long logd_request_id = 123456;
+
+    const unsigned long long post_transfer_history_id = Fred::transfer_object(
+        ctx,
+        contact.id,
+        the_different_registrar.handle,
+        new_authinfo,
+        logd_request_id
     );
 
-    const Database::Result post_op_res =
-        ctx.get_conn().exec_params(
-            "SELECT "
-                "clid, "
-                "trdate, "
-                "authinfopw, "
-                "now()::timestamp as now_ "
-            "FROM object "
-            "WHERE id = $1::integer",
-            Database::query_param_list(contact.id)
-        );
+    const std::string timezone = "Europe/Prague";
+
+    const Fred::InfoContactOutput post_transfer_contact_metadata = Fred::InfoContactById(contact.id).exec(ctx, timezone);
+    const Fred::InfoContactData& post_transfer_contact_data = post_transfer_contact_metadata.info_contact_data;
 
     BOOST_CHECK_EQUAL(
-        static_cast<unsigned long long>(
-            post_op_res[0]["clid"]
-        ),
+        Fred::InfoRegistrarByHandle(post_transfer_contact_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id,
         the_different_registrar.id
     );
 
     BOOST_CHECK_EQUAL(
-        static_cast<std::string>(
-            post_op_res[0]["authinfopw"]
-        ),
+        post_transfer_contact_data.authinfopw,
         new_authinfo.password_
     );
 
     BOOST_CHECK_EQUAL(
-        static_cast<std::string>(
-            post_op_res[0]["trdate"]
-        ),
-        static_cast<std::string>(
-            post_op_res[0]["now_"]
+        post_transfer_contact_data.transfer_time,
+        boost::posix_time::time_from_string(
+            static_cast<std::string>(
+                ctx.get_conn().exec_params(
+                    "SELECT now()::TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text",
+                    Database::query_param_list(timezone)
+                )[0][0]
+            )
         )
+    );
+
+    BOOST_CHECK_EQUAL(
+        post_transfer_history_id,
+        post_transfer_contact_data.historyid
+    );
+
+    BOOST_CHECK_EQUAL(
+        static_cast<unsigned long long>(
+            ctx.get_conn().exec_params(
+                "SELECT MAX(historyid) AS current_hid_ FROM object_history WHERE id = $1::integer",
+                Database::query_param_list(contact.id)
+            )[0]["current_hid_"]
+        ),
+        post_transfer_history_id
+    );
+
+    BOOST_CHECK_EQUAL(
+        logd_request_id,
+        post_transfer_contact_metadata.logd_request_id
     );
 }
 

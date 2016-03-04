@@ -90,7 +90,8 @@ namespace Fred
         " , r.system AS ")(GetAlias::system())(
         " , r.regex AS ")(GetAlias::memo_regex())(
         " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')::timestamp AS ")(GetAlias::utc_timestamp())(
-        " , (CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE ").param_text(local_timestamp_pg_time_zone_name)(")::timestamp AS ")(GetAlias::local_timestamp())(
+        /* CURRENT_TIMESTAMP is of type TIMESTAMP WITH TIME ZONE Ticket #15178 */
+        " , (CURRENT_TIMESTAMP AT TIME ZONE ").param_text(local_timestamp_pg_time_zone_name)(")::timestamp AS ")(GetAlias::local_timestamp())(
         " FROM registrar r ");
 
         if(info_registrar_id_filter_cte_.isset())
@@ -171,8 +172,6 @@ namespace Fred
                 : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::memo_regex()]));
             info_registrar_output.utc_timestamp = registrar_query_result[i][GetAlias::utc_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
                 : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][GetAlias::utc_timestamp()]));// utc timestamp
-            info_registrar_output.local_timestamp = registrar_query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][GetAlias::local_timestamp()]));//local zone timestamp
 
             result.push_back(info_registrar_output);
         }//for res

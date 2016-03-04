@@ -2,14 +2,16 @@
 
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/object/object.h"
 
 namespace Fred
 {
-    void transfer_object(
+    unsigned long long transfer_object(
         Fred::OperationContext& _ctx,
         const unsigned long long _object_id,
         const std::string& _new_registrar_handle,
-        const GeneratedAuthInfoPassword& _new_authinfopw
+        const GeneratedAuthInfoPassword& _new_authinfopw,
+        const Nullable<unsigned long long>& _logd_request_id
     ) {
 
         unsigned long long registrar_id = 0;
@@ -56,22 +58,42 @@ namespace Fred
             }
         }
 
-        const Database::Result transfer_res = _ctx.get_conn().exec_params(
-            "UPDATE object "
-            "SET "
-                "trdate = now(), "
-                "clid = $1::integer, "
-                "authinfopw = $2::text "
-            "WHERE id = $3::integer ",
-            Database::query_param_list
-                (registrar_id)
-                (_new_authinfopw.password_)
-                (_object_id)
-        );
+        {
+            const Database::Result transfer_res = _ctx.get_conn().exec_params(
+                "UPDATE object "
+                "SET "
+                    "trdate = now(), "
+                    "clid = $1::integer, "
+                    "authinfopw = $2::text "
+                "WHERE id = $3::integer ",
+                Database::query_param_list
+                    (registrar_id)
+                    (_new_authinfopw.password_)
+                    (_object_id)
+            );
 
-        if(transfer_res.rows_affected() != 1) {
-            throw std::runtime_error("transfer failed");
+            if(transfer_res.rows_affected() != 1) {
+                throw std::runtime_error("UPDATE object failed");
+            }
         }
 
+        const unsigned long long new_historyid = Fred::InsertHistory(_logd_request_id, _object_id).exec(_ctx);
+
+        {
+            const Database::Result update_historyid_res = _ctx.get_conn().exec_params(
+                "UPDATE object_registry "
+                "SET historyid = $1::bigint "
+                "WHERE id = $2::integer ",
+                Database::query_param_list
+                    (new_historyid)
+                    (_object_id)
+            );
+
+            if (update_historyid_res.rows_affected() != 1) {
+                throw std::runtime_error("UPDATE object_registry failed");
+            }
+        }
+
+        return new_historyid;
     }
 }

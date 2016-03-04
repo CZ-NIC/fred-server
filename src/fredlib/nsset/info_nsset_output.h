@@ -45,7 +45,6 @@ namespace Fred
         InfoNssetData info_nsset_data;/**< data of the nsset */
 
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the nsset data in UTC */
-        boost::posix_time::ptime local_timestamp;/**< timestamp of getting the nsset data in local time zone viz @ref local_timestamp_pg_time_zone_name */
 
         Nullable<unsigned long long> next_historyid; /**< next historyid of the nsset history*/
         boost::posix_time::ptime history_valid_from;/**< history data valid from time */

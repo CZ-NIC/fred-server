@@ -186,6 +186,25 @@ BOOST_AUTO_TEST_CASE(info_registrar)
     BOOST_CHECK(nosystem_registrar_infos.at(0).info_registrar_data == test_registrar_data_1);
 }
 
+BOOST_AUTO_TEST_CASE(test_info_registrar_output_timestamp)
+{
+    const std::string timezone = "Europe/Prague";
+    Fred::OperationContext ctx;
+    const Fred::InfoRegistrarOutput registrar_output_by_handle = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).exec(ctx, timezone);
+    const Fred::InfoRegistrarOutput registrar_output_by_id     = Fred::InfoRegistrarById(registrar_output_by_handle.info_registrar_data.id).exec(ctx, timezone);
+
+    /* all are equal amongst themselves ... */
+    BOOST_CHECK(
+            registrar_output_by_handle.utc_timestamp    == registrar_output_by_id.utc_timestamp
+    );
+
+    /* ... and one of them is equal to correct constant value */
+    BOOST_CHECK_EQUAL(
+        registrar_output_by_handle.utc_timestamp,
+        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
+    );
+}
+
 /**
  * test wrong handle with InfoRegistrarByHandle
  */

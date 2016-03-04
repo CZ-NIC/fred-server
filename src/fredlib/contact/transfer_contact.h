@@ -36,21 +36,24 @@ namespace Fred
             TransferContact(
                 const unsigned long long _contact_id,
                 const std::string& _new_registrar_handle,
-                const std::string& _authinfopw_for_authorization
+                const std::string& _authinfopw_for_authorization,
+                const Nullable<unsigned long long>& _logd_request_id = Nullable<unsigned long long>()
             );
 
             /**
-             * @throws ContactId
+             * @returns historyid of transferred contact
+             * @throws UnknownContactId
              * @throws UnknownRegistrar
              * @throws IncorrectAuthInfoPw
              * @throws NewRegistrarIsAlreadySponsoring
              */
-            void exec(OperationContext& _ctx);
+            unsigned long long exec(OperationContext& _ctx);
 
         private:
             const unsigned long long contact_id_;
             const std::string new_registrar_handle_;
             const std::string authinfopw_for_authorization_;
+            const Nullable<unsigned long long> logd_request_id_;
     };
 }
 #endif

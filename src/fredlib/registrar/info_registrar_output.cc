@@ -49,7 +49,6 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("info_registrar_data",info_registrar_data.to_string()))
         (std::make_pair("utc_timestamp",boost::lexical_cast<std::string>(utc_timestamp)))
-        (std::make_pair("local_timestamp",boost::lexical_cast<std::string>(local_timestamp)))
         );
     }
 
