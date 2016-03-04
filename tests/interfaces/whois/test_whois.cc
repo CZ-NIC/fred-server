@@ -9,8 +9,10 @@
 #define BOOST_TEST_NO_MAIN
 
 #include <sstream>
+#include <map>
 #include <boost/test/unit_test.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/foreach.hpp>
 
 
 struct whois_impl_instance_fixture
@@ -1792,21 +1794,35 @@ BOOST_AUTO_TEST_SUITE_END();//get_domains_by_nsset
 BOOST_AUTO_TEST_SUITE(get_domain_status_descriptions)
 
 struct domain_status_descriptions_fixture
-: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+: whois_impl_instance_fixture
 {
-    std::string test_fqdn;
     std::string test_lang;
     std::string no_lang;
+    std::string other_lang;
+    typedef std::map<std::string, std::string> map_type;
+    std::map<std::string, std::string> statuses;
 
     domain_status_descriptions_fixture()
-    : test_contact_fixture(),
-      test_fqdn(std::string("test") + xmark + ".cz"),
-      test_lang("EN")
+    : test_lang("EN"),
+      no_lang(""),
+      other_lang("XX")
     {
+        statuses = {
+                std::make_pair("expired", "description of expired"),
+                std::make_pair("unguarded", "description of unguarded"),
+                std::make_pair("serverTransferProhibited", "description of serverTransferProhibited")
+        };
         Fred::OperationContext ctx;
-        Fred::CreateDomain(test_fqdn, test_registrar_handle, test_registrant_handle)
-            .set_admin_contacts(Util::vector_of<std::string>(test_admin))
-            .exec(ctx);
+        BOOST_FOREACH(map_type::value_type& p, statuses)
+        {
+            ctx.get_conn().exec_params(
+                "INSERT INTO enum_object_states_desc "
+                "VALUES ((SELECT id FROM enum_object_states WHERE name = $1::text),"
+                " $2::text,"
+                " $3::text",
+                    Database::query_param_list(p.first)(p.second)(other_lang)
+            );
+        }
     }
 };
 
@@ -1834,6 +1850,17 @@ BOOST_FIXTURE_TEST_CASE(get_domain_status_descriptions, domain_status_descriptio
     {
         BOOST_CHECK(it->handle == it2->handle);
         BOOST_CHECK(it->description == it2->name);
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_domain_status_other_lang, domain_status_descriptions_fixture)
+{
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = impl.get_domain_status_descriptions(other_lang);
+    BOOST_CHECK(statuses.size() == vec_osd.size());
+    for(std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it = vec_osd.begin(); it != vec_osd.end(); ++it)
+    {
+        //if not present - at() throws
+        BOOST_CHECK(statuses.at(it->handle) == it->name);
     }
 }
 
