@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture_6da88b63b0bc46e29f6d0
 BOOST_FIXTURE_TEST_CASE(test_info_contact_output_timestamp, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
     const std::string timezone = "Europe/Prague";
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoContactOutput contact_output_by_handle              = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, timezone);
     const Fred::InfoContactOutput contact_output_by_id                  = Fred::InfoContactById(contact_output_by_handle.info_contact_data.id).exec(ctx, timezone);
     const Fred::InfoContactOutput contact_output_history_by_historyid   = Fred::InfoContactHistoryByHistoryid(contact_output_by_handle.info_contact_data.historyid).exec(ctx, timezone);

@@ -173,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE(info_keyset, info_keyset_fixture)
 BOOST_FIXTURE_TEST_CASE(test_info_keyset_output_timestamp, info_keyset_fixture)
 {
     const std::string timezone = "Europe/Prague";
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoKeysetOutput keyset_output_by_handle              = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, timezone);
     const Fred::InfoKeysetOutput keyset_output_by_id                  = Fred::InfoKeysetById(keyset_output_by_handle.info_keyset_data.id).exec(ctx, timezone);
     const Fred::InfoKeysetOutput keyset_output_history_by_historyid   = Fred::InfoKeysetHistoryByHistoryid(keyset_output_by_handle.info_keyset_data.historyid).exec(ctx, timezone);

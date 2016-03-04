@@ -1382,7 +1382,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
                 Fred::TransferContact transfer_contact_op(contact.id, mojeid_registrar_handle_, contact.authinfopw);
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
-                const unsigned long long history_id = 0;transfer_contact_op.exec(ctx);
+                const unsigned long long history_id = transfer_contact_op.exec(ctx);
                 notify(ctx, Notification::transferred,
                        mojeid_registrar_id_, history_id, _log_request_id);
             }

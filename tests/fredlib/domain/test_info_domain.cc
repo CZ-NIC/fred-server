@@ -199,7 +199,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
 BOOST_FIXTURE_TEST_CASE(test_info_domain_output_timestamp, test_domain_fixture)
 {
     const std::string timezone = "Europe/Prague";
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoDomainOutput domain_output_by_handle              = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, timezone);
     const Fred::InfoDomainOutput domain_output_by_id                  = Fred::InfoDomainById(domain_output_by_handle.info_domain_data.id).exec(ctx, timezone);
     const Fred::InfoDomainOutput domain_output_history_by_historyid   = Fred::InfoDomainHistoryByHistoryid(domain_output_by_handle.info_domain_data.historyid).exec(ctx, timezone);

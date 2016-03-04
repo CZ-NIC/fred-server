@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(info_registrar)
 BOOST_AUTO_TEST_CASE(test_info_registrar_output_timestamp)
 {
     const std::string timezone = "Europe/Prague";
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarOutput registrar_output_by_handle = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).exec(ctx, timezone);
     const Fred::InfoRegistrarOutput registrar_output_by_id     = Fred::InfoRegistrarById(registrar_output_by_handle.info_registrar_data.id).exec(ctx, timezone);
 
