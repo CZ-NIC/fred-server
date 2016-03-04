@@ -28,6 +28,8 @@
 #include <string>
 #include <omniORB4/CORBA.h>
 #include <boost/numeric/conversion/cast.hpp>
+#include <boost/mpl/assert.hpp>
+#include <boost/integer_traits.hpp>
 
 /**
  * CORBA conversions
@@ -51,6 +53,12 @@ struct IntegralConversionOutOfRange : std::invalid_argument
 template < class SOURCE_INTEGRAL_TYPE, class TARGET_INTEGRAL_TYPE >
 void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
 {
+    typedef boost::integer_traits< SOURCE_INTEGRAL_TYPE > source_integral_type_traits;
+    typedef boost::integer_traits< TARGET_INTEGRAL_TYPE > target_integral_type_traits;
+
+    BOOST_MPL_ASSERT_MSG(source_integral_type_traits::is_integral, source_type_have_to_be_integral, (SOURCE_INTEGRAL_TYPE));
+    BOOST_MPL_ASSERT_MSG(target_integral_type_traits::is_integral, target_type_have_to_be_integral, (TARGET_INTEGRAL_TYPE));
+
     try {
         dst = boost::numeric_cast< TARGET_INTEGRAL_TYPE >(src);
     }
