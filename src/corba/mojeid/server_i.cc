@@ -137,13 +137,16 @@ InfoContact* Server_i::update_transfer_contact_prepare(
         const char *_username,
         const UpdateTransferContact& _contact_data,
         const char *_trans_id,
-        ::CORBA::ULongLong _log_request_id)
+        ::CORBA::ULongLong _log_request_id,
+        ::CORBA::String_out _identification)
 {
     try {
         MojeIDImplData::UpdateTransferContact contact_data;
         CorbaConversion::unwrap_UpdateTransferContact(_contact_data, contact_data);
+        std::string ident;
         const MojeIDImplData::InfoContact info_contact =
-        impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id);
+        impl_ptr_->update_transfer_contact_prepare(_username, contact_data, _trans_id, _log_request_id, ident);
+        _identification = CorbaConversion::wrap_string(ident)._retn();
         return CorbaConversion::wrap_InfoContact(info_contact)._retn();
     }
     catch (const MojeIDImplData::ObjectDoesntExist &e) {

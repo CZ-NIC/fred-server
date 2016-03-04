@@ -63,10 +63,11 @@ public:
         LogRequestId log_request_id);
 
     InfoContact* update_transfer_contact_prepare(
-        const char *username,
+        const char* username,
         const UpdateTransferContact& contact_data,
-        const char *trans_id,
-        LogRequestId request_id);
+        const char* trans_id,
+        LogRequestId log_request_id,
+        ::CORBA::String_out ident);
 
     InfoContact* info_contact(
         const char *username);

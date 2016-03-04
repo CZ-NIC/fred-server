@@ -75,7 +75,8 @@ public:
         const std::string &_username,
         const MojeIDImplData::UpdateTransferContact &_new_data,
         const std::string &_trans_id,
-        LogRequestId _log_request_id)const;
+        LogRequestId _log_request_id,
+        std::string &_ident)const;
 
     void info_contact(
         const std::string &_username,

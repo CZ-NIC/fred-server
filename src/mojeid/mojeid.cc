@@ -1014,7 +1014,8 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         const std::string &_username,
         const MojeIDImplData::UpdateTransferContact &_new_data,
         const std::string &_trans_id,
-        LogRequestId _log_request_id)const
+        LogRequestId _log_request_id,
+        std::string &_ident)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
@@ -1122,6 +1123,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         MojeIDImplData::InfoContact changed_data;
         from_into(Fred::InfoContactById(current_data.id).exec(ctx).info_contact_data, changed_data);
         ctx.commit_transaction();
+        _ident = result.identification;
         return changed_data;
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
