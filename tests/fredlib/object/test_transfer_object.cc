@@ -41,7 +41,9 @@ BOOST_FIXTURE_TEST_CASE(test_transfer, Test::has_contact_and_a_different_registr
         logd_request_id
     );
 
-    const Fred::InfoContactOutput post_transfer_contact_metadata = Fred::InfoContactById(contact.id).exec(ctx);
+    const std::string timezone = "Europe/Prague";
+
+    const Fred::InfoContactOutput post_transfer_contact_metadata = Fred::InfoContactById(contact.id).exec(ctx, timezone);
     const Fred::InfoContactData& post_transfer_contact_data = post_transfer_contact_metadata.info_contact_data;
 
     BOOST_CHECK_EQUAL(
@@ -56,7 +58,14 @@ BOOST_FIXTURE_TEST_CASE(test_transfer, Test::has_contact_and_a_different_registr
 
     BOOST_CHECK_EQUAL(
         post_transfer_contact_data.transfer_time,
-        post_transfer_contact_metadata.local_timestamp
+        boost::posix_time::time_from_string(
+            static_cast<std::string>(
+                ctx.get_conn().exec_params(
+                    "SELECT now()::TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text",
+                    Database::query_param_list(timezone)
+                )[0][0]
+            )
+        )
     );
 
     BOOST_CHECK_EQUAL(

@@ -57,6 +57,8 @@ BOOST_AUTO_TEST_CASE(test_transfer_ok)
 
     const unsigned long long post_transfer_history_id = Fred::TransferContact(contact.id, the_different_registrar.handle, contact.authinfopw, logd_request_id).exec(ctx);
 
+    const std::string timezone = "Europe/Prague";
+
     const Fred::InfoContactOutput post_transfer_contact_metadata = Fred::InfoContactById(contact.id).exec(ctx);
     const Fred::InfoContactData& post_transfer_contact_data = post_transfer_contact_metadata.info_contact_data;
 
@@ -67,7 +69,14 @@ BOOST_AUTO_TEST_CASE(test_transfer_ok)
 
     BOOST_CHECK_EQUAL(
         post_transfer_contact_data.transfer_time,
-        post_transfer_contact_metadata.local_timestamp
+        boost::posix_time::time_from_string(
+            static_cast<std::string>(
+                ctx.get_conn().exec_params(
+                    "SELECT now()::TIMESTAMP AT TIME ZONE 'UTC' AT TIME ZONE $1::text",
+                    Database::query_param_list(timezone)
+                )[0][0]
+            )
+        )
     );
 
     BOOST_CHECK_EQUAL(
