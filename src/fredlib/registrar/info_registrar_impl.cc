@@ -172,8 +172,6 @@ namespace Fred
                 : Nullable<std::string> (static_cast<std::string>(registrar_query_result[i][GetAlias::memo_regex()]));
             info_registrar_output.utc_timestamp = registrar_query_result[i][GetAlias::utc_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
                 : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][GetAlias::utc_timestamp()]));// utc timestamp
-            info_registrar_output.local_timestamp = registrar_query_result[i][GetAlias::local_timestamp()].isnull() ? boost::posix_time::ptime(boost::date_time::not_a_date_time)
-                : boost::posix_time::time_from_string(static_cast<std::string>(registrar_query_result[i][GetAlias::local_timestamp()]));//local zone timestamp
 
             result.push_back(info_registrar_output);
         }//for res

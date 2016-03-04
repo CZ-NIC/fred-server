@@ -417,7 +417,6 @@ BOOST_AUTO_TEST_CASE(info_keyset_output)
     i.history_valid_from = boost::posix_time::microsec_clock::universal_time();
     i.history_valid_to = boost::posix_time::microsec_clock::universal_time();
     i.utc_timestamp = boost::posix_time::microsec_clock::universal_time();
-    i.local_timestamp = boost::posix_time::microsec_clock::local_time();
     i.info_keyset_data = d;
     i.logd_request_id = 1;
     i.next_historyid = 2;

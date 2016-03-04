@@ -141,25 +141,12 @@ BOOST_FIXTURE_TEST_CASE(test_info_contact_output_timestamp, test_contact_fixture
         &&  contact_output_by_id.utc_timestamp                  == contact_output_history_by_historyid.utc_timestamp
         &&  contact_output_history_by_historyid.utc_timestamp   == contact_output_history_by_id.utc_timestamp
         &&  contact_output_history_by_id.utc_timestamp          == contact_output_history_by_roid.utc_timestamp
-        &&
-            contact_output_by_handle.local_timestamp              == contact_output_by_id.local_timestamp
-        &&  contact_output_by_id.local_timestamp                  == contact_output_history_by_historyid.local_timestamp
-        &&  contact_output_history_by_historyid.local_timestamp   == contact_output_history_by_id.local_timestamp
-        &&  contact_output_history_by_id.local_timestamp          == contact_output_history_by_roid.local_timestamp
     );
 
     /* ... and one of them is equal to correct constant value */
     BOOST_CHECK_EQUAL(
         contact_output_by_handle.utc_timestamp,
         boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
-    );
-
-    BOOST_CHECK_EQUAL(
-        contact_output_by_handle.local_timestamp,
-        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec_params(
-            "SELECT now() AT TIME ZONE $1::text",
-            Database::query_param_list(timezone)
-        )[0][0] ) )
     );
 }
 

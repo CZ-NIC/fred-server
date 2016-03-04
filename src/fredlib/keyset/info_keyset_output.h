@@ -43,7 +43,6 @@ namespace Fred
         InfoKeysetData info_keyset_data;/**< data of the keyset */
 
         boost::posix_time::ptime utc_timestamp;/**< timestamp of getting the keyset data in UTC */
-        boost::posix_time::ptime local_timestamp;/**< timestamp of getting the keyset data in local time zone viz @ref local_timestamp_pg_time_zone_name */
 
         Nullable<unsigned long long> next_historyid; /**< next historyid of the keyset history*/
         boost::posix_time::ptime history_valid_from;/**< history data valid from time in local time zone viz @ref local_timestamp_pg_time_zone_name */

@@ -196,21 +196,12 @@ BOOST_AUTO_TEST_CASE(test_info_registrar_output_timestamp)
     /* all are equal amongst themselves ... */
     BOOST_CHECK(
             registrar_output_by_handle.utc_timestamp    == registrar_output_by_id.utc_timestamp
-        &&  registrar_output_by_handle.local_timestamp  == registrar_output_by_id.local_timestamp
     );
 
     /* ... and one of them is equal to correct constant value */
     BOOST_CHECK_EQUAL(
         registrar_output_by_handle.utc_timestamp,
         boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
-    );
-
-    BOOST_CHECK_EQUAL(
-        registrar_output_by_handle.local_timestamp,
-        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec_params(
-            "SELECT now() AT TIME ZONE $1::text",
-            Database::query_param_list(timezone)
-        )[0][0] ) )
     );
 }
 
