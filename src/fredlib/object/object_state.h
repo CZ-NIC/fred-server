@@ -115,37 +115,34 @@ inline std::string to_db_handle(Fred::Object::State::Enum value)
 template < >
 inline Fred::Object::State::Enum from_db_handle< Fred::Object::State >(const std::string &db_handle)
 {
-    static const Fred::Object::State::Enum values[] =
-    {
-        Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT,
-        Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION,
-        Fred::Object::State::CONTACT_IN_MANUAL_VERIFICATION,
-        Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION,
-        Fred::Object::State::DELETE_CANDIDATE,
-        Fred::Object::State::DELETE_WARNING,
-        Fred::Object::State::EXPIRATION_WARNING,
-        Fred::Object::State::EXPIRED,
-        Fred::Object::State::IDENTIFIED_CONTACT,
-        Fred::Object::State::LINKED,
-        Fred::Object::State::MOJEID_CONTACT,
-        Fred::Object::State::NOT_VALIDATED,
-        Fred::Object::State::NSSET_MISSING,
-        Fred::Object::State::OUTZONE,
-        Fred::Object::State::OUTZONE_UNGUARDED,
-        Fred::Object::State::SERVER_BLOCKED,
-        Fred::Object::State::SERVER_DELETE_PROHIBITED,
-        Fred::Object::State::SERVER_INZONE_MANUAL,
-        Fred::Object::State::SERVER_OUTZONE_MANUAL,
-        Fred::Object::State::SERVER_REGISTRANT_CHANGE_PROHIBITED,
-        Fred::Object::State::SERVER_RENEW_PROHIBITED,
-        Fred::Object::State::SERVER_TRANSFER_PROHIBITED,
-        Fred::Object::State::SERVER_UPDATE_PROHIBITED,
-        Fred::Object::State::UNGUARDED,
-        Fred::Object::State::VALIDATED_CONTACT,
-        Fred::Object::State::VALIDATION_WARNING1,
-        Fred::Object::State::VALIDATION_WARNING2,
-    };
-    return from_db_handle_impl(db_handle, values, "Fred::Object::State::Enum");
+    if (to_db_handle(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) == db_handle) { return Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT; }
+    if (to_db_handle(Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION) == db_handle) { return Fred::Object::State::CONTACT_FAILED_MANUAL_VERIFICATION; }
+    if (to_db_handle(Fred::Object::State::CONTACT_IN_MANUAL_VERIFICATION) == db_handle) { return Fred::Object::State::CONTACT_IN_MANUAL_VERIFICATION; }
+    if (to_db_handle(Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION) == db_handle) { return Fred::Object::State::CONTACT_PASSED_MANUAL_VERIFICATION; }
+    if (to_db_handle(Fred::Object::State::DELETE_CANDIDATE) == db_handle) { return Fred::Object::State::DELETE_CANDIDATE; }
+    if (to_db_handle(Fred::Object::State::DELETE_WARNING) == db_handle) { return Fred::Object::State::DELETE_WARNING; }
+    if (to_db_handle(Fred::Object::State::EXPIRATION_WARNING) == db_handle) { return Fred::Object::State::EXPIRATION_WARNING; }
+    if (to_db_handle(Fred::Object::State::EXPIRED) == db_handle) { return Fred::Object::State::EXPIRED; }
+    if (to_db_handle(Fred::Object::State::IDENTIFIED_CONTACT) == db_handle) { return Fred::Object::State::IDENTIFIED_CONTACT; }
+    if (to_db_handle(Fred::Object::State::LINKED) == db_handle) { return Fred::Object::State::LINKED; }
+    if (to_db_handle(Fred::Object::State::MOJEID_CONTACT) == db_handle) { return Fred::Object::State::MOJEID_CONTACT; }
+    if (to_db_handle(Fred::Object::State::NOT_VALIDATED) == db_handle) { return Fred::Object::State::NOT_VALIDATED; }
+    if (to_db_handle(Fred::Object::State::NSSET_MISSING) == db_handle) { return Fred::Object::State::NSSET_MISSING; }
+    if (to_db_handle(Fred::Object::State::OUTZONE) == db_handle) { return Fred::Object::State::OUTZONE; }
+    if (to_db_handle(Fred::Object::State::OUTZONE_UNGUARDED) == db_handle) { return Fred::Object::State::OUTZONE_UNGUARDED; }
+    if (to_db_handle(Fred::Object::State::SERVER_BLOCKED) == db_handle) { return Fred::Object::State::SERVER_BLOCKED; }
+    if (to_db_handle(Fred::Object::State::SERVER_DELETE_PROHIBITED) == db_handle) { return Fred::Object::State::SERVER_DELETE_PROHIBITED; }
+    if (to_db_handle(Fred::Object::State::SERVER_INZONE_MANUAL) == db_handle) { return Fred::Object::State::SERVER_INZONE_MANUAL; }
+    if (to_db_handle(Fred::Object::State::SERVER_OUTZONE_MANUAL) == db_handle) { return Fred::Object::State::SERVER_OUTZONE_MANUAL; }
+    if (to_db_handle(Fred::Object::State::SERVER_REGISTRANT_CHANGE_PROHIBITED) == db_handle) { return Fred::Object::State::SERVER_REGISTRANT_CHANGE_PROHIBITED; }
+    if (to_db_handle(Fred::Object::State::SERVER_RENEW_PROHIBITED) == db_handle) { return Fred::Object::State::SERVER_RENEW_PROHIBITED; }
+    if (to_db_handle(Fred::Object::State::SERVER_TRANSFER_PROHIBITED) == db_handle) { return Fred::Object::State::SERVER_TRANSFER_PROHIBITED; }
+    if (to_db_handle(Fred::Object::State::SERVER_UPDATE_PROHIBITED) == db_handle) { return Fred::Object::State::SERVER_UPDATE_PROHIBITED; }
+    if (to_db_handle(Fred::Object::State::UNGUARDED) == db_handle) { return Fred::Object::State::UNGUARDED; }
+    if (to_db_handle(Fred::Object::State::VALIDATED_CONTACT) == db_handle) { return Fred::Object::State::VALIDATED_CONTACT; }
+    if (to_db_handle(Fred::Object::State::VALIDATION_WARNING1) == db_handle) { return Fred::Object::State::VALIDATION_WARNING1; }
+    if (to_db_handle(Fred::Object::State::VALIDATION_WARNING2) == db_handle) { return Fred::Object::State::VALIDATION_WARNING2; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Object::State::Enum");
 }
 
 }//namespace Conversion::Enums

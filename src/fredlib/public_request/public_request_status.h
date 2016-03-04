@@ -66,13 +66,10 @@ inline std::string to_db_handle(Fred::PublicRequest::Status::Enum value)
 template < >
 inline Fred::PublicRequest::Status::Enum from_db_handle< Fred::PublicRequest::Status >(const std::string &db_handle)
 {
-    static const Fred::PublicRequest::Status::Enum values[] =
-    {
-        Fred::PublicRequest::Status::NEW,
-        Fred::PublicRequest::Status::ANSWERED,
-        Fred::PublicRequest::Status::INVALIDATED
-    };
-    return from_db_handle_impl(db_handle, values, "Fred::PublicRequest::Status::Enum");
+    if (to_db_handle(Fred::PublicRequest::Status::NEW) == db_handle) { return Fred::PublicRequest::Status::NEW; }
+    if (to_db_handle(Fred::PublicRequest::Status::ANSWERED) == db_handle) { return Fred::PublicRequest::Status::ANSWERED; }
+    if (to_db_handle(Fred::PublicRequest::Status::INVALIDATED) == db_handle) { return Fred::PublicRequest::Status::INVALIDATED; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::PublicRequest::Status::Enum");
 }
 
 }//namespace Conversion::Enums

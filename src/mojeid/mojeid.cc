@@ -411,21 +411,18 @@ inline std::string to_db_handle(Registry::MojeID::MessageType::Enum value)
 template < >
 inline Registry::MojeID::MessageType::Enum from_db_handle< Registry::MojeID::MessageType >(const std::string &db_handle)
 {
-    static const Registry::MojeID::MessageType::Enum values[] =
-    {
-        Registry::MojeID::MessageType::DOMAIN_EXPIRATION,
-        Registry::MojeID::MessageType::MOJEID_PIN2,
-        Registry::MojeID::MessageType::MOJEID_PIN3,
-        Registry::MojeID::MessageType::MOJEID_SMS_CHANGE,
-        Registry::MojeID::MessageType::MONITORING,
-        Registry::MojeID::MessageType::CONTACT_VERIFICATION_PIN2,
-        Registry::MojeID::MessageType::CONTACT_VERIFICATION_PIN3,
-        Registry::MojeID::MessageType::MOJEID_PIN3_REMINDER,
-        Registry::MojeID::MessageType::CONTACT_CHECK_NOTICE,
-        Registry::MojeID::MessageType::CONTACT_CHECK_THANK_YOU,
-        Registry::MojeID::MessageType::MOJEID_CARD
-    };
-    return from_db_handle_impl(db_handle, values, "Registry::MojeID::MessageType::{anonymous}::Enum");
+    if (to_db_handle(Registry::MojeID::MessageType::DOMAIN_EXPIRATION) == db_handle) { return Registry::MojeID::MessageType::DOMAIN_EXPIRATION; }
+    if (to_db_handle(Registry::MojeID::MessageType::MOJEID_PIN2) == db_handle) { return Registry::MojeID::MessageType::MOJEID_PIN2; }
+    if (to_db_handle(Registry::MojeID::MessageType::MOJEID_PIN3) == db_handle) { return Registry::MojeID::MessageType::MOJEID_PIN3; }
+    if (to_db_handle(Registry::MojeID::MessageType::MOJEID_SMS_CHANGE) == db_handle) { return Registry::MojeID::MessageType::MOJEID_SMS_CHANGE; }
+    if (to_db_handle(Registry::MojeID::MessageType::MONITORING) == db_handle) { return Registry::MojeID::MessageType::MONITORING; }
+    if (to_db_handle(Registry::MojeID::MessageType::CONTACT_VERIFICATION_PIN2) == db_handle) { return Registry::MojeID::MessageType::CONTACT_VERIFICATION_PIN2; }
+    if (to_db_handle(Registry::MojeID::MessageType::CONTACT_VERIFICATION_PIN3) == db_handle) { return Registry::MojeID::MessageType::CONTACT_VERIFICATION_PIN3; }
+    if (to_db_handle(Registry::MojeID::MessageType::MOJEID_PIN3_REMINDER) == db_handle) { return Registry::MojeID::MessageType::MOJEID_PIN3_REMINDER; }
+    if (to_db_handle(Registry::MojeID::MessageType::CONTACT_CHECK_NOTICE) == db_handle) { return Registry::MojeID::MessageType::CONTACT_CHECK_NOTICE; }
+    if (to_db_handle(Registry::MojeID::MessageType::CONTACT_CHECK_THANK_YOU) == db_handle) { return Registry::MojeID::MessageType::CONTACT_CHECK_THANK_YOU; }
+    if (to_db_handle(Registry::MojeID::MessageType::MOJEID_CARD) == db_handle) { return Registry::MojeID::MessageType::MOJEID_CARD; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::MessageType::{anonymous}::Enum");
 }
 
 inline std::string to_db_handle(Registry::MojeID::CommType::Enum value)
@@ -443,14 +440,11 @@ inline std::string to_db_handle(Registry::MojeID::CommType::Enum value)
 template < >
 inline Registry::MojeID::CommType::Enum from_db_handle< Registry::MojeID::CommType >(const std::string &db_handle)
 {
-    static const Registry::MojeID::CommType::Enum values[] =
-    {
-        Registry::MojeID::CommType::EMAIL,
-        Registry::MojeID::CommType::LETTER,
-        Registry::MojeID::CommType::SMS,
-        Registry::MojeID::CommType::REGISTERED_LETTER
-    };
-    return from_db_handle_impl(db_handle, values, "Registry::MojeID::CommType::{anonymous}::Enum");
+    if (to_db_handle(Registry::MojeID::CommType::EMAIL) == db_handle) { return Registry::MojeID::CommType::EMAIL; }
+    if (to_db_handle(Registry::MojeID::CommType::LETTER) == db_handle) { return Registry::MojeID::CommType::LETTER; }
+    if (to_db_handle(Registry::MojeID::CommType::SMS) == db_handle) { return Registry::MojeID::CommType::SMS; }
+    if (to_db_handle(Registry::MojeID::CommType::REGISTERED_LETTER) == db_handle) { return Registry::MojeID::CommType::REGISTERED_LETTER; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::CommType::{anonymous}::Enum");
 }
 
 inline std::string to_db_handle(Registry::MojeID::SendStatus::Enum value)
@@ -471,17 +465,14 @@ inline std::string to_db_handle(Registry::MojeID::SendStatus::Enum value)
 template < >
 inline Registry::MojeID::SendStatus::Enum from_db_handle< Registry::MojeID::SendStatus >(const std::string &db_handle)
 {
-    static const Registry::MojeID::SendStatus::Enum values[] =
-    {
-        Registry::MojeID::SendStatus::READY,
-        Registry::MojeID::SendStatus::WAITING_CONFIRMATION,
-        Registry::MojeID::SendStatus::NO_PROCESSING,
-        Registry::MojeID::SendStatus::SEND_FAILED,
-        Registry::MojeID::SendStatus::SENT,
-        Registry::MojeID::SendStatus::BEING_SENT,
-        Registry::MojeID::SendStatus::UNDELIVERED
-    };
-    return from_db_handle_impl(db_handle, values, "Registry::MojeID::SendStatus::{anonymous}::Enum");
+    if (to_db_handle(Registry::MojeID::SendStatus::READY) == db_handle) { return Registry::MojeID::SendStatus::READY; }
+    if (to_db_handle(Registry::MojeID::SendStatus::WAITING_CONFIRMATION) == db_handle) { return Registry::MojeID::SendStatus::WAITING_CONFIRMATION; }
+    if (to_db_handle(Registry::MojeID::SendStatus::NO_PROCESSING) == db_handle) { return Registry::MojeID::SendStatus::NO_PROCESSING; }
+    if (to_db_handle(Registry::MojeID::SendStatus::SEND_FAILED) == db_handle) { return Registry::MojeID::SendStatus::SEND_FAILED; }
+    if (to_db_handle(Registry::MojeID::SendStatus::SENT) == db_handle) { return Registry::MojeID::SendStatus::SENT; }
+    if (to_db_handle(Registry::MojeID::SendStatus::BEING_SENT) == db_handle) { return Registry::MojeID::SendStatus::BEING_SENT; }
+    if (to_db_handle(Registry::MojeID::SendStatus::UNDELIVERED) == db_handle) { return Registry::MojeID::SendStatus::UNDELIVERED; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::SendStatus::{anonymous}::Enum");
 }
 
 inline std::string to_db_handle(Registry::MojeID::PubReqType::Enum value)
@@ -501,13 +492,10 @@ inline std::string to_db_handle(Registry::MojeID::PubReqType::Enum value)
 template < >
 inline Registry::MojeID::PubReqType::Enum from_db_handle< Registry::MojeID::PubReqType >(const std::string &db_handle)
 {
-    static const Registry::MojeID::PubReqType::Enum values[] =
-    {
-        Registry::MojeID::PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION,
-        Registry::MojeID::PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
-        Registry::MojeID::PubReqType::IDENTIFIED_CONTACT_TRANSFER
-    };
-    return from_db_handle_impl(db_handle, values, "Registry::MojeID::PubReqType::{anonymous}::Enum");
+    if (to_db_handle(Registry::MojeID::PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION) == db_handle) { return Registry::MojeID::PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION; }
+    if (to_db_handle(Registry::MojeID::PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER) == db_handle) { return Registry::MojeID::PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER; }
+    if (to_db_handle(Registry::MojeID::PubReqType::IDENTIFIED_CONTACT_TRANSFER) == db_handle) { return Registry::MojeID::PubReqType::IDENTIFIED_CONTACT_TRANSFER; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::PubReqType::{anonymous}::Enum");
 }
 
 }//namespace Conversion::Enums

@@ -63,16 +63,13 @@ inline std::string to_db_handle(Fred::SSNType::Enum value)
 template < >
 inline Fred::SSNType::Enum from_db_handle< Fred::SSNType >(const std::string &db_handle)
 {
-    static const Fred::SSNType::Enum values[] =
-    {
-        Fred::SSNType::RC,
-        Fred::SSNType::OP,
-        Fred::SSNType::PASS,
-        Fred::SSNType::ICO,
-        Fred::SSNType::MPSV,
-        Fred::SSNType::BIRTHDAY
-    };
-    return from_db_handle_impl(db_handle, values, "Fred::SSNType::Enum");
+    if (to_db_handle(Fred::SSNType::RC) == db_handle) { return Fred::SSNType::RC; }
+    if (to_db_handle(Fred::SSNType::OP) == db_handle) { return Fred::SSNType::OP; }
+    if (to_db_handle(Fred::SSNType::PASS) == db_handle) { return Fred::SSNType::PASS; }
+    if (to_db_handle(Fred::SSNType::ICO) == db_handle) { return Fred::SSNType::ICO; }
+    if (to_db_handle(Fred::SSNType::MPSV) == db_handle) { return Fred::SSNType::MPSV; }
+    if (to_db_handle(Fred::SSNType::BIRTHDAY) == db_handle) { return Fred::SSNType::BIRTHDAY; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::SSNType::Enum");
 }
 
 }//namespace Conversion::Enums
