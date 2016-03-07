@@ -30,59 +30,6 @@
 namespace Fred {
 
 /**
- * Contains template class Into of which template class BasedOn adds `iface()` methods family.
- * @section add_iface_method_sample Sample of usage
- * @code
- * class SomeParticularPublicRequest:public AddIfaceMethod::Into
- *     < SomeParticularPublicRequest >::BasedOn< PublicRequestTypeIface >
- * {
- * public:
- *     virtual ~SomeParticularPublicRequest() { }
- * private:
- *     SomeParticularPublicRequest() { }
- *     std::string get_public_request_type()const;
- *     friend class BasedOn;
- * };
- * @endcode
- */
-struct AddIfaceMethod
-{
-    /**
-     * Contains template class BasedOn which adds `iface()` methods family to the DERIVED class.
-     * @tparam DERIVED class derived from IFACE and extended with `iface()` methods family
-     */
-    template < class DERIVED >
-    struct Into
-    {
-        /**
-         * Extends DERIVED class derived from IFACE class with `iface()` methods family.
-         * @tparam IFACE base class from which is derived DERIVED class
-         */
-        template < class IFACE >
-        class BasedOn:private IFACE
-        {
-        public:
-            typedef DERIVED Instanceable;///< DERIVED class is able to be instance
-            typedef IFACE   Iface;       ///< IFACE is pure virtual interface class which can't be instantiated
-            /**
-             */
-            static const Iface& iface()
-            {
-                static const Instanceable instance;
-                return static_cast< const Iface& >(instance);
-            }
-            typedef std::auto_ptr< Iface > IfacePtr;
-            template < typename T >
-            static IfacePtr iface(const T &_arg) { return IfacePtr(static_cast< Iface* >(new Instanceable(_arg))); }
-            template < typename T >
-            static IfacePtr iface(T *_arg_ptr) { return IfacePtr(static_cast< Iface* >(new Instanceable(_arg_ptr))); }
-        protected:
-            ~BasedOn() { }
-        };
-    };
-};
-
-/**
  * Common class for particular public request type.
  */
 class PublicRequestTypeIface

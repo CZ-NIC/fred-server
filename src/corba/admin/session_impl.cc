@@ -1485,7 +1485,7 @@ namespace
 template < class PUB_REQ_CLASS >
 std::string get_type_of()
 {
-    return PUB_REQ_CLASS::iface().get_public_request_type();
+    return PUB_REQ_CLASS().get_public_request_type();
 }
 
 }

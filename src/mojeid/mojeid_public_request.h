@@ -38,77 +38,64 @@ std::string contact_identification_generate_passwords();
 
 namespace PublicRequest {
 
-class ContactConditionalIdentification:public AddIfaceMethod::Into
-    < ContactConditionalIdentification >::BasedOn< PublicRequestAuthTypeIface >
+class ContactConditionalIdentification:public PublicRequestAuthTypeIface
 {
 public:
-    virtual ~ContactConditionalIdentification() { }
+    ~ContactConditionalIdentification() { }
+    std::string get_public_request_type()const;
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
     static std::string get_pin1_part(const std::string &_summary_password);
     static std::string get_pin2_part(const std::string &_summary_password);
 private:
-    ContactConditionalIdentification() { }
-    std::string get_public_request_type()const;
     std::string generate_passwords()const;
-    friend class BasedOn;
 };
 
-class ContactIdentification:public AddIfaceMethod::Into
-    < ContactIdentification >::BasedOn< PublicRequestAuthTypeIface >
+class ContactIdentification:public PublicRequestAuthTypeIface
 {
 public:
-    virtual ~ContactIdentification() { }
-private:
-    ContactIdentification() { }
+    ~ContactIdentification() { }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
+private:
     std::string generate_passwords()const;
-    friend class BasedOn;
 };
 
-class ContactReidentification:public AddIfaceMethod::Into
-    < ContactReidentification >::BasedOn< PublicRequestAuthTypeIface >
+class ContactReidentification:public PublicRequestAuthTypeIface
 {
 public:
-    virtual ~ContactReidentification() { }
-private:
-    ContactReidentification() { }
+    ~ContactReidentification() { }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
+private:
     std::string generate_passwords()const;
-    friend class BasedOn;
 };
 
-class ContactValidation:public AddIfaceMethod::Into
-    < ContactValidation >::BasedOn< PublicRequestTypeIface >
+class ContactValidation:public PublicRequestTypeIface
 {
 public:
-    virtual ~ContactValidation() { }
-private:
-    ContactValidation() { }
+    ~ContactValidation() { }
+    const PublicRequestTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
-    friend class BasedOn;
 };
 
-class ConditionallyIdentifiedContactTransfer:public AddIfaceMethod::Into
-    < ConditionallyIdentifiedContactTransfer >::BasedOn< PublicRequestAuthTypeIface >
+class ConditionallyIdentifiedContactTransfer:public PublicRequestAuthTypeIface
 {
 public:
-    virtual ~ConditionallyIdentifiedContactTransfer() { }
-private:
-    ConditionallyIdentifiedContactTransfer() { }
+    ~ConditionallyIdentifiedContactTransfer() { }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
+private:
     std::string generate_passwords()const;
-    friend class BasedOn;
 };
 
-class IdentifiedContactTransfer:public AddIfaceMethod::Into
-    < IdentifiedContactTransfer >::BasedOn< PublicRequestAuthTypeIface >
+class IdentifiedContactTransfer:public PublicRequestAuthTypeIface
 {
 public:
-    virtual ~IdentifiedContactTransfer() { }
-private:
-    IdentifiedContactTransfer() { }
+    ~IdentifiedContactTransfer() { }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
+private:
     std::string generate_passwords()const;
-    friend class BasedOn;
 };
 
 }//Fred::MojeID::PublicRequest

@@ -43,7 +43,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
     static std::string value(Database::query_param_list &_params)
     {
         const std::string type =
-            Fred::MojeID::PublicRequest::ContactConditionalIdentification::iface().get_public_request_type();
+            Fred::MojeID::PublicRequest::ContactConditionalIdentification().get_public_request_type();
         return "$" + _params.add(type) + "::TEXT";
     }
     static Generate::MessageId generate_message(
@@ -56,7 +56,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
         const std::string &_link_hostname_part,
         GeneralId _contact_history_id)
     {
-        if (PubReqCCI::iface().get_public_request_type() == _public_request_type) {
+        if (PubReqCCI().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< CommChannel::SMS >::for_given_request< PubReqCCI >(
                 _ctx,
                 _multimanager,
@@ -79,8 +79,8 @@ struct PossibleRequestTypes< CommChannel::LETTER >
     static std::string value(Database::query_param_list &_params)
     {
         const std::string type[] = {
-            PubReqCI::iface().get_public_request_type(),
-            PubReqCR::iface().get_public_request_type() };
+            PubReqCI().get_public_request_type(),
+            PubReqCR().get_public_request_type() };
         return "$" + _params.add(type[0]) + "::TEXT,"
                "$" + _params.add(type[1]) + "::TEXT";
     }
@@ -95,7 +95,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::LETTER;
-        if (PubReqCI::iface().get_public_request_type() == _public_request_type) {
+        if (PubReqCI().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqCI >(
                 _ctx,
                 _multimanager,
@@ -106,7 +106,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                 _contact_history_id);
             return message_id;
         }
-        if (PubReqCR::iface().get_public_request_type() == _public_request_type) {
+        if (PubReqCR().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqCR >(
                 _ctx,
                 _multimanager,
@@ -130,9 +130,9 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
     static std::string value(Database::query_param_list &_params)
     {
         const std::string type[] = {
-            PubReqCCI::iface().get_public_request_type(),
-            PubReqCICT::iface().get_public_request_type(),
-            PubReqICT::iface().get_public_request_type() };
+            PubReqCCI().get_public_request_type(),
+            PubReqCICT().get_public_request_type(),
+            PubReqICT().get_public_request_type() };
         return "$" + _params.add(type[0]) + "::TEXT,"
                "$" + _params.add(type[1]) + "::TEXT,"
                "$" + _params.add(type[2]) + "::TEXT";
@@ -148,7 +148,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
         GeneralId _contact_history_id)
     {
         static const CommChannel::Value channel_letter = CommChannel::EMAIL;
-        if (PubReqCCI::iface().get_public_request_type() == _public_request_type) {
+        if (PubReqCCI().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqCCI >(
                 _ctx,
                 _multimanager,
@@ -159,7 +159,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _contact_history_id);
             return message_id;
         }
-        if (PubReqCICT::iface().get_public_request_type() == _public_request_type) {
+        if (PubReqCICT().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqCICT >(
                 _ctx,
                 _multimanager,
@@ -170,7 +170,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                 _contact_history_id);
             return message_id;
         }
-        if (PubReqICT::iface().get_public_request_type() == _public_request_type) {
+        if (PubReqICT().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqICT >(
                 _ctx,
                 _multimanager,
