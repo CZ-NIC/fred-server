@@ -45,13 +45,36 @@ namespace Fred {
 /**
  * Information about public request.
  */
-class PublicRequestInfo
+class PublicRequestInfoIface
 {
 public:
     typedef boost::posix_time::ptime Time;        ///< class for time representation
     typedef ObjectId                 EmailId;     ///< email database identification
     typedef ObjectId                 RequestId;   ///< some request identification
     typedef ::uint64_t               LogRequestId;///< logging request identification
+    virtual ~PublicRequestInfoIface() { }
+
+    virtual const std::string&              get_type()const = 0;
+    virtual const Time&                     get_create_time()const = 0;
+    virtual PublicRequest::Status::Enum     get_status()const = 0;
+    virtual const Nullable< Time >&         get_resolve_time()const = 0;
+    virtual const Nullable< std::string >&  get_reason()const = 0;
+    virtual const Nullable< std::string >&  get_email_to_answer()const = 0;
+    virtual const Nullable< EmailId >&      get_answer_email_id()const = 0;
+    virtual const Nullable< RegistrarId >&  get_registrar_id()const = 0;
+    virtual const Nullable< LogRequestId >& get_create_request_id()const = 0;
+    virtual const Nullable< LogRequestId >& get_resolve_request_id()const = 0;
+    virtual const Nullable< ObjectId >&     get_object_id()const = 0;
+protected:
+    PublicRequestInfoIface() { }
+};
+
+/**
+ * Information about public request.
+ */
+class PublicRequestInfo:public PublicRequestInfoIface
+{
+public:
     /**
      * Obtain information from database.
      * @param _ctx    operation context
@@ -64,8 +87,6 @@ public:
      * @param _src source object which copy is created
      */
     PublicRequestInfo(const PublicRequestInfo &_src);
-
-    ~PublicRequestInfo() { }
 
     /**
      * Assignment operator.
