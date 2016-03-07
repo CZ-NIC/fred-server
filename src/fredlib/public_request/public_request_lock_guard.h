@@ -54,6 +54,12 @@ protected:
      */
     ~PublicRequestLockGuard() { }
 private:
+    static void* operator new(::size_t);
+    static void* operator new[](::size_t);
+    static void operator delete(void*);
+    static void operator delete[](void*);
+    static void operator delete(void*, ::size_t);
+    static void operator delete[](void*, ::size_t);
     const PublicRequestId public_request_id_;
 };
 

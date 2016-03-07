@@ -52,6 +52,12 @@ protected:
      */
     PublicRequestObjectLockGuard(ObjectId _object_id):object_id_(_object_id) { }
 private:
+    static void* operator new(::size_t);
+    static void* operator new[](::size_t);
+    static void operator delete(void*);
+    static void operator delete[](void*);
+    static void operator delete(void*, ::size_t);
+    static void operator delete[](void*, ::size_t);
     const ObjectId object_id_;
 };
 
