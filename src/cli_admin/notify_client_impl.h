@@ -192,4 +192,28 @@ struct notify_letters_optys_get_undelivered_impl
   }
 };
 
+struct send_object_event_notification_emails_impl {
+
+    void operator()() const {
+
+        Logging::Context ctx("send_object_event_notification_emails_impl");
+
+        FakedArgs orb_fa = CfgArgGroups::instance()->fa;
+
+        orb_fa.add_argv(std::string("-ORBnativeCharCodeSet"));
+        orb_fa.add_argv(std::string("UTF-8"));
+
+        HandleCorbaNameServiceArgsGrp* ns_args_ptr = CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>();
+
+        CorbaContainer::set_instance(
+            orb_fa.get_argc(), orb_fa.get_argv(),
+            ns_args_ptr->get_nameservice_host(), ns_args_ptr->get_nameservice_port(), ns_args_ptr->get_nameservice_context()
+        );
+
+        boost::shared_ptr<Fred::Mailer::Manager> mailer_manager( new MailerManager(CorbaContainer::get_instance()->getNS()) );
+
+        Admin::send_object_event_notification_emails_impl(mailer_manager);
+    }
+};
+
 #endif // NOTIFY_CLIENT_IMPL_H_

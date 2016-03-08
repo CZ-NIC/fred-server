@@ -597,5 +597,100 @@ BOOST_FIXTURE_TEST_CASE(test_process_empty_queue, has_autocomitting_ctx)
     BOOST_CHECK_EQUAL(mocked_mailer_data_access.accumulated_data.size(), 0);
 }
 
+struct has_domain_uncomitted : Test::Fixture::instantiate_db_template {
+
+    Fred::OperationContext ctx;
+
+    Fred::InfoRegistrarData registrar;
+    Fred::InfoContactData registrant;
+    Fred::InfoDomainData domain;
+
+    has_domain_uncomitted()
+    :
+        registrar(Test::registrar(ctx).info_data)
+    {
+        const std::string registrant_handle = "REGISTRANT1";
+        {
+            registrant =
+                Test::exec(
+                    Fred::CreateContact(registrant_handle, registrar.handle)
+                        .set_email("history.registrant1@nic.cz")
+                        .set_notifyemail("registrant@notify.cz"),
+                    ctx
+                );
+        }
+
+        const std::string fqdn = "mydomain123.cz";
+        {
+
+            domain = Test::exec(
+                Fred::CreateDomain(fqdn, registrar.handle, registrant.handle ),
+                ctx
+            );
+        }
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(test_process_request_parallel_notification_request_access, has_domain_uncomitted)
+{
+    Notification::enqueue_notification(
+        ctx,
+        Notification::created,
+        registrar.id,
+        domain.crhistoryid,
+        "abc"
+    );
+
+    ctx.commit_transaction();
+
+    boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
+
+    Fred::OperationContext evil_uncomitted_parallel_transaction;
+    Notification::process_one_notification_request(evil_uncomitted_parallel_transaction, mocked_mailer);
+
+    Fred::OperationContext ctx_my_poor_transaction;
+    BOOST_CHECK_THROW(
+        Notification::process_one_notification_request(ctx_my_poor_transaction, mocked_mailer),
+        Notification::FailedToLockRequest
+    );
+}
+
+struct MockThrowingMailerManager : public Fred::Mailer::Manager {
+
+    virtual unsigned long long sendEmail(
+      const std::string& _from,
+      const std::string& _to,
+      const std::string& _subject,
+      const std::string& _mailTemplate,
+      const Fred::Mailer::Parameters& _params,
+      const Fred::Mailer::Handles& _handles,
+      const Fred::Mailer::Attachments& _attach,
+      const std::string& _reply_to = std::string("")
+
+    ) throw (Fred::Mailer::NOT_SEND) {
+        throw Fred::Mailer::NOT_SEND();
+    }
+
+    virtual bool checkEmailList(std::string &_email_list) const { return true; }
+};
+
+BOOST_FIXTURE_TEST_CASE(test_process_request_invalid_notify_email, has_domain_big_update)
+{
+    Notification::enqueue_notification(
+        ctx,
+        Notification::created,
+        registrar.id,
+        domain_data_post_update.historyid,
+        "Svtrid-007"
+    );
+
+    boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockThrowingMailerManager);
+
+    BOOST_CHECK_THROW(
+        Notification::process_one_notification_request(ctx, mocked_mailer),
+        Notification::FailedToSendMail
+    );
+}
+
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

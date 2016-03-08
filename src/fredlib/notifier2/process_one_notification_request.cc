@@ -43,6 +43,22 @@ static std::string get_template_name(notified_event _event) {
     throw ExceptionUnknownEmailTemplate();
 }
 
+struct FailedToSendMailToRecipient {
+    const std::string failed_recipient;
+    const std::set<std::string> skipped_recipients;
+
+    FailedToSendMailToRecipient(
+        const std::string& _failed_recipient,
+        const std::set<std::string>& _skipped_recipients
+    ) :
+        failed_recipient(_failed_recipient),
+        skipped_recipients(_skipped_recipients)
+    { }
+};
+
+/**
+ * @throws FailedToSendMailToRecipient
+ */
 static void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const email_data& _data) {
 
     std::set<std::string> trimmed_recipient_email_addresses;
@@ -50,16 +66,27 @@ static void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const e
         trimmed_recipient_email_addresses.insert( boost::trim_copy(email) );
     }
 
-    BOOST_FOREACH(const std::string& email, trimmed_recipient_email_addresses) {
-        _mailer->sendEmail(
-            "",
-            email,
-            "",
-            _data.template_name,
-            _data.template_parameters,
-            Fred::Mailer::Handles(),
-            Fred::Mailer::Attachments()
-        );
+    for(
+        std::set<std::string>::const_iterator it = trimmed_recipient_email_addresses.begin();
+        it != trimmed_recipient_email_addresses.end();
+        ++it
+    ) {
+        try {
+            _mailer->sendEmail(
+                "",
+                *it,
+                "",
+                _data.template_name,
+                _data.template_parameters,
+                Fred::Mailer::Handles(),
+                Fred::Mailer::Attachments()
+            );
+        } catch(const Fred::Mailer::NOT_SEND& e) {
+            throw FailedToSendMailToRecipient(
+                *it,
+                std::set<std::string>(it, trimmed_recipient_email_addresses.end())
+            );
+        }
     }
 }
 
@@ -67,41 +94,57 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
 
     std::string log_prefix = "process_one_notification_request() ";
 
+    struct process_postgres_locking_exception {
+        static Database::Result get_notification_to_send(Fred::OperationContext& _ctx) {
+
+            /* There is no hard guarantee that records in notification_queue are unique. It is no problem though. */
+            try {
+                return _ctx.get_conn().exec(
+                    /* lock exclusively... */
+                    "WITH locked AS ("
+                        "SELECT "
+                            "change, "
+                            "done_by_registrar, "
+                            "historyid_post_change, "
+                            "svtrid "
+                        "FROM notification_queue "
+                        "FOR UPDATE NOWAIT "
+                        "LIMIT 1 "
+                    ")"
+                    /* ...and delete (it is locked until commit and deleted immediately after) */
+                    "DELETE "
+                    "FROM notification_queue AS q "
+                    "USING locked "
+                    "WHERE "
+                        "q.change = locked.change "
+                        "AND q.done_by_registrar = locked.done_by_registrar "
+                        "AND q.historyid_post_change = locked.historyid_post_change "
+                        "AND q.svtrid = locked.svtrid "
+                    "RETURNING "
+                        "locked.*, "
+                        "( "
+                            "SELECT "
+                                "e_o_t.name "
+                            "FROM    object_history      o_h "
+                            "JOIN    object_registry     o_r     USING(id) "
+                            "JOIN    enum_object_type    e_o_t  ON o_r.type = e_o_t.id "
+                            "WHERE o_h.historyid = locked.historyid_post_change "
+                        ") AS object_type_ "
+                );
+
+            } catch(const std::exception& ex) {
+                std::string what_string(ex.what());
+                if(what_string.find("could not obtain lock on row in relation \"notification_queue\"") != std::string::npos) {
+                    throw FailedToLockRequest();
+                }
+                throw;
+            }
+        }
+    };
+
     try {
 
-        /* There is no hard guarantee that records in notification_queue are unique. It is no problem though. */
-        const Database::Result notification_to_send_res = _ctx.get_conn().exec(
-            /* lock exclusively... */
-            "WITH locked AS ("
-                "SELECT "
-                    "change, "
-                    "done_by_registrar, "
-                    "historyid_post_change, "
-                    "svtrid "
-                "FROM notification_queue "
-                "FOR UPDATE "
-                "LIMIT 1 "
-            ")"
-            /* ...and delete (it is locked until commit and deleted immediately after) */
-            "DELETE "
-            "FROM notification_queue AS q "
-            "USING locked "
-            "WHERE "
-                "q.change = locked.change "
-                "AND q.done_by_registrar = locked.done_by_registrar "
-                "AND q.historyid_post_change = locked.historyid_post_change "
-                "AND q.svtrid = locked.svtrid "
-            "RETURNING "
-                "locked.*, "
-                "( "
-                    "SELECT "
-                        "e_o_t.name "
-                    "FROM    object_history      o_h "
-                    "JOIN    object_registry     o_r     USING(id) "
-                    "JOIN    enum_object_type    e_o_t  ON o_r.type = e_o_t.id "
-                    "WHERE o_h.historyid = locked.historyid_post_change "
-                ") AS object_type_ "
-        );
+        const Database::Result notification_to_send_res = process_postgres_locking_exception::get_notification_to_send(_ctx);
 
         if(notification_to_send_res.size() < 1) {
             _ctx.get_log().info(log_prefix + "no record found in notification_queue");
@@ -144,7 +187,20 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
 
         _ctx.get_log().info( log_prefix + "completed - transaction not yet comitted" );
 
-        send_email(_mailer, data);
+        try {
+
+            send_email(_mailer, data);
+
+        } catch(const FailedToSendMailToRecipient& e) {
+
+            throw FailedToSendMail(
+                request,
+                e.failed_recipient,
+                e.skipped_recipients,
+                data.template_name,
+                data.template_parameters
+            );
+        }
 
         return true;
 
