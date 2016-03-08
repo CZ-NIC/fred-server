@@ -31,7 +31,6 @@
 #include "util/printable.h"
 
 #include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/contact/contact_enum.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/contact/place_address.h"
@@ -153,8 +152,6 @@ namespace Fred
     class PersonalIdUnion
     {
     public:
-        PersonalIdUnion(const InfoContactDiff::PersonalId &_src)
-        :   type_(_src.type), id_(_src.value) { }
         const std::string& get_type()const { return type_; }
         const std::string& get()const { return id_; }
     protected:

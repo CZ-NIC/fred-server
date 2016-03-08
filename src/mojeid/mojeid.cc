@@ -840,7 +840,33 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
         _update_op.set_organization(_data_changes.organization.get_value().second.get_value());
     }
     if (_data_changes.personal_id.isset()) {
-        _update_op.set_personal_id(_data_changes.personal_id.get_value().second);
+        if (!_data_changes.personal_id.get_value().second.isnull()) {
+            const Fred::InfoContactDiff::PersonalId new_personal_id = _data_changes.personal_id.get_value().second.get_value();
+            if (new_personal_id.type == Fred::PersonalId_BIRTHDAY("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalId_BIRTHDAY(new_personal_id.value));
+            }
+            else if (new_personal_id.type == Fred::PersonalId_ICO("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalId_ICO(new_personal_id.value));
+            }
+            else if (new_personal_id.type == Fred::PersonalId_MPSV("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalId_MPSV(new_personal_id.value));
+            }
+            else if (new_personal_id.type == Fred::PersonalId_OP("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalId_OP(new_personal_id.value));
+            }
+            else if (new_personal_id.type == Fred::PersonalId_PASS("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalId_PASS(new_personal_id.value));
+            }
+            else if (new_personal_id.type == Fred::PersonalId_RC("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalId_RC(new_personal_id.value));
+            }
+            else {
+                throw std::runtime_error("bad type of personal id");
+            }
+        }
+        else {
+            _update_op.set_personal_id(Nullable< Fred::PersonalIdUnion >());
+        }
     }
     if (_data_changes.place.isset() && !_data_changes.place.get_value().second.isnull()) {
         _update_op.set_place(_data_changes.place.get_value().second.get_value());
