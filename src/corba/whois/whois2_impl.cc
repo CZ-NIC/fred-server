@@ -376,7 +376,7 @@ namespace Whois {
 
         Optional<boost::posix_time::ptime> get_val_expire_time_estimate() const
         {
-            return expire_time_estimate;
+            return val_expire_time_estimate;
         }
 
         Optional<boost::posix_time::ptime> get_val_expire_time_actual() const
