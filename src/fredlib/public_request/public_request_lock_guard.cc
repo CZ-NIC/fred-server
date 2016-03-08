@@ -14,14 +14,14 @@ PublicRequestId lock_by_id(OperationContext &_ctx, PublicRequestId _id);
 PublicRequestLockGuardByIdentification::PublicRequestLockGuardByIdentification(
     OperationContext &_ctx,
     const std::string &_identification)
-:   PublicRequestLockGuard(lock_by_identification(_ctx, _identification))
+:   locked_public_request_for_update_(_ctx, lock_by_identification(_ctx, _identification))
 {
 }
 
 PublicRequestLockGuardById::PublicRequestLockGuardById(
     OperationContext &_ctx,
     PublicRequestId _id)
-:   PublicRequestLockGuard(lock_by_id(_ctx, _id))
+:   locked_public_request_for_update_(_ctx, lock_by_id(_ctx, _id))
 {
 }
 

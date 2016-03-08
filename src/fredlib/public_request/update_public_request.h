@@ -135,18 +135,15 @@ public:
 
     /**
      * Executes update.
-     * @param _ctx contains reference to database and logging interface
      * @param _locked_public_request guarantees exclusive access to public request data
      * @param _resolve_log_request_id associated request id in logger
      * @return @ref Result object corresponding with performed operation
      * @throw Exception if something wrong happened
      */
-    Result exec(OperationContext &_ctx,
-                const PublicRequestLockGuard &_locked_public_request,
+    Result exec(const LockedPublicRequestForUpdate &_locked_public_request,
                 const Optional< LogRequestId > &_resolve_log_request_id = Optional< LogRequestId >())const;
 
-    Result exec(OperationContext &_ctx,
-                const PublicRequestObjectLockGuard &_locked_public_request,
+    Result exec(const LockedPublicRequestsOfObjectForUpdate &_locked_public_requests,
                 const PublicRequestTypeIface &_public_request_type,
                 const Optional< LogRequestId > &_resolve_log_request_id = Optional< LogRequestId >())const;
 private:

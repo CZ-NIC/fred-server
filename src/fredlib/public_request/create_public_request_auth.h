@@ -112,14 +112,12 @@ public:
 
     /**
      * Executes creation.
-     * @param _ctx contains reference to database and logging interface
      * @param _locked_object guarantees exclusive access to all public requests of given object
      * @param _create_log_request_id associated request id in logger
      * @return @ref Result object corresponding with performed operation
      * @throw Exception if something wrong happened
      */
-    Result exec(OperationContext &_ctx,
-                const PublicRequestObjectLockGuard &_locked_object,
+    Result exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
                 const Optional< LogRequestId > &_create_log_request_id = Optional< LogRequestId >())const;
 private:
     const std::string type_;

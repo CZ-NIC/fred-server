@@ -659,9 +659,9 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         const Fred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
         Fred::CreatePublicRequestAuth op_create_pub_req(
             Fred::MojeID::PublicRequest::ContactConditionalIdentification().iface());
-        Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_contact.object_id);
+        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_contact.object_id);
         {
-            const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
+            const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(locked_contact);
             _ident = result.identification;
             notify(ctx, Notification::created,
                    mojeid_registrar_id_, new_contact.history_id, _log_request_id);
@@ -690,17 +690,16 @@ Fred::CreatePublicRequestAuth::Result action_transfer_contact_prepare(
     const Fred::PublicRequestAuthTypeIface &_iface,
     const std::string &_trans_id,
     const Fred::InfoContactData &_contact,
-    const Fred::PublicRequestObjectLockGuardByObjectId &_locked_contact,
-    const std::string &_registrar_handle,
-    Fred::OperationContextTwoPhaseCommitCreator &_ctx)
+    const Fred::LockedPublicRequestsOfObjectForUpdate &_locked_contact,
+    const std::string &_registrar_handle)
 {
     Fred::CreatePublicRequestAuth op_create_pub_req(_iface);
     if (!_contact.notifyemail.isnull()) {
         op_create_pub_req.set_email_to_answer(_contact.notifyemail.get_value());
     }
-    op_create_pub_req.set_registrar_id(_ctx, _registrar_handle);
+    op_create_pub_req.set_registrar_id(_locked_contact.get_ctx(), _registrar_handle);
     const Fred::CreatePublicRequestAuth::Result result =
-        op_create_pub_req.exec(_ctx, _locked_contact);
+        op_create_pub_req.exec(_locked_contact);
     prepare_transaction_storage()->store(_trans_id, _contact.id);
     return result;
 }
@@ -719,7 +718,7 @@ void MojeIDImpl::transfer_contact_prepare(
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::InfoContactData contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact.id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact.id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(contact.id).exec(ctx));
         {
             const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);
@@ -742,7 +741,7 @@ void MojeIDImpl::transfer_contact_prepare(
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ContactConditionalIdentification(),
-                _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
+                _trans_id, contact, locked_contact, mojeid_registrar_handle_);
         }
         else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                  states.absents(Fred::Object::State::IDENTIFIED_CONTACT) &&
@@ -750,7 +749,7 @@ void MojeIDImpl::transfer_contact_prepare(
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer(),
-                _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
+                _trans_id, contact, locked_contact, mojeid_registrar_handle_);
         }
         else if (states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                  states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
@@ -758,7 +757,7 @@ void MojeIDImpl::transfer_contact_prepare(
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::IdentifiedContactTransfer(),
-                _trans_id, contact, locked_contact, mojeid_registrar_handle_, ctx);
+                _trans_id, contact, locked_contact, mojeid_registrar_handle_);
         }
 
         from_into(contact, _contact);
@@ -899,7 +898,7 @@ void MojeIDImpl::update_contact_prepare(
               data_changes.fax.isset())) {
             return;
         }
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         Fred::StatusList to_cancel;
         bool drop_validation = false;
         if (states.presents(Fred::Object::State::VALIDATED_CONTACT)) {
@@ -928,7 +927,7 @@ void MojeIDImpl::update_contact_prepare(
                                         : Fred::MojeID::PublicRequest::ContactIdentification().iface());
             create_public_request_op.set_reason("data changed");
             create_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
-            create_public_request_op.exec(ctx, locked_contact, _log_request_id).public_request_id;
+            create_public_request_op.exec(locked_contact, _log_request_id).public_request_id;
         }
         {
             const MojeIDImplInternal::CheckUpdateContactPrepare check_contact_data(new_data);
@@ -1035,7 +1034,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             }
         }
         check_limits::sent_letters()(ctx, current_data.id);
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         bool drop_identification      = false;
         bool drop_cond_identification = false;
         unsigned long long history_id;
@@ -1114,7 +1113,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         }
         op_create_pub_req.set_registrar_id(ctx, mojeid_registrar_handle_);
         const Fred::CreatePublicRequestAuth::Result result =
-            op_create_pub_req.exec(ctx, locked_contact, _log_request_id);
+            op_create_pub_req.exec(locked_contact, _log_request_id);
 
         notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
         //second phase commit will change contact states
@@ -1170,8 +1169,7 @@ namespace {
 enum { INVALID_LOG_REQUEST_ID = 0 };
 
 Fred::UpdatePublicRequest::Result set_status(
-    Fred::OperationContext &_ctx,
-    const Fred::PublicRequestLockGuard &_locked_request,
+    const Fred::LockedPublicRequestForUpdate &_locked_request,
     Fred::PublicRequest::Status::Enum _status,
     const std::string &_reason,
     MojeIDImpl::LogRequestId _log_request_id)
@@ -1182,27 +1180,25 @@ Fred::UpdatePublicRequest::Result set_status(
         op_update_public_request.set_reason(_reason);
     }
     if (_log_request_id == INVALID_LOG_REQUEST_ID) {
-        return op_update_public_request.exec(_ctx, _locked_request);
+        return op_update_public_request.exec(_locked_request);
     }
-    return op_update_public_request.exec(_ctx, _locked_request, _log_request_id);
+    return op_update_public_request.exec(_locked_request, _log_request_id);
 }
 
 Fred::UpdatePublicRequest::Result answer(
-    Fred::OperationContext &_ctx,
-    const Fred::PublicRequestLockGuard &_locked_request,
+    const Fred::LockedPublicRequestForUpdate &_locked_request,
     const std::string &_reason = "",
     MojeIDImpl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
 {
-    return set_status(_ctx, _locked_request, Fred::PublicRequest::Status::ANSWERED, _reason, _log_request_id);
+    return set_status(_locked_request, Fred::PublicRequest::Status::ANSWERED, _reason, _log_request_id);
 }
 
 Fred::UpdatePublicRequest::Result invalidate(
-    Fred::OperationContext &_ctx,
-    const Fred::PublicRequestLockGuard &_locked_request,
+    const Fred::LockedPublicRequestForUpdate &_locked_request,
     const std::string &_reason = "",
     MojeIDImpl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
 {
-    return set_status(_ctx, _locked_request, Fred::PublicRequest::Status::INVALIDATED, _reason, _log_request_id);
+    return set_status(_locked_request, Fred::PublicRequest::Status::INVALIDATED, _reason, _log_request_id);
 }
 
 }//namespace Registry::MojeID::{anonymous}
@@ -1321,7 +1317,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         const Fred::PublicRequestLockGuardByIdentification locked_request(ctx, _ident_request_id);
         const Fred::PublicRequestAuthInfo pub_req_info(ctx, locked_request);
         if (pub_req_info.get_object_id().isnull()) {
-            invalidate(ctx, locked_request, "no object associated with this public request", _log_request_id);
+            invalidate(locked_request, "no object associated with this public request", _log_request_id);
             throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
         const Fred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
@@ -1354,8 +1350,9 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                                     "create_time<(SELECT GREATEST(update,trdate) FROM object "
                                                  "WHERE id=$2::BIGINT)"
                              ") AS object_changed",
-                Database::query_param_list(locked_request.get_public_request_id())//$1::BIGINT
-                                          (contact_id));                          //$2::BIGINT
+                Database::query_param_list(static_cast< const Fred::LockedPublicRequest& >
+                                          (locked_request).get_id())//$1::BIGINT
+                                          (contact_id));            //$2::BIGINT
 
             if (dbres.size() != 1) {
                 throw std::runtime_error("something wrong happened, database looks to be crazy, this query has to return exactly one row");
@@ -1363,7 +1360,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
 
             const bool contact_changed = static_cast< bool >(dbres[0][0]);
             if (contact_changed) {
-                invalidate(ctx, locked_request, "contact data changed after the public request had been created", _log_request_id);
+                invalidate(locked_request, "contact data changed after the public request had been created", _log_request_id);
                 throw MojeIDImplData::ContactChanged();
             }
 
@@ -1386,12 +1383,12 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 notify(ctx, Notification::transferred,
                        mojeid_registrar_id_, history_id, _log_request_id);
             }
-            answer(ctx, locked_request, "successfully processed", _log_request_id);
+            answer(locked_request, "successfully processed", _log_request_id);
 
             if (pub_req_type != PubReqType::IDENTIFIED_CONTACT_TRANSFER) {
                 Fred::CreatePublicRequestAuth op_create_pub_req(Fred::MojeID::PublicRequest::ContactIdentification().iface());
-                Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
-                const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(ctx, locked_contact);
+                Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
+                const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(locked_contact);
             }
 
             ctx.commit_transaction();
@@ -1449,7 +1446,7 @@ void MojeIDImpl::process_identification_request(
 
     try {
         Fred::OperationContextCreator ctx;
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         Fred::PublicRequestId public_request_id;
         try {
             public_request_id = Fred::GetActivePublicRequest(
@@ -1507,7 +1504,7 @@ void MojeIDImpl::process_identification_request(
         to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::IDENTIFIED_CONTACT));
         Fred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         Fred::PerformObjectStateRequest(_contact_id).exec(ctx);
-        answer(ctx, locked_request, "successfully processed", _log_request_id);
+        answer(locked_request, "successfully processed", _log_request_id);
         ctx.commit_transaction();
     }
     catch (const MojeIDImplData::UpdateContactPrepareValidationResult&) {
@@ -1651,7 +1648,7 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
     try {
         Fred::OperationContextCreator ctx;
 
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
 
         Database::Result res = ctx.get_conn().exec_params(
             "SELECT pr.id,c.name,c.organization,c.ssn,"
@@ -1722,7 +1719,7 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
         content.value = pdf_document.str();
         return content;
     }
-    catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
+    catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIDImplData::ObjectDoesntExist();
@@ -1752,7 +1749,7 @@ void MojeIDImpl::create_validation_request(
 
     try {
         Fred::OperationContextCreator ctx;
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         try {
             Fred::GetActivePublicRequest(Fred::MojeID::PublicRequest::ContactValidation())
                 .exec(ctx, locked_contact, _log_request_id);
@@ -1778,11 +1775,11 @@ void MojeIDImpl::create_validation_request(
             }
         }
         Fred::CreatePublicRequest create_public_request_op(Fred::MojeID::PublicRequest::ContactValidation().iface());
-        create_public_request_op.exec(ctx, locked_contact, _log_request_id);
+        create_public_request_op.exec(locked_contact, _log_request_id);
         ctx.commit_transaction();
         return;
     }
-    catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
+    catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIDImplData::ObjectDoesntExist();
@@ -2013,7 +2010,7 @@ void MojeIDImpl::cancel_account_prepare(
 
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
 
         if (states.absents(Fred::Object::State::MOJEID_CONTACT)) {
@@ -2061,15 +2058,14 @@ void MojeIDImpl::cancel_account_prepare(
         Fred::UpdatePublicRequest().set_status(Fred::PublicRequest::Status::INVALIDATED)
                                    .set_reason("cancel_account_prepare call")
                                    .set_registrar_id(ctx, mojeid_registrar_handle_)
-                                   .exec(ctx,
-                                         locked_contact,
+                                   .exec(locked_contact,
                                          Fred::MojeID::PublicRequest::ContactValidation(),
                                          _log_request_id);
         prepare_transaction_storage()->store(_trans_id, _contact_id);
         ctx.commit_transaction();
         return;
     }
-    catch (const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
+    catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIDImplData::ObjectDoesntExist();
@@ -2099,7 +2095,7 @@ void MojeIDImpl::send_new_pin3(
 
     try {
         Fred::OperationContextCreator ctx;
-        const Fred::PublicRequestObjectLockGuardByObjectId locked_object(ctx, _contact_id);
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, _contact_id);
         const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
         if (states.presents(Fred::Object::State::IDENTIFIED_CONTACT)) {
             // nothing to send if contact is identified
@@ -2120,7 +2116,7 @@ void MojeIDImpl::send_new_pin3(
                 update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
                 update_public_request_op.set_reason("new pin3 generated");
                 update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
-                update_public_request_op.exec(ctx, locked_request);
+                update_public_request_op.exec(locked_request);
                 has_identification_request = true;
             }
         }
@@ -2141,7 +2137,7 @@ void MojeIDImpl::send_new_pin3(
                 update_public_request_op.set_status(Fred::PublicRequest::Status::INVALIDATED);
                 update_public_request_op.set_reason("new pin3 generated");
                 update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
-                update_public_request_op.exec(ctx, locked_request);
+                update_public_request_op.exec(locked_request);
                 has_reidentification_request = true;
             }
         }
@@ -2168,7 +2164,7 @@ void MojeIDImpl::send_new_pin3(
         create_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
         create_public_request_op.set_reason("send_new_pin3 call");
         const Fred::CreatePublicRequestAuth::Result result =
-        create_public_request_op.exec(ctx, locked_object, _log_request_id);
+        create_public_request_op.exec(locked_object, _log_request_id);
         ctx.commit_transaction();
         return;
     }
@@ -2180,7 +2176,7 @@ void MojeIDImpl::send_new_pin3(
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
-    catch(const Fred::PublicRequestObjectLockGuardByObjectId::Exception &e) {
+    catch(const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(e.what());
             throw MojeIDImplData::ObjectDoesntExist();

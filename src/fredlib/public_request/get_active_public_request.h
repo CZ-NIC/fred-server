@@ -62,7 +62,7 @@ public:
      * @throw Exception if something wrong happened
      */
     PublicRequestId exec(OperationContext &_ctx,
-                         const PublicRequestObjectLockGuard &_locked_object,
+                         const LockedPublicRequestsOfObject &_locked_object,
                          const Optional< LogRequestId > &_log_request_id = Optional< LogRequestId >())const;
 private:
     const std::string type_;

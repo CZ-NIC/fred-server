@@ -103,8 +103,8 @@ public:
         static MessageId for_given_request(
             Fred::OperationContext &_ctx,
             const Multimanager &_multimanager,
-            const Fred::PublicRequestLockGuard &_locked_request,
-            const Fred::PublicRequestObjectLockGuard &_locked_contact,
+            const Fred::LockedPublicRequest &_locked_request,
+            const Fred::LockedPublicRequestsOfObject &_locked_contact,
             const message_checker &_check_message_limits = message_checker_always_success(),
             const std::string &_link_hostname_part = "",
             const Optional< GeneralId > &_contact_history_id = Optional< GeneralId >());

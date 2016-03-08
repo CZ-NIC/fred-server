@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_registrar)
     try {
         Fred::CreatePublicRequestAuth(PublicRequestAuthTypeFake("mojeid_contact_identification", password))
             .set_registrar_id(bad_registrar_id)
-            .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
+            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
         BOOST_CHECK(!e.is_set_unknown_type());
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_type)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::CreatePublicRequestAuth(PublicRequestAuthTypeFake(bad_type, password))
-            .exec(ctx, Fred::PublicRequestObjectLockGuardByObjectId(ctx, contact_id));
+            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
         BOOST_CHECK(e.is_set_unknown_type());
@@ -183,11 +183,11 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
         BOOST_CHECK(type_names.size() == res.size());
     }
 
-    Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
+    Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
     for (TypeName::const_iterator name_ptr = type_names.begin(); name_ptr != type_names.end(); ++name_ptr) {
         const PublicRequestAuthTypeFake public_request_type(*name_ptr, password);
         const Fred::CreatePublicRequestAuth::Result result = Fred::CreatePublicRequestAuth(public_request_type)
-            .exec(ctx, locked_contact);
+            .exec(locked_contact);
         BOOST_CHECK(result.identification != result.password);
         BOOST_CHECK(result.identification.length() == Fred::PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH);
         const Database::Result res = ctx.get_conn().exec_params(
@@ -234,12 +234,12 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
     Fred::CreatePublicRequestAuth::Result result[2];
     result[0] = Fred::CreatePublicRequestAuth(
         public_request_type, reason, email_to_answer, registrar_id)
-        .exec(ctx, locked_contact);
+        .exec(locked_contact);
     result[1] = Fred::CreatePublicRequestAuth(public_request_type)
         .set_reason(reason)
         .set_email_to_answer(email_to_answer)
         .set_registrar_id(registrar_id)
-        .exec(ctx, locked_contact);
+        .exec(locked_contact);
     const Database::Result res = ctx.get_conn().exec_params(
         "SELECT "
             "pr.id,"

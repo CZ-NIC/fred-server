@@ -53,23 +53,22 @@ CreatePublicRequestAuth& CreatePublicRequestAuth::set_registrar_id(
     return *this;
 }
 
-CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &_ctx,
-                                                              const PublicRequestObjectLockGuard &_locked_object,
+CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
                                                               const Optional< LogRequestId > &_create_log_request_id)const
 {
     try {
-        CreatePublicRequest::invalidate_the_same(_ctx, type_, _locked_object, registrar_id_, _create_log_request_id);
+        CreatePublicRequest::invalidate_the_same(type_, _locked_object, registrar_id_, _create_log_request_id);
         Result result;
         result.identification = Random::string_alpha(PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH);
         Database::query_param_list params(type_);                                           // $1::TEXT
         params(result.identification)                                                       // $2::TEXT
               (password_)                                                                   // $3::TEXT
-              (_locked_object.get_object_id())                                              // $4::BIGINT
+              (_locked_object.get_id())                                                     // $4::BIGINT
               (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $5::TEXT
               (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull); // $6::TEXT
         if (registrar_id_.isset()) {
             const RegistrarId registrar_id = registrar_id_.get_value();
-            const bool registrar_id_exists = static_cast< bool >(_ctx.get_conn().exec_params(
+            const bool registrar_id_exists = static_cast< bool >(_locked_object.get_ctx().get_conn().exec_params(
                 "SELECT EXISTS(SELECT * FROM registrar WHERE id=$1::BIGINT)",
                 Database::query_param_list(registrar_id))[0][0]);
             if (!registrar_id_exists) {
@@ -86,7 +85,7 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(OperationContext &
         else {
             params(Database::QPNull);                                                       // $8::BIGINT
         }
-        const Database::Result res = _ctx.get_conn().exec_params(
+        const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
                     "(request_type,status,resolve_time,reason,email_to_answer,answer_email_id,registrar_id,"

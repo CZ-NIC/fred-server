@@ -83,26 +83,26 @@ namespace {
 
 }
 
-UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
-                                                      const PublicRequestLockGuard &_locked_public_request,
+UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequestForUpdate &_locked_public_request,
                                                       const Optional< LogRequestId > &_resolve_log_request_id)const
 {
-    return this->update(_ctx, _locked_public_request.get_public_request_id(), _resolve_log_request_id);
+    return this->update(_locked_public_request.get_ctx(), _locked_public_request.get_id(), _resolve_log_request_id);
 }
 
-UpdatePublicRequest::Result UpdatePublicRequest::exec(OperationContext &_ctx,
-                                                      const PublicRequestObjectLockGuard &_locked_public_request,
+UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequestsOfObjectForUpdate &_locked_public_requests,
                                                       const PublicRequestTypeIface &_public_request_type,
                                                       const Optional< LogRequestId > &_resolve_log_request_id)const
 {
     Result result;
     result.public_request_type = _public_request_type.get_public_request_type();
-    result.object_id           = _locked_public_request.get_object_id();
+    result.object_id           = _locked_public_requests.get_id();
     try {
         while (true) {//iterate all active public requests of given type and given object
             const PublicRequestId public_request_id = GetActivePublicRequest(_public_request_type)
-                                                          .exec(_ctx, _locked_public_request);
-            const Result updated = this->update(_ctx, public_request_id, _resolve_log_request_id);
+                                                          .exec(_locked_public_requests.get_ctx(),
+                                                                _locked_public_requests);
+            const Result updated = this->update(_locked_public_requests.get_ctx(), public_request_id,
+                                                _resolve_log_request_id);
             if (updated.public_request_type != result.public_request_type) {
                 throw std::runtime_error("unexpected public_request_type");
             }

@@ -38,7 +38,7 @@ class PublicRequestAuthInfo;
 
 }
 
-bool operator==(const Fred::PublicRequestLockGuard&, const Fred::PublicRequestInfo&);
+bool operator==(const Fred::LockedPublicRequest&, const Fred::PublicRequestInfo&);
 
 namespace Fred {
 
@@ -80,7 +80,7 @@ public:
      * @param _ctx    operation context
      * @param _locked locked public request
      */
-    PublicRequestInfo(OperationContext &_ctx, const PublicRequestLockGuard &_locked);
+    PublicRequestInfo(OperationContext &_ctx, const LockedPublicRequest &_locked);
 
     /**
      * Copy constructor.
@@ -119,7 +119,7 @@ private:
     Nullable< LogRequestId >    resolve_request_id_;
     Nullable< ObjectId >        object_id_;
     friend class PublicRequestAuthInfo;
-    friend bool ::operator==(const Fred::PublicRequestLockGuard&, const Fred::PublicRequestInfo&);
+    friend bool ::operator==(const Fred::LockedPublicRequest&, const Fred::PublicRequestInfo&);
 };
 
 class InfoPublicRequest
@@ -132,7 +132,7 @@ public:
      * @param _ctx    operation context
      * @param _locked locked public request
      */
-    Result exec(OperationContext &_ctx, const PublicRequestLockGuard &_locked)const
+    Result exec(OperationContext &_ctx, const LockedPublicRequest &_locked)const
     {
         return Result(_ctx, _locked);
     }
@@ -140,12 +140,12 @@ public:
 
 }//namespace Fred
 
-inline bool operator==(const Fred::PublicRequestLockGuard &_locked, const Fred::PublicRequestInfo &_data)
+inline bool operator==(const Fred::LockedPublicRequest &_locked, const Fred::PublicRequestInfo &_data)
 {
-    return _locked.get_public_request_id() == _data.id_;
+    return _locked.get_id() == _data.id_;
 }
 
-inline bool operator==(const Fred::PublicRequestInfo &_data, const Fred::PublicRequestLockGuard &_locked)
+inline bool operator==(const Fred::PublicRequestInfo &_data, const Fred::LockedPublicRequest &_locked)
 {
     return _locked == _data;
 }

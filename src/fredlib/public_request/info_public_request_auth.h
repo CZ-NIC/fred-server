@@ -41,7 +41,7 @@ public:
      * @param _ctx    operation context
      * @param _locked locked public request
      */
-    PublicRequestAuthInfo(OperationContext &_ctx, const PublicRequestLockGuard &_locked);
+    PublicRequestAuthInfo(OperationContext &_ctx, const LockedPublicRequest &_locked);
 
     /**
      * Copy constructor.
@@ -75,7 +75,7 @@ public:
      * @param _ctx    operation context
      * @param _locked locked public request
      */
-    Result exec(OperationContext &_ctx, const PublicRequestLockGuard &_locked)const
+    Result exec(OperationContext &_ctx, const LockedPublicRequest &_locked)const
     {
         return Result(_ctx, _locked);
     }
@@ -93,12 +93,12 @@ inline bool operator==(const Fred::PublicRequestAuthInfo &_data, const std::stri
     return _identification == _data;
 }
 
-inline bool operator==(const Fred::PublicRequestLockGuard &_locked, const Fred::PublicRequestAuthInfo &_data)
+inline bool operator==(const Fred::LockedPublicRequest &_locked, const Fred::PublicRequestAuthInfo &_data)
 {
     return _locked == static_cast< const Fred::PublicRequestInfo& >(_data);
 }
 
-inline bool operator==(const Fred::PublicRequestAuthInfo &_data, const Fred::PublicRequestLockGuard &_locked)
+inline bool operator==(const Fred::PublicRequestAuthInfo &_data, const Fred::LockedPublicRequest &_locked)
 {
     return _locked == _data;
 }

@@ -2,7 +2,7 @@
 
 namespace Fred {
 
-PublicRequestAuthInfo::PublicRequestAuthInfo(OperationContext &_ctx, const PublicRequestLockGuard &_locked)
+PublicRequestAuthInfo::PublicRequestAuthInfo(OperationContext &_ctx, const LockedPublicRequest &_locked)
 :   PublicRequestInfo(_ctx, _locked)
 {
     try {

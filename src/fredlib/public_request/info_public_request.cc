@@ -42,8 +42,8 @@ IsNull set(Nullable< DST > &_dst, const Database::Value &_src, DST(*convert)(con
 
 }//namespace Fred::{anonymous}
 
-PublicRequestInfo::PublicRequestInfo(OperationContext &_ctx, const PublicRequestLockGuard &_locked)
-:   id_(_locked.get_public_request_id())
+PublicRequestInfo::PublicRequestInfo(OperationContext &_ctx, const LockedPublicRequest &_locked)
+:   id_(_locked.get_id())
 {
     try {
         const Database::Result res = _ctx.get_conn().exec_params(

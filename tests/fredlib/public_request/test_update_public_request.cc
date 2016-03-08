@@ -63,7 +63,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
             Database::query_param_list(contact_handle));
         BOOST_CHECK(dbres.size() == 1);//expecting existing system registrar
         contact_id = static_cast< Fred::ObjectId >(dbres[0][0]);
-        Fred::PublicRequestObjectLockGuardByObjectId locked_contact(ctx, contact_id);
+        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
 
         dbres = ctx.get_conn().exec(
             "SELECT name FROM enum_public_request_type "
@@ -71,7 +71,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
         BOOST_CHECK(dbres.size() == 1);//expecting existing public request type
         type_name_ = static_cast< std::string >(dbres[0][0]);
         create_result = Fred::CreatePublicRequestAuth(public_request_type)
-            .exec(ctx, locked_contact);
+            .exec(locked_contact);
         ctx.commit_transaction();
     }
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_id)
         "SELECT 100+2*MAX(id) FROM public_request")[0][0]);
     BOOST_CHECK_EXCEPTION(
     const Fred::PublicRequestLockGuardById locked(ctx, create_result.public_request_id);
-    BOOST_CHECK(locked.get_public_request_id() == create_result.public_request_id);
+    BOOST_CHECK(static_cast< const Fred::LockedPublicRequest& >(locked).get_id() == create_result.public_request_id);
     try {
         Fred::PublicRequestLockGuardById(ctx, bad_id);
     }
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(public_request_lock_guard_by_identification)
     const std::string bad_identification = create_result.identification + " ";
     BOOST_CHECK_EXCEPTION(
     const Fred::PublicRequestLockGuardByIdentification locked(ctx, create_result.identification);
-    BOOST_CHECK(locked.get_public_request_id() == create_result.public_request_id);
+    BOOST_CHECK(static_cast< const Fred::LockedPublicRequest& >(locked).get_id() == create_result.public_request_id);
     try {
         Fred::PublicRequestLockGuardByIdentification(ctx, bad_identification);
     }
@@ -176,7 +176,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_without_changes)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::UpdatePublicRequest()
-            .exec(ctx, Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(e.is_set_nothing_to_do());
@@ -200,10 +200,11 @@ BOOST_AUTO_TEST_CASE(update_public_request_without_changes)
     check_std_exception);
 }
 
-class PublicRequestLockGuardFake:public Fred::PublicRequestLockGuard
+class PublicRequestLockGuardFake:public Fred::LockedPublicRequestForUpdate
 {
 public:
-    PublicRequestLockGuardFake(Fred::PublicRequestId _public_request_id):PublicRequestLockGuard(_public_request_id) { }
+    PublicRequestLockGuardFake(Fred::OperationContext &_ctx, Fred::PublicRequestId _public_request_id)
+    :   Fred::LockedPublicRequestForUpdate(_ctx, _public_request_id) { }
 };
 
 /**
@@ -219,7 +220,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
     try {
         Fred::UpdatePublicRequest()
             .set_status(Fred::PublicRequest::Status::ANSWERED)
-            .exec(ctx, PublicRequestLockGuardFake(bad_public_request_id));
+            .exec(PublicRequestLockGuardFake(ctx, bad_public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -259,7 +260,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
     try {
         Fred::UpdatePublicRequest()
             .set_answer_email_id(bad_email_id)
-            .exec(ctx, Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -286,7 +287,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
     try {
         Fred::UpdatePublicRequest()
             .set_registrar_id(bad_registrar_id)
-            .exec(ctx, Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -314,7 +315,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
         Fred::UpdatePublicRequest()
             .set_answer_email_id(bad_email_id)
             .set_registrar_id(bad_registrar_id)
-            .exec(ctx, Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -354,7 +355,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_status)
         Fred::UpdatePublicRequest()
             .set_status(incorrect_status_value)
             .set_email_to_answer(email)
-            .exec(ctx, Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -399,7 +400,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
         .set_email_to_answer(email)
         .set_answer_email_id(email_id)
         .set_registrar_id(registrar_id)
-        .exec(ctx, locked_request, resolve_request_id);
+        .exec(locked_request, resolve_request_id);
     BOOST_CHECK(result.affected_requests.size() == 1);
     BOOST_CHECK(!result.affected_requests.empty() &&
                 (result.affected_requests[0] == create_result.public_request_id));
@@ -420,7 +421,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
         "FROM public_request pr "
         "WHERE id=$1::BIGINT",
         Database::query_param_list
-            (locked_request.get_public_request_id())
+            (static_cast< const Fred::LockedPublicRequest& >(locked_request).get_id())
             (public_request_type.get_public_request_type())
             (str_status)
             (reason)

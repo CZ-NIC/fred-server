@@ -31,42 +31,68 @@
 namespace Fred {
 
 /**
- * Common class guaranteeing exclusive access to public request data.
- * @note It would be suitable to remember reference to operation context object and make this reference
- *       accessible too because this guard joins locked entity with particular database connection.
+ * Common class guaranteeing exclusive read access to the data of given public request.
  */
-class PublicRequestLockGuard
+class LockedPublicRequest
 {
 public:
     /**
-     * Return numeric id of guarded public request.
-     * @return id of guarded public request
+     * Returns unique numeric id of locked public request.
+     * @return id of locked public request
      */
-    PublicRequestId get_public_request_id()const { return public_request_id_; }
+    PublicRequestId get_id()const { return public_request_id_; }
 protected:
-    /**
-     * Derived class can store public_request_id.
-     * @param _public_request_id value to store
-     */
-    PublicRequestLockGuard(PublicRequestId _public_request_id):public_request_id_(_public_request_id) { }
-    /**
-     * It should unlock public request in derived class but ...
-     */
-    ~PublicRequestLockGuard() { }
+    LockedPublicRequest(PublicRequestId _public_request_id):public_request_id_(_public_request_id) { }
+    ~LockedPublicRequest() { }
 private:
-    static void* operator new(::size_t);
-    static void* operator new[](::size_t);
-    static void operator delete(void*);
-    static void operator delete[](void*);
-    static void operator delete(void*, ::size_t);
-    static void operator delete[](void*, ::size_t);
+    LockedPublicRequest(const LockedPublicRequest&);
+    LockedPublicRequest& operator=(const LockedPublicRequest&);
     const PublicRequestId public_request_id_;
+};
+
+/**
+ * Common class guaranteeing exclusive r/w access to the data of given public request.
+ */
+class LockedPublicRequestForUpdate
+{
+public:
+    /**
+     * Converts to the read only accessor.
+     * @return reference to the read only accessor
+     */
+    operator const LockedPublicRequest&()const { return locked_public_request_; }
+    /**
+     * Returns unique numeric id of locked public request.
+     * @return id of locked public request
+     */
+    PublicRequestId get_id()const { return locked_public_request_.get_id(); }
+    /**
+     * Returns operation context which has been used for the public request locking.
+     * @return reference to the operation context
+     */
+    OperationContext& get_ctx()const { return ctx_; }
+protected:
+    LockedPublicRequestForUpdate(OperationContext &_ctx, PublicRequestId _public_request_id)
+    :   locked_public_request_(_public_request_id),
+        ctx_(_ctx)
+    { }
+    ~LockedPublicRequestForUpdate() { }
+private:
+    LockedPublicRequestForUpdate(const LockedPublicRequestForUpdate&);
+    LockedPublicRequestForUpdate& operator=(const LockedPublicRequestForUpdate&);
+    class MyLockedPublicRequest:public LockedPublicRequest
+    {
+    public:
+        MyLockedPublicRequest(PublicRequestId _public_request_id):LockedPublicRequest(_public_request_id) { }
+    };
+    const MyLockedPublicRequest locked_public_request_;
+    OperationContext &ctx_;
 };
 
 /**
  * Obtain exclusive access to public request data identified by string identification.
  */
-class PublicRequestLockGuardByIdentification:public PublicRequestLockGuard
+class PublicRequestLockGuardByIdentification
 {
 public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, std::string);///< exception members for unknown identification
@@ -75,7 +101,7 @@ public:
         ExceptionData_public_request_doesnt_exist< Exception >
     {};
     /**
-     * Obtain exclusive access to public request identified by _identification. Operation context _ctx
+     * Obtain exclusive access to the public request identified by _identification. Operation context _ctx
      * can manipulate public request data from now until this transaction will finish.
      * @param _ctx use database connection from this operation context
      * @param _identification unique string identification of public request with authentication
@@ -86,12 +112,30 @@ public:
      *          transaction wherein it was created.
      */
     ~PublicRequestLockGuardByIdentification() { }
+    /**
+     * Converts to the read only accessor.
+     * @return reference to the read only accessor
+     */
+    operator const LockedPublicRequest&()const { return locked_public_request_for_update_; }
+    /**
+     * Converts to the r/w accessor.
+     * @return reference to the r/w accessor
+     */
+    operator const LockedPublicRequestForUpdate&()const { return locked_public_request_for_update_; }
+private:
+    class MyLockedPublicRequestForUpdate:public LockedPublicRequestForUpdate
+    {
+    public:
+        MyLockedPublicRequestForUpdate(OperationContext &_ctx, PublicRequestId _public_request_id)
+        :   LockedPublicRequestForUpdate(_ctx, _public_request_id) { }
+    };
+    const MyLockedPublicRequestForUpdate locked_public_request_for_update_;
 };
 
 /**
- * Obtain exclusive access to public request data identified by string identification.
+ * Obtain exclusive access to public request data identified by numeric identification.
  */
-class PublicRequestLockGuardById:public PublicRequestLockGuard
+class PublicRequestLockGuardById
 {
 public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);///< exception members for unknown id
@@ -111,6 +155,24 @@ public:
      *          transaction wherein it was created.
      */
     ~PublicRequestLockGuardById() { }
+    /**
+     * Converts to the read only accessor.
+     * @return reference to the read only accessor
+     */
+    operator const LockedPublicRequest&()const { return locked_public_request_for_update_; }
+    /**
+     * Converts to the r/w accessor.
+     * @return reference to the r/w accessor
+     */
+    operator const LockedPublicRequestForUpdate&()const { return locked_public_request_for_update_; }
+private:
+    class MyLockedPublicRequestForUpdate:public LockedPublicRequestForUpdate
+    {
+    public:
+        MyLockedPublicRequestForUpdate(OperationContext &_ctx, PublicRequestId _public_request_id)
+        :   LockedPublicRequestForUpdate(_ctx, _public_request_id) { }
+    };
+    const MyLockedPublicRequestForUpdate locked_public_request_for_update_;
 };
 
 }//namespace Fred
