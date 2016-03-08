@@ -31,6 +31,8 @@
 
 namespace Fred {
 
+const boost::regex phone_pattern("[[:space:]]*\\+[0-9]{1,3}\\.[0-9]{1,14}[[:space:]]*");
+
 namespace {
 
 bool nothing_else_whitespaces(const std::string &_data)
@@ -160,7 +162,7 @@ contact_phone_presence::contact_phone_presence(const Nullable< std::string > &_t
 }
 
 contact_phone_validity::contact_phone_validity(const Nullable< std::string > &_telephone)
-:   invalid(!absent_or_match(_telephone, phone_pattern()))
+:   invalid(!absent_or_match(_telephone, phone_pattern))
 {
 }
 
@@ -191,7 +193,7 @@ contact_phone_availability::contact_phone_availability(
 }
 
 contact_fax_validity::contact_fax_validity(const Nullable< std::string > &_fax)
-:   invalid(!absent_or_match(_fax, phone_pattern()))
+:   invalid(!absent_or_match(_fax, phone_pattern))
 {
 }
 

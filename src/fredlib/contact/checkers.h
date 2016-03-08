@@ -39,13 +39,8 @@ inline std::string email_phone_protection_period() { return "1MONTH"; }
 
 /**
  * Regular expression which match correct phone number.
- * @return pattern usable in boost::regex_match for checking correct phone number format
  */
-inline const boost::regex& phone_pattern()
-{
-    static const boost::regex pattern("[[:space:]]*\\+[0-9]{1,3}\\.[0-9]{1,14}[[:space:]]*");
-    return pattern;
-};
+extern const boost::regex phone_pattern;
 
 /// General check classes
 namespace GeneralCheck
