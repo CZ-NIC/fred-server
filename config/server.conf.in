@@ -111,7 +111,8 @@ hostname = demo.mojeid.cz
 notify_commands = false
 # demo_mode = true - uses constant PINs (do not use on production)
 demo_mode = false
-
+auto_email_generation = true
+auto_sms_generation = true
 
 ##
 # contact verification PIFD settings
