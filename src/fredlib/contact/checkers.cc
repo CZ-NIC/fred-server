@@ -221,7 +221,7 @@ contact_username_availability::contact_username_availability(
                 "WHERE name='handle_registration_protection_period') AS protected "
         "FROM object_registry "
         "WHERE type=get_object_type_id($2::TEXT) AND "
-              "UPPER(name)=UPPER($1::TEXT) AND "//use index (UPPER(name)) WHERE type=1
+              "UPPER(name)=UPPER($1::TEXT) "//use index (UPPER(name)) WHERE type=1
         "ORDER BY erdate IS NULL DESC,"//prefer erdate=NULL
                  "erdate DESC "        //otherwise the newest erdate
         "LIMIT 1",
