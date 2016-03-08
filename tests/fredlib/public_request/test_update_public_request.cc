@@ -204,7 +204,14 @@ class PublicRequestLockGuardFake:public Fred::LockedPublicRequestForUpdate
 {
 public:
     PublicRequestLockGuardFake(Fred::OperationContext &_ctx, Fred::PublicRequestId _public_request_id)
-    :   Fred::LockedPublicRequestForUpdate(_ctx, _public_request_id) { }
+    :   ctx_(_ctx),
+        public_request_id_(_public_request_id) { }
+    virtual ~PublicRequestLockGuardFake() { }
+private:
+    virtual Fred::PublicRequestId get_id()const { return public_request_id_; }
+    virtual Fred::OperationContext& get_ctx()const { return ctx_; }
+    Fred::OperationContext &ctx_;
+    const Fred::PublicRequestId public_request_id_;
 };
 
 /**

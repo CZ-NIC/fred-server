@@ -5,7 +5,8 @@ namespace Fred {
 PublicRequestsOfObjectLockGuardByObjectId::PublicRequestsOfObjectLockGuardByObjectId(
         OperationContext &_ctx,
         ObjectId _object_id)
-:   locked_public_requests_for_update_(_ctx, _object_id)
+:   ctx_(_ctx),
+    object_id_(_object_id)
 {
     //get lock to the end of transaction for given object
     if (0 < _ctx.get_conn().exec_params("SELECT lock_public_request_lock(id) "

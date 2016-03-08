@@ -383,14 +383,22 @@ class PublicRequestLocked:public Fred::LockedPublicRequest
 {
 public:
     PublicRequestLocked(Fred::PublicRequestId _locked_request_id)
-    :   Fred::LockedPublicRequest(_locked_request_id) { }
+    :   public_request_id_(_locked_request_id) { }
+    virtual ~PublicRequestLocked() { }
+private:
+    virtual Fred::PublicRequestId get_id()const { return public_request_id_; }
+    const Fred::PublicRequestId public_request_id_;
 };
 
 class PublicRequestObjectLocked:public Fred::LockedPublicRequestsOfObject
 {
 public:
     PublicRequestObjectLocked(Fred::ObjectId _locked_object_id)
-    :   Fred::LockedPublicRequestsOfObject(_locked_object_id) { }
+    :   object_id_(_locked_object_id) { }
+    virtual ~PublicRequestObjectLocked() { }
+private:
+    virtual Fred::ObjectId get_id()const { return object_id_; }
+    const Fred::ObjectId object_id_;
 };
 
 template < CommChannel::Value COMM_CHANNEL, typename PUBLIC_REQUEST_TYPE >

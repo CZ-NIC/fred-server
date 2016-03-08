@@ -40,59 +40,30 @@ public:
      * Returns unique numeric id of locked public request.
      * @return id of locked public request
      */
-    PublicRequestId get_id()const { return public_request_id_; }
+    virtual PublicRequestId get_id()const = 0;
 protected:
-    LockedPublicRequest(PublicRequestId _public_request_id):public_request_id_(_public_request_id) { }
-    ~LockedPublicRequest() { }
-private:
-    LockedPublicRequest(const LockedPublicRequest&);
-    LockedPublicRequest& operator=(const LockedPublicRequest&);
-    const PublicRequestId public_request_id_;
+    virtual ~LockedPublicRequest() { }
 };
 
 /**
  * Common class guaranteeing exclusive r/w access to the data of given public request.
  */
-class LockedPublicRequestForUpdate
+class LockedPublicRequestForUpdate:public LockedPublicRequest
 {
 public:
-    /**
-     * Converts to the read only accessor.
-     * @return reference to the read only accessor
-     */
-    operator const LockedPublicRequest&()const { return locked_public_request_; }
-    /**
-     * Returns unique numeric id of locked public request.
-     * @return id of locked public request
-     */
-    PublicRequestId get_id()const { return locked_public_request_.get_id(); }
     /**
      * Returns operation context which has been used for the public request locking.
      * @return reference to the operation context
      */
-    OperationContext& get_ctx()const { return ctx_; }
+    virtual OperationContext& get_ctx()const = 0;
 protected:
-    LockedPublicRequestForUpdate(OperationContext &_ctx, PublicRequestId _public_request_id)
-    :   locked_public_request_(_public_request_id),
-        ctx_(_ctx)
-    { }
-    ~LockedPublicRequestForUpdate() { }
-private:
-    LockedPublicRequestForUpdate(const LockedPublicRequestForUpdate&);
-    LockedPublicRequestForUpdate& operator=(const LockedPublicRequestForUpdate&);
-    class MyLockedPublicRequest:public LockedPublicRequest
-    {
-    public:
-        MyLockedPublicRequest(PublicRequestId _public_request_id):LockedPublicRequest(_public_request_id) { }
-    };
-    const MyLockedPublicRequest locked_public_request_;
-    OperationContext &ctx_;
+    virtual ~LockedPublicRequestForUpdate() { }
 };
 
 /**
  * Obtain exclusive access to public request data identified by string identification.
  */
-class PublicRequestLockGuardByIdentification
+class PublicRequestLockGuardByIdentification:public LockedPublicRequestForUpdate
 {
 public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, std::string);///< exception members for unknown identification
@@ -111,31 +82,18 @@ public:
      * @warning It doesn't release lock contrary to expectations. The one will release by finishing of
      *          transaction wherein it was created.
      */
-    ~PublicRequestLockGuardByIdentification() { }
-    /**
-     * Converts to the read only accessor.
-     * @return reference to the read only accessor
-     */
-    operator const LockedPublicRequest&()const { return locked_public_request_for_update_; }
-    /**
-     * Converts to the r/w accessor.
-     * @return reference to the r/w accessor
-     */
-    operator const LockedPublicRequestForUpdate&()const { return locked_public_request_for_update_; }
+    virtual ~PublicRequestLockGuardByIdentification() { }
 private:
-    class MyLockedPublicRequestForUpdate:public LockedPublicRequestForUpdate
-    {
-    public:
-        MyLockedPublicRequestForUpdate(OperationContext &_ctx, PublicRequestId _public_request_id)
-        :   LockedPublicRequestForUpdate(_ctx, _public_request_id) { }
-    };
-    const MyLockedPublicRequestForUpdate locked_public_request_for_update_;
+    virtual PublicRequestId get_id()const { return public_request_id_; }
+    virtual OperationContext& get_ctx()const { return ctx_; }
+    OperationContext &ctx_;
+    const PublicRequestId public_request_id_;
 };
 
 /**
  * Obtain exclusive access to public request data identified by numeric identification.
  */
-class PublicRequestLockGuardById
+class PublicRequestLockGuardById:public LockedPublicRequestForUpdate
 {
 public:
     DECLARE_EXCEPTION_DATA(public_request_doesnt_exist, PublicRequestId);///< exception members for unknown id
@@ -154,25 +112,12 @@ public:
      * @warning It doesn't release lock contrary to expectations. The one will release by finishing of
      *          transaction wherein it was created.
      */
-    ~PublicRequestLockGuardById() { }
-    /**
-     * Converts to the read only accessor.
-     * @return reference to the read only accessor
-     */
-    operator const LockedPublicRequest&()const { return locked_public_request_for_update_; }
-    /**
-     * Converts to the r/w accessor.
-     * @return reference to the r/w accessor
-     */
-    operator const LockedPublicRequestForUpdate&()const { return locked_public_request_for_update_; }
+    virtual ~PublicRequestLockGuardById() { }
 private:
-    class MyLockedPublicRequestForUpdate:public LockedPublicRequestForUpdate
-    {
-    public:
-        MyLockedPublicRequestForUpdate(OperationContext &_ctx, PublicRequestId _public_request_id)
-        :   LockedPublicRequestForUpdate(_ctx, _public_request_id) { }
-    };
-    const MyLockedPublicRequestForUpdate locked_public_request_for_update_;
+    virtual PublicRequestId get_id()const { return public_request_id_; }
+    virtual OperationContext& get_ctx()const { return ctx_; }
+    OperationContext &ctx_;
+    const PublicRequestId public_request_id_;
 };
 
 }//namespace Fred
