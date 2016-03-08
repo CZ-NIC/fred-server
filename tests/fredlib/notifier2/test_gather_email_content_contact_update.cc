@@ -150,7 +150,7 @@ template<typename T_has_contact> struct has_contact_big_update : T_has_contact {
                     .set_email("a" + T_has_contact::contact.email.get_value_or("abc@def.cx"))
                     .set_notifyemail("a" + T_has_contact::contact.notifyemail.get_value_or("abc.notify@def.cx"))
                     .set_vat(T_has_contact::contact.vat.get_value_or("123456") + "1")
-                    .set_personal_id(Fred::PersonalId_RC("19891231/1234"))
+                    .set_personal_id(Fred::PersonalIdUnion::get_RC("19891231/1234"))
                     .set_disclosename(          !T_has_contact::contact.disclosename)
                     .set_discloseorganization(  !T_has_contact::contact.discloseorganization)
                     .set_discloseaddress(       !T_has_contact::contact.discloseaddress)

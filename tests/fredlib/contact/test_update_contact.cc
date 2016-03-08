@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
                 , Optional< Nullable< std::string > >("test@nic.cz")//email
                 , Optional< Nullable< std::string > >("notif-test@nic.cz")//notifyemail
                 , Optional< Nullable< std::string > >("7805962556")//vat is TID
-                , Optional< Nullable< Fred::PersonalIdUnion > >(Fred::PersonalId_ICO("7805962556"))//ssn
+                , Optional< Nullable< Fred::PersonalIdUnion > >(Fred::PersonalIdUnion::get_ICO("7805962556"))//ssn
                 , addresses_to_update//addresses MAILING change, BILLING don't touch, SHIPPING remove, SHIPPING_2 remove
                 , Optional<bool>(true)//disclosename
                 , Optional<bool>(true)//discloseorganization
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     .set_email("test@nic.cz")
     .set_notifyemail("notif-test@nic.cz")
     .set_vat("7805962556")
-    .set_personal_id(Fred::PersonalId_ICO("7805962556"))
+    .set_personal_id(Fred::PersonalIdUnion::get_ICO("7805962556"))
     .set_address< Fred::ContactAddressType::MAILING >(new_address)
     .set_address< Fred::ContactAddressType::SHIPPING >(new_address)
     .set_address< Fred::ContactAddressType::SHIPPING_2 >(new_address)
@@ -526,13 +526,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar)
     BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
 }
 
-
-namespace {
-struct PersonalId_BAD:Fred::PersonalIdUnion
-{
-    PersonalId_BAD():Fred::PersonalIdUnion("bad-ssntype", "bad-ssnvalue") { }
-};
-}
 /**
  * test UpdateContactByHandle with wrong ssntype
  */
@@ -542,21 +535,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_ssntype)
     {
         Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
-    }
-
-    try
-    {
-        Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
-        .set_personal_id(PersonalId_BAD())
-        .exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_ssntype());
-        BOOST_CHECK(ex.get_unknown_ssntype() == "bad-ssntype");
     }
 
     Fred::InfoContactOutput info_data_2;

@@ -842,23 +842,23 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
     if (_data_changes.personal_id.isset()) {
         if (!_data_changes.personal_id.get_value().second.isnull()) {
             const Fred::InfoContactDiff::PersonalId new_personal_id = _data_changes.personal_id.get_value().second.get_value();
-            if (new_personal_id.type == Fred::PersonalId_BIRTHDAY("").get_type()) {
-                _update_op.set_personal_id(Fred::PersonalId_BIRTHDAY(new_personal_id.value));
+            if (new_personal_id.type == Fred::PersonalIdUnion::get_BIRTHDAY("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalIdUnion::get_BIRTHDAY(new_personal_id.value));
             }
-            else if (new_personal_id.type == Fred::PersonalId_ICO("").get_type()) {
-                _update_op.set_personal_id(Fred::PersonalId_ICO(new_personal_id.value));
+            else if (new_personal_id.type == Fred::PersonalIdUnion::get_ICO("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalIdUnion::get_ICO(new_personal_id.value));
             }
-            else if (new_personal_id.type == Fred::PersonalId_MPSV("").get_type()) {
-                _update_op.set_personal_id(Fred::PersonalId_MPSV(new_personal_id.value));
+            else if (new_personal_id.type == Fred::PersonalIdUnion::get_MPSV("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalIdUnion::get_MPSV(new_personal_id.value));
             }
-            else if (new_personal_id.type == Fred::PersonalId_OP("").get_type()) {
-                _update_op.set_personal_id(Fred::PersonalId_OP(new_personal_id.value));
+            else if (new_personal_id.type == Fred::PersonalIdUnion::get_OP("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalIdUnion::get_OP(new_personal_id.value));
             }
-            else if (new_personal_id.type == Fred::PersonalId_PASS("").get_type()) {
-                _update_op.set_personal_id(Fred::PersonalId_PASS(new_personal_id.value));
+            else if (new_personal_id.type == Fred::PersonalIdUnion::get_PASS("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalIdUnion::get_PASS(new_personal_id.value));
             }
-            else if (new_personal_id.type == Fred::PersonalId_RC("").get_type()) {
-                _update_op.set_personal_id(Fred::PersonalId_RC(new_personal_id.value));
+            else if (new_personal_id.type == Fred::PersonalIdUnion::get_RC("").get_type()) {
+                _update_op.set_personal_id(Fred::PersonalIdUnion::get_RC(new_personal_id.value));
             }
             else {
                 throw std::runtime_error("bad type of personal id");

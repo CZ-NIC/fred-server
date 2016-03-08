@@ -154,51 +154,21 @@ namespace Fred
     public:
         const std::string& get_type()const { return type_; }
         const std::string& get()const { return id_; }
-    protected:
-        PersonalIdUnion(const std::string &_type, const std::string &_id)
-        :   type_(_type), id_(_id) { }
+        static PersonalIdUnion get_RC(const std::string &_value) { return PersonalIdUnion("RC", _value); }
+        static PersonalIdUnion get_OP(const std::string &_value) { return PersonalIdUnion("OP", _value); }
+        static PersonalIdUnion get_PASS(const std::string &_value) { return PersonalIdUnion("PASS", _value); }
+        static PersonalIdUnion get_ICO(const std::string &_value) { return PersonalIdUnion("ICO", _value); }
+        static PersonalIdUnion get_MPSV(const std::string &_value) { return PersonalIdUnion("MPSV", _value); }
+        static PersonalIdUnion get_BIRTHDAY(const std::string &_value) { return PersonalIdUnion("BIRTHDAY", _value); }
     private:
         PersonalIdUnion() { }
+        PersonalIdUnion(const std::string &_type, const std::string &_id)
+        :   type_(_type), id_(_id) { }
         std::string type_;
         std::string id_;
         friend class Nullable< PersonalIdUnion >;
     };
 
-    class PersonalId_RC:public PersonalIdUnion
-    {
-    public:
-        PersonalId_RC(const std::string &_rc):PersonalIdUnion("RC", _rc) { }
-    };
-
-    class PersonalId_OP:public PersonalIdUnion
-    {
-    public:
-        PersonalId_OP(const std::string &_op):PersonalIdUnion("OP", _op) { }
-    };
-
-    class PersonalId_PASS:public PersonalIdUnion
-    {
-    public:
-        PersonalId_PASS(const std::string &_pass):PersonalIdUnion("PASS", _pass) { }
-    };
-
-    class PersonalId_ICO:public PersonalIdUnion
-    {
-    public:
-        PersonalId_ICO(const std::string &_ico):PersonalIdUnion("ICO", _ico) { }
-    };
-
-    class PersonalId_MPSV:public PersonalIdUnion
-    {
-    public:
-        PersonalId_MPSV(const std::string &_mpsv):PersonalIdUnion("MPSV", _mpsv) { }
-    };
-
-    class PersonalId_BIRTHDAY:public PersonalIdUnion
-    {
-    public:
-        PersonalId_BIRTHDAY(const std::string &_birthday):PersonalIdUnion("BIRTHDAY", _birthday) { }
-    };
     /**
     * Update of contact, implementation template.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
