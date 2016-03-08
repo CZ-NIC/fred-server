@@ -45,14 +45,6 @@ namespace Fred
     {
         template <class T> struct DiffMemeber { typedef Optional<std::pair<T,T> > Type;};
 
-        struct PersonalId
-        {
-            PersonalId() { }
-            PersonalId(const std::string &type, const std::string &value):type(type), value(value) { }
-            std::string type;
-            std::string value;
-        };
-
         DiffMemeber<unsigned long long>::Type crhistoryid;/**< first historyid of contact history*/
         DiffMemeber<unsigned long long>::Type historyid;/**< last historyid of contact history*/
         DiffMemeber<Nullable<boost::posix_time::ptime> >::Type delete_time; /**< contact delete time in set local zone*/
@@ -73,7 +65,7 @@ namespace Fred
         DiffMemeber<Nullable<std::string> >::Type email;/**< e-mail address */
         DiffMemeber<Nullable<std::string> >::Type notifyemail;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
         DiffMemeber<Nullable<std::string> >::Type vat;/**< taxpayer identification number */
-        DiffMemeber< Nullable< PersonalId > >::Type personal_id;/**< type and value of identification number e.g. social security number, identity card number, date of birth */
+        DiffMemeber< Nullable< PersonalIdUnion > >::Type personal_id;/**< type and value of identification number e.g. social security number, identity card number, date of birth */
         DiffMemeber<bool>::Type disclosename;/**< whether to reveal contact name */
         DiffMemeber<bool>::Type discloseorganization;/**< whether to reveal organization */
         DiffMemeber<bool>::Type discloseaddress;/**< whether to reveal address */
@@ -120,12 +112,5 @@ namespace Fred
     InfoContactDiff diff_contact_data(const InfoContactData& first, const InfoContactData& second);
 
 }//namespace Fred
-
-inline std::ostream& operator<<(std::ostream &out, const Fred::InfoContactDiff::PersonalId &personal_id)
-{
-    std::ostringstream o;
-    o << personal_id.type << ": " << personal_id.value;
-    return out << o.str();
-}
 
 #endif//INFO_CONTACT_DIFF_H_

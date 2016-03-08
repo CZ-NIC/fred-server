@@ -276,14 +276,14 @@ namespace Fred
         if (!Util::is_equal(first.ssntype, second.ssntype) ||
             !Util::is_equal(first.ssn,     second.ssn))
         {
-            const Nullable< InfoContactDiff::PersonalId > a = first.ssntype.isnull() || first.ssn.isnull()
-                ? Nullable< InfoContactDiff::PersonalId >()
-                : Nullable< InfoContactDiff::PersonalId >(
-                      InfoContactDiff::PersonalId(first.ssntype.get_value(), first.ssn.get_value()));
-            const Nullable< InfoContactDiff::PersonalId > b = second.ssntype.isnull() || second.ssn.isnull()
-                ? Nullable< InfoContactDiff::PersonalId >()
-                : Nullable< InfoContactDiff::PersonalId >(
-                      InfoContactDiff::PersonalId(second.ssntype.get_value(), second.ssn.get_value()));
+            const Nullable< PersonalIdUnion > a = first.ssntype.isnull() || first.ssn.isnull()
+                ? Nullable< PersonalIdUnion >()
+                : Nullable< PersonalIdUnion >(
+                      PersonalIdUnion::get_any_type(first.ssntype.get_value(), first.ssn.get_value()));
+            const Nullable< PersonalIdUnion > b = second.ssntype.isnull() || second.ssn.isnull()
+                ? Nullable< PersonalIdUnion >()
+                : Nullable< PersonalIdUnion >(
+                      PersonalIdUnion::get_any_type(second.ssntype.get_value(), second.ssn.get_value()));
             diff.personal_id = std::make_pair(a, b);
         }
 

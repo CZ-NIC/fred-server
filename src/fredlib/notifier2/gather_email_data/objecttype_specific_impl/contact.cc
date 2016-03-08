@@ -152,12 +152,12 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     /* Yes we are using database "enum" values as e-mail template parameters. It's flexible. And it works! A vubec! */
     struct translate_ssntypes
     {
-        static std::string exec(const Nullable< Fred::InfoContactDiff::PersonalId > &_nullable_personal_id)
+        static std::string exec(const Nullable< Fred::PersonalIdUnion > &_nullable_personal_id)
         {
             if (_nullable_personal_id.isnull() ||
-                _nullable_personal_id.get_value().type.empty()) { return "EMPTY"; }
+                _nullable_personal_id.get_value().get_type().empty()) { return "EMPTY"; }
 
-            const std::string type = _nullable_personal_id.get_value().type;
+            const std::string type = _nullable_personal_id.get_value().get_type();
 
             if (type == "PASS") { return "PASSPORT"; }
 
@@ -172,16 +172,16 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     };
 
     if (diff.personal_id.isset()) {
-        const Nullable< Fred::InfoContactDiff::PersonalId > nullable_personal_id_a = diff.personal_id.get_value().first;
-        const Nullable< Fred::InfoContactDiff::PersonalId > nullable_personal_id_b = diff.personal_id.get_value().second;
+        const Nullable< Fred::PersonalIdUnion > nullable_personal_id_a = diff.personal_id.get_value().first;
+        const Nullable< Fred::PersonalIdUnion > nullable_personal_id_b = diff.personal_id.get_value().second;
         add_old_new_suffix_pair_if_different(
             result, "contact.ident_type",
             translate_ssntypes::exec(nullable_personal_id_a),
             translate_ssntypes::exec(nullable_personal_id_b));
         add_old_new_suffix_pair_if_different(
             result, "contact.ident",
-            nullable_personal_id_a.get_value_or_default().value,
-            nullable_personal_id_b.get_value_or_default().value);
+            nullable_personal_id_a.get_value_or_default().get(),
+            nullable_personal_id_b.get_value_or_default().get());
     }
 
     if(diff.vat.isset()) {

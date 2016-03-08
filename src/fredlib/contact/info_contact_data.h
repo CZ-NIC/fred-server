@@ -214,6 +214,31 @@ namespace Fred
      * Container of additional contact addresses.
      */
     typedef std::map< ContactAddressType, ContactAddress > ContactAddressList;
+
+    /**
+     * Connect ssn and ssnvalue together.
+     */
+    class PersonalIdUnion
+    {
+    public:
+        const std::string& get_type()const { return type_; }
+        const std::string& get()const { return id_; }
+        static PersonalIdUnion get_RC(const std::string &_value) { return PersonalIdUnion("RC", _value); }
+        static PersonalIdUnion get_OP(const std::string &_value) { return PersonalIdUnion("OP", _value); }
+        static PersonalIdUnion get_PASS(const std::string &_value) { return PersonalIdUnion("PASS", _value); }
+        static PersonalIdUnion get_ICO(const std::string &_value) { return PersonalIdUnion("ICO", _value); }
+        static PersonalIdUnion get_MPSV(const std::string &_value) { return PersonalIdUnion("MPSV", _value); }
+        static PersonalIdUnion get_BIRTHDAY(const std::string &_value) { return PersonalIdUnion("BIRTHDAY", _value); }
+        static PersonalIdUnion get_any_type(const std::string &_type, const std::string &_value) { return PersonalIdUnion(_type, _value); }
+    private:
+        PersonalIdUnion() { }
+        PersonalIdUnion(const std::string &_type, const std::string &_id)
+        :   type_(_type), id_(_id) { }
+        std::string type_;
+        std::string id_;
+        friend class Nullable< PersonalIdUnion >;
+    };
+
     /**
      * Common data of contact.
      * Current or history state of the contact.
@@ -377,5 +402,12 @@ std::ostream& operator<<(std::ostream &_os, const ContactAddress &_v);
 std::ostream& operator<<(std::ostream &_os, const ContactAddressType &_v);
 
 }//namespace Fred
+
+inline std::ostream& operator<<(std::ostream &out, const Fred::PersonalIdUnion &personal_id)
+{
+    std::ostringstream o;
+    o << personal_id.get_type() << ": " << personal_id.get();
+    return out << o.str();
+}
 
 #endif//INFO_CONTACT_DATA_H_
