@@ -71,6 +71,7 @@ inline std::string to_db_handle(Fred::Object::Type::Enum value)
         case Fred::Object::Type::DOMAIN:  return "domain";
         case Fred::Object::Type::KEYSET:  return "keyset";
     }
+    throw std::invalid_argument("value doesn't exist in Fred::Object::Type::Enum");
 };
 
 template < >
@@ -80,6 +81,7 @@ inline Fred::Object::Type::Enum from_db_handle< Fred::Object::Type >(const std::
     if (to_db_handle(Fred::Object::Type::NSSET)   == db_handle) { return Fred::Object::Type::NSSET; }
     if (to_db_handle(Fred::Object::Type::DOMAIN)  == db_handle) { return Fred::Object::Type::DOMAIN; }
     if (to_db_handle(Fred::Object::Type::KEYSET)  == db_handle) { return Fred::Object::Type::KEYSET; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Object::Type::Enum");
 }
 
 }//namespace Conversion::Enums
