@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(test_minimal_update_no_data, has_keyset_empty_update<has
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "4";
-    etalon["name"] = keyset.handle;
+    etalon["handle"] = keyset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "0";
@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(test_minimal_update_from_empty_data, has_keyset_empty_up
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "4";
-    etalon["name"] = keyset.handle;
+    etalon["handle"] = keyset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "0";
@@ -145,7 +145,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_keyset_big_update<h
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "4";
-    etalon["name"] = keyset.handle;
+    etalon["handle"] = keyset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
@@ -191,7 +191,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_keyset_big_update<ha
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "4";
-    etalon["name"] = keyset.handle;
+    etalon["handle"] = keyset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";

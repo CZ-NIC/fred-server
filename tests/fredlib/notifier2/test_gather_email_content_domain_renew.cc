@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(test_transfer_empty, has_domain_renewed<has_domain>)
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "3";
-    etalon["name"] = dom.fqdn;
+    etalon["handle"] = dom.fqdn;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 
@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(test_transfer_enum, has_domain_renewed<has_enum_domain>)
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "3";
-    etalon["name"] = dom.fqdn;
+    etalon["handle"] = dom.fqdn;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 

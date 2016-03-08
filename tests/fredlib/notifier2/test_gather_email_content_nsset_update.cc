@@ -101,7 +101,7 @@ BOOST_FIXTURE_TEST_CASE(test_minimal_update_no_data, has_nsset_empty_update<has_
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "2";
-    etalon["name"] = nsset.handle;
+    etalon["handle"] = nsset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "0";
@@ -126,7 +126,7 @@ BOOST_FIXTURE_TEST_CASE(test_minimal_update_from_empty_data, has_nsset_empty_upd
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "2";
-    etalon["name"] = nsset.handle;
+    etalon["handle"] = nsset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "0";
@@ -153,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_nsset_big_update<ha
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "2";
-    etalon["name"] = nsset.handle;
+    etalon["handle"] = nsset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
@@ -203,7 +203,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_nsset_big_update<has
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "2";
-    etalon["name"] = nsset.handle;
+    etalon["handle"] = nsset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";

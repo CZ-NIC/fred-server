@@ -51,7 +51,7 @@ BOOST_FIXTURE_TEST_CASE(test_minimal_update1, has_contact_empty_update<has_empty
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "0";
@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(test_minimal_update2, has_contact_empty_update<has_full_
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "0";
@@ -173,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_contact_big_update<
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
@@ -307,7 +307,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_contact_big_update<h
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";

@@ -57,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_transfer, has_keyset_transferred<has_empty_ke
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "4";
-    etalon["name"] = keyset.handle;
+    etalon["handle"] = keyset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 
@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE(test_full_transfer, has_keyset_transferred<has_full_keys
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "4";
-    etalon["name"] = keyset.handle;
+    etalon["handle"] = keyset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 

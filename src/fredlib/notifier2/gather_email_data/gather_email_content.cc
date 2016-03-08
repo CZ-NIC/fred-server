@@ -48,16 +48,16 @@ std::map<std::string, std::string> gather_common_email_content(
 
     switch(_request.event.get_type()) {
         case Fred::contact :
-            data["name"] = Fred::InfoContactHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_contact_data.handle;
+            data["handle"] = Fred::InfoContactHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_contact_data.handle;
             break;
         case Fred::domain :
-            data["name"] = Fred::InfoDomainHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_domain_data.fqdn;
+            data["handle"] = Fred::InfoDomainHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_domain_data.fqdn;
             break;
         case Fred::keyset :
-            data["name"] = Fred::InfoKeysetHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_keyset_data.handle;
+            data["handle"] = Fred::InfoKeysetHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_keyset_data.handle;
             break;
         case Fred::nsset :
-            data["name"] = Fred::InfoNssetHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_nsset_data.handle;
+            data["handle"] = Fred::InfoNssetHistoryByHistoryid(_request.history_id_post_change).exec(_ctx).info_nsset_data.handle;
             break;
         default:
             throw Fred::ExceptionUnknownObjectType();

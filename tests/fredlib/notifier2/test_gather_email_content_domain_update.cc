@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_CASE(test_minimal_update_no_data, has_domain_empty_update)
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "3";
-    etalon["name"] = dom.fqdn;
+    etalon["handle"] = dom.fqdn;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "0";
@@ -142,7 +142,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_empty_domain_big_up
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "3";
-    etalon["name"] = dom.fqdn;
+    etalon["handle"] = dom.fqdn;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
@@ -281,7 +281,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_full_domain_big_upda
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "3";
-    etalon["name"] = dom.fqdn;
+    etalon["handle"] = dom.fqdn;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";

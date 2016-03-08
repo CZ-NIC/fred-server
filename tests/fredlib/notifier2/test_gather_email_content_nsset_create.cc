@@ -39,7 +39,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_create, has_empty_nsset)
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "2";
-    etalon["name"] = nsset.handle;
+    etalon["handle"] = nsset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 
@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(test_full_create, has_full_nsset)
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "2";
-    etalon["name"] = nsset.handle;
+    etalon["handle"] = nsset.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 

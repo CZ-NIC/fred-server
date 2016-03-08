@@ -46,7 +46,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_delete, has_deleted_contact<has_empty_contact
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 
@@ -70,7 +70,7 @@ BOOST_FIXTURE_TEST_CASE(test_full_delete, has_deleted_contact<has_full_contact>)
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 

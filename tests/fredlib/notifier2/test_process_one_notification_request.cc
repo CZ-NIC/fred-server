@@ -528,11 +528,11 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
     }
     {
         std::map<std::string, std::string> params_etalon = boost::assign::map_list_of
-            (std::string("type"),   std::string("3"))
-            ("name",        domain_data_post_update.fqdn)
-            ("ticket",      input_svtrid)
-            ("registrar",   registrar.name.get_value_or("") + " (" + registrar.url.get_value_or("") + ")")
-            ("changes",     "1")
+            (std::string("type"),       std::string("3"))
+            ("handle",                  domain_data_post_update.fqdn)
+            ("ticket",                  input_svtrid)
+            ("registrar",               registrar.name.get_value_or("") + " (" + registrar.url.get_value_or("") + ")")
+            ("changes",                 "1")
             ("object.authinfo",         "1")
             ("object.authinfo.old",     domain_data_pre_update .authinfopw)
             ("object.authinfo.new",     domain_data_post_update.authinfopw)

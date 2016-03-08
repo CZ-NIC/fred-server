@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(test_transfer_empty, has_contact_transferred<has_empty_c
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 
@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(test_transfer_full, has_contact_transferred<has_full_con
 
     std::map<std::string, std::string> etalon;
     etalon["type"] = "1";
-    etalon["name"] = contact.handle;
+    etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
 
