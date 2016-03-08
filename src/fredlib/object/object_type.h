@@ -47,23 +47,13 @@ public:
     /**
      * Names of particular object types.
      */
-    enum Value
+    enum Enum
     {
         CONTACT,///< object is contact
         NSSET,  ///< object is nsset
         DOMAIN, ///< object is domain
         KEYSET, ///< object is keyset
     };
-    /**
-     * String value converts to its enum equivalent.
-     * @param _str database representation of object type
-     * @return its enum equivalent
-     * @throw std::invalid_argument if conversion is impossible
-     */
-    static Value from(const std::string &_str)
-    {
-        return Conversion::Enums::into_from< Value >::into_enum_from(_str);
-    }
 };
 
 }//Fred::Object
@@ -72,18 +62,25 @@ public:
 namespace Conversion {
 namespace Enums {
 
-template < >
-struct tools_for< Fred::Object::Type::Value >
+inline std::string to_db_handle(Fred::Object::Type::Enum value)
 {
-    static void enum_to_other_init(void (*enum_to_other_set)(Fred::Object::Type::Value, const std::string&))
+    switch (value)
     {
-        using Fred::Object::Type;
-        enum_to_other_set(Type::CONTACT, "contact");
-        enum_to_other_set(Type::NSSET,   "nsset");
-        enum_to_other_set(Type::DOMAIN,  "domain");
-        enum_to_other_set(Type::KEYSET,  "keyset");
+        case Fred::Object::Type::CONTACT: return "contact";
+        case Fred::Object::Type::NSSET:   return "nsset";
+        case Fred::Object::Type::DOMAIN:  return "domain";
+        case Fred::Object::Type::KEYSET:  return "keyset";
     }
 };
+
+template < >
+inline Fred::Object::Type::Enum from_db_handle< Fred::Object::Type >(const std::string &db_handle)
+{
+    if (to_db_handle(Fred::Object::Type::CONTACT) == db_handle) { return Fred::Object::Type::CONTACT; }
+    if (to_db_handle(Fred::Object::Type::NSSET)   == db_handle) { return Fred::Object::Type::NSSET; }
+    if (to_db_handle(Fred::Object::Type::DOMAIN)  == db_handle) { return Fred::Object::Type::DOMAIN; }
+    if (to_db_handle(Fred::Object::Type::KEYSET)  == db_handle) { return Fred::Object::Type::KEYSET; }
+}
 
 }//namespace Conversion::Enums
 }//namespace Conversion

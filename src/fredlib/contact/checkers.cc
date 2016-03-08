@@ -18,6 +18,7 @@
 
 #include "src/fredlib/contact/checkers.h"
 #include "src/fredlib/contact/ssntype.h"
+#include "src/fredlib/object/object_type.h"
 #include "src/fredlib/contact_verification/django_email_format.h"
 #include "util/idn_utils.h"
 #include "util/types/birthdate.h"
@@ -210,8 +211,6 @@ contact_username::contact_username(const std::string &_handle)
     }
 }
 
-#define CONTACT_TYPE_ID "1"
-
 contact_username_availability::contact_username_availability(
     const std::string &_handle,
     OperationContext &_ctx)
@@ -221,14 +220,12 @@ contact_username_availability::contact_username_availability(
                "(SELECT (NOW()-(val::TEXT||'MONTHS')::INTERVAL)<erdate FROM enum_parameters "
                 "WHERE name='handle_registration_protection_period') AS protected "
         "FROM object_registry "
-        "WHERE type=" CONTACT_TYPE_ID " AND "
-              "UPPER(name)=UPPER($1::TEXT) AND "               //use index (UPPER(name)) WHERE type=1
-              "(SELECT name='contact' "
-               "FROM enum_object_type WHERE id=" CONTACT_TYPE_ID ") "//make sure that type=1 is contact
+        "WHERE type=get_object_type_id($2::TEXT) AND "
+              "UPPER(name)=UPPER($1::TEXT) AND "//use index (UPPER(name)) WHERE type=1
         "ORDER BY erdate IS NULL DESC,"//prefer erdate=NULL
                  "erdate DESC "        //otherwise the newest erdate
         "LIMIT 1",
-        Database::query_param_list(_handle));
+        Database::query_param_list(_handle)(Conversion::Enums::to_db_handle(Fred::Object::Type::CONTACT)));
     taken         = (0 < dbres.size()) && static_cast< bool >(dbres[0][0]);
     used_recently = (0 < dbres.size()) && static_cast< bool >(dbres[0][1]);
 }
