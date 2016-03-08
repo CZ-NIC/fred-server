@@ -31,9 +31,9 @@
 
 namespace Fred {
 
-const boost::regex phone_pattern("[[:space:]]*\\+[0-9]{1,3}\\.[0-9]{1,14}[[:space:]]*");
-
 namespace {
+
+const boost::regex phone_pattern("[[:space:]]*\\+[0-9]{1,3}\\.[0-9]{1,14}[[:space:]]*");
 
 bool nothing_else_whitespaces(const std::string &_data)
 {

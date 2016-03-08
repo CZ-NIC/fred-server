@@ -37,11 +37,6 @@ namespace Fred {
  */
 inline std::string email_phone_protection_period() { return "1MONTH"; }
 
-/**
- * Regular expression which match correct phone number.
- */
-extern const boost::regex phone_pattern;
-
 /// General check classes
 namespace GeneralCheck
 {
