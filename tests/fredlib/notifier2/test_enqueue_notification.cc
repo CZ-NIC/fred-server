@@ -37,12 +37,19 @@ struct has_domain : has_autocomitting_ctx {
 
     has_domain()
     :
-        creating_registrar(Test::registrar(ctx).info_data),
+        creating_registrar(
+            Test::exec(
+                Fred::CreateRegistrar("BIG_R")
+                    .set_name("Novakovic Jan")
+                    .set_url("registrar1.cz"),
+                ctx
+            )
+        ),
         registrant(
             Test::exec(
                 Fred::CreateContact("REGISTRANT1", creating_registrar.handle)
-                    .set_email("registrant1@.nic.cz")
-                    .set_notifyemail("registrant1notify@.nic.cz"),
+                    .set_email("registrant1@.nic.cz") /* <== should not be a problem because should not be used */
+                    .set_notifyemail("registrant1notify@nic.cz"),
                 ctx
             )
         ),
