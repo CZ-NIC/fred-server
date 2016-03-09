@@ -130,16 +130,16 @@ struct has_domain : has_autocomitting_ctx {
         keyset_tech_c1(
             Test::exec(
                 Fred::CreateContact("KEYSET1_TECH_C1", registrar.handle)
-                    .set_email("keyset1.tech.c.1@.nic.cz")
-                    .set_notifyemail("keyset1.tech.c.1.notify@.nic.cz"),
+                    .set_email("keyset1.tech.c.1@nic.cz")
+                    .set_notifyemail("keyset1.tech.c.1.notify@nic.cz"),
                 ctx
             )
         ),
         keyset_tech_c2(
             Test::exec(
                 Fred::CreateContact("KEYSET1_TECH_C2", registrar.handle)
-                    .set_email("keyset1.tech.c.2@.nic.cz")
-                    .set_notifyemail("keyset1.tech.c.2.notify@.nic.cz"),
+                    .set_email("keyset1.tech.c.2@nic.cz")
+                    .set_notifyemail("keyset1.tech.c.2.notify@nic.cz"),
                 ctx
             )
         ),
@@ -155,16 +155,16 @@ struct has_domain : has_autocomitting_ctx {
         nsset_tech_c1(
             Test::exec(
                 Fred::CreateContact("NSSET1_TECH_C1", registrar.handle)
-                    .set_email("nsset1.tech.c.1@.nic.cz")
-                    .set_notifyemail("nsset1.tech.c.1.notify@.nic.cz"),
+                    .set_email("nsset1.tech.c.1@nic.cz")
+                    .set_notifyemail("nsset1.tech.c.1.notify@nic.cz"),
                 ctx
             )
         ),
         nsset_tech_c2(
             Test::exec(
                 Fred::CreateContact("NSSET1_TECH_C2", registrar.handle)
-                    .set_email("nsset1.tech.c.2@.nic.cz")
-                    .set_notifyemail("nsset1.tech.c.2.notify@.nic.cz"),
+                    .set_email("nsset1.tech.c.2@nic.cz")
+                    .set_notifyemail("nsset1.tech.c.2.notify@nic.cz"),
                 ctx
             )
         ),
@@ -190,18 +190,18 @@ struct has_domain : has_autocomitting_ctx {
             const unsigned long long crhid =
                 Test::exec(
                     Fred::CreateContact(registrant_handle, registrar.handle)
-                        .set_email("history.registrant1@.nic.cz")
+                        .set_email("history.registrant1@nic.cz")
                         .set_notifyemail("history.registrant1notify@.nic.cz"),
                     ctx
                 ).historyid;
             const unsigned long long to_be_notified_hid =
                 Fred::UpdateContactByHandle(registrant_handle, registrar.handle)
                     .set_email("registrant1@.nic.cz")
-                    .set_notifyemail("registrant1notify@.nic.cz")
+                    .set_notifyemail("registrant1notify@nic.cz")
                     .exec(ctx);
             const unsigned long long future_begin_hid = Fred::UpdateContactByHandle(registrant_handle, registrar.handle)
                 .set_email("future.registrant1@.nic.cz")
-                .set_notifyemail("future.registrant1notify@.nic.cz")
+                .set_notifyemail("future.registrant1notify@nic.cz")
                 .exec(ctx);
 
             make_history_version_begin_older( ctx, crhid, history_starts_years_ago, true );
@@ -311,8 +311,8 @@ struct has_updated_domain_followed_by_future_changes {
             const unsigned long long crhid =
                 Test::exec(
                     Fred::CreateContact(different_registrant_handle, _registrar_handle)
-                        .set_email("different.registrant@.nic.cz")
-                        .set_notifyemail("different.registrant.notify@.nic.cz"),
+                        .set_email("different.registrant@nic.cz")
+                        .set_notifyemail("different.registrant.notify@nic.cz"),
                     _ctx
                 ).historyid;
 
@@ -397,7 +397,7 @@ struct has_domain_big_update : has_domain {
         new_nsset_tech_c1(
             Test::exec(
                 Fred::CreateContact("NEW_NSSET_TECH_C1", registrar.handle)
-                    .set_email("new_nsset.tech.c.1@.nic.cz")
+                    .set_email("new_nsset.tech.c.1@nic.cz")
                     .set_notifyemail("new_nsset.tech.c.1.notify@.nic.cz"),
                 ctx
             )
@@ -405,7 +405,7 @@ struct has_domain_big_update : has_domain {
         new_nsset_tech_c2(
             Test::exec(
                 Fred::CreateContact("NEW_NSSET_TECH_C2", registrar.handle)
-                    .set_email("new_nsset.tech.c.2@.nic.cz")
+                    .set_email("new_nsset.tech.c.2@nic.cz")
                     .set_notifyemail("new_nsset.tech.c.2.notify@.nic.cz"),
                 ctx
             )
@@ -422,16 +422,16 @@ struct has_domain_big_update : has_domain {
         new_keyset_tech_c1(
             Test::exec(
                 Fred::CreateContact("NEW_KEYSET_TECH_C1", registrar.handle)
-                    .set_email("new_keyset.tech.c.1@.nic.cz")
-                    .set_notifyemail("new_keyset.tech.c.1.notify@.nic.cz"),
+                    .set_email("new_keyset.tech.c.1@nic.cz")
+                    .set_notifyemail("new_keyset.tech.c.1.notify@nic.cz"),
                 ctx
             )
         ),
         new_keyset_tech_c2(
             Test::exec(
                 Fred::CreateContact("NEW_KEYSET_TECH_C2", registrar.handle)
-                    .set_email("new_keyset.tech.c.2@.nic.cz")
-                    .set_notifyemail("new_keyset.tech.c.2.notify@.nic.cz"),
+                    .set_email("new_keyset.tech.c.2@nic.cz")
+                    .set_notifyemail("new_keyset.tech.c.2.notify@nic.cz"),
                 ctx
             )
         ),
