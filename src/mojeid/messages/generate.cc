@@ -597,7 +597,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
             throw std::runtime_error("no public request found");
         }
         if (dbres[0][3].isnull()) {
-            throw std::runtime_error("no message service handle asociated with '" + 
+            throw std::runtime_error("no message service handle asociated with '" +
                                      message_type_mojeid_pin3 + "' message type");
         }
 
@@ -833,7 +833,7 @@ Generate::MessageId send_email(
     Fred::Mailer::Handles handles;
     handles.push_back(contact_handle);
     const GeneralId message_id = _multimanager.select< Fred::Mailer::Manager >().sendEmail(
-        sender,                          
+        sender,
         recipient,
         subject,
         _mail_template,
