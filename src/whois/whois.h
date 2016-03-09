@@ -9,6 +9,10 @@
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
+#include <src/fredlib/object_state/get_object_states.h>
+#include <src/fredlib/nsset/info_nsset_output.h>
+#include <src/fredlib/domain/info_domain_output.h>
+#include <src/fredlib/opcontext.h>
 
 #include <boost/asio/ip/address.hpp>
 namespace Registry {
@@ -266,12 +270,12 @@ struct MissingLocalization
 };
 
 typedef std::vector< std::pair<std::string, std::string> > str_str_vector;
+typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
+typedef std::vector<Fred::InfoNssetOutput> InfoNssetOutputList;
+typedef std::vector<Fred::InfoDomainOutput> InfoDomainOutputList;
 
 class Server_impl
 {
-    typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
-    typedef std::vector<Fred::InfoNssetOutput> InfoNssetOutputList;
-    typedef std::vector<Fred::InfoDomainOutput> InfoDomainOutputList;
 private:
     std::vector<ObjectStatusDesc> get_object_status_descriptions(
             const std::string& lang, const std::string& type);

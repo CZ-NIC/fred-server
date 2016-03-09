@@ -4,15 +4,39 @@
 #include "src/fredlib/registrar/info_registrar_data.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/create_registrar.h"
+#include "src/fredlib/object_state/get_object_state_descriptions.h"
+#include "src/fredlib/zone/zone.h"
+#include "src/whois/zone_list.h"
+#include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/keyset/info_keyset_data.h"
+#include "src/fredlib/keyset/info_keyset_output.h"
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/keyset/keyset_dns_key.h"
+#include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/nsset/nsset_dns_host.h"
+#include "src/whois/nameserver_exists.h"
+#include "src/fredlib/contact/info_contact_data.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/place_address.h"
+#include "src/fredlib/contact.h"
 #include "random_data_generator.h"
+#include "util/map_at.h"
+#include "util/util.h"
 
 #define BOOST_TEST_NO_MAIN
 
 #include <sstream>
+#include <string>
 #include <map>
 #include <boost/test/unit_test.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 
 
 struct whois_impl_instance_fixture
@@ -67,7 +91,7 @@ struct test_contact_fixture
     : test_admin("TEST-ADMIN"),
       test_contact("TEST-CONTACT")
     {}
-}
+};
 
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
@@ -156,7 +180,7 @@ struct get_my_registrar_list_fixture
                 .set_country("CZ");
             if(i>5) //4 of them to be system
             {
-                cr = cr.set_system(true);
+                cr.set_system(true);
             }
             cr.exec(ctx);
             registrar_info[test_handles.str()] =
@@ -175,7 +199,7 @@ BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
     std::vector<Fred::InfoRegistrarOutput> reg_list_out =
             Fred::InfoRegistrarAllExceptSystem()
             .exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
-    for(int i=0; i < reg_list_out.size(); ++i)
+    for(unsigned int i=0; i < reg_list_out.size(); ++i)
     {
         //refactor
         BOOST_CHECK(reg_list_out.at(i).info_registrar_data.handle == map_at(registrar_info, reg_list_out.at(i).info_registrar_data.handle).info_registrar_data.handle);
@@ -327,7 +351,7 @@ struct get_nsset_by_handle_fixture
         Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>(
                     Fred::DnsHost(std::string("TEST-FQDN")+xmark,
-                    boost::asio::ip::address())))
+                    Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))
             .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
             .exec(ctx);
 
@@ -402,17 +426,17 @@ struct get_nssets_by_ns_fixture
       test_limit(10)
     {
         Fred::OperationContext ctx;
-        for(int i = 0; i < test_limit; ++i)
+        for(unsigned long i = 0; i < test_limit; ++i)
         {
             std::ostringstream test_handles;
             test_handles << "n" << i;
             std::vector<Fred::DnsHost> v_dns;
             v_dns.push_back(Fred::DnsHost(test_fqdn,
-                            boost::asio::ip::address()));
+                            Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address())));
             std::vector<std::string> tech_contacts;
             tech_contacts.push_back("TEST-TECH-CONTACT" + xmark);
 
-            Fred::CreateNsset(test_handles.str(), test_registrar_handle + i,
+            Fred::CreateNsset(test_handles.str(), test_registrar_handle + boost::lexical_cast<std::string>(i),
                               Optional<std::string>(), Optional<short>(), v_dns,
                               tech_contacts, Optional<unsigned long long>())
                 .exec(ctx);
@@ -429,7 +453,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
     Fred::OperationContext ctx;
     std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_fqdn).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit);
-    for(int i = 0; i < test_limit; ++i)
+    for(unsigned long i = 0; i < test_limit; ++i)
     {
         std::vector<Fred::InfoNssetOutput>::iterator it = v_ino.begin(), end = v_ino.end();
         while(it != end)
@@ -499,17 +523,17 @@ struct get_nssets_by_tech_c_fixture
       test_limit(10)
     {
         Fred::OperationContext ctx;
-        for(int i = 0; i < test_limit; ++i)
+        for(unsigned long i = 0; i < test_limit; ++i)
         {
             std::ostringstream test_handles;
             test_handles << "n" << i;
             std::vector<Fred::DnsHost> v_dns;
             v_dns.push_back(Fred::DnsHost(test_c_handle,
-                            boost::asio::ip::address()));
+                            Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address())));
             std::vector<std::string> tech_contacts;
             tech_contacts.push_back("TEST-TECH-CONTACT" + xmark);
 
-            Fred::CreateNsset(test_handles.str(), test_registrar_handle + i,
+            Fred::CreateNsset(test_handles.str(), test_registrar_handle + boost::lexical_cast<std::string>(i),
                               Optional<std::string>(), Optional<short>(), v_dns,
                               tech_contacts, Optional<unsigned long long>())
                 .exec(ctx);
@@ -526,7 +550,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
     Fred::OperationContext ctx;
     std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_c_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_c_handle, test_limit);
-    for(int i = 0; i < test_limit; ++i)
+    for(unsigned long i = 0; i < test_limit; ++i)
     {
         std::vector<Fred::InfoNssetOutput>::iterator it = v_ino.begin(), end = v_ino.end();
         while(it != end)
@@ -595,7 +619,7 @@ struct get_nameserver_by_fqdn_fixture
     {
         Fred::OperationContext ctx;
         Fred::CreateNsset("TEST-NSSET-HANDLE", test_registrar_handle)
-            .set_dns_hosts(Util::vector_of<Fred::DnsHost>(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(123)))//making nameserver
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))//making nameserver
             .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
             .exec(ctx);
             //any extra setting here?
@@ -674,7 +698,7 @@ struct get_keyset_by_handle_fixture
 BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
 {
     Fred::OperationContext ctx;
-    Fred::InfoKeysetData ikd = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
+    Fred::InfoKeysetData ikd = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_keyset_data;
     Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle(test_keyset_handle);
     BOOST_CHECK(ks.changed.isnull());//new has to be unchanged
     BOOST_CHECK(ks.created == ikd.creation_time);
@@ -685,7 +709,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
     BOOST_CHECK(ks.handle == ikd.handle);
     BOOST_CHECK(ks.last_transfer.isnull());//new has to have no transfer
     BOOST_CHECK(ks.registrar_handle == ikd.create_registrar_handle);
-    BOOST_CHECK(ks.tech_contact_handles.at(0) == ikd.tech_contacts.at(0));
+    BOOST_CHECK(ks.tech_contact_handles.at(0) == ikd.tech_contacts.at(0).handle);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle_no_keyset, get_keyset_by_handle_fixture)
@@ -738,13 +762,13 @@ struct get_keysets_by_tech_c_fixture
       test_limit(10)
     {
         Fred::OperationContext ctx;
-        for(int i = 0; i < test_limit; ++i)
+        for(unsigned long i = 0; i < test_limit; ++i)
         {
             std::ostringstream test_handles;
             test_handles << test_keyset_handle << i;
 
-            Fred::CreateKeyset(test_handles.str(), test_registrar_handle + i)
-                .set_dns_keys(Util::vector_of<Fred::DnsKey>(42, 777, 13, "any-key"))
+            Fred::CreateKeyset(test_handles.str(), test_registrar_handle + boost::lexical_cast<std::string>(i))
+                .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))
                 .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact))
                 .exec(ctx);
         }
@@ -759,7 +783,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
     Fred::OperationContext ctx;
     std::vector<Fred::InfoKeysetOutput> v_iko = Fred::InfoKeysetByTechContactHandle(test_admin).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
     Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(test_admin, test_limit);
-    for(int i = 0; i < test_limit; ++i)
+    for(unsigned long i = 0; i < test_limit; ++i)
     {
         std::vector<Fred::InfoKeysetOutput>::iterator it = v_iko.begin(), end = v_iko.end();
         while(it != end)
@@ -771,10 +795,13 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
         Fred::InfoKeysetData found = it->info_keyset_data;
         BOOST_CHECK(ks_s.content.at(0).changed.isnull());
         BOOST_CHECK(ks_s.content.at(0).created == found.creation_time);
-        BOOST_CHECK(ks_s.content.at(0).dns_keys.at(0) == found.dns_keys.at(0));
+        BOOST_CHECK(ks_s.content.at(0).dns_keys.at(0).alg == found.dns_keys.at(0).get_alg());
+        BOOST_CHECK(ks_s.content.at(0).dns_keys.at(0).flags == found.dns_keys.at(0).get_flags());
+        BOOST_CHECK(ks_s.content.at(0).dns_keys.at(0).protocol == found.dns_keys.at(0).get_protocol());
+        BOOST_CHECK(ks_s.content.at(0).dns_keys.at(0).public_key == found.dns_keys.at(0).get_key());
         BOOST_CHECK(ks_s.content.at(0).last_transfer.isnull());
         BOOST_CHECK(ks_s.content.at(0).registrar_handle == found.create_registrar_handle);
-        BOOST_CHECK(ks_s.content.at(0).tech_contact_handles.at(0) == found.tech_contacts.at(0));
+        BOOST_CHECK(ks_s.content.at(0).tech_contact_handles.at(0) == found.tech_contacts.at(0).handle);
     }
 }
     
@@ -782,7 +809,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_wrong_contact, get_keysets_by_tech
 {
     try
     {
-        Registry::WhoisImpl::KeySetSeq ks_s = impl.get_nssets_by_tech_c(test_wrong_handle, test_limit);
+        Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(test_wrong_handle, test_limit);
         BOOST_ERROR("tech contact handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
@@ -842,12 +869,12 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle, test_domain_fixture)
     Fred::OperationContext ctx;
     Fred::InfoDomainData idd = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(test_fqdn);
-    BOOST_CHECK(dom.admin_contact_handles.at(0) == idd.admin_contacts.at(0));
+    BOOST_CHECK(dom.admin_contact_handles.at(0) == idd.admin_contacts.at(0).handle);
     BOOST_CHECK(dom.changed.isnull());
     BOOST_CHECK(dom.fqdn == idd.fqdn);
     BOOST_CHECK(dom.last_transfer.isnull());
     BOOST_CHECK(dom.registered == idd.creation_time);
-    BOOST_CHECK(dom.registrant_handle == idd.registrant);
+    BOOST_CHECK(dom.registrant_handle == idd.registrant.handle);
     BOOST_CHECK(dom.registrar_handle == idd.create_registrar_handle);
     //Jiri: others?
 }
@@ -918,7 +945,7 @@ struct many_labels_fixture
             BOOST_ERROR("test zone was not created properly");
         }
         std::ostringstream labeled_zone;
-        for(int i=0; i < zone_data.dots_max + 1; ++i)
+        for(unsigned int i=0; i < zone_data.dots_max + 1; ++i)
         {
             labeled_zone << "1.";
         }
@@ -989,7 +1016,7 @@ struct invalid_unmanaged_fixture
     : wrong_zone_fixture()//do not create bad_zone domain for it
     {
         std::ostringstream prefix;
-        for(int i=0; i < 256 - test_fqdn_bad_zone.size(); ++i)//exceed the size of valid label
+        for(unsigned int i=0; i < 256 - test_fqdn_bad_zone.size(); ++i)//exceed the size of valid label
         {
             prefix << "1";//invalid part
         }
@@ -1033,7 +1060,7 @@ struct unmanaged_toomany_fixture
             BOOST_ERROR("test zone was not created properly");
         }
         std::ostringstream labeled_zone;
-        for(int i=0; i < zone_data.dots_max + 1; ++i)
+        for(unsigned int i=0; i < zone_data.dots_max + 1; ++i)
         {
             labeled_zone << "1.";//toomany part
         }
@@ -1090,11 +1117,11 @@ struct invalid_toomany_fixture
             BOOST_ERROR("test zone was not created properly");
         }
         std::ostringstream labeled_zone, invalid_offset;
-        for(int i=0; i < zone_data.dots_max + 1; ++i)
+        for(unsigned int i=0; i < zone_data.dots_max + 1; ++i)
         {
             labeled_zone << "1.";//toomany part
         }
-        for(int i=0; i < 256 - labeled_zone.tellp(); ++i)
+        for(unsigned int i=0; i < 256 - labeled_zone.tellp(); ++i)
         {
             invalid_offset << '1';//invalid part
         }
@@ -1153,11 +1180,11 @@ struct invalid_unmanaged_toomany_fixture
             BOOST_ERROR("test zone was not created properly");
         }
         std::ostringstream labeled_zone, invalid_offset;
-        for(int i=0; i < zone_data.dots_max + 1; ++i)
+        for(unsigned int i=0; i < zone_data.dots_max + 1; ++i)
         {
             labeled_zone << "1.";//toomany part
         }
-        for(int i=0; i < 256 - labeled_zone.tellp(); ++i)
+        for(unsigned int i=0; i < 256 - labeled_zone.tellp(); ++i)
         {
             invalid_offset << '1';//invalid part
         }
@@ -1274,13 +1301,13 @@ struct domains_by_registrant_fixture
         Fred::OperationContext ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
                 .set_admin_contacts(Util::vector_of<std::string>(test_admin))
                 .exec(ctx);
         }
         for(int i=0; i < 3; ++i)//3 different domains for another registrant
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle + "another")
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle + "another")
                 .set_admin_contacts(Util::vector_of<std::string>(test_admin))
                 .exec(ctx);
 
@@ -1303,7 +1330,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
     Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_registrant(test_registrant_handle, regular_domains);
     BOOST_CHECK(!domain_seq.limit_exceeded);
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == regular_domains);
+    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1313,7 +1340,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1333,7 +1360,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() != regular_domains);
+    BOOST_CHECK(domain_vec.size() != static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1343,7 +1370,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1403,13 +1430,13 @@ struct domains_by_admin_contact_fixture
         Fred::OperationContext ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
                 .set_admin_contacts(Util::vector_of<std::string>(test_admin))
                 .exec(ctx);
         }
         for(int i=0; i < 3; ++i)//3 different domains for another contact
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
                 .set_admin_contacts(Util::vector_of<std::string>("different admin"))
                 .exec(ctx);
 
@@ -1433,7 +1460,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == regular_domains);
+    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1443,7 +1470,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1463,7 +1490,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() != regular_domains);
+    BOOST_CHECK(domain_vec.size() != static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1473,7 +1500,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1535,14 +1562,14 @@ struct domains_by_nsset_fixture
         Fred::OperationContext ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
                 .set_nsset(test_nsset)
                 .set_admin_contacts(Util::vector_of<std::string>(test_admin))
                 .exec(ctx);
         }
         for(int i=0; i < 3; ++i)//3 different domains for another nsset
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
                 .set_nsset(std::string("different-nsset"))
                 .set_admin_contacts(Util::vector_of<std::string>("different admin"))
                 .exec(ctx);
@@ -1572,7 +1599,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == regular_domains);
+    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1582,7 +1609,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1602,7 +1629,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fi
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() != regular_domains);
+    BOOST_CHECK(domain_vec.size() != static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1612,7 +1639,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fi
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1674,14 +1701,14 @@ struct domains_by_keyset_fixture
         Fred::OperationContext ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
                 .set_keyset(test_keyset)
                 .set_admin_contacts(Util::vector_of<std::string>(test_admin))
                 .exec(ctx);
         }
         for(int i=0; i < 3; ++i)//3 different domains for another keyset
         {
-            Fred::CreateDomain(test_fqdn + i + ".cz", test_registrar_handle, test_registrant_handle)
+            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
                 .set_keyset(std::string("different-keyset"))
                 .set_admin_contacts(Util::vector_of<std::string>("different admin"))
                 .exec(ctx);
@@ -1711,7 +1738,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == regular_domains);
+    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1721,7 +1748,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1741,7 +1768,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() != regular_domains);
+    BOOST_CHECK(domain_vec.size() != static_cast<unsigned>(regular_domains));
     std::vector<Fred::InfoDomainOutput>::const_iterator found = domain_info.begin(), end = domain_info.end();
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
     {
@@ -1751,7 +1778,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
             ++found;
         }
         BOOST_REQUIRE(it->fqdn == found->info_domain_data.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0));
+        BOOST_CHECK(it->admin_contact_handles.at(0) == found->info_domain_data.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.isnull());
         BOOST_CHECK(it->last_transfer.isnull());
         BOOST_CHECK(it->registered == found->info_domain_data.creation_time);
@@ -1807,11 +1834,9 @@ struct object_status_descriptions_fixture
       no_lang(""),
       other_lang("XX")
     {
-        statuses = {
-                std::make_pair("expired", "description of expired"),
-                std::make_pair("unguarded", "description of unguarded"),
-                std::make_pair("serverTransferProhibited", "description of serverTransferProhibited")
-        };
+        statuses.at("expired") = "description of expired";
+        statuses.at("unguarded") = "description of unguarded";
+        statuses.at("serverTransferProhibited") = "description of serverTransferProhibited";
         Fred::OperationContext ctx;
         BOOST_FOREACH(map_type::value_type& p, statuses)
         {
@@ -1826,52 +1851,92 @@ struct object_status_descriptions_fixture
     }
 };
 
+//template <typename T>
+//struct PointerTypeHolder
+//{
+//public:
+//    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (T::*memberFunctionPointer)(const std::string& lang);
+//};
+
+
 struct domain_type
 : object_status_descriptions_fixture
 {
+//    PointerTypeHolder<domain_type> caller;
     std::string object_name;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
+//    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
 
     domain_type()
-    : object_name("domain"),
-      fun(/*Server_impl*/&impl.get_domain_status_descriptions)
-    {}
+    : object_name("domain")//,
+//      fun(/*Server_impl*/&impl.get_domain_status_descriptions)
+//      (/*Server_impl*/&Registry::WhoisImpl::Server_impl::get_domain_status_descriptions),
+    {
+//        caller.memberFunctionPointer = &Registry::WhoisImpl::Server_impl::get_domain_status_descriptions;
+    }
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
+    {
+        return impl.get_domain_status_descriptions(test_lang);
+    }
 };
 
 struct contact_type
 : object_status_descriptions_fixture
 {
+//    PointerTypeHolder<contact_type> caller;
     std::string object_name;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
+//    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
 
     contact_type()
-    : object_name("contact"),
-      fun(/*Server_impl*/&impl.get_contact_status_descriptions)
-    {}
+    : object_name("contact")//,
+//      fun(/*Server_impl*/&impl.get_contact_status_descriptions)
+//      fun(/*Server_impl*/&Registry::WhoisImpl::Server_impl::get_contact_status_descriptions)
+    {
+//        caller.memberFunctionPointer = &Registry::WhoisImpl::Server_impl::get_contact_status_descriptions;
+    }
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
+    {
+        return impl.get_contact_status_descriptions(test_lang);
+    }
 };
 
 struct nsset_type
 : object_status_descriptions_fixture
 {
+//    PointerTypeHolder<nsset_type> caller;
     std::string object_name;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
+//    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
 
     nsset_type()
-    : object_name("nsset"),
-      fun(/*Server_impl*/&impl.get_nsset_status_descriptions)
-    {}
+    : object_name("nsset")//,
+//      fun(/*Server_impl*/&impl.get_nsset_status_descriptions)
+//      fun(/*Server_impl*/&Registry::WhoisImpl::Server_impl::get_nsset_status_descriptions)
+    {
+//        caller.memberFunctionPointer = &Registry::WhoisImpl::Server_impl::get_nsset_status_descriptions;
+    }
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
+    {
+        return impl.get_nsset_status_descriptions(test_lang);
+    }
 };
 
 struct keyset_type
 : object_status_descriptions_fixture
 {
+//    PointerTypeHolder<keyset_type> caller;
     std::string object_name;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
+//    std::vector<Registry::WhoisImpl::ObjectStatusDesc> (Registry::WhoisImpl::Server_impl::*fun)(const std::string& lang);
 
     keyset_type()
-    : object_name("keyset"),
-      fun(/*Server_impl*/&impl.get_keyset_status_descriptions)
-    {}
+    : object_name("keyset")//,
+//      fun(/*Server_impl*/&impl.get_keyset_status_descriptions)
+//      fun(/*Server_impl*/&Registry::WhoisImpl::Server_impl::get_keyset_status_descriptions)
+    {
+//        caller.memberFunctionPointer = &Registry::WhoisImpl::Server_impl::get_keyset_status_descriptions;
+    }
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
+    {
+        return impl.get_keyset_status_descriptions(test_lang);
+    }
 };
 
 typedef boost::mpl::list<domain_type, contact_type, nsset_type, keyset_type> test_types;
@@ -1887,11 +1952,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions, T, test_types, 
     T fix;
     Fred::OperationContext ctx;
     std::vector<Fred::ObjectStateDescription> states =
-                        Fred::GetObjectStateDescriptions(test_lang)
+                        Fred::GetObjectStateDescriptions(fix.test_lang)
                         .set_object_type(fix.object_name) /*Because of the template nature of the test case (class) you need to prepend T:: to access the fixtures members to indicate that they are (template parameter) dependent names.*/
                         .set_external()
                         .exec(ctx);
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = (fix.*fun)(test_lang); //prepare for compile hell
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description(); //prepare for compile hell
     BOOST_CHECK(states.size() == vec_osd.size());
     std::sort(states.begin(), states.end(), private_sort<Fred::ObjectStateDescription>);
     std::sort(vec_osd.begin(), vec_osd.end(), private_sort<Registry::WhoisImpl::ObjectStatusDesc>);
@@ -1907,12 +1972,12 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions, T, test_types, 
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_other_lang, T, test_types, T)
 {
     T fix;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = (fix.*fun)(other_lang);
-    BOOST_CHECK(statuses.size() == vec_osd.size());
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description();
+    BOOST_CHECK(fix.statuses.size() == vec_osd.size());
     for(std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it = vec_osd.begin(); it != vec_osd.end(); ++it)
     {
         //if not present - at() throws
-        BOOST_CHECK(statuses.at(it->handle) == it->name);
+        BOOST_CHECK(fix.statuses.at(it->handle) == it->name);
     }
 }
 
@@ -1921,7 +1986,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_missing, T, test
     T fix;
     try
     {
-        std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = (fix.*fun)(no_lang);
+        std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description();
         BOOST_ERROR(std::string("this ") + fix.object_name + " must not have a localization");
     }
     catch(const Registry::WhoisImpl::MissingLocalization& ex)
