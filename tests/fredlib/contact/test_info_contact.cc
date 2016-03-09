@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE(test_info_contact_output_timestamp, test_contact_fixture
     /* ... and one of them is equal to correct constant value */
     BOOST_CHECK_EQUAL(
         contact_output_by_handle.utc_timestamp,
-        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
+        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()::timestamp")[0][0] ) )
     );
 }
 
