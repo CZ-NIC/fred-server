@@ -32,6 +32,7 @@ namespace Fred
                 /* XXX relying on the fact that exception is throw if CONTACT is not found */
                 throw UnknownContactId();
             }
+            throw;
         }
 
         struct ExceptionTranslation {
