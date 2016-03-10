@@ -47,7 +47,7 @@ struct whois_impl_instance_fixture
 BOOST_AUTO_TEST_SUITE(TestWhois)
 
 struct test_registrar_fixture
-        : whois_impl_instance_fixture
+: whois_impl_instance_fixture
 {
     std::string xmark;
     std::string test_registrar_handle;
@@ -69,7 +69,7 @@ struct test_registrar_fixture
     }
 };
 
-struct test_registrant_fixture
+struct test_registrant_fixture //is always used in conjunction with registrar and contact
 {
     std::string test_registrant_handle;
 
@@ -92,10 +92,11 @@ struct test_contact_fixture
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
 struct get_registrar_fixture
-        : test_registrar_fixture
+: test_registrar_fixture
 {
     std::string no_registrar_handle;
     std::string wrong_registrar_handle;
+
     get_registrar_fixture()
     : no_registrar_handle("absent-registrar"),
       wrong_registrar_handle("")
@@ -157,7 +158,7 @@ BOOST_AUTO_TEST_SUITE_END();//get_registrar_by_handle
 BOOST_AUTO_TEST_SUITE(get_registrars)
 
 struct get_my_registrar_list_fixture
-        : test_registrar_fixture
+: test_registrar_fixture
 {
     std::map<std::string,Fred::InfoRegistrarOutput> registrar_info;
 
@@ -253,7 +254,7 @@ BOOST_AUTO_TEST_SUITE_END();//get_managed_zone_list
 BOOST_AUTO_TEST_SUITE(get_contact_by_handle);
 
 struct test_contact_fixture
-        : test_registrar_fixture
+: test_registrar_fixture
 {
     std::string test_contact_handle;
     std::string no_contact_handle;
@@ -325,7 +326,7 @@ BOOST_AUTO_TEST_SUITE_END();//get_contact_by_handle
 BOOST_AUTO_TEST_SUITE(get_nsset_by_handle)
 
 struct get_nsset_by_handle_fixture
-        : test_registrar_fixture
+: test_registrar_fixture
 {
     std::string test_nsset_handle;
     std::string no_nsset_handle;
@@ -403,7 +404,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_nsset_by_handle
 BOOST_AUTO_TEST_SUITE(get_nssets_by_ns)
 
 struct get_nssets_by_ns_fixture
-        : test_registrar_fixture
+: test_registrar_fixture
 {
 //        std::map<std::string,Fred::InfoNssetOutput> nsset_info;
     std::string test_fqdn;
@@ -500,7 +501,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_ns
 BOOST_AUTO_TEST_SUITE(get_nssets_by_tech_c)
 
 struct get_nssets_by_tech_c_fixture
-        : test_registrar_fixture
+: test_registrar_fixture
 {
     std::string test_c_handle;
     std::string test_no_handle;//better name
@@ -594,7 +595,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_tech_c
 BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)
 
 struct get_nameserver_by_fqdn_fixture
-        : test_registrar_fixture
+: test_registrar_fixture
 {
     std::string test_nameserver_fqdn;
     std::string test_no_handle;
@@ -658,7 +659,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_nameserver_by_fqdn
 BOOST_AUTO_TEST_SUITE(get_keyset_by_handle)
 
 struct get_keyset_by_handle_fixture
-        : test_registrar_fixture, test_contact_fixture
+: test_registrar_fixture, test_contact_fixture
 {
     std::string test_keyset_handle;
     std::string no_keyset_handle;
@@ -733,7 +734,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_keyset_by_handle
 BOOST_AUTO_TEST_SUITE(get_keysets_by_tech_c)
 
 struct get_keysets_by_tech_c_fixture
-        : test_registrar_fixture, test_contact_fixture
+: test_registrar_fixture, test_contact_fixture
 {
     std::string test_keyset_handle;
     std::string test_no_handle;
@@ -825,7 +826,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_keysets_by_tech_c
 BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
 
 struct test_domain_fixture
-        : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
     std::string test_fqdn;
     std::string no_fqdn;
@@ -880,7 +881,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_wrong_handle, test_domain_fixture)
 }
 
 struct wrong_zone_fixture
-        : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
     std::string test_fqdn_bad_zone;
 
@@ -916,7 +917,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_wrong_zone, wrong_zone_fixture)
 }
 
 struct many_labels_fixture
-        : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
     std::vector<std::string> domain_list;
     std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
@@ -995,7 +996,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_invalid_handle, test_domain_fixture
 }
 
 struct invalid_unmanaged_fixture
-        : wrong_zone_fixture
+: wrong_zone_fixture
 {
     std::string invalid_unmanaged_fqdn;
     invalid_unmanaged_fixture()
@@ -1030,7 +1031,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_invalid_unmanaged, invalid_unmanage
 }
 
 struct unmanaged_toomany_fixture
-        : wrong_zone_fixture
+: wrong_zone_fixture
 {
     std::vector<std::string> domain_list;
 
@@ -1269,7 +1270,7 @@ BOOST_AUTO_TEST_SUITE_END()//get_domain_by_handle
 BOOST_AUTO_TEST_SUITE(get_domains_by_registrant)
 
 struct domains_by_registrant_fixture
-        : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
+: test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
     std::string test_fqdn;
     std::string wrong_handle;
@@ -1838,14 +1839,10 @@ struct object_status_descriptions_fixture
     }
 };
 
-struct domain_type
+struct description_type
 : object_status_descriptions_fixture
 {
     std::string object_name;
-
-    domain_type()
-    : object_name("domain")
-    {}
 
     std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
     {
@@ -1853,49 +1850,36 @@ struct domain_type
     }
 };
 
-struct contact_type
-: object_status_descriptions_fixture
+struct domain_type
+: description_type
 {
-    std::string object_name;
+    domain_type()
+    : object_name("domain")
+    {}
+};
 
+struct contact_type
+: description_type
+{
     contact_type()
     : object_name("contact")
     {}
-
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
-    {
-        return impl.get_contact_status_descriptions(test_lang);
-    }
 };
 
 struct nsset_type
-: object_status_descriptions_fixture
+: description_type
 {
-    std::string object_name;
-
     nsset_type()
     : object_name("nsset")
     {}
-
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
-    {
-        return impl.get_nsset_status_descriptions(test_lang);
-    }
 };
 
 struct keyset_type
-: object_status_descriptions_fixture
+: description_type
 {
-    std::string object_name;
-
     keyset_type()
     : object_name("keyset")
     {}
-
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
-    {
-        return impl.get_keyset_status_descriptions(test_lang);
-    }
 };
 
 template <class T>
