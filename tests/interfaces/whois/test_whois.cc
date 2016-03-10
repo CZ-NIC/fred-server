@@ -163,6 +163,7 @@ struct get_my_registrar_list_fixture
     std::map<std::string,Fred::InfoRegistrarOutput> registrar_info;
 
     get_my_registrar_list_fixture()
+    : test_registrar_handle()
     {
         Fred::OperationContext ctx;
         for(int i=0; i<10; ++i)
@@ -406,7 +407,6 @@ BOOST_AUTO_TEST_SUITE(get_nssets_by_ns)
 struct get_nssets_by_ns_fixture
 : test_registrar_fixture
 {
-//        std::map<std::string,Fred::InfoNssetOutput> nsset_info;
     std::string test_fqdn;
     std::string test_no_fqdn;
     std::string test_wrong_fqdn;
@@ -503,14 +503,14 @@ BOOST_AUTO_TEST_SUITE(get_nssets_by_tech_c)
 struct get_nssets_by_tech_c_fixture
 : test_registrar_fixture
 {
-    std::string test_c_handle;
+    std::string test_contact_handle;
     std::string test_no_handle;//better name
     std::string test_wrong_handle;
     unsigned long test_limit;
 
     get_nssets_by_tech_c_fixture()
     : test_registrar_fixture(),
-      test_c_handle(std::string("TEST-CONTACT-HANDLE") + xmark),
+      test_contact_handle(std::string("TEST-CONTACT-HANDLE") + xmark),
       test_no_handle("fine-tech-c-handle"),
       test_wrong_handle(""),
       test_limit(10)
@@ -521,7 +521,7 @@ struct get_nssets_by_tech_c_fixture
             std::ostringstream test_handles;
             test_handles << "n" << i;
             std::vector<Fred::DnsHost> v_dns;
-            v_dns.push_back(Fred::DnsHost(test_c_handle,
+            v_dns.push_back(Fred::DnsHost(test_contact_handle,
                             Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address())));
             std::vector<std::string> tech_contacts;
             tech_contacts.push_back("TEST-TECH-CONTACT" + xmark);
@@ -538,8 +538,8 @@ struct get_nssets_by_tech_c_fixture
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
 {
     Fred::OperationContext ctx;
-    std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_c_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
-    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_c_handle, test_limit);
+    std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_contact_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
+    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_contact_handle, test_limit);
     for(unsigned long i = 0; i < test_limit; ++i)
     {
         std::vector<Fred::InfoNssetOutput>::iterator it = v_ino.begin(), end = v_ino.end();
@@ -887,6 +887,7 @@ struct wrong_zone_fixture
 
     wrong_zone_fixture()
     : test_registrar_fixture(),
+      test_registrant_fixture(),
       test_contact_fixture(),
       test_fqdn_bad_zone("a.")
     {
@@ -939,7 +940,11 @@ struct many_labels_fixture
         labeled_zone << zone_data.name;
         return labeled_zone.str();
     }
+
     many_labels_fixture()
+    : test_registrar_fixture(),
+      test_registrant_fixture(),
+      test_contact_fixture()
     {
         Fred::OperationContext ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
@@ -999,6 +1004,7 @@ struct invalid_unmanaged_fixture
 : wrong_zone_fixture
 {
     std::string invalid_unmanaged_fqdn;
+
     invalid_unmanaged_fixture()
     : wrong_zone_fixture()//do not create bad_zone domain for it
     {
@@ -1116,6 +1122,7 @@ struct invalid_toomany_fixture
         invalid_offset << labeled_zone.str() << zone_data.name;
         return invalid_offset.str();
     }
+
     invalid_toomany_fixture()
     : whois_impl_instance_fixture()
     {
@@ -1225,7 +1232,11 @@ struct delete_candidate_fixture //Jiri: check carefully
     std::string delete_status;
 
     delete_candidate_fixture()
-    : delete_status("deleteCandidate")
+    : test_registrar_fixture(),
+      test_registrant_fixture(),
+      test_contact_fixture(),
+      delete_fqdn(std::string("test-delete") + xmark + ".cz"),
+      delete_status("deleteCandidate")
     {
         Fred::OperationContext ctx;
         Fred::CreateDomain(delete_fqdn, test_registrar_handle, test_registrant_handle)
@@ -1409,7 +1420,9 @@ struct domains_by_admin_contact_fixture
     int regular_domains;
 
     domains_by_admin_contact_fixture()
-    : test_contact_fixture(),
+    : test_registrar_fixture(),
+      test_registrant_fixture(),
+      test_contact_fixture(),
       test_fqdn(std::string("test") + xmark),
       wrong_contact(""),
       no_contact("absent-contact"),
@@ -1540,7 +1553,9 @@ struct domains_by_nsset_fixture
     int regular_domains;
 
     domains_by_nsset_fixture()
-    : test_contact_fixture(),
+    : test_registrar_fixture(),
+      test_registrant_fixture(),
+      test_contact_fixture(),
       test_fqdn(std::string("test") + xmark),
       test_nsset("test-nsset" + xmark),
       wrong_nsset(""),
@@ -1679,7 +1694,9 @@ struct domains_by_keyset_fixture
     int regular_domains;
 
     domains_by_keyset_fixture()
-    : test_contact_fixture(),
+    : test_registrar_fixture(),
+      test_registrant_fixture(),
+      test_contact_fixture(),
       test_fqdn(std::string("test") + xmark),
       test_keyset("test-nsset" + xmark),
       wrong_keyset(""),
@@ -1811,10 +1828,11 @@ BOOST_AUTO_TEST_SUITE(get_domain_status_descriptions)
 struct object_status_descriptions_fixture
 : whois_impl_instance_fixture
 {
+    typedef std::map<std::string, std::string> map_type;
+
     std::string test_lang;
     std::string no_lang;
     std::string other_lang;
-    typedef std::map<std::string, std::string> map_type;
     map_type statuses;
 
     object_status_descriptions_fixture()
@@ -1844,6 +1862,10 @@ struct description_type
 {
     std::string object_name;
 
+    description_type()
+    : object_status_descriptions_fixture()
+    {}
+
     std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
     {
         return impl.get_domain_status_descriptions(test_lang);
@@ -1854,7 +1876,8 @@ struct domain_type
 : description_type
 {
     domain_type()
-    : object_name("domain")
+    : description_type(),
+      object_name("domain")
     {}
 };
 
@@ -1862,7 +1885,8 @@ struct contact_type
 : description_type
 {
     contact_type()
-    : object_name("contact")
+    : description_type(),
+      object_name("contact")
     {}
 };
 
@@ -1870,7 +1894,8 @@ struct nsset_type
 : description_type
 {
     nsset_type()
-    : object_name("nsset")
+    : description_type(),
+      object_name("nsset")
     {}
 };
 
@@ -1878,7 +1903,8 @@ struct keyset_type
 : description_type
 {
     keyset_type()
-    : object_name("keyset")
+    : description_type(),
+      object_name("keyset")
     {}
 };
 
