@@ -309,8 +309,9 @@ namespace Fred
         */
         CreateContact& set_logd_request_id(unsigned long long logd_request_id);
 
-        struct Result:CreateObject::Result
+        struct Result
         {
+            CreateObject::Result create_object_result;
             boost::posix_time::ptime creation_time;///< timestamp of the contact creation
         };
         /**

@@ -659,16 +659,16 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         const Fred::CreateContact::Result new_contact = op_create_contact.exec(ctx);
         Fred::CreatePublicRequestAuth op_create_pub_req(
             Fred::MojeID::PublicRequest::ContactConditionalIdentification().iface());
-        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_contact.object_id);
+        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_contact.create_object_result.object_id);
         {
             const Fred::CreatePublicRequestAuth::Result result = op_create_pub_req.exec(locked_contact);
             _ident = result.identification;
             notify(ctx, Notification::created,
-                   mojeid_registrar_id_, new_contact.history_id, _log_request_id);
+                   mojeid_registrar_id_, new_contact.create_object_result.history_id, _log_request_id);
         }
-        prepare_transaction_storage()->store(_trans_id, new_contact.object_id);
+        prepare_transaction_storage()->store(_trans_id, new_contact.create_object_result.object_id);
         ctx.commit_transaction();
-        return new_contact.object_id;
+        return new_contact.create_object_result.object_id;
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
         LOGGER(PACKAGE).error("request failed (incorrect input data)");
