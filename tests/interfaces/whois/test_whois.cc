@@ -467,20 +467,6 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, get_nssets_by_ns_fixture)
-{
-    try
-    {
-        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_wrong_fqdn, test_limit);
-        BOOST_ERROR("domain handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
-
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, get_nssets_by_ns_fixture)
 {
     try
@@ -489,6 +475,20 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, get_nssets_by_ns_fixture)
         BOOST_ERROR("unreported dangling NSSets");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, get_nssets_by_ns_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_wrong_fqdn, test_limit);
+        BOOST_ERROR("domain handle rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
@@ -561,20 +561,6 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_wrong_ns, get_nssets_by_tech_c_fixture)
-{
-    try
-    {
-        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_wrong_handle, test_limit);
-        BOOST_ERROR("domain handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
-
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_no_ns, get_nssets_by_tech_c_fixture)
 {
     try
@@ -583,6 +569,20 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_no_ns, get_nssets_by_tech_c_fixture
         BOOST_ERROR("unreported dangling NSSets");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_wrong_ns, get_nssets_by_tech_c_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_wrong_handle, test_limit);
+        BOOST_ERROR("domain handle rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
@@ -625,20 +625,6 @@ BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
     BOOST_CHECK(ns.fqdn == test_nameserver_fqdn);
 }
 
-BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_wrong_ns, get_nameserver_by_fqdn_fixture)
-{
-    try
-    {
-        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_wrong_handle);
-        BOOST_ERROR("domain handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
-
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, get_nameserver_by_fqdn_fixture)
 {
     try
@@ -647,6 +633,20 @@ BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, get_nameserver_by_fqdn_fix
         BOOST_ERROR("unreported dangling nameserver");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_wrong_ns, get_nameserver_by_fqdn_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_wrong_handle);
+        BOOST_ERROR("domain handle rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
@@ -791,20 +791,6 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
         BOOST_CHECK(ks_s.content.at(0).tech_contact_handles.at(0) == found.tech_contacts.at(0).handle);
     }
 }
-    
-BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_wrong_contact, get_keysets_by_tech_c_fixture)
-{
-    try
-    {
-        Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(test_wrong_handle, test_limit);
-        BOOST_ERROR("tech contact handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
-}
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_no_contact, get_keysets_by_tech_c_fixture)
 {
@@ -814,6 +800,20 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_no_contact, get_keysets_by_tech_c_
         BOOST_ERROR("unreported dangling KeySets");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+    {
+        BOOST_CHECK(true);
+        BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_wrong_contact, get_keysets_by_tech_c_fixture)
+{
+    try
+    {
+        Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(test_wrong_handle, test_limit);
+        BOOST_ERROR("tech contact handle rule is wrong");
+    }
+    catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
@@ -1284,8 +1284,8 @@ struct domains_by_registrant_fixture
 : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
     std::string test_fqdn;
-    std::string wrong_handle;
     std::string no_handle;
+    std::string wrong_handle;
     int regular_domains;
 
     domains_by_registrant_fixture()
@@ -1293,8 +1293,8 @@ struct domains_by_registrant_fixture
       test_registrant_fixture(),
       test_contact_fixture(),
       test_fqdn(std::string("test") + xmark),
-      wrong_handle(""),
       no_handle("absent-registrant"),
+      wrong_handle(""),
       regular_domains(6)
     {
         Fred::OperationContext ctx;
@@ -1378,12 +1378,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_wrong_registrant, domains_by_registrant_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_no_registrant, domains_by_registrant_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant(wrong_handle, 0);
-        BOOST_ERROR("registrant handle rule is wrong");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant(no_handle, 0);
+        BOOST_ERROR("unreported dangling registrant");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1392,12 +1392,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_wrong_registrant, domains_by_r
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_no_registrant, domains_by_registrant_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_wrong_registrant, domains_by_registrant_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant(no_handle, 0);
-        BOOST_ERROR("unreported dangling registrant");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant(wrong_handle, 0);
+        BOOST_ERROR("registrant handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1415,8 +1415,8 @@ struct domains_by_admin_contact_fixture
 : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
     std::string test_fqdn;
-    std::string wrong_contact;
     std::string no_contact;
+    std::string wrong_contact;
     int regular_domains;
 
     domains_by_admin_contact_fixture()
@@ -1424,8 +1424,8 @@ struct domains_by_admin_contact_fixture
       test_registrant_fixture(),
       test_contact_fixture(),
       test_fqdn(std::string("test") + xmark),
-      wrong_contact(""),
       no_contact("absent-contact"),
+      wrong_contact(""),
       regular_domains(6)
     {
         Fred::OperationContext ctx;
@@ -1510,12 +1510,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_wrong_contact, domains_by_admin_contact_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_no_contact, domains_by_admin_contact_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_admin_contact(wrong_contact, 0);
-        BOOST_ERROR("registrant handle rule is wrong");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_admin_contact(no_contact, 0);
+        BOOST_ERROR("unreported dangling registrant");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1524,12 +1524,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_wrong_contact, domains_by_a
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_no_contact, domains_by_admin_contact_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_wrong_contact, domains_by_admin_contact_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_admin_contact(no_contact, 0);
-        BOOST_ERROR("unreported dangling registrant");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_admin_contact(wrong_contact, 0);
+        BOOST_ERROR("registrant handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1548,8 +1548,8 @@ struct domains_by_nsset_fixture
 {
     std::string test_fqdn;
     std::string test_nsset;
-    std::string wrong_nsset;
     std::string no_nsset;
+    std::string wrong_nsset;
     int regular_domains;
 
     domains_by_nsset_fixture()
@@ -1558,8 +1558,8 @@ struct domains_by_nsset_fixture
       test_contact_fixture(),
       test_fqdn(std::string("test") + xmark),
       test_nsset("test-nsset" + xmark),
-      wrong_nsset(""),
       no_nsset("absent-nsset"),
+      wrong_nsset(""),
       regular_domains(6)
     {
         Fred::OperationContext ctx;
@@ -1651,12 +1651,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fi
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_wrong_nsset, domains_by_nsset_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_no_nsset, domains_by_nsset_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_nsset(wrong_nsset, 0);
-        BOOST_ERROR("nsset handle rule is wrong");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_nsset(no_nsset, 0);
+        BOOST_ERROR("unreported dangling nsset");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1665,12 +1665,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_wrong_nsset, domains_by_nsset_fixtu
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_no_nsset, domains_by_nsset_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_wrong_nsset, domains_by_nsset_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_nsset(no_nsset, 0);
-        BOOST_ERROR("unreported dangling nsset");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_nsset(wrong_nsset, 0);
+        BOOST_ERROR("nsset handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1689,8 +1689,8 @@ struct domains_by_keyset_fixture
 {
     std::string test_fqdn;
     std::string test_keyset;
-    std::string wrong_keyset;
     std::string no_keyset;
+    std::string wrong_keyset;
     int regular_domains;
 
     domains_by_keyset_fixture()
@@ -1699,8 +1699,8 @@ struct domains_by_keyset_fixture
       test_contact_fixture(),
       test_fqdn(std::string("test") + xmark),
       test_keyset("test-nsset" + xmark),
-      wrong_keyset(""),
       no_keyset("absent-nsset"),
+      wrong_keyset(""),
       regular_domains(6)
     {
         Fred::OperationContext ctx;
@@ -1792,12 +1792,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_wrong_keyset, domains_by_keyset_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_no_keyset, domains_by_keyset_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_keyset(wrong_keyset, 0);
-        BOOST_ERROR("nsset handle rule is wrong");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_keyset(no_keyset, 0);
+        BOOST_ERROR("unreported dangling nsset");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1806,12 +1806,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_wrong_keyset, domains_by_keyset_fi
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_no_keyset, domains_by_keyset_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_wrong_keyset, domains_by_keyset_fixture)
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_keyset(no_keyset, 0);
-        BOOST_ERROR("unreported dangling nsset");
+        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_keyset(wrong_keyset, 0);
+        BOOST_ERROR("nsset handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
     {
@@ -1948,18 +1948,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions, T, test_types, 
     }
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_other_lang, T, test_types, T)
-{
-    T fix;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description(fix.other_lang);
-    BOOST_CHECK(fix.statuses.size() == vec_osd.size());
-    for(std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it = vec_osd.begin(); it != vec_osd.end(); ++it)
-    {
-        //if not present - at() throws
-        BOOST_CHECK(fix.statuses.at(it->handle) == it->name);
-    }
-}
-
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_missing, T, test_types, T)
 {
     T fix;
@@ -1972,6 +1960,18 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_missing, T, test
     {
         BOOST_CHECK(true);
         BOOST_MESSAGE(boost::diagnostic_information(ex));
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_other_lang, T, test_types, T)
+{
+    T fix;
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description(fix.other_lang);
+    BOOST_CHECK(fix.statuses.size() == vec_osd.size());
+    for(std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it = vec_osd.begin(); it != vec_osd.end(); ++it)
+    {
+        //if not present - at() throws
+        BOOST_CHECK(fix.statuses.at(it->handle) == it->name);
     }
 }
 
