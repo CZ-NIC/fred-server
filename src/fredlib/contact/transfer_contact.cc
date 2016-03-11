@@ -30,7 +30,7 @@ namespace Fred
             }
         } catch(const Fred::InfoContactById::Exception& e) {
             if( e.is_set_unknown_object_id() ) {
-                /* XXX relying on the fact that exception is throw if CONTACT is not found */
+                /* XXX relying on the fact that exception is thrown if CONTACT is not found */
                 throw UnknownContactId();
             }
             throw;
