@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/fredlib/contact/checkers.h"
+#include "src/mojeid/checkers.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/ssntype.h"

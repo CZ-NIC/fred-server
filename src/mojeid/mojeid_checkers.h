@@ -24,7 +24,7 @@
 #ifndef MOJEID2_CHECKERS_H_3F3071E19E8ADD1CB7438F97BBE37530//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define MOJEID2_CHECKERS_H_3F3071E19E8ADD1CB7438F97BBE37530
 
-#include "src/fredlib/contact/checkers.h"
+#include "src/mojeid/checkers.h"
 #include "src/fredlib/contact/info_contact_data.h"
 #include "src/fredlib/object/states_info.h"
 

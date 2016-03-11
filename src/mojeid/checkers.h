@@ -24,7 +24,7 @@
 #ifndef CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define CHECKERS_H_D5C22F5DFA53E06F6886FD6DE0FD30C6
 
-#include "src/fredlib/contact/check_collector.h"
+#include "src/mojeid/check_collector.h"
 #include "src/fredlib/contact/info_contact_data.h"
 #include "src/fredlib/opcontext.h"
 
