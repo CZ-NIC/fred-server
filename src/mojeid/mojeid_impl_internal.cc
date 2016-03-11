@@ -320,6 +320,9 @@ void raise(const CheckUpdateTransferContactPrepare &result)
 
     set_validity_result(!result.Fred::MojeID::check_contact_username::invalid, e.username);
 
+    e.first_name = MojeIDImplData::ValidationResult::OK;
+    e.last_name = MojeIDImplData::ValidationResult::OK;
+
     set_validity_result(result.Fred::MojeID::check_contact_birthday::success(), e.birth_date);
 
     set_validity_availability_result<
