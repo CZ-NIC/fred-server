@@ -163,7 +163,7 @@ struct get_my_registrar_list_fixture
     std::map<std::string,Fred::InfoRegistrarOutput> registrar_info;
 
     get_my_registrar_list_fixture()
-    : test_registrar_handle()
+    : test_registrar_fixture()//TODO remove
     {
         Fred::OperationContext ctx;
         for(int i=0; i<10; ++i)
@@ -1833,6 +1833,7 @@ struct object_status_descriptions_fixture
     std::string test_lang;
     std::string no_lang;
     std::string other_lang;
+    std::string object_name;
     map_type statuses;
 
     object_status_descriptions_fixture()
@@ -1840,9 +1841,9 @@ struct object_status_descriptions_fixture
       no_lang(""),
       other_lang("XX")
     {
-        statuses.at("expired") = "description of expired";
-        statuses.at("unguarded") = "description of unguarded";
-        statuses.at("serverTransferProhibited") = "description of serverTransferProhibited";
+        statuses["expired"] = "description of expired";
+        statuses["unguarded"] = "description of unguarded";
+        statuses["serverTransferProhibited"] = "description of serverTransferProhibited";
         Fred::OperationContext ctx;
         BOOST_FOREACH(map_type::value_type& p, statuses)
         {
@@ -1850,62 +1851,71 @@ struct object_status_descriptions_fixture
                 "INSERT INTO enum_object_states_desc "
                 "VALUES ((SELECT id FROM enum_object_states WHERE name = $1::text),"
                 " $2::text,"
-                " $3::text",
+                " $3::text)",
                     Database::query_param_list(p.first)(other_lang)(p.second)
             );
         }
     }
 };
 
-struct description_type
+struct domain_type
 : object_status_descriptions_fixture
 {
-    std::string object_name;
-
-    description_type()
+    domain_type()
     : object_status_descriptions_fixture()
-    {}
-
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description()
     {
-        return impl.get_domain_status_descriptions(test_lang);
+      object_name = ("domain");
+    }
+
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    {
+        return impl.get_domain_status_descriptions(lang);
     }
 };
 
-struct domain_type
-: description_type
-{
-    domain_type()
-    : description_type(),
-      object_name("domain")
-    {}
-};
-
 struct contact_type
-: description_type
+: object_status_descriptions_fixture
 {
     contact_type()
-    : description_type(),
-      object_name("contact")
-    {}
+    : object_status_descriptions_fixture()
+    {
+      object_name = ("contact");
+    }
+
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    {
+        return impl.get_contact_status_descriptions(lang);
+    }
 };
 
 struct nsset_type
-: description_type
+: object_status_descriptions_fixture
 {
     nsset_type()
-    : description_type(),
-      object_name("nsset")
-    {}
+    : object_status_descriptions_fixture()
+    {
+      object_name = ("nsset");
+    }
+
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    {
+        return impl.get_nsset_status_descriptions(lang);
+    }
 };
 
 struct keyset_type
-: description_type
+: object_status_descriptions_fixture
 {
     keyset_type()
-    : description_type(),
-      object_name("keyset")
-    {}
+    : object_status_descriptions_fixture()
+    {
+      object_name = ("keyset");
+    }
+
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    {
+        return impl.get_keyset_status_descriptions(lang);
+    }
 };
 
 template <class T>
@@ -1925,7 +1935,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions, T, test_types, 
                         .set_object_type(fix.object_name)
                         .set_external()
                         .exec(ctx);
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description();
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description(fix.test_lang);
     BOOST_CHECK(states.size() == vec_osd.size());
     std::sort(states.begin(), states.end(), private_sort<Fred::ObjectStateDescription>);
     std::sort(vec_osd.begin(), vec_osd.end(), private_sort<Registry::WhoisImpl::ObjectStatusDesc>);
@@ -1941,7 +1951,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions, T, test_types, 
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_other_lang, T, test_types, T)
 {
     T fix;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description();
+    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description(fix.other_lang);
     BOOST_CHECK(fix.statuses.size() == vec_osd.size());
     for(std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it = vec_osd.begin(); it != vec_osd.end(); ++it)
     {
@@ -1955,7 +1965,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions_missing, T, test
     T fix;
     try
     {
-        std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description();
+        std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = fix.get_description(fix.no_lang);
         BOOST_ERROR(std::string("this ") + fix.object_name + " must not have a localization");
     }
     catch(const Registry::WhoisImpl::MissingLocalization& ex)
