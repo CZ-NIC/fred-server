@@ -2403,7 +2403,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/test_update_contact.cc \
 		tests/fredlib/contact/test_copy_contact.cc \
 		tests/fredlib/contact/test_transfer_contact.cc \
-		tests/fredlib/contact/test_checkers.cc \
+		tests/fredlib/contact/test_mojeid_checkers.cc \
 		util/types/birthdate.cc \
 		tests/fredlib/domain/test_update_domain.cc \
 		tests/fredlib/domain/test_info_domain.cc \
