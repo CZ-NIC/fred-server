@@ -1393,6 +1393,8 @@ src_corba_whois_libwhois2_impl_a_SOURCES = \
 		src/whois/nameserver_exists.cc \
 		src/whois/is_domain_delete_pending.h \
 		src/whois/is_domain_delete_pending.cc \
+		src/whois/domain_expiration_datetime.h \
+		src/whois/domain_expiration_datetime.cc \
 		src/whois/registrar_group.h \
 		src/whois/registrar_group.cc \
 		src/whois/registrar_certification.h \

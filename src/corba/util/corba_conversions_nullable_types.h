@@ -21,6 +21,7 @@ namespace Corba {
 
     Registry::NullableDate* wrap_nullable_date(const Nullable<boost::gregorian::date>& in);
     Registry::NullableDateTime* wrap_nullable_datetime(const Nullable<boost::posix_time::ptime>& in);
+    Registry::NullableDateTime_var wrap_optional_datetime(const Optional<boost::posix_time::ptime>& in);
 
     Nullable<unsigned long long> unwrap_nullable_ulonglong(const Registry::NullableULongLong * in);
     Optional<unsigned long long> unwrap_nullable_ulonglong_to_optional(const Registry::NullableULongLong * in);
