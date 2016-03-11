@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-//#include "src/corba/Whois2.hh"
 #include "util/db/nullable.h"
 
 #include <boost/date_time/posix_time/ptime.hpp>
@@ -44,11 +43,6 @@ struct Registrar
     : id(0)
     {}
 };
-//
-//struct RegistrarSeq
-//{
-//    std::vector<Registrar> rdl;/**< list of registrar data */
-//};
 
 struct ContactIdentification
 {
@@ -96,14 +90,6 @@ struct Contact
       disclose_vat_number(false)
     {}
 };
-
-//enum IPVersion { IPv4, IPv6 };
-//
-//struct IPAddress
-//{
-//    std::string address;
-//    IPVersion version;
-//};
 
 struct NameServer
 {
@@ -195,37 +181,18 @@ struct RegistrarGroup
     std::vector<std::string> members;
 };
 
-//struct RegistrarGroupList{
-//    std::vector<RegistrarGroup> rgl;
-//};
-
 struct RegistrarCertification
 {
     std::string registrar_handle;
     short score;
     unsigned long long evaluation_file_id;
 };
-//
-//struct RegistrarCertificationList
-//{
-//    std::vector<RegistrarCertification> rcl;
-//};
-
-//struct ZoneFqdnList
-//{
-//    std::vector<std::string> zfl;
-//};
 
 struct ObjectStatusDesc
 {
     std::string handle;
     std::string name;
 };
-//
-//struct ObjectStatusDescSeq
-//{
-//    std::vector<ObjectStatusDesc> osds;
-//};
 
 struct ObjectNotExists
 : virtual std::exception
