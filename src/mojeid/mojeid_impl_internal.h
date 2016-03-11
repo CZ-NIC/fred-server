@@ -134,7 +134,8 @@ void raise(const CheckCreateValidationRequest &result);
 
 
 typedef boost::mpl::list< Fred::MojeID::check_contact_username,
-                          Fred::MojeID::check_contact_birthday,
+                          Fred::check_contact_name,
+                          Fred::MojeID::check_contact_ssn,
                           Fred::check_contact_email_validity,
                           Fred::check_contact_notifyemail_validity,
                           Fred::check_contact_phone_validity,

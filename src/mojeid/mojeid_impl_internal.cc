@@ -164,6 +164,27 @@ void set_availability_result(bool available, MojeIDImplData::ValidationResult::V
                        : MojeIDImplData::ValidationResult::NOT_AVAILABLE;
 }
 
+template < class EXCEPTION_CLASS >
+void set_ssn_result(const Fred::MojeID::check_contact_ssn &result, EXCEPTION_CLASS &e)
+{
+    if (result.birthdate_absent) {
+        e.birth_date = MojeIDImplData::ValidationResult::REQUIRED;
+    }
+    else if (result.birthdate_invalid) {
+        e.birth_date = MojeIDImplData::ValidationResult::INVALID;
+    }
+    else {
+        e.birth_date = MojeIDImplData::ValidationResult::OK;
+    }
+
+    if (result.vat_id_num_absent) {
+        e.vat_id_num = MojeIDImplData::ValidationResult::REQUIRED;
+    }
+    else {
+        e.vat_id_num = MojeIDImplData::ValidationResult::OK;
+    }
+}
+
 }//namespace Registry::MojeIDImplInternal::{anonymous}
 
 void raise(const CheckMojeIDRegistration &result)
@@ -175,6 +196,7 @@ void raise(const CheckMojeIDRegistration &result)
     set_contact_name_result(result, e);
 
     set_validity_result(result.Fred::MojeID::check_contact_birthday::success(), e.birth_date);
+    e.vat_id_num = MojeIDImplData::ValidationResult::OK;
 
     set_presence_validity_availability_result<
         Fred::check_contact_email_presence,
@@ -229,6 +251,7 @@ void raise(const CheckCreateContactPrepare &result)
     set_contact_name_result(result, e);
 
     set_validity_result(result.Fred::MojeID::check_contact_birthday_validity::success(), e.birth_date);
+    e.vat_id_num = MojeIDImplData::ValidationResult::OK;
 
     set_presence_validity_availability_result<
         Fred::check_contact_email_presence,
@@ -294,22 +317,7 @@ void raise(const CheckCreateValidationRequest &result)
 
     set_validity_result(result.Fred::check_contact_fax_validity::success(), e.fax);
 
-    if (result.Fred::MojeID::check_contact_ssn::birthdate_absent) {
-        e.birth_date = MojeIDImplData::ValidationResult::REQUIRED;
-    }
-    else if (result.Fred::MojeID::check_contact_ssn::birthdate_invalid) {
-        e.birth_date = MojeIDImplData::ValidationResult::INVALID;
-    }
-    else {
-        e.birth_date = MojeIDImplData::ValidationResult::OK;
-    }
-
-    if (result.Fred::MojeID::check_contact_ssn::vat_id_num_absent) {
-        e.vat_id_num = MojeIDImplData::ValidationResult::REQUIRED;
-    }
-    else {
-        e.vat_id_num = MojeIDImplData::ValidationResult::OK;
-    }
+    set_ssn_result(result, e);
 
     throw e;
 }
@@ -320,10 +328,9 @@ void raise(const CheckUpdateTransferContactPrepare &result)
 
     set_validity_result(!result.Fred::MojeID::check_contact_username::invalid, e.username);
 
-    e.first_name = MojeIDImplData::ValidationResult::OK;
-    e.last_name = MojeIDImplData::ValidationResult::OK;
+    set_contact_name_result(result, e);
 
-    set_validity_result(result.Fred::MojeID::check_contact_birthday::success(), e.birth_date);
+    set_ssn_result(result, e);
 
     set_validity_availability_result<
         Fred::check_contact_email_validity,

@@ -130,6 +130,7 @@ struct RegistrationValidationResult
         first_name  (ValidationResult::UNKNOWN),
         last_name   (ValidationResult::UNKNOWN),
         birth_date  (ValidationResult::UNKNOWN),
+        vat_id_num  (ValidationResult::UNKNOWN),
         email       (ValidationResult::UNKNOWN),
         notify_email(ValidationResult::UNKNOWN),
         phone       (ValidationResult::UNKNOWN),
@@ -138,6 +139,7 @@ struct RegistrationValidationResult
     ValidationResult::Value          first_name;
     ValidationResult::Value          last_name;
     ValidationResult::Value          birth_date;
+    ValidationResult::Value          vat_id_num;
     ValidationResult::Value          email;
     ValidationResult::Value          notify_email;
     ValidationResult::Value          phone;

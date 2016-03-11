@@ -289,6 +289,7 @@ void wrap_RegistrationValidationResult(const Registry::MojeIDImplData::Registrat
     wrap_ValidationResult(src.first_name,   dst.first_name);
     wrap_ValidationResult(src.last_name,    dst.last_name);
     wrap_ValidationResult(src.birth_date,   dst.birth_date);
+    wrap_ValidationResult(src.vat_id_num,   dst.vat_id_num);
     wrap_ValidationResult(src.email,        dst.email);
     wrap_ValidationResult(src.notify_email, dst.notify_email);
     wrap_ValidationResult(src.phone,        dst.phone);
