@@ -48,7 +48,7 @@ class DnsKey  : public Util::Printable
     std::string key_;/**< the public key field in base64 encoding */
 public:
     /**
-     * Empty destructor.
+     * Virtual destructor.
      */
     virtual ~DnsKey(){}
 
@@ -79,7 +79,6 @@ public:
     : flags_(0)
     , protocol_(0)
     , alg_(0)
-    //, key_("")
     {}
 
     /**
