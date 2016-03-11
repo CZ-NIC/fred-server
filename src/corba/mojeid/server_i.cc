@@ -162,6 +162,12 @@ InfoContact* Server_i::update_transfer_contact_prepare(
         CorbaConversion::raise_REGISTRATION_VALIDATION_ERROR(e);
         throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
+    catch (const MojeIDImplData::AlreadyMojeidContact&) {
+        throw IDL::ALREADY_MOJEID_CONTACT();
+    }
+    catch(const MojeIDImplData::MessageLimitExceeded&) {
+        throw IDL::MESSAGE_LIMIT_EXCEEDED();
+    }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
     }
