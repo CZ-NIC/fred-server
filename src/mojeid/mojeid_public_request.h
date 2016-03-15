@@ -98,6 +98,26 @@ private:
     std::string generate_passwords()const;
 };
 
+class PrevalidatedUnidentifiedContactTransfer:public PublicRequestAuthTypeIface
+{
+public:
+    ~PrevalidatedUnidentifiedContactTransfer() { }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    std::string get_public_request_type()const;
+private:
+    std::string generate_passwords()const;
+};
+
+class PrevalidatedContactTransfer:public PublicRequestAuthTypeIface
+{
+public:
+    ~PrevalidatedContactTransfer() { }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    std::string get_public_request_type()const;
+private:
+    std::string generate_passwords()const;
+};
+
 }//Fred::MojeID::PublicRequest
 }//Fred::MojeID
 }//Fred

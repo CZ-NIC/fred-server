@@ -379,6 +379,8 @@ struct PubReqType
         CONTACT_CONDITIONAL_IDENTIFICATION,
         CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER,
         IDENTIFIED_CONTACT_TRANSFER,
+        PREVALIDATED_UNIDENTIFIED_CONTACT_TRANSFER,
+        PREVALIDATED_CONTACT_TRANSFER
     };
 };
 
@@ -485,6 +487,10 @@ inline std::string to_db_handle(Registry::MojeID::PubReqType::Enum value)
             return Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer().get_public_request_type();
         case Registry::MojeID::PubReqType::IDENTIFIED_CONTACT_TRANSFER:
             return Fred::MojeID::PublicRequest::IdentifiedContactTransfer().get_public_request_type();
+        case Registry::MojeID::PubReqType::PREVALIDATED_CONTACT_TRANSFER:
+            return Fred::MojeID::PublicRequest::PrevalidatedContactTransfer().get_public_request_type();
+        case Registry::MojeID::PubReqType::PREVALIDATED_UNIDENTIFIED_CONTACT_TRANSFER:
+            return Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer().get_public_request_type();
     }
     throw std::invalid_argument("value doesn't exist in Registry::MojeID::PubReqType::{anonymous}::Enum");
 }
@@ -495,6 +501,8 @@ inline Registry::MojeID::PubReqType::Enum from_db_handle< Registry::MojeID::PubR
     if (to_db_handle(Registry::MojeID::PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION) == db_handle) { return Registry::MojeID::PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION; }
     if (to_db_handle(Registry::MojeID::PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER) == db_handle) { return Registry::MojeID::PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER; }
     if (to_db_handle(Registry::MojeID::PubReqType::IDENTIFIED_CONTACT_TRANSFER) == db_handle) { return Registry::MojeID::PubReqType::IDENTIFIED_CONTACT_TRANSFER; }
+    if (to_db_handle(Registry::MojeID::PubReqType::PREVALIDATED_CONTACT_TRANSFER) == db_handle) { return Registry::MojeID::PubReqType::PREVALIDATED_CONTACT_TRANSFER; }
+    if (to_db_handle(Registry::MojeID::PubReqType::PREVALIDATED_UNIDENTIFIED_CONTACT_TRANSFER) == db_handle) { return Registry::MojeID::PubReqType::PREVALIDATED_UNIDENTIFIED_CONTACT_TRANSFER; }
     throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Registry::MojeID::PubReqType::{anonymous}::Enum");
 }
 
@@ -1102,17 +1110,13 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             update_contact_op.set_logd_request_id(_log_request_id);
             history_id = update_contact_op.exec(ctx);
         }
-        const bool is_identified      = states.presents(Fred::Object::State::IDENTIFIED_CONTACT) &&
-                                        !drop_identification;
         const bool is_cond_identified = states.presents(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT) &&
                                         !drop_cond_identification;
         Fred::CreatePublicRequestAuth op_create_pub_req(
-            //for 'identifiedContact' create 'mojeid_identified_contact_transfer' public request
-            is_identified      ? Fred::MojeID::PublicRequest::IdentifiedContactTransfer().iface() :
-            //for 'conditionallyIdentifiedContact' create 'mojeid_conditionally_identified_contact_transfer' public request
-            is_cond_identified ? Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer().iface()
-            //in other cases create 'mojeid_contact_conditional_identification' public request
-                               : Fred::MojeID::PublicRequest::ContactConditionalIdentification().iface());
+            //for 'conditionallyIdentifiedContact' or 'identifiedContact' create 'mojeid_prevalidated_contact_transfer' public request
+            is_cond_identified ? Fred::MojeID::PublicRequest::PrevalidatedContactTransfer().iface()
+            //in other cases create 'mojeid_prevalidated_unidentified_contact_transfer' public request
+                               : Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface());
         if (!current_data.notifyemail.get_value_or_default().empty()) {
             op_create_pub_req.set_email_to_answer(current_data.notifyemail.get_value());
         }
@@ -1326,6 +1330,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
         const Fred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
+        const Fred::Object::StatesInfo states(Fred::GetObjectStates(contact_id).exec(ctx));
         const PubReqType::Enum pub_req_type(Conversion::Enums::from_db_handle< PubReqType >(pub_req_info.get_type()));
         try {
             switch (pub_req_info.get_status()) {
@@ -1342,8 +1347,19 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             case PubReqType::CONTACT_CONDITIONAL_IDENTIFICATION:
                 to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
                 break;
+            case PubReqType::PREVALIDATED_UNIDENTIFIED_CONTACT_TRANSFER:
+                to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::CONDITIONALLY_IDENTIFIED_CONTACT));
+                if (states.absents(Fred::Object::State::VALIDATED_CONTACT)) {
+                    to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::VALIDATED_CONTACT));
+                }
+                break;
             case PubReqType::CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER:
             case PubReqType::IDENTIFIED_CONTACT_TRANSFER:
+                break;
+            case PubReqType::PREVALIDATED_CONTACT_TRANSFER:
+                if (states.absents(Fred::Object::State::VALIDATED_CONTACT)) {
+                    to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::VALIDATED_CONTACT));
+                }
                 break;
             default:
                 throw std::runtime_error("unexpected public request type " + pub_req_type);

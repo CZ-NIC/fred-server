@@ -39,12 +39,15 @@ struct PossibleRequestTypes;
 template < >
 struct PossibleRequestTypes< CommChannel::SMS >
 {
-    typedef Fred::MojeID::PublicRequest::ContactConditionalIdentification PubReqCCI;
+    typedef Fred::MojeID::PublicRequest::ContactConditionalIdentification        PubReqCCI;
+    typedef Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer PubReqPUCT;
     static std::string value(Database::query_param_list &_params)
     {
-        const std::string type =
-            Fred::MojeID::PublicRequest::ContactConditionalIdentification().get_public_request_type();
-        return "$" + _params.add(type) + "::TEXT";
+        const std::string type[] = {
+            PubReqCCI().get_public_request_type(),
+            PubReqPUCT().get_public_request_type() };
+        return "$" + _params.add(type[0]) + "::TEXT,"
+               "$" + _params.add(type[1]) + "::TEXT";
     }
     static Generate::MessageId generate_message(
         Fred::OperationContextCreator &_ctx,
@@ -58,6 +61,17 @@ struct PossibleRequestTypes< CommChannel::SMS >
     {
         if (PubReqCCI().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< CommChannel::SMS >::for_given_request< PubReqCCI >(
+                _ctx,
+                _multimanager,
+                _locked_request,
+                _locked_contact,
+                _check_message_limits,
+                _link_hostname_part,
+                _contact_history_id);
+            return message_id;
+        }
+        if (PubReqPUCT().get_public_request_type() == _public_request_type) {
+            const Generate::MessageId message_id = Generate::Into< CommChannel::SMS >::for_given_request< PubReqPUCT >(
                 _ctx,
                 _multimanager,
                 _locked_request,
@@ -124,18 +138,24 @@ struct PossibleRequestTypes< CommChannel::LETTER >
 template < >
 struct PossibleRequestTypes< CommChannel::EMAIL >
 {
-    typedef Fred::MojeID::PublicRequest::ContactConditionalIdentification       PubReqCCI;
-    typedef Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer PubReqCICT;
-    typedef Fred::MojeID::PublicRequest::IdentifiedContactTransfer              PubReqICT;
+    typedef Fred::MojeID::PublicRequest::ContactConditionalIdentification        PubReqCCI;
+    typedef Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer  PubReqCICT;
+    typedef Fred::MojeID::PublicRequest::IdentifiedContactTransfer               PubReqICT;
+    typedef Fred::MojeID::PublicRequest::PrevalidatedContactTransfer             PubReqPCT;
+    typedef Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer PubReqPUCT;
     static std::string value(Database::query_param_list &_params)
     {
         const std::string type[] = {
             PubReqCCI().get_public_request_type(),
             PubReqCICT().get_public_request_type(),
-            PubReqICT().get_public_request_type() };
+            PubReqICT().get_public_request_type(),
+            PubReqPCT().get_public_request_type(),
+            PubReqPUCT().get_public_request_type() };
         return "$" + _params.add(type[0]) + "::TEXT,"
                "$" + _params.add(type[1]) + "::TEXT,"
-               "$" + _params.add(type[2]) + "::TEXT";
+               "$" + _params.add(type[2]) + "::TEXT,"
+               "$" + _params.add(type[3]) + "::TEXT,"
+               "$" + _params.add(type[4]) + "::TEXT";
     }
     static Generate::MessageId generate_message(
         Fred::OperationContextCreator &_ctx,
@@ -147,9 +167,9 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
         const std::string &_link_hostname_part,
         GeneralId _contact_history_id)
     {
-        static const CommChannel::Value channel_letter = CommChannel::EMAIL;
+        static const CommChannel::Value channel_email = CommChannel::EMAIL;
         if (PubReqCCI().get_public_request_type() == _public_request_type) {
-            const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqCCI >(
+            const Generate::MessageId message_id = Generate::Into< channel_email >::for_given_request< PubReqCCI >(
                 _ctx,
                 _multimanager,
                 _locked_request,
@@ -160,7 +180,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
             return message_id;
         }
         if (PubReqCICT().get_public_request_type() == _public_request_type) {
-            const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqCICT >(
+            const Generate::MessageId message_id = Generate::Into< channel_email >::for_given_request< PubReqCICT >(
                 _ctx,
                 _multimanager,
                 _locked_request,
@@ -171,7 +191,29 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
             return message_id;
         }
         if (PubReqICT().get_public_request_type() == _public_request_type) {
-            const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqICT >(
+            const Generate::MessageId message_id = Generate::Into< channel_email >::for_given_request< PubReqICT >(
+                _ctx,
+                _multimanager,
+                _locked_request,
+                _locked_contact,
+                _check_message_limits,
+                _link_hostname_part,
+                _contact_history_id);
+            return message_id;
+        }
+        if (PubReqPCT().get_public_request_type() == _public_request_type) {
+            const Generate::MessageId message_id = Generate::Into< channel_email >::for_given_request< PubReqPCT >(
+                _ctx,
+                _multimanager,
+                _locked_request,
+                _locked_contact,
+                _check_message_limits,
+                _link_hostname_part,
+                _contact_history_id);
+            return message_id;
+        }
+        if (PubReqPUCT().get_public_request_type() == _public_request_type) {
+            const Generate::MessageId message_id = Generate::Into< channel_email >::for_given_request< PubReqPUCT >(
                 _ctx,
                 _multimanager,
                 _locked_request,
@@ -444,6 +486,29 @@ struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactC
                                                            _locked_contact.get_id(),
                                                            _contact_history_id.get_value());
         return message_id;
+    }
+};
+
+template < >
+struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Multimanager &_multimanager,
+        const Fred::LockedPublicRequest &_locked_request,
+        const Fred::LockedPublicRequestsOfObject &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        return generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactConditionalIdentification >::
+                   for_given_request(_ctx,
+                                     _multimanager,
+                                     _locked_request,
+                                     _locked_contact,
+                                     _check_message_limits,
+                                     _link_hostname_part,
+                                     _contact_history_id);
     }
 };
 
@@ -918,6 +983,56 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Identi
     }
 };
 
+template < >
+struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Multimanager &_multimanager,
+        const Fred::LockedPublicRequest &_locked_request,
+        const Fred::LockedPublicRequestsOfObject &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        //db table mail_type: 21,'mojeid_identification','[mojeID] Založení účtu - PIN1 pro aktivaci mojeID'
+        const std::string mail_template = "mojeid_identification";
+        return send_email(mail_template,
+                         _ctx,
+                         _multimanager,
+                         _locked_request,
+                         _locked_contact,
+                         _check_message_limits,
+                         _link_hostname_part,
+                         _contact_history_id);
+    }
+};
+
+template < >
+struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::PrevalidatedContactTransfer >
+{
+    static Generate::MessageId for_given_request(
+        Fred::OperationContext &_ctx,
+        const Multimanager &_multimanager,
+        const Fred::LockedPublicRequest &_locked_request,
+        const Fred::LockedPublicRequestsOfObject &_locked_contact,
+        const Generate::message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
+        const Optional< GeneralId > &_contact_history_id)
+    {
+        //db table mail_type: 27,'mojeid_verified_contact_transfer','Založení účtu mojeID'
+        const std::string mail_template = "mojeid_verified_contact_transfer";
+        return send_email(mail_template,
+                         _ctx,
+                         _multimanager,
+                         _locked_request,
+                         _locked_contact,
+                         _check_message_limits,
+                         _link_hostname_part,
+                         _contact_history_id);
+    }
+};
+
 }//namespace MojeID::Messages::{anonymous}
 
 template < bool X >
@@ -1099,6 +1214,16 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
+template Generate::MessageId Generate::Into< CommChannel::SMS >::
+                             for_given_request< Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
+        Fred::OperationContext &_ctx,
+        const Multimanager &_multimanager,
+        const Fred::LockedPublicRequest &_locked_request,
+        const Fred::LockedPublicRequestsOfObject &_locked_contact,
+        const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
+        const Optional< GeneralId > &_contact_history_id);
+
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactIdentification >(
         Fred::OperationContext &_ctx,
@@ -1141,6 +1266,26 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
 
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
                              for_given_request< Fred::MojeID::PublicRequest::IdentifiedContactTransfer >(
+        Fred::OperationContext &_ctx,
+        const Multimanager &_multimanager,
+        const Fred::LockedPublicRequest &_locked_request,
+        const Fred::LockedPublicRequestsOfObject &_locked_contact,
+        const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
+        const Optional< GeneralId > &_contact_history_id);
+
+template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
+                             for_given_request< Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
+        Fred::OperationContext &_ctx,
+        const Multimanager &_multimanager,
+        const Fred::LockedPublicRequest &_locked_request,
+        const Fred::LockedPublicRequestsOfObject &_locked_contact,
+        const message_checker &_check_message_limits,
+        const std::string &_link_hostname_part,
+        const Optional< GeneralId > &_contact_history_id);
+
+template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
+                             for_given_request< Fred::MojeID::PublicRequest::PrevalidatedContactTransfer >(
         Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,

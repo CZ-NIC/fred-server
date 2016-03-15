@@ -173,6 +173,26 @@ std::string IdentifiedContactTransfer::generate_passwords()const
     return contact_transfer_request_generate_passwords();
 }
 
+std::string PrevalidatedUnidentifiedContactTransfer::get_public_request_type()const
+{
+    return "mojeid_prevalidated_unidentified_contact_transfer";
+}
+
+std::string PrevalidatedUnidentifiedContactTransfer::generate_passwords()const
+{
+    return ContactConditionalIdentification().iface().generate_passwords();
+}
+
+std::string PrevalidatedContactTransfer::get_public_request_type()const
+{
+    return "mojeid_prevalidated_contact_transfer";
+}
+
+std::string PrevalidatedContactTransfer::generate_passwords()const
+{
+    return contact_transfer_request_generate_passwords();
+}
+
 }//Fred::MojeID::PublicRequest
 }//Fred::MojeID
 }//Fred
