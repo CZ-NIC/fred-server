@@ -187,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE(test_info_nsset_output_timestamp, info_nsset_fixture)
     /* ... and one of them is equal to correct constant value */
     BOOST_CHECK_EQUAL(
         nsset_output_by_handle.utc_timestamp,
-        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()")[0][0] ) )
+        boost::posix_time::time_from_string( static_cast<std::string>( ctx.get_conn().exec("SELECT now()::timestamp")[0][0] ) )
     );
 }
 
