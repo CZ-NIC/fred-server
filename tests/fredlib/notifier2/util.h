@@ -72,6 +72,10 @@ namespace boost { namespace test_tools {
 struct has_autocomitting_ctx : Test::Fixture::instantiate_db_template {
     Fred::OperationContext ctx;
 
+    has_autocomitting_ctx() {
+        ctx.get_conn().exec("TRUNCATE notification_queue");
+    }
+
     ~has_autocomitting_ctx() {
         ctx.commit_transaction();
     }

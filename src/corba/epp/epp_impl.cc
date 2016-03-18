@@ -35,6 +35,9 @@
 
 #include "src/corba/connection_releaser.h"
 
+#include "util/optional_value.h"
+#include "src/fredlib/notifier2/enqueue_notification.h"
+
 #include "config.h"
 
 // database functions
@@ -66,9 +69,6 @@
 #include "util/factory_check.h"
 #include "src/fredlib/public_request/public_request.h"
 #include "src/fredlib/public_request/public_request_authinfo_impl.h"
-
-// Notifier
-#include "notifier.h"
 
 // logger
 #include "log/logger.h"
@@ -121,6 +121,25 @@ static bool testObjectHasState(
 }
 
 
+struct NotificationParams //for enqueue_notification call in ~EPPAction()
+{
+    unsigned long long id;
+    Notification::notified_event event_type;
+    bool disable_epp_notifier;
+
+    NotificationParams()
+    : id(), event_type(), disable_epp_notifier()
+    {}
+
+    NotificationParams(unsigned long long _id,
+        Notification::notified_event _event_type,
+        bool _disable_epp_notifier)
+    : id(_id)
+    , event_type(_event_type)
+    , disable_epp_notifier(_disable_epp_notifier)
+    {}
+};
+
 
 class EPPAction
 {
@@ -131,7 +150,7 @@ class EPPAction
   int regID;
   unsigned long long clientID;
   int code; ///< needed for destructor where Response is invalidated
-  EPPNotifier *notifier;
+  Optional<NotificationParams> notification_params_ ;
   std::string cltrid;
   Database::Connection conn_;
   std::auto_ptr<Database::Transaction> tx_;
@@ -146,7 +165,7 @@ public:
   ) :
     ret(new ccReg::Response()), errors(new ccReg::Errors()), epp(_epp),
     regID(_epp->GetRegistrarID(_clientID)), clientID(_clientID),
-    notifier(0), cltrid(clTRID), conn_(Database::Manager::acquire()), tx_()
+    notification_params_(), cltrid(clTRID), conn_(Database::Manager::acquire()), tx_()
   {
     Logging::Context::push(str(boost::format("action-%1%") % action));
     try {
@@ -173,14 +192,36 @@ public:
     Logging::Context::push(str(boost::format("%1%") % db->GetsvTRID()));
   }
 
-
   ~EPPAction()
   {
     try
     {
+        unsigned long long historyid = 0;
+
         if (tx_.get()) {
             /* OMG: insane macro naming condition style */
             if (CMD_FAILED(code)) {
+
+                try
+                {
+                    if(notification_params_.isset())
+                    {
+                        historyid = conn_.exec_params("SELECT historyid FROM object_registry WHERE id = $1::bigint"
+                            , Database::query_param_list(notification_params_.get_value().id))[0][0];
+                    }
+                }
+                catch (const std::exception& ex)
+                {
+                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() failed to get historyid: "
+                          "(svtrid %1% what: %2%)") % db->GetsvTRID() % ex.what());
+                    throw;
+                }
+                catch (...)
+                {
+                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() failed to get historyid: "
+                          "(svtrid %1%)") % db->GetsvTRID());
+                    throw;
+                }
                 tx_->commit();
             }
             else {
@@ -189,7 +230,7 @@ public:
         }
         db->EndAction(code);
 
-        if (notifier && (code == COMMAND_OK)) {
+        if (notification_params_.isset() && (code == COMMAND_OK)) {
             /* disable notifier for configured cltrid prefix */
             if (boost::starts_with(cltrid, epp->get_disable_epp_notifier_cltrid_prefix())
                     && db->GetRegistrarSystem(getRegistrar()))
@@ -198,7 +239,28 @@ public:
                       "(registrator=%1% cltrid=%2%)") % getRegistrar() % cltrid);
             }
             else {
-                notifier->Send();
+                try
+                {
+                    if(!notification_params_.get_value().disable_epp_notifier)
+                    {
+                        Fred::OperationContext ctx;
+                        Notification::enqueue_notification(ctx,notification_params_.get_value().event_type,
+                            getRegistrar(), historyid, db->GetsvTRID());
+                        ctx.commit_transaction();
+                    }
+                }
+                catch (const std::exception& ex)
+                {
+                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() enqueue_notification failed: "
+                          "(svtrid %1% what: %2%)") % db->GetsvTRID() % ex.what());
+                    throw;
+                }
+                catch (...)
+                {
+                    LOGGER(PACKAGE).error(boost::format(" ~EPPAction() enqueue_notification failed: "
+                          "(svtrid %1%)") % db->GetsvTRID());
+                    throw;
+                }
             }
         }
 
@@ -280,10 +342,15 @@ public:
   {
     code = ret->code = _code;
   }
-  void setNotifier(EPPNotifier *_notifier)
+
+  void set_notification_params(
+      unsigned long long id,
+  Notification::notified_event request_type,
+  bool disable_epp_notifier)
   {
-      notifier = _notifier;
+      notification_params_ = NotificationParams(id,request_type, disable_epp_notifier);
   }
+
 };
 
 /* Ticket #3197 - wrap/overload for function
@@ -2729,7 +2796,6 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     int id;
     short int code = 0;
 
@@ -2770,9 +2836,6 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id )); // notifier maneger before delete
-        ntf->constructMessages(); // need to run all sql queries before delete take place (Ticket #1622)
-
         // test to  table  domain domain_contact_map and nsset_contact_map for relations
         if (action.getDB()->TestContactRelations(id) ) // can not be deleted
         {
@@ -2788,7 +2851,9 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         }
 
         if (code == COMMAND_OK)
-            action.setNotifier(ntf.get());
+        {
+            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
+        }
 
     }
 
@@ -2828,7 +2893,6 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     int id;
     int s, snum;
     char streetStr[10];
@@ -3121,11 +3185,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
 
         if (code == COMMAND_OK) // run notifier
         {
-            ntf.reset(new EPPNotifier(
-                          disable_epp_notifier_,
-                          mm, action.getDB(), action.getRegistrar(), id, regMan.get()));
-            ntf->addExtraEmails(oldNotifyEmail);
-            action.setNotifier(ntf.get()); // schedule message send
+            action.set_notification_params(id,Notification::updated, disable_epp_notifier_);
         }
 
         // EPP exception
@@ -3179,8 +3239,6 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
     Logging::Context ctx("rifd");
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
-
-    std::auto_ptr<EPPNotifier> ntf;
 
     int id;
     int s, snum;
@@ -3350,10 +3408,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
 
     if (code == COMMAND_OK) // run notifier
     {
-        ntf.reset(new EPPNotifier(
-                    disable_epp_notifier_, mm ,
-                    action.getDB(), action.getRegistrar() , id ));
-        action.setNotifier(ntf.get());
+        action.set_notification_params(id,Notification::created, disable_epp_notifier_);
     }
 
 
@@ -3388,7 +3443,6 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
   const char* authInfo, 
   const ccReg::EppParams &params)
 {
-    std::auto_ptr<EPPNotifier> ntf;
     char pass[PASS_LEN+1];
     int oldregID;
     int type = 0;
@@ -3579,9 +3633,7 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
         if (code == COMMAND_OK) // run notifier
         {
-            ntf.reset(new EPPNotifier(disable_epp_notifier_,
-                        mm , action.getDB(), action.getRegistrar() , id ));
-            action.setNotifier(ntf.get());
+            action.set_notification_params(id,Notification::transferred, disable_epp_notifier_);
         }
 
     }
@@ -3725,7 +3777,6 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     int id;
     short int code = 0;
 
@@ -3765,7 +3816,6 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
 
         // test to  table domain if relations to nsset
         if (action.getDB()->TestNSSetRelations(id) ) //  can not be delete
@@ -3781,7 +3831,9 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
         }
 
         if (code == COMMAND_OK)
-            action.setNotifier(ntf.get());
+        {
+            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
+        }
     }
 
     // EPP exception
@@ -3824,7 +3876,6 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     char NAME[256]; // to upper case of name of DNS hosts
     int id, techid, hostID;
     unsigned int i, j, l;
@@ -4120,8 +4171,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 
             if (code == COMMAND_OK) // run notifier
             {
-                ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
-                action.setNotifier(ntf.get());
+                action.set_notification_params(id,Notification::created, disable_epp_notifier_);
             }
 
         }
@@ -4172,7 +4222,6 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     char NAME[256], REM_NAME[256];
     int nssetID, techid, hostID;
     unsigned int i, j, k, l;
@@ -4426,15 +4475,6 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         if (code == 0)
             if (action.getDB()->ObjectUpdate(nssetID, action.getRegistrar(), authInfo_chg) ) {
 
-                // notifier
-                ntf.reset(new EPPNotifier(
-                              disable_epp_notifier_,
-                              mm, action.getDB(), action.getRegistrar(), nssetID, regMan.get()));
-
-                //  add to current tech-c added tech-c
-                for (i = 0; i < tech_add.length(); i++)
-                    ntf->AddTechNew(tch_add[i]);
-
                 // update tech level
                 if (level >= 0) {
                     LOG( NOTICE_LOG, "update nsset check level %d ", (int ) level );
@@ -4584,7 +4624,9 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
 
 
                 if (code == COMMAND_OK)
-                    action.setNotifier(ntf.get()); // schedule message send
+                {
+                    action.set_notification_params(nssetID,Notification::updated, disable_epp_notifier_);
+                }
 
 
             }
@@ -4683,7 +4725,6 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     int id, zone;
     short int code = 0;
 
@@ -4719,15 +4760,15 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
-
         if (action.getDB()->SaveObjectDelete(id) ) //save object as delete
         {
             if (action.getDB()->DeleteDomainObject(id) )
                 code = COMMAND_OK; // if succesfully deleted
         }
         if (code == COMMAND_OK)
-            action.setNotifier(ntf.get());
+        {
+            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
+        }
     }
 
     // EPP exception
@@ -4774,7 +4815,6 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     std::string valexdate;
     ccReg::Disclose publish;
     int id, nssetid, contactid, adminid, keysetid;
@@ -5061,35 +5101,6 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
         }
         if (code == 0) {
 
-            // BEGIN notifier
-            // notify default contacts
-            ntf.reset(new EPPNotifier(
-                          disable_epp_notifier_, mm, action.getDB(),
-                          action.getRegistrar(), id, regMan.get()));
-
-            for (i = 0; i < admin_add.length(); i++)
-                ntf->AddAdminNew(ac_add[i]); // notifier new ADMIN contact
-
-            //  NSSET change  if  NULL value   nssetid = -1
-            if (nssetid != 0) {
-                ntf->AddNSSetTechByDomain(id); // notifier tech-c old nsset
-                if (nssetid > 0)
-                    ntf->AddNSSetTech(nssetid); // tech-c changed nsset if not null
-            }
-
-            //KeySet change if NULL valus      keysetid = -1
-            if (keysetid != 0) {
-                ntf->AddKeySetTechByDomain(id); //notifier tech-c old keyset
-                if (keysetid > 0)
-                    ntf->AddKeySetTech(keysetid); //tech-c changed keyset if not null
-            }
-
-            // change owner of domain send to new registrant
-            if (contactid)
-                ntf->AddRegistrantNew(contactid);
-
-            // END notifier
-
             // begin update
             if (action.getDB()->ObjectUpdate(id, action.getRegistrar(), authInfo_chg) ) {
 
@@ -5182,15 +5193,14 @@ ccReg::Response * ccReg_EPP_i::DomainUpdate(
                     if (code == 0)
                         if (action.getDB()->SaveDomainHistory(id, params.requestID))
                             code = COMMAND_OK; // set up successfully
-
-
                 }
-
             }
 
             // notifier send messages
             if (code == COMMAND_OK)
-                action.setNotifier(ntf.get()); // schedule message send
+            {
+                action.set_notification_params(id,Notification::updated, disable_epp_notifier_);
+            }
 
         }
 
@@ -5249,7 +5259,6 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     std::string valexdate;
     ccReg::Disclose publish;
     std::string FQDN(fqdn);
@@ -5622,10 +5631,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
                             if (code == COMMAND_OK) // run notifier
                             {
-                                ntf.reset(new EPPNotifier(
-                                            disable_epp_notifier_,
-                                            mm , action.getDB(), action.getRegistrar(), id ));
-                                action.setNotifier(ntf.get());
+                                action.set_notification_params(id,Notification::created, disable_epp_notifier_);
                             }
                     }
                 }
@@ -5679,7 +5685,6 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     std::string valexdate;
     ccReg::Disclose publish;
     int id, zone;
@@ -5864,8 +5869,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
     }
     if (code == COMMAND_OK) // run notifier
     {
-        ntf.reset(new EPPNotifier(disable_epp_notifier_,mm , action.getDB(), action.getRegistrar() , id ));
-        action.setNotifier(ntf.get());
+        action.set_notification_params(id,Notification::renewed, disable_epp_notifier_);
     }
     // EPP exception
     if (code > COMMAND_EXCEPTION) {
@@ -5956,7 +5960,6 @@ ccReg_EPP_i::KeySetDelete(
     ConnectionReleaser releaser;
 
     int                 id;
-    std::auto_ptr<EPPNotifier> ntf;
     short int code = 0;
 
     EPPAction action(this, params.loginID, EPP_KeySetDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
@@ -5993,12 +5996,6 @@ ccReg_EPP_i::KeySetDelete(
         code = COMMAND_FAILED;
     }
     if (!code) {
-        ntf.reset(new EPPNotifier(
-                      disable_epp_notifier_,
-                      mm,
-                      action.getDB(),
-                      action.getRegistrar(),
-                      id));
         if (action.getDB()->TestKeySetRelations(id)) {
             LOG(WARNING_LOG, "KeySet can't be deleted - relations in db");
             code = COMMAND_PROHIBITS_OPERATION;
@@ -6008,7 +6005,9 @@ ccReg_EPP_i::KeySetDelete(
                     code = COMMAND_OK;
         }
         if (code == COMMAND_OK)
-            action.setNotifier(ntf.get());
+        {
+            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
+        }
     }
     if (code > COMMAND_EXCEPTION) {
         action.failed(code);
@@ -6075,7 +6074,6 @@ ccReg_EPP_i::KeySetCreate(
     Logging::Context ctx("rifd");
     Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
     ConnectionReleaser releaser;
-    std::auto_ptr<EPPNotifier>  ntf;
     int                         id, techid, dsrecID;
     unsigned int                i, j;
     int                         *tch = NULL;
@@ -6434,15 +6432,7 @@ ccReg_EPP_i::KeySetCreate(
             }
 
             if (code == COMMAND_OK) {
-                // run notifier and send notify (suprisingly) message
-                ntf.reset(new EPPNotifier(
-                            disable_epp_notifier_,
-                            mm,
-                            action.getDB(),
-                            action.getRegistrar(),
-                            id)
-                        );
-                action.setNotifier(ntf.get());
+                action.set_notification_params(id,Notification::created, disable_epp_notifier_);
             }
         }
     }
@@ -6481,7 +6471,6 @@ ccReg_EPP_i::KeySetUpdate(
     Logging::Context ctx("rifd");
     ConnectionReleaser releaser;
 
-    std::auto_ptr<EPPNotifier> ntf;
     int keysetId, techId;
 
     int *techAdd = NULL;
@@ -6978,12 +6967,6 @@ ccReg_EPP_i::KeySetUpdate(
     // if no errors occured run update
     if (code == 0) {
         if (action.getDB()->ObjectUpdate(keysetId, action.getRegistrar(), authInfo_chg)) {
-            ntf.reset(new EPPNotifier(
-                          disable_epp_notifier_,
-                          mm, action.getDB(), action.getRegistrar(), keysetId, regMan.get()));
-
-            for (int i = 0; i < (int)tech_add.length(); i++)
-                ntf->AddTechNew(techAdd[i]);
 
             // adding tech contacts
             for (int i = 0; i < (int)tech_add.length(); i++) {
@@ -7150,7 +7133,9 @@ ccReg_EPP_i::KeySetUpdate(
                     code = COMMAND_OK;
             }
             if (code == COMMAND_OK)
-                action.setNotifier(ntf.get()); // schedule message send
+            {
+                action.set_notification_params(keysetId,Notification::updated, disable_epp_notifier_);
+            }
         }
     }
 
