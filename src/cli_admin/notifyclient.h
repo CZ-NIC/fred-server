@@ -144,6 +144,8 @@ void notify_letters_optys_send_impl(const std::string& nameservice_host_port
         , const std::string& optys_config_file
         );
 
+void send_object_event_notification_emails_impl(boost::shared_ptr<Fred::Mailer::Manager> _mailer);
+
 } // namespace Admin;
 
 #endif // _NOTIFYCLIENT_H_

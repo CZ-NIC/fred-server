@@ -2641,5 +2641,35 @@ public:
     }//handle
 };//class HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp
 
+class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpArgs {
+    private:
+        static const char* get_command_name() { return "notify_email_objects_events"; }
+    public:
+        CommandDescription get_command_option() {
+            return CommandDescription( get_command_name() );
+        }
+
+        boost::shared_ptr<boost::program_options::options_description> get_options_description() {
+            boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+                new boost::program_options::options_description( std::string(get_command_name()) + " options" )
+            );
+
+            cfg_opts->add_options()
+            (
+                get_command_name(),
+                boost::program_options::value<bool>()->zero_tokens(),
+                "Send e-mails notifying events on objects in registry"
+            );
+
+            return cfg_opts;
+
+        }
+
+        std::size_t handle(int argc, char* argv[],  FakedArgs &fa, std::size_t option_group_index) {
+            boost::program_options::variables_map vm;
+            handler_parse_args()(get_options_description(), vm, argc, argv, fa);
+            return option_group_index;
+        }
+};
 
 #endif //HANDLE_ADMINCLIENTSELECTION_ARGS_H_

@@ -53,6 +53,8 @@
 
 #include "src/fredlib/db_settings.h"
 
+#include "src/fredlib/notifier2/process_one_notification_request.h"
+
 using namespace Database;
 
 namespace Admin {
@@ -1026,6 +1028,49 @@ void notify_letters_optys_send_impl(
         "registered_letter",service_handle, max_attempts_limit,
         zip_file_name_foreign_before_message_type, zip_filename_registered_letter_after_message_type,
         messages_manager);
+}
+
+static std::string join_map(const std::map<std::string, std::string>& _map) {
+    std::vector<std::string> key_value_pairs;
+    for(std::map<std::string, std::string>::const_iterator it = _map.begin();
+        it != _map.end();
+        ++it
+    ) {
+        key_value_pairs.push_back( it->first + "=" + it->second );
+    }
+
+    return boost::algorithm::join(key_value_pairs, " ");
+}
+
+void send_object_event_notification_emails_impl(boost::shared_ptr<Fred::Mailer::Manager> _mailer) {
+
+    while(true) {
+        Fred::OperationContext ctx;
+        try {
+            if( ! Notification::process_one_notification_request(ctx, _mailer) ) {
+                break;
+            }
+        } catch(const Notification::FailedToSendMail& e) {
+            /* avoid loop by comitting the transaction and thus removing the problematic notification request */
+            ctx.commit_transaction();
+
+            LOGGER(PACKAGE).error(
+                "send_object_event_notification_emails_impl: failed to send letter "
+                    "event: "                   + to_db_handle( e.failed_request_data.event.get_event() )   + " " +
+                    "object_type: "             + to_db_handle( e.failed_request_data.event.get_type() )    + " " +
+                    "event_done_by_registrar: " + boost::lexical_cast<std::string>( e.failed_request_data.done_by_registrar ) + " " +
+                    "history_id_post_change: "  + boost::lexical_cast<std::string>( e.failed_request_data.history_id_post_change ) + " " +
+                    "failed_recipient: "        + e.failed_recipient + " " +
+                    "skipped_recipients: "      + boost::algorithm::join( e.skipped_recipients, ", " ) + " " +
+                    "email_template: "          + e.template_name + " " +
+                    "email_parameters: "        + join_map( e.template_parameters )
+            );
+
+            throw;
+        }
+        ctx.commit_transaction();
+    }
+
 }
 
 } // namespace Admin;

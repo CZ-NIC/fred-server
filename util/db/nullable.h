@@ -165,11 +165,31 @@ public:
     }
 
     /**
+     * @returns "normal" value of the object
+     * @throws default-constructed exception of type TException when isnull()
+     */
+    template<typename TException>T get_value_or_throw() const {
+        if( isnull() ) {
+            throw TException();
+        }
+
+        return value_;
+    };
+
+    /**
      * @returns "normal" value of object and in case it is null it returns default value of type T (defined by it's default constructor)
      */
     T get_value_or_default() const
     {
         return value_;
+    }
+
+    /**
+     * @returns either not-null value of object or falls back to provided value in case of null
+     */
+    T get_value_or(const T& _default) const
+    {
+        return isnull_ ? _default : value_;
     }
 
     /**

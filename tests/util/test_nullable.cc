@@ -203,6 +203,33 @@ BOOST_AUTO_TEST_CASE( test_all_values )
     }
 }
 
+BOOST_AUTO_TEST_CASE( test_get_value_or )
+{
+    BOOST_CHECK_EQUAL( Nullable<int>().get_value_or(0), 0);
+    BOOST_CHECK_EQUAL( Nullable<int>().get_value_or(42), 42);
+    BOOST_CHECK_EQUAL( Nullable<std::string>().get_value_or(""), "");
+    BOOST_CHECK_EQUAL( Nullable<std::string>().get_value_or("aBc"), "aBc");
+
+    BOOST_CHECK_EQUAL( Nullable<int>(13).get_value_or(0), 13);
+    BOOST_CHECK_EQUAL( Nullable<int>(144).get_value_or(42), 144);
+    BOOST_CHECK_EQUAL( Nullable<std::string>("Prague").get_value_or(""), "Prague");
+    BOOST_CHECK_EQUAL( Nullable<std::string>("CZ.NIC").get_value_or("aBc"), "CZ.NIC");
+}
+
+struct MyDummyException {};
+
+BOOST_AUTO_TEST_CASE( test_get_value_or_throw )
+{
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<MyDummyException>( ), MyDummyException);
+    /* For lack of other types I am throwing int, std::string, etc. (But I am safely catching as well! No type was harmed during testing.) */
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<int>(  ), int);
+    BOOST_CHECK_THROW( Nullable<std::string>().get_value_or_throw<MyDummyException>( ), MyDummyException);
+    BOOST_CHECK_THROW( Nullable<int>().get_value_or_throw<std::string>( ), std::string);
+    BOOST_CHECK_EQUAL( Nullable<int>(144).get_value_or_throw<bool>( ), 144);
+    BOOST_CHECK_EQUAL( Nullable<std::string>("Prague").get_value_or_throw<std::string>( ), "Prague");
+    BOOST_CHECK_EQUAL( Nullable<std::string>("CZ.NIC").get_value_or_throw<MyDummyException>( ), "CZ.NIC");
+}
+
 #if 0
 void unable_to_compile()
 {
