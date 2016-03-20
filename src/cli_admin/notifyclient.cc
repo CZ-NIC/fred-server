@@ -1066,7 +1066,14 @@ void send_object_event_notification_emails_impl(boost::shared_ptr<Fred::Mailer::
                     "email_parameters: "        + join_map( e.template_parameters )
             );
 
-            throw;
+            throw std::runtime_error("send_object_event_notification_emails_impl: failed to send letter ");
+
+        } catch(const Notification::FailedToLockRequest& e) {
+            LOGGER(PACKAGE).error(
+                "unable to get data from notification queue - another process is running"
+            );
+
+            throw std::runtime_error("unable to get data from notification queue - another process is running");
         }
         ctx.commit_transaction();
     }

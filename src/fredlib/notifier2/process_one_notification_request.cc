@@ -133,7 +133,7 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
                 );
 
             } catch(const std::exception& ex) {
-                std::string what_string(ex.what());
+                const std::string what_string(ex.what());
                 if(what_string.find("could not obtain lock on row in relation \"notification_queue\"") != std::string::npos) {
                     throw FailedToLockRequest();
                 }
