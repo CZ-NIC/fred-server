@@ -31,11 +31,16 @@
 
 namespace Notification {
 
-    inline void add_old_new_suffix_pair_if_different(std::map<std::string, std::string>& _target, const std::string& _key, const std::string& _old, const std::string& _new) {
+    /**
+     * if _old != _new
+     *      insert pair("changes." _key ".old", _old) to _target
+     *      insert pair("changes." _key ".new", _new) to _target
+     */
+    inline void add_old_new_changes_pair_if_different(std::map<std::string, std::string>& _target, const std::string& _key, const std::string& _old, const std::string& _new) {
         if(_old != _new) {
             if(
                 _target.insert(
-                    std::make_pair(_key + ".old", _old)
+                    std::make_pair("changes." + _key + ".old", _old)
                 ).second == false /* existing value */
             ) {
                 throw ExceptionInvalidNotificationContent();
@@ -43,7 +48,7 @@ namespace Notification {
 
             if(
                 _target.insert(
-                    std::make_pair(_key + ".new", _new)
+                    std::make_pair("changes." + _key + ".new", _new)
                 ).second == false /* existing value */
             ) {
                 throw ExceptionInvalidNotificationContent();
@@ -51,7 +56,7 @@ namespace Notification {
 
             if(
                 _target.insert(
-                    std::make_pair(_key, "1")
+                    std::make_pair("changes." + _key, "1")
                 ).second == false /* existing value */
             ) {
                 throw ExceptionInvalidNotificationContent();

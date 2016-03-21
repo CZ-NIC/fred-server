@@ -33,7 +33,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     const Fred::InfoContactDiff diff = diff_contact_data(_before, _after);
 
     if(diff.authinfopw.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "object.authinfo",
             diff.authinfopw.get_value().first,
             diff.authinfopw.get_value().second
@@ -41,7 +41,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.name.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.name",
             diff.name.get_value().first.get_value_or(""),
             diff.name.get_value().second.get_value_or("")
@@ -49,7 +49,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.organization.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.org",
             diff.organization.get_value().first.get_value_or(""),
             diff.organization.get_value().second.get_value_or("")
@@ -94,7 +94,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     };
 
     if(diff.place.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.address.permanent",
             convert::to_string( diff.place.get_value().first.get_value_or( Fred::Contact::PlaceAddress() ) ),
             convert::to_string( diff.place.get_value().second.get_value_or( Fred::Contact::PlaceAddress() ) )
@@ -109,7 +109,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
             const std::map<Fred::ContactAddressType, Fred::ContactAddress>::const_iterator old_it = old_addresses.find(type);
             const std::map<Fred::ContactAddressType, Fred::ContactAddress>::const_iterator new_it = new_addresses.find(type);
 
-            add_old_new_suffix_pair_if_different(
+            add_old_new_changes_pair_if_different(
                 result, "contact.address." + to_template_handle(type),
                 old_it != old_addresses.end() ? convert::to_string( old_it->second ) : "",
                 new_it != new_addresses.end() ? convert::to_string( new_it->second ) : ""
@@ -118,7 +118,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.telephone.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.telephone",
             diff.telephone.get_value().first.get_value_or(""),
             diff.telephone.get_value().second.get_value_or("")
@@ -126,7 +126,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.fax.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.fax",
             diff.fax.get_value().first.get_value_or(""),
             diff.fax.get_value().second.get_value_or("")
@@ -134,7 +134,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.email.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.email",
             diff.email.get_value().first.get_value_or(""),
             diff.email.get_value().second.get_value_or("")
@@ -142,7 +142,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.notifyemail.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.notify_email",
             diff.notifyemail.get_value().first.get_value_or(""),
             diff.notifyemail.get_value().second.get_value_or("")
@@ -174,7 +174,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     };
 
     if(diff.ssntype.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.ident_type",
             translate_ssntypes::exec( diff.ssntype.get_value().first ),
             translate_ssntypes::exec( diff.ssntype.get_value().second )
@@ -182,7 +182,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.ssn.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.ident",
             diff.ssn.get_value().first.get_value_or(""),
             diff.ssn.get_value().second.get_value_or("")
@@ -190,7 +190,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.vat.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.vat",
             diff.vat.get_value().first.get_value_or(""),
             diff.vat.get_value().second.get_value_or("")
@@ -198,7 +198,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.disclosename.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.name",
             to_string( diff.disclosename.get_value().first ),
             to_string( diff.disclosename.get_value().second )
@@ -206,7 +206,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.discloseorganization.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.org",
             to_string( diff.discloseorganization.get_value().first ),
             to_string( diff.discloseorganization.get_value().second )
@@ -214,7 +214,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.discloseemail.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.email",
             to_string( diff.discloseemail.get_value().first ),
             to_string( diff.discloseemail.get_value().second )
@@ -222,7 +222,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.discloseaddress.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.address",
             to_string( diff.discloseaddress.get_value().first ),
             to_string( diff.discloseaddress.get_value().second )
@@ -230,7 +230,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.disclosenotifyemail.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.notify_email",
             to_string( diff.disclosenotifyemail.get_value().first ),
             to_string( diff.disclosenotifyemail.get_value().second )
@@ -238,7 +238,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.discloseident.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.ident",
             to_string( diff.discloseident.get_value().first ),
             to_string( diff.discloseident.get_value().second )
@@ -246,7 +246,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.disclosevat.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.vat",
             to_string( diff.disclosevat.get_value().first ),
             to_string( diff.disclosevat.get_value().second )
@@ -254,7 +254,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.disclosetelephone.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.telephone",
             to_string( diff.disclosetelephone.get_value().first ),
             to_string( diff.disclosetelephone.get_value().second )
@@ -262,7 +262,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     }
 
     if(diff.disclosefax.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.disclose.fax",
             to_string( diff.disclosefax.get_value().first ),
             to_string( diff.disclosefax.get_value().second )

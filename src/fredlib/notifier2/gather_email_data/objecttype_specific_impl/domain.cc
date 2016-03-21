@@ -26,7 +26,7 @@ static std::map<std::string, std::string> gather_domain_update_data_change(
     const Fred::InfoDomainDiff diff = diff_domain_data(_before, _after);
 
     if(diff.authinfopw.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "object.authinfo",
             diff.authinfopw.get_value().first,
             diff.authinfopw.get_value().second
@@ -34,7 +34,7 @@ static std::map<std::string, std::string> gather_domain_update_data_change(
     }
 
     if(diff.registrant.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "domain.registrant",
             diff.registrant.get_value().first.handle,
             diff.registrant.get_value().second.handle
@@ -42,7 +42,7 @@ static std::map<std::string, std::string> gather_domain_update_data_change(
     }
 
     if( diff.nsset.isset() ) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "domain.nsset",
             diff.nsset.get_value().first.isnull()  ? "" : diff.nsset.get_value().first.get_value().handle,
             diff.nsset.get_value().second.isnull() ? "" : diff.nsset.get_value().second.get_value().handle
@@ -50,7 +50,7 @@ static std::map<std::string, std::string> gather_domain_update_data_change(
     }
 
     if(diff.keyset.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "domain.keyset",
             diff.keyset.get_value().first.isnull()  ? "" : diff.keyset.get_value().first.get_value().handle,
             diff.keyset.get_value().second.isnull() ? "" : diff.keyset.get_value().second.get_value().handle
@@ -58,7 +58,7 @@ static std::map<std::string, std::string> gather_domain_update_data_change(
     }
 
     if(diff.admin_contacts.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "domain.admin_c",
             boost::algorithm::join( sort( get_handles( diff.admin_contacts.get_value().first  ) ), " " ),
             boost::algorithm::join( sort( get_handles( diff.admin_contacts.get_value().second ) ), " " )
@@ -67,7 +67,7 @@ static std::map<std::string, std::string> gather_domain_update_data_change(
 
     if( diff.enum_domain_validation.isset() ) {
 
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "domain.val_ex_date",
             to_cz_format(
                 diff.enum_domain_validation.get_value().first.get_value_or(
@@ -83,7 +83,7 @@ static std::map<std::string, std::string> gather_domain_update_data_change(
     }
 
     if( diff.enum_domain_validation.isset() ) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "domain.publish",
             diff.enum_domain_validation.get_value().first.isnull()  ? "" : to_string( diff.enum_domain_validation.get_value().first.get_value().publish ),
             diff.enum_domain_validation.get_value().second.isnull() ? "" : to_string( diff.enum_domain_validation.get_value().second.get_value().publish )

@@ -54,7 +54,7 @@ static std::map<std::string, std::string> gather_nsset_update_data_change(
     const Fred::InfoNssetDiff diff = diff_nsset_data(_before, _after);
 
     if(diff.authinfopw.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "object.authinfo",
             diff.authinfopw.get_value().first,
             diff.authinfopw.get_value().second
@@ -62,7 +62,7 @@ static std::map<std::string, std::string> gather_nsset_update_data_change(
     }
 
     if(diff.tech_check_level.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "nsset.check_level",
             diff.tech_check_level.get_value().first.isnull()
                 ? ""
@@ -74,7 +74,7 @@ static std::map<std::string, std::string> gather_nsset_update_data_change(
     }
 
     if(diff.tech_contacts.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "nsset.tech_c",
             boost::algorithm::join( sort( get_handles( diff.tech_contacts.get_value().first  ) ), " " ),
             boost::algorithm::join( sort( get_handles( diff.tech_contacts.get_value().second ) ), " " )
@@ -89,14 +89,14 @@ static std::map<std::string, std::string> gather_nsset_update_data_change(
         std::sort(sorted_nameservers_new.begin(), sorted_nameservers_new.end(), sort_by_hostname);
 
         if( ! equal(sorted_nameservers_old, sorted_nameservers_new) ) {
-            result["nsset.dns"] = "1";
+            result["changes.nsset.dns"] = "1";
 
             for(std::vector<Fred::DnsHost>::size_type i = 0; i < sorted_nameservers_old.size(); ++i) {
-                result["nsset.dns.old." + boost::lexical_cast<std::string>(i)] = dns_host_to_string( sorted_nameservers_old.at(i) );
+                result["changes.nsset.dns.old." + boost::lexical_cast<std::string>(i)] = dns_host_to_string( sorted_nameservers_old.at(i) );
             }
 
             for(std::vector<Fred::DnsHost>::size_type i = 0; i < sorted_nameservers_new.size(); ++i) {
-                result["nsset.dns.new." + boost::lexical_cast<std::string>(i)] = dns_host_to_string( sorted_nameservers_new.at(i) );
+                result["changes.nsset.dns.new." + boost::lexical_cast<std::string>(i)] = dns_host_to_string( sorted_nameservers_new.at(i) );
             }
         }
     }

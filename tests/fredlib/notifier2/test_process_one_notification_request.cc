@@ -533,19 +533,19 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
             ("ticket",                  input_svtrid)
             ("registrar",               registrar.name.get_value_or("") + " (" + registrar.url.get_value_or("") + ")")
             ("changes",                 "1")
-            ("object.authinfo",         "1")
-            ("object.authinfo.old",     domain_data_pre_update .authinfopw)
-            ("object.authinfo.new",     domain_data_post_update.authinfopw)
-            ("domain.registrant",       "1")
-            ("domain.registrant.old",   domain_data_pre_update .registrant.handle)
-            ("domain.registrant.new",   domain_data_post_update.registrant.handle)
-            ("domain.nsset",            "1")
-            ("domain.nsset.old",        domain_data_pre_update .nsset.get_value().handle)
-            ("domain.nsset.new",        domain_data_post_update.nsset.get_value().handle)
-            ("domain.keyset",           "1")
-            ("domain.keyset.old",       domain_data_pre_update .keyset.get_value().handle)
-            ("domain.keyset.new",       domain_data_post_update.keyset.get_value().handle)
-            ("domain.admin_c",          "1");
+            ("changes.object.authinfo",         "1")
+            ("changes.object.authinfo.old",     domain_data_pre_update .authinfopw)
+            ("changes.object.authinfo.new",     domain_data_post_update.authinfopw)
+            ("changes.domain.registrant",       "1")
+            ("changes.domain.registrant.old",   domain_data_pre_update .registrant.handle)
+            ("changes.domain.registrant.new",   domain_data_post_update.registrant.handle)
+            ("changes.domain.nsset",            "1")
+            ("changes.domain.nsset.old",        domain_data_pre_update .nsset.get_value().handle)
+            ("changes.domain.nsset.new",        domain_data_post_update.nsset.get_value().handle)
+            ("changes.domain.keyset",           "1")
+            ("changes.domain.keyset.old",       domain_data_pre_update .keyset.get_value().handle)
+            ("changes.domain.keyset.new",       domain_data_post_update.keyset.get_value().handle)
+            ("changes.domain.admin_c",          "1");
         {
             std::string admin_c_list_pre_update;
 
@@ -556,7 +556,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
             std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
             admin_c_list_pre_update = boost::algorithm::join(admin_contact_handles, " ");
 
-            params_etalon["domain.admin_c.old"]    = admin_c_list_pre_update;
+            params_etalon["changes.domain.admin_c.old"]    = admin_c_list_pre_update;
         }
         {
             std::string admin_c_list_post_update;
@@ -568,7 +568,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
             std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
             admin_c_list_post_update = boost::algorithm::join(admin_contact_handles, " ");
 
-            params_etalon["domain.admin_c.new"]    = admin_c_list_post_update;
+            params_etalon["changes.domain.admin_c.new"]    = admin_c_list_post_update;
         }
 
 
