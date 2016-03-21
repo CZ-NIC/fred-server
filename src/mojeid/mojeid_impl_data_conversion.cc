@@ -82,13 +82,26 @@ void minimal_common_conversion_into_fred(const SRC_INFO_TYPE &src, Fred::InfoCon
 {
     dst.organization = src.organization;
     dst.vat          = src.vat_reg_num;
-    if (!src.birth_date.isnull()) {
-        dst.ssntype = Conversion::Enums::to_db_handle(Fred::SSNType::BIRTHDAY);
-        dst.ssn     = src.birth_date.get_value().value;
+    const bool contact_is_organization = !dst.organization.isnull() && !dst.organization.get_value().empty();
+    if (contact_is_organization) {
+        if (!src.vat_id_num.isnull()) {
+            dst.ssntype = Conversion::Enums::to_db_handle(Fred::SSNType::ICO);
+            dst.ssn     = src.vat_id_num.get_value();
+        }
+        else if (!src.birth_date.isnull()) {
+            dst.ssntype = Conversion::Enums::to_db_handle(Fred::SSNType::BIRTHDAY);
+            dst.ssn     = src.birth_date.get_value().value;
+        }
     }
-    else if (!src.vat_id_num.isnull()) {
-        dst.ssntype = Conversion::Enums::to_db_handle(Fred::SSNType::ICO);
-        dst.ssn     = src.vat_id_num.get_value();
+    else {
+        if (!src.birth_date.isnull()) {
+            dst.ssntype = Conversion::Enums::to_db_handle(Fred::SSNType::BIRTHDAY);
+            dst.ssn     = src.birth_date.get_value().value;
+        }
+        else if (!src.vat_id_num.isnull()) {
+            dst.ssntype = Conversion::Enums::to_db_handle(Fred::SSNType::ICO);
+            dst.ssn     = src.vat_id_num.get_value();
+        }
     }
     from_into_nullable(src.permanent, dst.place);
     if (!src.mailing.isnull()) {
