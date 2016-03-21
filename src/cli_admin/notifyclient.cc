@@ -1045,7 +1045,7 @@ static std::string join_map(const std::map<std::string, std::string>& _map) {
 void send_object_event_notification_emails_impl(boost::shared_ptr<Fred::Mailer::Manager> _mailer) {
 
     while(true) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         try {
             if( ! Notification::process_one_notification_request(ctx, _mailer) ) {
                 break;

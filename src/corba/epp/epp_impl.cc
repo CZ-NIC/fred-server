@@ -243,7 +243,7 @@ public:
                 {
                     if(!notification_params_.get_value().disable_epp_notifier)
                     {
-                        Fred::OperationContext ctx;
+                        Fred::OperationContextCreator ctx;
                         Notification::enqueue_notification(ctx,notification_params_.get_value().event_type,
                             getRegistrar(), historyid, db->GetsvTRID());
                         ctx.commit_transaction();

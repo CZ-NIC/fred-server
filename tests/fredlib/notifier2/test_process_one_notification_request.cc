@@ -599,7 +599,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_empty_queue, has_autocomitting_ctx)
 
 struct has_domain_uncomitted : Test::Fixture::instantiate_db_template {
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoRegistrarData registrar;
     Fred::InfoContactData registrant;
@@ -645,10 +645,10 @@ BOOST_FIXTURE_TEST_CASE(test_process_request_parallel_notification_request_acces
 
     boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
 
-    Fred::OperationContext evil_uncomitted_parallel_transaction;
+    Fred::OperationContextCreator evil_uncomitted_parallel_transaction;
     Notification::process_one_notification_request(evil_uncomitted_parallel_transaction, mocked_mailer);
 
-    Fred::OperationContext ctx_my_poor_transaction;
+    Fred::OperationContextCreator ctx_my_poor_transaction;
     BOOST_CHECK_THROW(
         Notification::process_one_notification_request(ctx_my_poor_transaction, mocked_mailer),
         Notification::FailedToLockRequest
