@@ -47,7 +47,7 @@
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/messages/messages_impl.h"
-#include "src/fredlib/notifier2/enqueue_notification.h"
+#include "src/fredlib/notifier/enqueue_notification.h"
 #include "util/random.h"
 #include "util/xmlgen.h"
 #include "util/log/context.h"

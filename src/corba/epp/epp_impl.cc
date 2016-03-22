@@ -36,7 +36,7 @@
 #include "src/corba/connection_releaser.h"
 
 #include "util/optional_value.h"
-#include "src/fredlib/notifier2/enqueue_notification.h"
+#include "src/fredlib/notifier/enqueue_notification.h"
 
 #include "config.h"
 

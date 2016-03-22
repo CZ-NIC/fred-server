@@ -53,7 +53,7 @@
 
 #include "src/fredlib/db_settings.h"
 
-#include "src/fredlib/notifier2/process_one_notification_request.h"
+#include "src/fredlib/notifier/process_one_notification_request.h"
 
 using namespace Database;
 
