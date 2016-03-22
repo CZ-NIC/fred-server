@@ -887,7 +887,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_wrong_handle, test_domain_fixture)
 struct wrong_zone_fixture
 : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
-    std::string test_fqdn_bad_zone;
+    std::string test_fqdn_bad_zone; //separate so a different fixture
 
     wrong_zone_fixture()
     : test_registrar_fixture(),
@@ -1010,7 +1010,7 @@ struct invalid_unmanaged_fixture
         {
             prefix << "1";//invalid part
         }
-        prefix << test_fqdn_bad_zone;//unmanaged part
+        prefix << '.' << test_fqdn_bad_zone;//unmanaged part
         invalid_unmanaged_fqdn = prefix.str();
     }
 };
