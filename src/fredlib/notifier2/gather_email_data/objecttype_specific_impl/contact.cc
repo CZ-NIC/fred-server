@@ -174,11 +174,11 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
     if (diff.personal_id.isset()) {
         const Nullable< Fred::PersonalIdUnion > nullable_personal_id_a = diff.personal_id.get_value().first;
         const Nullable< Fred::PersonalIdUnion > nullable_personal_id_b = diff.personal_id.get_value().second;
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.ident_type",
             translate_ssntypes::exec(nullable_personal_id_a),
             translate_ssntypes::exec(nullable_personal_id_b));
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "contact.ident",
             nullable_personal_id_a.get_value_or_default().get(),
             nullable_personal_id_b.get_value_or_default().get());
