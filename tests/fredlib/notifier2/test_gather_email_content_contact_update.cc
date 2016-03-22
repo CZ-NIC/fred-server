@@ -178,9 +178,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_contact_big_update<
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
 
-    etalon["contact.address.permanent"]         = "1";
-    etalon["contact.address.permanent.old"]     = "";
-    etalon["contact.address.permanent.new"]     =
+    etalon["changes.contact.address.permanent"]         = "1";
+    etalon["changes.contact.address.permanent.old"]     = "";
+    etalon["changes.contact.address.permanent.new"]     =
         new_contact_data.place.get_value().street1 + ", " +
         new_contact_data.place.get_value().street2.get_value() + ", " +
         new_contact_data.place.get_value().street3.get_value() + ", " +
@@ -189,9 +189,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_contact_big_update<
         new_contact_data.place.get_value().city + ", " +
         new_contact_data.place.get_value().country;
 
-    etalon["contact.address.mailing"]         = "1";
-    etalon["contact.address.mailing.old"]     = "";
-    etalon["contact.address.mailing.new"]     =
+    etalon["changes.contact.address.mailing"]         = "1";
+    etalon["changes.contact.address.mailing.old"]     = "";
+    etalon["changes.contact.address.mailing.new"]     =
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).street1 + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).street2.get_value() + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).street3.get_value() + ", " +
@@ -200,9 +200,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_contact_big_update<
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).city + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).country;
 
-    etalon["contact.address.shipping"]         = "1";
-    etalon["contact.address.shipping.old"]     = "";
-    etalon["contact.address.shipping.new"]     =
+    etalon["changes.contact.address.shipping"]         = "1";
+    etalon["changes.contact.address.shipping.old"]     = "";
+    etalon["changes.contact.address.shipping.new"]     =
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).street1 + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).street2.get_value() + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).street3.get_value() + ", " +
@@ -211,81 +211,81 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_contact_big_update<
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).city + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).country;
 
-    etalon["object.authinfo"]                   = "1";
-    etalon["object.authinfo.old"]               = contact.authinfopw;
-    etalon["object.authinfo.new"]               = new_contact_data.authinfopw;
+    etalon["changes.object.authinfo"]                   = "1";
+    etalon["changes.object.authinfo.old"]               = contact.authinfopw;
+    etalon["changes.object.authinfo.new"]               = new_contact_data.authinfopw;
 
-    etalon["contact.name"]                      = "1";
-    etalon["contact.name.old"]                  = "";
-    etalon["contact.name.new"]                  = new_contact_data.name.get_value();
+    etalon["changes.contact.name"]                      = "1";
+    etalon["changes.contact.name.old"]                  = "";
+    etalon["changes.contact.name.new"]                  = new_contact_data.name.get_value();
 
-    etalon["contact.org"]                       = "1";
-    etalon["contact.org.old"]                   = "";
-    etalon["contact.org.new"]                   = new_contact_data.organization.get_value();
+    etalon["changes.contact.org"]                       = "1";
+    etalon["changes.contact.org.old"]                   = "";
+    etalon["changes.contact.org.new"]                   = new_contact_data.organization.get_value();
 
-    etalon["contact.telephone"]                 = "1";
-    etalon["contact.telephone.old"]             = "";
-    etalon["contact.telephone.new"]             = new_contact_data.telephone.get_value();
+    etalon["changes.contact.telephone"]                 = "1";
+    etalon["changes.contact.telephone.old"]             = "";
+    etalon["changes.contact.telephone.new"]             = new_contact_data.telephone.get_value();
 
-    etalon["contact.fax"]                       = "1";
-    etalon["contact.fax.old"]                   = "";
-    etalon["contact.fax.new"]                   = new_contact_data.fax.get_value();
+    etalon["changes.contact.fax"]                       = "1";
+    etalon["changes.contact.fax.old"]                   = "";
+    etalon["changes.contact.fax.new"]                   = new_contact_data.fax.get_value();
 
-    etalon["contact.email"]                     = "1";
-    etalon["contact.email.old"]                 = "";
-    etalon["contact.email.new"]                 = new_contact_data.email.get_value();
+    etalon["changes.contact.email"]                     = "1";
+    etalon["changes.contact.email.old"]                 = "";
+    etalon["changes.contact.email.new"]                 = new_contact_data.email.get_value();
 
-    etalon["contact.notify_email"]              = "1";
-    etalon["contact.notify_email.old"]          = "";
-    etalon["contact.notify_email.new"]          = new_contact_data.notifyemail.get_value();
+    etalon["changes.contact.notify_email"]              = "1";
+    etalon["changes.contact.notify_email.old"]          = "";
+    etalon["changes.contact.notify_email.new"]          = new_contact_data.notifyemail.get_value();
 
-    etalon["contact.ident_type"]                = "1";
-    etalon["contact.ident_type.old"]            = "EMPTY";
-    etalon["contact.ident_type.new"]            = new_contact_data.ssntype.get_value();
+    etalon["changes.contact.ident_type"]                = "1";
+    etalon["changes.contact.ident_type.old"]            = "EMPTY";
+    etalon["changes.contact.ident_type.new"]            = new_contact_data.ssntype.get_value();
 
-    etalon["contact.ident"]                     = "1";
-    etalon["contact.ident.old"]                 = "";
-    etalon["contact.ident.new"]                 = new_contact_data.ssn.get_value();
+    etalon["changes.contact.ident"]                     = "1";
+    etalon["changes.contact.ident.old"]                 = "";
+    etalon["changes.contact.ident.new"]                 = new_contact_data.ssn.get_value();
 
-    etalon["contact.vat"]                       = "1";
-    etalon["contact.vat.old"]                   = "";
-    etalon["contact.vat.new"]                   = new_contact_data.vat.get_value();
+    etalon["changes.contact.vat"]                       = "1";
+    etalon["changes.contact.vat.old"]                   = "";
+    etalon["changes.contact.vat.new"]                   = new_contact_data.vat.get_value();
 
-    etalon["contact.disclose.name"]             = "1";
-    etalon["contact.disclose.name.old"]         = contact         .disclosename ? "1" : "0";
-    etalon["contact.disclose.name.new"]         = new_contact_data.disclosename ? "1" : "0";
+    etalon["changes.contact.disclose.name"]             = "1";
+    etalon["changes.contact.disclose.name.old"]         = contact         .disclosename ? "1" : "0";
+    etalon["changes.contact.disclose.name.new"]         = new_contact_data.disclosename ? "1" : "0";
 
-    etalon["contact.disclose.org"]              = "1";
-    etalon["contact.disclose.org.old"]          = contact         .discloseorganization ? "1" : "0";
-    etalon["contact.disclose.org.new"]          = new_contact_data.discloseorganization ? "1" : "0";
+    etalon["changes.contact.disclose.org"]              = "1";
+    etalon["changes.contact.disclose.org.old"]          = contact         .discloseorganization ? "1" : "0";
+    etalon["changes.contact.disclose.org.new"]          = new_contact_data.discloseorganization ? "1" : "0";
 
-    etalon["contact.disclose.email"]            = "1";
-    etalon["contact.disclose.email.old"]        = contact         .discloseemail ? "1" : "0";
-    etalon["contact.disclose.email.new"]        = new_contact_data.discloseemail ? "1" : "0";
+    etalon["changes.contact.disclose.email"]            = "1";
+    etalon["changes.contact.disclose.email.old"]        = contact         .discloseemail ? "1" : "0";
+    etalon["changes.contact.disclose.email.new"]        = new_contact_data.discloseemail ? "1" : "0";
 
-    etalon["contact.disclose.address"]          = "1";
-    etalon["contact.disclose.address.old"]      = contact         .discloseaddress ? "1" : "0";
-    etalon["contact.disclose.address.new"]      = new_contact_data.discloseaddress ? "1" : "0";
+    etalon["changes.contact.disclose.address"]          = "1";
+    etalon["changes.contact.disclose.address.old"]      = contact         .discloseaddress ? "1" : "0";
+    etalon["changes.contact.disclose.address.new"]      = new_contact_data.discloseaddress ? "1" : "0";
 
-    etalon["contact.disclose.notify_email"]     = "1";
-    etalon["contact.disclose.notify_email.old"] = contact         .disclosenotifyemail ? "1" : "0";
-    etalon["contact.disclose.notify_email.new"] = new_contact_data.disclosenotifyemail ? "1" : "0";
+    etalon["changes.contact.disclose.notify_email"]     = "1";
+    etalon["changes.contact.disclose.notify_email.old"] = contact         .disclosenotifyemail ? "1" : "0";
+    etalon["changes.contact.disclose.notify_email.new"] = new_contact_data.disclosenotifyemail ? "1" : "0";
 
-    etalon["contact.disclose.ident"]            = "1";
-    etalon["contact.disclose.ident.old"]        = contact         .discloseident ? "1" : "0";
-    etalon["contact.disclose.ident.new"]        = new_contact_data.discloseident ? "1" : "0";
+    etalon["changes.contact.disclose.ident"]            = "1";
+    etalon["changes.contact.disclose.ident.old"]        = contact         .discloseident ? "1" : "0";
+    etalon["changes.contact.disclose.ident.new"]        = new_contact_data.discloseident ? "1" : "0";
 
-    etalon["contact.disclose.vat"]              = "1";
-    etalon["contact.disclose.vat.old"]          = contact         .disclosevat ? "1" : "0";
-    etalon["contact.disclose.vat.new"]          = new_contact_data.disclosevat ? "1" : "0";
+    etalon["changes.contact.disclose.vat"]              = "1";
+    etalon["changes.contact.disclose.vat.old"]          = contact         .disclosevat ? "1" : "0";
+    etalon["changes.contact.disclose.vat.new"]          = new_contact_data.disclosevat ? "1" : "0";
 
-    etalon["contact.disclose.telephone"]        = "1";
-    etalon["contact.disclose.telephone.old"]    = contact         .disclosetelephone ? "1" : "0";
-    etalon["contact.disclose.telephone.new"]    = new_contact_data.disclosetelephone ? "1" : "0";
+    etalon["changes.contact.disclose.telephone"]        = "1";
+    etalon["changes.contact.disclose.telephone.old"]    = contact         .disclosetelephone ? "1" : "0";
+    etalon["changes.contact.disclose.telephone.new"]    = new_contact_data.disclosetelephone ? "1" : "0";
 
-    etalon["contact.disclose.fax"]              = "1";
-    etalon["contact.disclose.fax.old"]          = contact         .disclosefax ? "1" : "0";
-    etalon["contact.disclose.fax.new"]          = new_contact_data.disclosefax ? "1" : "0";
+    etalon["changes.contact.disclose.fax"]              = "1";
+    etalon["changes.contact.disclose.fax.old"]          = contact         .disclosefax ? "1" : "0";
+    etalon["changes.contact.disclose.fax.new"]          = new_contact_data.disclosefax ? "1" : "0";
 
     check_maps_are_equal(
         etalon,
@@ -312,8 +312,8 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_contact_big_update<h
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
 
-    etalon["contact.address.permanent"]         = "1";
-    etalon["contact.address.permanent.old"]     =
+    etalon["changes.contact.address.permanent"]         = "1";
+    etalon["changes.contact.address.permanent.old"]     =
         contact.place.get_value().street1 + ", " +
         contact.place.get_value().street2.get_value() + ", " +
         contact.place.get_value().street3.get_value() + ", " +
@@ -321,7 +321,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_contact_big_update<h
         contact.place.get_value().postalcode + ", " +
         contact.place.get_value().city + ", " +
         contact.place.get_value().country;
-    etalon["contact.address.permanent.new"]     =
+    etalon["changes.contact.address.permanent.new"]     =
         new_contact_data.place.get_value().street1 + ", " +
         new_contact_data.place.get_value().street2.get_value() + ", " +
         new_contact_data.place.get_value().street3.get_value() + ", " +
@@ -330,9 +330,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_contact_big_update<h
         new_contact_data.place.get_value().city + ", " +
         new_contact_data.place.get_value().country;
 
-    etalon["contact.address.mailing"]         = "1";
-    etalon["contact.address.mailing.old"]     = "";
-    etalon["contact.address.mailing.new"]     =
+    etalon["changes.contact.address.mailing"]         = "1";
+    etalon["changes.contact.address.mailing.old"]     = "";
+    etalon["changes.contact.address.mailing.new"]     =
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).street1 + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).street2.get_value() + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).street3.get_value() + ", " +
@@ -341,8 +341,8 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_contact_big_update<h
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).city + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::MAILING).country;
 
-    etalon["contact.address.shipping"]         = "1";
-    etalon["contact.address.shipping.old"]     =
+    etalon["changes.contact.address.shipping"]         = "1";
+    etalon["changes.contact.address.shipping.old"]     =
         contact.addresses.at(Fred::ContactAddressType::SHIPPING).company_name.get_value() + ", " +
         contact.addresses.at(Fred::ContactAddressType::SHIPPING).street1 + ", " +
         contact.addresses.at(Fred::ContactAddressType::SHIPPING).street2.get_value() + ", " +
@@ -351,7 +351,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_contact_big_update<h
         contact.addresses.at(Fred::ContactAddressType::SHIPPING).postalcode + ", " +
         contact.addresses.at(Fred::ContactAddressType::SHIPPING).city + ", " +
         contact.addresses.at(Fred::ContactAddressType::SHIPPING).country;
-    etalon["contact.address.shipping.new"]     =
+    etalon["changes.contact.address.shipping.new"]     =
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).street1 + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).street2.get_value() + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).street3.get_value() + ", " +
@@ -360,81 +360,81 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_contact_big_update<h
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).city + ", " +
         new_contact_data.addresses.at(Fred::ContactAddressType::SHIPPING).country;
 
-    etalon["object.authinfo"]                   = "1";
-    etalon["object.authinfo.old"]               = contact         .authinfopw;
-    etalon["object.authinfo.new"]               = new_contact_data.authinfopw;
+    etalon["changes.object.authinfo"]                   = "1";
+    etalon["changes.object.authinfo.old"]               = contact         .authinfopw;
+    etalon["changes.object.authinfo.new"]               = new_contact_data.authinfopw;
 
-    etalon["contact.name"]                      = "1";
-    etalon["contact.name.old"]                  = contact         .name.get_value();
-    etalon["contact.name.new"]                  = new_contact_data.name.get_value();
+    etalon["changes.contact.name"]                      = "1";
+    etalon["changes.contact.name.old"]                  = contact         .name.get_value();
+    etalon["changes.contact.name.new"]                  = new_contact_data.name.get_value();
 
-    etalon["contact.org"]                       = "1";
-    etalon["contact.org.old"]                   = contact         .organization.get_value();
-    etalon["contact.org.new"]                   = new_contact_data.organization.get_value();
+    etalon["changes.contact.org"]                       = "1";
+    etalon["changes.contact.org.old"]                   = contact         .organization.get_value();
+    etalon["changes.contact.org.new"]                   = new_contact_data.organization.get_value();
 
-    etalon["contact.telephone"]                 = "1";
-    etalon["contact.telephone.old"]             = contact         .telephone.get_value();
-    etalon["contact.telephone.new"]             = new_contact_data.telephone.get_value();
+    etalon["changes.contact.telephone"]                 = "1";
+    etalon["changes.contact.telephone.old"]             = contact         .telephone.get_value();
+    etalon["changes.contact.telephone.new"]             = new_contact_data.telephone.get_value();
 
-    etalon["contact.fax"]                       = "1";
-    etalon["contact.fax.old"]                   = contact         .fax.get_value();
-    etalon["contact.fax.new"]                   = new_contact_data.fax.get_value();
+    etalon["changes.contact.fax"]                       = "1";
+    etalon["changes.contact.fax.old"]                   = contact         .fax.get_value();
+    etalon["changes.contact.fax.new"]                   = new_contact_data.fax.get_value();
 
-    etalon["contact.email"]                     = "1";
-    etalon["contact.email.old"]                 = contact         .email.get_value();
-    etalon["contact.email.new"]                 = new_contact_data.email.get_value();
+    etalon["changes.contact.email"]                     = "1";
+    etalon["changes.contact.email.old"]                 = contact         .email.get_value();
+    etalon["changes.contact.email.new"]                 = new_contact_data.email.get_value();
 
-    etalon["contact.notify_email"]              = "1";
-    etalon["contact.notify_email.old"]          = contact         .notifyemail.get_value();
-    etalon["contact.notify_email.new"]          = new_contact_data.notifyemail.get_value();
+    etalon["changes.contact.notify_email"]              = "1";
+    etalon["changes.contact.notify_email.old"]          = contact         .notifyemail.get_value();
+    etalon["changes.contact.notify_email.new"]          = new_contact_data.notifyemail.get_value();
 
-    etalon["contact.ident_type"]                = "1";
-    etalon["contact.ident_type.old"]            = contact         .ssntype.get_value();
-    etalon["contact.ident_type.new"]            = new_contact_data.ssntype.get_value();
+    etalon["changes.contact.ident_type"]                = "1";
+    etalon["changes.contact.ident_type.old"]            = contact         .ssntype.get_value();
+    etalon["changes.contact.ident_type.new"]            = new_contact_data.ssntype.get_value();
 
-    etalon["contact.ident"]                     = "1";
-    etalon["contact.ident.old"]                 = contact         .ssn.get_value();
-    etalon["contact.ident.new"]                 = new_contact_data.ssn.get_value();
+    etalon["changes.contact.ident"]                     = "1";
+    etalon["changes.contact.ident.old"]                 = contact         .ssn.get_value();
+    etalon["changes.contact.ident.new"]                 = new_contact_data.ssn.get_value();
 
-    etalon["contact.vat"]                       = "1";
-    etalon["contact.vat.old"]                   = contact         .vat.get_value();
-    etalon["contact.vat.new"]                   = new_contact_data.vat.get_value();
+    etalon["changes.contact.vat"]                       = "1";
+    etalon["changes.contact.vat.old"]                   = contact         .vat.get_value();
+    etalon["changes.contact.vat.new"]                   = new_contact_data.vat.get_value();
 
-    etalon["contact.disclose.name"]             = "1";
-    etalon["contact.disclose.name.old"]         = contact         .disclosename ? "1" : "0";
-    etalon["contact.disclose.name.new"]         = new_contact_data.disclosename ? "1" : "0";
+    etalon["changes.contact.disclose.name"]             = "1";
+    etalon["changes.contact.disclose.name.old"]         = contact         .disclosename ? "1" : "0";
+    etalon["changes.contact.disclose.name.new"]         = new_contact_data.disclosename ? "1" : "0";
 
-    etalon["contact.disclose.org"]              = "1";
-    etalon["contact.disclose.org.old"]          = contact         .discloseorganization ? "1" : "0";
-    etalon["contact.disclose.org.new"]          = new_contact_data.discloseorganization ? "1" : "0";
+    etalon["changes.contact.disclose.org"]              = "1";
+    etalon["changes.contact.disclose.org.old"]          = contact         .discloseorganization ? "1" : "0";
+    etalon["changes.contact.disclose.org.new"]          = new_contact_data.discloseorganization ? "1" : "0";
 
-    etalon["contact.disclose.email"]            = "1";
-    etalon["contact.disclose.email.old"]        = contact         .discloseemail ? "1" : "0";
-    etalon["contact.disclose.email.new"]        = new_contact_data.discloseemail ? "1" : "0";
+    etalon["changes.contact.disclose.email"]            = "1";
+    etalon["changes.contact.disclose.email.old"]        = contact         .discloseemail ? "1" : "0";
+    etalon["changes.contact.disclose.email.new"]        = new_contact_data.discloseemail ? "1" : "0";
 
-    etalon["contact.disclose.address"]          = "1";
-    etalon["contact.disclose.address.old"]      = contact         .discloseaddress ? "1" : "0";
-    etalon["contact.disclose.address.new"]      = new_contact_data.discloseaddress ? "1" : "0";
+    etalon["changes.contact.disclose.address"]          = "1";
+    etalon["changes.contact.disclose.address.old"]      = contact         .discloseaddress ? "1" : "0";
+    etalon["changes.contact.disclose.address.new"]      = new_contact_data.discloseaddress ? "1" : "0";
 
-    etalon["contact.disclose.notify_email"]     = "1";
-    etalon["contact.disclose.notify_email.old"] = contact         .disclosenotifyemail ? "1" : "0";
-    etalon["contact.disclose.notify_email.new"] = new_contact_data.disclosenotifyemail ? "1" : "0";
+    etalon["changes.contact.disclose.notify_email"]     = "1";
+    etalon["changes.contact.disclose.notify_email.old"] = contact         .disclosenotifyemail ? "1" : "0";
+    etalon["changes.contact.disclose.notify_email.new"] = new_contact_data.disclosenotifyemail ? "1" : "0";
 
-    etalon["contact.disclose.ident"]            = "1";
-    etalon["contact.disclose.ident.old"]        = contact         .discloseident ? "1" : "0";
-    etalon["contact.disclose.ident.new"]        = new_contact_data.discloseident ? "1" : "0";
+    etalon["changes.contact.disclose.ident"]            = "1";
+    etalon["changes.contact.disclose.ident.old"]        = contact         .discloseident ? "1" : "0";
+    etalon["changes.contact.disclose.ident.new"]        = new_contact_data.discloseident ? "1" : "0";
 
-    etalon["contact.disclose.vat"]              = "1";
-    etalon["contact.disclose.vat.old"]          = contact         .disclosevat ? "1" : "0";
-    etalon["contact.disclose.vat.new"]          = new_contact_data.disclosevat ? "1" : "0";
+    etalon["changes.contact.disclose.vat"]              = "1";
+    etalon["changes.contact.disclose.vat.old"]          = contact         .disclosevat ? "1" : "0";
+    etalon["changes.contact.disclose.vat.new"]          = new_contact_data.disclosevat ? "1" : "0";
 
-    etalon["contact.disclose.telephone"]        = "1";
-    etalon["contact.disclose.telephone.old"]    = contact         .disclosetelephone ? "1" : "0";
-    etalon["contact.disclose.telephone.new"]    = new_contact_data.disclosetelephone ? "1" : "0";
+    etalon["changes.contact.disclose.telephone"]        = "1";
+    etalon["changes.contact.disclose.telephone.old"]    = contact         .disclosetelephone ? "1" : "0";
+    etalon["changes.contact.disclose.telephone.new"]    = new_contact_data.disclosetelephone ? "1" : "0";
 
-    etalon["contact.disclose.fax"]              = "1";
-    etalon["contact.disclose.fax.old"]          = contact         .disclosefax ? "1" : "0";
-    etalon["contact.disclose.fax.new"]          = new_contact_data.disclosefax ? "1" : "0";
+    etalon["changes.contact.disclose.fax"]              = "1";
+    etalon["changes.contact.disclose.fax.old"]          = contact         .disclosefax ? "1" : "0";
+    etalon["changes.contact.disclose.fax.new"]          = new_contact_data.disclosefax ? "1" : "0";
 
     check_maps_are_equal(
         etalon,

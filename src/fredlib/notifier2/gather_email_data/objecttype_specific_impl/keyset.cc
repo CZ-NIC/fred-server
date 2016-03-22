@@ -52,7 +52,7 @@ static std::map<std::string, std::string> gather_keyset_update_data_change(
 
 
     if(diff.authinfopw.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "object.authinfo",
             diff.authinfopw.get_value().first,
             diff.authinfopw.get_value().second
@@ -60,7 +60,7 @@ static std::map<std::string, std::string> gather_keyset_update_data_change(
     }
 
     if(diff.tech_contacts.isset()) {
-        add_old_new_suffix_pair_if_different(
+        add_old_new_changes_pair_if_different(
             result, "keyset.tech_c",
             boost::algorithm::join( sort( get_handles( diff.tech_contacts.get_value().first  ) ), " " ),
             boost::algorithm::join( sort( get_handles( diff.tech_contacts.get_value().second ) ), " " )
@@ -75,14 +75,14 @@ static std::map<std::string, std::string> gather_keyset_update_data_change(
         std::sort(sorted_keys_new.begin(), sorted_keys_new.end(), sort_by_key);
 
         if( ! equal(sorted_keys_old, sorted_keys_new) ) {
-            result["keyset.dnskey"] = "1";
+            result["changes.keyset.dnskey"] = "1";
 
             for(std::vector<Fred::DnsKey>::size_type i = 0; i < sorted_keys_old.size(); ++i) {
-                result["keyset.dnskey.old." + boost::lexical_cast<std::string>(i)] = dns_key_to_string( sorted_keys_old.at(i) );
+                result["changes.keyset.dnskey.old." + boost::lexical_cast<std::string>(i)] = dns_key_to_string( sorted_keys_old.at(i) );
             }
 
             for(std::vector<Fred::DnsKey>::size_type i = 0; i < sorted_keys_new.size(); ++i) {
-                result["keyset.dnskey.new." + boost::lexical_cast<std::string>(i)] = dns_key_to_string( sorted_keys_new.at(i) );
+                result["changes.keyset.dnskey.new." + boost::lexical_cast<std::string>(i)] = dns_key_to_string( sorted_keys_new.at(i) );
             }
         }
     }

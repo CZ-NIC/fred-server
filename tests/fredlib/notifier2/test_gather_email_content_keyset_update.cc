@@ -150,9 +150,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_keyset_big_update<h
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
 
-    etalon["object.authinfo"]       = "1";
-    etalon["object.authinfo.old"]   = keyset         .authinfopw;
-    etalon["object.authinfo.new"]   = new_keyset_data.authinfopw;
+    etalon["changes.object.authinfo"]       = "1";
+    etalon["changes.object.authinfo.old"]   = keyset         .authinfopw;
+    etalon["changes.object.authinfo.new"]   = new_keyset_data.authinfopw;
 
     struct extract {
         static std::set<std::string> handles(const std::vector<Fred::ObjectIdHandlePair>& _in) {
@@ -164,12 +164,12 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_keyset_big_update<h
         }
     };
 
-    etalon["keyset.tech_c"]       = "1";
-    etalon["keyset.tech_c.old"]   = boost::join( extract::handles( keyset         .tech_contacts ), " " );
-    etalon["keyset.tech_c.new"]   = boost::join( extract::handles( new_keyset_data.tech_contacts ), " " );
+    etalon["changes.keyset.tech_c"]       = "1";
+    etalon["changes.keyset.tech_c.old"]   = boost::join( extract::handles( keyset         .tech_contacts ), " " );
+    etalon["changes.keyset.tech_c.new"]   = boost::join( extract::handles( new_keyset_data.tech_contacts ), " " );
 
-    etalon["keyset.dnskey"]         = "1";
-    etalon["keyset.dnskey.new.0"]   = "(flags: 3 protocol: 3 algorithm: 3 key: key_no_3)";
+    etalon["changes.keyset.dnskey"]         = "1";
+    etalon["changes.keyset.dnskey.new.0"]   = "(flags: 3 protocol: 3 algorithm: 3 key: key_no_3)";
 
     check_maps_are_equal(
         etalon,
@@ -196,9 +196,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_keyset_big_update<ha
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
 
-    etalon["object.authinfo"]       = "1";
-    etalon["object.authinfo.old"]   = keyset         .authinfopw;
-    etalon["object.authinfo.new"]   = new_keyset_data.authinfopw;
+    etalon["changes.object.authinfo"]       = "1";
+    etalon["changes.object.authinfo.old"]   = keyset         .authinfopw;
+    etalon["changes.object.authinfo.new"]   = new_keyset_data.authinfopw;
 
     struct extract {
         static std::set<std::string> handles(const std::vector<Fred::ObjectIdHandlePair>& _in) {
@@ -210,16 +210,16 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_keyset_big_update<ha
         }
     };
 
-    etalon["keyset.tech_c"]       = "1";
-    etalon["keyset.tech_c.old"]   = boost::join( extract::handles( keyset         .tech_contacts ), " " );
-    etalon["keyset.tech_c.new"]   = boost::join( extract::handles( new_keyset_data.tech_contacts ), " " );
+    etalon["changes.keyset.tech_c"]       = "1";
+    etalon["changes.keyset.tech_c.old"]   = boost::join( extract::handles( keyset         .tech_contacts ), " " );
+    etalon["changes.keyset.tech_c.new"]   = boost::join( extract::handles( new_keyset_data.tech_contacts ), " " );
 
-    etalon["keyset.dnskey"]         = "1";
-    etalon["keyset.dnskey.old.0"]   = "(flags: 1 protocol: 1 algorithm: 1 key: da_key!!!)";
-    etalon["keyset.dnskey.old.1"]   = "(flags: 2 protocol: 2 algorithm: 2 key: super_secret_key)";
-    etalon["keyset.dnskey.new.0"]   = "(flags: 1 protocol: 1 algorithm: 1 key: da_key!!!)";
-    etalon["keyset.dnskey.new.1"]   = "(flags: 3 protocol: 3 algorithm: 3 key: key_no_3)";
-    etalon["keyset.dnskey.new.2"]   = "(flags: 2 protocol: 2 algorithm: 2 key: super_secret_key)";
+    etalon["changes.keyset.dnskey"]         = "1";
+    etalon["changes.keyset.dnskey.old.0"]   = "(flags: 1 protocol: 1 algorithm: 1 key: da_key!!!)";
+    etalon["changes.keyset.dnskey.old.1"]   = "(flags: 2 protocol: 2 algorithm: 2 key: super_secret_key)";
+    etalon["changes.keyset.dnskey.new.0"]   = "(flags: 1 protocol: 1 algorithm: 1 key: da_key!!!)";
+    etalon["changes.keyset.dnskey.new.1"]   = "(flags: 3 protocol: 3 algorithm: 3 key: key_no_3)";
+    etalon["changes.keyset.dnskey.new.2"]   = "(flags: 2 protocol: 2 algorithm: 2 key: super_secret_key)";
 
 
     check_maps_are_equal(

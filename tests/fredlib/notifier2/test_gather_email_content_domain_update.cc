@@ -147,21 +147,21 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_empty_domain_big_up
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
 
-    etalon["object.authinfo"]       = "1";
-    etalon["object.authinfo.old"]   = dom            .authinfopw;
-    etalon["object.authinfo.new"]   = new_domain_data.authinfopw;
+    etalon["changes.object.authinfo"]       = "1";
+    etalon["changes.object.authinfo.old"]   = dom            .authinfopw;
+    etalon["changes.object.authinfo.new"]   = new_domain_data.authinfopw;
 
-    etalon["domain.registrant"]     = "1";
-    etalon["domain.registrant.old"] = dom            .registrant.handle;
-    etalon["domain.registrant.new"] = new_domain_data.registrant.handle;
+    etalon["changes.domain.registrant"]     = "1";
+    etalon["changes.domain.registrant.old"] = dom            .registrant.handle;
+    etalon["changes.domain.registrant.new"] = new_domain_data.registrant.handle;
 
-    etalon["domain.nsset"]          = "1";
-    etalon["domain.nsset.old"]      = "";
-    etalon["domain.nsset.new"]      = new_domain_data.nsset.get_value().handle;
+    etalon["changes.domain.nsset"]          = "1";
+    etalon["changes.domain.nsset.old"]      = "";
+    etalon["changes.domain.nsset.new"]      = new_domain_data.nsset.get_value().handle;
 
-    etalon["domain.keyset"]         = "1";
-    etalon["domain.keyset.old"]     = "";
-    etalon["domain.keyset.new"]     = new_domain_data.keyset.get_value().handle;
+    etalon["changes.domain.keyset"]         = "1";
+    etalon["changes.domain.keyset.old"]     = "";
+    etalon["changes.domain.keyset.new"]     = new_domain_data.keyset.get_value().handle;
 
     std::string admin_c_list;
     {
@@ -172,9 +172,9 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_empty_domain_big_up
         std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
         admin_c_list = boost::algorithm::join(admin_contact_handles, " ");
     }
-    etalon["domain.admin_c"]        = "1";
-    etalon["domain.admin_c.old"]    = "";
-    etalon["domain.admin_c.new"]    = admin_c_list;
+    etalon["changes.domain.admin_c"]        = "1";
+    etalon["changes.domain.admin_c.old"]    = "";
+    etalon["changes.domain.admin_c.new"]    = admin_c_list;
 
     /* XXX This is sad indeed. But I am not going to use all the circus around facets to do simple output formatting! */
     struct cz_format {
@@ -188,13 +188,13 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_empty_domain_big_up
         }
     };
 
-    etalon["domain.val_ex_date"]     = "1";
-    etalon["domain.val_ex_date.old"] = cz_format::convert(dom            .enum_domain_validation.get_value().validation_expiration);
-    etalon["domain.val_ex_date.new"] = cz_format::convert(new_domain_data.enum_domain_validation.get_value().validation_expiration);
+    etalon["changes.domain.val_ex_date"]     = "1";
+    etalon["changes.domain.val_ex_date.old"] = cz_format::convert(dom            .enum_domain_validation.get_value().validation_expiration);
+    etalon["changes.domain.val_ex_date.new"] = cz_format::convert(new_domain_data.enum_domain_validation.get_value().validation_expiration);
 
-    etalon["domain.publish"]         = "1";
-    etalon["domain.publish.old"]     = "0";
-    etalon["domain.publish.new"]     = "1";
+    etalon["changes.domain.publish"]         = "1";
+    etalon["changes.domain.publish.old"]     = "0";
+    etalon["changes.domain.publish.new"]     = "1";
 
     check_maps_are_equal(
         etalon,
@@ -286,23 +286,23 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_full_domain_big_upda
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
     etalon["changes"] = "1";
 
-    etalon["object.authinfo"]       = "1";
-    etalon["object.authinfo.old"]   = new_domain_data   .authinfopw;
-    etalon["object.authinfo.new"]   = newest_domain_data.authinfopw;
+    etalon["changes.object.authinfo"]       = "1";
+    etalon["changes.object.authinfo.old"]   = new_domain_data   .authinfopw;
+    etalon["changes.object.authinfo.new"]   = newest_domain_data.authinfopw;
 
-    etalon["domain.registrant"]     = "1";
-    etalon["domain.registrant.old"] = new_domain_data   .registrant.handle;
-    etalon["domain.registrant.new"] = newest_domain_data.registrant.handle;
+    etalon["changes.domain.registrant"]     = "1";
+    etalon["changes.domain.registrant.old"] = new_domain_data   .registrant.handle;
+    etalon["changes.domain.registrant.new"] = newest_domain_data.registrant.handle;
 
-    etalon["domain.nsset"]          = "1";
-    etalon["domain.nsset.old"]      = new_domain_data   .nsset.get_value().handle;
-    etalon["domain.nsset.new"]      = newest_domain_data.nsset.get_value().handle;
+    etalon["changes.domain.nsset"]          = "1";
+    etalon["changes.domain.nsset.old"]      = new_domain_data   .nsset.get_value().handle;
+    etalon["changes.domain.nsset.new"]      = newest_domain_data.nsset.get_value().handle;
 
-    etalon["domain.keyset"]         = "1";
-    etalon["domain.keyset.old"]     = new_domain_data   .keyset.get_value().handle;
-    etalon["domain.keyset.new"]     = newest_domain_data.keyset.get_value().handle;
+    etalon["changes.domain.keyset"]         = "1";
+    etalon["changes.domain.keyset.old"]     = new_domain_data   .keyset.get_value().handle;
+    etalon["changes.domain.keyset.new"]     = newest_domain_data.keyset.get_value().handle;
 
-    etalon["domain.admin_c"]        = "1";
+    etalon["changes.domain.admin_c"]        = "1";
     {
         std::string new_admin_c_list;
 
@@ -313,7 +313,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_full_domain_big_upda
         std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
         new_admin_c_list = boost::algorithm::join(admin_contact_handles, " ");
 
-        etalon["domain.admin_c.old"]    = new_admin_c_list;
+        etalon["changes.domain.admin_c.old"]    = new_admin_c_list;
     }
     {
         std::string newest_admin_c_list;
@@ -325,7 +325,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_full_domain_big_upda
         std::sort( admin_contact_handles.begin(), admin_contact_handles.end() );
         newest_admin_c_list = boost::algorithm::join(admin_contact_handles, " ");
 
-        etalon["domain.admin_c.new"]    = newest_admin_c_list;
+        etalon["changes.domain.admin_c.new"]    = newest_admin_c_list;
     }
 
     /* XXX This is sad indeed. But I am not going to use all the circus around facets to do simple output formatting! */
@@ -340,13 +340,13 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_full_domain_big_upda
         }
     };
 
-    etalon["domain.val_ex_date"]     = "1";
-    etalon["domain.val_ex_date.old"] = cz_format::convert(new_domain_data   .enum_domain_validation.get_value().validation_expiration);
-    etalon["domain.val_ex_date.new"] = cz_format::convert(newest_domain_data.enum_domain_validation.get_value().validation_expiration);
+    etalon["changes.domain.val_ex_date"]     = "1";
+    etalon["changes.domain.val_ex_date.old"] = cz_format::convert(new_domain_data   .enum_domain_validation.get_value().validation_expiration);
+    etalon["changes.domain.val_ex_date.new"] = cz_format::convert(newest_domain_data.enum_domain_validation.get_value().validation_expiration);
 
-    etalon["domain.publish"]         = "1";
-    etalon["domain.publish.old"]     = "1";
-    etalon["domain.publish.new"]     = "0";
+    etalon["changes.domain.publish"]         = "1";
+    etalon["changes.domain.publish.old"]     = "1";
+    etalon["changes.domain.publish.new"]     = "0";
 
     check_maps_are_equal(
         etalon,
