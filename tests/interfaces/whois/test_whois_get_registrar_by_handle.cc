@@ -1,9 +1,4 @@
-#include <boost/exception/diagnostic_information.hpp>
-#include <boost/test/unit_test.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 #include "tests/interfaces/whois/fixture_common.h"
-#include "tests/setup/fixtures_utils.h"
 #include "util/random_data_generator.h"
 
 #define BOOST_TEST_NO_MAIN
@@ -11,13 +6,14 @@
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
-struct registrar_fixture : whois_impl_instance_fixture
+struct registrar_fixture 
+: whois_impl_instance_fixture
 {
     Fred::OperationContext ctx;
     const Fred::InfoRegistrarData registrar;
 
     registrar_fixture()
-    :   registrar(
+    : registrar(
             Test::exec(
                 Fred::CreateRegistrar("REG-FOOBAR")
                     .set_name(std::string("TEST-REGISTRAR NAME"))

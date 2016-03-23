@@ -1,4 +1,5 @@
 //registrar!
+//contact could be empty
 BOOST_AUTO_TEST_SUITE(get_nsset_by_handle)
 
 struct get_nsset_by_handle_fixture
@@ -22,7 +23,7 @@ struct get_nsset_by_handle_fixture
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>(
                     Fred::DnsHost(std::string("TEST-FQDN")+xmark,
                     Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))
-            .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))//could be empty
+            .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
             .exec(ctx);
         ctx.commit_transaction();
         BOOST_MESSAGE(test_nsset_handle);

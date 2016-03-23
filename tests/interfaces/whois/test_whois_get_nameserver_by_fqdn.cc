@@ -1,4 +1,5 @@
 //registrar!
+//contact could be empty
 BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)
 
 struct get_nameserver_by_fqdn_fixture
@@ -17,7 +18,7 @@ struct get_nameserver_by_fqdn_fixture
         Fred::OperationContext ctx;
         Fred::CreateNsset("TEST-NSSET-HANDLE", test_registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))//making nameserver
-            .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))//could be empty
+            .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
             .exec(ctx);
         ctx.commit_transaction();
     }

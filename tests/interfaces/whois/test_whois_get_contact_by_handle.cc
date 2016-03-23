@@ -1,32 +1,45 @@
+#include "tests/interfaces/whois/fixture_common.h"
+#include "util/random_data_generator.h"
 //registrar!
 BOOST_AUTO_TEST_SUITE(get_contact_by_handle);
 
 struct test_contact_fixture
-: test_registrar_fixture
+: whois_impl_instance_fixture
 {
-    std::string test_contact_handle;
+    Fred::OperationContext ctx;
     std::string no_contact_handle;
     std::string wrong_contact_handle;
-    Fred::Contact::PlaceAddress contact_place;
+    const Fred::InfoRegistrarData registrar;
 
     test_contact_fixture()
-    : test_registrar_fixture(),
+    : registrar(
+          Test::exec(Fred::CreateRegistrar("REG-FOOBAR"), ctx)
+      ),
+      contact(
+          Test::exec(
+                  Fred::CreateContact("CONTACT", registrar.handle)
+                      .set_place(Fred::Contact::PlaceAddres(
+                                     "Str1",
+                                     Optional< std::string >(),//simplier?
+                                     Optional< std::string >(),
+                                     "Praha",
+                                     Optional< std::string >(),
+                                     "11150",
+                                     "CZ"
+                                 )
+                       )
+                      .
+                  , ctx)
+          )
+      )
       test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark),
       no_contact_handle("fine-handle"),
       wrong_contact_handle("")
     {
-        Fred::OperationContext ctx;
-        contact_place.city = "Praha";
-        contact_place.country = "CZ";
-        contact_place.postalcode = "11150";
-        contact_place.street1 = "STR1";
-        Fred::CreateContact(test_contact_handle, test_registrar_handle)
-            .set_place(contact_place).exec(ctx);
+       Fred::CreateContact(test_contact_handle, test_registrar_handle)
         ctx.commit_transaction();
-        BOOST_MESSAGE(test_contact_handle);
     }
 };
-
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle, test_contact_fixture)
 {

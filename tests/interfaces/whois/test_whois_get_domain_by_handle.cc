@@ -1,6 +1,6 @@
-//registrar
-//registrant
-//contact optional, but necessary
+//registrar!
+//registrant!
+//contact could be empty
 BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
 
 struct test_domain_fixture

@@ -1,4 +1,5 @@
 //registrar!
+//contact could be empty
 BOOST_AUTO_TEST_SUITE(get_keyset_by_handle)
 
 struct get_keyset_by_handle_fixture
@@ -18,7 +19,7 @@ struct get_keyset_by_handle_fixture
         Fred::OperationContext ctx;
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
             .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
-            .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact)) //could be empty
+            .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact))
             .exec(ctx);
         ctx.commit_transaction();
         BOOST_MESSAGE(test_keyset_handle);
