@@ -2309,7 +2309,8 @@ tests_interfaces_test_epp_LDADD = \
 #
 tests_interfaces_test_whois_SOURCES = \
 		tests/interfaces/whois/main.cc \
-		tests/interfaces/whois/test_whois.cc \
+		tests/interfaces/whois/fixture_common.h \
+		tests/interfaces/whois/test_whois_get_registrar_by_handle.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
