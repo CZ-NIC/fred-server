@@ -36,6 +36,27 @@ void unwrap_NullableString(const Registry::MojeID::NullableString *src_ptr, Null
     }
 }
 
+namespace {
+
+//Fake NULL value from empty input string
+void unwrap_NullableString_fix_frontend_bug(const Registry::MojeID::NullableString *src_ptr, Nullable< std::string > &dst)
+{
+    if (src_ptr == NULL) {
+        dst = Nullable< std::string >();
+    }
+    else {
+        const std::string dst_value = src_ptr->_boxed_in();
+        if (dst_value.empty()) {
+            dst = Nullable< std::string >();
+        }
+        else {
+            dst = dst_value;
+        }
+    }
+}
+
+}
+
 Registry::MojeID::NullableString_var wrap_Nullable_string(const Nullable< std::string > &src)
 {
     return src.isnull() ? Registry::MojeID::NullableString_var()
@@ -358,10 +379,10 @@ void unwrap_CreateContact(const Registry::MojeID::CreateContact &src, Registry::
 
     unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
 
-    unwrap_NullableString(src.id_card_num.in(),  dst.id_card_num);
-    unwrap_NullableString(src.passport_num.in(), dst.passport_num);
-    unwrap_NullableString(src.ssn_id_num.in(),   dst.ssn_id_num);
-    unwrap_NullableString(src.vat_id_num.in(),   dst.vat_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(),  dst.id_card_num);
+    unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
+    unwrap_NullableString_fix_frontend_bug(src.ssn_id_num.in(),   dst.ssn_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(),   dst.vat_id_num);
 
     unwrap_Address(src.permanent, dst.permanent);
 
@@ -390,7 +411,7 @@ void unwrap_UpdateTransferContact(const Registry::MojeID::UpdateTransferContact 
 
     unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
 
-    unwrap_NullableString(src.vat_id_num.in(), dst.vat_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(), dst.vat_id_num);
 
     unwrap_Address(src.permanent, dst.permanent);
 
@@ -415,10 +436,10 @@ void unwrap_UpdateContact(const Registry::MojeID::UpdateContact &src, Registry::
 
     unwrap_NullableDate(src.birth_date.in(), dst.birth_date);
 
-    unwrap_NullableString(src.id_card_num.in(),  dst.id_card_num);
-    unwrap_NullableString(src.passport_num.in(), dst.passport_num);
-    unwrap_NullableString(src.ssn_id_num.in(),   dst.ssn_id_num);
-    unwrap_NullableString(src.vat_id_num.in(),   dst.vat_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.id_card_num.in(),  dst.id_card_num);
+    unwrap_NullableString_fix_frontend_bug(src.passport_num.in(), dst.passport_num);
+    unwrap_NullableString_fix_frontend_bug(src.ssn_id_num.in(),   dst.ssn_id_num);
+    unwrap_NullableString_fix_frontend_bug(src.vat_id_num.in(),   dst.vat_id_num);
 
     unwrap_Address(src.permanent, dst.permanent);
 
