@@ -200,7 +200,6 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
     //call update using big ctor
     Fred::UpdateDomain(test_domain_handle//fqdn
             , registrar_handle//registrar
-            , Optional<std::string>(registrar_handle)//sponsoring registrar
             , registrant_contact_handle //registrant - owner
             , std::string("testauthinfo1") //authinfo
             , Nullable<std::string>()//unset nsset - set to null
@@ -275,7 +274,6 @@ BOOST_FIXTURE_TEST_CASE(update_domain, update_domain_admin_nsset_keyset_fixture 
 
     //call update using small ctor and set custom params
     Fred::UpdateDomain(test_domain_handle, registrar_handle)
-    .set_sponsoring_registrar(registrar_handle)
     .set_authinfo("testauthinfo")
     .set_registrant(registrant_contact_handle)
     .add_admin_contact(admin_contact_handle)
@@ -1079,42 +1077,6 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_registrar)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
-    }
-
-    Fred::InfoDomainOutput info_data_2;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
-    }
-    BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
-}
-
-/**
- * test UpdateDomain with wrong sponsoring registrar
- */
-BOOST_AUTO_TEST_CASE(update_domain_wrong_sponsoring_registrar)
-{
-    std::string bad_registrar_handle = registrar_handle+xmark;
-
-    Fred::InfoDomainOutput info_data_1;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
-    }
-
-    try
-    {
-        Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::UpdateDomain(test_domain_handle, registrar_handle)
-            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::UpdateDomain::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
-        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoDomainOutput info_data_2;

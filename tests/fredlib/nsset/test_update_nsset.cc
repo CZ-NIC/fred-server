@@ -192,7 +192,6 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     Fred::UpdateNsset(test_nsset_handle//handle
             , registrar_handle//registrar
-            , Optional<std::string>()//sponsoring registrar
             , Optional<std::string>()//authinfo
             , std::vector<Fred::DnsHost>() //add_dns
             , std::vector<std::string>() //rem_dns
@@ -235,7 +234,6 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
 
     Fred::UpdateNsset(test_nsset_handle//handle
             , registrar_handle//registrar
-                , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
                 , Util::vector_of<Fred::DnsHost>
                     (Fred::DnsHost("host",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.1"))(ip::address::from_string("127.1.1.1")))) //add_dns
@@ -297,7 +295,6 @@ BOOST_FIXTURE_TEST_CASE(update_nsset, update_nsset_fixture )
     BOOST_CHECK(history_info_data_4.at(0).info_nsset_data.crhistoryid == info_data_4.info_nsset_data.crhistoryid);
 
     Fred::UpdateNsset(test_nsset_handle, registrar_handle)
-        .set_sponsoring_registrar(registrar_handle)
         .add_dns(Fred::DnsHost("host2",  Util::vector_of<ip::address>(ip::address::from_string("127.0.0.3"))(ip::address::from_string("127.1.1.3"))))
         .rem_dns("b.ns.nic.cz")
         .add_tech_contact(admin_contact2_handle)
@@ -739,43 +736,6 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_registrar, update_nsset_fixture)
     BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
 
 }
-
-/**
- * test UpdateNsset with wrong sponsoring registrar
- */
-BOOST_FIXTURE_TEST_CASE(update_nsset_wrong_sponsoring_registrar, update_nsset_fixture)
-{
-    std::string bad_registrar_handle = registrar_handle+xmark;
-    Fred::InfoNssetOutput info_data_1;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
-    }
-
-    try
-    {
-        Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::UpdateNsset(test_nsset_handle, registrar_handle)
-            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::UpdateNsset::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
-        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
-    }
-
-    Fred::InfoNssetOutput info_data_2;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
-    }
-    BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.info_nsset_data.delete_time.isnull());
-
-}
-
 
 /**
  * test UpdateNsset add non-existing tech contact

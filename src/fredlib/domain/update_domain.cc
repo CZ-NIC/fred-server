@@ -51,7 +51,6 @@ namespace Fred
 
     UpdateDomain::UpdateDomain(const std::string& fqdn
             , const std::string& registrar
-            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& registrant
             , const Optional<std::string>& authinfo
             , const Optional<Nullable<std::string> >& nsset
@@ -65,7 +64,6 @@ namespace Fred
             )
     : fqdn_(fqdn)
     , registrar_(registrar)
-    , sponsoring_registrar_(sponsoring_registrar)
     , registrant_(registrant)
     , authinfo_(authinfo)
     , nsset_(nsset)
@@ -79,12 +77,6 @@ namespace Fred
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
     {}
-
-    UpdateDomain& UpdateDomain::set_sponsoring_registrar(const std::string& sponsoring_registrar)
-    {
-        sponsoring_registrar_ = sponsoring_registrar;
-        return *this;
-    }
 
     UpdateDomain& UpdateDomain::set_registrant(const std::string& registrant)
     {
@@ -223,7 +215,7 @@ namespace Fred
         {
             //update object
             history_id = Fred::UpdateObject(no_root_dot_fqdn,"domain", registrar_
-                , sponsoring_registrar_, authinfo_, logd_request_id_
+                , authinfo_, logd_request_id_
                 ).exec(ctx);
         }
         catch(const Fred::UpdateObject::Exception& ex)
@@ -238,12 +230,6 @@ namespace Fred
             {
                 update_domain_exception.set_unknown_registrar_handle(
                         ex.get_unknown_registrar_handle());
-            }
-
-            if(ex.is_set_unknown_sponsoring_registrar_handle())
-            {
-                update_domain_exception.set_unknown_sponsoring_registrar_handle(
-                        ex.get_unknown_sponsoring_registrar_handle());
             }
         }
         //update domain
@@ -480,7 +466,6 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("fqdn",fqdn_))
         (std::make_pair("registrar",registrar_))
-        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
         (std::make_pair("registrant",registrant_.print_quoted()))
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("nsset",nsset_.isset() ? nsset_.get_value().print_quoted() : nsset_.print_quoted()))

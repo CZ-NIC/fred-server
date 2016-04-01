@@ -126,7 +126,6 @@ namespace Fred
 
     template < class DERIVED >
     UpdateContact< DERIVED >::UpdateContact(const std::string& registrar
-        , const Optional<std::string>& sponsoring_registrar
         , const Optional<std::string>& authinfo
         , const Optional< Nullable< std::string > > &name
         , const Optional< Nullable< std::string > > &organization
@@ -150,7 +149,6 @@ namespace Fred
         , const Optional< Nullable< bool > > &domain_expiration_letter_flag
         , const Optional< unsigned long long > &logd_request_id)
     :   registrar_(registrar)
-    ,   sponsoring_registrar_(sponsoring_registrar)
     ,   authinfo_(authinfo)
     ,   name_(name)
     ,   organization_(organization)
@@ -247,7 +245,7 @@ namespace Fred
         //update object
         try {
             history_id = UpdateObject(contact.info_contact_data.handle,
-                "contact",registrar_,sponsoring_registrar_, authinfo_,
+                "contact", registrar_, authinfo_,
                 logd_request_id_.isset() ? Nullable< ::size_t >(logd_request_id_.get_value())
                                          : Nullable< ::size_t >()).exec(ctx);
         }
@@ -256,15 +254,8 @@ namespace Fred
                 //fatal good path, need valid registrar performing update
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(ex.get_unknown_registrar_handle()));
             }
-            else if(ex.is_set_unknown_object_handle()
-                 || ex.is_set_unknown_sponsoring_registrar_handle()) {//non-fatal good path, update can continue to check input
-                if(ex.is_set_unknown_object_handle()) {
-                    update_contact_exception.set_unknown_contact_handle(contact.info_contact_data.handle);
-                }
-                if(ex.is_set_unknown_sponsoring_registrar_handle()) {
-                    update_contact_exception.set_unknown_sponsoring_registrar_handle(
-                        ex.get_unknown_sponsoring_registrar_handle());
-                }
+            else if(ex.is_set_unknown_object_handle()) {
+                update_contact_exception.set_unknown_contact_handle(contact.info_contact_data.handle);
             }
             else {
                 throw;//rethrow unexpected
@@ -575,7 +566,6 @@ namespace Fred
         return Util::format_operation_state("UpdateContact",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("registrar",registrar_))
-        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("name",name_.print_quoted()))
         (std::make_pair("organization",organization_.print_quoted()))
@@ -609,7 +599,6 @@ namespace Fred
 
     UpdateContactById::UpdateContactById(unsigned long long id
             , const std::string& registrar
-            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
             , const Optional< Nullable< std::string > > &name
             , const Optional< Nullable< std::string > > &organization
@@ -633,7 +622,6 @@ namespace Fred
             , const Optional< Nullable< bool > > &domain_expiration_letter_flag
             , const Optional< unsigned long long > &logd_request_id)
     : UpdateContact<UpdateContactById>(registrar
-              , sponsoring_registrar
               , authinfo
               , name
               , organization
@@ -696,7 +684,6 @@ namespace Fred
                             update_contact_exception.get_unknown_registrar_handle()));
                 }
                 else if(update_contact_exception.is_set_unknown_contact_handle()
-                    ||  update_contact_exception.is_set_unknown_sponsoring_registrar_handle()
                     ||  update_contact_exception.is_set_unknown_ssntype()
                     ||  update_contact_exception.is_set_unknown_country()
                     ||  update_contact_exception.is_set_forbidden_company_name_setting()
@@ -705,12 +692,6 @@ namespace Fred
                     if(update_contact_exception.is_set_unknown_contact_handle())
                     {
                         update_exception.set_unknown_contact_id(id_);
-                    }
-
-                    if(update_contact_exception.is_set_unknown_sponsoring_registrar_handle())
-                    {
-                        update_exception.set_unknown_sponsoring_registrar_handle(
-                                update_contact_exception.get_unknown_sponsoring_registrar_handle());
                     }
 
                     if(update_contact_exception.is_set_unknown_ssntype())
@@ -767,7 +748,6 @@ namespace Fred
 
     UpdateContactByHandle::UpdateContactByHandle(const std::string& handle
             , const std::string& registrar
-            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
             , const Optional< Nullable< std::string > > &name
             , const Optional< Nullable< std::string > > &organization
@@ -791,7 +771,6 @@ namespace Fred
             , const Optional< Nullable< bool > > &domain_expiration_letter_flag
             , const Optional< unsigned long long > &logd_request_id)
     : UpdateContact<UpdateContactByHandle>(registrar
-            , sponsoring_registrar
             , authinfo
             , name
             , organization
@@ -854,7 +833,6 @@ namespace Fred
                             update_contact_exception.get_unknown_registrar_handle()));
                 }
                 else if(update_contact_exception.is_set_unknown_contact_handle()
-                    ||  update_contact_exception.is_set_unknown_sponsoring_registrar_handle()
                     ||  update_contact_exception.is_set_unknown_ssntype()
                     ||  update_contact_exception.is_set_unknown_country()
                     ||  update_contact_exception.is_set_forbidden_company_name_setting()
@@ -863,12 +841,6 @@ namespace Fred
                     if(update_contact_exception.is_set_unknown_contact_handle())
                     {
                         update_exception.set_unknown_contact_handle(handle_);
-                    }
-
-                    if(update_contact_exception.is_set_unknown_sponsoring_registrar_handle())
-                    {   //non-fatal good path, update can continue to check input
-                        update_exception.set_unknown_sponsoring_registrar_handle(
-                                update_contact_exception.get_unknown_sponsoring_registrar_handle());
                     }
 
                     if(update_contact_exception.is_set_unknown_ssntype())

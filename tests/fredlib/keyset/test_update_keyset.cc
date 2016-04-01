@@ -150,7 +150,6 @@ BOOST_AUTO_TEST_CASE(update_keyset)
 
     Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
         , registrar_handle//const std::string& registrar
-        , Optional<std::string>(registrar_handle)//sponsoring registrar
         , Optional<std::string>("testauthinfo")//const Optional<std::string>& authinfo
         , Util::vector_of<std::string>(admin_contact5_handle) //const std::vector<std::string>& add_tech_contact
         , Util::vector_of<std::string>(admin_contact6_handle)//const std::vector<std::string>& rem_tech_contact
@@ -209,7 +208,6 @@ BOOST_AUTO_TEST_CASE(update_keyset)
 
     Fred::UpdateKeyset(test_keyset_handle//const std::string& handle
         , registrar_handle//const std::string& registrar
-        , Optional<std::string>()//sponsoring registrar
         , Optional<std::string>()//const Optional<std::string>& authinfo
         , std::vector<std::string>() //const std::vector<std::string>& add_tech_contact
         , std::vector<std::string>()//const std::vector<std::string>& rem_tech_contact
@@ -558,42 +556,6 @@ BOOST_AUTO_TEST_CASE(update_keyset_wrong_registrar)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
-    }
-
-    Fred::InfoKeysetOutput info_data_2;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    }
-    BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.info_keyset_data.delete_time.isnull());
-
-}
-
-/**
- * test UpdateKeyset with wrong sponsoring registrar
- */
-BOOST_AUTO_TEST_CASE(update_keyset_wrong_sponsoring_registrar)
-{
-    std::string bad_registrar_handle = registrar_handle+xmark;
-    Fred::InfoKeysetOutput info_data_1;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
-    }
-
-    try
-    {
-        Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
-            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::UpdateKeyset::Exception& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
-        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoKeysetOutput info_data_2;

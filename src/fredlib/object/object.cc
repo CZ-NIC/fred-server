@@ -161,22 +161,14 @@ namespace Fred
     UpdateObject::UpdateObject(const std::string& handle
         , const std::string& obj_type
         , const std::string& registrar
-        , const Optional<std::string>& sponsoring_registrar
         , const Optional<std::string>& authinfo
         , const Nullable<unsigned long long>& logd_request_id)
     : handle_(handle)
     , obj_type_(obj_type)
     , registrar_(registrar)
-    , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , logd_request_id_(logd_request_id)
     {}
-
-    UpdateObject& UpdateObject::set_sponsoring_registrar(const std::string& sponsoring_registrar)
-    {
-        sponsoring_registrar_ = sponsoring_registrar;
-        return *this;
-    }
 
     UpdateObject& UpdateObject::set_authinfo(const std::string& authinfo)
     {
@@ -213,16 +205,6 @@ namespace Fred
             sql <<"UPDATE object SET update = now() "
                 ", upid = $"
                 << params.size() << "::integer " ; //registrar from epp-session container by client_id from epp-params
-
-            if(sponsoring_registrar_.isset())
-            {
-                //check sponsoring registrar
-                unsigned long long sponsoring_registrar_id = Registrar::get_registrar_id_by_handle(
-                    ctx, sponsoring_registrar_.get_value(), &update_object_exception,
-                    &Exception::set_unknown_sponsoring_registrar_handle);
-                params.push_back(sponsoring_registrar_id);
-                sql << " , clid = $" << params.size() << "::integer ";//set sponsoring registrar
-            }
 
             if(authinfo_.isset())
             {
@@ -275,7 +257,6 @@ namespace Fred
         (std::make_pair("obj_type",obj_type_))
         (std::make_pair("handle",handle_))
         (std::make_pair("registrar",registrar_))
-        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
