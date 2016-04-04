@@ -186,6 +186,7 @@ namespace Fred
                 }
                 catch(std::exception& ex)
                 {
+                    // TODO XXX Je skutecne bezpecne pohltit vsechny std::exception?
                     //report regex_match failure
                     std::string errmsg("FilterHandleMojeIDSyntax: ");
                     errmsg += ex.what();
