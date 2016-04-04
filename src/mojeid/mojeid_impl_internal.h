@@ -55,7 +55,7 @@ struct check_contact_optional_addresses
 
 typedef boost::mpl::list< Fred::MojeID::check_contact_username,
                           Fred::check_contact_name,
-                          Fred::MojeID::check_contact_ssn,
+                          Fred::MojeID::check_contact_birthday_validity,
                           Fred::check_contact_email_presence,
                           Fred::check_contact_email_validity,
                           Fred::check_contact_notifyemail_validity,

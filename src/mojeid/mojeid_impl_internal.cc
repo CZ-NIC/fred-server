@@ -195,7 +195,7 @@ void raise(const CheckMojeIDRegistration &result)
 
     set_contact_name_result(result, e);
 
-    set_ssn_result(result, e);
+    set_validity_result(result.Fred::MojeID::check_contact_birthday_validity::success(), e.birth_date);
 
     set_presence_validity_availability_result<
         Fred::check_contact_email_presence,
