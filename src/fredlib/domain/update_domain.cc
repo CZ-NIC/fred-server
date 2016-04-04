@@ -203,10 +203,12 @@ namespace Fred
 
         if (!is_enum_zone)//check ENUM specific parameters
         {
-            if(enum_validation_expiration_.isset())
+            if(enum_validation_expiration_.isset()) {
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
-            if(enum_publish_flag_.isset())
+            }
+            if(enum_publish_flag_.isset()) {
                 BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for non-ENUM domain"));
+            }
         }
 
         Exception update_domain_exception;
@@ -310,8 +312,9 @@ namespace Fred
             }//if change exdate
 
             //check exception
-            if(update_domain_exception.throw_me())
+            if(update_domain_exception.throw_me()) {
                 BOOST_THROW_EXCEPTION(update_domain_exception);
+            }
 
             params.push_back(domain_id);
             sql << " WHERE id = $" << params.size() << "::integer RETURNING id";
