@@ -668,7 +668,9 @@ namespace Fred
                     update_exception.set_unknown_contact_id(
                         info_exception.get_unknown_object_id());
                 }
-                else throw;//rethrow unexpected
+                else {
+                    throw;//rethrow unexpected
+                }
             }
 
             try
@@ -712,7 +714,9 @@ namespace Fred
                                 update_contact_exception.get_forbidden_company_name_setting());
                     }
                 }
-                else throw;//rethrow unexpected
+                else {
+                    throw;//rethrow unexpected
+                }
             }
 
             if(update_exception.throw_me())
@@ -817,7 +821,9 @@ namespace Fred
                     update_exception.set_unknown_contact_handle(
                         info_exception.get_unknown_contact_handle());
                 }
-                else throw;//rethrow unexpected
+                else {
+                    throw;//rethrow unexpected
+                }
             }
 
             try
@@ -861,7 +867,9 @@ namespace Fred
                                 update_contact_exception.get_forbidden_company_name_setting());
                     }
                 }
-                else throw;//rethrow unexpected
+                else {
+                    throw;//rethrow unexpected
+                }
             }
 
             if(update_exception.throw_me())

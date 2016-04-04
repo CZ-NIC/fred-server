@@ -363,8 +363,9 @@ namespace Fred
                         update_domain_exception.add_already_set_admin_contact_handle(*i);
                         ctx.get_conn().exec("ROLLBACK TO SAVEPOINT admin_contact");
                     }
-                    else
+                    else {
                         throw;
+                    }
                 }
             }//for i
         }//if add admin contacts

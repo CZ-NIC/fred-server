@@ -184,8 +184,9 @@ namespace Fred
                             update_keyset_exception.add_already_set_technical_contact_handle(*i);
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_tech_contact");
                         }
-                        else
+                        else {
                             throw;
+                        }
                     }
                 }//for i
             }//if add tech contacts
@@ -272,8 +273,9 @@ namespace Fred
                             update_keyset_exception.add_already_set_dns_key(*i);
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_dns_key");
                         }
-                        else
+                        else {
                             throw;
+                        }
                     }
                 }//for i
             }//if add dns keys

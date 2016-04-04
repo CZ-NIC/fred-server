@@ -186,8 +186,9 @@ namespace Fred
                 {
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_fqdn(fqdn_));
                 }
-                else
+                else {
                     throw;
+                }
             }
 
             if (zone.is_enum)//check ENUM specific parameters
@@ -372,8 +373,9 @@ namespace Fred
                                     create_domain_exception.add_already_set_admin_contact_handle(*i);
                                     ctx.get_conn().exec("ROLLBACK TO SAVEPOINT admin_contact");
                                 }
-                                else
+                                else {
                                     throw;
+                                }
                             }
                         }
                         else

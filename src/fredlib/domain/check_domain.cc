@@ -71,8 +71,9 @@ namespace Fred
                 {
                     return true;//zone not found
                 }
-                else
+                else {
                     throw;
+                }
             }
 
             //domain_name_validation
@@ -115,8 +116,9 @@ namespace Fred
                 {
                     return true;
                 }
-                else
+                else {
                     throw;
+                }
             }
         }//try
         catch(ExceptionStack& ex)
@@ -148,8 +150,9 @@ namespace Fred
                 {
                     return true;//zone not found
                 }
-                else
+                else {
                     throw;
+                }
             }
 
             //check number of labels
@@ -213,8 +216,9 @@ namespace Fred
                 {
                     return false;//zone not found
                 }
-                else
+                else {
                     throw;
+                }
             }
 
             if(zone.is_enum)

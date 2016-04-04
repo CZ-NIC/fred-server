@@ -260,7 +260,9 @@ namespace Fred
                     create_contact_exception.set_invalid_contact_handle(
                             create_object_exception.get_invalid_object_handle());
                 }
-                else throw;//rethrow unexpected
+                else {
+                    throw;//rethrow unexpected }
+                }
             }
 
             //create contact
