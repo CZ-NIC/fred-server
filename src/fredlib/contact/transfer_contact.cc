@@ -32,6 +32,7 @@ namespace Fred
             if( e.is_set_unknown_object_id() ) {
                 throw UnknownContactId();
             }
+
             throw;
         }
 

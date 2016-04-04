@@ -220,16 +220,20 @@ namespace Fred
         }
         catch(const Fred::UpdateObject::Exception& ex)
         {
-            if(ex.is_set_unknown_object_handle())
-            {
-                update_domain_exception.set_unknown_domain_fqdn(
-                        ex.get_unknown_object_handle());
+            bool caught_exception_has_been_handled = false;
+
+            if( ex.is_set_unknown_object_handle() ) {
+                update_domain_exception.set_unknown_domain_fqdn( ex.get_unknown_object_handle() );
+                caught_exception_has_been_handled = true;
             }
 
-            if(ex.is_set_unknown_registrar_handle())
-            {
-                update_domain_exception.set_unknown_registrar_handle(
-                        ex.get_unknown_registrar_handle());
+            if( ex.is_set_unknown_registrar_handle() ) {
+                update_domain_exception.set_unknown_registrar_handle( ex.get_unknown_registrar_handle() );
+                caught_exception_has_been_handled = true;
+            }
+
+            if( ! caught_exception_has_been_handled ) {
+                throw;
             }
         }
         //update domain
