@@ -30,7 +30,7 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
-struct has_registrar : Test::autocommitting_context {
+struct has_registrar : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData registrar;
 
     has_registrar() {
@@ -107,6 +107,12 @@ struct has_contact_with_server_update_prohibited : has_contact_with_status {
     { }
 };
 
+struct has_contact_with_server_transfer_prohibited : has_contact_with_status {
+    has_contact_with_server_transfer_prohibited()
+    :   has_contact_with_status("serverTransferProhibited")
+    { }
+};
+
 struct has_contact_with_delete_candidate : has_contact_with_status {
     has_contact_with_delete_candidate()
     :   has_contact_with_status("deleteCandidate")
@@ -122,6 +128,12 @@ struct has_contact_with_delete_candidate_request : has_contact_with_status_reque
 struct has_contact_with_server_transfer_prohibited_request : has_contact_with_status_request {
     has_contact_with_server_transfer_prohibited_request()
     :   has_contact_with_status_request("serverTransferProhibited")
+    { }
+};
+
+struct has_contact_with_server_update_prohibited_request : has_contact_with_status_request {
+    has_contact_with_server_update_prohibited_request()
+    :   has_contact_with_status_request("serverUpdateProhibited")
     { }
 };
 

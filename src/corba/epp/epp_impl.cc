@@ -81,6 +81,7 @@
 #include "src/epp/contact/contact_create.h"
 #include "src/epp/contact/contact_info.h"
 #include "src/epp/contact/contact_delete.h"
+#include "src/epp/contact/contact_transfer.h"
 #include "src/epp/contact/post_contact_update_hooks.h"
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
@@ -2978,14 +2979,33 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 }
 
 ccReg::Response* ccReg_EPP_i::ContactTransfer(
-  const char* handle, const char* authInfo, const ccReg::EppParams &params)
-{
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const char* const _handle,
+    const char* const _auth_info,
+    const ccReg::EppParams& _epp_params
+) {
 
-  return ObjectTransfer( EPP_ContactTransfer , "CONTACT" , "handle" , handle, authInfo, params);
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
+
+        return new ccReg::Response(
+            Corba::wrap_response(
+                contact_transfer(
+                    Corba::unwrap_string(_handle),
+                    Corba::unwrap_string(_auth_info),
+                    Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
+                    _epp_params.requestID,
+                    Legacy::get_lang(epp_sessions, _epp_params.loginID),
+                    server_transaction_handle,
+                    Corba::unwrap_string(_epp_params.clTRID),
+                    disable_epp_notifier_cltrid_prefix_
+                ),
+                server_transaction_handle
+            )
+        );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetTransfer(
