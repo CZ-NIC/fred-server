@@ -79,6 +79,7 @@
 
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_create.h"
+#include "src/epp/contact/contact_info.h"
 #include "src/epp/contact/post_contact_update_hooks.h"
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
@@ -2614,169 +2615,31 @@ ccReg_EPP_i::KeySetCheck(
             a, params);
 }
 
-/***********************************************************************
- *
- * FUNCTION:    ContactInfo
- *
- * DESCRIPTION: returns detailed information about contact
- *              empty value if contact doesn't exist
- * PARAMETERS:  handle - contact identifier
- *        OUT:  c - contact structure detailed description
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
 ccReg::Response* ccReg_EPP_i::ContactInfo(
-  const char* handle, ccReg::Contact_out c, const ccReg::EppParams &params)
-{
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const char* const _handle,
+    ccReg::Contact_out _info_result,
+    const ccReg::EppParams& _epp_params
+) {
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
+        const Epp::LocalizedInfoContactResponse response = Epp::contact_info(
+            Corba::unwrap_string(_handle),
+            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
+            Legacy::get_lang(epp_sessions, _epp_params.loginID),
+            server_transaction_handle
+        );
 
-  LOG(
-      NOTICE_LOG ,
-      "ContactInfo: clientID -> %llu clTRID [%s] handle [%s] ",
-       params.loginID, static_cast<const char*>(params.clTRID), handle
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_ContactInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  // initialize managers for contact manipulation
-  std::auto_ptr<Fred::Contact::Manager>
-      cman(Fred::Contact::Manager::create(a.getDB(),
-          restricted_handles_) );
-  // first check handle for proper format
-  if (!cman->checkHandleFormat(handle))
-    // failure in handle check, throw exception
-    a.failed(SetReasonContactHandle(a.getErrors(), handle, a.getLang()));
-  // now load contact by handle
-  std::auto_ptr<Fred::Contact::List> clist(cman->createList());
-  clist->setHandleFilter(handle);
-  try {clist->reload();}
-  catch (...) {a.failedInternal("Cannot load contacts");}
-  if (clist->getCount() != 1)
-    // failer because non existance, throw exception
-    a.failed(COMMAND_OBJECT_NOT_EXIST);
-  // start filling output contact structure
-  Fred::Contact::Contact *con = clist->getContact(0);
-  c = new ccReg::Contact;
-  // fill common object data
-  c->ROID = CORBA::string_dup(con->getROID().c_str());
-  c->CrDate = CORBA::string_dup(formatTime(con->getCreateDate()).c_str());
-  c->UpDate = CORBA::string_dup(formatTime(con->getUpdateDate()).c_str());
-  c->TrDate = CORBA::string_dup(formatTime(con->getTransferDate()).c_str());
-  c->ClID = CORBA::string_dup(con->getRegistrarHandle().c_str());
-  c->CrID = CORBA::string_dup(con->getCreateRegistrarHandle().c_str());
-  c->UpID = CORBA::string_dup(con->getUpdateRegistrarHandle().c_str());
-  // authinfo is filled only if session registar is ownering registrar
-  c->AuthInfoPw = CORBA::string_dup(
-   a.getRegistrar() == (int)con->getRegistrarId()?con->getAuthPw().c_str():""
-  );
-  /* Ticket #10053 - HACK - 1st part: temporarily hide states until we fix epp schemas */
-  std::vector<std::string> admin_contact_verification_states = Admin::AdminContactVerificationObjectStates::get_all();
-  /* Ticket #10053 - END OF 1st part*/
-  // states
-  for (unsigned i=0; i<con->getStatusCount(); i++) {
-    Fred::TID stateId = con->getStatusByIdx(i)->getStatusId();
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
-    if (!sd || !sd->getExternal())
-      continue;
+        ccReg::Contact_var info_result = new ccReg::Contact( Corba::wrap_localized_info_contact(response.payload) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
 
-    /* Ticket #10053 - HACK - 2nd part: temporarily hide states until we fix epp schemas */
-    if( std::find(
-            admin_contact_verification_states.begin(),
-            admin_contact_verification_states.end(),
-            sd->getName()
-        ) != admin_contact_verification_states.end()
-    ) {
-        continue;
+        /* No exception shall be thrown from here onwards. */
+
+        _info_result = info_result._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    /* Ticket #10053 - END OF 2nd part*/
-
-    c->stat.length(c->stat.length()+1);
-    c->stat[c->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
-    c->stat[c->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
-        a.getLang() == LANG_CS ? "CS" : "EN"
-    ).c_str());
-  }
-  if (!c->stat.length()) {
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
-    if (sd) {
-      c->stat.length(1);
-      c->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-      c->stat[0].text = CORBA::string_dup(sd->getDesc(
-          a.getLang() == LANG_CS ? "CS" : "EN"
-      ).c_str());
-    }
-  }
-  // fill contact specific data
-  c->handle = CORBA::string_dup(con->getHandle().c_str());
-  c->Name = CORBA::string_dup(con->getName().c_str());
-  c->Organization = CORBA::string_dup(con->getOrganization().c_str());
-  unsigned num = !con->getStreet3().empty() ? 3 : !con->getStreet2().empty() ? 2 : !con->getStreet1().empty() ? 1 : 0;
-  c->Streets.length(num);
-  if (num > 0)
-    c->Streets[0] = CORBA::string_dup(con->getStreet1().c_str());
-  if (num > 1)
-    c->Streets[1] = CORBA::string_dup(con->getStreet2().c_str());
-  if (num > 2)
-    c->Streets[2] = CORBA::string_dup(con->getStreet3().c_str());
-  c->City = CORBA::string_dup(con->getCity().c_str());
-  c->StateOrProvince = CORBA::string_dup(con->getProvince().c_str());
-  c->PostalCode = CORBA::string_dup(con->getPostalCode().c_str());
-  c->Telephone = CORBA::string_dup(con->getTelephone().c_str());
-  c->Fax = CORBA::string_dup(con->getFax().c_str());
-  c->Email = CORBA::string_dup(con->getEmail().c_str());
-  c->NotifyEmail = CORBA::string_dup(con->getNotifyEmail().c_str());
-  c->CountryCode = CORBA::string_dup(con->getCountry().c_str());
-  c->VAT = CORBA::string_dup(con->getVAT().c_str());
-  c->ident = CORBA::string_dup(con->getSSN().c_str());
-  switch (con->getSSNTypeId()) {
-    case 1:
-      c->identtype = ccReg::EMPTY;
-      break;
-    case 2:
-      c->identtype = ccReg::OP;
-      break;
-    case 3:
-      c->identtype = ccReg::PASS;
-      break;
-    case 4:
-      c->identtype = ccReg::ICO;
-      break;
-    case 5:
-      c->identtype = ccReg::MPSV;
-      break;
-    case 6:
-      c->identtype = ccReg::BIRTHDAY;
-      break;
-    default:
-      c->identtype = ccReg::EMPTY;
-      break;
-  }
-  // DiscloseFlag by the default policy of the server
-  if (DefaultPolicy())
-    c->DiscloseFlag = ccReg::DISCL_HIDE;
-  else
-    c->DiscloseFlag = ccReg::DISCL_DISPLAY;
-  // set disclose flags according to default policy
-  c->DiscloseName = get_DISCLOSE(con->getDiscloseName());
-  c->DiscloseOrganization = get_DISCLOSE(con->getDiscloseOrganization());
-  c->DiscloseAddress = get_DISCLOSE(con->getDiscloseAddr());
-  c->DiscloseTelephone = get_DISCLOSE(con->getDiscloseTelephone());
-  c->DiscloseFax = get_DISCLOSE(con->getDiscloseFax());
-  c->DiscloseEmail = get_DISCLOSE(con->getDiscloseEmail());
-  c->DiscloseVAT = get_DISCLOSE(con->getDiscloseVat());
-  c->DiscloseIdent = get_DISCLOSE(con->getDiscloseIdent());
-  c->DiscloseNotifyEmail = get_DISCLOSE(con->getDiscloseNotifyEmail());
-  // if not set return flag empty
-  if (!c->DiscloseName && !c->DiscloseOrganization && !c->DiscloseAddress
-      && !c->DiscloseTelephone && !c->DiscloseFax && !c->DiscloseEmail
-      && !c->DiscloseVAT && !c->DiscloseIdent && !c->DiscloseNotifyEmail)
-    c->DiscloseFlag = ccReg::DISCL_EMPTY;
-  return a.getRet()._retn();
 }
 
 /***********************************************************************
