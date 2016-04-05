@@ -292,7 +292,7 @@ struct Parameter< CommChannel::SMS >
 {
     static std::string name(Database::query_param_list &_params)
     {
-        return "$" + _params.add("async_sms_generation") + "::TEXT";
+        return "$" + _params.add("mojeid_async_sms_generation") + "::TEXT";
     }
 };
 
@@ -301,7 +301,7 @@ struct Parameter< CommChannel::LETTER >
 {
     static std::string name(Database::query_param_list &_params)
     {
-        return "$" + _params.add("async_letter_generation") + "::TEXT";
+        return "$" + _params.add("mojeid_async_letter_generation") + "::TEXT";
     }
 };
 
@@ -310,7 +310,7 @@ struct Parameter< CommChannel::EMAIL >
 {
     static std::string name(Database::query_param_list &_params)
     {
-        return "$" + _params.add("async_email_generation") + "::TEXT";
+        return "$" + _params.add("mojeid_async_email_generation") + "::TEXT";
     }
 };
 
