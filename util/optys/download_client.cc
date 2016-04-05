@@ -121,7 +121,7 @@
             //open csv file
             std::ifstream csv_file_stream;
             std::string local_csv_file_name = local_download_dir + "/" + (*ci);
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             try
             {
                 csv_file_stream.open (local_csv_file_name.c_str(), std::ios::in);
@@ -168,7 +168,7 @@
                 //set undelivered state
                 if(!file_message_id_set.empty())
                 {
-                    Fred::OperationContext file_ctx;
+                    Fred::OperationContextCreator file_ctx;
                     Database::query_param_list params;//query params
                     std::string message_state_undelivered_query(
                     "UPDATE message_archive SET status_id = (SELECT id FROM enum_send_status WHERE status_name = 'undelivered') "

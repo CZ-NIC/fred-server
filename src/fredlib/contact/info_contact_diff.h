@@ -33,6 +33,7 @@
 #include "util/db/nullable.h"
 #include "util/printable.h"
 
+#include <sstream>
 
 namespace Fred
 {
@@ -64,8 +65,7 @@ namespace Fred
         DiffMemeber<Nullable<std::string> >::Type email;/**< e-mail address */
         DiffMemeber<Nullable<std::string> >::Type notifyemail;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
         DiffMemeber<Nullable<std::string> >::Type vat;/**< taxpayer identification number */
-        DiffMemeber<Nullable<std::string> >::Type ssntype;/**< type of identification from enumssntype table */
-        DiffMemeber<Nullable<std::string> >::Type ssn;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        DiffMemeber< Nullable< PersonalIdUnion > >::Type personal_id;/**< type and value of identification number e.g. social security number, identity card number, date of birth */
         DiffMemeber<bool>::Type disclosename;/**< whether to reveal contact name */
         DiffMemeber<bool>::Type discloseorganization;/**< whether to reveal organization */
         DiffMemeber<bool>::Type discloseaddress;/**< whether to reveal address */

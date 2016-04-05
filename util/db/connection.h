@@ -214,6 +214,11 @@ public:
     return conn_->inTransaction();
   }
 
+  bool in_valid_transaction() const
+  {
+    return (conn_ != NULL) && conn_->in_valid_transaction();
+  }
+
   virtual inline void setConstraintExclusion(bool on = true) {
     conn_->setConstraintExclusion(on);
   }
@@ -372,6 +377,10 @@ public:
     return super::escape(_in);
   }
 
+  bool in_valid_transaction() const
+  {
+    return this->super::in_valid_transaction();
+  }
 
   template<class _transaction_type, class _manager_type>
   friend class Transaction_;

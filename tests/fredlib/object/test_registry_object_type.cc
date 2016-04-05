@@ -28,11 +28,11 @@ BOOST_AUTO_TEST_SUITE(TestRegistryObjectType)
 
 BOOST_FIXTURE_TEST_CASE(all_definitions_from_db_are_supported, Test::Fixture::instantiate_db_template)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Database::Result obj_types_res = ctx.get_conn().exec("SELECT name FROM enum_object_type");
     BOOST_CHECK(obj_types_res.size() > 0);
 
-    for(int i = 0; i < obj_types_res.size(); ++i) {
+    for(::size_t i = 0; i < obj_types_res.size(); ++i) {
         Fred::object_type tmp;
 
         BOOST_CHECK_NO_THROW(

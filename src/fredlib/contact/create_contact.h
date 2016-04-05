@@ -30,7 +30,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "src/fredlib/opexception.h"
-#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object/object.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
 #include "util/printable.h"
@@ -309,13 +309,18 @@ namespace Fred
         */
         CreateContact& set_logd_request_id(unsigned long long logd_request_id);
 
+        struct Result
+        {
+            CreateObject::Result create_object_result;
+            boost::posix_time::ptime creation_time;///< timestamp of the contact creation
+        };
         /**
         * Executes create
         * @param ctx contains reference to database and logging interface
         * @param returned_timestamp_pg_time_zone_name is postgresql time zone name of the returned timestamp
-        * @return timestamp of the contact creation
+        * @return object id, history id and creation timestamp
         */
-        boost::posix_time::ptime exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
+        Result exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
 
         /**
         * Dumps state of the instance into the string

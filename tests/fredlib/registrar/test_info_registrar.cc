@@ -94,7 +94,7 @@ struct test_info_registrar_fixture : virtual public Test::Fixture::instantiate_d
         test_registrar_data_2.vat_payer = false;
 
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         ctx.get_conn().exec("TRUNCATE TABLE registrar CASCADE;");
 
@@ -166,7 +166,7 @@ BOOST_FIXTURE_TEST_SUITE(TestInfoRegistrar, test_info_registrar_fixture)
 */
 BOOST_AUTO_TEST_CASE(info_registrar)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).exec(ctx);
     BOOST_CHECK(registrar_info1.info_registrar_data == test_registrar_data_1);
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(info_registrar)
 BOOST_AUTO_TEST_CASE(test_info_registrar_output_timestamp)
 {
     const std::string timezone = "Europe/Prague";
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarOutput registrar_output_by_handle = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).exec(ctx, timezone);
     const Fred::InfoRegistrarOutput registrar_output_by_id     = Fred::InfoRegistrarById(registrar_output_by_handle.info_registrar_data.id).exec(ctx, timezone);
 
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(test_info_registrar_output_timestamp)
  */
 BOOST_AUTO_TEST_CASE(info_registrar_wrong_handle)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string bad_registrar_handle = "BAD_REGISTRAR_HANDLE";
 
     try
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(info_registrar_wrong_handle)
  */
 BOOST_AUTO_TEST_CASE(info_registrar_wrong_id)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     unsigned long long bad_registrar_id = 0;
 
     try
@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(info_registrar_wrong_id)
 */
 BOOST_AUTO_TEST_CASE(info_registrar_diff)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoRegistrarOutput registrar_info1 = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).exec(ctx);
     Fred::InfoRegistrarOutput registrar_info2 = Fred::InfoRegistrarByHandle(test_registrar_data_2.handle).set_lock().exec(ctx);
 

@@ -29,7 +29,7 @@ namespace Fred
 {
     std::vector<test_result_status> list_test_result_statuses(const std::string& lang ) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             Database::Result names_res = ctx.get_conn().exec_params(
                 "SELECT "
@@ -65,7 +65,7 @@ namespace Fred
 
     std::vector<check_status> list_check_statuses(const std::string& lang ) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             Database::Result names_res = ctx.get_conn().exec_params(
                 "SELECT "
@@ -100,7 +100,7 @@ namespace Fred
 
     std::vector<test_definition> list_test_definitions(const std::string& lang, const std::string& testsuite_name ) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             Database::QueryParams params;
             params.push_back(lang);
@@ -161,7 +161,7 @@ namespace Fred
 
     std::vector<testsuite_definition> list_testsuite_definitions(const std::string& lang ) {
         try {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             Database::Result names_res = ctx.get_conn().exec_params(
                 "SELECT "

@@ -37,15 +37,6 @@
 
 namespace Fred
 {
-    struct CreateObjectOutput
-    {
-        unsigned long long object_id;
-        unsigned long long history_id;
-        CreateObjectOutput()
-        : object_id(0)
-        , history_id(0)
-        {}
-    };
     /**
      * Creates common part of registry object.
      */
@@ -75,7 +66,18 @@ namespace Fred
             , const Nullable<unsigned long long>& logd_request_id);
         CreateObject& set_authinfo(const std::string& authinfo);
         CreateObject& set_logd_request_id(const Nullable<unsigned long long>& logd_request_id);
-        CreateObjectOutput exec(OperationContext& ctx);
+
+        struct Result
+        {
+            enum { INVALID_ID = 0 };
+            Result()
+            :   object_id(INVALID_ID),
+                history_id(INVALID_ID)
+            {}
+            unsigned long long object_id;
+            unsigned long long history_id;
+        };
+        Result exec(OperationContext& ctx);
 
         std::string to_string() const;
     };

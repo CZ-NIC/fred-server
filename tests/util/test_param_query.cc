@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_SUITE(TestParamQuery)
 */
 BOOST_FIXTURE_TEST_CASE(query_composition, Test::Fixture::instantiate_db_template)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Database::ParamQuery array_lit = Database::ParamQuery("'{")
                 ("\"aaa\",")

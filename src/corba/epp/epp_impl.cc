@@ -36,7 +36,7 @@
 #include "src/corba/connection_releaser.h"
 
 #include "util/optional_value.h"
-#include "src/fredlib/notifier2/enqueue_notification.h"
+#include "src/fredlib/notifier/enqueue_notification.h"
 
 #include "config.h"
 
@@ -243,7 +243,7 @@ public:
                 {
                     if(!notification_params_.get_value().disable_epp_notifier)
                     {
-                        Fred::OperationContext ctx;
+                        Fred::OperationContextCreator ctx;
                         Notification::enqueue_notification(ctx,notification_params_.get_value().event_type,
                             getRegistrar(), historyid, db->GetsvTRID());
                         ctx.commit_transaction();
@@ -3204,7 +3204,7 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     if (code == COMMAND_OK) {
         try {
             if(epp_update_contact_enqueue_check_ && automatic_contact_check_should_be_enqueued) {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 Admin::enqueue_check_if_no_other_exists(ctx, id, Fred::TestsuiteHandle::AUTOMATIC, params.requestID);
                 ctx.commit_transaction();
             }

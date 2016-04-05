@@ -127,16 +127,15 @@ namespace Fred
     UpdateContact< DERIVED >::UpdateContact(const std::string& registrar
         , const Optional<std::string>& sponsoring_registrar
         , const Optional<std::string>& authinfo
-        , const Optional<std::string>& name
-        , const Optional<std::string>& organization
-        , const Optional< Fred::Contact::PlaceAddress > &place
-        , const Optional<std::string>& telephone
-        , const Optional<std::string>& fax
-        , const Optional<std::string>& email
-        , const Optional<std::string>& notifyemail
-        , const Optional<std::string>& vat
-        , const Optional<std::string>& ssntype
-        , const Optional<std::string>& ssn
+        , const Optional< Nullable< std::string > > &name
+        , const Optional< Nullable< std::string > > &organization
+        , const Optional< Nullable< Fred::Contact::PlaceAddress > > &place
+        , const Optional< Nullable< std::string > > &telephone
+        , const Optional< Nullable< std::string > > &fax
+        , const Optional< Nullable< std::string > > &email
+        , const Optional< Nullable< std::string > > &notifyemail
+        , const Optional< Nullable< std::string > > &vat
+        , const Optional< Nullable< PersonalIdUnion > > &personal_id
         , const ContactAddressToUpdate &addresses
         , const Optional<bool>& disclosename
         , const Optional<bool>& discloseorganization
@@ -147,9 +146,8 @@ namespace Fred
         , const Optional<bool>& disclosevat
         , const Optional<bool>& discloseident
         , const Optional<bool>& disclosenotifyemail
-        , const Optional<Nullable<bool> >& domain_expiration_letter_flag
-        , const Optional<unsigned long long>& logd_request_id
-        )
+        , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+        , const Optional< unsigned long long > &logd_request_id)
     :   registrar_(registrar)
     ,   sponsoring_registrar_(sponsoring_registrar)
     ,   authinfo_(authinfo)
@@ -161,8 +159,7 @@ namespace Fred
     ,   email_(email)
     ,   notifyemail_(notifyemail)
     ,   vat_(vat)
-    ,   ssntype_(ssntype)
-    ,   ssn_(ssn)
+    ,   personal_id_(personal_id)
     ,   addresses_(addresses)
     ,   disclosename_(disclosename)
     ,   discloseorganization_(discloseorganization)
@@ -174,10 +171,70 @@ namespace Fred
     ,   discloseident_(discloseident)
     ,   disclosenotifyemail_(disclosenotifyemail)
     ,   domain_expiration_letter_flag_(domain_expiration_letter_flag)
-    ,   logd_request_id_(logd_request_id.isset()
-            ? Nullable<unsigned long long>(logd_request_id.get_value())
-            : Nullable<unsigned long long>())//is NULL if not set
+    ,   logd_request_id_(logd_request_id)
     {}
+
+    std::string update_value(
+        const std::string &value,
+        const std::string &value_name,
+        Database::query_param_list &params)
+    {
+        return value_name + "=$" + params.add(value) + "::text";
+    }
+
+    std::string update_value(
+        const Nullable< std::string > &null_value,
+        const std::string &value_name,
+        Database::query_param_list &params)
+    {
+        std::string sql = value_name + "=";
+        if (null_value.isnull()) {
+            sql += "NULL";
+        }
+        else {
+            sql += "$" + params.add(null_value.get_value());
+        }
+        sql += "::text ";
+        return sql;
+    }
+
+    std::string update_value(
+        const Optional< std::string > &opt_value,
+        const std::string &value_name,
+        Database::query_param_list &params)
+    {
+        std::string sql = value_name + "=";
+        if (opt_value.isset()) {
+            sql += "$" + params.add(opt_value.get_value());
+        }
+        else {
+            sql += "NULL";
+        }
+        sql += "::text ";
+        return sql;
+    }
+
+    std::string update_value(
+        const Optional< Nullable< std::string > > &opt_null_value,
+        const std::string &value_name,
+        Util::HeadSeparator &set_separator,
+        Database::query_param_list &params)
+    {
+        return opt_null_value.isset()
+               ? (set_separator.get() + update_value(opt_null_value.get_value(), value_name, params))
+               : std::string();
+    }
+
+    std::string update_value(
+        const Optional< bool > &opt_value,
+        const std::string &value_name,
+        Util::HeadSeparator &set_separator,
+        Database::query_param_list &params)
+    {
+        return opt_value.isset()
+               ? (set_separator.get() + value_name + "=$" + params.add(opt_value.get_value()) + "::boolean ")
+               : std::string();
+    }
 
     template < class DERIVED >
     unsigned long long UpdateContact< DERIVED >::exec(OperationContext& ctx
@@ -190,7 +247,8 @@ namespace Fred
         try {
             history_id = UpdateObject(contact.info_contact_data.handle,
                 "contact",registrar_,sponsoring_registrar_, authinfo_,
-                logd_request_id_).exec(ctx);
+                logd_request_id_.isset() ? Nullable< ::size_t >(logd_request_id_.get_value())
+                                         : Nullable< ::size_t >()).exec(ctx);
         }
         catch(const UpdateObject::Exception& ex) {
             if(ex.is_set_unknown_registrar_handle()) {
@@ -214,143 +272,80 @@ namespace Fred
 
         //update contact
         {
-            Database::QueryParams params;//query params
+            Database::query_param_list params;
             std::ostringstream sql;
-            Util::HeadSeparator set_separator("SET ",", ");
+            Util::HeadSeparator set_separator("SET ",",");
             sql << "UPDATE contact ";
 
-            if (name_.isset()) {
-                params.push_back(name_.get_value());
-                sql << set_separator.get() << "name = $" << params.size() << "::text ";
-            }
-
-            if (organization_.isset()) {
-                params.push_back(organization_.get_value());
-                sql << set_separator.get() << "organization = $" << params.size() << "::text ";
-            }
-
+            sql << update_value(name_,         "name",         set_separator, params);
+            sql << update_value(organization_, "organization", set_separator, params);
             if (place_.isset()) {
-                const Fred::Contact::PlaceAddress &place = place_.get_value();
-                params.push_back(place.street1);
-                sql << set_separator.get() << "street1 = $" << params.size() << "::text ";
-
-                if (place.street2.isset()) {
-                    params.push_back(place.street2.get_value());
-                    sql << set_separator.get() << "street2 = $" << params.size() << "::text ";
+                if (place_.get_value().isnull()) {
+                    sql << set_separator.get() << "street1=NULL::text,"
+                                                  "street2=NULL::text,"
+                                                  "street3=NULL::text,"
+                                                  "city=NULL::text,"
+                                                  "stateorprovince=NULL::text,"
+                                                  "postalcode=NULL::text,"
+                                                  "country=NULL::text";
                 }
-
-                if (place.street3.isset()) {
-                    params.push_back(place.street3.get_value());
-                    sql << set_separator.get() << "street3 = $" << params.size() << "::text ";
+                else {
+                    const Fred::Contact::PlaceAddress place = place_.get_value().get_value();
+                    const std::string country = Contact::get_country_code(
+                        place.country, ctx, &update_contact_exception, &Exception::set_unknown_country);
+                    sql << set_separator.get();
+                    sql << update_value(place.street1,         "street1",         params) << ",";
+                    sql << update_value(place.street2,         "street2",         params) << ",";
+                    sql << update_value(place.street3,         "street3",         params) << ",";
+                    sql << update_value(place.city,            "city",            params) << ",";
+                    sql << update_value(place.stateorprovince, "stateorprovince", params) << ",";
+                    sql << update_value(place.postalcode,      "postalcode",      params) << ",";
+                    sql << update_value(country,               "country",         params);
                 }
+            }
 
-                params.push_back(place.city);
-                sql << set_separator.get() << "city = $" << params.size() << "::text ";
+            sql << update_value(telephone_,   "telephone",   set_separator, params);
+            sql << update_value(fax_,         "fax",         set_separator, params);
+            sql << update_value(email_,       "email",       set_separator, params);
+            sql << update_value(notifyemail_, "notifyemail", set_separator, params);
+            sql << update_value(vat_,         "vat",         set_separator, params);
 
-                if (place.stateorprovince.isset()) {
-                    params.push_back(place.stateorprovince.get_value());
-                    sql << set_separator.get() << "stateorprovince = $" << params.size() << "::text ";
+            if (personal_id_.isset()) {
+                const Nullable< PersonalIdUnion > nullable_personal_id = personal_id_.get_value();
+                if (nullable_personal_id.isnull()) {
+                    sql << set_separator.get() << "ssntype=NULL::integer,"
+                                                  "ssn=NULL::text";
                 }
-
-                params.push_back(place.postalcode);
-                sql << set_separator.get() << "postalcode = $" << params.size() << "::text ";
-
-                params.push_back(Contact::get_country_code(place.country, ctx, &update_contact_exception, &Exception::set_unknown_country));
-                sql << set_separator.get() << "country = $" << params.size() << "::text ";
+                else {
+                    const PersonalIdUnion personal_id = nullable_personal_id.get_value();
+                    const ::size_t ssn_type_id(
+                        Contact::get_ssntype_id(personal_id.get_type(),
+                                                ctx, &update_contact_exception, &Exception::set_unknown_ssntype));
+                    sql << set_separator.get() << "ssntype=$" << params.add(ssn_type_id) << "::integer,"
+                                                  "ssn=$" << params.add(personal_id.get()) << "::text";
+                }
             }
 
-            if (telephone_.isset()) {
-                params.push_back(telephone_.get_value());
-                sql << set_separator.get() << "telephone = $" << params.size() << "::text ";
-            }
-
-            if (fax_.isset()) {
-                params.push_back(fax_.get_value());
-                sql << set_separator.get() << "fax = $" << params.size() << "::text ";
-            }
-
-            if (email_.isset()) {
-                params.push_back(email_.get_value());
-                sql << set_separator.get() << "email = $" << params.size() << "::text ";
-            }
-
-            if (notifyemail_.isset()) {
-                params.push_back(notifyemail_.get_value());
-                sql << set_separator.get() << "notifyemail = $" << params.size() << "::text ";
-            }
-
-            if (vat_.isset()) {
-                params.push_back(vat_.get_value());
-                sql << set_separator.get() << "vat = $" << params.size() << "::text ";
-            }
-
-            if (ssntype_.isset()) {
-                params.push_back(Contact::get_ssntype_id(ssntype_,ctx, &update_contact_exception, &Exception::set_unknown_ssntype));
-                sql << set_separator.get() << "ssntype = $" << params.size() << "::integer ";
-            }
-
-            if (ssn_.isset()) {
-                params.push_back(ssn_.get_value());
-                sql << set_separator.get() << "ssn = $" << params.size() << "::text ";
-            }
-
-            if (disclosename_.isset()) {
-                params.push_back(disclosename_.get_value());
-                sql << set_separator.get() << "disclosename = $" << params.size() << "::boolean ";
-            }
-
-            if (discloseorganization_.isset()) {
-                params.push_back(discloseorganization_.get_value());
-                sql << set_separator.get() << "discloseorganization = $" << params.size() << "::boolean ";
-            }
-
-            if (discloseaddress_.isset()) {
-                params.push_back(discloseaddress_.get_value());
-                sql << set_separator.get() << "discloseaddress = $" << params.size() << "::boolean ";
-            }
-
-            if (disclosetelephone_.isset()) {
-                params.push_back(disclosetelephone_.get_value());
-                sql << set_separator.get() << "disclosetelephone = $" << params.size() << "::boolean ";
-            }
-
-            if (disclosefax_.isset()) {
-                params.push_back(disclosefax_.get_value());
-                sql << set_separator.get() << "disclosefax = $" << params.size() << "::boolean ";
-            }
-
-            if (discloseemail_.isset()) {
-                params.push_back(discloseemail_.get_value());
-                sql << set_separator.get() << "discloseemail = $" << params.size() << "::boolean ";
-            }
-
-            if (disclosevat_.isset()) {
-                params.push_back(disclosevat_.get_value());
-                sql << set_separator.get() << "disclosevat = $" << params.size() << "::boolean ";
-            }
-
-            if (discloseident_.isset()) {
-                params.push_back(discloseident_.get_value());
-                sql << set_separator.get() << "discloseident = $" << params.size() << "::boolean ";
-            }
-
-            if (disclosenotifyemail_.isset()) {
-                params.push_back(disclosenotifyemail_.get_value());
-                sql << set_separator.get() << "disclosenotifyemail = $" << params.size() << "::boolean ";
-            }
+            sql << update_value(disclosename_,         "disclosename",         set_separator, params);
+            sql << update_value(discloseorganization_, "discloseorganization", set_separator, params);
+            sql << update_value(discloseaddress_,      "discloseaddress",      set_separator, params);
+            sql << update_value(disclosetelephone_,    "disclosetelephone",    set_separator, params);
+            sql << update_value(disclosefax_,          "disclosefax",          set_separator, params);
+            sql << update_value(discloseemail_,        "discloseemail",        set_separator, params);
+            sql << update_value(disclosevat_,          "disclosevat",          set_separator, params);
+            sql << update_value(discloseident_,        "discloseident",        set_separator, params);
+            sql << update_value(disclosenotifyemail_,  "disclosenotifyemail",  set_separator, params);
 
             if (domain_expiration_letter_flag_.isset()) {
-                Nullable<bool> new_domain_expiration_letter_flag = domain_expiration_letter_flag_.get_value();
-                if(new_domain_expiration_letter_flag.isnull())
-                {
-                    params.push_back(Database::NullQueryParam);
-                    sql << set_separator.get() << "warning_letter = $" << params.size() << "::boolean ";
+                const Nullable< bool > flag = domain_expiration_letter_flag_.get_value();
+                sql << set_separator.get() << "warning_letter=";
+                if (flag.isnull()) {
+                    sql << "NULL";
                 }
-                else
-                {
-                    params.push_back(new_domain_expiration_letter_flag.get_value());
-                    sql << set_separator.get() << "warning_letter = $" << params.size() << "::boolean ";
+                else {
+                    sql << "$" << params.add(flag.get_value());
                 }
+                sql << "::boolean";
             }
 
             params.push_back(contact.info_contact_data.id);
@@ -367,35 +362,31 @@ namespace Fred
                 if (update_contact_res.size() != 1) {
                     BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
                 }
-                else {
-                    const Fred::Contact::PlaceAddress place = place_.get_value_or_default();
-                    Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
-                        ctx,
-                        contact.info_contact_data.id,
-                        name_,
-                        organization_,
-                        place.street1,
-                        place.street2,
-                        place.street3,
-                        place.city,
-                        place.stateorprovince,
-                        place.postalcode,
-                        place.country,
-                        telephone_,
-                        fax_,
-                        email_,
-                        notifyemail_,
-                        vat_,
-                        ssntype_,
-                        ssn_
-                    );
-                }
+                Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(
+                    ctx,
+                    contact.info_contact_data.id,
+                    name_.isset(),
+                    organization_.isset(),
+                    place_.isset(),
+                    place_.isset(),
+                    place_.isset(),
+                    place_.isset(),
+                    place_.isset(),
+                    place_.isset(),
+                    place_.isset(),
+                    telephone_.isset(),
+                    fax_.isset(),
+                    email_.isset(),
+                    notifyemail_.isset(),
+                    vat_.isset(),
+                    personal_id_.isset(),
+                    personal_id_.isset());
             }
 
             //UPDATE or INSERT contact_address
             if (!addresses_.to_update().empty()) {
                 const ContactAddressToUpdate::ToUpdate &to_update = addresses_.to_update();
-                params = Database::QueryParams();
+                params.clear();
                 params.push_back(contact.info_contact_data.id);
                 Database::Result address_types_res = ctx.get_conn().exec_params(
                     "SELECT type FROM contact_address WHERE contactid=$1::bigint", params);
@@ -413,7 +404,7 @@ namespace Fred
                     if (updatable.find(addr_ptr->first) != updatable.end()) { //UPDATE
                         sql.str("");
                         sql << "UPDATE contact_address SET ";
-                        params = Database::QueryParams();
+                        params.clear();
                         params.push_back(contact.info_contact_data.id);//$1 = contactid
                         params.push_back(type); //$2 = type
                         //company_name optional
@@ -554,7 +545,7 @@ namespace Fred
             //DELETE contact_address
             if (!addresses_.to_remove().empty()) {
                 const ContactAddressToUpdate::ToRemove &to_remove = addresses_.to_remove();
-                params = Database::QueryParams();
+                params.clear();
                 params.push_back(contact.info_contact_data.id);//$1 = contactid
                 sql.str("");
                 sql << "DELETE FROM contact_address WHERE contactid=$1::bigint AND "
@@ -621,8 +612,7 @@ namespace Fred
         (std::make_pair("email",email_.print_quoted()))
         (std::make_pair("notifyemail_",notifyemail_.print_quoted()))
         (std::make_pair("vat",vat_.print_quoted()))
-        (std::make_pair("ssntype",ssntype_.print_quoted()))
-        (std::make_pair("ssn",ssn_.print_quoted()))
+        (std::make_pair("personal_id",personal_id_.print_quoted()))
         (std::make_pair("addresses",addresses_.to_string()))
         (std::make_pair("disclosename",disclosename_.print_quoted()))
         (std::make_pair("discloseorganization",discloseorganization_.print_quoted()))
@@ -648,16 +638,15 @@ namespace Fred
             , const std::string& registrar
             , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
-            , const Optional<std::string>& name
-            , const Optional<std::string>& organization
-            , const Optional< Fred::Contact::PlaceAddress > &place
-            , const Optional<std::string>& telephone
-            , const Optional<std::string>& fax
-            , const Optional<std::string>& email
-            , const Optional<std::string>& notifyemail
-            , const Optional<std::string>& vat
-            , const Optional<std::string>& ssntype
-            , const Optional<std::string>& ssn
+            , const Optional< Nullable< std::string > > &name
+            , const Optional< Nullable< std::string > > &organization
+            , const Optional< Nullable< Fred::Contact::PlaceAddress > > &place
+            , const Optional< Nullable< std::string > > &telephone
+            , const Optional< Nullable< std::string > > &fax
+            , const Optional< Nullable< std::string > > &email
+            , const Optional< Nullable< std::string > > &notifyemail
+            , const Optional< Nullable< std::string > > &vat
+            , const Optional< Nullable< PersonalIdUnion > > &personal_id
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -668,9 +657,8 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
-            , const Optional<Nullable<bool> >& domain_expiration_letter_flag
-            , const Optional<unsigned long long>& logd_request_id
-            )
+            , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+            , const Optional< unsigned long long > &logd_request_id)
     : UpdateContact<UpdateContactById>(registrar
               , sponsoring_registrar
               , authinfo
@@ -682,8 +670,7 @@ namespace Fred
               , email
               , notifyemail
               , vat
-              , ssntype
-              , ssn
+              , personal_id
               , addresses
               , disclosename
               , discloseorganization
@@ -809,16 +796,15 @@ namespace Fred
             , const std::string& registrar
             , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
-            , const Optional<std::string>& name
-            , const Optional<std::string>& organization
-            , const Optional< Fred::Contact::PlaceAddress > &place
-            , const Optional<std::string>& telephone
-            , const Optional<std::string>& fax
-            , const Optional<std::string>& email
-            , const Optional<std::string>& notifyemail
-            , const Optional<std::string>& vat
-            , const Optional<std::string>& ssntype
-            , const Optional<std::string>& ssn
+            , const Optional< Nullable< std::string > > &name
+            , const Optional< Nullable< std::string > > &organization
+            , const Optional< Nullable< Fred::Contact::PlaceAddress > > &place
+            , const Optional< Nullable< std::string > > &telephone
+            , const Optional< Nullable< std::string > > &fax
+            , const Optional< Nullable< std::string > > &email
+            , const Optional< Nullable< std::string > > &notifyemail
+            , const Optional< Nullable< std::string > > &vat
+            , const Optional< Nullable< PersonalIdUnion > > &personal_id
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -829,9 +815,8 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
-            , const Optional<Nullable<bool> >& domain_expiration_letter_flag
-            , const Optional<unsigned long long> logd_request_id
-            )
+            , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+            , const Optional< unsigned long long > &logd_request_id)
     : UpdateContact<UpdateContactByHandle>(registrar
             , sponsoring_registrar
             , authinfo
@@ -843,8 +828,7 @@ namespace Fred
             , email
             , notifyemail
             , vat
-            , ssntype
-            , ssn
+            , personal_id
             , addresses
             , disclosename
             , discloseorganization
@@ -961,4 +945,3 @@ namespace Fred
     }
 
 }//namespace Fred
-

@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             check_logd_request_history.back() );
 
         try {
-            Fred::OperationContext ctx1;
+            Fred::OperationContextCreator ctx1;
             update_check.exec(ctx1);
             ctx1.commit_transaction();
         } catch(const Fred::InternalError& exp) {
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     //test_handles.push_back(check.testsuite_handle_.test.testdef_handle_);
     BOOST_FOREACH (const setup_testdef& def, suite.testdefs) {
         test_handles.push_back(def.testdef_handle_);
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateContactTest(uuid::from_string(check.check_handle_), def.testdef_handle_).exec(ctx);
         ctx.commit_transaction();
     }
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             tests_error_msg_history.at(0).at(j) );
 
         try {
-            Fred::OperationContext ctx2;
+            Fred::OperationContextCreator ctx2;
             update_test.exec(ctx2);
             ctx2.commit_transaction();
         } catch(const Fred::InternalError& exp) {
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
             tests_logd_request_history.at(i).at(0) );
 
         try {
-            Fred::OperationContext ctx3;
+            Fred::OperationContextCreator ctx3;
             create_test.exec(ctx3);
             ctx3.commit_transaction();
         } catch(const Fred::InternalError& exp) {
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
                 tests_error_msg_history.at(i).at(j) );
 
             try {
-                Fred::OperationContext ctx4;
+                Fred::OperationContextCreator ctx4;
                 update_test.exec(ctx4);
                 ctx4.commit_transaction();
             } catch(const Fred::InternalError& exp) {
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(test_Exec)
     Fred::InfoContactCheck info_op( uuid::from_string( check.check_handle_) );
     Fred::InfoContactCheckOutput info;
     try {
-        Fred::OperationContext ctx5;
+        Fred::OperationContextCreator ctx5;
         info = info_op.exec(ctx5);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_check_handle)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
         dummy.exec(ctx1);
     } catch(const Fred::ExceptionUnknownCheckHandle& exp) {
         caught_the_right_exception = true;

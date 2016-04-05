@@ -54,7 +54,7 @@ struct check_domain_fixture : public Test::Fixture::instantiate_db_template
     , blacklisted_domain_name("fredblack"+xmark+".cz")
     {
         namespace ip = boost::asio::ip;
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -117,7 +117,7 @@ BOOST_FIXTURE_TEST_SUITE(TestCheckDomain, check_domain_fixture)
  */
 BOOST_AUTO_TEST_CASE(check_domain_handle_true)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK(Fred::CheckDomain(std::string("-..")+test_domain_name).is_invalid_syntax());
     BOOST_CHECK(Fred::CheckDomain(std::string("-")+test_domain_name).is_invalid_handle(ctx));
     BOOST_CHECK(Fred::CheckDomain(std::string("testfred")+xmark+".czz").is_bad_zone(ctx));
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(check_domain_handle_true)
 
 BOOST_AUTO_TEST_CASE(check_domain_handle_false)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_syntax());
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_handle(ctx));
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_bad_zone(ctx));

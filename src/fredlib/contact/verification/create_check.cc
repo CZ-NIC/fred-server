@@ -70,7 +70,7 @@ namespace Fred
         _ctx.get_log().debug("CreateContactCheck exec() started");
         _ctx.get_log().info(to_string());
 
-        Fred::OperationContext ctx_unique;
+        Fred::OperationContextCreator ctx_unique;
         std::string unique_test_query =
                 "SELECT handle "
                 "   FROM contact_check "

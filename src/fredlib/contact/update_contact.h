@@ -162,36 +162,6 @@ namespace Fred
         : public virtual Util::Printable
         , public ExceptionTraits<UpdateContactET>
     {
-        const std::string registrar_;/**< handle of registrar performing the update */
-        Optional<std::string> sponsoring_registrar_;/**< handle of registrar administering the object */
-        Optional<std::string> authinfo_;/**< transfer password */
-        Optional<std::string> name_ ;/**< name of contact person */
-        Optional<std::string> organization_;/**< full trade name of organization */
-        Optional< Fred::Contact::PlaceAddress > place_;/**< place address of contact */
-        Optional<std::string> telephone_;/**<  telephone number */
-        Optional<std::string> fax_;/**< fax number */
-        Optional<std::string> email_;/**< e-mail address */
-        Optional<std::string> notifyemail_;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
-        Optional<std::string> vat_;/**< taxpayer identification number */
-        Optional<std::string> ssntype_;/**< type of identification from enum_ssntype table */
-        Optional<std::string> ssn_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
-        ContactAddressToUpdate addresses_;/**< contact addresses to update or remove */
-        Optional<bool> disclosename_;/**< whether to reveal contact name */
-        Optional<bool> discloseorganization_;/**< whether to reveal organization */
-        Optional<bool> discloseaddress_;/**< whether to reveal address */
-        Optional<bool> disclosetelephone_;/**< whether to reveal phone number */
-        Optional<bool> disclosefax_;/**< whether to reveal fax number */
-        Optional<bool> discloseemail_;/**< whether to reveal email address */
-        Optional<bool> disclosevat_;/**< whether to reveal taxpayer identification number */
-        Optional<bool> discloseident_;/**< whether to reveal unambiguous identification number */
-        Optional<bool> disclosenotifyemail_;/**< whether to reveal notify email */
-        Optional<Nullable<bool> > domain_expiration_letter_flag_;/**< user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set */
-        Nullable<unsigned long long> logd_request_id_; /**< id of the new entry in log_entry database table, id is used in other calls to logging within current request */
-    protected:
-        /**
-         * Empty destructor meant to be called by derived class.
-         */
-        ~UpdateContact(){}
     public:
         /**
         * Update contact constructor with mandatory parameter.
@@ -214,8 +184,7 @@ namespace Fred
         * @param email sets e-mail address into @ref email_ attribute
         * @param notifyemail sets e-mail address for notifications into @ref notifyemail_ attribute
         * @param vat sets taxpayer identification number into @ref vat_ attribute
-        * @param ssntype sets type of identification into @ref ssntype_ attribute
-        * @param ssn sets unambiguous identification number into @ref ssn_ attribute
+        * @param personal_id sets type and identification value into @ref personal_id_ attribute
         * @param addresses sets contact addresses into @ref addresses_ attribute
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
@@ -232,16 +201,15 @@ namespace Fred
         UpdateContact(const std::string& registrar
             , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
-            , const Optional<std::string>& name
-            , const Optional<std::string>& organization
-            , const Optional< Fred::Contact::PlaceAddress > &place
-            , const Optional<std::string>& telephone
-            , const Optional<std::string>& fax
-            , const Optional<std::string>& email
-            , const Optional<std::string>& notifyemail
-            , const Optional<std::string>& vat
-            , const Optional<std::string>& ssntype
-            , const Optional<std::string>& ssn
+            , const Optional< Nullable< std::string > > &name
+            , const Optional< Nullable< std::string > > &organization
+            , const Optional< Nullable< Fred::Contact::PlaceAddress > > &place
+            , const Optional< Nullable< std::string > > &telephone
+            , const Optional< Nullable< std::string > > &fax
+            , const Optional< Nullable< std::string > > &email
+            , const Optional< Nullable< std::string > > &notifyemail
+            , const Optional< Nullable< std::string > > &vat
+            , const Optional< Nullable< PersonalIdUnion > > &personal_id
             , const ContactAddressToUpdate &addresses
             , const Optional<bool>& disclosename
             , const Optional<bool>& discloseorganization
@@ -252,10 +220,15 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
-            , const Optional<Nullable<bool> >& domain_expiration_letter_flag
-            , const Optional<unsigned long long>& logd_request_id
-            );
+            , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+            , const Optional< unsigned long long > &logd_request_id);
+    protected:
+        /**
+         * Empty destructor meant to be called by derived class.
+         */
+        ~UpdateContact(){}
 
+    public:
         /**
         * Sets contact sponsoring registrar.
         * @param sponsoring_registrar sets sponsoring registrar handle into @ref sponsoring_registrar_ attribute
@@ -283,7 +256,7 @@ namespace Fred
         * @param name sets name of contact person into @ref name_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_name(const std::string& name)
+        DERIVED& set_name(const Nullable< std::string > &name)
         {
             name_ = name;
             return static_cast<DERIVED&>(*this);
@@ -294,7 +267,7 @@ namespace Fred
         * @param organization sets full trade name of organization into @ref organization_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_organization(const std::string& organization)
+        DERIVED& set_organization(const Nullable< std::string > &organization)
         {
             organization_ = organization;
             return static_cast<DERIVED&>(*this);
@@ -305,7 +278,7 @@ namespace Fred
         * @param place sets place address of contact into @ref place_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_place(const Fred::Contact::PlaceAddress &place)
+        DERIVED& set_place(const Nullable< Fred::Contact::PlaceAddress > &place)
         {
             place_ = place;
             return static_cast<DERIVED&>(*this);
@@ -316,7 +289,7 @@ namespace Fred
         * @param telephone sets telephone number into @ref telephone_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_telephone(const std::string& telephone)
+        DERIVED& set_telephone(const Nullable< std::string > &telephone)
         {
             telephone_ = telephone;
             return static_cast<DERIVED&>(*this);
@@ -327,7 +300,7 @@ namespace Fred
         * @param fax sets fax number into @ref fax_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_fax(const std::string& fax)
+        DERIVED& set_fax(const Nullable< std::string > &fax)
         {
             fax_ = fax;
             return static_cast<DERIVED&>(*this);
@@ -338,7 +311,7 @@ namespace Fred
         * @param email sets e-mail address into @ref email_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_email(const std::string& email)
+        DERIVED& set_email(const Nullable< std::string > &email)
         {
             email_ = email;
             return static_cast<DERIVED&>(*this);
@@ -349,7 +322,7 @@ namespace Fred
         * @param notifyemail sets e-mail address for notifications into @ref notifyemail_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_notifyemail(const std::string& notifyemail)
+        DERIVED& set_notifyemail(const Nullable< std::string > &notifyemail)
         {
             notifyemail_ = notifyemail;
             return static_cast<DERIVED&>(*this);
@@ -360,31 +333,20 @@ namespace Fred
         * @param vat sets taxpayer identification number into @ref vat_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_vat(const std::string& vat)
+        DERIVED& set_vat(const Nullable< std::string > &vat)
         {
             vat_ = vat;
             return static_cast<DERIVED&>(*this);
         }
 
         /**
-        * Sets contact type of identification.
-        * @param ssntype sets type of identification into @ref ssntype_ attribute
+        * Sets contact unique identification type and value.
+        * @param personal_id sets type and value of identification into @ref personal_id_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_ssntype(const std::string& ssntype)
+        DERIVED& set_personal_id(const Nullable< PersonalIdUnion > &personal_id)
         {
-            ssntype_ = ssntype;
-            return static_cast<DERIVED&>(*this);
-        }
-
-        /**
-        * Sets contact type of identification.
-        * @param ssn sets unambiguous identification number into @ref ssn_ attribute
-        * @return operation instance reference to allow method chaining
-        */
-        DERIVED& set_ssn(const std::string& ssn)
-        {
-            ssn_ = ssn;
+            personal_id_ = personal_id;
             return static_cast<DERIVED&>(*this);
         }
 
@@ -418,7 +380,7 @@ namespace Fred
         * @param disclosename sets whether to reveal contact name into @ref disclosename_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_disclosename(const bool disclosename)
+        DERIVED& set_disclosename(bool disclosename)
         {
             disclosename_ = disclosename;
             return static_cast<DERIVED&>(*this);
@@ -429,7 +391,7 @@ namespace Fred
         * @param discloseorganization sets whether to reveal organization name into @ref discloseorganization_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_discloseorganization(const bool discloseorganization)
+        DERIVED& set_discloseorganization(bool discloseorganization)
         {
             discloseorganization_ = discloseorganization;
             return static_cast<DERIVED&>(*this);
@@ -440,7 +402,7 @@ namespace Fred
         * @param discloseaddress sets whether to reveal contact address into @ref discloseaddress_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_discloseaddress(const bool discloseaddress)
+        DERIVED& set_discloseaddress(bool discloseaddress)
         {
             discloseaddress_ = discloseaddress;
             return static_cast<DERIVED&>(*this);
@@ -451,7 +413,7 @@ namespace Fred
         * @param disclosetelephone sets whether to reveal telephone number into @ref disclosetelephone_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_disclosetelephone(const bool disclosetelephone)
+        DERIVED& set_disclosetelephone(bool disclosetelephone)
         {
             disclosetelephone_ = disclosetelephone;
             return static_cast<DERIVED&>(*this);
@@ -462,7 +424,7 @@ namespace Fred
         * @param disclosefax sets whether to reveal fax number into @ref disclosefax_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_disclosefax(const bool disclosefax)
+        DERIVED& set_disclosefax(bool disclosefax)
         {
             disclosefax_ = disclosefax;
             return static_cast<DERIVED&>(*this);
@@ -473,7 +435,7 @@ namespace Fred
         * @param discloseemail sets whether to reveal e-mail address into @ref discloseemail_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_discloseemail(const bool discloseemail)
+        DERIVED& set_discloseemail(bool discloseemail)
         {
             discloseemail_ = discloseemail;
             return static_cast<DERIVED&>(*this);
@@ -484,7 +446,7 @@ namespace Fred
         * @param disclosevat sets whether to reveal taxpayer identification number into @ref disclosevat_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_disclosevat(const bool disclosevat)
+        DERIVED& set_disclosevat(bool disclosevat)
         {
             disclosevat_ = disclosevat;
             return static_cast<DERIVED&>(*this);
@@ -495,7 +457,7 @@ namespace Fred
         * @param discloseident sets whether to reveal unambiguous identification number into @ref discloseident_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_discloseident(const bool discloseident)
+        DERIVED& set_discloseident(bool discloseident)
         {
             discloseident_ = discloseident;
             return static_cast<DERIVED&>(*this);
@@ -506,7 +468,7 @@ namespace Fred
         * @param disclosenotifyemail sets whether to reveal e-mail address for notifications into @ref disclosenotifyemail_ attribute
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_disclosenotifyemail(const bool disclosenotifyemail)
+        DERIVED& set_disclosenotifyemail(bool disclosenotifyemail)
         {
             disclosenotifyemail_ = disclosenotifyemail;
             return static_cast<DERIVED&>(*this);
@@ -517,9 +479,9 @@ namespace Fred
         * @param domain_expiration_letter_flag sets user preference whether to send domain expiration letters for domains linked to this contact into @ref domain_expiration_letter_flag_ attribute.
         * @return operation instance reference to allow method chaining
         */
-        DERIVED& set_domain_expiration_letter_flag(const bool domain_expiration_letter_flag)
+        DERIVED& set_domain_expiration_letter_flag(const Nullable< bool > &domain_expiration_letter_flag)
         {
-            domain_expiration_letter_flag_ = Nullable<bool>(domain_expiration_letter_flag);
+            domain_expiration_letter_flag_ = domain_expiration_letter_flag;
             return static_cast<DERIVED&>(*this);
         }
 
@@ -530,8 +492,7 @@ namespace Fred
         */
         DERIVED& unset_domain_expiration_letter_flag()
         {
-            domain_expiration_letter_flag_ = Nullable<bool>();
-            return static_cast<DERIVED&>(*this);
+            return this->set_domain_expiration_letter_flag(Nullable< bool >());
         }
 
         /**
@@ -559,6 +520,31 @@ namespace Fred
         */
         std::string to_string() const;
 
+    private:
+        const std::string registrar_;/**< handle of registrar performing the update */
+        Optional< std::string > sponsoring_registrar_;/**< handle of registrar administering the object */
+        Optional< std::string > authinfo_;/**< transfer password */
+        Optional< Nullable< std::string > > name_ ;/**< name of contact person */
+        Optional< Nullable< std::string > > organization_;/**< full trade name of organization */
+        Optional< Nullable< Fred::Contact::PlaceAddress > > place_;/**< place address of contact */
+        Optional< Nullable< std::string > > telephone_;/**<  telephone number */
+        Optional< Nullable< std::string > > fax_;/**< fax number */
+        Optional< Nullable< std::string > > email_;/**< e-mail address */
+        Optional< Nullable< std::string > > notifyemail_;/**< to this e-mail address will be send message in case of any change in domain or nsset affecting contact */
+        Optional< Nullable< std::string > > vat_;/**< taxpayer identification number */
+        Optional< Nullable< PersonalIdUnion > > personal_id_;/**< unambiguous identification number e.g. social security number, identity card number, date of birth */
+        ContactAddressToUpdate addresses_;/**< contact addresses to update or remove */
+        Optional<bool> disclosename_;/**< whether to reveal contact name */
+        Optional<bool> discloseorganization_;/**< whether to reveal organization */
+        Optional<bool> discloseaddress_;/**< whether to reveal address */
+        Optional<bool> disclosetelephone_;/**< whether to reveal phone number */
+        Optional<bool> disclosefax_;/**< whether to reveal fax number */
+        Optional<bool> discloseemail_;/**< whether to reveal email address */
+        Optional<bool> disclosevat_;/**< whether to reveal taxpayer identification number */
+        Optional<bool> discloseident_;/**< whether to reveal unambiguous identification number */
+        Optional<bool> disclosenotifyemail_;/**< whether to reveal notify email */
+        Optional< Nullable< bool > > domain_expiration_letter_flag_;/**< user preference whether to send domain expiration letters for domains linked to this contact, if TRUE then send domain expiration letters, if FALSE don't send domain expiration letters, if is NULL no user preference set */
+        Optional< unsigned long long > logd_request_id_; /**< id of the new entry in log_entry database table, id is used in other calls to logging within current request */
     };//UpdateContact
 
     /**
@@ -619,8 +605,7 @@ namespace Fred
         * @param email sets e-mail address into UpdateContact base
         * @param notifyemail sets e-mail address for notifications into UpdateContact base
         * @param vat sets taxpayer identification number into UpdateContact base
-        * @param ssntype sets type of identification into UpdateContact base
-        * @param ssn sets unambiguous identification number into UpdateContact base
+        * @param personal_id sets type and value of identification into UpdateContact base
         * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
@@ -638,16 +623,15 @@ namespace Fred
                 , const std::string& registrar
                 , const Optional<std::string>& sponsoring_registrar
                 , const Optional<std::string>& authinfo
-                , const Optional<std::string>& name
-                , const Optional<std::string>& organization
-                , const Optional< Fred::Contact::PlaceAddress > &place
-                , const Optional<std::string>& telephone
-                , const Optional<std::string>& fax
-                , const Optional<std::string>& email
-                , const Optional<std::string>& notifyemail
-                , const Optional<std::string>& vat
-                , const Optional<std::string>& ssntype
-                , const Optional<std::string>& ssn
+                , const Optional< Nullable< std::string > > &name
+                , const Optional< Nullable< std::string > > &organization
+                , const Optional< Nullable< Fred::Contact::PlaceAddress > > &place
+                , const Optional< Nullable< std::string > > &telephone
+                , const Optional< Nullable< std::string > > &fax
+                , const Optional< Nullable< std::string > > &email
+                , const Optional< Nullable< std::string > > &notifyemail
+                , const Optional< Nullable< std::string > > &vat
+                , const Optional< Nullable< PersonalIdUnion > > &personal_id
                 , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
@@ -658,9 +642,8 @@ namespace Fred
                 , const Optional<bool>& disclosevat
                 , const Optional<bool>& discloseident
                 , const Optional<bool>& disclosenotifyemail
-                , const Optional<Nullable<bool> >& domain_expiration_letter_flag
-                , const Optional<unsigned long long>& logd_request_id
-                );
+                , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+                , const Optional< unsigned long long > &logd_request_id);
 
         /**
         * Executes update
@@ -737,8 +720,7 @@ namespace Fred
         * @param email sets e-mail address into UpdateContact base
         * @param notifyemail sets e-mail address for notifications into UpdateContact base
         * @param vat sets taxpayer identification number into UpdateContact base
-        * @param ssntype sets type of identification into UpdateContact base
-        * @param ssn sets unambiguous identification number into UpdateContact base
+        * @param personal_id sets type and value of identification into UpdateContact base
         * @param addresses sets contact addresses into UpdateContact base
         * @param disclosename sets whether to reveal contact name into UpdateContact base
         * @param discloseorganization sets whether to reveal organization name into UpdateContact base
@@ -756,16 +738,15 @@ namespace Fred
                 , const std::string& registrar
                 , const Optional<std::string>& sponsoring_registrar
                 , const Optional<std::string>& authinfo
-                , const Optional<std::string>& name
-                , const Optional<std::string>& organization
-                , const Optional< Fred::Contact::PlaceAddress > &place
-                , const Optional<std::string>& telephone
-                , const Optional<std::string>& fax
-                , const Optional<std::string>& email
-                , const Optional<std::string>& notifyemail
-                , const Optional<std::string>& vat
-                , const Optional<std::string>& ssntype
-                , const Optional<std::string>& ssn
+                , const Optional< Nullable< std::string > > &name
+                , const Optional< Nullable< std::string > > &organization
+                , const Optional< Nullable< Fred::Contact::PlaceAddress > > &place
+                , const Optional< Nullable< std::string > > &telephone
+                , const Optional< Nullable< std::string > > &fax
+                , const Optional< Nullable< std::string > > &email
+                , const Optional< Nullable< std::string > > &notifyemail
+                , const Optional< Nullable< std::string > > &vat
+                , const Optional< Nullable< PersonalIdUnion > > &personal_id
                 , const ContactAddressToUpdate &addresses
                 , const Optional<bool>& disclosename
                 , const Optional<bool>& discloseorganization
@@ -776,9 +757,8 @@ namespace Fred
                 , const Optional<bool>& disclosevat
                 , const Optional<bool>& discloseident
                 , const Optional<bool>& disclosenotifyemail
-                , const Optional<Nullable<bool> >& domain_expiration_letter_flag
-                , const Optional<unsigned long long> logd_request_id
-                );
+                , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+                , const Optional< unsigned long long > &logd_request_id);
 
         /**
         * Executes update

@@ -1,0 +1,13 @@
+#ifndef CORBA_CONVERSION_TEST_IDL_
+#define CORBA_CONVERSION_TEST_IDL_
+
+module Test {
+    typedef string Mystring;
+    typedef short myshort;
+    typedef sequence<string> StringSeq;
+    valuetype NullableString string;
+    valuetype NullableBoolean boolean;
+    valuetype NullableULongLong unsigned long long;
+};
+
+#endif

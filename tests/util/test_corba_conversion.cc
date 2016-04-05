@@ -1,0 +1,1723 @@
+/*
+ * Copyright (C) 2015  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <limits>
+#include <fstream>
+#include <ios>
+#include <iterator>
+#include <iomanip>
+#include <sstream>
+#include <utility>
+#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
+#include "config.h"
+#include "src/fredlib/opcontext.h"
+#include "src/cli_admin/read_config_file.h"
+#include "util/util.h"
+#include "util/map_at.h"
+#include "util/subprocess.h"
+#include "util/printable.h"
+#include "util/random_data_generator.h"
+#include "tests/setup/fixtures.h"
+
+#include "util/corba_conversion.h"
+
+#include "src/corba/corba_conversion_test.hh"
+#include "src/corba/mojeid/mojeid_corba_conversion.h"
+
+//not using UTF defined main
+#define BOOST_TEST_NO_MAIN
+
+#include "cfg/config_handler_decl.h"
+#include <boost/test/unit_test.hpp>
+
+namespace Test {
+namespace CorbaConversion {
+
+void unwrap_NullableString(const NullableString *src_ptr, Nullable< std::string > &dst)
+{
+    if (src_ptr == NULL) {
+        dst = Nullable< std::string >();
+    }
+    else {
+        dst = src_ptr->_boxed_in();
+    }
+}
+
+NullableString_var wrap_Nullable_string(const Nullable< std::string > &src)
+{
+    return src.isnull() ? NullableString_var()
+                        : NullableString_var(new NullableString(src.get_value().c_str()));
+}
+
+CORBA::StringSeq_var wrap_into_CORBA_StringSeq(const std::vector< std::string > &src)
+{
+    CORBA::StringSeq_var result(new CORBA::StringSeq());
+
+    result->length(src.size());
+    ::size_t dst_idx = 0;
+    for (std::vector< std::string >::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
+         ++src_ptr, ++dst_idx)
+    {
+        result->operator[](dst_idx) = ::CorbaConversion::wrap_string(*src_ptr)._retn();
+    }
+    return result._retn();
+}
+
+StringSeq_var wrap_into_Test_StringSeq(const std::vector< std::string > &src)
+{
+    StringSeq_var result(new StringSeq());
+
+    result->length(src.size());
+    ::size_t dst_idx = 0;
+    for (std::vector< std::string >::const_iterator src_ptr = src.begin() ; src_ptr != src.end();
+         ++src_ptr, ++dst_idx)
+    {
+        result->operator[](dst_idx) = ::CorbaConversion::wrap_string(*src_ptr)._retn();
+    }
+    return result._retn();
+}
+
+}//namespace Test::CorbaConversion
+}//namespace Test
+
+BOOST_AUTO_TEST_SUITE(TestCorbaConversion)
+
+const std::string server_name = "test-corba-conversion";
+
+BOOST_AUTO_TEST_CASE(test_wrap_string)
+{
+    static const char *const text = "test";
+    const CORBA::String_var sv1 = CorbaConversion::wrap_string(std::string(text))._retn();
+    BOOST_CHECK(sv1.in() == std::string(text));
+    const std::string ss1 = sv1.in();
+    BOOST_CHECK(ss1 == text);
+}
+
+BOOST_AUTO_TEST_CASE(test_string_seq_wrap_ref)
+{
+    static const std::vector< std::string > vs1 = Util::vector_of< std::string >("test1")("test2")("test3");
+    CORBA::StringSeq_var ssv1 = Test::CorbaConversion::wrap_into_CORBA_StringSeq(vs1)._retn();
+
+    BOOST_CHECK(ssv1->length() == vs1.size());
+
+    CORBA::String_var sv0;
+    sv0 = ssv1[0];
+    BOOST_CHECK(sv0.in() == vs1[0]);
+
+    const CORBA::String_var sv1 = ssv1[1];
+    BOOST_CHECK(sv1.in() == vs1[1]);
+
+    BOOST_CHECK(ssv1[2].in() == vs1[2]);
+}
+
+BOOST_AUTO_TEST_CASE(test_string_seq_wrap_test)
+{
+    static const std::vector< std::string > vs1 = Util::vector_of< std::string >("test1")("test2")("test3");
+    Test::StringSeq_var ssv1 = Test::CorbaConversion::wrap_into_Test_StringSeq(vs1)._retn();
+
+    BOOST_CHECK(ssv1->length() == vs1.size());
+
+    CORBA::String_var sv0;
+    sv0 = ssv1[0];
+    BOOST_CHECK(sv0.in() == vs1[0]);
+
+    const CORBA::String_var sv1 = ssv1[1];
+    BOOST_CHECK(sv1.in() == vs1[1]);
+
+    BOOST_CHECK(ssv1[2].in() == vs1[2]);
+}
+
+BOOST_AUTO_TEST_CASE(test_valuetype_string)
+{
+    static const Nullable< std::string > ns1("test1");
+    const Test::NullableString_var tnsv1 = Test::CorbaConversion::wrap_Nullable_string(ns1)._retn();
+    BOOST_CHECK(tnsv1->_value() == ns1.get_value());
+
+    Nullable< std::string > ns2;
+    Test::CorbaConversion::unwrap_NullableString(tnsv1.in(), ns2);
+    BOOST_CHECK(tnsv1->_value() == ns2.get_value());
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_valuetype_string)
+{
+    static const Nullable< std::string > ns1("test1");
+    const Registry::MojeID::NullableString_var tnsv1 = CorbaConversion::wrap_Nullable_string(ns1)._retn();
+    BOOST_CHECK(tnsv1->_value() == ns1.get_value());
+
+    Nullable< std::string > ns2;
+    CorbaConversion::unwrap_NullableString(tnsv1.in(), ns2);
+    BOOST_CHECK(tnsv1->_value() == ns2.get_value());
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_date)
+{
+    static const boost::gregorian::date date(2015,12,10);
+    static const std::string date_as_string = boost::gregorian::to_iso_extended_string(date);
+    BOOST_CHECK(date_as_string == "2015-12-10");
+
+    Registry::MojeID::Date idl_date;
+    CorbaConversion::wrap_boost_gregorian_date(date, idl_date);
+    BOOST_CHECK(idl_date.value.in() == date_as_string);
+
+    Registry::MojeIDImplData::Date impl_date;
+    CorbaConversion::unwrap_Date(idl_date, impl_date);
+    BOOST_CHECK(impl_date.value == date_as_string);
+
+    BOOST_CHECK_THROW(CorbaConversion::wrap_boost_gregorian_date(boost::gregorian::date(), idl_date),
+                      CorbaConversion::ArgumentIsSpecial);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_datetime)
+{
+    static const boost::posix_time::ptime time = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
+    static const std::string time_as_string = boost::posix_time::to_iso_extended_string(time);
+    BOOST_CHECK(time_as_string == "2015-12-10T00:00:00");
+
+    Registry::MojeID::DateTime_var idl_time = CorbaConversion::wrap_DateTime(time)._retn();
+    BOOST_CHECK(idl_time->value.in() == time_as_string);
+
+    boost::posix_time::ptime impl_time;
+    CorbaConversion::unwrap_DateTime(idl_time.in(), impl_time);
+    BOOST_CHECK(impl_time == time);
+
+    BOOST_CHECK_THROW(CorbaConversion::wrap_DateTime(boost::posix_time::ptime()), CorbaConversion::ArgumentIsSpecial);
+
+    static const boost::posix_time::ptime special_time = boost::posix_time::ptime(boost::posix_time::not_a_date_time);
+    idl_time->value = boost::posix_time::to_iso_extended_string(special_time).c_str();
+    BOOST_CHECK_THROW(CorbaConversion::unwrap_DateTime(idl_time, impl_time), CorbaConversion::ArgumentIsSpecial);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_nullabledate)
+{
+    static const boost::gregorian::date date(2015,12,10);
+    static const std::string date_as_string = boost::gregorian::to_iso_extended_string(date);
+    BOOST_CHECK(date_as_string == "2015-12-10");
+    static const Nullable< boost::gregorian::date > nnd(date);
+
+    const Registry::MojeID::NullableDate_var nd1 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nnd)._retn();
+    BOOST_CHECK(std::string(nd1->value()) == date_as_string);
+
+    static const Nullable< boost::gregorian::date > nd;
+    const Registry::MojeID::NullableDate_var nd2 = CorbaConversion::wrap_Nullable_boost_gregorian_date(nd)._retn();
+    BOOST_CHECK(nd2.in() == NULL);
+
+    Nullable< Registry::MojeIDImplData::Date > res1;
+    CorbaConversion::unwrap_NullableDate(nd1.in(), res1);
+    BOOST_CHECK(!res1.isnull());
+    BOOST_CHECK(res1.get_value().value == date_as_string);
+
+    Nullable< Registry::MojeIDImplData::Date > res2;
+    CorbaConversion::unwrap_NullableDate(nd2.in(), res2);
+    BOOST_CHECK(res2.isnull());
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_address)
+{
+    Registry::MojeIDImplData::Address impl_addr;
+    impl_addr.street1 = "st1";
+    impl_addr.street2 = "st2";
+    impl_addr.street3 = "st3";
+    impl_addr.city    = "Praha";
+    impl_addr.state   = "state";
+    impl_addr.country = "Czech Republic";
+
+    Registry::MojeID::Address idl_addr;
+    CorbaConversion::wrap_Address(impl_addr, idl_addr);
+    BOOST_CHECK(idl_addr.street1.in()           == impl_addr.street1);
+    BOOST_CHECK(idl_addr.street2.in()->_value() == impl_addr.street2.get_value());
+    BOOST_CHECK(idl_addr.street3.in()->_value() == impl_addr.street3.get_value());
+    BOOST_CHECK(idl_addr.city.in()              == impl_addr.city);
+    BOOST_CHECK(idl_addr.state.in()->_value()   == impl_addr.state.get_value());
+    BOOST_CHECK(idl_addr.country.in()           == impl_addr.country);
+
+    Registry::MojeIDImplData::Address impl_addr_res;
+    CorbaConversion::unwrap_Address(idl_addr, impl_addr_res);
+    BOOST_CHECK(impl_addr_res.street1             == impl_addr.street1);
+    BOOST_CHECK(impl_addr_res.street2.get_value() == impl_addr.street2.get_value());
+    BOOST_CHECK(impl_addr_res.street3.get_value() == impl_addr.street3.get_value());
+    BOOST_CHECK(impl_addr_res.city                == impl_addr.city);
+    BOOST_CHECK(impl_addr_res.state.get_value()   == impl_addr.state.get_value());
+    BOOST_CHECK(impl_addr_res.country             == impl_addr.country);
+}
+
+BOOST_AUTO_TEST_CASE(test_nullable_mojeid_address)
+{
+    Registry::MojeIDImplData::Address impl_addr;
+    impl_addr.street1 = "st1";
+    impl_addr.street2 = "st2";
+    impl_addr.street3 = "st3";
+    impl_addr.city    = "Praha";
+    impl_addr.state   = "state";
+    impl_addr.country = "Czech Republic";
+
+    Registry::MojeID::NullableAddress_var idl_nullable_addr =
+        CorbaConversion::wrap_Nullable_Address(Nullable< Registry::MojeIDImplData::Address >())._retn();
+    BOOST_CHECK(idl_nullable_addr.in() == NULL);
+
+    Nullable< Registry::MojeIDImplData::Address > impl_nullable_addr(impl_addr);
+    BOOST_CHECK(!impl_nullable_addr.isnull());
+    CorbaConversion::unwrap_NullableAddress(idl_nullable_addr, impl_nullable_addr);
+    BOOST_CHECK(impl_nullable_addr.isnull());
+
+    impl_nullable_addr = impl_addr;
+    BOOST_CHECK(!impl_nullable_addr.isnull());
+    idl_nullable_addr = CorbaConversion::wrap_Nullable_Address(impl_nullable_addr);
+    BOOST_REQUIRE(idl_nullable_addr.in() != NULL);
+    BOOST_CHECK(idl_nullable_addr->_value().street1.in()           == impl_addr.street1);
+    BOOST_CHECK(idl_nullable_addr->_value().street2.in()->_value() == impl_addr.street2.get_value());
+    BOOST_CHECK(idl_nullable_addr->_value().street3.in()->_value() == impl_addr.street3.get_value());
+    BOOST_CHECK(idl_nullable_addr->_value().city.in()              == impl_addr.city);
+    BOOST_CHECK(idl_nullable_addr->_value().state.in()->_value()   == impl_addr.state.get_value());
+    BOOST_CHECK(idl_nullable_addr->_value().country.in()           == impl_addr.country);
+
+    impl_nullable_addr = Nullable< Registry::MojeIDImplData::Address >();
+    BOOST_CHECK(impl_nullable_addr.isnull());
+    CorbaConversion::unwrap_NullableAddress(idl_nullable_addr, impl_nullable_addr);
+    BOOST_REQUIRE(!impl_nullable_addr.isnull());
+    BOOST_CHECK(impl_nullable_addr.get_value().street1             == impl_addr.street1);
+    BOOST_CHECK(impl_nullable_addr.get_value().street2.get_value() == impl_addr.street2.get_value());
+    BOOST_CHECK(impl_nullable_addr.get_value().street3.get_value() == impl_addr.street3.get_value());
+    BOOST_CHECK(impl_nullable_addr.get_value().city                == impl_addr.city);
+    BOOST_CHECK(impl_nullable_addr.get_value().state.get_value()   == impl_addr.state.get_value());
+    BOOST_CHECK(impl_nullable_addr.get_value().country             == impl_addr.country);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_shippingaddress)
+{
+    Registry::MojeIDImplData::ShippingAddress impl_addr;
+    impl_addr.company_name = "company";
+    impl_addr.street1      = "st1";
+    impl_addr.street2      = "st2";
+    impl_addr.street3      = "st3";
+    impl_addr.city         = "Praha";
+    impl_addr.state        = "state";
+    impl_addr.country      = "Czech Republic";
+
+    Registry::MojeID::ShippingAddress idl_addr;
+    CorbaConversion::wrap_ShippingAddress(impl_addr, idl_addr);
+    BOOST_CHECK(idl_addr.company_name.in()->_value() == impl_addr.company_name.get_value());
+    BOOST_CHECK(idl_addr.street1.in()                == impl_addr.street1);
+    BOOST_CHECK(idl_addr.street2.in()->_value()      == impl_addr.street2.get_value());
+    BOOST_CHECK(idl_addr.street3.in()->_value()      == impl_addr.street3.get_value());
+    BOOST_CHECK(idl_addr.city.in()                   == impl_addr.city);
+    BOOST_CHECK(idl_addr.state.in()->_value()        == impl_addr.state.get_value());
+    BOOST_CHECK(idl_addr.country.in()                == impl_addr.country);
+
+    Registry::MojeIDImplData::ShippingAddress impl_addr_res;
+    CorbaConversion::unwrap_ShippingAddress(idl_addr, impl_addr_res);
+    BOOST_CHECK(impl_addr_res.company_name.get_value() == impl_addr.company_name.get_value());
+    BOOST_CHECK(impl_addr_res.street1                  == impl_addr.street1);
+    BOOST_CHECK(impl_addr_res.street2.get_value()      == impl_addr.street2.get_value());
+    BOOST_CHECK(impl_addr_res.street3.get_value()      == impl_addr.street3.get_value());
+    BOOST_CHECK(impl_addr_res.city                     == impl_addr.city);
+    BOOST_CHECK(impl_addr_res.state.get_value()        == impl_addr.state.get_value());
+    BOOST_CHECK(impl_addr_res.country                  == impl_addr.country);
+}
+
+BOOST_AUTO_TEST_CASE(test_nullable_mojeid_shippingaddress)
+{
+    Registry::MojeIDImplData::ShippingAddress impl_addr;
+    impl_addr.company_name = "company";
+    impl_addr.street1      = "st1";
+    impl_addr.street2      = "st2";
+    impl_addr.street3      = "st3";
+    impl_addr.city         = "Praha";
+    impl_addr.state        = "state";
+    impl_addr.country      = "Czech Republic";
+
+    Registry::MojeID::NullableShippingAddress_var idl_nullable_addr =
+        CorbaConversion::wrap_Nullable_ShippingAddress(Nullable< Registry::MojeIDImplData::ShippingAddress >())._retn();
+    BOOST_CHECK(idl_nullable_addr.in() == NULL);
+
+    Nullable< Registry::MojeIDImplData::ShippingAddress > impl_nullable_addr(impl_addr);
+    BOOST_CHECK(!impl_nullable_addr.isnull());
+    CorbaConversion::unwrap_NullableShippingAddress(idl_nullable_addr, impl_nullable_addr);
+    BOOST_CHECK(impl_nullable_addr.isnull());
+
+    impl_nullable_addr = impl_addr;
+    BOOST_CHECK(!impl_nullable_addr.isnull());
+    idl_nullable_addr = CorbaConversion::wrap_Nullable_ShippingAddress(impl_nullable_addr);
+    BOOST_REQUIRE(idl_nullable_addr.in() != NULL);
+    BOOST_CHECK(idl_nullable_addr->_value().company_name.in()->_value() == impl_addr.company_name.get_value());
+    BOOST_CHECK(idl_nullable_addr->_value().street1.in()                == impl_addr.street1);
+    BOOST_CHECK(idl_nullable_addr->_value().street2.in()->_value()      == impl_addr.street2.get_value());
+    BOOST_CHECK(idl_nullable_addr->_value().street3.in()->_value()      == impl_addr.street3.get_value());
+    BOOST_CHECK(idl_nullable_addr->_value().city.in()                   == impl_addr.city);
+    BOOST_CHECK(idl_nullable_addr->_value().state.in()->_value()        == impl_addr.state.get_value());
+    BOOST_CHECK(idl_nullable_addr->_value().country.in()                == impl_addr.country);
+
+    impl_nullable_addr = Nullable< Registry::MojeIDImplData::ShippingAddress >();
+    BOOST_CHECK(impl_nullable_addr.isnull());
+    CorbaConversion::unwrap_NullableShippingAddress(idl_nullable_addr, impl_nullable_addr);
+    BOOST_REQUIRE(!impl_nullable_addr.isnull());
+    BOOST_CHECK(impl_nullable_addr.get_value().company_name.get_value() == impl_addr.company_name.get_value());
+    BOOST_CHECK(impl_nullable_addr.get_value().street1                  == impl_addr.street1);
+    BOOST_CHECK(impl_nullable_addr.get_value().street2.get_value()      == impl_addr.street2.get_value());
+    BOOST_CHECK(impl_nullable_addr.get_value().street3.get_value()      == impl_addr.street3.get_value());
+    BOOST_CHECK(impl_nullable_addr.get_value().city                     == impl_addr.city);
+    BOOST_CHECK(impl_nullable_addr.get_value().state.get_value()        == impl_addr.state.get_value());
+    BOOST_CHECK(impl_nullable_addr.get_value().country                  == impl_addr.country);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_validationresult)
+{
+    Registry::MojeID::ValidationResult idl_value;
+
+    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::OK, idl_value);
+    BOOST_CHECK(idl_value == Registry::MojeID::OK);
+
+    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE, idl_value);
+    BOOST_CHECK(idl_value == Registry::MojeID::NOT_AVAILABLE);
+
+    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::INVALID, idl_value);
+    BOOST_CHECK(idl_value == Registry::MojeID::INVALID);
+
+    CorbaConversion::wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::REQUIRED, idl_value);
+    BOOST_CHECK(idl_value == Registry::MojeID::REQUIRED);
+
+    static const Registry::MojeIDImplData::ValidationResult::Value out_of_range_value =
+        static_cast< Registry::MojeIDImplData::ValidationResult::Value >(10);
+    BOOST_CHECK_THROW(CorbaConversion::wrap_ValidationResult(out_of_range_value, idl_value),
+                      CorbaConversion::NotEnumValidationResultValue);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_addressvalidationresult)
+{
+    Registry::MojeIDImplData::AddressValidationResult addr_err_impl;
+    addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::OK;
+    addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
+    addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+
+    Registry::MojeID::AddressValidationResult addr_err;
+    CorbaConversion::wrap_AddressValidationResult(addr_err_impl, addr_err);
+
+    BOOST_CHECK(addr_err.street1     == Registry::MojeID::OK);
+    BOOST_CHECK(addr_err.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.postal_code == Registry::MojeID::INVALID);
+    BOOST_CHECK(addr_err.country     == Registry::MojeID::REQUIRED);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_mandatoryaddressvalidationresult)
+{
+    Registry::MojeIDImplData::MandatoryAddressValidationResult addr_err_impl;
+    addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::OK;
+    addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::INVALID;
+    addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+
+    Registry::MojeID::MandatoryAddressValidationResult addr_err;
+    CorbaConversion::wrap_MandatoryAddressValidationResult(addr_err_impl, addr_err);
+
+    BOOST_CHECK(addr_err.address_presence == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(addr_err.street1          == Registry::MojeID::OK);
+    BOOST_CHECK(addr_err.city             == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(addr_err.postal_code      == Registry::MojeID::INVALID);
+    BOOST_CHECK(addr_err.country          == Registry::MojeID::REQUIRED);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_message_limit_exceeded)
+{
+    Registry::MojeIDImplData::MessageLimitExceeded msg;
+    BOOST_CHECK_THROW(CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(msg),
+                      Registry::MojeID::Server::INTERNAL_SERVER_ERROR);
+
+    msg.limit_expire_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
+
+    Registry::MojeID::Server::MESSAGE_LIMIT_EXCEEDED res;
+    CorbaConversion::wrap_MessageLimitExceeded(msg, res);
+
+    boost::posix_time::ptime limit_expire_datetime;
+    CorbaConversion::unwrap_DateTime(res.limit_expire_datetime, limit_expire_datetime);
+    BOOST_CHECK(limit_expire_datetime == msg.limit_expire_datetime);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
+{
+    Registry::MojeIDImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
+    permanent_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
+    permanent_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult mailing_addr_err_impl;
+    mailing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    mailing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    mailing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
+    mailing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult billing_addr_err_impl;
+    billing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    billing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
+    billing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+
+    Registry::MojeIDImplData::AddressValidationResult shipping_addr_err_impl;
+    shipping_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
+    shipping_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    shipping_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult shipping2_addr_err_impl;
+    shipping2_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    shipping2_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
+    shipping2_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult shipping3_addr_err_impl;
+    shipping3_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
+    shipping3_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    shipping3_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::RegistrationValidationResult reg_val_err_impl;
+    reg_val_err_impl.username     = Registry::MojeIDImplData::ValidationResult::INVALID;
+    reg_val_err_impl.first_name   = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    reg_val_err_impl.last_name    = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    reg_val_err_impl.birth_date   = Registry::MojeIDImplData::ValidationResult::INVALID;
+    reg_val_err_impl.email        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    reg_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    reg_val_err_impl.phone        = Registry::MojeIDImplData::ValidationResult::INVALID;
+    reg_val_err_impl.fax          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    reg_val_err_impl.permanent = permanent_addr_err_impl;
+    reg_val_err_impl.mailing   = mailing_addr_err_impl;
+    reg_val_err_impl.billing   = billing_addr_err_impl;
+
+    reg_val_err_impl.shipping  = shipping_addr_err_impl;
+    reg_val_err_impl.shipping2 = shipping2_addr_err_impl;
+    reg_val_err_impl.shipping3 = shipping3_addr_err_impl;
+
+    Registry::MojeID::Server::REGISTRATION_VALIDATION_ERROR res;
+    CorbaConversion::wrap_RegistrationValidationResult(reg_val_err_impl, res);
+
+    BOOST_CHECK(res.username     == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.first_name   == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.last_name    == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.birth_date   == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.email        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.notify_email == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.fax          == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.permanent.address_presence == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.street1          == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.permanent.city             == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.permanent.postal_code      == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.country          == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.mailing.street1     == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.mailing.city        == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.mailing.postal_code == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.mailing.country     == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.billing.street1     == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.billing.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.billing.postal_code == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.billing.country     == Registry::MojeID::REQUIRED);
+
+    BOOST_CHECK(res.shipping.street1     == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.shipping.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.shipping.postal_code == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.shipping.country     == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.shipping2.street1     == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.shipping2.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.shipping2.postal_code == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.shipping2.country     == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.shipping3.street1     == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.shipping3.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.shipping3.postal_code == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.shipping3.country     == Registry::MojeID::NOT_AVAILABLE);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_update_contact_prepare_validation_error)
+{
+    Registry::MojeIDImplData::MandatoryAddressValidationResult permanent_addr_err_impl;
+    permanent_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
+    permanent_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    permanent_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    permanent_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult mailing_addr_err_impl;
+    mailing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    mailing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    mailing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
+    mailing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult billing_addr_err_impl;
+    billing_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    billing_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    billing_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
+    billing_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+
+    Registry::MojeIDImplData::AddressValidationResult shipping_addr_err_impl;
+    shipping_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
+    shipping_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    shipping_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    shipping_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult shipping2_addr_err_impl;
+    shipping2_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    shipping2_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    shipping2_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::INVALID;
+    shipping2_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::AddressValidationResult shipping3_addr_err_impl;
+    shipping3_addr_err_impl.street1     = Registry::MojeIDImplData::ValidationResult::INVALID;
+    shipping3_addr_err_impl.city        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    shipping3_addr_err_impl.postal_code = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    shipping3_addr_err_impl.country     = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::UpdateContactPrepareValidationResult upd_val_err_impl;
+    upd_val_err_impl.first_name   = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    upd_val_err_impl.last_name    = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    upd_val_err_impl.birth_date   = Registry::MojeIDImplData::ValidationResult::INVALID;
+    upd_val_err_impl.email        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    upd_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    upd_val_err_impl.phone        = Registry::MojeIDImplData::ValidationResult::INVALID;
+    upd_val_err_impl.fax          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    upd_val_err_impl.permanent = permanent_addr_err_impl;
+    upd_val_err_impl.mailing   = mailing_addr_err_impl;
+    upd_val_err_impl.billing   = billing_addr_err_impl;
+
+    upd_val_err_impl.shipping  = shipping_addr_err_impl;
+    upd_val_err_impl.shipping2 = shipping2_addr_err_impl;
+    upd_val_err_impl.shipping3 = shipping3_addr_err_impl;
+
+    Registry::MojeID::Server::UPDATE_CONTACT_PREPARE_VALIDATION_ERROR res;
+    CorbaConversion::wrap_UpdateContactPrepareValidationResult(upd_val_err_impl,res);
+
+    BOOST_CHECK(res.first_name   == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.last_name    == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.birth_date   == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.email        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.notify_email == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.fax          == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.permanent.address_presence == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.street1          == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.permanent.city             == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.permanent.postal_code      == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.country          == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.mailing.street1     == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.mailing.city        == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.mailing.postal_code == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.mailing.country     == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.billing.street1     == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.billing.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.billing.postal_code == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.billing.country     == Registry::MojeID::REQUIRED);
+
+    BOOST_CHECK(res.shipping.street1     == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.shipping.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.shipping.postal_code == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.shipping.country     == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.shipping2.street1     == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.shipping2.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.shipping2.postal_code == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.shipping2.country     == Registry::MojeID::NOT_AVAILABLE);
+
+    BOOST_CHECK(res.shipping3.street1     == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.shipping3.city        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.shipping3.postal_code == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.shipping3.country     == Registry::MojeID::NOT_AVAILABLE);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_create_validation_request_validation_error)
+{
+    Registry::MojeIDImplData::MandatoryAddressValidationResult mandatory_addr_err_impl;
+    mandatory_addr_err_impl.address_presence = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    mandatory_addr_err_impl.street1          = Registry::MojeIDImplData::ValidationResult::INVALID;
+    mandatory_addr_err_impl.city             = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    mandatory_addr_err_impl.postal_code      = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    mandatory_addr_err_impl.country          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+
+    Registry::MojeIDImplData::CreateValidationRequestValidationResult crr_val_err_impl;
+
+    crr_val_err_impl.first_name   = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    crr_val_err_impl.last_name    = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    crr_val_err_impl.email        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    crr_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+    crr_val_err_impl.phone        = Registry::MojeIDImplData::ValidationResult::INVALID;
+    crr_val_err_impl.fax          = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
+    crr_val_err_impl.birth_date   = Registry::MojeIDImplData::ValidationResult::INVALID;
+    crr_val_err_impl.vat_id_num   = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+
+    crr_val_err_impl.permanent = mandatory_addr_err_impl;
+
+    Registry::MojeID::Server::CREATE_VALIDATION_REQUEST_VALIDATION_ERROR res;
+    CorbaConversion::wrap_CreateValidationRequestValidationResult(crr_val_err_impl,res);
+
+    BOOST_CHECK(res.first_name   == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.last_name    == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.email        == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.notify_email == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.fax          == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.birth_date   == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.vat_id_num   == Registry::MojeID::REQUIRED);
+
+    BOOST_CHECK(res.permanent.address_presence == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.street1          == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.permanent.city             == Registry::MojeID::NOT_AVAILABLE);
+    BOOST_CHECK(res.permanent.postal_code      == Registry::MojeID::REQUIRED);
+    BOOST_CHECK(res.permanent.country          == Registry::MojeID::NOT_AVAILABLE);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_process_registration_request_validation_error)
+{
+    Registry::MojeIDImplData::ProcessRegistrationValidationResult prr_val_err_impl;
+    prr_val_err_impl.email = Registry::MojeIDImplData::ValidationResult::INVALID;
+    prr_val_err_impl.phone = Registry::MojeIDImplData::ValidationResult::REQUIRED;
+
+    Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR res;
+    CorbaConversion::wrap_ProcessRegistrationValidationResult(prr_val_err_impl,res);
+
+    BOOST_CHECK(res.email == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.phone == Registry::MojeID::REQUIRED);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_create_contact)
+{
+    Registry::MojeID::CreateContact cc;
+
+    cc.username = CorbaConversion::wrap_string("username")._retn();
+    cc.first_name = CorbaConversion::wrap_string("first_name")._retn();
+    cc.last_name = CorbaConversion::wrap_string("last_name")._retn();
+    cc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
+    cc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
+    cc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    cc.id_card_num = CorbaConversion::wrap_Nullable_string("id_card_num")._retn();
+    cc.passport_num = CorbaConversion::wrap_Nullable_string("passport_num")._retn();
+    cc.ssn_id_num = CorbaConversion::wrap_Nullable_string("ssn_id_num")._retn();
+    cc.vat_id_num = CorbaConversion::wrap_Nullable_string("vat_id_num")._retn();
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "st1";
+        addr_impl.street2 = "st2";
+        addr_impl.street3 = "st3";
+        addr_impl.city    = "Praha";
+        addr_impl.state   = "state";
+        addr_impl.country = "Czech Republic";
+        CorbaConversion::wrap_Address(addr_impl, cc.permanent);
+    }
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "m_st1";
+        addr_impl.street2 = "m_st2";
+        addr_impl.street3 = "m_st3";
+        addr_impl.city    = "m_Praha";
+        addr_impl.state   = "m_state";
+        addr_impl.country = "m_Czech Republic";
+
+        cc.mailing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "b_st1";
+        addr_impl.street2 = "b_st2";
+        addr_impl.street3 = "b_st3";
+        addr_impl.city    = "b_Praha";
+        addr_impl.state   = "b_state";
+        addr_impl.country = "b_Czech Republic";
+
+        cc.billing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s_company";
+        addr_impl.street1      = "s_st1";
+        addr_impl.street2      = "s_st2";
+        addr_impl.street3      = "s_st3";
+        addr_impl.city         = "s_Praha";
+        addr_impl.state        = "s_state";
+        addr_impl.country      = "s_Czech Republic";
+
+        cc.shipping = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s2_company";
+        addr_impl.street1      = "s2_st1";
+        addr_impl.street2      = "s2_st2";
+        addr_impl.street3      = "s2_st3";
+        addr_impl.city         = "s2_Praha";
+        addr_impl.state        = "s2_state";
+        addr_impl.country      = "s2_Czech Republic";
+
+        cc.shipping2 = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s3_company";
+        addr_impl.street1      = "s3_st1";
+        addr_impl.street2      = "s3_st2";
+        addr_impl.street3      = "s3_st3";
+        addr_impl.city         = "s3_Praha";
+        addr_impl.state        = "s3_state";
+        addr_impl.country      = "s3_Czech Republic";
+
+        cc.shipping3 = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
+    }
+    cc.email = CorbaConversion::wrap_string("email")._retn();
+    cc.notify_email = CorbaConversion::wrap_Nullable_string("notify_email")._retn();
+    cc.telephone = CorbaConversion::wrap_string("telephone")._retn();
+    cc.fax = CorbaConversion::wrap_Nullable_string("fax")._retn();
+
+    Registry::MojeIDImplData::CreateContact cc_impl;
+    CorbaConversion::unwrap_CreateContact(cc, cc_impl);
+
+    BOOST_CHECK(cc_impl.username == "username");
+    BOOST_CHECK(cc_impl.first_name == "first_name");
+    BOOST_CHECK(cc_impl.last_name == "last_name");
+    BOOST_CHECK(cc_impl.organization.get_value() == "org");
+    BOOST_CHECK(cc_impl.vat_reg_num.get_value() == "vat_reg_num");
+    BOOST_CHECK(boost::gregorian::from_simple_string(cc_impl.birth_date.get_value().value) == boost::gregorian::date(2015,12,10));
+    BOOST_CHECK(cc_impl.id_card_num.get_value() == "id_card_num");
+    BOOST_CHECK(cc_impl.passport_num.get_value() == "passport_num");
+    BOOST_CHECK(cc_impl.ssn_id_num.get_value() == "ssn_id_num");
+    BOOST_CHECK(cc_impl.vat_id_num.get_value() == "vat_id_num");
+
+    BOOST_CHECK(cc_impl.permanent.street1 == "st1");
+    BOOST_CHECK(cc_impl.permanent.street2.get_value() == "st2");
+    BOOST_CHECK(cc_impl.permanent.street3.get_value() == "st3");
+    BOOST_CHECK(cc_impl.permanent.city == "Praha");
+    BOOST_CHECK(cc_impl.permanent.state.get_value() == "state");
+    BOOST_CHECK(cc_impl.permanent.country == "Czech Republic");
+
+    BOOST_CHECK(cc_impl.mailing.get_value().street1 == "m_st1");
+    BOOST_CHECK(cc_impl.mailing.get_value().street2.get_value() == "m_st2");
+    BOOST_CHECK(cc_impl.mailing.get_value().street3.get_value() == "m_st3");
+    BOOST_CHECK(cc_impl.mailing.get_value().city == "m_Praha");
+    BOOST_CHECK(cc_impl.mailing.get_value().state.get_value() == "m_state");
+    BOOST_CHECK(cc_impl.mailing.get_value().country == "m_Czech Republic");
+
+    BOOST_CHECK(cc_impl.billing.get_value().street1 == "b_st1");
+    BOOST_CHECK(cc_impl.billing.get_value().street2.get_value() == "b_st2");
+    BOOST_CHECK(cc_impl.billing.get_value().street3.get_value() == "b_st3");
+    BOOST_CHECK(cc_impl.billing.get_value().city == "b_Praha");
+    BOOST_CHECK(cc_impl.billing.get_value().state.get_value() == "b_state");
+    BOOST_CHECK(cc_impl.billing.get_value().country == "b_Czech Republic");
+
+    BOOST_CHECK(cc_impl.shipping.get_value().company_name.get_value() == "s_company");
+    BOOST_CHECK(cc_impl.shipping.get_value().street1 == "s_st1");
+    BOOST_CHECK(cc_impl.shipping.get_value().street2.get_value() == "s_st2");
+    BOOST_CHECK(cc_impl.shipping.get_value().street3.get_value() == "s_st3");
+    BOOST_CHECK(cc_impl.shipping.get_value().city == "s_Praha");
+    BOOST_CHECK(cc_impl.shipping.get_value().state.get_value() == "s_state");
+    BOOST_CHECK(cc_impl.shipping.get_value().country == "s_Czech Republic");
+
+    BOOST_CHECK(cc_impl.shipping2.get_value().company_name.get_value() == "s2_company");
+    BOOST_CHECK(cc_impl.shipping2.get_value().street1 == "s2_st1");
+    BOOST_CHECK(cc_impl.shipping2.get_value().street2.get_value() == "s2_st2");
+    BOOST_CHECK(cc_impl.shipping2.get_value().street3.get_value() == "s2_st3");
+    BOOST_CHECK(cc_impl.shipping2.get_value().city == "s2_Praha");
+    BOOST_CHECK(cc_impl.shipping2.get_value().state.get_value() == "s2_state");
+    BOOST_CHECK(cc_impl.shipping2.get_value().country == "s2_Czech Republic");
+
+    BOOST_CHECK(cc_impl.shipping3.get_value().company_name.get_value() == "s3_company");
+    BOOST_CHECK(cc_impl.shipping3.get_value().street1 == "s3_st1");
+    BOOST_CHECK(cc_impl.shipping3.get_value().street2.get_value() == "s3_st2");
+    BOOST_CHECK(cc_impl.shipping3.get_value().street3.get_value() == "s3_st3");
+    BOOST_CHECK(cc_impl.shipping3.get_value().city == "s3_Praha");
+    BOOST_CHECK(cc_impl.shipping3.get_value().state.get_value() == "s3_state");
+    BOOST_CHECK(cc_impl.shipping3.get_value().country == "s3_Czech Republic");
+
+    BOOST_CHECK(cc_impl.email == "email");
+    BOOST_CHECK(cc_impl.notify_email.get_value() == "notify_email");
+    BOOST_CHECK(cc_impl.telephone == "telephone");
+    BOOST_CHECK(cc_impl.fax.get_value() == "fax");
+}
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE,
+           bool SRC_IS_SIGNED  = std::numeric_limits< SRC_INT_TYPE >::is_signed,
+           bool DST_IS_SIGNED  = std::numeric_limits< DST_INT_TYPE >::is_signed,
+           bool DST_IS_SHORTER = std::numeric_limits< DST_INT_TYPE >::digits < std::numeric_limits< SRC_INT_TYPE >::digits >
+struct IntConversionTraits;
+
+// ===== bool -> bool =====
+// = src: < 0, 1 >        =
+// = dst: < 0, 1 >        =
+// ========================
+template < >
+struct IntConversionTraits< bool, bool, false, false, false >
+{
+    typedef bool type;
+    static const ::size_t number_of_values_to_fit = 2;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 0;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+const bool IntConversionTraits< bool, bool, false, false, false >::
+    value_to_fit[number_of_values_to_fit] = {
+        false,
+        true
+    };
+
+
+// ===== bool -> any integer =====
+// = src:       < 0, 1 >         =
+// = dst: < ......0++++++ >      =
+// ===============================
+template < class DST_INT_TYPE, bool DST_IS_SIGNED >
+struct IntConversionTraits< bool, DST_INT_TYPE, false, DST_IS_SIGNED, false >
+{
+    typedef bool type;
+    static const ::size_t number_of_values_to_fit = 2;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 0;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class DST_INT_TYPE, bool DST_IS_SIGNED >
+const bool IntConversionTraits< bool, DST_INT_TYPE, false, DST_IS_SIGNED, false >::
+    value_to_fit[number_of_values_to_fit] = {
+        false,
+        true
+    };
+
+
+// ===== shorter unsigned -> longer integer =====
+// = src:             < 0+++ >                  =
+// = dst: < ............0++++++++++++ >         =
+// ==============================================
+template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
+struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, false >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > shorter_unsigned;
+    static const ::size_t number_of_values_to_fit = 4;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 0;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, false >::
+    value_to_fit[number_of_values_to_fit] = {
+        0,
+        1,
+        shorter_unsigned::max() - 1,
+        shorter_unsigned::max()
+    };
+
+
+// ===== shorter signed -> longer unsigned =====
+// = src: < ---0+++ >                          =
+// = dst:    < 0++++++++++++ >                 =
+// =============================================
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, false >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > shorter_signed;
+    static const ::size_t number_of_values_to_fit = 4;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 3;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, false >::
+    value_to_fit[number_of_values_to_fit] = {
+        0,
+        1,
+        shorter_signed::max() - 1,
+        shorter_signed::max()
+    };
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, false >::
+    out_of_range_value[number_of_out_of_range_values] = {
+        shorter_signed::min(),
+        shorter_signed::min() + 1,
+        -1
+    };
+
+
+// ===== shorter signed -> longer signed =====
+// = src:          < ---0+++ >               =
+// = dst: < ------------0++++++++++++ >      =
+// ===========================================
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, false >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > shorter_signed;
+    static const ::size_t number_of_values_to_fit = 7;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 0;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, false >::
+    value_to_fit[number_of_values_to_fit] = {
+        shorter_signed::min(),
+        shorter_signed::min() + 1,
+       -1,
+        0,
+        1,
+        shorter_signed::max() - 1,
+        shorter_signed::max()
+    };
+
+
+// ===== longer unsigned -> bool =====
+// = src: < 0++++++++++++ >          =
+// = dst: < 0, 1 >                   =
+// ===================================
+template < class SRC_INT_TYPE >
+struct IntConversionTraits< SRC_INT_TYPE, bool, false, false, true >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > longer_unsigned;
+    typedef std::numeric_limits< bool > shorter_unsigned;
+    static const ::size_t number_of_values_to_fit = 2;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 3;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, false, false, true >::
+    value_to_fit[number_of_values_to_fit] = {
+        0,
+        1
+    };
+
+template < class SRC_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, false, false, true >::
+    out_of_range_value[number_of_out_of_range_values] = {
+        type(shorter_unsigned::max()) + 1,
+        longer_unsigned::max() - 1,
+        longer_unsigned::max()
+    };
+
+
+// ===== longer signed -> bool =====
+// = src: < ---------0+++++++++ >  =
+// = dst:          < 0, 1 >        =
+// =================================
+template < class SRC_INT_TYPE >
+struct IntConversionTraits< SRC_INT_TYPE, bool, true, false, true >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > longer_signed;
+    typedef std::numeric_limits< bool > shorter_unsigned;
+    static const ::size_t number_of_values_to_fit = 2;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 7;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, true, false, true >::
+    value_to_fit[number_of_values_to_fit] = {
+        0,
+        1
+    };
+
+template < class SRC_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, true, false, true >::
+    out_of_range_value[number_of_out_of_range_values] = {
+        longer_signed::min(),
+        longer_signed::min() + 1,
+       -type(shorter_unsigned::max()) - 1,
+       -type(shorter_unsigned::max()),
+        type(shorter_unsigned::max()) + 1,
+        longer_signed::max() - 1,
+        longer_signed::max()
+    };
+
+
+// ===== longer unsigned -> shorter integer =====
+// = src:    < 0++++++++++++ >                  =
+// = dst: < ---0+++ >                           =
+// ==============================================
+template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
+struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, true >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > longer_unsigned;
+    typedef std::numeric_limits< DST_INT_TYPE > shorter;
+    static const ::size_t number_of_values_to_fit = 4;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 3;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, true >::
+    value_to_fit[number_of_values_to_fit] = {
+        0,
+        1,
+        shorter::max() - 1,
+        shorter::max()
+    };
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, true >::
+    out_of_range_value[number_of_out_of_range_values] = {
+        type(shorter::max()) + 1,
+        longer_unsigned::max() - 1,
+        longer_unsigned::max()
+    };
+
+// ===== longer signed -> shorter unsigned =====
+// = src: < ------------0++++++++++++ >        =
+// = dst:             < 0+++ >                 =
+// =============================================
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, true >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > longer_signed;
+    typedef std::numeric_limits< DST_INT_TYPE > shorter_unsigned;
+    static const ::size_t number_of_values_to_fit = 4;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 9;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, true >::
+    value_to_fit[number_of_values_to_fit] = {
+        0,
+        1,
+        shorter_unsigned::max() - 1,
+        shorter_unsigned::max()
+    };
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, true >::
+    out_of_range_value[number_of_out_of_range_values] = {
+        longer_signed::min(),
+        longer_signed::min() + 1,
+       -type(shorter_unsigned::max()) - 1,
+       -type(shorter_unsigned::max()),
+       -type(shorter_unsigned::max()) + 1,
+       -1,
+        type(shorter_unsigned::max()) + 1,
+        longer_signed::max() - 1,
+        longer_signed::max()
+    };
+
+
+// ===== longer signed -> shorter signed =====
+// = src: < ------------0++++++++++++ >      =
+// = dst:          < ---0+++ >               =
+// ===========================================
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, true >
+{
+    typedef SRC_INT_TYPE type;
+    typedef std::numeric_limits< SRC_INT_TYPE > longer_signed;
+    typedef std::numeric_limits< DST_INT_TYPE > shorter_signed;
+    static const ::size_t number_of_values_to_fit = 7;
+    static const type value_to_fit[number_of_values_to_fit];
+    static const ::size_t number_of_out_of_range_values = 6;
+    static const type out_of_range_value[number_of_out_of_range_values];
+};
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, true >::
+    value_to_fit[number_of_values_to_fit] = {
+        shorter_signed::min(),
+        shorter_signed::min() + 1,
+       -1,
+        0,
+        1,
+        shorter_signed::max() - 1,
+        shorter_signed::max()
+    };
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, true >::
+    out_of_range_value[number_of_out_of_range_values] = {
+        longer_signed::min(),
+        longer_signed::min() + 1,
+        type(shorter_signed::min()) - 1,
+        type(shorter_signed::max()) + 1,
+        longer_signed::max() - 1,
+        longer_signed::max()
+    };
+
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+void integer_conversion_test(::size_t &sum_cnt, ::size_t &sum_fit_cnt)
+{
+    typedef SRC_INT_TYPE src_type;
+    typedef DST_INT_TYPE dst_type;
+    typedef IntConversionTraits< src_type, dst_type > traits;
+    for (::size_t idx = 0; idx < traits::number_of_values_to_fit; ++idx) {
+        const src_type src_value = traits::value_to_fit[idx];
+        dst_type dst_value;
+        CorbaConversion::int_to_int(src_value, dst_value);
+        BOOST_CHECK(src_type(dst_value) == src_value);
+        BOOST_CHECK(dst_value == dst_type(src_value));
+        src_type src_value_back;
+        CorbaConversion::int_to_int(dst_value, src_value_back);
+        BOOST_CHECK(src_value_back == src_value);
+    }
+    sum_cnt += traits::number_of_values_to_fit;
+    sum_fit_cnt += traits::number_of_values_to_fit;
+
+    for (::size_t idx = 0; idx < traits::number_of_out_of_range_values; ++idx) {
+        const src_type src_value = traits::out_of_range_value[idx];
+        dst_type dst_value;
+        BOOST_CHECK_THROW((CorbaConversion::int_to_int(src_value, dst_value)),
+                          CorbaConversion::IntegralConversionOutOfRange);
+    }
+    sum_cnt += traits::number_of_out_of_range_values;
+}
+
+
+#define TEST_INT_CONVERSION_FOR_GIVEN_TYPES(SRC_INT_TYPE, DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM) \
+    integer_conversion_test< SRC_INT_TYPE, DST_INT_TYPE >(CNT_SUM, FIT_CNT_SUM)
+
+#define TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM) \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(bool,               DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(char,               DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(unsigned char,      DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(signed char,        DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(wchar_t,            DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(short,              DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(unsigned short,     DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(int,                DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(unsigned int,       DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(long,               DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(unsigned long,      DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(long long,          DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM); \
+    TEST_INT_CONVERSION_FOR_GIVEN_TYPES(unsigned long long, DST_INT_TYPE, CNT_SUM, FIT_CNT_SUM)
+
+BOOST_AUTO_TEST_CASE(test_basic_integer_conversion)
+{
+    ::size_t     cnt_sum = 0;
+    ::size_t fit_cnt_sum = 0;
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(bool,               cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(char,               cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(unsigned char,      cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(signed char,        cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(wchar_t,            cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(short,              cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(unsigned short,     cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(int,                cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(unsigned int,       cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(long,               cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(unsigned long,      cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(long long,          cnt_sum, fit_cnt_sum);
+    TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO(unsigned long long, cnt_sum, fit_cnt_sum);
+    BOOST_CHECK(    cnt_sum == 1215);
+    BOOST_CHECK(fit_cnt_sum ==  773);
+}
+
+#undef TEST_CONVERSION_FOR_ANY_INT_TYPE_INTO
+#undef TEST_INT_CONVERSION_FOR_GIVEN_TYPES
+
+BOOST_AUTO_TEST_CASE(test_mojeid_update_contact)
+{
+    Registry::MojeID::UpdateContact uc;
+
+    uc.first_name = CorbaConversion::wrap_string("first_name")._retn();
+    uc.last_name = CorbaConversion::wrap_string("last_name")._retn();
+    uc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
+    uc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
+    uc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    uc.id_card_num = CorbaConversion::wrap_Nullable_string("id_card_num")._retn();
+    uc.passport_num = CorbaConversion::wrap_Nullable_string("passport_num")._retn();
+    uc.ssn_id_num = CorbaConversion::wrap_Nullable_string("ssn_id_num")._retn();
+    uc.vat_id_num = CorbaConversion::wrap_Nullable_string("vat_id_num")._retn();
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "st1";
+        addr_impl.street2 = "st2";
+        addr_impl.street3 = "st3";
+        addr_impl.city    = "Praha";
+        addr_impl.state   = "state";
+        addr_impl.country = "Czech Republic";
+        CorbaConversion::wrap_Address(addr_impl, uc.permanent);
+    }
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "m_st1";
+        addr_impl.street2 = "m_st2";
+        addr_impl.street3 = "m_st3";
+        addr_impl.city    = "m_Praha";
+        addr_impl.state   = "m_state";
+        addr_impl.country = "m_Czech Republic";
+
+        uc.mailing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "b_st1";
+        addr_impl.street2 = "b_st2";
+        addr_impl.street3 = "b_st3";
+        addr_impl.city    = "b_Praha";
+        addr_impl.state   = "b_state";
+        addr_impl.country = "b_Czech Republic";
+
+        uc.billing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s_company";
+        addr_impl.street1      = "s_st1";
+        addr_impl.street2      = "s_st2";
+        addr_impl.street3      = "s_st3";
+        addr_impl.city         = "s_Praha";
+        addr_impl.state        = "s_state";
+        addr_impl.country      = "s_Czech Republic";
+
+        uc.shipping = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s2_company";
+        addr_impl.street1      = "s2_st1";
+        addr_impl.street2      = "s2_st2";
+        addr_impl.street3      = "s2_st3";
+        addr_impl.city         = "s2_Praha";
+        addr_impl.state        = "s2_state";
+        addr_impl.country      = "s2_Czech Republic";
+
+        uc.shipping2 = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s3_company";
+        addr_impl.street1      = "s3_st1";
+        addr_impl.street2      = "s3_st2";
+        addr_impl.street3      = "s3_st3";
+        addr_impl.city         = "s3_Praha";
+        addr_impl.state        = "s3_state";
+        addr_impl.country      = "s3_Czech Republic";
+
+        uc.shipping3 = CorbaConversion::wrap_Nullable_ShippingAddress(addr_impl)._retn();
+    }
+    uc.email = CorbaConversion::wrap_string("email")._retn();
+    uc.notify_email = CorbaConversion::wrap_Nullable_string("notify_email")._retn();
+    uc.telephone = CorbaConversion::wrap_Nullable_string("telephone")._retn();
+    uc.fax = CorbaConversion::wrap_Nullable_string("fax")._retn();
+
+    Registry::MojeIDImplData::UpdateContact uc_impl;
+    CorbaConversion::unwrap_UpdateContact(uc, uc_impl);
+
+    BOOST_CHECK(uc_impl.first_name == std::string("first_name"));
+    BOOST_CHECK(uc_impl.last_name == std::string("last_name"));
+    BOOST_CHECK(uc_impl.organization.get_value() == "org");
+    BOOST_CHECK(uc_impl.vat_reg_num.get_value() == "vat_reg_num");
+    BOOST_CHECK(boost::gregorian::from_simple_string(uc_impl.birth_date.get_value().value) == boost::gregorian::date(2015,12,10));
+    BOOST_CHECK(uc_impl.id_card_num.get_value() == "id_card_num");
+    BOOST_CHECK(uc_impl.passport_num.get_value() == "passport_num");
+    BOOST_CHECK(uc_impl.ssn_id_num.get_value() == "ssn_id_num");
+    BOOST_CHECK(uc_impl.vat_id_num.get_value() == "vat_id_num");
+
+
+    BOOST_CHECK(uc_impl.permanent.street1 == "st1");
+    BOOST_CHECK(uc_impl.permanent.street2.get_value() == "st2");
+    BOOST_CHECK(uc_impl.permanent.street3.get_value() == "st3");
+    BOOST_CHECK(uc_impl.permanent.city == "Praha");
+    BOOST_CHECK(uc_impl.permanent.state.get_value() == "state");
+    BOOST_CHECK(uc_impl.permanent.country == "Czech Republic");
+
+    BOOST_CHECK(uc_impl.mailing.get_value().street1 == "m_st1");
+    BOOST_CHECK(uc_impl.mailing.get_value().street2.get_value() == "m_st2");
+    BOOST_CHECK(uc_impl.mailing.get_value().street3.get_value() == "m_st3");
+    BOOST_CHECK(uc_impl.mailing.get_value().city == "m_Praha");
+    BOOST_CHECK(uc_impl.mailing.get_value().state.get_value() == "m_state");
+    BOOST_CHECK(uc_impl.mailing.get_value().country == "m_Czech Republic");
+
+    BOOST_CHECK(uc_impl.billing.get_value().street1 == "b_st1");
+    BOOST_CHECK(uc_impl.billing.get_value().street2.get_value() == "b_st2");
+    BOOST_CHECK(uc_impl.billing.get_value().street3.get_value() == "b_st3");
+    BOOST_CHECK(uc_impl.billing.get_value().city == "b_Praha");
+    BOOST_CHECK(uc_impl.billing.get_value().state.get_value() == "b_state");
+    BOOST_CHECK(uc_impl.billing.get_value().country == "b_Czech Republic");
+
+    BOOST_CHECK(uc_impl.shipping.get_value().company_name.get_value() == "s_company");
+    BOOST_CHECK(uc_impl.shipping.get_value().street1 == "s_st1");
+    BOOST_CHECK(uc_impl.shipping.get_value().street2.get_value() == "s_st2");
+    BOOST_CHECK(uc_impl.shipping.get_value().street3.get_value() == "s_st3");
+    BOOST_CHECK(uc_impl.shipping.get_value().city == "s_Praha");
+    BOOST_CHECK(uc_impl.shipping.get_value().state.get_value() == "s_state");
+    BOOST_CHECK(uc_impl.shipping.get_value().country == "s_Czech Republic");
+
+    BOOST_CHECK(uc_impl.shipping2.get_value().company_name.get_value() == "s2_company");
+    BOOST_CHECK(uc_impl.shipping2.get_value().street1 == "s2_st1");
+    BOOST_CHECK(uc_impl.shipping2.get_value().street2.get_value() == "s2_st2");
+    BOOST_CHECK(uc_impl.shipping2.get_value().street3.get_value() == "s2_st3");
+    BOOST_CHECK(uc_impl.shipping2.get_value().city == "s2_Praha");
+    BOOST_CHECK(uc_impl.shipping2.get_value().state.get_value() == "s2_state");
+    BOOST_CHECK(uc_impl.shipping2.get_value().country == "s2_Czech Republic");
+
+    BOOST_CHECK(uc_impl.shipping3.get_value().company_name.get_value() == "s3_company");
+    BOOST_CHECK(uc_impl.shipping3.get_value().street1 == "s3_st1");
+    BOOST_CHECK(uc_impl.shipping3.get_value().street2.get_value() == "s3_st2");
+    BOOST_CHECK(uc_impl.shipping3.get_value().street3.get_value() == "s3_st3");
+    BOOST_CHECK(uc_impl.shipping3.get_value().city == "s3_Praha");
+    BOOST_CHECK(uc_impl.shipping3.get_value().state.get_value() == "s3_state");
+    BOOST_CHECK(uc_impl.shipping3.get_value().country == "s3_Czech Republic");
+
+    BOOST_CHECK(uc_impl.email == "email");
+    BOOST_CHECK(uc_impl.notify_email.get_value() == "notify_email");
+    BOOST_CHECK(uc_impl.telephone.get_value() == "telephone");
+    BOOST_CHECK(uc_impl.fax.get_value() == "fax");
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_set_contact)
+{
+    Registry::MojeID::UpdateTransferContact sc;
+
+    sc.organization = CorbaConversion::wrap_Nullable_string("org")._retn();
+    sc.vat_reg_num = CorbaConversion::wrap_Nullable_string("vat_reg_num")._retn();
+    sc.birth_date = CorbaConversion::wrap_Nullable_boost_gregorian_date(boost::gregorian::date(2015,12,10))._retn();
+    sc.vat_id_num = CorbaConversion::wrap_Nullable_string("vat_id_num")._retn();
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "st1";
+        addr_impl.street2 = "st2";
+        addr_impl.street3 = "st3";
+        addr_impl.city    = "Praha";
+        addr_impl.state   = "state";
+        addr_impl.country = "Czech Republic";
+        CorbaConversion::wrap_Address(addr_impl, sc.permanent);
+    }
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "m_st1";
+        addr_impl.street2 = "m_st2";
+        addr_impl.street3 = "m_st3";
+        addr_impl.city    = "m_Praha";
+        addr_impl.state   = "m_state";
+        addr_impl.country = "m_Czech Republic";
+
+        sc.mailing = CorbaConversion::wrap_Nullable_Address(addr_impl)._retn();
+    }
+
+    sc.email = CorbaConversion::wrap_string("email")._retn();
+    sc.notify_email = CorbaConversion::wrap_Nullable_string("notify_email")._retn();
+    sc.telephone = CorbaConversion::wrap_string("telephone")._retn();
+    sc.fax = CorbaConversion::wrap_Nullable_string("fax")._retn();
+
+    Registry::MojeIDImplData::UpdateTransferContact sc_impl;
+    CorbaConversion::unwrap_UpdateTransferContact(sc, sc_impl);
+
+    BOOST_CHECK(sc_impl.organization.get_value() == "org");
+    BOOST_CHECK(sc_impl.vat_reg_num.get_value() == "vat_reg_num");
+    BOOST_CHECK(boost::gregorian::from_simple_string(sc_impl.birth_date.get_value().value) == boost::gregorian::date(2015,12,10));
+    BOOST_CHECK(sc_impl.vat_id_num.get_value() == "vat_id_num");
+
+    BOOST_CHECK(sc_impl.permanent.street1 == "st1");
+    BOOST_CHECK(sc_impl.permanent.street2.get_value() == "st2");
+    BOOST_CHECK(sc_impl.permanent.street3.get_value() == "st3");
+    BOOST_CHECK(sc_impl.permanent.city == "Praha");
+    BOOST_CHECK(sc_impl.permanent.state.get_value() == "state");
+    BOOST_CHECK(sc_impl.permanent.country == "Czech Republic");
+
+    BOOST_CHECK(sc_impl.mailing.get_value().street1 == "m_st1");
+    BOOST_CHECK(sc_impl.mailing.get_value().street2.get_value() == "m_st2");
+    BOOST_CHECK(sc_impl.mailing.get_value().street3.get_value() == "m_st3");
+    BOOST_CHECK(sc_impl.mailing.get_value().city == "m_Praha");
+    BOOST_CHECK(sc_impl.mailing.get_value().state.get_value() == "m_state");
+    BOOST_CHECK(sc_impl.mailing.get_value().country == "m_Czech Republic");
+
+    BOOST_CHECK(sc_impl.email == "email");
+    BOOST_CHECK(sc_impl.notify_email.get_value() == "notify_email");
+    BOOST_CHECK(sc_impl.telephone == "telephone");
+    BOOST_CHECK(sc_impl.fax.get_value() == "fax");
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_info_contact)
+{
+
+    Registry::MojeIDImplData::InfoContact impl_ic;
+
+    impl_ic.id = 5;
+    impl_ic.first_name = "first_name";
+    impl_ic.last_name ="last_name";
+    impl_ic.organization = "org";
+    impl_ic.vat_reg_num = "vat_reg_num";
+    {
+        Registry::MojeIDImplData::Date birthdate;
+        birthdate.value = boost::gregorian::to_iso_extended_string(boost::gregorian::date(2015,12,10));
+        impl_ic.birth_date = birthdate;
+    }
+    impl_ic.id_card_num = "id_card_num";
+    impl_ic.passport_num = "passport_num";
+    impl_ic.ssn_id_num = "ssn_id_num";
+    impl_ic.vat_id_num = "vat_id_num";
+
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "st1";
+        addr_impl.street2 = "st2";
+        addr_impl.street3 = "st3";
+        addr_impl.city = "Praha";
+        addr_impl.state = "state";
+        addr_impl.country = "Czech Republic";
+
+        impl_ic.permanent = addr_impl;
+    }
+
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "m_st1";
+        addr_impl.street2 = "m_st2";
+        addr_impl.street3 = "m_st3";
+        addr_impl.city = "m_Praha";
+        addr_impl.state = "m_state";
+        addr_impl.country = "m_Czech Republic";
+
+        impl_ic.mailing = addr_impl;
+    }
+    {
+        Registry::MojeIDImplData::Address addr_impl;
+        addr_impl.street1 = "b_st1";
+        addr_impl.street2 = "b_st2";
+        addr_impl.street3 = "b_st3";
+        addr_impl.city = "b_Praha";
+        addr_impl.state = "b_state";
+        addr_impl.country = "b_Czech Republic";
+
+        impl_ic.billing = addr_impl;
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s_company";
+        addr_impl.street1 = "s_st1";
+        addr_impl.street2 = "s_st2";
+        addr_impl.street3 = "s_st3";
+        addr_impl.city = "s_Praha";
+        addr_impl.state = "s_state";
+        addr_impl.country = "s_Czech Republic";
+
+        impl_ic.shipping = addr_impl;
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s2_company";
+        addr_impl.street1 = "s2_st1";
+        addr_impl.street2 = "s2_st2";
+        addr_impl.street3 = "s2_st3";
+        addr_impl.city = "s2_Praha";
+        addr_impl.state = "s2_state";
+        addr_impl.country = "s2_Czech Republic";
+
+        impl_ic.shipping2 = addr_impl;
+    }
+    {
+        Registry::MojeIDImplData::ShippingAddress addr_impl;
+        addr_impl.company_name = "s3_company";
+        addr_impl.street1 = "s3_st1";
+        addr_impl.street2 = "s3_st2";
+        addr_impl.street3 = "s3_st3";
+        addr_impl.city = "s3_Praha";
+        addr_impl.state = "s3_state";
+        addr_impl.country = "s3_Czech Republic";
+
+        impl_ic.shipping3 = addr_impl;
+    }
+
+    impl_ic.email = "email";
+    impl_ic.notify_email = "notify_email";
+    impl_ic.telephone = "telephone";
+    impl_ic.fax = "fax";
+
+
+    const Registry::MojeID::InfoContact_var idl_ic_ptr = CorbaConversion::wrap_InfoContact(impl_ic)._retn();
+    BOOST_REQUIRE(idl_ic_ptr.operator->() != NULL);
+
+    BOOST_CHECK(idl_ic_ptr->id == 5);
+    BOOST_CHECK(idl_ic_ptr->first_name.in()                 == impl_ic.first_name);
+    BOOST_CHECK(idl_ic_ptr->last_name.in()                  == impl_ic.last_name);
+    BOOST_CHECK(idl_ic_ptr->organization->_value()          == impl_ic.organization.get_value());
+    BOOST_CHECK(idl_ic_ptr->vat_reg_num->_value()           == impl_ic.vat_reg_num.get_value());
+    BOOST_CHECK(idl_ic_ptr->birth_date->_value().value.in() == impl_ic.birth_date.get_value().value);
+    BOOST_CHECK(idl_ic_ptr->id_card_num->_value()           == impl_ic.id_card_num.get_value());
+    BOOST_CHECK(idl_ic_ptr->passport_num->_value()          == impl_ic.passport_num.get_value());
+    BOOST_CHECK(idl_ic_ptr->ssn_id_num->_value()            == impl_ic.ssn_id_num.get_value());
+    BOOST_CHECK(idl_ic_ptr->vat_id_num->_value()            == impl_ic.vat_id_num.get_value());
+
+
+    BOOST_CHECK(idl_ic_ptr->permanent.street1.in() == impl_ic.permanent.street1);
+    BOOST_CHECK(idl_ic_ptr->permanent.street2.in()->_value() == impl_ic.permanent.street2.get_value());
+    BOOST_CHECK(idl_ic_ptr->permanent.street3.in()->_value() == impl_ic.permanent.street3.get_value());
+    BOOST_CHECK(idl_ic_ptr->permanent.city.in() == impl_ic.permanent.city);
+    BOOST_CHECK(idl_ic_ptr->permanent.state.in()->_value() == impl_ic.permanent.state.get_value());
+    BOOST_CHECK(idl_ic_ptr->permanent.country.in() == impl_ic.permanent.country);
+
+    Nullable< Registry::MojeIDImplData::Address > mailing;
+    CorbaConversion::unwrap_NullableAddress(idl_ic_ptr->mailing.in(), mailing);
+    BOOST_REQUIRE(!mailing.isnull());
+
+    BOOST_CHECK(mailing.get_value().street1 == impl_ic.mailing.get_value().street1);
+    BOOST_CHECK(mailing.get_value().street2.get_value() == impl_ic.mailing.get_value().street2.get_value());
+    BOOST_CHECK(mailing.get_value().street3.get_value() == impl_ic.mailing.get_value().street3.get_value());
+    BOOST_CHECK(mailing.get_value().city == impl_ic.mailing.get_value().city);
+    BOOST_CHECK(mailing.get_value().state.get_value() == impl_ic.mailing.get_value().state.get_value());
+    BOOST_CHECK(mailing.get_value().country == impl_ic.mailing.get_value().country);
+
+    Nullable< Registry::MojeIDImplData::Address > billing;
+    CorbaConversion::unwrap_NullableAddress(idl_ic_ptr->billing.in(), billing);
+    BOOST_REQUIRE(!billing.isnull());
+
+    BOOST_CHECK(billing.get_value().street1 == impl_ic.billing.get_value().street1);
+    BOOST_CHECK(billing.get_value().street2.get_value() == impl_ic.billing.get_value().street2.get_value());
+    BOOST_CHECK(billing.get_value().street3.get_value() == impl_ic.billing.get_value().street3.get_value());
+    BOOST_CHECK(billing.get_value().city == impl_ic.billing.get_value().city);
+    BOOST_CHECK(billing.get_value().state.get_value() == impl_ic.billing.get_value().state.get_value());
+    BOOST_CHECK(billing.get_value().country == impl_ic.billing.get_value().country);
+
+    Nullable< Registry::MojeIDImplData::ShippingAddress > shipping;
+    CorbaConversion::unwrap_NullableShippingAddress(idl_ic_ptr->shipping.in(), shipping);
+    BOOST_REQUIRE(!shipping.isnull());
+
+    BOOST_CHECK(shipping.get_value().company_name.get_value() == impl_ic.shipping.get_value().company_name.get_value());
+    BOOST_CHECK(shipping.get_value().street1 == impl_ic.shipping.get_value().street1);
+    BOOST_CHECK(shipping.get_value().street2.get_value() == impl_ic.shipping.get_value().street2.get_value());
+    BOOST_CHECK(shipping.get_value().street3.get_value() == impl_ic.shipping.get_value().street3.get_value());
+    BOOST_CHECK(shipping.get_value().city == impl_ic.shipping.get_value().city);
+    BOOST_CHECK(shipping.get_value().state.get_value() == impl_ic.shipping.get_value().state.get_value());
+    BOOST_CHECK(shipping.get_value().country == impl_ic.shipping.get_value().country);
+
+    Nullable< Registry::MojeIDImplData::ShippingAddress > shipping2;
+    CorbaConversion::unwrap_NullableShippingAddress(idl_ic_ptr->shipping2.in(), shipping2);
+    BOOST_REQUIRE(!shipping2.isnull());
+
+    BOOST_CHECK(shipping2.get_value().company_name.get_value() == impl_ic.shipping2.get_value().company_name.get_value());
+    BOOST_CHECK(shipping2.get_value().street1 == impl_ic.shipping2.get_value().street1);
+    BOOST_CHECK(shipping2.get_value().street2.get_value() == impl_ic.shipping2.get_value().street2.get_value());
+    BOOST_CHECK(shipping2.get_value().street3.get_value() == impl_ic.shipping2.get_value().street3.get_value());
+    BOOST_CHECK(shipping2.get_value().city == impl_ic.shipping2.get_value().city);
+    BOOST_CHECK(shipping2.get_value().state.get_value() == impl_ic.shipping2.get_value().state.get_value());
+    BOOST_CHECK(shipping2.get_value().country == impl_ic.shipping2.get_value().country);
+
+    Nullable< Registry::MojeIDImplData::ShippingAddress > shipping3;
+    CorbaConversion::unwrap_NullableShippingAddress(idl_ic_ptr->shipping3.in(), shipping3);
+    BOOST_REQUIRE(!shipping3.isnull());
+
+    BOOST_CHECK(shipping3.get_value().company_name.get_value() == impl_ic.shipping3.get_value().company_name.get_value());
+    BOOST_CHECK(shipping3.get_value().street1 == impl_ic.shipping3.get_value().street1);
+    BOOST_CHECK(shipping3.get_value().street2.get_value() == impl_ic.shipping3.get_value().street2.get_value());
+    BOOST_CHECK(shipping3.get_value().street3.get_value() == impl_ic.shipping3.get_value().street3.get_value());
+    BOOST_CHECK(shipping3.get_value().city == impl_ic.shipping3.get_value().city);
+    BOOST_CHECK(shipping3.get_value().state.get_value() == impl_ic.shipping3.get_value().state.get_value());
+    BOOST_CHECK(shipping3.get_value().country == impl_ic.shipping3.get_value().country);
+
+    BOOST_CHECK(idl_ic_ptr->email.in() == impl_ic.email);
+    BOOST_CHECK(idl_ic_ptr->notify_email.in()->_value() == impl_ic.notify_email.get_value());
+    BOOST_CHECK(idl_ic_ptr->telephone.in()->_value() == impl_ic.telephone.get_value());
+    BOOST_CHECK(idl_ic_ptr->fax.in()->_value() == impl_ic.fax.get_value());
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info)
+{
+
+    Registry::MojeIDImplData::ContactStateInfo impl_info;
+
+    impl_info.contact_id = 6;
+    impl_info.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
+    impl_info.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,12));
+    impl_info.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,13));
+    impl_info.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,14));
+
+    Registry::MojeID::ContactStateInfo idl_info;
+    CorbaConversion::wrap_ContactStateInfo(impl_info, idl_info);
+
+    BOOST_CHECK(idl_info.contact_id == impl_info.contact_id);
+    BOOST_CHECK(idl_info.mojeid_activation_datetime.value.in() == boost::posix_time::to_iso_extended_string(impl_info.mojeid_activation_datetime));
+    BOOST_CHECK(idl_info.identification_date->_value().value.in() == boost::gregorian::to_iso_extended_string(impl_info.identification_date.get_value()));
+    BOOST_CHECK(idl_info.validation_date->_value().value.in() == boost::gregorian::to_iso_extended_string(impl_info.validation_date.get_value()));
+    BOOST_CHECK(idl_info.linked_date->_value().value.in() == boost::gregorian::to_iso_extended_string(impl_info.linked_date.get_value()));
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_contact_state_info_list)
+{
+    Registry::MojeIDImplData::ContactStateInfoList impl_list;
+    Registry::MojeID::ContactStateInfoList_var idl_list_ptr = CorbaConversion::wrap_ContactStateInfoList(impl_list)._retn();
+    BOOST_REQUIRE(idl_list_ptr.operator->() != NULL);
+    BOOST_CHECK(idl_list_ptr->length() == 0);
+
+    {
+        Registry::MojeIDImplData::ContactStateInfo info_impl;
+        info_impl.contact_id = 5;
+        info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2015,12,10));
+        info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,12));
+        info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,13));
+        info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2015,12,14));
+        impl_list.push_back(info_impl);
+    }
+    {
+        Registry::MojeIDImplData::ContactStateInfo info_impl;
+        info_impl.contact_id = 6;
+        info_impl.mojeid_activation_datetime = boost::posix_time::ptime(boost::gregorian::date(2016,12,10));
+        info_impl.identification_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,12));
+        info_impl.validation_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,13));
+        info_impl.linked_date = Nullable<boost::gregorian::date>(boost::gregorian::date(2016,12,14));
+        impl_list.push_back(info_impl);
+    }
+
+    idl_list_ptr = CorbaConversion::wrap_ContactStateInfoList(impl_list)._retn();
+    BOOST_REQUIRE(idl_list_ptr.operator ->() != NULL);
+    BOOST_REQUIRE(idl_list_ptr->length() == 2);
+
+    for (::size_t idx = 0; idx < idl_list_ptr->length(); ++idx) {
+        BOOST_CHECK(idl_list_ptr[idx].contact_id == impl_list[idx].contact_id);
+        BOOST_CHECK(idl_list_ptr[idx].mojeid_activation_datetime.value.in() == boost::posix_time::to_iso_extended_string(impl_list[idx].mojeid_activation_datetime));
+        BOOST_CHECK(idl_list_ptr[idx].identification_date->_value().value.in() == boost::gregorian::to_iso_extended_string(impl_list[idx].identification_date.get_value()));
+        BOOST_CHECK(idl_list_ptr[idx].validation_date->_value().value.in() == boost::gregorian::to_iso_extended_string(impl_list[idx].validation_date.get_value()));
+        BOOST_CHECK(idl_list_ptr[idx].linked_date->_value().value.in() == boost::gregorian::to_iso_extended_string(impl_list[idx].linked_date.get_value()));
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_buffer)
+{
+    Registry::MojeIDImplData::Buffer impl_buffer;
+    impl_buffer.value = "test";
+    Registry::MojeID::Buffer_var idl_buffer_ptr = CorbaConversion::wrap_Buffer(impl_buffer);
+    BOOST_REQUIRE(idl_buffer_ptr.operator ->() != NULL);
+    BOOST_CHECK(std::string(reinterpret_cast< const char* >(idl_buffer_ptr->value.get_buffer()),
+                            idl_buffer_ptr->value.length()) == impl_buffer.value);
+}
+
+BOOST_AUTO_TEST_CASE(test_mojeid_constact_handle_list)
+{
+    static const Registry::MojeIDImplData::ContactHandleList impl_list = Util::vector_of< std::string >("test1")("test2")("test3");
+    const Registry::MojeID::ContactHandleList_var ssv1 = CorbaConversion::wrap_ContactHandleList(impl_list)._retn();
+    BOOST_REQUIRE(ssv1.operator ->() != NULL);
+    BOOST_REQUIRE(ssv1->length() == 3);
+    for (::size_t idx = 0; idx < ssv1->length(); ++idx) {
+        BOOST_CHECK(ssv1.in()[idx].in() == impl_list[idx]);
+    }
+}
+
+BOOST_AUTO_TEST_SUITE_END();

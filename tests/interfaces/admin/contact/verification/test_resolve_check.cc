@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_status)
     setup_testsuite testsuite;
     setup_check check(testsuite.testsuite_handle);
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::UpdateContactCheck(
         uuid::from_string( check.check_handle_ ),
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_Resolved_logd_request_id)
     setup_testsuite testsuite;
     setup_check check(testsuite.testsuite_handle);
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::UpdateContactCheck(
         uuid::from_string( check.check_handle_ ),
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_manual_suite_postprocessing)
     setup_check fail_check(Fred::TestsuiteHandle::MANUAL);
     setup_check ok_check(Fred::TestsuiteHandle::MANUAL);
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
 
     Fred::UpdateContactCheck(
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(test_Resolving_automatic_suite_postprocessing)
     setup_check fail_check(Fred::TestsuiteHandle::AUTOMATIC);
     setup_check ok_check(Fred::TestsuiteHandle::AUTOMATIC);
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::UpdateContactCheck(
         uuid::from_string( fail_check.check_handle_ ),

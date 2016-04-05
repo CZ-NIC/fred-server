@@ -40,7 +40,7 @@ struct copy_contact_fixture : public Test::Fixture::instantiate_db_template
         src_contact_handle(std::string("TEST-COPY-CONTACT-SRC-HANDLE") + xmark),
         dst_contact_handle(std::string("TEST-COPY-CONTACT-DST-HANDLE") + xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Database::Result registrar_result = ctx.get_conn().exec(
             "SELECT (SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1),"
                    "(SELECT handle FROM registrar WHERE NOT system ORDER BY id LIMIT 1)");
@@ -75,15 +75,15 @@ BOOST_FIXTURE_TEST_SUITE(TestCopyContact, copy_contact_fixture)
  */
 BOOST_AUTO_TEST_CASE(copy_contact)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     const Fred::InfoContactData src_contact_info = Fred::InfoContactByHandle(src_contact_handle).exec(ctx).info_contact_data;
     BOOST_CHECK(src_contact_info.delete_time.isnull());
 
     Fred::CopyContact(src_contact_handle, dst_contact_handle, sys_registrar_handle, 0).exec(ctx);
-    ctx.commit_transaction();
 
     const Fred::InfoContactData dst_contact_info = Fred::InfoContactByHandle(dst_contact_handle).exec(ctx).info_contact_data;
+    ctx.commit_transaction();
 
     BOOST_CHECK(src_contact_info.roid != dst_contact_info.roid);
     BOOST_CHECK(boost::algorithm::to_upper_copy(src_contact_info.handle).compare(boost::algorithm::to_upper_copy(dst_contact_info.handle)) != 0);
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(copy_contact_bad)
 {
     const std::string bad_src_contact_handle = dst_contact_handle;
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CopyContact(bad_src_contact_handle, dst_contact_handle, sys_registrar_handle, 0).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(copy_contact_bad)
 
     const std::string bad_dst_contact_handle = src_contact_handle;
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CopyContact(src_contact_handle, bad_dst_contact_handle, sys_registrar_handle, 0).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(copy_contact_bad)
 
     const std::string bad_registrar_handle = std::string("BAD") + sys_registrar_handle + xmark;
     try {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CopyContact(src_contact_handle, dst_contact_handle, bad_registrar_handle, 0).exec(ctx);
         ctx.commit_transaction();
         BOOST_CHECK(false);

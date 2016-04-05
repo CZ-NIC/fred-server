@@ -55,7 +55,7 @@ struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixt
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     , test_contact_history_handle(std::string("TEST-CONTACT-HISTORY-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -95,7 +95,7 @@ struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixt
 */
 BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
 
@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture_6da88b63b0bc46e29f6d0
 BOOST_FIXTURE_TEST_CASE(test_info_contact_output_timestamp, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
     const std::string timezone = "Europe/Prague";
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoContactOutput contact_output_by_handle              = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, timezone);
     const Fred::InfoContactOutput contact_output_by_id                  = Fred::InfoContactById(contact_output_by_handle.info_contact_data.id).exec(ctx, timezone);
     const Fred::InfoContactOutput contact_output_history_by_historyid   = Fred::InfoContactHistoryByHistoryid(contact_output_by_handle.info_contact_data.historyid).exec(ctx, timezone);
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE(test_info_contact_output_timestamp, test_contact_fixture
 */
 BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     Fred::InfoContactOutput contact_info2 = Fred::InfoContactByHandle(test_contact_handle).set_lock().exec(ctx);
 
@@ -194,8 +194,9 @@ BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e2
     test_diff.email = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.notifyemail = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
     test_diff.vat = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.ssntype = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
-    test_diff.ssn = std::make_pair(Nullable<std::string>(),Nullable<std::string>("test2"));
+    test_diff.personal_id = std::make_pair(Nullable< Fred::PersonalIdUnion >(),
+                                           Nullable< Fred::PersonalIdUnion >(
+                                               Fred::PersonalIdUnion::get_any_type("test2", "test2")));
     test_diff.disclosename= std::make_pair(false, true);
     test_diff.discloseorganization= std::make_pair(true, false);
     test_diff.discloseaddress= std::make_pair(false, true);
@@ -221,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e2
 
 BOOST_FIXTURE_TEST_CASE(info_contact_history_order, test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_history_info = Fred::InfoContactByHandle(test_contact_history_handle).exec(ctx);
 
     std::vector<Fred::InfoContactOutput> contact_history_info_by_roid = Fred::InfoContactHistoryByRoid(contact_history_info.info_contact_data.roid).exec(ctx);

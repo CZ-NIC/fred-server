@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
                 std::string admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark);
                 std::string registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark);
 
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 Fred::Contact::PlaceAddress place;
                 place.street1 = std::string("STR1") + xmark;

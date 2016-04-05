@@ -106,7 +106,7 @@ namespace Fred
                 ctx, registrar_, static_cast<Exception*>(0)//set throw
                 , &Exception::set_unknown_registrar_handle);
 
-            CreateObjectOutput create_object_output = CreateObject("nsset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
+            CreateObject::Result create_object_result = CreateObject("nsset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
 
             Exception create_nsset_exception;
 
@@ -120,7 +120,7 @@ namespace Fred
                 val_sql << " VALUES (";
 
                 //id
-                params.push_back(create_object_output.object_id);
+                params.push_back(create_object_result.object_id);
                 col_sql << col_separator.get() << "id";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -148,7 +148,7 @@ namespace Fred
                             Database::Result add_host_id_res = ctx.get_conn().exec_params(
                             "INSERT INTO host (nssetid, fqdn) VALUES( "
                             " $1::integer, LOWER($2::text)) RETURNING id"
-                            , Database::query_param_list(create_object_output.object_id)(i->get_fqdn()));
+                            , Database::query_param_list(create_object_result.object_id)(i->get_fqdn()));
                             ctx.get_conn().exec("RELEASE SAVEPOINT dnshost");
 
                             add_host_id = static_cast<unsigned long long>(add_host_id_res[0][0]);
@@ -175,7 +175,7 @@ namespace Fred
                                 ctx.get_conn().exec_params(
                                 "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
                                 " VALUES($1::integer, $2::integer, $3::inet)"
-                                , Database::query_param_list(add_host_id)(create_object_output.object_id)(*j));
+                                , Database::query_param_list(add_host_id)(create_object_result.object_id)(*j));
                                 ctx.get_conn().exec("RELEASE SAVEPOINT dnshostipaddr");
                             }
                             catch(const std::exception& ex)
@@ -200,7 +200,7 @@ namespace Fred
                     Database::QueryParams params;//query params
                     std::stringstream sql;
 
-                    params.push_back(create_object_output.object_id);
+                    params.push_back(create_object_result.object_id);
                     sql << "INSERT INTO nsset_contact_map(nssetid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
@@ -249,7 +249,7 @@ namespace Fred
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_output.object_id));
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_result.object_id));
                     if (crdate_res.size() != 1)
                     {
                         BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the nsset creation was not found"));
@@ -265,28 +265,28 @@ namespace Fred
                     "INSERT INTO nsset_history(historyid,id,checklevel) "
                     " SELECT $1::bigint, id, checklevel FROM nsset "
                         " WHERE id = $2::integer"
-                        , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                        , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
 
                 //host_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO host_history(historyid, id, nssetid, fqdn) "
                     " SELECT $1::bigint, id, nssetid, fqdn FROM host "
                         " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
 
                 //host_ipaddr_map_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO host_ipaddr_map_history(historyid, id, hostid, nssetid, ipaddr) "
                     " SELECT $1::bigint, id, hostid, nssetid, ipaddr FROM host_ipaddr_map "
                         " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
 
                 //nsset_contact_map_history
                 ctx.get_conn().exec_params(
                     "INSERT INTO nsset_contact_map_history(historyid, nssetid, contactid) "
                     " SELECT $1::bigint, nssetid, contactid FROM nsset_contact_map "
                         " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(create_object_output.history_id)(create_object_output.object_id));
+                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
             }//save history
         }//try
         catch(ExceptionStack& ex)

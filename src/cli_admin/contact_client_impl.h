@@ -337,7 +337,7 @@ struct contact_verification_enqueue_check_impl
       ContactVerificationEnqueueCheckArgs params = CfgArgGroups::instance()
         ->get_handler_ptr_by_type<HandleContactVerificationEnqueueCheckArgsGrp>()->params;
 
-      Fred::OperationContext ctx;
+      Fred::OperationContextCreator ctx;
       std::string check_handle;
       try {
           check_handle = Admin::enqueue_check(

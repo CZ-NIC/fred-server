@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         Database::Manager::init(new Database::ConnectionFactory(conn_info));
         ContactIdToAddresses addresses;
         get_contact_addresses(std::cin, addresses);
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         import_contact_addresses(addresses, registrar, ctx, logd_request_id);
         ctx.commit_transaction();
         return EXIT_SUCCESS;

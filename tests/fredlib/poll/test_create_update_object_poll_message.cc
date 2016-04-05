@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(TestCreateUpdateObjectPollMessage)
  */
 BOOST_AUTO_TEST_CASE( test_correct_generic_data )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Test::domain domain(ctx);
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
 {
 
     for(int i=0; i<3; ++i) {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         Database::Result ids_res = ctx.get_conn().exec(
             "SELECT id AS count_ "
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         Test::contact contact(ctx);
         Fred::Poll::CreateUpdateObjectPollMessage(
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
  */
 BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     bool correct_exception_caught = false;
     try {

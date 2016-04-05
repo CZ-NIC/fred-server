@@ -1079,7 +1079,7 @@ namespace MergeContactFixture
           */
          std::map<std::string, Fred::InfoContactDiff> diff_contacts()
          {
-             Fred::OperationContext ctx;
+             Fred::OperationContextCreator ctx;
              std::map<std::string, Fred::InfoContactDiff> diff_map;
              for(std::map<std::string, Fred::InfoContactData>::const_iterator ci = contact_info.begin(); ci != contact_info.end(); ++ci)
              {
@@ -1097,7 +1097,7 @@ namespace MergeContactFixture
           */
          std::map<std::string, Fred::InfoNssetDiff> diff_nssets()
          {
-             Fred::OperationContext ctx;
+             Fred::OperationContextCreator ctx;
              std::map<std::string, Fred::InfoNssetDiff> diff_map;
              for(std::map<std::string, Fred::InfoNssetData>::const_iterator ci = nsset_info.begin(); ci != nsset_info.end(); ++ci)
              {
@@ -1114,7 +1114,7 @@ namespace MergeContactFixture
           */
          std::map<std::string, Fred::InfoKeysetDiff> diff_keysets()
          {
-             Fred::OperationContext ctx;
+             Fred::OperationContextCreator ctx;
              std::map<std::string, Fred::InfoKeysetDiff> diff_map;
              for(std::map<std::string, Fred::InfoKeysetData>::const_iterator ci = keyset_info.begin(); ci != keyset_info.end(); ++ci)
              {
@@ -1131,7 +1131,7 @@ namespace MergeContactFixture
           */
          std::map<std::string, Fred::InfoDomainDiff> diff_domains()
          {
-             Fred::OperationContext ctx;
+             Fred::OperationContextCreator ctx;
              std::map<std::string, Fred::InfoDomainDiff> diff_map;
              for(std::map<std::string, Fred::InfoDomainData>::const_iterator ci = domain_info.begin(); ci != domain_info.end(); ++ci)
              {
@@ -1148,7 +1148,7 @@ namespace MergeContactFixture
           */
          std::map<std::string, Fred::InfoRegistrarDiff> diff_registrars()
          {
-             Fred::OperationContext ctx;
+             Fred::OperationContextCreator ctx;
              std::map<std::string, Fred::InfoRegistrarDiff> diff_map;
              for(std::map<std::string, Fred::InfoRegistrarData>::const_iterator ci = registrar_info.begin(); ci != registrar_info.end(); ++ci)
              {
@@ -1165,7 +1165,7 @@ namespace MergeContactFixture
           */
          bool is_system_registrar(const std::string registrar_handle)
          {
-             Fred::OperationContext ctx;
+             Fred::OperationContextCreator ctx;
              return ctx.get_conn().exec_params("SELECT id FROM registrar r WHERE r.system IS TRUE AND r.handle = $1::text"
              , Database::query_param_list(registrar_handle)).size() == 1;
          }
@@ -1175,7 +1175,7 @@ namespace MergeContactFixture
           */
          std::map<std::string, unsigned long long> get_del_contact_poll_msg()
          {
-             Fred::OperationContext ctx;
+             Fred::OperationContextCreator ctx;
              Database::Result poll_res =
              ctx.get_conn().exec("SELECT oreg.name as handle, m.id as msgid "
                  " FROM poll_eppaction pe "
@@ -1220,7 +1220,7 @@ namespace MergeContactFixture
 
         void init_fixture()
         {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
 
             //registrar
             registrar_vect = Util::vector_of<std::string>

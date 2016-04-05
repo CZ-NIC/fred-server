@@ -89,7 +89,7 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -176,7 +176,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -293,7 +293,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -452,7 +452,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -571,7 +571,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -732,7 +732,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -850,7 +850,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -970,7 +970,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1088,7 +1088,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1209,7 +1209,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1330,7 +1330,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1485,7 +1485,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
         BOOST_MESSAGE(contact_handle_dst);
         try
         {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             Fred::MergeContactOutput merge_data = Fred::MergeContact(
                 contact_handle_src, contact_handle_dst
                 , registrar_sys_handle).exec(ctx);
@@ -1684,7 +1684,7 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
     BOOST_MESSAGE(contact_handle_dst);
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1744,7 +1744,7 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_dst_contact, merge_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1804,7 +1804,7 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1865,7 +1865,7 @@ BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1926,7 +1926,7 @@ BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -1991,7 +1991,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -2220,7 +2220,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixtu
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -2297,7 +2297,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_state
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -2374,7 +2374,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_st
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -2452,7 +2452,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_state
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -2528,7 +2528,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -2610,7 +2610,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
@@ -2680,7 +2680,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::MergeContactOutput merge_data = Fred::MergeContact(
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);

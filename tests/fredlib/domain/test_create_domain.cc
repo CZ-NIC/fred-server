@@ -47,7 +47,7 @@ struct create_domain_fixture : public Test::Fixture::instantiate_db_template
                         +xmark.at(3)+'.'+xmark.at(4)+'.'+xmark.at(5)+'.'
                         +xmark.at(6)+'.'+xmark.at(7)+'.'+xmark.at(8)+".0.2.4.e164.arpa")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -83,7 +83,7 @@ BOOST_FIXTURE_TEST_SUITE(TestCreateDomainNameBlacklistId, create_domain_fixture)
  */
 BOOST_AUTO_TEST_CASE(create_domain_wrong_registrar)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string bad_registrar_handle = registrar_handle+xmark;
 
     BOOST_CHECK_EXCEPTION(
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(create_domain_wrong_registrar)
  */
 BOOST_AUTO_TEST_CASE(create_domain_wrong_fqdn_syntax)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string bad_test_domain_handle = test_domain_handle+".2bad..";
     BOOST_CHECK_EXCEPTION(
     try
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(create_domain_wrong_fqdn_syntax)
  */
 BOOST_AUTO_TEST_CASE(create_domain_wrong_cz_syntax)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string bad_test_domain_handle = std::string("-")+test_domain_handle;
     BOOST_CHECK_EXCEPTION(
     try
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_exdate)
     boost::gregorian::date exdate(boost::gregorian::from_string("2010-12-20"));
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomain(test_domain_handle, registrar_handle, registrant_contact_handle)
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_expiration_date(exdate)
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_exdate)
     {
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1.info_domain_data.expiration_date == exdate);
 }
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_wrong_exdate)
     boost::gregorian::date exdate;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomain(test_domain_handle, registrar_handle, registrant_contact_handle)
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_expiration_date(exdate)
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_valexdate)
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomain(test_enum_domain, registrar_handle, registrant_contact_handle)
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_enum_validation_expiration(valexdate)
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_valexdate)
     {
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
     BOOST_CHECK(info_data_1.info_domain_data.enum_domain_validation.get_value()
             .validation_expiration == valexdate);
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_wrong_valexdate)
     boost::gregorian::date valexdate;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomain(test_enum_domain, registrar_handle, registrant_contact_handle)
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_enum_validation_expiration(valexdate)
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_valexdate_wrong_domain)
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomain(test_domain_handle, registrar_handle, registrant_contact_handle)
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_enum_validation_expiration(valexdate)
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_publish_wrong_domain)
 {
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::CreateDomain(test_domain_handle, registrar_handle, registrant_contact_handle)
         .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_enum_publish_flag(true)

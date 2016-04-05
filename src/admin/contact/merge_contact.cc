@@ -40,7 +40,7 @@ MergeContact::MergeContact(
 
 Fred::MergeContactOutput MergeContact::exec(Fred::Logger::LoggerClient &_logger_client)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     if (!registrar_.isset()) {
         registrar_ = get_system_registrar(ctx);
@@ -70,7 +70,7 @@ Fred::MergeContactOutput MergeContact::exec(Fred::Logger::LoggerClient &_logger_
 
 Fred::MergeContactOutput MergeContact::exec_dry_run()
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     if (!registrar_.isset()) {
         registrar_ = get_system_registrar(ctx);

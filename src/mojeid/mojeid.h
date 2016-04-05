@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2015  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -17,193 +17,141 @@
  */
 
 /**
- *  @mojeid.h
+ *  @file
  *  header of mojeid implementation
  */
 
-#ifndef MOJEID_H_
-#define MOJEID_H_
+#ifndef MOJEID_H_06D795C17DD0FF3D98B375032F99493A//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define MOJEID_H_06D795C17DD0FF3D98B375032F99493A
 
-#include "src/fredlib/contact_verification/contact.h"
-#include "src/fredlib/contact_verification/contact_verification_validators.h"
+#include "src/mojeid/mojeid_checkers.h"
+#include "src/mojeid/mojeid_impl_data_conversion.h"
+#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/messages/messages_impl.h"
 
-#include <string>
 #include <vector>
-#include <boost/thread/mutex.hpp>
+#include <stdexcept>
 
-#include "cfg/handle_registry_args.h"
-#include "cfg/handle_mojeid_args.h"
-#include "src/fredlib/mailer.h"
-#include "src/mojeid/request.h"
-#include "src/mojeid/mojeid_identification.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
+namespace Registry {
+namespace MojeID {
 
-namespace Registry
+class MojeIDImpl
 {
-    namespace MojeID
-    {
+public:
+    typedef unsigned long long ContactId;
+    typedef unsigned long long MessageId;
+    typedef unsigned long long LogRequestId;
+    MojeIDImpl(const std::string &_server_name);
+    ~MojeIDImpl();
 
-        enum mojeid_operation_type {
-            MOJEID_NOP = 0,
-            MOJEID_CONTACT_CREATE = 1,
-            MOJEID_CONTACT_UPDATE,
-            MOJEID_CONTACT_UNIDENTIFY,
-            MOJEID_CONTACT_TRANSFER,
-            MOJEID_CONTACT_CANCEL
-        };
+    const std::string& get_server_name()const;
 
-        struct trans_data {
+    void get_unregistrable_contact_handles(
+        MojeIDImplData::ContactHandleList &_result)const;
 
-            explicit trans_data(const mojeid_operation_type &operation) : op(operation), cid(0), prid(0), eppaction_id(0), request_id(0)
-            { }
+    ContactId create_contact_prepare(
+        const MojeIDImplData::CreateContact &_contact,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id,
+        std::string &_ident)const;
 
-            mojeid_operation_type op;
-            unsigned long long cid;
-            unsigned long long prid;
-            unsigned long long eppaction_id;
-            unsigned long long request_id;
-        };
+    void transfer_contact_prepare(
+        const std::string &_handle,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id,
+        MojeIDImplData::InfoContact &_contact,
+        std::string &_ident)const;
 
-        struct OBJECT_NOT_EXISTS : public std::runtime_error
-        {
-            OBJECT_NOT_EXISTS() : std::runtime_error("object does not exist")
-            {}
-        };
+    void update_contact_prepare(
+        ContactId contact_id,
+        const MojeIDImplData::UpdateContact &_new_data,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const;
 
-        struct IDENTIFICATION_REQUEST_NOT_EXISTS : public std::runtime_error
-        {
-            IDENTIFICATION_REQUEST_NOT_EXISTS() : std::runtime_error("identification request does not exist")
-            {}
-        };
+    MojeIDImplData::InfoContact update_transfer_contact_prepare(
+        const std::string &_username,
+        const MojeIDImplData::UpdateTransferContact &_new_data,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id,
+        std::string &_ident)const;
 
-        struct MESSAGE_LIMIT_EXCEEDED : public std::runtime_error
-        {
-            typedef boost::gregorian::date Date;
-            MESSAGE_LIMIT_EXCEEDED(const Date &_limit_expire_date,
-                                   unsigned _max_number_of_messages,
-                                   unsigned _watched_period_in_days)
-            :   std::runtime_error("too many letters sent"),
-                limit_expire_date(_limit_expire_date),
-                max_number_of_messages(_max_number_of_messages),
-                watched_period_in_days(_watched_period_in_days)
-            { }
-            ~MESSAGE_LIMIT_EXCEEDED()throw() { }
-            Date limit_expire_date;
-            unsigned max_number_of_messages;
-            unsigned watched_period_in_days;
-        };
+    void info_contact(
+        const std::string &_username,
+        MojeIDImplData::InfoContact &_result)const;
 
-        struct ContactStateData
-        {
-            unsigned long long contact_id;
-            typedef std::string DateTime;// iso (extended) format: YYYY-MM-DDTHH:MM:SS,fffffffff
-            typedef std::map< std::string, DateTime > StateValidFrom;
-            StateValidFrom state;
+    void get_contact_info_publish_flags(
+        ContactId _contact_id,
+        MojeIDImplData::InfoContactPublishFlags &_flags)const;
 
-            ContactStateData(): contact_id(0) { }
-            StateValidFrom::const_iterator get_sum_state() const;
-        };
+    void commit_prepared_transaction(const std::string &_trans_id)const;
 
-        typedef std::vector< ContactStateData > ContactStateDataList;
+    void rollback_prepared_transaction(const std::string &_trans_id)const;
 
-        class MojeIDImpl
-        {
-            const HandleRegistryArgs *registry_conf_;
-            const HandleMojeIDArgs *server_conf_;
-            const std::string server_name_;
-            unsigned long long mojeid_registrar_id_;
+    MojeIDImplData::Buffer get_validation_pdf(ContactId _contact_id)const;
 
-            typedef std::map<std::string, trans_data> transaction_data_map_type;
-            transaction_data_map_type transaction_data;
-            boost::mutex td_mutex; /// for transaction data
-            boost::shared_ptr<Fred::Mailer::Manager> mailer_;
+    void create_validation_request(
+        ContactId contact_id,
+        LogRequestId log_request_id)const;
 
+    ContactId process_registration_request(
+        const std::string &_ident_request_id,
+        const std::string &_password,
+        LogRequestId _log_request_id)const;
 
-        public:
-            MojeIDImpl(const std::string &_server_name
-                    , boost::shared_ptr<Fred::Mailer::Manager> _mailer);
-            virtual ~MojeIDImpl();
+    void process_identification_request(
+        ContactId _contact_id,
+        const std::string &_password,
+        LogRequestId _log_request_id)const;
 
-            const std::string& get_server_name();
+    void get_contacts_state_changes(
+        unsigned long _last_hours,
+        MojeIDImplData::ContactStateInfoList &_result)const;
 
-            unsigned long long contactCreatePrepare(
-                const std::string & _contact_username
-                , Fred::Contact::Verification::Contact &_contact
-                , const char* _trans_id
-                , const unsigned long long _request_id
-                , std::string & _identification);
+    void get_contact_state(
+        ContactId _contact_id,
+        MojeIDImplData::ContactStateInfo &_result)const;
 
-            unsigned long long contactTransferPrepare(
-                const char* _handle
-                , const char* _trans_id
-                , unsigned long long _request_id
-                , std::string& _identification);
+    void cancel_account_prepare(
+        ContactId _contact_id,
+        const std::string &_trans_id,
+        LogRequestId _log_request_id)const;
 
-            void contactUpdatePrepare(
-                const std::string & _contact_username
-                , Fred::Contact::Verification::Contact& _contact
-                , const char* _trans_id
-                , unsigned long long _request_id);
+    void send_new_pin3(
+        ContactId _contact_id,
+        LogRequestId _log_request_id)const;
 
-            Fred::Contact::Verification::Contact contactInfo(
-                unsigned long long contact_id);
+    void send_mojeid_card(
+        ContactId _contact_id,
+        LogRequestId _log_request_id)const;
 
-            unsigned long long processIdentification(
-                const char* ident_request_id
-                , const char* password
-                , unsigned long long request_id);
+    void generate_sms_messages()const;
+    void enable_sms_messages_generation(bool enable)const;
 
-            std::string getIdentificationInfo(
-                unsigned long long _contact_id);
+    void generate_letter_messages()const;
+    void enable_letter_messages_generation(bool enable)const;
 
-            void commitPreparedTransaction(
-                const char* _trans_id);
+    void generate_email_messages()const;
+    void enable_email_messages_generation(bool enable)const;
 
-            void rollbackPreparedTransaction(
-                const char* _trans_id);
-
-            void getValidationPdf(
-                unsigned long long _contact_id
-                , std::stringstream& outstr);
-
-            void createValidationRequest(
-                unsigned long long  _contact_id
-                , unsigned long long  _request_id);
-
-            ContactStateDataList getContactsStateChanges(unsigned long _last_hours);
-
-            ContactStateData getContactState(unsigned long long _contact_id);
-
-            unsigned long long getContactId(const std::string& _handle);
-
-            std::vector<std::string> getUnregistrableHandles();
-            std::string contactAuthInfo(const unsigned long long _contact_id);
-
-            void sendNewPIN3(
-                unsigned long long _contact_id,
-                unsigned long long _request_id);
-
-            void sendMojeIDCard(
-                unsigned long long _contact_id,
-                unsigned long long _request_id);
-
-            void contactCancelAccountPrepare(
-                unsigned long long _contact_id
-                 , const char* _trans_id
-                 , unsigned long long _request_id);
-
-            bool isMojeidContact(unsigned long long _contact_id);
-            bool isMojeidContact(const std::string &_contact_handle);
+    static MessageId send_mojeid_card(
+        Fred::OperationContext &_ctx,
+        Fred::Messages::Manager *_msg_manager_ptr,
+        const Fred::InfoContactData &_data,
+        unsigned _limit_count,
+        unsigned _limit_interval,
+        LogRequestId _log_request_id,
+        const Optional< boost::posix_time::ptime > &_letter_time = Optional< boost::posix_time::ptime >(),
+        const Optional< bool > &_validated_contact = Optional< bool >());
 private:
-            void sendAuthPasswords(unsigned long long cid, unsigned long long prid);
+    const std::string server_name_;
+    const std::string mojeid_registrar_handle_;
+    const ::size_t mojeid_registrar_id_;
+};//class MojeIDImpl
 
-        };//class MojeIDImpl
-
-
-        void updateObjectStates(unsigned long long cid) throw();
-
-
-    }//namespace MojeID
+}//namespace Registry::MojeID
 }//namespace Registry
 
-#endif // MOJEID_H_
+#endif//MOJEID_H_06D795C17DD0FF3D98B375032F99493A

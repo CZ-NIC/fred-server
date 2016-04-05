@@ -16,23 +16,25 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-#include <string>
-#include <algorithm>
-
 #include "src/fredlib/opcontext.h"
-#include <fredlib/contact.h>
+#include "include/fredlib/contact.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/object/object_state.h"
 
 #include "util/util.h"
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
+#include "tests/fredlib/enum_to_db_handle_conversion.h"
+
+#include <boost/test/unit_test.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
+#include <string>
+#include <algorithm>
 
 BOOST_FIXTURE_TEST_SUITE(TestObjectState, Test::Fixture::instantiate_db_template)
 
@@ -49,7 +51,7 @@ struct test_contact_fixture_8470af40b863415588b78b1fb1782e7e : public Test::Fixt
     :xmark(RandomDataGenerator().xnumstring(6))
     , test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
                 "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -75,7 +77,7 @@ struct test_contact_fixture_8470af40b863415588b78b1fb1782e7e : public Test::Fixt
 
 BOOST_FIXTURE_TEST_CASE(get_object_states, test_contact_fixture_8470af40b863415588b78b1fb1782e7e )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput contact_info1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
     std::vector<Fred::ObjectStateData> states;
     states = Fred::GetObjectStates(contact_info1.info_contact_data.id).exec(ctx);
@@ -190,7 +192,7 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
             (Fred::ObjectStateDescription(27,"contactFailedManualVerification", "Contact has failed the verification by CZ.NIC customer support"))
         )
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         ctx.get_conn().exec(
             "TRUNCATE TABLE enum_object_states CASCADE; "
@@ -301,9 +303,19 @@ void check_object_state_desc_data(std::vector<Fred::ObjectStateDescription> test
 }
 
 
+/**
+ * test Fred::Object::State conversion functions
+ */
+BOOST_AUTO_TEST_CASE(fred_object_state_conversions)
+{
+    Fred::OperationContextCreator ctx;
+    static const char *const sql = "SELECT name FROM enum_object_states";
+    enum_to_db_handle_conversion_test< Fred::Object::State, 27 >(ctx, sql);
+}
+
 BOOST_FIXTURE_TEST_CASE(get_object_state_descriptions, object_state_description_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").exec(ctx), state_desc_en_all_vect);
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_object_type("contact").exec(ctx), state_desc_en_contact_vect);
     check_object_state_desc_data(Fred::GetObjectStateDescriptions("EN").set_external().exec(ctx), state_desc_en_external_vect);

@@ -23,53 +23,121 @@
 
 #include "src/fredlib/opcontext.h"
 
-#include <string>
-
-#include "src/fredlib/db_settings.h"
-#include "util/log/log.h"
+#include <stdexcept>
 
 namespace Fred
 {
-    OperationContext::~OperationContext()
-    {
-        if (in_transaction_)
-        {
-            try
-            {
-                conn_->exec("ROLLBACK TRANSACTION");
-            }
-            catch(...)
-            {
-                try
-                {
-                    log_.error("OperationContext::~OperationContext: rollback failed");
-                }
-                catch(...){}
-            }
+
+namespace
+{
+
+const std::string& check_transaction_id(const std::string &_value)
+{
+    if (_value.empty()) {
+        throw std::runtime_error("prepared transaction id mustn't be empty");
+    }
+    enum { MAX_LENGTH_OF_TRANSACTION_ID = 200 };
+    if (MAX_LENGTH_OF_TRANSACTION_ID < _value.length()) {
+        throw std::runtime_error("prepared transaction id too long");
+    }
+    //Postgres PREPARE TRANSACTION commands family doesn't accept parameters, requires immediate argument,
+    //so I check unsafe character(s) in transaction identifier.
+    if (_value.find('\'') != std::string::npos) {
+        throw std::runtime_error("prepared transaction id too unsafe");
+    }
+    return _value;
+}
+
+using namespace Database;
+
+std::auto_ptr< StandaloneConnection > get_database_conn()
+{
+    //manager is responsible for a factory destroying
+    StandaloneManager manager(new StandaloneConnectionFactory(Manager::getConnectionString()));
+    return std::auto_ptr< StandaloneConnection >(manager.acquire());
+}
+
+}//Fred::{anonymous}
+
+OperationContext::OperationContext()
+:   conn_(get_database_conn()),
+    log_(LOGGER(PACKAGE))
+{
+    conn_->exec("START TRANSACTION ISOLATION LEVEL READ COMMITTED");
+}
+
+Database::StandaloneConnection& OperationContext::get_conn()const
+{
+    Database::StandaloneConnection *const conn_ptr = conn_.get();
+    if (conn_ptr != NULL) {
+        if (conn_ptr->inTransaction()) {
+            return *conn_ptr;
+        }
+        throw std::runtime_error("database transaction broken");
+    }
+    throw std::runtime_error("database connection doesn't exist");
+}
+
+OperationContext::~OperationContext()
+{
+    Database::StandaloneConnection *const conn_ptr = conn_.get();
+    if (conn_ptr == NULL) {
+        return;
+    }
+    try {
+        conn_ptr->exec("ROLLBACK");
+    }
+    catch(...) {
+        try {
+            log_.error("OperationContext::~OperationContext: rollback failed");
+        }
+        catch(...) {
         }
     }
-
-    OperationContext::OperationContext()
-    : conn_(Database::StandaloneManager(new Database::StandaloneConnectionFactory(Database::Manager::getConnectionString())).acquire())
-    , in_transaction_(true)
-    , log_(LOGGER(PACKAGE))
-    {
-        conn_->exec("START TRANSACTION  ISOLATION LEVEL READ COMMITTED");
+    try {
+        conn_.reset();
     }
-
-    Database::StandaloneConnection& OperationContext::get_conn()
-    {
-        return *conn_.get();
-    }
-
-    Logging::Log& OperationContext::get_log()
-    {
-        return log_;
-    }
-
-    void OperationContext::commit_transaction()
-    {
-        conn_->exec("COMMIT TRANSACTION");
-        in_transaction_ = false;
+    catch(...) {
+        try {
+            log_.error("OperationContext::~OperationContext: database connection destroying failed");
+        }
+        catch(...) {
+        }
     }
 }
+
+OperationContextTwoPhaseCommit::OperationContextTwoPhaseCommit(const std::string &_transaction_id)
+:   transaction_id_(check_transaction_id(_transaction_id))
+{
+}
+
+void OperationContextCreator::commit_transaction()
+{
+    this->get_conn().exec("COMMIT");
+    conn_.reset();
+}
+
+void OperationContextTwoPhaseCommitCreator::commit_transaction()
+{
+    //"PREPARE TRANSACTION $1::TEXT" failed
+    this->get_conn().exec("PREPARE TRANSACTION '" + transaction_id_ + "'");
+    conn_.reset();
+}
+
+void commit_transaction(const std::string &_transaction_id)
+{
+    check_transaction_id(_transaction_id);
+    std::auto_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
+    //"COMMIT PREPARED $1::TEXT" failed
+    conn_ptr->exec("COMMIT PREPARED '" + _transaction_id + "'");
+}
+
+void rollback_transaction(const std::string &_transaction_id)
+{
+    check_transaction_id(_transaction_id);
+    std::auto_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
+    //"ROLLBACK PREPARED $1::TEXT" failed
+    conn_ptr->exec("ROLLBACK PREPARED '" + _transaction_id + "'");
+}
+
+}//Fred

@@ -49,7 +49,7 @@ struct create_admin_object_state_restore_request_id_fixture : public Test::Fixtu
         test_domain_fqdn(std::string("fred") + xmark + ".cz"),
         logd_request_id(23456)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(create_admin_object_state_restore_request_id)
     Fred::StatusList status_list_after;
     Database::Result status_result;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         status_result = ctx.get_conn().exec_params(query, param);
         for (::size_t idx = 0; idx < status_result.size(); ++idx) {
             status_list_before.insert(static_cast< std::string >(status_result[idx][0]));
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(create_admin_object_state_restore_request_id)
         Fred::PerformObjectStateRequest(test_domain_id).exec(ctx);
         ctx.commit_transaction();
     }
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     status_result = ctx.get_conn().exec_params(query, param);
     for (::size_t idx = 0; idx < status_result.size(); ++idx) {
         status_list_after.insert(static_cast< std::string >(status_result[idx][0]));

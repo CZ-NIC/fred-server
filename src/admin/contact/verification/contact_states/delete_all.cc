@@ -15,39 +15,39 @@ namespace AdminContactVerificationObjectStates
     bool conditionally_cancel_final_states(
         Fred::OperationContext& ctx,
         unsigned long long contact_id,
-        const Optional<std::string>& name,
-        const Optional<std::string>& organization,
-        const Optional<std::string>& street1,
-        const Optional<std::string>& street2,
-        const Optional<std::string>& street3,
-        const Optional<std::string>& city,
-        const Optional<std::string>& stateorprovince,
-        const Optional<std::string>& postalcode,
-        const Optional<std::string>& country,
-        const Optional<std::string>& telephone,
-        const Optional<std::string>& fax,
-        const Optional<std::string>& email,
-        const Optional<std::string>& notifyemail,
-        const Optional<std::string>& vat,
-        const Optional<std::string>& ssntype,
-        const Optional<std::string>& ssn
+        bool name_changed,
+        bool organization_changed,
+        bool street1_changed,
+        bool street2_changed,
+        bool street3_changed,
+        bool city_changed,
+        bool stateorprovince_changed,
+        bool postalcode_changed,
+        bool country_changed,
+        bool telephone_changed,
+        bool fax_changed,
+        bool email_changed,
+        bool notifyemail_changed,
+        bool vat_changed,
+        bool ssntype_changed,
+        bool ssn_changed
     ) {
-        if(    name.isset()
-            || organization.isset()
-            || street1.isset()
-            || street2.isset()
-            || street3.isset()
-            || city.isset()
-            || stateorprovince.isset()
-            || postalcode.isset()
-            || country.isset()
-            || telephone.isset()
-            || fax.isset()
-            || email.isset()
-            || notifyemail.isset()
-            || vat.isset()
-            || ssntype.isset()
-            || ssn.isset()
+        if(    name_changed
+            || organization_changed
+            || street1_changed
+            || street2_changed
+            || street3_changed
+            || city_changed
+            || stateorprovince_changed
+            || postalcode_changed
+            || country_changed
+            || telephone_changed
+            || fax_changed
+            || email_changed
+            || notifyemail_changed
+            || vat_changed
+            || ssntype_changed
+            || ssn_changed
         ) {
             cancel_final_states(ctx, contact_id);
 

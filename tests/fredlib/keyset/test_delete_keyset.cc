@@ -43,7 +43,7 @@ struct delete_keyset_fixture : public Test::Fixture::instantiate_db_template
     , test_keyset_handle ( std::string("TEST-DEL-KEYSET-")+xmark+"-HANDLE")
     , test_domain_fqdn ( std::string("fred")+xmark+".cz")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -79,13 +79,12 @@ BOOST_FIXTURE_TEST_SUITE(TestDeleteKeyset, delete_keyset_fixture)
  */
 BOOST_AUTO_TEST_CASE(delete_keyset)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoKeysetOutput keyset_info1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     BOOST_CHECK(keyset_info1.info_keyset_data.delete_time.isnull());
 
     Fred::DeleteKeysetByHandle(test_keyset_handle).exec(ctx);
-    ctx.commit_transaction();
 
     std::vector<Fred::InfoKeysetOutput> keyset_history_info1 = Fred::InfoKeysetHistoryByRoid(
     keyset_info1.info_keyset_data.roid).exec(ctx);
@@ -120,6 +119,7 @@ BOOST_AUTO_TEST_CASE(delete_keyset)
         "SELECT kcm.contactid FROM keyset_contact_map kcm JOIN object_registry oreg ON kcm.keysetid = oreg.id WHERE oreg.name = $1::text"
         , Database::query_param_list(test_keyset_handle)).size() == 0);
 
+    ctx.commit_transaction();
 }//delete_keyset
 
 
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(delete_keyset_with_wrong_handle)
     std::string bad_test_keyset_handle = std::string("bad")+test_keyset_handle;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::DeleteKeysetByHandle(bad_test_keyset_handle).exec(ctx);
         ctx.commit_transaction();
     }
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(delete_keyset_with_wrong_handle)
 BOOST_AUTO_TEST_CASE(delete_linked_keyset)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         //create linked object
 
         Fred::CreateDomain(test_domain_fqdn //const std::string& fqdn
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(delete_linked_keyset)
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::DeleteKeysetByHandle(test_keyset_handle).exec(ctx);
         ctx.commit_transaction();
     }

@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
     std::string timezone = "UTC";
 
     try {
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
         handle = create_check.exec(ctx1);
         ctx1.commit_transaction();
     } catch(const Fred::InternalError& exp) {
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
 
 
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         result_data = info_check.exec(ctx2, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_mandatory_setup)
         + " 'now' is:" + boost::posix_time::to_simple_string(now) );
 
     // contact_history_id is correct regarding the create_time
-    Fred::OperationContext ctx3;
+    Fred::OperationContextCreator ctx3;
     Database::Result contact_history_validity_interval = ctx3.get_conn().exec_params(
         "SELECT "
         "   valid_from AT TIME ZONE 'utc' AT TIME ZONE $1::text AS valid_from_, "
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     std::string timezone = "UTC";
 
     try {
-        Fred::OperationContext ctx1;
+        Fred::OperationContextCreator ctx1;
         handle = create_check.exec(ctx1);
         ctx1.commit_transaction();
     } catch(const Fred::InternalError& exp) {
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
     Fred::InfoContactCheckOutput result_data;
 
     try {
-        Fred::OperationContext ctx2;
+        Fred::OperationContextCreator ctx2;
         result_data = info_check.exec(ctx2, timezone);
     } catch(const Fred::InternalError& exp) {
         BOOST_FAIL("exception (1):" + boost::diagnostic_information(exp) + exp.what() );
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_optional_setup)
 
     // contact_history_id is correct regarding the create_time
 
-    Fred::OperationContext ctx3;
+    Fred::OperationContextCreator ctx3;
     Database::Result contact_history_validity_interval = ctx3.get_conn().exec_params(
         "SELECT "
         "   valid_from AT TIME ZONE 'utc' AT TIME ZONE $1::varchar AS valid_from_, "
@@ -315,7 +315,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_contact_id)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateContactCheck create_check(Test::get_nonexistent_object_id(ctx), testsuite.testsuite_handle);
         handle = create_check.exec(ctx);
         ctx.commit_transaction();
@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_nonexistent_testsuite_handle)
 
     bool caught_the_right_exception = false;
     try {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         handle = create_check.exec(ctx);
         ctx.commit_transaction();
     } catch(const Fred::ExceptionUnknownTestsuiteHandle& exp) {

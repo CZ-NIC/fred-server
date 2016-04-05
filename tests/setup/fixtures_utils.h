@@ -398,7 +398,7 @@ namespace Test {
         Database::Result check;
         // guarantee non-existence
         do {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             result = random_generator();
             check = ctx.get_conn().exec_params(
                 "SELECT "+ column +" "
@@ -496,7 +496,7 @@ namespace Test {
         }
 
         registrar(Optional<std::string> _handle = Optional<std::string>()) {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             info_data = make(ctx, _handle);
             ctx.commit_transaction();
         }
@@ -530,7 +530,7 @@ namespace Test {
         }
 
         contact(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             info_data = make(ctx, _handle, _registrar_handle);
             ctx.commit_transaction();
         }
@@ -554,7 +554,7 @@ namespace Test {
         }
 
         domain() {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             info_data = make(ctx);
             ctx.commit_transaction();
         }
@@ -588,7 +588,7 @@ namespace Test {
         }
 
         nsset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             info_data = make(ctx, _handle, _registrar_handle);
             ctx.commit_transaction();
         }
@@ -622,7 +622,7 @@ namespace Test {
         }
 
         keyset(Optional<std::string> _handle = Optional<std::string>(), Optional<std::string> _registrar_handle = Optional<std::string>()) {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             info_data = make(ctx, _handle, _registrar_handle);
             ctx.commit_transaction();
         }

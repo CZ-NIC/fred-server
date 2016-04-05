@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_max_count)
         setup_check(testsuite.testsuite_handle);
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK_EQUAL(Fred::ListContactChecks().set_max_item_count(10).exec(ctx).size(), 10);
 }
 
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_testsuite_filter)
         setup_check(testsuite3.testsuite_handle);
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::ListChecksItem> list = Fred::ListContactChecks()
         .set_max_item_count(100)
         .set_testsuite_handle(testsuite2.testsuite_handle)
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_contact_filter)
 
     Test::contact the_contact;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string the_check_handle = Fred::CreateContactCheck(
         the_contact.info_data.id,
         testsuite.testsuite_handle
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(test_Exec_filters_nonexistent_values)
     }
 
     setup_nonexistent_testsuite_handle nonexistent_testsuite;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK_EQUAL(
         Fred::ListContactChecks()
             .set_max_item_count(100)

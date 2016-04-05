@@ -19,7 +19,7 @@ namespace  Admin {
     ){
         using std::set;
 
-        Fred::OperationContext ctx_info;
+        Fred::OperationContextCreator ctx_info;
 
         Fred::InfoContactCheckOutput check_info = Fred::InfoContactCheck(_check_handle)
             .exec(ctx_info);

@@ -62,7 +62,7 @@ struct delete_nsset_fixture : public Test::Fixture::instantiate_db_template
     , test_nsset_handle ( std::string("TEST-DEL-NSSET-")+xmark+"-HANDLE")
     , test_domain_fqdn ( std::string("fred")+xmark+".cz")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -98,13 +98,12 @@ BOOST_FIXTURE_TEST_SUITE(TestDeleteNsset, delete_nsset_fixture)
  */
 BOOST_AUTO_TEST_CASE(delete_nsset)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     BOOST_CHECK(nsset_info1.info_nsset_data.delete_time.isnull());
 
     Fred::DeleteNssetByHandle(test_nsset_handle).exec(ctx);
-    ctx.commit_transaction();
 
     std::vector<Fred::InfoNssetOutput> nsset_history_info1 = Fred::InfoNssetHistoryByRoid(
     nsset_info1.info_nsset_data.roid).exec(ctx);
@@ -139,6 +138,7 @@ BOOST_AUTO_TEST_CASE(delete_nsset)
         "SELECT ncm.contactid FROM nsset_contact_map ncm JOIN object_registry oreg ON ncm.nssetid = oreg.id WHERE oreg.name = $1::text"
         , Database::query_param_list(test_nsset_handle)).size() == 0);
 
+    ctx.commit_transaction();
 }//delete_nsset
 
 
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(delete_nsset_with_wrong_handle)
     std::string bad_test_nsset_handle = std::string("bad")+test_nsset_handle;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::DeleteNssetByHandle(bad_test_nsset_handle).exec(ctx);
         ctx.commit_transaction();
     }
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(delete_nsset_with_wrong_handle)
 BOOST_AUTO_TEST_CASE(delete_linked_nsset)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         //create linked object
 
         Fred::CreateDomain(test_domain_fqdn //const std::string& fqdn
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(delete_linked_nsset)
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::DeleteNssetByHandle(test_nsset_handle).exec(ctx);
         ctx.commit_transaction();
     }

@@ -19,7 +19,7 @@ namespace Admin {
     std::vector<Fred::MergeContactNotificationEmailWithAddr> email_notification(Fred::Mailer::Manager& mm
         , const std::vector<Fred::MergeContactEmailNotificationInput>& email_notification_input_vector)
 {
-    Fred::OperationContext enctx;
+    Fred::OperationContextCreator enctx;
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notif_emails
           = Fred::MergeContactNotificationEmailAddr(Fred::MergeContactEmailNotificationData(email_notification_input_vector)
         .exec(enctx)).exec(enctx);
@@ -221,7 +221,7 @@ unsigned short MergeContactAutoProcedure::get_verbose_level() const
 std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedure::exec()
 {
     std::vector<Fred::MergeContactNotificationEmailWithAddr> ret_email_notifications;
-    Fred::OperationContext octx;
+    Fred::OperationContextCreator octx;
     /* get system registrar - XXX: should be a parameter?? */
     Database::Result system_registrar_result = octx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system is True");

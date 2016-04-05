@@ -325,7 +325,7 @@ namespace  Admin {
         while(true) {
             while(true) {
                 while(true) {
-                    Fred::OperationContext ctx_check_postprocess;
+                    Fred::OperationContextCreator ctx_check_postprocess;
                     Optional<string> check_handle_to_postprocess = lock_some_running_check_with_some_finished_test(ctx_check_postprocess);
                     if( !check_handle_to_postprocess.isset() ) {
                         break;
@@ -340,7 +340,7 @@ namespace  Admin {
                     handles.push_back(check_handle_to_postprocess.get_value());
                 }
 
-                Fred::OperationContext ctx_check_process;
+                Fred::OperationContextCreator ctx_check_process;
                 Optional<string> check_handle_to_process = lock_some_running_check_with_only_enqueued_tests(ctx_check_process);
                 if( !check_handle_to_process.isset() ) {
                     break;
@@ -351,22 +351,29 @@ namespace  Admin {
                 std::set<unsigned long long> related_message_ids;
                 while(true) {
                     while(true) {
-                        Fred::OperationContext ctx_test_process;
-                        Optional<string> test_handle_to_process = lock_some_running_test(ctx_test_process, check_uuid_to_process );
-                        if( !test_handle_to_process.isset() ) {
-                            break;
-                        }
-                        try {
-                            run_test(
-                                ctx_test_process, _tests,
-                                check_uuid_to_process, test_handle_to_process.get_value(),
-                                related_mail_ids, related_message_ids,
-                                _logd_request_id);
-                        } catch(...) {
+                        bool error_occurred = false;
+                        Optional< string > test_handle_to_process;
+                        {
+                            Fred::OperationContextCreator ctx_test_process;
+                            test_handle_to_process = lock_some_running_test(ctx_test_process, check_uuid_to_process);
+                            if( !test_handle_to_process.isset() ) {
+                                break;
+                            }
                             try {
-                                ctx_test_process.get_conn().exec("ROLLBACK");
-                                Fred::OperationContext ctx_testrun_error;
-
+                                run_test(
+                                    ctx_test_process, _tests,
+                                    check_uuid_to_process, test_handle_to_process.get_value(),
+                                    related_mail_ids, related_message_ids,
+                                    _logd_request_id);
+                                ctx_test_process.commit_transaction();
+                            }
+                            catch(...) {
+                                error_occurred = true;
+                            }
+                        }
+                        if (error_occurred) {
+                            try {
+                                Fred::OperationContextCreator ctx_testrun_error;
                                 Fred::UpdateContactTest(
                                     check_uuid_to_process, test_handle_to_process.get_value(),
                                     Fred::ContactTestStatus::ERROR,
@@ -376,14 +383,14 @@ namespace  Admin {
 
                                 ctx_testrun_error.get_log().warning( (string("exception in test implementation ") + test_handle_to_process.get_value()).c_str());
                                 ctx_testrun_error.commit_transaction();
-                            } catch(...) {
+                            }
+                            catch(...) {
                                 throw Fred::InternalError( (string("problem when setting test status to ERROR; check_handle=") + check_handle_to_process.get_value() + "; test_handle=" + test_handle_to_process.get_value()).c_str() );
                             }
                         }
-                        ctx_test_process.commit_transaction();
                     }
 
-                    Fred::OperationContext ctx_test_preprocess;
+                    Fred::OperationContextCreator ctx_test_preprocess;
                     Optional<string> test_handle_to_preprocess = lock_some_enqueued_test(ctx_test_preprocess, check_uuid_to_process );
                     if( !test_handle_to_preprocess.isset() ) {
                         break;
@@ -398,7 +405,7 @@ namespace  Admin {
                 ctx_check_process.commit_transaction();
             }
 
-            Fred::OperationContext ctx_check_preprocess;
+            Fred::OperationContextCreator ctx_check_preprocess;
             Optional<string> check_handle_to_preprocess = lock_some_enqueued_check(ctx_check_preprocess);
             if( !check_handle_to_preprocess.isset() ) {
                 break;

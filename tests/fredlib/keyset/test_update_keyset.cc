@@ -46,7 +46,7 @@ struct update_keyset_fixture : public Test::Fixture::instantiate_db_template
     , admin_contact6_handle(std::string("TEST-ADMIN-CONTACT6-HANDLE")+xmark)
     , test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle  = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -100,7 +100,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateKeyset, update_keyset_fixture)
  */
 BOOST_AUTO_TEST_CASE(update_keyset)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoKeysetOutput info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     std::vector<Fred::InfoKeysetOutput> history_info_data_1 = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
 
@@ -523,7 +523,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_wrong_handle)
     std::string bad_test_keyset_handle = std::string("bad")+test_keyset_handle;
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(bad_test_keyset_handle, registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -543,13 +543,13 @@ BOOST_AUTO_TEST_CASE(update_keyset_wrong_registrar)
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -562,7 +562,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_wrong_registrar)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -578,13 +578,13 @@ BOOST_AUTO_TEST_CASE(update_keyset_wrong_sponsoring_registrar)
     std::string bad_registrar_handle = registrar_handle+xmark;
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
             .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
         ctx.commit_transaction();
@@ -598,7 +598,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_wrong_sponsoring_registrar)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -614,14 +614,14 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_wrong_tech_contact)
     std::string bad_tech_contact_handle = admin_contact5_handle+xmark;
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     BOOST_MESSAGE(std::string("handle: ") + info_data_1.info_keyset_data.handle + " roid: " + info_data_1.info_keyset_data.roid);
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
         .add_tech_contact(bad_tech_contact_handle)
         .exec(ctx);
@@ -637,7 +637,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_wrong_tech_contact)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -651,13 +651,13 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_already_added_tech_contact)
 {
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
         .add_tech_contact(admin_contact6_handle)//already added in fixture
         .exec(ctx);
@@ -672,7 +672,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_already_added_tech_contact)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -689,13 +689,13 @@ BOOST_AUTO_TEST_CASE(update_keyset_rem_wrong_tech_contact)
 
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
         .rem_tech_contact(bad_tech_contact_handle)
         .exec(ctx);
@@ -710,7 +710,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_rem_wrong_tech_contact)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -725,13 +725,13 @@ BOOST_AUTO_TEST_CASE(update_keyset_rem_unassigned_tech_contact)
     std::string bad_tech_contact_handle = admin_contact4_handle;
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
         .rem_tech_contact(bad_tech_contact_handle)
         .exec(ctx);
@@ -746,7 +746,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_rem_unassigned_tech_contact)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -761,13 +761,13 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_already_added_dnskey)
 {
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
         .add_dns_key(Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"))
         .exec(ctx);
@@ -782,7 +782,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_already_added_dnskey)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -796,13 +796,13 @@ BOOST_AUTO_TEST_CASE(update_keyset_unassigned_dnskey)
 {
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
     try
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
         .rem_dns_key(Fred::DnsKey(257, 3, 5, "unassignedkey"))
         .exec(ctx);
@@ -817,7 +817,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_unassigned_dnskey)
 
     Fred::InfoKeysetOutput info_data_2;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
@@ -836,12 +836,12 @@ BOOST_AUTO_TEST_CASE(info_keyset_history_test)
 {
     Fred::InfoKeysetOutput info_data_1;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
     //call update
     {
-        Fred::OperationContext ctx;//new connection to rollback on error
+        Fred::OperationContextCreator ctx;//new connection to rollback on error
         Fred::UpdateKeyset(test_keyset_handle, registrar_handle)
         .exec(ctx);
         ctx.commit_transaction();
@@ -850,7 +850,7 @@ BOOST_AUTO_TEST_CASE(info_keyset_history_test)
     Fred::InfoKeysetOutput info_data_2;
     std::vector<Fred::InfoKeysetOutput> history_info_data;
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         info_data_2 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
         history_info_data = Fred::InfoKeysetHistoryByRoid(info_data_1.info_keyset_data.roid).exec(ctx);
     }

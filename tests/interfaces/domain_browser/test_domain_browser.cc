@@ -122,7 +122,7 @@ struct user_contact_fixture
 
     user_contact_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         Fred::Contact::PlaceAddress place;
         place.street1 = std::string("STR1") + xmark;
@@ -147,7 +147,7 @@ struct mojeid_user_contact_fixture
 {
     mojeid_user_contact_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::StatusList states;
         states.insert(Fred::ObjectState::MOJEID_CONTACT);
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
@@ -168,7 +168,7 @@ struct test_registrar_fixture
     :xmark(RandomDataGenerator().xnumstring(6))
     , test_registrar_handle(std::string("TEST-REGISTRAR-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         Fred::CreateRegistrar(test_registrar_handle).set_name(std::string("TEST-REGISTRAR NAME")+xmark)
             .set_name(std::string("TEST-REGISTRAR NAME")+xmark)
@@ -191,7 +191,7 @@ struct admin_contact_fixture
     admin_contact_fixture()
     : test_contact_handle(std::string("TEST-ADMIN-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::Contact::PlaceAddress place;
         place.street1 = std::string("STR1") + xmark;
         place.city = "Praha";
@@ -218,7 +218,7 @@ struct nsset_fixture
     nsset_fixture()
     : test_nsset_handle(std::string("TEST-NSSET-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
@@ -250,7 +250,7 @@ struct keyset_fixture
     keyset_fixture()
     : test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
         .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle))
         .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
@@ -282,7 +282,7 @@ struct get_registrar_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_registrar_detail, get_registrar_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
             test_registrar_handle);
@@ -312,7 +312,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_user, get_registrar_detail_no_us
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(0, test_registrar_handle);
         BOOST_ERROR("unreported missing user contact");
@@ -339,7 +339,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoRegistrarOutput registrar_info = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
                 test_registrar_handle);
@@ -364,7 +364,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_registrar, get_registrar_detail_
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::RegistrarDetail rd = impl.getRegistrarDetail(user_contact_info.info_contact_data.id,
                 "NO-NO-REGISTRAR-HANDLE");
         BOOST_ERROR("unreported missing registrar");
@@ -388,7 +388,7 @@ struct test_contact_fixture
     test_contact_fixture()
     :test_contact_handle(std::string("TEST-CONTACT-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
 
         BOOST_CHECK(!test_registrar_handle.empty());//expecting existing registrar
 
@@ -421,7 +421,7 @@ struct get_my_contact_detail_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_my_contact_detail, get_my_contact_detail_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
@@ -477,7 +477,7 @@ struct get_contact_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_contact_detail, get_contact_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(test_contact_info.info_contact_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
@@ -535,7 +535,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_f
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(0,test_contact_info.info_contact_data.id);
 
@@ -561,7 +561,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_n
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoContactOutput test_contact_info = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         Registry::DomainBrowserImpl::ContactDetail cd = impl.getContactDetail(user_contact_info.info_contact_data.id,
                 test_contact_info.info_contact_data.id);
@@ -586,7 +586,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, get_contact_detail_n
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::ContactDetail d = impl.getContactDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test contact");
     }
@@ -609,7 +609,7 @@ struct registrant_contact_fixture
     registrant_contact_fixture()
     :test_contact_handle(std::string("TEST-REGISTRANT-HANDLE")+xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::Contact::PlaceAddress place;
         place.street1 = std::string("STR1") + xmark;
         place.city = "Praha";
@@ -639,7 +639,7 @@ struct get_my_domain_fixture
     : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
     {
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , user_contact_handle//const std::string& registrant
@@ -679,7 +679,7 @@ struct get_domain_fixture
     : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
     {
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , registrant_contact_fixture::test_contact_handle//const std::string& registrant
@@ -704,7 +704,7 @@ struct get_domain_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainOutput my_domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
@@ -758,7 +758,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_detail_no_domain, get_domain_detail_no_domain
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::DomainDetail d = impl.getDomainDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test domain");
     }
@@ -784,7 +784,7 @@ struct get_nsset_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_nsset_detail, get_nsset_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(nsset_info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -845,7 +845,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail_no_nsset, get_nsset_detail_no_nsset_fix
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::NssetDetail d = impl.getNssetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test nsset");
     }
@@ -872,7 +872,7 @@ struct get_keyset_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_keyset_detail, get_keyset_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoKeysetOutput keyset_info = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(keyset_info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoContactOutput admin_contact_info = Fred::InfoContactByHandle(admin_contact_fixture::test_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -931,7 +931,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail_no_keyset, get_keyset_detail_no_keyset
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::KeysetDetail d = impl.getKeysetDetail(user_contact_info.info_contact_data.id,0);
         BOOST_ERROR("unreported missing test keyset");
     }
@@ -958,7 +958,7 @@ struct set_contact_disclose_flags_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::StatusList states;
         states.insert(Fred::ObjectState::IDENTIFIED_CONTACT);
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
@@ -966,7 +966,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
     set_flags.address = true;
@@ -1003,7 +1003,7 @@ struct set_validated_contact_disclose_flags_fixture
 BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_contact_disclose_flags_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::StatusList states;
         states.insert(Fred::ObjectState::VALIDATED_CONTACT);
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
@@ -1011,7 +1011,7 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_cont
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
     set_flags.address = true;
     set_flags.email = true;
@@ -1046,7 +1046,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_in_mojeid, set_conta
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
         set_flags.email = true;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
@@ -1072,7 +1072,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_identified, set_cont
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
         set_flags.email = true;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
@@ -1097,7 +1097,7 @@ struct set_contact_disclose_flags_contact_blocked_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_contact_blocked, set_contact_disclose_flags_contact_blocked_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1106,7 +1106,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_contact_blocked, set_contact_
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
         set_flags.email = true;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
@@ -1129,7 +1129,7 @@ struct set_contact_disclose_flags_hide_organization_address_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_hide_organization_address, set_contact_disclose_flags_hide_organization_address_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1141,7 +1141,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_hide_organization_address, se
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Registry::DomainBrowserImpl::ContactDiscloseFlagsToSet set_flags;
         impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
         BOOST_ERROR("unreported hide address of organization");
@@ -1168,7 +1168,7 @@ struct set_contact_authinfo_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::StatusList states;
         states.insert(Fred::ObjectState::IDENTIFIED_CONTACT);
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
@@ -1176,7 +1176,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo, set_contact_authinfo_fixture )
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
         user_contact_info.info_contact_data.id,"newauthinfo", 42));
 
@@ -1195,7 +1195,7 @@ struct set_validated_contact_authinfo_fixture
 BOOST_FIXTURE_TEST_CASE(set_validated_contact_authinfo, set_validated_contact_authinfo_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::StatusList states;
         states.insert(Fred::ObjectState::VALIDATED_CONTACT);
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id, states).exec(ctx);
@@ -1203,7 +1203,7 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_authinfo, set_validated_contact_au
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK(impl.setContactAuthInfo(
         user_contact_info.info_contact_data.id,"newauthinfo", 0));
 
@@ -1223,7 +1223,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_in_mojeid, set_contact_aut
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.setContactAuthInfo(
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user");
@@ -1247,7 +1247,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_identified, set_contact_au
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.setContactAuthInfo(
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported missing user identification");
@@ -1269,7 +1269,7 @@ struct set_contact_authinfo_contact_blocked_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authinfo_contact_blocked_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1278,7 +1278,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authin
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.setContactAuthInfo(
             user_contact_info.info_contact_data.id,"newauthinfo", 0);
         BOOST_ERROR("unreported blocked user contact");
@@ -1301,7 +1301,7 @@ struct set_contact_authinfo_the_same_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_the_same, set_contact_authinfo_the_same_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1309,7 +1309,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_the_same, set_contact_authinfo_the_
     }
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(impl.setContactAuthInfo(
             user_contact_info.info_contact_data.id,
             user_contact_info.info_contact_data.authinfopw, 0) == false);
@@ -1331,7 +1331,7 @@ struct set_contact_authinfo_too_long_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_long_fixture )
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::IDENTIFIED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1340,7 +1340,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.setContactAuthInfo(
             user_contact_info.info_contact_data.id,
             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -1374,7 +1374,7 @@ struct registrant_domain_fixture
     : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
     {
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , user_contact_handle//const std::string& registrant
@@ -1407,7 +1407,7 @@ struct set_registrant_domain_object_block_status_fixture
 BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, set_registrant_domain_object_block_status_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1419,7 +1419,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, set_registran
         "domain", Util::vector_of<unsigned long long>(domain_info.info_domain_data.id),
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1429,7 +1429,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status, set_registran
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1446,7 +1446,7 @@ struct set_registrant_domain_object_block_status_transfer_fixture
 BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, set_registrant_domain_object_block_status_transfer_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1459,7 +1459,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, set_
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1469,7 +1469,7 @@ BOOST_FIXTURE_TEST_CASE(set_registrant_domain_object_block_status_transfer, set_
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1488,7 +1488,7 @@ struct admin_domain_fixture
     : test_fqdn(std::string("test")+test_registrar_fixture::xmark+".cz")
     {
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateDomain(test_fqdn//const std::string& fqdn
                     , test_registrar_handle//const std::string& registrar
                     , admin_contact_fixture::test_contact_handle//const std::string& registrant
@@ -1520,7 +1520,7 @@ struct set_admin_domain_object_block_status_fixture
 BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, set_admin_domain_object_block_status_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1533,7 +1533,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, set_admin_domain_o
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1543,7 +1543,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status, set_admin_domain_o
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1560,7 +1560,7 @@ struct set_admin_domain_object_block_status_transfer_fixture
 BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, set_admin_domain_object_block_status_transfer_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1573,7 +1573,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, set_admin
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1583,7 +1583,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_domain_object_block_status_transfer, set_admin
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(domain_info.info_domain_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1600,7 +1600,7 @@ struct admin_nsset_fixture
     admin_nsset_fixture()
     : test_nsset_handle(std::string("TEST-NSSET-HANDLE")+mojeid_user_contact_fixture::xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateNsset(test_nsset_handle, test_registrar_handle)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
@@ -1636,7 +1636,7 @@ struct set_admin_nsset_object_block_status_fixture
 BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, set_admin_nsset_object_block_status_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1649,7 +1649,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, set_admin_nsset_obj
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1659,7 +1659,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status, set_admin_nsset_obj
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1675,7 +1675,7 @@ struct set_admin_nsset_object_block_status_transfer_fixture
 BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, set_admin_nsset_object_block_status_transfer_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1688,7 +1688,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, set_admin_
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1698,7 +1698,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_nsset_object_block_status_transfer, set_admin_
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1715,7 +1715,7 @@ struct admin_keyset_fixture
     admin_keyset_fixture()
     : test_keyset_handle(std::string("TEST-KEYSET-HANDLE")+mojeid_user_contact_fixture::xmark)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
         .set_tech_contacts(Util::vector_of<std::string>(admin_contact_fixture::test_contact_handle)(user_contact_handle))
         .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
@@ -1744,7 +1744,7 @@ struct set_admin_keyset_object_block_status_fixture
 BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, set_admin_keyset_object_block_status_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1757,7 +1757,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, set_admin_keyset_o
         Registry::DomainBrowserImpl::BLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1767,7 +1767,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status, set_admin_keyset_o
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER_AND_UPDATE, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1783,7 +1783,7 @@ struct set_admin_keyset_object_block_status_transfer_fixture
 BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, set_admin_keyset_object_block_status_transfer_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1796,7 +1796,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, set_admin
         Registry::DomainBrowserImpl::BLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1806,7 +1806,7 @@ BOOST_FIXTURE_TEST_CASE(set_admin_keyset_object_block_status_transfer, set_admin
         Registry::DomainBrowserImpl::UNBLOCK_TRANSFER, blocked_objects_out);
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(ctx));
         BOOST_CHECK(!Fred::ObjectHasState(keyset_info.info_keyset_data.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx));
     }
@@ -1822,7 +1822,7 @@ struct set_contact_object_block_status_fixture
 BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, set_contact_object_block_status_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1878,7 +1878,7 @@ struct set_object_block_status_wrong_object_type_fixture
 BOOST_FIXTURE_TEST_CASE(set_object_block_status_wrong_object_type, set_object_block_status_wrong_object_type_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1910,7 +1910,7 @@ struct set_object_block_status_empty_input_fixture
 BOOST_FIXTURE_TEST_CASE(set_object_block_status_empty_input, set_object_block_status_empty_input_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1933,7 +1933,7 @@ struct set_object_block_status_big_input_fixture
 BOOST_FIXTURE_TEST_CASE(set_object_block_status_big_input, set_object_block_status_big_input_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1965,7 +1965,7 @@ struct set_object_block_wrong_object_id_fixture
 BOOST_FIXTURE_TEST_CASE(set_object_block_wrong_object_id, set_object_block_wrong_object_id_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -1997,7 +1997,7 @@ struct set_object_block_blocked_object_fixture
 BOOST_FIXTURE_TEST_CASE(set_object_block_blocked_object, set_object_block_blocked_object_fixture)
 {
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateObjectStateRequestId(user_contact_info.info_contact_data.id
         , Util::set_of<std::string>(Fred::ObjectState::VALIDATED_CONTACT)).exec(ctx);
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
@@ -2005,7 +2005,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_blocked_object, set_object_block_blocke
     }
 
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         if(!Fred::ObjectHasState(nsset_info.info_nsset_data.id, Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
         {
             ctx.get_conn().exec_params(
@@ -2051,7 +2051,7 @@ struct get_my_domains_fixture
     , registration_protection(0)
     {
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i = 0; i < 10; ++i)
         {
             std::ostringstream fqdn;
@@ -2115,7 +2115,7 @@ struct get_my_domains_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),
         Optional<unsigned long long>(), Optional<unsigned long long>(),0);
     std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out = dl.dld;
@@ -2161,7 +2161,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 
 BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_contact, get_my_domains_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),
             Optional<unsigned long long>(),
@@ -2212,12 +2212,12 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
 {
     //add user contact as nsset admin
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::UpdateNsset(test_nsset_handle, test_registrar_handle).add_tech_contact(user_contact_info.info_contact_data.handle).exec(ctx);
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::DomainList dl =  impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(nsset_info.info_nsset_data.id),
@@ -2267,12 +2267,12 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
 {
     //add user contact as keyset admin
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::UpdateKeyset(test_keyset_handle, test_registrar_handle).add_tech_contact(user_contact_info.info_contact_data.handle).exec(ctx);
         ctx.commit_transaction();
     }
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::DomainList dl = impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),
@@ -2330,7 +2330,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
             Optional<unsigned long long>(),Optional<unsigned long long>()
@@ -2352,7 +2352,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
@@ -2375,7 +2375,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(),
@@ -2398,7 +2398,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<Registry::DomainBrowserImpl::DomainListData> domain_list_out;
         impl.getDomainList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(0),
@@ -2429,7 +2429,7 @@ struct get_my_nssets_fixture
     get_my_nssets_fixture()
     : test_nsset_handle(std::string("TEST_NSSET_")+user_contact_handle_fixture::xmark+"_")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i = 0; i < 10; ++i)
         {
             std::ostringstream nsset_handle;
@@ -2475,7 +2475,7 @@ struct get_my_nssets_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
     std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
 
@@ -2501,7 +2501,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_nsset_list, get_my_nssets_fixture )
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_list_by_contact, get_my_nssets_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::NssetList nl = impl.getNssetList(user_contact_info.info_contact_data.id,
         Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id), 0);
     std::vector<Registry::DomainBrowserImpl::NssetListData> nsset_list_out = nl.nld;
@@ -2532,7 +2532,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_list_for_not_existing_contact, get_my_nssets_f
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.getNssetList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(0), 0);
         BOOST_ERROR("unreported missing contact");
@@ -2560,7 +2560,7 @@ struct get_my_keysets_fixture
     get_my_keysets_fixture()
     : test_keyset_handle(std::string("TEST_KEYSET_")+user_contact_handle_fixture::xmark+"_")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i = 0; i < 10; ++i)
         {
             std::ostringstream keyset_handle;
@@ -2600,7 +2600,7 @@ struct get_my_keysets_fixture
 */
 BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id, Optional<unsigned long long>(),0);
     std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
     for(unsigned long long i = 0; i < keyset_list_out.size(); ++i)
@@ -2625,7 +2625,7 @@ BOOST_FIXTURE_TEST_CASE(get_my_keyset_list, get_my_keysets_fixture )
 
 BOOST_FIXTURE_TEST_CASE(get_keyset_list_by_contact, get_my_keysets_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::KeysetList kl = impl.getKeysetList(user_contact_info.info_contact_data.id,
         Optional<unsigned long long>(admin_contact_fixture::test_contact_info.info_contact_data.id),0);
     std::vector<Registry::DomainBrowserImpl::KeysetListData> keyset_list_out = kl.kld;
@@ -2657,7 +2657,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_list_for_not_existing_contact, get_my_keysets
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.getKeysetList(user_contact_info.info_contact_data.id,
             Optional<unsigned long long>(0),0);
 
@@ -2676,7 +2676,7 @@ BOOST_AUTO_TEST_SUITE(getPublicStatusDesc)
 
 BOOST_FIXTURE_TEST_CASE(get_public_status_desc, domain_browser_impl_instance_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Registry::DomainBrowserImpl::StatusDesc> status_desc_out = impl.getPublicStatusDesc("CS");
 
     for(unsigned long long i = 0 ; i < status_desc_out.size(); ++i)
@@ -2696,7 +2696,7 @@ struct get_my_contact_object_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_object_id, get_my_contact_object_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_CHECK(user_contact_info.info_contact_data.id == impl.getContactId(
         user_contact_info.info_contact_data.handle));
 }
@@ -2705,7 +2705,7 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fix
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.getContactId("_WRONG_HANDLE_");
 
         BOOST_ERROR("unreported wrong handle");
@@ -2734,7 +2734,7 @@ struct merge_contacts_fixture
     : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
     {
         { //destination / user contact
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             Fred::Contact::PlaceAddress place;
             place.street1 = std::string("STR1") + user_contact_handle_fixture::xmark;
             place.city = "Praha";
@@ -2753,7 +2753,7 @@ struct merge_contacts_fixture
         }
 
         //source contacts
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i = 0; i < 26; ++i)
         {
             std::ostringstream contact_handle;
@@ -3130,7 +3130,7 @@ BOOST_AUTO_TEST_SUITE(getMergeContactCandidateList)
 */
 BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Registry::DomainBrowserImpl::MergeContactCandidateList mcl = impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
     std::vector<Registry::DomainBrowserImpl::MergeContactCandidateData> contact_list_out = mcl.mccl;
 
@@ -3178,7 +3178,7 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
 {
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         impl.getMergeContactCandidateList(user_contact_info.info_contact_data.id, 0);
 
         BOOST_ERROR("unreported missing user");
@@ -3201,7 +3201,7 @@ BOOST_AUTO_TEST_SUITE(mergeContacts)
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
     impl.mergeContacts(user_contact_info.info_contact_data.id,
         Util::vector_of<unsigned long long>(map_at(contact_info,test_contact_handle+"0").info_contact_data.id), 0);
@@ -3222,7 +3222,7 @@ struct merge_contacts_user_not_in_mojeid_fixture
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_user_not_in_mojeid, merge_contacts_user_not_in_mojeid_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(0), 0);
@@ -3250,7 +3250,7 @@ struct merge_contacts_no_src_contacts_fixture
     : test_contact_handle(std::string("TEST_CONTACT_")+user_contact_handle_fixture::xmark+"_")
     {
         // user contact
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::Contact::PlaceAddress place;
         place.street1 = std::string("STR1") + user_contact_handle_fixture::xmark;
         place.city = "Praha";
@@ -3274,7 +3274,7 @@ struct merge_contacts_no_src_contacts_fixture
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_no_src_contacts, merge_contacts_no_src_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,std::vector<unsigned long long>(), 0);
@@ -3292,7 +3292,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_no_src_contacts, merge_contacts_no_src_co
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_dst_contacts, merge_contacts_no_src_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,Util::vector_of<unsigned long long>(user_contact_info.info_contact_data.id), 0);
@@ -3310,7 +3310,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_dst_contacts, merge_contacts_no_src_conta
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_mojeid_src_contact, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3329,7 +3329,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_mojeid_src_contact, merge_contacts_fixtur
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_blocked_src_contact, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3348,7 +3348,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_blocked_src_contact, merge_contacts_fixtu
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_delete_prohibited_src_contact, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3367,7 +3367,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_delete_prohibited_src_contact, merge_cont
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_name, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3386,7 +3386,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_name, merge_contac
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_org, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3405,7 +3405,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_org, merge_contact
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_street1, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3424,7 +3424,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_street1, merge_con
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_city, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3443,7 +3443,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_city, merge_contac
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_postalcode, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3462,7 +3462,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_postalcode, merge_
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_country, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3481,7 +3481,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_country, merge_con
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_email, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3500,7 +3500,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_email, merge_conta
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_vat, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,
@@ -3519,7 +3519,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_vat, merge_contact
 */
 BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_ssn, merge_contacts_fixture )
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     try
     {
         impl.mergeContacts(user_contact_info.info_contact_data.id,

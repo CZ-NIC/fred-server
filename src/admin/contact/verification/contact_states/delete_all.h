@@ -41,22 +41,22 @@ namespace AdminContactVerificationObjectStates
     bool conditionally_cancel_final_states(
         Fred::OperationContext& ctx,
         unsigned long long contact_id,
-        const Optional<std::string>& name_change_to,
-        const Optional<std::string>& organization_change_to,
-        const Optional<std::string>& street1_change_to,
-        const Optional<std::string>& street2_change_to,
-        const Optional<std::string>& street3_change_to,
-        const Optional<std::string>& city_change_to,
-        const Optional<std::string>& stateorprovince_change_to,
-        const Optional<std::string>& postalcode_change_to,
-        const Optional<std::string>& country_change_to,
-        const Optional<std::string>& telephone_change_to,
-        const Optional<std::string>& fax_change_to,
-        const Optional<std::string>& email_change_to,
-        const Optional<std::string>& notifyemail_change_to,
-        const Optional<std::string>& vat_change_to,
-        const Optional<std::string>& ssntype_change_to,
-        const Optional<std::string>& ssn_change_to
+        bool name_changed,
+        bool organization_changed,
+        bool street1_changed,
+        bool street2_changed,
+        bool street3_changed,
+        bool city_changed,
+        bool stateorprovince_changed,
+        bool postalcode_changed,
+        bool country_changed,
+        bool telephone_changed,
+        bool fax_changed,
+        bool email_changed,
+        bool notifyemail_changed,
+        bool vat_changed,
+        bool ssntype_changed,
+        bool ssn_changed
     );
 
     void cancel_all_states(Fred::OperationContext& ctx, unsigned long long contact_id);

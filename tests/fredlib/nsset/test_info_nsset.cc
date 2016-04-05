@@ -52,7 +52,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
     {
         namespace ip = boost::asio::ip;
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         registrar_handle = static_cast<std::string>(ctx.get_conn().exec(
             "SELECT handle FROM registrar WHERE system = TRUE ORDER BY id LIMIT 1")[0][0]);
         BOOST_CHECK(!registrar_handle.empty());//expecting existing system registrar
@@ -139,7 +139,7 @@ struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
 */
 BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     BOOST_CHECK(test_info_nsset_output == info_data_1);
     Fred::InfoNssetOutput info_data_2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
@@ -169,7 +169,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset, info_nsset_fixture)
 BOOST_FIXTURE_TEST_CASE(test_info_nsset_output_timestamp, info_nsset_fixture)
 {
     const std::string timezone = "Europe/Prague";
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoNssetOutput nsset_output_by_handle              = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, timezone);
     const Fred::InfoNssetOutput nsset_output_by_id                  = Fred::InfoNssetById(nsset_output_by_handle.info_nsset_data.id).exec(ctx, timezone);
     const Fred::InfoNssetOutput nsset_output_history_by_historyid   = Fred::InfoNssetHistoryByHistoryid(nsset_output_by_handle.info_nsset_data.historyid).exec(ctx, timezone);
@@ -200,7 +200,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_wrong_handle, info_nsset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetByHandle(wrong_handle).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -223,7 +223,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_wrong_id, info_nsset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetById(wrong_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -246,7 +246,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_history_wrong_historyid, info_nsset_fixture)
 
     try
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::InfoNssetOutput info_data_1 = Fred::InfoNssetHistoryByHistoryid(wrong_id).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -267,7 +267,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_ns_unknown_ns, info_nsset_fixture)
 {
     std::string bad_ns_fqdn = xmark+test_nsset_dnsname;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoNssetOutput> info = Fred::InfoNssetByDNSFqdn(bad_ns_fqdn).exec(ctx);
     BOOST_CHECK(info.empty());
 }
@@ -279,7 +279,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_tech_c_unknown_handle, info_nsset_fixture)
 {
     std::string bad_tech_c_handle = admin_contact3_handle+xmark;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoNssetOutput> info = Fred::InfoNssetByTechContactHandle(bad_tech_c_handle).exec(ctx);
     BOOST_CHECK(info.empty());
 }
@@ -289,7 +289,7 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_tech_c_unknown_handle, info_nsset_fixture)
 */
 BOOST_FIXTURE_TEST_CASE(info_nsset_diff, info_nsset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput nsset_info1 = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx);
     Fred::InfoNssetOutput nsset_info2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
 
@@ -327,7 +327,7 @@ struct info_nsset_history_fixture : public info_nsset_fixture
 {
     info_nsset_history_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
             Fred::UpdateNsset(test_nsset_history_handle, registrar_handle)
             .rem_tech_contact(admin_contact3_handle)
             .exec(ctx);
@@ -340,7 +340,7 @@ struct info_nsset_history_fixture : public info_nsset_fixture
 */
 BOOST_FIXTURE_TEST_CASE(info_nsset_history_order, info_nsset_history_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetOutput nsset_history_info = Fred::InfoNssetByHandle(test_nsset_history_handle).exec(ctx);
 
     std::vector<Fred::InfoNssetOutput> nsset_history_info_by_roid = Fred::InfoNssetHistoryByRoid(nsset_history_info.info_nsset_data.roid).exec(ctx);

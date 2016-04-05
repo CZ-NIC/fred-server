@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
         typedef std::vector<std::vector<std::string> > Table;
         Table data = Util::CsvParser(file_content, ',').parse();
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for (Table::const_iterator it = data.begin(); it != data.end(); ++it)
         {
             const unsigned long long contact_id = boost::lexical_cast<unsigned long long>(it->at(0));
@@ -100,8 +100,7 @@ int main(int argc, char *argv[])
 
                 Fred::UpdateContactById cu(contact_id, registrar_handle);
                 cu.set_logd_request_id(logd_request_id);
-                cu.set_ssntype("BIRTHDAY");
-                cu.set_ssn(ssn_birth_date);
+                cu.set_personal_id(Fred::PersonalIdUnion::get_BIRTHDAY(ssn_birth_date));
                 cu.exec(ctx);
             }
         }

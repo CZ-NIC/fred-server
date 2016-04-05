@@ -117,7 +117,7 @@ namespace Registrar
 
     std::vector<std::string> GetRegistrarHandles::exec()
     {
-        OperationContext(ctx);
+        OperationContextCreator ctx;
         return exec(ctx);
 
     }

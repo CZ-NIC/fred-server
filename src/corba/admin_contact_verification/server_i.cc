@@ -52,7 +52,7 @@ namespace Corba {
         Fred::InfoContactOutput contact_info_historical;
         Fred::InfoContactOutput contact_info_current;
         {
-            Fred::OperationContext ctx;
+            Fred::OperationContextCreator ctx;
             contact_info_historical = Fred::InfoContactHistoryByHistoryid(in.contact_history_id).exec(ctx);
             contact_info_current =
                 // looks strange but in case contact was deleted it's current data are not accessible via Fred::InfoContact anymore
@@ -268,7 +268,7 @@ namespace Registry
 
             try {
                 ContactCheckDetail_var result(new ContactCheckDetail);
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 Corba::wrap_check_detail(
                     Fred::InfoContactCheck(
@@ -293,7 +293,7 @@ namespace Registry
 
             try {
                 ContactCheckList_var result(new ContactCheckList);
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
                 Fred::ListContactChecks list_checks;
 
                 list_checks
@@ -339,7 +339,7 @@ namespace Registry
             Logging::Context log_method("updateContactCheckTests");
 
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 Admin::update_tests(
                     ctx,
@@ -371,7 +371,7 @@ namespace Registry
             Logging::Context log_method("resolveContactCheckStatus");
 
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 Admin::resolve_check(
                     uuid::from_string( Corba::unwrap_string(check_handle) ),
@@ -398,7 +398,7 @@ namespace Registry
             Logging::Context log_method("deleteDomainsAfterFailedManualCheck");
 
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 Admin::delete_domains_of_invalid_contact(
                     ctx,
@@ -428,7 +428,7 @@ namespace Registry
             Logging::Context log_method("requestEnqueueingContactCheck");
 
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 std::string created_handle;
 
@@ -456,7 +456,7 @@ namespace Registry
             Logging::Context log_method("confirmEnqueueingContactCheck");
 
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 Admin::confirm_check_enqueueing(
                     ctx,
@@ -482,7 +482,7 @@ namespace Registry
             Logging::Context log_method("enqueueContactCheck");
 
             try {
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 std::string created_handle;
 
@@ -512,7 +512,7 @@ namespace Registry
             try {
                 MessageSeq_var result(new MessageSeq);
 
-                Fred::OperationContext ctx;
+                Fred::OperationContextCreator ctx;
 
                 Corba::wrap_messages(
                     Admin::get_related_messages(

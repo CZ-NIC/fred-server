@@ -280,9 +280,34 @@ public:
   }
 
 
-  bool inTransaction() const {
-    PGTransactionStatusType ts = PQtransactionStatus(psql_conn_);
-    return ts == PQTRANS_INTRANS || ts == PQTRANS_INERROR;
+  bool inTransaction() const
+  {
+    switch (PQtransactionStatus(psql_conn_))
+    {
+      case PQTRANS_INTRANS://idle, within transaction block
+      case PQTRANS_INERROR://idle, within failed transaction
+        return true;
+      case PQTRANS_IDLE:   //connection idle
+      case PQTRANS_ACTIVE: //command in progress
+      case PQTRANS_UNKNOWN://cannot determine status
+        return false;
+    }
+    throw std::runtime_error("PQtransactionStatus() failure: unexpected return value");
+  }
+
+  bool in_valid_transaction() const
+  {
+    switch (PQtransactionStatus(psql_conn_))
+    {
+      case PQTRANS_INTRANS://idle, within transaction block
+        return true;
+      case PQTRANS_INERROR://idle, within failed transaction
+      case PQTRANS_IDLE:   //connection idle
+      case PQTRANS_ACTIVE: //command in progress
+      case PQTRANS_UNKNOWN://cannot determine status
+        return false;
+    }
+    throw std::runtime_error("PQtransactionStatus() failure: unexpected return value");
   }
 
 
