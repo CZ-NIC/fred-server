@@ -1,3 +1,6 @@
+#ifndef SRC_CORBA_EPP_F_INCLUDE_GUARD_FOR_F_EPP_SESSION_138671357410
+#define SRC_CORBA_EPP_F_INCLUDE_GUARD_FOR_F_EPP_SESSION_138671357410
+
 #include <vector>
 #include <map>
 
@@ -74,3 +77,5 @@ private:
     void garbage_session_internal();
 
 };
+
+#endif

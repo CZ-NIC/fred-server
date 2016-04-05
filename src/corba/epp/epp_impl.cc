@@ -66,6 +66,7 @@
 #include <memory>
 #include "tech_check.h"
 
+
 #include "util/factory_check.h"
 #include "src/fredlib/public_request/public_request.h"
 #include "src/fredlib/public_request/public_request_authinfo_impl.h"
@@ -76,13 +77,20 @@
 
 //cancel contact verification
 #include "src/fredlib/contact_verification/cancel_contact_verification.h"
-
-//object states
-#include "src/fredlib/object_states.h"
-
 #include "src/admin/contact/verification/contact_states/delete_all.h"
 #include "src/admin/contact/verification/contact_states/enum.h"
 #include <admin/admin_contact_verification.h>
+#include "src/epp/response.h"
+#include "src/epp/reason.h"
+#include "src/epp/param.h"
+#include "src/epp/session_lang.h"
+#include "src/epp/localization.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object_state/object_has_state.h"
+#include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/epp/corba_conversions.h"
+#include "src/corba/epp/epp_legacy_compatibility.h"
+#include "util/util.h"
 
 #define FLAG_serverDeleteProhibited 1
 #define FLAG_serverRenewProhibited 2
@@ -96,6 +104,7 @@
 #define BASE64_BAD_LENGTH       1
 #define BASE64_BAD_CHAR         2
 #define BASE64_UNKNOWN          3
+
 /*
  * isValidBase64 - returns 0 if some string is valid base64 encoded.
  * -if return value is BASE64_OK then ret is -1
@@ -372,12 +381,9 @@ static bool testObjectHasState(EPPAction &action, Fred::TID object_id,
     }
 }
 
-/// timestamp formatting function
-static std::string formatTime(
-  boost::posix_time::ptime tm)
-{
+static std::string formatTime(const boost::posix_time::ptime& tm) {
   char buffer[100];
-  convert_rfc3339_timestamp(buffer, sizeof(buffer), to_iso_extended_string(tm).c_str());
+  convert_rfc3339_timestamp(buffer, sizeof(buffer), boost::posix_time::to_iso_extended_string(tm).c_str());
   return buffer;
 }
 
