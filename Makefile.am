@@ -1440,6 +1440,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
 		src/corba/epp/epp_impl.h \
+		src/corba/epp/corba_conversions.h \
+		src/corba/epp/corba_conversions.cc \
 		src/corba/epp/messages.cc \
 		src/corba/epp/messages.h \
 		src/corba/epp/tech_check.cc \
@@ -1459,7 +1461,12 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/reason.h \
 		src/epp/response.h \
 		src/epp/conditionally_enqueue_notification.h \
-		src/epp/conditionally_enqueue_notification.cc
+		src/epp/conditionally_enqueue_notification.cc \
+		src/epp/contact/contact_create.cc \
+		src/epp/contact/contact_create.h \
+		src/epp/contact/contact_create_impl.cc \
+		src/epp/contact/contact_create_impl.h \
+		src/epp/contact/contact_handle_registration_obstruction.h
 #
 # src/corba/epp/libepp_impl.a
 
@@ -2197,6 +2204,7 @@ tests_interfaces_test_admin_contact_automerge_LDADD = \
 #
 tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/main.cc \
+		tests/interfaces/epp/contact/test_contact_create_impl.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \

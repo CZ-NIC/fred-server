@@ -26,6 +26,7 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 #include "boost/date_time/c_local_time_adjustor.hpp"
 #include <boost/algorithm/string.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <stdlib.h>
 #include <string.h>
@@ -66,6 +67,7 @@
 #include <memory>
 #include "tech_check.h"
 
+#include "src/fredlib/registrar/info_registrar.h"
 
 #include "util/factory_check.h"
 #include "src/fredlib/public_request/public_request.h"
@@ -80,6 +82,7 @@
 #include "src/admin/contact/verification/contact_states/delete_all.h"
 #include "src/admin/contact/verification/contact_states/enum.h"
 #include <admin/admin_contact_verification.h>
+#include "src/epp/contact/contact_create.h"
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
@@ -3222,212 +3225,37 @@ ccReg::Response * ccReg_EPP_i::ContactUpdate(
     return result._retn();
 }
 
-/***********************************************************************
- *
- * FUNCTION:    ContactCreate
- *
- * DESCRIPTION: creation of contact
- *
- * PARAMETERS:  handle - identifier of contact
- *              c      - ContactChange information about contact
- *        OUT:  crDate - object creation date
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
 ccReg::Response * ccReg_EPP_i::ContactCreate(
-  const char *handle, const ccReg::ContactChange & c,
-  ccReg::timestamp_out crDate, const ccReg::EppParams & params)
-{
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    int id;
-    int s, snum;
-    char streetStr[10];
-    short int code = 0;
-
-    crDate = CORBA::string_dup("");
-
-
-    EPPAction action(this, params.loginID, EPP_ContactCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    LOGGER(PACKAGE).notice(boost::format("ContactCreate: clientID -> %1% clTRID [%2%] handle [%3%]") % (int ) params.loginID % (const char*)params.clTRID % handle );
-
-    LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag %
-            c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail);
-
-    Fred::Contact::Manager::CheckAvailType caType;
+    const char* const _handle,
+    const ccReg::ContactChange& _contact_data,
+    ccReg::timestamp_out _create_time,
+    const ccReg::EppParams& _epp_params
+) {
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        std::auto_ptr<Fred::Contact::Manager> cman(
-                Fred::Contact::Manager::create(action.getDB(),restricted_handles_)
-                );
-        Fred::NameIdPair nameId;
-        caType = cman->checkAvail(handle,nameId);
-        id = nameId.id;
+        const Epp::SessionLang::Enum lang = Legacy::get_lang(epp_sessions, _epp_params.loginID);
+
+        const Epp::LocalizedCreateContactResponse response = contact_create(
+            Corba::unwrap_contact_create_input_data(_handle, _contact_data),
+            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
+            _epp_params.requestID,
+            lang,
+            server_transaction_handle,
+            Corba::unwrap_string(_epp_params.clTRID),
+            disable_epp_notifier_cltrid_prefix_
+        );
+
+        ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string( formatTime( response.crdate ) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+
+        /* No exception shall be thrown from here onwards. */
+
+        _create_time = create_time._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    catch (...) {
-        id = -1;
-        caType = Fred::Contact::Manager::CA_INVALID_HANDLE;
-    }
-    if (id<0 || caType == Fred::Contact::Manager::CA_INVALID_HANDLE) {
-        LOG(WARNING_LOG, "bad format of contact [%s]", handle);
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::contact_handle, 1, REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-    } else if (caType == Fred::Contact::Manager::CA_REGISTRED) {
-        LOG( WARNING_LOG, "contact handle [%s] EXIST", handle );
-        code= COMMAND_OBJECT_EXIST;
-    } else if (caType == Fred::Contact::Manager::CA_PROTECTED) {
-        LOG(WARNING_LOG, "object [%s] in history period", handle);
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::contact_handle, 1, REASON_MSG_PROTECTED_PERIOD);
-    }
-    // test  if country code  is valid
-    if ( !TestCountryCode(c.CC) ) {
-        LOG(WARNING_LOG, "Reason: unknown country code: %s", (const char *)c.CC);
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::contact_cc, 1, REASON_MSG_COUNTRY_NOTEXIST);
-    } else if (code == 0) {
-        // create object generate ROID
-        id= action.getDB()->CreateObject("C", action.getRegistrar(), handle, c.AuthInfoPw);
-        if (id<=0) {
-            if (id == 0) {
-                LOG( WARNING_LOG, "contact handle [%s] EXIST", handle );
-                code= COMMAND_OBJECT_EXIST;
-            } else {
-                LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", handle );
-                code= COMMAND_FAILED;
-            }
-
-        } else {
-
-            action.getDB()->INSERT("CONTACT");
-            action.getDB()->INTO("id");
-
-            action.getDB()->INTOVAL("Name", c.Name);
-            action.getDB()->INTOVAL("Organization", c.Organization);
-
-            // insert streets
-            snum = c.Streets.length();
-            for (s = 0; s < snum; s ++) {
-                snprintf(streetStr, sizeof(streetStr), "Street%d", s +1);
-                action.getDB()->INTOVAL(streetStr, c.Streets[s]);
-            }
-
-            action.getDB()->INTOVAL("City", c.City);
-            action.getDB()->INTOVAL("StateOrProvince", c.StateOrProvince);
-            action.getDB()->INTOVAL("PostalCode", c.PostalCode);
-            action.getDB()->INTOVAL("Country", c.CC);
-            action.getDB()->INTOVAL("Telephone", c.Telephone);
-            action.getDB()->INTOVAL("Fax", c.Fax);
-            action.getDB()->INTOVAL("Email", c.Email);
-            action.getDB()->INTOVAL("NotifyEmail", c.NotifyEmail);
-            action.getDB()->INTOVAL("VAT", c.VAT);
-            action.getDB()->INTOVAL("SSN", c.ident);
-            if (c.identtype != ccReg::EMPTY)
-                action.getDB()->INTO("SSNtype");
-
-            // disclose are write true or false
-            action.getDB()->INTO("DiscloseName");
-            action.getDB()->INTO("DiscloseOrganization");
-            action.getDB()->INTO("DiscloseAddress");
-            action.getDB()->INTO("DiscloseTelephone");
-            action.getDB()->INTO("DiscloseFax");
-            action.getDB()->INTO("DiscloseEmail");
-            action.getDB()->INTO("DiscloseVAT");
-            action.getDB()->INTO("DiscloseIdent");
-            action.getDB()->INTO("DiscloseNotifyEmail");
-
-            action.getDB()->VALUE(id);
-
-            action.getDB()->VAL(c.Name);
-            action.getDB()->VAL(c.Organization);
-            snum = c.Streets.length();
-            for (s = 0; s < snum; s ++) {
-                snprintf(streetStr, sizeof(streetStr), "Street%d", s +1);
-                action.getDB()->VAL(c.Streets[s]);
-            }
-
-            action.getDB()->VAL(c.City);
-            action.getDB()->VAL(c.StateOrProvince);
-            action.getDB()->VAL(c.PostalCode);
-            action.getDB()->VAL(c.CC);
-            action.getDB()->VAL(c.Telephone);
-            action.getDB()->VAL(c.Fax);
-            action.getDB()->VAL(c.Email);
-            action.getDB()->VAL(c.NotifyEmail);
-            action.getDB()->VAL(c.VAT);
-            action.getDB()->VAL(c.ident);
-            if (c.identtype != ccReg::EMPTY) {
-                int identtype = 0;
-                switch (c.identtype) {
-                    case ccReg::OP:
-                        identtype = 2;
-                        break;
-                    case ccReg::PASS:
-                        identtype = 3;
-                        break;
-                    case ccReg::ICO:
-                        identtype = 4;
-                        break;
-                    case ccReg::MPSV:
-                        identtype = 5;
-                        break;
-                    case ccReg::BIRTHDAY:
-                        identtype = 6;
-                        break;
-                    case ccReg::EMPTY:
-                        // just to keep compiler satisfied
-                        break;
-                }
-                action.getDB()->VALUE(identtype);
-            }
-
-            // insert DiscloseFlag by a  DefaultPolicy of server
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseName, c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseOrganization,
-                        c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseAddress, c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseTelephone, c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseFax, c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseEmail, c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseVAT, c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseIdent, c.DiscloseFlag) );
-            action.getDB()->VALUE(setvalue_DISCLOSE(c.DiscloseNotifyEmail,
-                        c.DiscloseFlag) );
-
-            // if is inserted
-            if (action.getDB()->EXEC() ) {
-                // get local timestamp of created  object
-                CORBA::string_free(crDate);
-                crDate= CORBA::string_dup(action.getDB()->GetObjectCrDateTime(id) );
-                if (action.getDB()->SaveContactHistory(id, params.requestID)) // save history
-                    if (action.getDB()->SaveObjectCreate(id) )
-                        code = COMMAND_OK; // if saved
-            }
-        }
-    }
-
-    if (code == COMMAND_OK) // run notifier
-    {
-        action.set_notification_params(id,Notification::created, disable_epp_notifier_);
-    }
-
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("ContactCreate");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************
