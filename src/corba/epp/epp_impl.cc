@@ -2568,14 +2568,39 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 }
 
 ccReg::Response* ccReg_EPP_i::ContactCheck(
-  const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params)
-{
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const ccReg::Check& _handles_to_be_checked,
+    ccReg::CheckResp_out _check_results,
+    const ccReg::EppParams& _epp_params
+) {
+    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
+    try {
+        /* output data must be ordered exactly the same */
+        const std::vector<std::string> handles_to_be_checked = Corba::unwrap_contact_handles_to_be_checked(_handles_to_be_checked);
 
-  return ObjectCheck( EPP_ContactCheck , "CONTACT" , "handle" , handle , a , params);
+        const Epp::LocalizedCheckContactResponse response = Epp::contact_check(
+            std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
+            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
+            Legacy::get_lang(epp_sessions, _epp_params.loginID),
+            server_transaction_handle
+        );
+
+        ccReg::CheckResp_var check_results = new ccReg::CheckResp(
+            Corba::wrap_localized_check_info(
+                handles_to_be_checked,
+                response.contact_statuses
+            )
+        );
+
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+
+        /* No exception shall be thrown from here onwards. */
+
+        _check_results = check_results._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(
