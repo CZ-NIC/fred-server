@@ -80,6 +80,7 @@
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_create.h"
 #include "src/epp/contact/contact_info.h"
+#include "src/epp/contact/contact_delete.h"
 #include "src/epp/contact/post_contact_update_hooks.h"
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
@@ -2642,100 +2643,28 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    ContactDelete
- *
- * DESCRIPTION: delete contact from tabel Contact and save them into history
- *              returns contact wasn't find or contact has yet links
- *              to other tables and cannot be deleted
- *              contact can be DELETED only registrar, who created contact
- * PARAMETERS:  handle - contact identifier
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
 ccReg::Response* ccReg_EPP_i::ContactDelete(
-  const char* handle, const ccReg::EppParams &params)
-{
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    int id;
-    short int code = 0;
-
-    EPPAction action(this, params.loginID, EPP_ContactDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    LOGGER(PACKAGE).notice(boost::format("ContactDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
-
-    id = getIdOfContact(action.getDB(), handle, restricted_handles_
-            , lock_epp_commands_, true);
-
-    if (id < 0) {
-        LOG(WARNING_LOG, "bad format of contact [%s]", handle);
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::contact_handle, 1,
-                REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-    } else if (id ==0) {
-        LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
-        code= COMMAND_OBJECT_NOT_EXIST;
-    }
-    if (!code && !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) //  if registrar is not client of the object
-    {
-        LOG( WARNING_LOG, "bad autorization not  creator of handle [%s]", handle );
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0,
-                REASON_MSG_REGISTRAR_AUTOR);
-    }
+    const char* const _handle,
+    const ccReg::EppParams& _epp_params
+) {
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        if (!code && (
-                    testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
-                    testObjectHasState(action,id,FLAG_deleteCandidate)
-        ))
-        {
-            LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
-        }
-    } catch (...) {
-        code = COMMAND_FAILED;
+        const Epp::SessionLang::Enum lang = Legacy::get_lang(epp_sessions, _epp_params.loginID);
+
+        const Epp::LocalizedSuccessResponse response = Epp::contact_delete(
+            Corba::unwrap_string(_handle),
+            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
+            lang,
+            server_transaction_handle,
+            Corba::unwrap_string(_epp_params.clTRID),
+            disable_epp_notifier_cltrid_prefix_
+        );
+
+        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    if (!code) {
-        // test to  table  domain domain_contact_map and nsset_contact_map for relations
-        if (action.getDB()->TestContactRelations(id) ) // can not be deleted
-        {
-            LOG( WARNING_LOG, "test contact handle [%s] relations: PROHIBITS_OPERATION", handle );
-            code = COMMAND_PROHIBITS_OPERATION;
-        } else {
-            if (action.getDB()->SaveObjectDelete(id) ) // save to delete object object_registry.ErDate
-            {
-                if (action.getDB()->DeleteContactObject(id) )
-                    code = COMMAND_OK; // if deleted successfully
-            }
-
-        }
-
-        if (code == COMMAND_OK)
-        {
-            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
-        }
-
-    }
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("ContactDelete");
-    }
-
-    return action.getRet()._retn();
 }
 
 ccReg::Response* ccReg_EPP_i::ContactUpdate(

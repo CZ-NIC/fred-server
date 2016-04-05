@@ -1474,6 +1474,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_info.h \
 		src/epp/contact/contact_info_impl.cc \
 		src/epp/contact/contact_info_impl.h \
+		src/epp/contact/contact_delete.cc \
+		src/epp/contact/contact_delete.h \
+		src/epp/contact/contact_delete_impl.cc \
+		src/epp/contact/contact_delete_impl.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h
@@ -2215,6 +2219,7 @@ tests_interfaces_test_admin_contact_automerge_LDADD = \
 tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/contact/test_contact_create_impl.cc \
+		tests/interfaces/epp/contact/test_contact_delete_impl.cc \
 		tests/interfaces/epp/contact/test_contact_info_impl.cc \
 		tests/interfaces/epp/contact/test_contact_update_impl.cc \
 		tests/setup/fixtures_utils.h \
