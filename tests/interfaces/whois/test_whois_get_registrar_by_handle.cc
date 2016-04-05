@@ -3,6 +3,7 @@
 
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
+//registrar!
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
 struct registrar_fixture 
@@ -15,14 +16,12 @@ struct registrar_fixture
     : registrar(
             Test::exec(
                 Fred::CreateRegistrar("REG-FOOBAR")//!
-                    .set_name(std::string("TEST-REGISTRAR NAME"))
-                    .set_street1(std::string("str1"))
-                    .set_city("Praha")
-                    .set_postalcode("11150")
-                    .set_country("CZ"),
-                ctx
-            )
-        )
+                  .set_name(std::string("TEST-REGISTRAR NAME"))
+                  .set_street1(std::string("str1"))
+                  .set_city("Praha")
+                  .set_postalcode("11150")
+                  .set_country("CZ"),
+                ctx))
     {
         ctx.commit_transaction();
     }
