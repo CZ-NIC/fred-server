@@ -77,12 +77,9 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-//cancel contact verification
-#include "src/fredlib/contact_verification/cancel_contact_verification.h"
-#include "src/admin/contact/verification/contact_states/delete_all.h"
-#include "src/admin/contact/verification/contact_states/enum.h"
-#include <admin/admin_contact_verification.h>
+#include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_create.h"
+#include "src/epp/contact/post_contact_update_hooks.h"
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
@@ -2878,351 +2875,31 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     return action.getRet()._retn();
 }
 
-/***********************************************************************
- *
- * FUNCTION:    ContactUpdate
- *
- * DESCRIPTION: change of contact information and save into history
- *		contact can be CHANGED only by registrar
- *		who created contact or those, who has by contact some domain
- * PARAMETERS:  handle - contact identifier
- *              c      - ContactChange  changed information about contact
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
+ccReg::Response* ccReg_EPP_i::ContactUpdate(
+    const char* const _handle,
+    const ccReg::ContactChange& _data_change,
+    const ccReg::EppParams& _epp_params
+) {
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
+        const Epp::SessionLang::Enum lang = Legacy::get_lang(epp_sessions, _epp_params.loginID);
 
-ccReg::Response * ccReg_EPP_i::ContactUpdate(
-  const char *handle, const ccReg::ContactChange & c, 
-  const ccReg::EppParams &params)
-{
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
+        const Epp::LocalizedSuccessResponse response = Epp::contact_update(
+            Corba::unwrap_contact_update_input_data(_handle, _data_change),
+            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
+            _epp_params.requestID,
+            epp_update_contact_enqueue_check_,
+            lang,
+            server_transaction_handle,
+            Corba::unwrap_string(_epp_params.clTRID),
+            disable_epp_notifier_cltrid_prefix_
+        );
 
-    int id;
-    int s, snum;
-    char streetStr[10];
-    short int code = 0;
+        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
 
-    ccReg::Response_var result(NULL);
-    bool automatic_contact_check_should_be_enqueued = false;
-    // admin contact verification Ticket #10935
-    // eclosing action in this block because need to force it to commit the db transaction in destructor before consequent admin contact verification check is enqueued
-    {
-        EPPAction action(this, params.loginID, EPP_ContactUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-        LOGGER(PACKAGE).notice(boost::format("ContactUpdate: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
-        LOGGER(PACKAGE).notice(boost::format("Discloseflag %1%: Disclose Name %2% Org %3% Add %4% Tel %5% Fax %6% Email %7% VAT %8% Ident %9% NotifyEmail %10%") % c.DiscloseFlag % c.DiscloseName % c.DiscloseOrganization % c.DiscloseAddress % c.DiscloseTelephone % c.DiscloseFax % c.DiscloseEmail % c.DiscloseVAT % c.DiscloseIdent % c.DiscloseNotifyEmail );
-
-
-        /* this abomination is by the way LOCKING record in object_registry FOR UPDATE
-           main purpose is probably different but since right now it is relied upon in
-           AdminContactVerificationObjectStates::conditionally_delete_all( ) called below
-        */
-        id = getIdOfContact(action.getDB(), handle, restricted_handles_
-                , lock_epp_commands_, true);
-
-        std::string oldNotifyEmail;
-        if (id > 0) {
-            // for notification to old notify address, this address must be
-            // discovered before change happen
-            if (strlen(c.NotifyEmail) && !disable_epp_notifier_)
-                oldNotifyEmail = action.getDB()->GetValueFromTable(
-                        "contact", "notifyemail", "id", id
-                        );
-        }
-        if (id < 0) {
-            LOG(WARNING_LOG, "bad format of contact [%s]", handle);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::contact_handle, 1,
-                    REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-        } else if (id ==0) {
-            LOG( WARNING_LOG, "contact handle [%s] NOT_EXIST", handle );
-            code= COMMAND_OBJECT_NOT_EXIST;
-        }
-        if (!code && !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) {
-            LOG( WARNING_LOG, "bad autorization not  client of contact [%s]", handle );
-            code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                    ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
-        }
-        try {
-            if (!code && (testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
-                testObjectHasState(action,id,FLAG_deleteCandidate)))
-            {
-                LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
-                code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            }
-        } catch (...) {
-            code = COMMAND_FAILED;
-        }
-
-        bool disclose_address = false;
-
-        if (!code)
-        {
-            //lock and update states of contact
-            Fred::lock_object_state_request_lock(id);
-            Fred::update_object_states(id);
-
-            //discloseaddress conditions #12563
-            if(c.DiscloseFlag == ccReg::DISCL_EMPTY)//discloseaddress not changed
-            {
-                if(c.Organization.in()[0] == '\0') // no change so we need to check current value
-                {
-                    Database::Result result = Database::Manager::acquire().exec_params(
-                    "SELECT c.organization FROM contact c WHERE c.id = $1::bigint "
-                    , Database::query_param_list(id));
-                    if (result.size() == 1)
-                    {
-                        if(!std::string(result[0][0]).empty())
-                        {
-                            disclose_address = true;
-                        }
-                    }
-                }
-                else if(c.Organization.in()[0] != '\b') //not erasing current value (see EPP hack - grep "\\\b") effectively sets the organization
-                {
-                    disclose_address = true;
-                }
-
-                {//check data change ending identification state of the contact
-                    Database::Result result = Database::Manager::acquire().exec_params(
-                    "SELECT c.email, c.telephone, c.name, c.organization, c.street1, c.street2, c.street3 "
-                    ", c.city, c.stateorprovince, c.postalcode, c.country FROM contact c WHERE c.id = $1::bigint"
-                    , Database::query_param_list(id));
-
-                    if (result.size() == 1)
-                    {
-                        std::string email = static_cast<std::string>(result[0]["email"]);
-                        std::string telephone = static_cast<std::string>(result[0]["telephone"]);
-                        std::string name = static_cast<std::string>(result[0]["name"]);
-                        std::string organization = static_cast<std::string>(result[0]["organization"]);
-                        std::string street1 = static_cast<std::string>(result[0]["street1"]);
-                        std::string street2 = static_cast<std::string>(result[0]["street2"]);
-                        std::string street3 = static_cast<std::string>(result[0]["street3"]);
-                        std::string city = static_cast<std::string>(result[0]["city"]);
-                        std::string stateorprovince = static_cast<std::string>(result[0]["stateorprovince"]);
-                        std::string postalcode = static_cast<std::string>(result[0]["postalcode"]);
-                        std::string country = static_cast<std::string>(result[0]["country"]);
-
-                        if(((c.Email.in()[0] != '\0') && (email != c.Email.in()))
-                        || ((c.Telephone.in()[0] != '\0') && (telephone != c.Telephone.in()))
-                        || ((c.Name.in()[0] != '\0') && (name != c.Name.in()))
-                        || ((c.Organization.in()[0] != '\0') && (organization != c.Organization.in()))
-                        || ((c.Streets.length() > 0) && (c.Streets[0].in()[0] != '\0') && (street1 != c.Streets[0].in()))
-                        || ((c.Streets.length() > 1) && (c.Streets[1].in()[0] != '\0') && (street2 != c.Streets[1].in()))
-                        || ((c.Streets.length() > 2) && (c.Streets[2].in()[0] != '\0') && (street3 != c.Streets[2].in()))
-                        || ((c.City.in()[0] != '\0') && (city != c.City.in()))
-                        || ((c.StateOrProvince.in()[0] != '\0') && (stateorprovince != c.StateOrProvince.in()))
-                        || ((c.PostalCode.in()[0] != '\0') && (postalcode != c.PostalCode.in()))
-                        || ((c.CC.in()[0] != '\0') && (country != c.CC.in())))
-                        {
-                            disclose_address = true;
-                        }
-                    }
-                }
-
-                if(!(Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
-                    || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT)))
-                {
-                    disclose_address = true;
-                }
-            }
-        }
-
-        if (!code) {
-            if ( !TestCountryCode(c.CC) ) {
-                LOG(WARNING_LOG, "Reason: unknown country code: %s", (const char *)c.CC);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::contact_cc, 1,
-                        REASON_MSG_COUNTRY_NOTEXIST);
-            } else if (action.getDB()->ObjectUpdate(id, action.getRegistrar(), c.AuthInfoPw) ) // update OBJECT table
-            {
-                // begin update
-                action.getDB()->UPDATE("Contact");
-
-                action.getDB()->SET("Name", c.Name);
-                action.getDB()->SET("Organization", c.Organization);
-                // whole adrress must be updated at once
-                // it's not allowed to update only part of it
-                if (strlen(c.City) || strlen(c.CC)) {
-                    snum = c.Streets.length();
-
-                    for (s = 0; s < 3; s ++) {
-                        snprintf(streetStr, sizeof(streetStr), "Street%d", s +1);
-                        if (s < snum)
-                            action.getDB()->SET(streetStr, c.Streets[s]);
-                        else
-                            action.getDB()->SETNULL(streetStr);
-                    }
-
-                    action.getDB()->SET("City", c.City);
-                    if (strlen(c.StateOrProvince))
-                        action.getDB()->SET("StateOrProvince", c.StateOrProvince);
-                    else
-                        action.getDB()->SETNULL("StateOrProvince");
-                    if (strlen(c.PostalCode))
-                        action.getDB()->SET("PostalCode", c.PostalCode);
-                    else
-                        action.getDB()->SETNULL("PostalCode");
-                    action.getDB()->SET("Country", c.CC);
-                }
-                action.getDB()->SET("Telephone", c.Telephone);
-                action.getDB()->SET("Fax", c.Fax);
-                action.getDB()->SET("Email", c.Email);
-                action.getDB()->SET("NotifyEmail", c.NotifyEmail);
-                action.getDB()->SET("VAT", c.VAT);
-                action.getDB()->SET("SSN", c.ident);
-                if (c.identtype != ccReg::EMPTY) {
-                    int identtype = 0;
-                    switch (c.identtype) {
-                        case ccReg::OP:
-                            identtype = 2;
-                            break;
-                        case ccReg::PASS:
-                            identtype = 3;
-                            break;
-                        case ccReg::ICO:
-                            identtype = 4;
-                            break;
-                        case ccReg::MPSV:
-                            identtype = 5;
-                            break;
-                        case ccReg::BIRTHDAY:
-                            identtype = 6;
-                            break;
-                        case ccReg::EMPTY:
-                            // just to keep compiler satisfied :)
-                            break;
-                    }
-                    action.getDB()->SET("SSNtype", identtype); // type ssn
-                }
-
-                //  Disclose parameters flags translate
-                action.getDB()->SETBOOL("DiscloseName", update_DISCLOSE(c.DiscloseName,
-                            c.DiscloseFlag) );
-                action.getDB()->SETBOOL("DiscloseOrganization", update_DISCLOSE(
-                            c.DiscloseOrganization, c.DiscloseFlag) );
-
-               //if hidden address not allowed then disclose address
-               if(disclose_address)
-               {
-                   action.getDB()->SETBOOL("DiscloseAddress", 't');
-               }
-               else //ok
-               {
-                   action.getDB()->SETBOOL("DiscloseAddress", update_DISCLOSE(
-                            c.DiscloseAddress, c.DiscloseFlag) );
-               }
-                action.getDB()->SETBOOL("DiscloseTelephone", update_DISCLOSE(
-                            c.DiscloseTelephone, c.DiscloseFlag) );
-                action.getDB()->SETBOOL("DiscloseFax", update_DISCLOSE(c.DiscloseFax,
-                            c.DiscloseFlag) );
-                action.getDB()->SETBOOL("DiscloseEmail", update_DISCLOSE(c.DiscloseEmail,
-                            c.DiscloseFlag) );
-                action.getDB()->SETBOOL("DiscloseVAT", update_DISCLOSE(c.DiscloseVAT,
-                            c.DiscloseFlag) );
-                action.getDB()->SETBOOL("DiscloseIdent", update_DISCLOSE(c.DiscloseIdent,
-                            c.DiscloseFlag) );
-                action.getDB()->SETBOOL("DiscloseNotifyEmail", update_DISCLOSE(
-                            c.DiscloseNotifyEmail, c.DiscloseFlag) );
-
-                // the end of UPDATE SQL
-                action.getDB()->WHEREID(id);
-
-                // make update and save to history
-                if (action.getDB()->EXEC() )
-                    if (action.getDB()->SaveContactHistory(id, params.requestID) )
-                    {
-                        code = COMMAND_OK;
-
-                        try
-                        {
-                            //conditional cancel verification
-                            if(Fred::Contact::Verification::check_contact_change_for_cancel_verification(handle))
-                            {
-                                Fred::Contact::Verification::contact_cancel_verification(handle);
-                            }
-                        }
-                        catch(std::exception & ex)
-                        {
-                            LOGGER(PACKAGE).error(boost::format("ContactUpdate: contact_cancel_verification [%1%] ") % ex.what());
-                            code =2400;
-                        }
-                        catch(...)
-                        {
-                            LOGGER(PACKAGE).error("ContactUpdate: contact_cancel_verification unknown exception");
-                            code =2400;
-                        }
-
-                        // admin contact verification Ticket #10935
-                        try {
-                            automatic_contact_check_should_be_enqueued = Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states_legacy(id);
-                            if(automatic_contact_check_should_be_enqueued) {
-                                Fred::update_object_states(id);
-                            }
-                        } catch(...) {
-                            LOGGER(PACKAGE).error("ContactUpdate: conditionally_delete_final_states_legacy exception");
-                        }
-                    }
-            }
-        }
-
-        if (code == COMMAND_OK)//check disclose address
-        {
-            //discloseaddress conditions #7493
-            bool hidden_address_allowed_by_contact_state
-                = Fred::object_has_state(id, Fred::ObjectState::IDENTIFIED_CONTACT)
-                    || Fred::object_has_state(id, Fred::ObjectState::VALIDATED_CONTACT);
-
-            Database::Result result = Database::Manager::acquire().exec_params(
-                "SELECT c.organization, c.discloseaddress FROM contact c WHERE c.id = $1::bigint "
-                , Database::query_param_list(id));
-
-            if(result.size() == 1)
-            {
-                std::string organization = static_cast<std::string>(result[0]["organization"]);
-                bool discloseaddress = static_cast<bool>(result[0]["discloseaddress"]);
-
-                if((discloseaddress == false) && (!organization.empty() || !hidden_address_allowed_by_contact_state))
-                code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            }
-        }
-
-        if (code == COMMAND_OK) // run notifier
-        {
-            action.set_notification_params(id,Notification::updated, disable_epp_notifier_);
-        }
-
-        // EPP exception
-        if (code > COMMAND_EXCEPTION) {
-            action.failed(code);
-        }
-
-        if (code == 0) {
-            action.failedInternal("ContactUpdate");
-        }
-
-        result = action.getRet()._retn();
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-
-    // admin contact verification Ticket #10935
-    if (code == COMMAND_OK) {
-        try {
-            if(epp_update_contact_enqueue_check_ && automatic_contact_check_should_be_enqueued) {
-                Fred::OperationContextCreator ctx;
-                Admin::enqueue_check_if_no_other_exists(ctx, id, Fred::TestsuiteHandle::AUTOMATIC, params.requestID);
-                ctx.commit_transaction();
-            }
-        } catch(...) {
-            LOGGER(PACKAGE).error("ContactUpdate: CreateContactCheck exception");
-        }
-    }
-
-    return result._retn();
 }
 
 ccReg::Response * ccReg_EPP_i::ContactCreate(

@@ -59,6 +59,12 @@ namespace AdminContactVerificationObjectStates
         bool ssn_changed
     );
 
+    /** @returns true if contact has changed data related to verification false otherwise */
+    bool conditionally_cancel_final_states(
+        Fred::OperationContext& ctx,
+        unsigned long long contact_id
+    );
+
     void cancel_all_states(Fred::OperationContext& ctx, unsigned long long contact_id);
 
     void cancel_final_states(Fred::OperationContext& ctx, unsigned long long contact_id);
