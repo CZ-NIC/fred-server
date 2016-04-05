@@ -74,14 +74,14 @@ namespace Fred
         * @param ctx an operation context with database and logging interface.
         * @return true if protected, false if not
         */
-        bool is_protected(OperationContext& ctx)  const;
+        bool is_protected(OperationContext& ctx) const;
 
         /**
         * Checks if contact handle is free for registration.
         * @param ctx an operation context with database and logging interface.
         * @return true if protected, false if not
         */
-        bool is_free(OperationContext& ctx)  const;
+        bool is_free(OperationContext& ctx) const;
 
         /**
         * Dumps state of the instance into the string
