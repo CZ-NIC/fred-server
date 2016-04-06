@@ -2,10 +2,11 @@
 //registrant!
 //contact could be empty
 #include "tests/interfaces/whois/fixture_common.h"
-#include "util/random_data_generator.h"
+//#include "util/random_data_generator.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "tests/setup/fixtures_utils.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
@@ -15,20 +16,28 @@ struct test_domain_fixture
 {
     Fred::OperationContext ctx;
     std::string xmark;
-    empty_contact_fixture ecf;
-    empty_registrar_fixture erf;
+//    empty_contact_fixture ecf;
+//    empty_registrar_fixture erf;
+    const Fred::InfoRegistrarData registrar;
+    const Fred::InfoContactData contact;
     const Fred::InfoDomainData domain;
     const boost::posix_time::ptime now_utc;
     const boost::posix_time::ptime now_prague;
 
     test_domain_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6)),
+    : registrar(
+          Test::exec(Test::CreateX_factory<Fred::CreateRegistrar>().make(), ctx)),
+//      xmark(RandomDataGenerator().xnumstring(6)),
+      contact(
+          Test::exec(
+              Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle),
+              ctx)),
       domain(Test::exec(
                  Fred::CreateDomain(
                      std::string("test") + xmark + ".cz",
-                     erf.registrar.handle,
-                     ecf.contact.handle)
-                   .set_admin_contacts(Util::vector_of<std::string>(ecf.contact.handle)),
+                     registrar.handle,
+                     contact.handle)
+                   .set_admin_contacts(Util::vector_of<std::string>(contact.handle)),
                  ctx)),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn().exec("SELECT now()::timestamp")[0][0]))),
@@ -45,7 +54,6 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     BOOST_CHECK(dom.changed.get_value() == ptime(not_a_date_time));
     BOOST_CHECK(dom.fqdn == domain.fqdn);
     BOOST_CHECK(dom.last_transfer.get_value() == ptime(not_a_date_time));
-    //BOOST_CHECK(dom.registered == domain.creation_time);
     BOOST_CHECK(dom.registrant_handle == domain.registrant.handle);
     BOOST_CHECK_EQUAL(dom.registered, now_utc);
     BOOST_MESSAGE(dom.registrar_handle);
@@ -359,15 +367,23 @@ struct delete_candidate_fixture //Jiri: check carefully
     std::string xmark;
     std::string delete_fqdn;
     Fred::OperationContext ctx;
-    empty_contact_fixture ecf;
-    empty_registrar_fixture erf;
+    const Fred::InfoRegistrarData registrar;
+    const Fred::InfoContactData contact;
+    //empty_contact_fixture ecf;
+    //empty_registrar_fixture erf;
 
     delete_candidate_fixture()
-    : xmark(RandomDataGenerator().xnumstring(6)),
+    : registrar(
+          Test::exec(Test::CreateX_factory<Fred::CreateRegistrar>().make(), ctx)),
+//      xmark(RandomDataGenerator().xnumstring(6)),
+      contact(
+          Test::exec(
+              Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle),
+              ctx)),
       delete_fqdn(std::string("test-delete") + xmark + ".cz")
     {
-        Fred::CreateDomain(delete_fqdn, erf.registrar.handle, ecf.contact.handle)
-          .set_admin_contacts(Util::vector_of<std::string>(ecf.contact.handle)) //?
+        Fred::CreateDomain(delete_fqdn, registrar.handle, contact.handle)
+          .set_admin_contacts(Util::vector_of<std::string>(contact.handle)) //?
           .exec(ctx);
         ctx.get_conn().exec_params(
             "UPDATE domain_history "
@@ -389,7 +405,6 @@ struct delete_candidate_fixture //Jiri: check carefully
                                        .exec(ctx, impl.output_timezone);
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
         ctx.commit_transaction();
-        BOOST_MESSAGE(delete_fqdn);
     }
 };
 
