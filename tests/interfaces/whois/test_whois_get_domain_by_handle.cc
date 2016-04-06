@@ -1,8 +1,4 @@
-//registrar!
-//registrant!
-//contact could be empty
 #include "tests/interfaces/whois/fixture_common.h"
-//#include "util/random_data_generator.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
@@ -16,8 +12,6 @@ struct test_domain_fixture
 {
     Fred::OperationContext ctx;
     std::string xmark;
-//    empty_contact_fixture ecf;
-//    empty_registrar_fixture erf;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
     const Fred::InfoDomainData domain;
@@ -25,20 +19,14 @@ struct test_domain_fixture
     const boost::posix_time::ptime now_prague;
 
     test_domain_fixture()
-    : registrar(
-          Test::exec(Test::CreateX_factory<Fred::CreateRegistrar>().make(), ctx)),
-//      xmark(RandomDataGenerator().xnumstring(6)),
-      contact(
+    : contact(Test::contact::make(ctx)), 
+      domain(
           Test::exec(
-              Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle),
-              ctx)),
-      domain(Test::exec(
-                 Fred::CreateDomain(
-                     std::string("test") + xmark + ".cz",
-                     registrar.handle,
-                     contact.handle)
-                   .set_admin_contacts(Util::vector_of<std::string>(contact.handle)),
-                 ctx)),
+              Test::CreateX_factory<Fred::CreateDomain>()
+                  .make(Test::registrar(ctx).info_data.handle,
+                        Test::contact(ctx).info_data.handle)
+                  .set_admin_contacts(Util::vector_of<std::string>(contact.handle)),
+               ctx)),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn().exec("SELECT now()::timestamp")[0][0]))),
       now_prague(boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
@@ -365,17 +353,14 @@ struct delete_candidate_fixture //Jiri: check carefully
 : whois_impl_instance_fixture
 {
     std::string xmark;
-    std::string delete_fqdn;
     Fred::OperationContext ctx;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
-    //empty_contact_fixture ecf;
-    //empty_registrar_fixture erf;
+    std::string delete_fqdn;
 
     delete_candidate_fixture()
     : registrar(
           Test::exec(Test::CreateX_factory<Fred::CreateRegistrar>().make(), ctx)),
-//      xmark(RandomDataGenerator().xnumstring(6)),
       contact(
           Test::exec(
               Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle),
