@@ -2,8 +2,8 @@
 #include "util/random_data_generator.h"
 
 
-BOOST_AUTO_TEST_SUITE(TestWhois)
 //registrar!
+BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
 struct registrar_fixture 
@@ -15,7 +15,7 @@ struct registrar_fixture
     registrar_fixture()
     : registrar(
             Test::exec(
-                Fred::CreateRegistrar("REG-FOOBAR")//!
+                Fred::CreateRegistrar("REG-FOO")//!
                   .set_name(std::string("TEST-REGISTRAR NAME"))
                   .set_street1(std::string("str1"))
                   .set_city("Praha")
