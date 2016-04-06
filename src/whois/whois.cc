@@ -588,6 +588,7 @@ WhoisImpl::Domain Server_impl::make_domain_from_info_data(const Fred::InfoDomain
     result.nsset_handle = idd.nsset.get_value_or_default().handle;
     result.registered = idd.creation_time;
     result.registrant_handle = idd.registrant.handle;
+    result.registrar_handle = idd.create_registrar_handle;
     const ObjectStateDataList v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
     result.statuses.reserve(v_osd.size());
     for(ObjectStateDataList::const_iterator it2 = v_osd.begin();
