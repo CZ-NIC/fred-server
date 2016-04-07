@@ -28,6 +28,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/nsset/copy_history_impl.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
@@ -258,36 +259,8 @@ namespace Fred
                 }
             }
 
-            //save history
-            {
-                //nsset_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO nsset_history(historyid,id,checklevel) "
-                    " SELECT $1::bigint, id, checklevel FROM nsset "
-                        " WHERE id = $2::integer"
-                        , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
+            copy_nsset_data_to_nsset_history_impl(ctx, create_object_result.object_id, create_object_result.history_id);
 
-                //host_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO host_history(historyid, id, nssetid, fqdn) "
-                    " SELECT $1::bigint, id, nssetid, fqdn FROM host "
-                        " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-                //host_ipaddr_map_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO host_ipaddr_map_history(historyid, id, hostid, nssetid, ipaddr) "
-                    " SELECT $1::bigint, id, hostid, nssetid, ipaddr FROM host_ipaddr_map "
-                        " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-                //nsset_contact_map_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO nsset_contact_map_history(historyid, nssetid, contactid) "
-                    " SELECT $1::bigint, nssetid, contactid FROM nsset_contact_map "
-                        " WHERE nssetid = $2::integer"
-                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-            }//save history
         }//try
         catch(ExceptionStack& ex)
         {

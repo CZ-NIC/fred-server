@@ -28,6 +28,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/keyset/copy_history_impl.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
@@ -204,37 +205,7 @@ namespace Fred
             if(create_keyset_exception.throw_me())
                 BOOST_THROW_EXCEPTION(create_keyset_exception);
 
-            //save history
-            {
-                //keyset_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO keyset_history(historyid,id) "
-                    " SELECT $1::bigint, id FROM keyset "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-                //dsrecord_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO dsrecord_history(historyid, id, keysetid, keytag, alg, digesttype, digest, maxsiglife) "
-                    " SELECT $1::bigint, id, keysetid, keytag, alg, digesttype, digest, maxsiglife FROM dsrecord "
-                    " WHERE keysetid = $2::integer"
-                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-                //dnskey_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO dnskey_history(historyid, id, keysetid, flags, protocol, alg, key) "
-                    " SELECT $1::bigint, id, keysetid, flags, protocol, alg, key FROM dnskey "
-                    " WHERE keysetid = $2::integer"
-                    , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-                //keyset_contact_map_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO keyset_contact_map_history(historyid,keysetid, contactid) "
-                    " SELECT $1::bigint, keysetid, contactid FROM keyset_contact_map "
-                        " WHERE keysetid = $2::integer"
-                        , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-            }//save history
+            copy_keyset_data_to_keyset_history_impl(ctx, create_object_result.object_id, create_object_result.history_id);
 
         }//try
         catch(ExceptionStack& ex)

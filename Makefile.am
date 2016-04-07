@@ -849,6 +849,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_delete_domain_poll_message.h \
 		src/fredlib/poll/create_delete_domain_poll_message.cc \
 		src/fredlib/opexception.h \
+		src/fredlib/contact/copy_history_impl.h \
+		src/fredlib/contact/copy_history_impl.cc \
 		src/fredlib/contact/merge_contact.h \
 		src/fredlib/contact/merge_contact.cc \
 		src/fredlib/contact/create_contact.cc \
@@ -863,6 +865,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/nsset_dns_host.h \
 		src/fredlib/domain/create_domain.cc \
 		src/fredlib/domain/create_domain.h \
+		src/fredlib/domain/copy_history_impl.h \
+		src/fredlib/domain/copy_history_impl.cc \
 		src/fredlib/contact/merge_contact_selection.cc \
 		src/fredlib/contact/merge_contact_selection.h \
 		src/fredlib/contact/find_contact_duplicates.cc \
@@ -897,8 +901,12 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/check_nsset.h \
 		src/fredlib/nsset/delete_nsset.cc \
 		src/fredlib/nsset/delete_nsset.h \
+		src/fredlib/nsset/copy_history_impl.h \
+		src/fredlib/nsset/copy_history_impl.cc \
 		src/fredlib/keyset/check_keyset.cc \
 		src/fredlib/keyset/check_keyset.h \
+		src/fredlib/keyset/copy_history_impl.h \
+		src/fredlib/keyset/copy_history_impl.cc \
 		src/fredlib/object/check_handle.cc \
 		src/fredlib/object/check_handle.h\
 		src/fredlib/object/transfer_object.cc \
