@@ -2306,7 +2306,7 @@ tests_interfaces_test_epp_LDADD = \
 # tests/interfaces/test-epp
 
 # tests/interfaces/test-whois
-# tests/interfaces/whois/test_whois_get_domains_by_admin_contact.cc
+#
 tests_interfaces_test_whois_SOURCES = \
 		tests/interfaces/whois/main.cc \
 		tests/interfaces/whois/fixture_common.h \
