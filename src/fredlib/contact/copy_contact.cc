@@ -139,9 +139,13 @@ namespace Fred
         try {
             create_contact.exec(_ctx);
         }
-        catch (const Fred::CreateObject::Exception &e) {
-            // TODO XXX Vzhledem k tomu, ze se objekty vyse nezamykaji je mozne, ze tady je nejaky implicitni predpoklad.
-            BOOST_THROW_EXCEPTION(Exception().set_dst_contact_handle_already_exist(dst_contact_handle_));
+        catch (const Fred::CreateContact::Exception &e) {
+            /* XXX Exception method naming is incorrect. In fact it signalizes that contact with such handle already exists. */
+            if( e.is_set_invalid_contact_handle() ) {
+                BOOST_THROW_EXCEPTION(Exception().set_dst_contact_handle_already_exist(dst_contact_handle_));
+            }
+
+            throw;
         }
         Database::Result dst_contact_id_res = _ctx.get_conn().exec_params(
             "SELECT id "
