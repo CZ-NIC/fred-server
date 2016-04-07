@@ -41,6 +41,7 @@ class OperationContextTwoPhaseCommitCreator;
  * Common objects needed in Fred operations. It consists of two parts, database and logging.
  */
 class OperationContext
+:   private boost::noncopyable
 {
 public:
     typedef Database::StandaloneConnection DbConn;///< typename alias
@@ -87,8 +88,7 @@ private:
  * Makes accessible OperationContext instance and offers commit_transaction() method.
  */
 class OperationContextCreator
-:   private boost::noncopyable,
-    public OperationContext
+:   public OperationContext
 {
 public:
     /**
@@ -110,8 +110,7 @@ public:
  * Makes accessible OperationContextTwoPhaseCommit instance and offers commit_transaction() method.
  */
 class OperationContextTwoPhaseCommitCreator
-:   private boost::noncopyable,
-    public OperationContextTwoPhaseCommit
+:   public OperationContextTwoPhaseCommit
 {
 public:
     /**
