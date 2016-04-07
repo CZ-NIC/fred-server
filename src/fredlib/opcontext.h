@@ -80,6 +80,7 @@ public:
     std::string get_transaction_id()const { return transaction_id_; }
 private:
     OperationContextTwoPhaseCommit(const std::string &_transaction_id);
+    ~OperationContextTwoPhaseCommit() { }
     const std::string transaction_id_;
     friend class OperationContextTwoPhaseCommitCreator;
 };
