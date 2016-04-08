@@ -909,6 +909,7 @@ void MojeIDImpl::update_contact_prepare(
               data_changes.notifyemail.isset()  ||
               data_changes.telephone.isset()    ||
               data_changes.fax.isset())) {
+            ctx.commit_transaction();
             return;
         }
         const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
