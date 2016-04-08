@@ -39,6 +39,10 @@ class OperationContextTwoPhaseCommitCreator;
 
 /**
  * Common objects needed in Fred operations. It consists of two parts, database and logging.
+ *
+ * Is non-copyable.
+ * Is not directly instantiable (implemented by private ctor and destructor).
+ * Is instantiable only by selected friend classes.
  */
 class OperationContext
 :   private boost::noncopyable
@@ -69,6 +73,10 @@ private:
 
 /**
  * OperationContext with two-phase commit only.
+ *
+ * Is non-copyable (implemented by non-copyable base class).
+ * Is not directly instantiable (implemented by private ctor and destructor).
+ * Is instantiable only by friend class.
  */
 class OperationContextTwoPhaseCommit
 :   public OperationContext
@@ -86,7 +94,9 @@ private:
 };
 
 /**
- * Makes accessible OperationContext instance and offers commit_transaction() method.
+ * Creates OperationContext instance and offers commit_transaction() method.
+ *
+ * Is non-copyable (implemented by non-copyable base class).
  */
 class OperationContextCreator
 :   public OperationContext
@@ -108,7 +118,9 @@ public:
 };
 
 /**
- * Makes accessible OperationContextTwoPhaseCommit instance and offers commit_transaction() method.
+ * Creates OperationContextTwoPhaseCommit instance and offers commit_transaction() method.
+ *
+ * Is non-copyable (implemented by non-copyable base class).
  */
 class OperationContextTwoPhaseCommitCreator
 :   public OperationContextTwoPhaseCommit
