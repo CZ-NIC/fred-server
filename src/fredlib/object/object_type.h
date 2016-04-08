@@ -33,11 +33,6 @@ namespace Object {
 
 typedef unsigned long long Id;
 
-//boost/type_traits.hpp defines DOMAIN
-#ifdef DOMAIN
-#undef DOMAIN
-#endif
-
 /**
  * Bidirectional conversions between string and enum representation of object types.
  */
@@ -49,10 +44,10 @@ public:
      */
     enum Enum
     {
-        CONTACT,///< object is contact
-        NSSET,  ///< object is nsset
-        DOMAIN, ///< object is domain
-        KEYSET, ///< object is keyset
+        contact,///< object is contact
+        nsset,  ///< object is nsset
+        domain, ///< object is domain
+        keyset, ///< object is keyset
     };
 };
 
@@ -66,10 +61,10 @@ inline std::string to_db_handle(Fred::Object::Type::Enum value)
 {
     switch (value)
     {
-        case Fred::Object::Type::CONTACT: return "contact";
-        case Fred::Object::Type::NSSET:   return "nsset";
-        case Fred::Object::Type::DOMAIN:  return "domain";
-        case Fred::Object::Type::KEYSET:  return "keyset";
+        case Fred::Object::Type::contact: return "contact";
+        case Fred::Object::Type::nsset:   return "nsset";
+        case Fred::Object::Type::domain:  return "domain";
+        case Fred::Object::Type::keyset:  return "keyset";
     }
     throw std::invalid_argument("value doesn't exist in Fred::Object::Type::Enum");
 };
@@ -77,10 +72,10 @@ inline std::string to_db_handle(Fred::Object::Type::Enum value)
 template < >
 inline Fred::Object::Type::Enum from_db_handle< Fred::Object::Type >(const std::string &db_handle)
 {
-    if (to_db_handle(Fred::Object::Type::CONTACT) == db_handle) { return Fred::Object::Type::CONTACT; }
-    if (to_db_handle(Fred::Object::Type::NSSET)   == db_handle) { return Fred::Object::Type::NSSET; }
-    if (to_db_handle(Fred::Object::Type::DOMAIN)  == db_handle) { return Fred::Object::Type::DOMAIN; }
-    if (to_db_handle(Fred::Object::Type::KEYSET)  == db_handle) { return Fred::Object::Type::KEYSET; }
+    if (to_db_handle(Fred::Object::Type::contact) == db_handle) { return Fred::Object::Type::contact; }
+    if (to_db_handle(Fred::Object::Type::nsset)   == db_handle) { return Fred::Object::Type::nsset; }
+    if (to_db_handle(Fred::Object::Type::domain)  == db_handle) { return Fred::Object::Type::domain; }
+    if (to_db_handle(Fred::Object::Type::keyset)  == db_handle) { return Fred::Object::Type::keyset; }
     throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Object::Type::Enum");
 }
 
