@@ -39,8 +39,13 @@ class OperationContextTwoPhaseCommitCreator;
 
 /**
  * Common objects needed in Fred operations. It consists of two parts, database and logging.
+ *
+ * Is non-copyable.
+ * Is not directly instantiable (implemented by private ctor and destructor).
+ * Is instantiable only by selected friend classes.
  */
 class OperationContext
+:   private boost::noncopyable
 {
 public:
     typedef Database::StandaloneConnection DbConn;///< typename alias
@@ -68,27 +73,33 @@ private:
 
 /**
  * OperationContext with two-phase commit only.
+ *
+ * Is non-copyable (implemented by non-copyable base class).
+ * Is not directly instantiable (implemented by private ctor and destructor).
+ * Is instantiable only by friend class.
  */
 class OperationContextTwoPhaseCommit
 :   public OperationContext
 {
 public:
     /**
-     * Database transaction string identification which will use in first phase of two-phase commit.
+     * Database transaction string identification which will be used in first phase of two-phase commit.
      */
     std::string get_transaction_id()const { return transaction_id_; }
 private:
     OperationContextTwoPhaseCommit(const std::string &_transaction_id);
+    ~OperationContextTwoPhaseCommit() { }
     const std::string transaction_id_;
     friend class OperationContextTwoPhaseCommitCreator;
 };
 
 /**
- * Makes accessible OperationContext instance and offers commit_transaction() method.
+ * Creates OperationContext instance and offers commit_transaction() method.
+ *
+ * Is non-copyable (implemented by non-copyable base class).
  */
 class OperationContextCreator
-:   private boost::noncopyable,
-    public OperationContext
+:   public OperationContext
 {
 public:
     /**
@@ -107,11 +118,12 @@ public:
 };
 
 /**
- * Makes accessible OperationContextTwoPhaseCommit instance and offers commit_transaction() method.
+ * Creates OperationContextTwoPhaseCommit instance and offers commit_transaction() method.
+ *
+ * Is non-copyable (implemented by non-copyable base class).
  */
 class OperationContextTwoPhaseCommitCreator
-:   private boost::noncopyable,
-    public OperationContextTwoPhaseCommit
+:   public OperationContextTwoPhaseCommit
 {
 public:
     /**
