@@ -50,7 +50,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
                "$" + _params.add(type[1]) + "::TEXT";
     }
     static Generate::MessageId generate_message(
-        Fred::OperationContextCreator &_ctx,
+        Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
         const std::string &_public_request_type,
         const Fred::LockedPublicRequest &_locked_request,
@@ -99,7 +99,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
                "$" + _params.add(type[1]) + "::TEXT";
     }
     static Generate::MessageId generate_message(
-        Fred::OperationContextCreator &_ctx,
+        Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
         const std::string &_public_request_type,
         const Fred::LockedPublicRequest &_locked_request,
@@ -158,7 +158,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
                "$" + _params.add(type[4]) + "::TEXT";
     }
     static Generate::MessageId generate_message(
-        Fred::OperationContextCreator &_ctx,
+        Fred::OperationContext &_ctx,
         const Multimanager &_multimanager,
         const std::string &_public_request_type,
         const Fred::LockedPublicRequest &_locked_request,
@@ -1061,14 +1061,17 @@ MANAGER& Multimanager::select()const
 
 namespace {
 
-class GuardManagerPtrAccess:private boost::lock_guard< boost::mutex >
+class GuardManagerPtrAccess
 {
 public:
     GuardManagerPtrAccess()
-    :   boost::lock_guard< boost::mutex >(mutex) { }
+    :   guard(mutex) { }
 private:
-    boost::mutex mutex;
+    static boost::mutex mutex;
+    boost::lock_guard< boost::mutex > guard;
 };
+
+boost::mutex GuardManagerPtrAccess::mutex;
 
 typedef std::auto_ptr< Fred::Document::Manager > DocumentManagerPtr;
 DocumentManagerPtr document_manager_ptr;
@@ -1087,13 +1090,15 @@ Fred::Document::Manager* DefaultMultimanager::document()const
         const HandleRegistryArgs *const rconf =
             CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
         GuardManagerPtrAccess guard;
-        document_manager_ptr =
-            Fred::Document::Manager::create(
-                rconf->docgen_path,
-                rconf->docgen_template_path,
-                rconf->fileclient_path,
-                CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
-                    ->get_nameservice_host_port());
+        if (document_manager_ptr.get() == NULL) {
+            document_manager_ptr =
+                Fred::Document::Manager::create(
+                    rconf->docgen_path,
+                    rconf->docgen_template_path,
+                    rconf->fileclient_path,
+                    CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
+                        ->get_nameservice_host_port());
+        }
     }
     return document_manager_ptr.get();
 }
@@ -1102,7 +1107,9 @@ Fred::Mailer::Manager* DefaultMultimanager::mailer()const
 {
     if (mailer_manager_ptr.get() == NULL) {
         GuardManagerPtrAccess guard;
-        mailer_manager_ptr = MailerManagerPtr(new MailerManager(CorbaContainer::get_instance()->getNS()));
+        if (mailer_manager_ptr.get() == NULL) {
+            mailer_manager_ptr = MailerManagerPtr(new MailerManager(CorbaContainer::get_instance()->getNS()));
+        }
     }
     return mailer_manager_ptr.get();
 }
@@ -1111,7 +1118,9 @@ Fred::Messages::Manager* DefaultMultimanager::messages()const
 {
     if (messages_manager_ptr.get() == NULL) {
         GuardManagerPtrAccess guard;
-        messages_manager_ptr = Fred::Messages::create_manager();
+        if (messages_manager_ptr.get() == NULL) {
+            messages_manager_ptr = Fred::Messages::create_manager();
+        }
     }
     return messages_manager_ptr.get();
 }
