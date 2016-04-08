@@ -2179,10 +2179,10 @@ void MojeIDImpl::send_new_pin3(
                                  server_conf_ptr->letter_limit_count,
                                  server_conf_ptr->letter_limit_interval);
 
-        const Fred::PublicRequestAuthTypeIface &type = has_reidentification_request
-                                                       ? Fred::MojeID::PublicRequest::ContactReidentification().iface()
-                                                       : Fred::MojeID::PublicRequest::ContactIdentification().iface();
-        Fred::CreatePublicRequestAuth create_public_request_op(type);
+        Fred::CreatePublicRequestAuth create_public_request_op(
+            has_reidentification_request
+            ? Fred::MojeID::PublicRequest::ContactReidentification().iface()
+            : Fred::MojeID::PublicRequest::ContactIdentification().iface());
         create_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
         create_public_request_op.set_reason("send_new_pin3 call");
         const Fred::CreatePublicRequestAuth::Result result =
