@@ -169,7 +169,7 @@ namespace Fred
     , public Util::FactoryAutoRegister<ContactSelectionFilterBase, FilterHandleMojeIDSyntax>
     {
     public:
-        std::vector<std::string> operator()(OperationContext& ctx
+        std::vector<std::string> operator()(OperationContext&
                 , const std::vector<std::string>& contact_handle)
         {
             boost::regex mojeid_handle_syntax("^[a-z0-9](-?[a-z0-9])*$");
