@@ -176,21 +176,10 @@ namespace Fred
             std::vector<std::string> filtered;
             for(std::vector<std::string>::const_iterator i = contact_handle.begin(); i != contact_handle.end() ; ++i)
             {
-                try
+                if(boost::regex_match(boost::to_lower_copy(*i), mojeid_handle_syntax)
+                        && (*i).length() <= 30)
                 {
-                    if(boost::regex_match(boost::to_lower_copy(*i), mojeid_handle_syntax)
-                            && (*i).length() <= 30)
-                    {
-                        filtered.push_back(*i);
-                    }
-                }
-                catch(std::exception& ex)
-                {
-                    // TODO XXX Je skutecne bezpecne pohltit vsechny std::exception?
-                    //report regex_match failure
-                    std::string errmsg("FilterHandleMojeIDSyntax: ");
-                    errmsg += ex.what();
-                    ctx.get_log().error(errmsg);
+                    filtered.push_back(*i);
                 }
             }
             return filtered;
