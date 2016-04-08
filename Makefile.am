@@ -2315,6 +2315,7 @@ tests_interfaces_test_whois_SOURCES = \
 		tests/interfaces/whois/test_whois_get_domain_by_handle.cc \
 		tests/interfaces/whois/test_whois_get_domains_by_admin_contact.cc \
 		tests/interfaces/whois/test_whois_get_domains_by_keyset.cc \
+		tests/interfaces/whois/test_whois_get_domains_by_nsset.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
