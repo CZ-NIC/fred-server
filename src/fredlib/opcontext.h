@@ -75,7 +75,7 @@ class OperationContextTwoPhaseCommit
 {
 public:
     /**
-     * Database transaction string identification which will use in first phase of two-phase commit.
+     * Database transaction string identification which will be used in first phase of two-phase commit.
      */
     std::string get_transaction_id()const { return transaction_id_; }
 private:
