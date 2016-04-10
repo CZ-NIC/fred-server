@@ -1,3 +1,12 @@
+2016-04-10 (2.24.0)
+
+  * mojeid backend rewrite
+
+  * object event notification made async (epp, mojeid) - fred-admin command
+
+  * fredlib
+    * operation context creator / two phase commit support
+
 2016-01-20 (2.23.0)
 
   * whois backend refactoring (new methods for webwhois client)
