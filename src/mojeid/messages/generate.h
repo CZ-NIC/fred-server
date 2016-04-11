@@ -33,6 +33,7 @@
 #include "src/fredlib/messages/messages_impl.h"
 
 #include <memory>
+#include <boost/noncopyable.hpp>
 
 namespace MojeID {
 namespace Messages {
@@ -49,7 +50,7 @@ struct CommChannel
     };
 };
 
-class Multimanager
+class Multimanager:private boost::noncopyable
 {
 public:
     template < typename MANAGER >
