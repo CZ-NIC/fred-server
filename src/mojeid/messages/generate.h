@@ -32,6 +32,9 @@
 #include "src/fredlib/mailer.h"
 #include "src/fredlib/messages/messages_impl.h"
 
+#include <memory>
+#include <boost/noncopyable.hpp>
+
 namespace MojeID {
 namespace Messages {
 
@@ -47,17 +50,17 @@ struct CommChannel
     };
 };
 
-class Multimanager
+class Multimanager:private boost::noncopyable
 {
 public:
     template < typename MANAGER >
-    MANAGER& select()const;
+    MANAGER& select();
 protected:
     virtual ~Multimanager() { }
 private:
-    virtual Fred::Document::Manager* document()const = 0;
-    virtual Fred::Mailer::Manager*   mailer()const = 0;
-    virtual Fred::Messages::Manager* messages()const = 0;
+    virtual Fred::Document::Manager* document() = 0;
+    virtual Fred::Mailer::Manager*   mailer() = 0;
+    virtual Fred::Messages::Manager* messages() = 0;
     template < typename MANAGER, bool > struct traits;
 };
 
@@ -67,9 +70,13 @@ public:
     DefaultMultimanager() { }
     ~DefaultMultimanager() { }
 private:
-    virtual Fred::Document::Manager* document()const;
-    virtual Fred::Mailer::Manager*   mailer()const;
-    virtual Fred::Messages::Manager* messages()const;
+    virtual Fred::Document::Manager* document();
+    virtual Fred::Mailer::Manager*   mailer();
+    virtual Fred::Messages::Manager* messages();
+
+    std::auto_ptr< Fred::Mailer::Manager > mailer_manager_ptr_;
+    std::auto_ptr< Fred::Document::Manager > document_manager_ptr_;
+    Fred::Messages::ManagerPtr messages_manager_ptr_;
 };
 
 class Generate
@@ -95,14 +102,14 @@ public:
     {
         static void for_new_requests(
             Fred::OperationContext &_ctx,
-            const Multimanager &_multimanager = DefaultMultimanager(),
+            Multimanager &_multimanager,
             const message_checker &_check_message_limits = message_checker_always_success(),
             const std::string &_link_hostname_part = "");
 
         template < typename PUBLIC_REQUEST_TYPE >
         static MessageId for_given_request(
             Fred::OperationContext &_ctx,
-            const Multimanager &_multimanager,
+            Multimanager &_multimanager,
             const Fred::LockedPublicRequest &_locked_request,
             const Fred::LockedPublicRequestsOfObject &_locked_contact,
             const message_checker &_check_message_limits = message_checker_always_success(),
