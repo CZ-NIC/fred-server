@@ -17,7 +17,6 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/thread/mutex.hpp>
 
 namespace MojeID {  //MojeID
 namespace Messages {//MojeID::Messages
@@ -51,7 +50,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
     }
     static Generate::MessageId generate_message(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const std::string &_public_request_type,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
@@ -100,7 +99,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
     }
     static Generate::MessageId generate_message(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const std::string &_public_request_type,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
@@ -159,7 +158,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
     }
     static Generate::MessageId generate_message(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const std::string &_public_request_type,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
@@ -451,7 +450,7 @@ struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactC
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -494,7 +493,7 @@ struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::Prevalid
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -628,7 +627,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -709,7 +708,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -821,7 +820,7 @@ std::string collect_address(const Nullable< Fred::Contact::PlaceAddress > &_addr
 Generate::MessageId send_email(
     const std::string &_mail_template,
     Fred::OperationContext &_ctx,
-    const Multimanager &_multimanager,
+    Multimanager &_multimanager,
     const Fred::LockedPublicRequest &_locked_request,
     const Fred::LockedPublicRequestsOfObject &_locked_contact,
     const Generate::message_checker &_check_message_limits,
@@ -913,7 +912,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Contac
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -938,7 +937,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Condit
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -963,7 +962,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Identi
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -988,7 +987,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Preval
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -1013,7 +1012,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Preval
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const Generate::message_checker &_check_message_limits,
@@ -1038,97 +1037,64 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Preval
 template < bool X >
 struct Multimanager::traits< Fred::Document::Manager, X >
 {
-    static Fred::Document::Manager* get(const Multimanager *mm_ptr) { return mm_ptr->document(); }
+    static Fred::Document::Manager* get(Multimanager *mm_ptr) { return mm_ptr->document(); }
 };
 
 template < bool X >
 struct Multimanager::traits< Fred::Mailer::Manager, X >
 {
-    static Fred::Mailer::Manager* get(const Multimanager *mm_ptr) { return mm_ptr->mailer(); }
+    static Fred::Mailer::Manager* get(Multimanager *mm_ptr) { return mm_ptr->mailer(); }
 };
 
 template < bool X >
 struct Multimanager::traits< Fred::Messages::Manager, X >
 {
-    static Fred::Messages::Manager* get(const Multimanager *mm_ptr) { return mm_ptr->messages(); }
+    static Fred::Messages::Manager* get(Multimanager *mm_ptr) { return mm_ptr->messages(); }
 };
 
 template < typename MANAGER >
-MANAGER& Multimanager::select()const
+MANAGER& Multimanager::select()
 {
     return *traits< MANAGER, false >::get(this);
 }
 
-namespace {
-
-class GuardManagerPtrAccess
+Fred::Document::Manager* DefaultMultimanager::document()
 {
-public:
-    GuardManagerPtrAccess()
-    :   guard(mutex) { }
-private:
-    static boost::mutex mutex;
-    boost::lock_guard< boost::mutex > guard;
-};
-
-boost::mutex GuardManagerPtrAccess::mutex;
-
-typedef std::auto_ptr< Fred::Document::Manager > DocumentManagerPtr;
-DocumentManagerPtr document_manager_ptr;
-
-typedef std::auto_ptr< Fred::Mailer::Manager > MailerManagerPtr;
-MailerManagerPtr mailer_manager_ptr;
-
-typedef Fred::Messages::ManagerPtr MessagesManagerPtr;
-MessagesManagerPtr messages_manager_ptr;
-
-}
-
-Fred::Document::Manager* DefaultMultimanager::document()const
-{
-    if (document_manager_ptr.get() == NULL) {
+    if (document_manager_ptr_.get() == NULL) {
         const HandleRegistryArgs *const rconf =
             CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
-        GuardManagerPtrAccess guard;
-        if (document_manager_ptr.get() == NULL) {
-            document_manager_ptr =
-                Fred::Document::Manager::create(
-                    rconf->docgen_path,
-                    rconf->docgen_template_path,
-                    rconf->fileclient_path,
-                    CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
-                        ->get_nameservice_host_port());
-        }
+        document_manager_ptr_ =
+            Fred::Document::Manager::create(
+                rconf->docgen_path,
+                rconf->docgen_template_path,
+                rconf->fileclient_path,
+                CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >()
+                    ->get_nameservice_host_port());
     }
-    return document_manager_ptr.get();
+    return document_manager_ptr_.get();
 }
 
-Fred::Mailer::Manager* DefaultMultimanager::mailer()const
+Fred::Mailer::Manager* DefaultMultimanager::mailer()
 {
-    if (mailer_manager_ptr.get() == NULL) {
-        GuardManagerPtrAccess guard;
-        if (mailer_manager_ptr.get() == NULL) {
-            mailer_manager_ptr = MailerManagerPtr(new MailerManager(CorbaContainer::get_instance()->getNS()));
-        }
+    if (mailer_manager_ptr_.get() == NULL) {
+        mailer_manager_ptr_ = std::auto_ptr< Fred::Mailer::Manager >(
+                                  new MailerManager(CorbaContainer::get_instance()->getNS()));
     }
-    return mailer_manager_ptr.get();
+    return mailer_manager_ptr_.get();
 }
 
-Fred::Messages::Manager* DefaultMultimanager::messages()const
+Fred::Messages::Manager* DefaultMultimanager::messages()
 {
-    if (messages_manager_ptr.get() == NULL) {
-        GuardManagerPtrAccess guard;
-        if (messages_manager_ptr.get() == NULL) {
-            messages_manager_ptr = Fred::Messages::create_manager();
-        }
+    if (messages_manager_ptr_.get() == NULL) {
+        messages_manager_ptr_ = Fred::Messages::create_manager();
     }
-    return messages_manager_ptr.get();
+    return messages_manager_ptr_.get();
 }
 
 template < CommChannel::Value COMM_CHANNEL >
 void Generate::Into< COMM_CHANNEL >::for_new_requests(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part)
 {
@@ -1164,17 +1130,17 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
 
 template void Generate::Into< CommChannel::SMS    >::for_new_requests(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part);
 template void Generate::Into< CommChannel::EMAIL  >::for_new_requests(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part);
 template void Generate::Into< CommChannel::LETTER >::for_new_requests(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part);
 
@@ -1196,7 +1162,7 @@ template < CommChannel::Value COMM_CHANNEL >
 template < typename PUBLIC_REQUEST_TYPE >
 Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1216,7 +1182,7 @@ Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
 template Generate::MessageId Generate::Into< CommChannel::SMS >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactConditionalIdentification >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1226,7 +1192,7 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
 template Generate::MessageId Generate::Into< CommChannel::SMS >::
                              for_given_request< Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1236,7 +1202,7 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactIdentification >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1246,7 +1212,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
 template Generate::MessageId Generate::Into< CommChannel::LETTER >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactReidentification >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1256,7 +1222,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactConditionalIdentification >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1266,7 +1232,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
                              for_given_request< Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1276,7 +1242,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
                              for_given_request< Fred::MojeID::PublicRequest::IdentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1286,7 +1252,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
                              for_given_request< Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,
@@ -1296,7 +1262,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
 template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
                              for_given_request< Fred::MojeID::PublicRequest::PrevalidatedContactTransfer >(
         Fred::OperationContext &_ctx,
-        const Multimanager &_multimanager,
+        Multimanager &_multimanager,
         const Fred::LockedPublicRequest &_locked_request,
         const Fred::LockedPublicRequestsOfObject &_locked_contact,
         const message_checker &_check_message_limits,

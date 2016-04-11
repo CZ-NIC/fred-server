@@ -2272,7 +2272,8 @@ void MojeIDImpl::generate_sms_messages()const
     try {
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
-        ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(ctx);
+        ::MojeID::Messages::DefaultMultimanager multimanager;
+        ::MojeID::Messages::Generate::Into< CommChannel::SMS >::for_new_requests(ctx, multimanager);
         ctx.commit_transaction();
         return;
     }
@@ -2313,8 +2314,9 @@ void MojeIDImpl::generate_letter_messages()const
     try {
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
+        ::MojeID::Messages::DefaultMultimanager multimanager;
         ::MojeID::Messages::Generate::Into< CommChannel::LETTER >::for_new_requests(
-            ctx, ::MojeID::Messages::DefaultMultimanager(), check_limits::sent_letters());
+            ctx, multimanager, check_limits::sent_letters());
         ctx.commit_transaction();
         return;
     }
@@ -2356,9 +2358,10 @@ void MojeIDImpl::generate_email_messages()const
         Fred::OperationContextCreator ctx;
         typedef ::MojeID::Messages::CommChannel CommChannel;
         const std::string link_hostname_part = CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->hostname;
+        ::MojeID::Messages::DefaultMultimanager multimanager;
         ::MojeID::Messages::Generate::Into< CommChannel::EMAIL >::for_new_requests(
             ctx,
-            ::MojeID::Messages::DefaultMultimanager(),
+            multimanager,
             ::MojeID::Messages::Generate::message_checker_always_success(),
             link_hostname_part);
         ctx.commit_transaction();
