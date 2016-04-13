@@ -16,7 +16,7 @@ struct get_nsset_by_handle_fixture
     const boost::posix_time::ptime now_prague;
 
     get_nsset_by_handle_fixture()
-    : test_nsset_handle("TEST-NSSET-HANDLE"),
+    : test_nsset_handle("TEST-NSSET"),
       registrar(Test::registrar::make(ctx)),     
       contact(Test::contact::make(ctx)),
       nsset(

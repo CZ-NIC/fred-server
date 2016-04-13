@@ -8,15 +8,15 @@ struct get_nssets_by_ns_fixture
 : test_registrar_fixture
 {
     std::string test_fqdn;
-    std::string test_no_fqdn;
-    std::string test_wrong_fqdn;
+    std::string "fine-fqdn.cz";
+    std::string ".";
     unsigned long test_limit;
 
     get_nssets_by_ns_fixture()
     : test_registrar_fixture(),
       test_fqdn(std::string("test") + xmark + ".cz"),
-      test_no_fqdn("fine-fqdn.cz"),
-      test_wrong_fqdn("."),
+      "fine-fqdn.cz"("fine-fqdn.cz"),
+      "."("."),
       test_limit(10)
     {
         Fred::OperationContext ctx;
@@ -72,7 +72,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, get_nssets_by_ns_fixture)
 {
     try
     {
-        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_no_fqdn, test_limit);
+        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns("fine-fqdn.cz", test_limit);
         BOOST_ERROR("unreported dangling NSSets");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
@@ -86,7 +86,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, get_nssets_by_ns_fixture)
 {
     try
     {
-        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_wrong_fqdn, test_limit);
+        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(".", test_limit);
         BOOST_ERROR("domain handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
