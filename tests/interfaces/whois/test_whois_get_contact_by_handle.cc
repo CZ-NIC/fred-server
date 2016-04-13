@@ -1,5 +1,4 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "util/random_data_generator.h"
 #include "tests/setup/fixtures_utils.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
@@ -13,20 +12,18 @@ struct test_contact_fixture
     const Fred::InfoContactData contact;
 
     test_contact_fixture()
-    : registrar(
-          Test::exec(Test::CreateX_factory<Fred::CreateRegistrar>().make(), ctx)),//Fred::CreateRegistrar("REG-FOO"), ctx)),
+    : registrar(Test::registrar::make(ctx)),
       contact(
           Test::exec(
               Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle)
-                 // Fred::CreateContact("CONTACT", registrar.handle)
-                      .set_place(Fred::Contact::PlaceAddress(
-                                    "Str1",
-                                     Optional<std::string>(),//simplier?
-                                     Optional<std::string>(),
-                                     "Praha",
-                                     Optional<std::string>(),
-                                     "11150",
-                                     "CZ")),
+                  .set_place(Fred::Contact::PlaceAddress(
+                                "Str1",
+                                 Optional<std::string>(),//simplier?
+                                 Optional<std::string>(),
+                                 "Praha",
+                                 Optional<std::string>(),
+                                 "11150",
+                                 "CZ")),
               ctx))
     {
         ctx.commit_transaction();

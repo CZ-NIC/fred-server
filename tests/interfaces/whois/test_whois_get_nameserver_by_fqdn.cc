@@ -1,43 +1,48 @@
-//registrar!
-//contact could be empty
+#include "src/whois/nameserver_exists.h"
+#include "tests/interfaces/whois/fixture_common.h"
+#include "tests/setup/fixtures_utils.h"
+
+BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)
 
 struct get_nameserver_by_fqdn_fixture
-: test_registrar_fixture
+: whois_impl_instance_fixture
 {
+    Fred::OperationContext ctx;
     std::string test_nameserver_fqdn;
-    std::string test_no_handle;
-    std::string test_wrong_handle;
+    const Fred::InfoRegistrarData registrar;
+    const Fred::InfoContactData contact;
+    const Fred::InfoNssetData nsset;
 
     get_nameserver_by_fqdn_fixture()
-    : test_registrar_fixture(),
-      test_nameserver_fqdn(std::string("test-nameserver") + xmark + ".cz"),
-      test_no_handle("fine-fqdn.cz"),
-      test_wrong_handle("")
+    : test_nameserver_fqdn("test_nameserver"),
+      registrar(Test::registrar::make(ctx)),     
+      contact(Test::contact::make(ctx)),
+      nsset(
+          Test::exec(
+              Test::CreateX_factory<Fred::CreateNsset>().make(registrar.handle)
+              //making nameserver
+                  .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))
+                  .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+              ctx))
     {
-        Fred::OperationContext ctx;
-        Fred::CreateNsset("TEST-NSSET-HANDLE", test_registrar_handle)
-            .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))//making nameserver
-            .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
-            .exec(ctx);
         ctx.commit_transaction();
     }
 };
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
 {
-    Fred::OperationContext ctx;
     BOOST_REQUIRE(Whois::nameserver_exists(test_nameserver_fqdn, ctx));
 
     Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_nameserver_fqdn);
     BOOST_CHECK(ns.fqdn == test_nameserver_fqdn);
 }
 
-BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, get_nameserver_by_fqdn_fixture)
+BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, whois_impl_instance_fixture)
 {
     try
     {
-        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_no_handle);
+        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn("fine-fqdn.cz");
         BOOST_ERROR("unreported dangling nameserver");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
@@ -47,11 +52,11 @@ BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, get_nameserver_by_fqdn_fix
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_wrong_ns, get_nameserver_by_fqdn_fixture)
+BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_wrong_ns, whois_impl_instance_fixture)
 {
     try
     {
-        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_wrong_handle);
+        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn("");
         BOOST_ERROR("domain handle rule is wrong");
     }
     catch(const Registry::WhoisImpl::InvalidHandle& ex)
@@ -62,3 +67,4 @@ BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_wrong_ns, get_nameserver_by_fqdn_
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nameserver_by_fqdn
+BOOST_AUTO_TEST_SUITE_END()//TestWhois

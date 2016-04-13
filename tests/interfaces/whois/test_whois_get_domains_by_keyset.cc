@@ -62,18 +62,22 @@ struct domains_by_keyset_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_keyset(test_keyset, regular_domains);
+    Registry::WhoisImpl::DomainSeq domain_seq =
+        impl.get_domains_by_keyset(test_keyset, regular_domains);
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
+    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
+        it < domain_vec.end();
+        ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->second.admin_contacts.at(0).handle);
+        BOOST_CHECK(it->admin_contact_handles.at(0) ==
+            found->second.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.get_value() == ptime(not_a_date_time));
         BOOST_CHECK(it->last_transfer.get_value() == ptime(not_a_date_time));
         BOOST_CHECK_EQUAL(it->registered, now_utc);
@@ -84,18 +88,22 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_keyset(test_keyset, regular_domains - 1);
+    Registry::WhoisImpl::DomainSeq domain_seq =
+        impl.get_domains_by_keyset(test_keyset, regular_domains - 1);
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
+    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
+        it < domain_vec.end();
+        ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->second.admin_contacts.at(0).handle);
+        BOOST_CHECK(it->admin_contact_handles.at(0) ==
+            found->second.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.get_value() == ptime(not_a_date_time));
         BOOST_CHECK(it->last_transfer.get_value() == ptime(not_a_date_time));
         BOOST_CHECK_EQUAL(it->registered, now_utc);
@@ -108,7 +116,8 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_no_keyset, whois_impl_instance_fix
 {
     try
     {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_keyset("absent-nsset", 0);
+        Registry::WhoisImpl::DomainSeq ds =
+            impl.get_domains_by_keyset("absent-nsset", 0);
         BOOST_ERROR("unreported dangling nsset");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)

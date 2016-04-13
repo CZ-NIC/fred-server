@@ -11,8 +11,6 @@ struct domains_by_admin_contact_fixture
 {
     std::map<std::string, Fred::InfoDomainData> domain_info;
     Fred::OperationContext ctx;
-//    empty_contact_fixture system_admin, regular_admin, ecf;
-//    empty_registrar_fixture erf;
     const Fred::InfoRegistrarData registrar; // rly need?
     const Fred::InfoContactData system_admin, regular_admin, contact;
     int regular_domains;
@@ -32,12 +30,6 @@ struct domains_by_admin_contact_fixture
         std::string tmp_handle;
         for(int i=0; i < regular_domains; ++i)
         {
-//            tmp_handle = std::string("test") + boost::lexical_cast<std::string>(i) + ".cz";
-//            domain_info[tmp_handle] = 
-//                Test::exec(
-//                    Fred::CreateDomain(tmp_handle, registrar.handle, contact.handle)
-//                      .set_admin_contacts(Util::vector_of<std::string>(regular_admin.contact.handle)),
-//                    ctx);
             const Fred::InfoDomainData& idd = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>().make(registrar.handle, contact.handle)
                     .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle)),
@@ -46,18 +38,11 @@ struct domains_by_admin_contact_fixture
         }
         for(int i=0; i < 3; ++i)//3 different domains for another contact
         {
-//            tmp_handle = std::string("test-other") + boost::lexical_cast<std::string>(i) + ".cz";
-//            domain_info[tmp_handle] = 
-//                Test::exec(
-//                    Fred::CreateDomain(tmp_handle, registrar.handle, contact.handle)
-//                      .set_admin_contacts(Util::vector_of<std::string>(system_admin.contact.handle)),
-//                    ctx);
-            const Fred::InfoDomainData& idd = Test::exec(
-                Test::CreateX_factory<Fred::CreateDomain>().make(registrar.handle, contact.handle)
-                    .set_admin_contacts(Util::vector_of<std::string>(system_admin.handle)),
-                ctx);
-                domain_info[idd.fqdn] = idd;
-     
+            Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
+                       .make(registrar.handle, contact.handle)
+                       .set_admin_contacts(
+                           Util::vector_of<std::string>(system_admin.handle)),
+                       ctx);
         }
         ctx.commit_transaction();
     }

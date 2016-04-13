@@ -10,7 +10,7 @@ struct domains_by_nsset_fixture
 {
     Fred::OperationContext ctx;
     std::string test_nsset;
-    int regular_domains;
+    unsigned int regular_domains;
     std::map<std::string, Fred::InfoDomainData> domain_info;
     const Fred::InfoRegistrarData registrar; 
     const Fred::InfoContactData contact, admin;
@@ -78,7 +78,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
+    BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
         it < domain_vec.end();
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fi
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
+    BOOST_CHECK(domain_vec.size() == regular_domains - 1);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
         it < domain_vec.end();

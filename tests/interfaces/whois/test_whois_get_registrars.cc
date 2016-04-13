@@ -1,22 +1,34 @@
+#include "tests/interfaces/whois/fixture_common.h"
+#include "util/random_data_generator.h"
 
+BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_registrars)
 
+//STOPPED IN THE MIDDLE
 struct get_my_registrar_list_fixture
-: test_registrar_fixture
+: whois_impl_instance_fixture
 {
+    Fred::OperationContext ctx;
     std::map<std::string,Fred::InfoRegistrarOutput> registrar_info;
     int system_registars, total_registrars;
 
     get_my_registrar_list_fixture()
-    : test_registrar_fixture(),//TODO remove
       system_registars(5),
       total_registrars(10)
     {
-        Fred::OperationContext ctx;
         for(int i=0; i < total_registrars; ++i)
         {
             std::ostringstream test_handles;
             test_handles << test_registrar_handle << i;
+
+//            Test::exec(
+//                Fred::CreateRegistrar("REG-FOO")//!
+//                  .set_name(std::string("TEST-REGISTRAR NAME"))
+//                  .set_street1(std::string("str1"))
+//                  .set_city("Praha")
+//                  .set_postalcode("11150")
+//                  .set_country("CZ"),
+//                ctx)
             Fred::CreateRegistrar& cr = Fred::CreateRegistrar(test_handles.str())
                 .set_name(std::string("TEST-REGISTRAR NAME")+xmark+boost::lexical_cast<std::string>(i))
                 .set_street1(std::string("STR1")+xmark)
@@ -56,4 +68,5 @@ BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END();//get_registrars
+BOOST_AUTO_TEST_SUITE_END()//get_registrars
+BOOST_AUTO_TEST_SUITE_END()//TestWhois

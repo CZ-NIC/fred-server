@@ -444,9 +444,12 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
             const Fred::InfoKeysetData ikd = Fred::InfoKeysetByHandle(handle)
                 .exec(ctx, output_timezone).info_keyset_data;
             WhoisImpl::KeySet ks;
+            ks.handle = ikd.handle;
             ks.changed = ikd.update_time.get_value_or_default();
             ks.created = ikd.creation_time;
+            ks.registrar_handle = ikd.create_registrar_handle;
             ks.dns_keys.reserve(ikd.dns_keys.size());
+            ks.last_transfer = ikd.transfer_time;
             DNSKey dns_k;
             for(std::vector<Fred::DnsKey>::const_iterator it = ikd.dns_keys.begin();
                 it != ikd.dns_keys.end();
@@ -457,6 +460,10 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
                 dns_k.protocol = it->get_protocol();
                 dns_k.public_key = it->get_key();
                 ks.dns_keys.push_back(dns_k);
+            }
+            for(std::vector<Fred::ObjectIdHandlePair>::const_iterator it = ikd.tech_contacts.begin(); it != ikd.tech_contacts.end(); ++it)
+            {
+                ks.tech_contact_handles.push_back(it->handle);
             }
             return ks;
         }
@@ -512,7 +519,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
         {
             end = ks_info.end();
         }
-        for(; it != ks_info.end(); ++it)
+        for(; it != end; ++it)
         {
             temp.changed = it->info_keyset_data.update_time.get_value_or_default();
             temp.created = it->info_keyset_data.creation_time;

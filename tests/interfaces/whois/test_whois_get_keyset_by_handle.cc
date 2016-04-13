@@ -32,10 +32,6 @@ struct get_keyset_by_handle_fixture
                   static_cast<std::string>(ctx.get_conn()
                   .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
-//        Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
-//            .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
-//            .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact))
-//            .exec(ctx);
         ctx.commit_transaction();
     }
 };
@@ -51,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
     BOOST_CHECK(ks.dns_keys.at(0).protocol   == keyset.dns_keys.at(0).get_protocol());
     BOOST_CHECK(ks.dns_keys.at(0).public_key == keyset.dns_keys.at(0).get_key());
     BOOST_CHECK(ks.handle == keyset.handle);
-    BOOST_CHECK(ks.last_transfer.get_value_or_default() == ptime(not_a_date_time));
+    BOOST_CHECK(ks.last_transfer.isnull());
     BOOST_CHECK(ks.registrar_handle == keyset.create_registrar_handle);
     BOOST_CHECK(ks.tech_contact_handles.at(0) == keyset.tech_contacts.at(0).handle);
 }

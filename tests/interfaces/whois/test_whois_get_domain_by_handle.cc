@@ -11,25 +11,25 @@ struct test_domain_fixture
 : whois_impl_instance_fixture
 {
     Fred::OperationContext ctx;
-    std::string xmark;
     const Fred::InfoRegistrarData registrar;
-    const Fred::InfoContactData contact;
     const Fred::InfoDomainData domain;
     const boost::posix_time::ptime now_utc;
     const boost::posix_time::ptime now_prague;
 
     test_domain_fixture()
-    : contact(Test::contact::make(ctx)), 
-      domain(
-          Test::exec(
-              Test::CreateX_factory<Fred::CreateDomain>()
-                  .make(Test::registrar(ctx).info_data.handle,
-                        Test::contact(ctx).info_data.handle)
-                  .set_admin_contacts(Util::vector_of<std::string>(contact.handle)),
-               ctx)),
+    : domain(Test::exec(
+          Test::CreateX_factory<Fred::CreateDomain>()
+              .make(Test::registrar(ctx).info_data.handle,
+                   Test::contact(ctx).info_data.handle)
+              .set_admin_contacts(Util::vector_of<std::string>(
+                   Test::contact::make(ctx).handle)),
+           ctx)),
       now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn().exec("SELECT now()::timestamp")[0][0]))),
-      now_prague(boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                  static_cast<std::string>(ctx.get_conn()
+                  .exec("SELECT now()::timestamp")[0][0]))),
+      now_prague(boost::posix_time::time_from_string(
+                  static_cast<std::string>(ctx.get_conn()
+                  .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         ctx.commit_transaction();
     }
@@ -38,7 +38,8 @@ struct test_domain_fixture
 BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
 {
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(domain.fqdn);
-    BOOST_CHECK(dom.admin_contact_handles.at(0) == domain.admin_contacts.at(0).handle);
+    BOOST_CHECK(dom.admin_contact_handles.at(0) ==
+        domain.admin_contacts.at(0).handle);
     BOOST_CHECK(dom.changed.get_value() == ptime(not_a_date_time));
     BOOST_CHECK(dom.fqdn == domain.fqdn);
     BOOST_CHECK(dom.last_transfer.get_value() == ptime(not_a_date_time));
@@ -331,8 +332,8 @@ BOOST_FIXTURE_TEST_CASE(invalid_unmanaged_toomany, invalid_unmanaged_toomany_fix
     {
         Registry::WhoisImpl::Domain dom =
             impl.get_domain_by_handle(invalid_unmanaged_toomany_fqdn);
-        BOOST_ERROR("domain must have invalid handle, \
-                     unmanaged zone and exceeded number of labels");
+        BOOST_ERROR("domain must have invalid handle, "
+                    "unmanaged zone and exceeded number of labels");
     }
     catch(const Registry::WhoisImpl::InvalidLabel& ex)
     {
@@ -349,27 +350,28 @@ BOOST_FIXTURE_TEST_CASE(invalid_unmanaged_toomany, invalid_unmanaged_toomany_fix
     }
 }
 
-struct delete_candidate_fixture //Jiri: check carefully
+struct delete_candidate_fixture 
 : whois_impl_instance_fixture
 {
-    std::string xmark;
     Fred::OperationContext ctx;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
     std::string delete_fqdn;
 
     delete_candidate_fixture()
-    : registrar(
-          Test::exec(Test::CreateX_factory<Fred::CreateRegistrar>().make(), ctx)),
-      contact(
-          Test::exec(
-              Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle),
-              ctx)),
-      delete_fqdn(std::string("test-delete") + xmark + ".cz")
+    : contact(Test::exec(
+          Test::CreateX_factory<Fred::CreateContact>()
+              .make(Test::registrar(ctx).info_data.handle),
+          ctx)),
+      delete_fqdn("test-delete.cz")
     {
-        Fred::CreateDomain(delete_fqdn, registrar.handle, contact.handle)
-          .set_admin_contacts(Util::vector_of<std::string>(contact.handle)) //?
-          .exec(ctx);
+        Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
+                       .make(Test::registrar(ctx).info_data.handle,
+                             Test::contact(ctx).info_data.handle,
+                             delete_fqdn)
+                       .set_admin_contacts(Util::vector_of<std::string>(
+                           Test::contact::make(ctx).handle)),
+                   ctx);
         ctx.get_conn().exec_params(
             "UPDATE domain_history "
             "SET exdate = now() - "

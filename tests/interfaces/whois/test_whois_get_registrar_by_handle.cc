@@ -1,8 +1,6 @@
 #include "tests/interfaces/whois/fixture_common.h"
 #include "util/random_data_generator.h"
 
-
-//registrar!
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
