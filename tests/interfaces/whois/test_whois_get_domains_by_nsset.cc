@@ -42,11 +42,6 @@ struct domains_by_nsset_fixture
                     .set_admin_contacts(Util::vector_of<std::string>(admin.handle)),
                     ctx);
             domain_info[idd.fqdn] = idd;
-
-//            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
-//                .set_nsset(test_nsset)
-//                .set_admin_contacts(Util::vector_of<std::string>(test_admin))
-//                .exec(ctx);
         }
         for(int i=0; i < 3; ++i)//3 different domains for another nsset
         {
@@ -56,11 +51,6 @@ struct domains_by_nsset_fixture
                            .set_admin_contacts(
                                Util::vector_of<std::string>(admin.handle)),
                        ctx);
-
-//            Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
-//                .set_nsset(std::string("different-nsset"))
-//                .set_admin_contacts(Util::vector_of<std::string>("different admin"))
-//                .exec(ctx);
         }
         //1 with no nsset
         Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
@@ -86,7 +76,6 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);
-        BOOST_REQUIRE(found != domain_info.end());
         BOOST_CHECK(it->admin_contact_handles.at(0) ==
             found->second.admin_contacts.at(0).handle);
         BOOST_CHECK(it->changed.get_value() == ptime(not_a_date_time));
