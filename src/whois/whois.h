@@ -74,7 +74,7 @@ struct Contact
     std::string creating_registrar_handle;
     std::string sponsoring_registrar_handle;
     boost::posix_time::ptime created;
-    Nullable<boost::posix_time::ptime> changed; //TODO make sure empty time is considered a valid input
+    Nullable<boost::posix_time::ptime> changed;
     Nullable<boost::posix_time::ptime> last_transfer;
     std::vector<std::string> statuses;
 

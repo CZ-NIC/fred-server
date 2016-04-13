@@ -33,7 +33,7 @@ struct domains_by_nsset_fixture
                   static_cast<std::string>(ctx.get_conn()
                   .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
-        for(int i=0; i < regular_domains; ++i)
+        for(unsigned int i=0; i < regular_domains; ++i)
         {
             const Fred::InfoDomainData& idd = Test::exec(
                     Test::CreateX_factory<Fred::CreateDomain>()

@@ -1,4 +1,7 @@
-//many registrars!
+#include "tests/interfaces/whois/fixture_common.h"
+#include "tests/setup/fixtures_utils.h"
+
+BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_nssets_by_ns)
 
 struct get_nssets_by_ns_fixture
@@ -56,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 
         BOOST_CHECK(nss_s.content.at(i).changed.isnull());
         BOOST_CHECK(nss_s.content.at(i).last_transfer.isnull());
-        BOOST_CHECK(nss_s.content.at(i).created == found.creation_time);//as that or greater than __
+        BOOST_CHECK(nss_s.content.at(i).created == now_utc);//as that or greater than __
         BOOST_CHECK(nss_s.content.at(i).handle == found.handle);
         BOOST_CHECK(nss_s.content.at(i).nservers.at(0).fqdn == found.dns_hosts.at(0).get_fqdn());
         BOOST_CHECK(nss_s.content.at(i).nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0)); //comparing two boost::address'es
@@ -94,3 +97,4 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, get_nssets_by_ns_fixture)
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_ns
+BOOST_AUTO_TEST_SUITE_END()//TestWhois

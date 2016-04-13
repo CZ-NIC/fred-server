@@ -225,17 +225,39 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             const Fred::InfoContactData icd = Fred::InfoContactByHandle(handle)
                 .exec(ctx, output_timezone).info_contact_data;
             Contact con;
-            con.address.city = icd.place.get_value_or_default().city;
+            con.handle = icd.handle;
+            con.organization = icd.organization.get_value_or_default();
+            con.name = icd.name.get_value_or_default();
+            con.phone = icd.telephone.get_value_or_default();
+            con.fax = icd.fax.get_value_or_default();
+            con.email = icd.email.get_value_or_default();
+            con.notify_email = icd.notifyemail.get_value_or_default();
+            con.vat_number = icd.vat.get_value_or_default();
+            con.creating_registrar_handle = icd.create_registrar_handle;
+            con.sponsoring_registrar_handle = icd.sponsoring_registrar_handle;
+            con.created = icd.creation_time;
+            con.changed = icd.update_time.get_value_or_default();
+            con.last_transfer = icd.transfer_time.get_value_or_default();
+//?            con.identification = icd.;
+            con.address.city         = icd.place.get_value_or_default().city;
             con.address.country_code = icd.place.get_value_or_default().country;
-            con.address.postal_code = icd.place.get_value_or_default().postalcode;
+            con.address.postal_code  = icd.place.get_value_or_default().postalcode;
             con.address.stateorprovince =
-                    icd.place.get_value_or_default().stateorprovince.get_value_or_default();
+                icd.place.get_value_or_default().stateorprovince.get_value_or_default();
             con.address.street1 =
-                    icd.place.get_value_or_default().street1;
+                icd.place.get_value_or_default().street1;
             con.address.street2 =
-                    icd.place.get_value_or_default().street2.get_value_or_default();
+                icd.place.get_value_or_default().street2.get_value_or_default();
             con.address.street3 =
-                    icd.place.get_value_or_default().street3.get_value_or_default();
+                icd.place.get_value_or_default().street3.get_value_or_default();
+
+            const ObjectStateDataList v_osd = Fred::GetObjectStates(icd.id).exec(ctx);
+            con.statuses.reserve(v_osd.size());
+            for(ObjectStateDataList::const_iterator it = v_osd.begin(); it != v_osd.end(); ++it)
+            {
+                if(it->is_external)
+                    con.statuses.push_back(it->state_name);
+            }
             return con;
         }
         catch(const Fred::InfoContactByHandle::Exception& e)
@@ -263,10 +285,10 @@ WhoisImpl::NSSet Server_impl::make_nsset_from_info_data(
         Fred::OperationContext& ctx)
 {
     WhoisImpl::NSSet nss;
-    nss.changed = Nullable<boost::posix_time::ptime>(ind.update_time.get_value_or_default());
+    nss.changed = ind.update_time;
     nss.created = ind.creation_time;
     nss.handle = ind.handle;
-    nss.last_transfer = ind.transfer_time.get_value_or_default();
+    nss.last_transfer = ind.transfer_time;
     nss.nservers.reserve(ind.dns_hosts.size());
     WhoisImpl::NameServer ns;
     for(std::vector<Fred::DnsHost>::const_iterator it = ind.dns_hosts.begin();
@@ -286,6 +308,12 @@ WhoisImpl::NSSet Server_impl::make_nsset_from_info_data(
         nss.nservers.push_back(ns);
     }
     nss.registrar_handle = ind.sponsoring_registrar_handle;
+    for(std::vector<Fred::ObjectIdHandlePair>::const_iterator it = ind.tech_contacts.begin();
+        it != ind.tech_contacts.end();
+        ++it) 
+    {
+        nss.tech_contact_handles.push_back(it->handle);
+    }
     const ObjectStateDataList v_osd = Fred::GetObjectStates(ind.id).exec(ctx);
     nss.statuses.reserve(v_osd.size());
     for(ObjectStateDataList::const_iterator it2 = v_osd.begin(); it2 != v_osd.end(); ++it2)
@@ -445,7 +473,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
                 .exec(ctx, output_timezone).info_keyset_data;
             WhoisImpl::KeySet ks;
             ks.handle = ikd.handle;
-            ks.changed = ikd.update_time.get_value_or_default();
+            ks.changed = ikd.update_time;
             ks.created = ikd.creation_time;
             ks.registrar_handle = ikd.create_registrar_handle;
             ks.dns_keys.reserve(ikd.dns_keys.size());
@@ -521,7 +549,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
         }
         for(; it != end; ++it)
         {
-            temp.changed = it->info_keyset_data.update_time.get_value_or_default();
+            temp.changed = it->info_keyset_data.update_time;
             temp.created = it->info_keyset_data.creation_time;
 
             temp.dns_keys.reserve(it->info_keyset_data.dns_keys.size());
@@ -538,7 +566,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
             }
 
             temp.handle = it->info_keyset_data.handle;
-            temp.last_transfer = it->info_keyset_data.transfer_time.get_value_or_default();
+            temp.last_transfer = it->info_keyset_data.transfer_time;
             temp.registrar_handle = it->info_keyset_data.create_registrar_handle;
 
             const ObjectStateDataList v_osd = Fred::GetObjectStates(it->info_keyset_data.id).exec(ctx);
@@ -587,11 +615,11 @@ WhoisImpl::Domain Server_impl::make_domain_from_info_data(const Fred::InfoDomain
             idd.admin_contacts.begin();
     for(; it != idd.admin_contacts.end(); ++it)
         result.admin_contact_handles.push_back(it->handle);
-    result.changed = idd.update_time.get_value_or_default();
+    result.changed = idd.update_time;
     result.expire = idd.expiration_date;
     result.fqdn = idd.fqdn;
     result.keyset_handle = idd.keyset.get_value_or_default().handle;
-    result.last_transfer = idd.transfer_time.get_value_or_default();
+    result.last_transfer = idd.transfer_time;
     result.nsset_handle = idd.nsset.get_value_or_default().handle;
     result.registered = idd.creation_time;
     result.registrant_handle = idd.registrant.handle;

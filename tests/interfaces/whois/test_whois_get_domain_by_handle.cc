@@ -44,9 +44,7 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     BOOST_CHECK(dom.fqdn == domain.fqdn);
     BOOST_CHECK(dom.last_transfer.get_value() == ptime(not_a_date_time));
     BOOST_CHECK(dom.registrant_handle == domain.registrant.handle);
-    BOOST_CHECK_EQUAL(dom.registered, now_utc);
-    BOOST_MESSAGE(dom.registrar_handle);
-    BOOST_MESSAGE(domain.create_registrar_handle);
+    BOOST_CHECK(dom.registered == now_utc);
     BOOST_CHECK(dom.registrar_handle == domain.create_registrar_handle);
     //Jiri: others?
 }
