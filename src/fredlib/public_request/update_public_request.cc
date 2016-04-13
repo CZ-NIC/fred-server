@@ -66,7 +66,7 @@ namespace {
                              PublicRequestId _public_request_id)
 {
     Database::query_param_list params(_public_request_id);                    //$1::BIGINT
-    params(Conversion::Enums::to_db_handle(Fred::PublicRequest::Status::NEW));//$2::TEXT
+    params(Conversion::Enums::to_db_handle(Fred::PublicRequest::Status::active));//$2::TEXT
     const Database::Result res = _ctx.get_conn().exec_params(
         "UPDATE message_archive ma "
         "SET status_id=(SELECT id FROM enum_send_status WHERE status_name='no_processing'),"
@@ -134,9 +134,9 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
     if (status_.isset()) {
         try {
             switch (status_.get_value()) {
-            case PublicRequest::Status::ANSWERED:
+            case PublicRequest::Status::answered:
                 break;
-            case PublicRequest::Status::INVALIDATED:
+            case PublicRequest::Status::invalidated:
                 stop_letter_sending(_ctx, _public_request_id);
                 break;
             default:
@@ -146,7 +146,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
                     << params.add(Conversion::Enums::to_db_handle(status_.get_value()))
                     << "::TEXT),"
                        "resolve_time=CASE WHEN status=(SELECT id FROM enum_public_request_status WHERE name=$"
-                    << params.add(Conversion::Enums::to_db_handle(PublicRequest::Status::NEW))
+                    << params.add(Conversion::Enums::to_db_handle(PublicRequest::Status::active))
                     << "::TEXT) "
                                          "THEN NOW() "
                                          "ELSE resolve_time "

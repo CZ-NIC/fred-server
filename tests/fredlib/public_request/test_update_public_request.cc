@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::UpdatePublicRequest()
-            .set_status(Fred::PublicRequest::Status::ANSWERED)
+            .set_status(Fred::PublicRequest::Status::answered)
             .exec(PublicRequestLockGuardFake(ctx, bad_public_request_id));
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
 {
     Fred::OperationContextCreator ctx;
     Fred::PublicRequestLockGuardById locked_request(ctx, create_result.public_request_id);
-    const Fred::PublicRequest::Status::Enum enum_status = Fred::PublicRequest::Status::ANSWERED;
+    const Fred::PublicRequest::Status::Enum enum_status = Fred::PublicRequest::Status::answered;
     const std::string str_status = Conversion::Enums::to_db_handle(enum_status);
     const std::string reason = "Prostě proto.";
     const std::string email = "noreply@nic.cz";

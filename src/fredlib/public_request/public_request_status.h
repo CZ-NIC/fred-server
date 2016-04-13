@@ -40,9 +40,9 @@ struct Status
      */
     enum Enum//enum_public_request_status table
     {
-        NEW,
-        ANSWERED,
-        INVALIDATED,
+        active,
+        answered,
+        invalidated,
     };
 };
 
@@ -56,9 +56,9 @@ inline std::string to_db_handle(Fred::PublicRequest::Status::Enum value)
 {
     switch (value)
     {
-        case Fred::PublicRequest::Status::NEW:         return "new";
-        case Fred::PublicRequest::Status::ANSWERED:    return "answered";
-        case Fred::PublicRequest::Status::INVALIDATED: return "invalidated";
+        case Fred::PublicRequest::Status::active:      return "new";
+        case Fred::PublicRequest::Status::answered:    return "answered";
+        case Fred::PublicRequest::Status::invalidated: return "invalidated";
     }
     throw std::invalid_argument("value doesn't exist in Fred::PublicRequest::Status::Enum");
 }
@@ -66,9 +66,9 @@ inline std::string to_db_handle(Fred::PublicRequest::Status::Enum value)
 template < >
 inline Fred::PublicRequest::Status::Enum from_db_handle< Fred::PublicRequest::Status >(const std::string &db_handle)
 {
-    if (to_db_handle(Fred::PublicRequest::Status::NEW) == db_handle) { return Fred::PublicRequest::Status::NEW; }
-    if (to_db_handle(Fred::PublicRequest::Status::ANSWERED) == db_handle) { return Fred::PublicRequest::Status::ANSWERED; }
-    if (to_db_handle(Fred::PublicRequest::Status::INVALIDATED) == db_handle) { return Fred::PublicRequest::Status::INVALIDATED; }
+    if (to_db_handle(Fred::PublicRequest::Status::active) == db_handle) { return Fred::PublicRequest::Status::active; }
+    if (to_db_handle(Fred::PublicRequest::Status::answered) == db_handle) { return Fred::PublicRequest::Status::answered; }
+    if (to_db_handle(Fred::PublicRequest::Status::invalidated) == db_handle) { return Fred::PublicRequest::Status::invalidated; }
     throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::PublicRequest::Status::Enum");
 }
 

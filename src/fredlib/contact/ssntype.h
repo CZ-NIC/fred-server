@@ -32,12 +32,12 @@ struct SSNType
 {
     enum Enum//enum_ssntype table
     {
-        RC,
-        OP,
-        PASS,
-        ICO,
-        MPSV,
-        BIRTHDAY
+        rc,
+        op,
+        pass,
+        ico,
+        mpsv,
+        birthday
     };
 };
 
@@ -50,12 +50,12 @@ inline std::string to_db_handle(Fred::SSNType::Enum value)
 {
     switch (value)
     {
-        case Fred::SSNType::RC:       return "RC";
-        case Fred::SSNType::OP:       return "OP";
-        case Fred::SSNType::PASS:     return "PASS";
-        case Fred::SSNType::ICO:      return "ICO";
-        case Fred::SSNType::MPSV:     return "MPSV";
-        case Fred::SSNType::BIRTHDAY: return "BIRTHDAY";
+        case Fred::SSNType::rc:       return "RC";
+        case Fred::SSNType::op:       return "OP";
+        case Fred::SSNType::pass:     return "PASS";
+        case Fred::SSNType::ico:      return "ICO";
+        case Fred::SSNType::mpsv:     return "MPSV";
+        case Fred::SSNType::birthday: return "BIRTHDAY";
     }
     throw std::invalid_argument("value doesn't exist in Fred::SSNType::Enum");
 }
@@ -63,12 +63,12 @@ inline std::string to_db_handle(Fred::SSNType::Enum value)
 template < >
 inline Fred::SSNType::Enum from_db_handle< Fred::SSNType >(const std::string &db_handle)
 {
-    if (to_db_handle(Fred::SSNType::RC) == db_handle) { return Fred::SSNType::RC; }
-    if (to_db_handle(Fred::SSNType::OP) == db_handle) { return Fred::SSNType::OP; }
-    if (to_db_handle(Fred::SSNType::PASS) == db_handle) { return Fred::SSNType::PASS; }
-    if (to_db_handle(Fred::SSNType::ICO) == db_handle) { return Fred::SSNType::ICO; }
-    if (to_db_handle(Fred::SSNType::MPSV) == db_handle) { return Fred::SSNType::MPSV; }
-    if (to_db_handle(Fred::SSNType::BIRTHDAY) == db_handle) { return Fred::SSNType::BIRTHDAY; }
+    if (to_db_handle(Fred::SSNType::rc) == db_handle) { return Fred::SSNType::rc; }
+    if (to_db_handle(Fred::SSNType::op) == db_handle) { return Fred::SSNType::op; }
+    if (to_db_handle(Fred::SSNType::pass) == db_handle) { return Fred::SSNType::pass; }
+    if (to_db_handle(Fred::SSNType::ico) == db_handle) { return Fred::SSNType::ico; }
+    if (to_db_handle(Fred::SSNType::mpsv) == db_handle) { return Fred::SSNType::mpsv; }
+    if (to_db_handle(Fred::SSNType::birthday) == db_handle) { return Fred::SSNType::birthday; }
     throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::SSNType::Enum");
 }
 

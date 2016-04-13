@@ -23,20 +23,20 @@ namespace Messages {//MojeID::Messages
 
 namespace {         //MojeID::Messages::{anonymous}
 
-template < CommChannel::Value >
+template < CommChannel::Enum >
 struct RequiredStatus
 {
     static std::string value(Database::query_param_list &_params)
     {
-        return "$" + _params.add(Conversion::Enums::to_db_handle(Fred::PublicRequest::Status::NEW)) + "::TEXT";
+        return "$" + _params.add(Conversion::Enums::to_db_handle(Fred::PublicRequest::Status::active)) + "::TEXT";
     }
 };
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 struct PossibleRequestTypes;
 
 template < >
-struct PossibleRequestTypes< CommChannel::SMS >
+struct PossibleRequestTypes< CommChannel::sms >
 {
     typedef Fred::MojeID::PublicRequest::ContactConditionalIdentification        PubReqCCI;
     typedef Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer PubReqPUCT;
@@ -59,7 +59,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
         GeneralId _contact_history_id)
     {
         if (PubReqCCI().get_public_request_type() == _public_request_type) {
-            const Generate::MessageId message_id = Generate::Into< CommChannel::SMS >::for_given_request< PubReqCCI >(
+            const Generate::MessageId message_id = Generate::Into< CommChannel::sms >::for_given_request< PubReqCCI >(
                 _ctx,
                 _multimanager,
                 _locked_request,
@@ -70,7 +70,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
             return message_id;
         }
         if (PubReqPUCT().get_public_request_type() == _public_request_type) {
-            const Generate::MessageId message_id = Generate::Into< CommChannel::SMS >::for_given_request< PubReqPUCT >(
+            const Generate::MessageId message_id = Generate::Into< CommChannel::sms >::for_given_request< PubReqPUCT >(
                 _ctx,
                 _multimanager,
                 _locked_request,
@@ -85,7 +85,7 @@ struct PossibleRequestTypes< CommChannel::SMS >
 };
 
 template < >
-struct PossibleRequestTypes< CommChannel::LETTER >
+struct PossibleRequestTypes< CommChannel::letter >
 {
     typedef Fred::MojeID::PublicRequest::ContactIdentification   PubReqCI;
     typedef Fred::MojeID::PublicRequest::ContactReidentification PubReqCR;
@@ -107,7 +107,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
         const std::string &_link_hostname_part,
         GeneralId _contact_history_id)
     {
-        static const CommChannel::Value channel_letter = CommChannel::LETTER;
+        static const CommChannel::Enum channel_letter = CommChannel::letter;
         if (PubReqCI().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< channel_letter >::for_given_request< PubReqCI >(
                 _ctx,
@@ -135,7 +135,7 @@ struct PossibleRequestTypes< CommChannel::LETTER >
 };
 
 template < >
-struct PossibleRequestTypes< CommChannel::EMAIL >
+struct PossibleRequestTypes< CommChannel::email >
 {
     typedef Fred::MojeID::PublicRequest::ContactConditionalIdentification        PubReqCCI;
     typedef Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer  PubReqCICT;
@@ -166,7 +166,7 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
         const std::string &_link_hostname_part,
         GeneralId _contact_history_id)
     {
-        static const CommChannel::Value channel_email = CommChannel::EMAIL;
+        static const CommChannel::Enum channel_email = CommChannel::email;
         if (PubReqCCI().get_public_request_type() == _public_request_type) {
             const Generate::MessageId message_id = Generate::Into< channel_email >::for_given_request< PubReqCCI >(
                 _ctx,
@@ -226,11 +226,11 @@ struct PossibleRequestTypes< CommChannel::EMAIL >
     }
 };
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 struct ChannelType;
 
 template < >
-struct ChannelType< CommChannel::SMS >
+struct ChannelType< CommChannel::sms >
 {
     static std::string value(Database::query_param_list &_params)
     {
@@ -239,7 +239,7 @@ struct ChannelType< CommChannel::SMS >
 };
 
 template < >
-struct ChannelType< CommChannel::LETTER >
+struct ChannelType< CommChannel::letter >
 {
     static std::string value(Database::query_param_list &_params)
     {
@@ -248,7 +248,7 @@ struct ChannelType< CommChannel::LETTER >
 };
 
 template < >
-struct ChannelType< CommChannel::EMAIL >
+struct ChannelType< CommChannel::email >
 {
     static std::string value(Database::query_param_list &_params)
     {
@@ -256,7 +256,7 @@ struct ChannelType< CommChannel::EMAIL >
     }
 };
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 struct Exists
 {
     static std::string messages_associated_with(const std::string &_request_id)
@@ -272,7 +272,7 @@ struct Exists
 };
 
 template < >
-struct Exists< CommChannel::EMAIL >
+struct Exists< CommChannel::email >
 {
     static std::string messages_associated_with(const std::string &_request_id)
     {
@@ -283,11 +283,11 @@ struct Exists< CommChannel::EMAIL >
     }
 };
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 struct Parameter;
 
 template < >
-struct Parameter< CommChannel::SMS >
+struct Parameter< CommChannel::sms >
 {
     static std::string name(Database::query_param_list &_params)
     {
@@ -296,7 +296,7 @@ struct Parameter< CommChannel::SMS >
 };
 
 template < >
-struct Parameter< CommChannel::LETTER >
+struct Parameter< CommChannel::letter >
 {
     static std::string name(Database::query_param_list &_params)
     {
@@ -305,7 +305,7 @@ struct Parameter< CommChannel::LETTER >
 };
 
 template < >
-struct Parameter< CommChannel::EMAIL >
+struct Parameter< CommChannel::email >
 {
     static std::string name(Database::query_param_list &_params)
     {
@@ -319,7 +319,7 @@ struct DbCommand
     Database::query_param_list params;
 };
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 struct collect_query_for
 {
     static DbCommand init()
@@ -379,10 +379,10 @@ struct collect_query_for
     static const DbCommand sql;
 };
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 const DbCommand collect_query_for< COMM_CHANNEL >::sql = collect_query_for< COMM_CHANNEL >::init();
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 struct JoinMessage
 {
     static void with_public_request(Fred::OperationContext &_ctx,
@@ -402,7 +402,7 @@ struct JoinMessage
 };
 
 template < >
-struct JoinMessage< CommChannel::EMAIL >
+struct JoinMessage< CommChannel::email >
 {
     static void with_public_request(Fred::OperationContext &_ctx,
                                     const Fred::LockedPublicRequest &_locked_request,
@@ -442,11 +442,11 @@ private:
     const Fred::ObjectId object_id_;
 };
 
-template < CommChannel::Value COMM_CHANNEL, typename PUBLIC_REQUEST_TYPE >
+template < CommChannel::Enum COMM_CHANNEL, typename PUBLIC_REQUEST_TYPE >
 struct generate_message;
 
 template < >
-struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactConditionalIdentification >
+struct generate_message< CommChannel::sms, Fred::MojeID::PublicRequest::ContactConditionalIdentification >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -489,7 +489,7 @@ struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactC
 };
 
 template < >
-struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
+struct generate_message< CommChannel::sms, Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -500,7 +500,7 @@ struct generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::Prevalid
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
-        return generate_message< CommChannel::SMS, Fred::MojeID::PublicRequest::ContactConditionalIdentification >::
+        return generate_message< CommChannel::sms, Fred::MojeID::PublicRequest::ContactConditionalIdentification >::
                    for_given_request(_ctx,
                                      _multimanager,
                                      _locked_request,
@@ -623,7 +623,7 @@ Generate::MessageId send_auth_owner_letter(
 }
 
 template < >
-struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::ContactIdentification >
+struct generate_message< CommChannel::letter, Fred::MojeID::PublicRequest::ContactIdentification >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -635,7 +635,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const Optional< GeneralId > &_contact_history_id)
     {
         typedef Fred::Object::State FOS;
-        const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::VALIDATED_CONTACT);
+        const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::validated_contact);
         const std::string message_type_mojeid_pin3 = "mojeid_pin3";
         Database::query_param_list params;
         params(_locked_request.get_id())
@@ -704,7 +704,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
 };
 
 template < >
-struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::ContactReidentification >
+struct generate_message< CommChannel::letter, Fred::MojeID::PublicRequest::ContactReidentification >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -716,7 +716,7 @@ struct generate_message< CommChannel::LETTER, Fred::MojeID::PublicRequest::Conta
         const Optional< GeneralId > &_contact_history_id)
     {
         typedef Fred::Object::State FOS;
-        const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::VALIDATED_CONTACT);
+        const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::validated_contact);
         Database::query_param_list params;
         params(_locked_request.get_id())
               (_locked_contact.get_id())
@@ -908,7 +908,7 @@ Generate::MessageId send_email(
 }
 
 template < >
-struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::ContactConditionalIdentification >
+struct generate_message< CommChannel::email, Fred::MojeID::PublicRequest::ContactConditionalIdentification >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -933,7 +933,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Contac
 };
 
 template < >
-struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer >
+struct generate_message< CommChannel::email, Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -958,7 +958,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Condit
 };
 
 template < >
-struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::IdentifiedContactTransfer >
+struct generate_message< CommChannel::email, Fred::MojeID::PublicRequest::IdentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -983,7 +983,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Identi
 };
 
 template < >
-struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
+struct generate_message< CommChannel::email, Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -1008,7 +1008,7 @@ struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::Preval
 };
 
 template < >
-struct generate_message< CommChannel::EMAIL, Fred::MojeID::PublicRequest::PrevalidatedContactTransfer >
+struct generate_message< CommChannel::email, Fred::MojeID::PublicRequest::PrevalidatedContactTransfer >
 {
     static Generate::MessageId for_given_request(
         Fred::OperationContext &_ctx,
@@ -1091,7 +1091,7 @@ Fred::Messages::Manager* DefaultMultimanager::messages()
     return messages_manager_ptr_.get();
 }
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 void Generate::Into< COMM_CHANNEL >::for_new_requests(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1128,23 +1128,23 @@ void Generate::Into< COMM_CHANNEL >::for_new_requests(
     }
 }
 
-template void Generate::Into< CommChannel::SMS    >::for_new_requests(
+template void Generate::Into< CommChannel::sms    >::for_new_requests(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part);
-template void Generate::Into< CommChannel::EMAIL  >::for_new_requests(
+template void Generate::Into< CommChannel::email  >::for_new_requests(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part);
-template void Generate::Into< CommChannel::LETTER >::for_new_requests(
+template void Generate::Into< CommChannel::letter >::for_new_requests(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
         const message_checker &_check_message_limits,
         const std::string &_link_hostname_part);
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 void Generate::enable(Fred::OperationContext &_ctx, bool flag)
 {
     Database::query_param_list params;
@@ -1154,11 +1154,11 @@ void Generate::enable(Fred::OperationContext &_ctx, bool flag)
     _ctx.get_conn().exec_params(sql, params);
 }
 
-template void Generate::enable< CommChannel::SMS    >(Fred::OperationContext &_ctx, bool flag);
-template void Generate::enable< CommChannel::EMAIL  >(Fred::OperationContext &_ctx, bool flag);
-template void Generate::enable< CommChannel::LETTER >(Fred::OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::sms    >(Fred::OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::email  >(Fred::OperationContext &_ctx, bool flag);
+template void Generate::enable< CommChannel::letter >(Fred::OperationContext &_ctx, bool flag);
 
-template < CommChannel::Value COMM_CHANNEL >
+template < CommChannel::Enum COMM_CHANNEL >
 template < typename PUBLIC_REQUEST_TYPE >
 Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
         Fred::OperationContext &_ctx,
@@ -1179,7 +1179,7 @@ Generate::MessageId Generate::Into< COMM_CHANNEL >::for_given_request(
         _contact_history_id);
 }
 
-template Generate::MessageId Generate::Into< CommChannel::SMS >::
+template Generate::MessageId Generate::Into< CommChannel::sms >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactConditionalIdentification >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1189,7 +1189,7 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::SMS >::
+template Generate::MessageId Generate::Into< CommChannel::sms >::
                              for_given_request< Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1199,7 +1199,7 @@ template Generate::MessageId Generate::Into< CommChannel::SMS >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::LETTER >::
+template Generate::MessageId Generate::Into< CommChannel::letter >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactIdentification >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1209,7 +1209,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::LETTER >::
+template Generate::MessageId Generate::Into< CommChannel::letter >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactReidentification >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1219,7 +1219,7 @@ template Generate::MessageId Generate::Into< CommChannel::LETTER >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
+template Generate::MessageId Generate::Into< CommChannel::email >::
                              for_given_request< Fred::MojeID::PublicRequest::ContactConditionalIdentification >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1229,7 +1229,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
+template Generate::MessageId Generate::Into< CommChannel::email >::
                              for_given_request< Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1239,7 +1239,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
+template Generate::MessageId Generate::Into< CommChannel::email >::
                              for_given_request< Fred::MojeID::PublicRequest::IdentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1249,7 +1249,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
+template Generate::MessageId Generate::Into< CommChannel::email >::
                              for_given_request< Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
@@ -1259,7 +1259,7 @@ template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id);
 
-template Generate::MessageId Generate::Into< CommChannel::EMAIL >::
+template Generate::MessageId Generate::Into< CommChannel::email >::
                              for_given_request< Fred::MojeID::PublicRequest::PrevalidatedContactTransfer >(
         Fred::OperationContext &_ctx,
         Multimanager &_multimanager,
