@@ -27,15 +27,15 @@ namespace Fred
     };
 
     struct UnknownDomainId : UnknownObjectId {
-        const char* what() const throw() { return "unknown contact id"; }
+        const char* what() const throw() { return "unknown domain id"; }
     };
 
     struct UnknownKeysetId : UnknownObjectId {
-        const char* what() const throw() { return "unknown contact id"; }
+        const char* what() const throw() { return "unknown keyset id"; }
     };
 
     struct UnknownNssetId : UnknownObjectId {
-        const char* what() const throw() { return "unknown contact id"; }
+        const char* what() const throw() { return "unknown nsset id"; }
     };
 }
 
