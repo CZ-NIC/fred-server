@@ -1,48 +1,47 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "util/random_data_generator.h"
+#include "tests/setup/fixtures_utils.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_registrars)
 
-//STOPPED IN THE MIDDLE
 struct get_my_registrar_list_fixture
 : whois_impl_instance_fixture
 {
     Fred::OperationContext ctx;
-    std::map<std::string,Fred::InfoRegistrarOutput> registrar_info;
-    int system_registars, total_registrars;
+    std::map<std::string,Fred::InfoRegistrarData> registrar_info;
+    unsigned int total_registrars;
 
     get_my_registrar_list_fixture()
-      system_registars(5),
-      total_registrars(10)
+    : total_registrars(10)
     {
-        for(int i=0; i < total_registrars; ++i)
+        const std::vector<Fred::InfoRegistrarOutput> v =
+                Fred::InfoRegistrarAllExceptSystem().exec(ctx, "UTC");
+        for(std::vector<Fred::InfoRegistrarOutput>::const_iterator it =
+                  v.begin();
+            it != v.end();
+            ++it)
         {
-            std::ostringstream test_handles;
-            test_handles << test_registrar_handle << i;
-
-//            Test::exec(
-//                Fred::CreateRegistrar("REG-FOO")//!
-//                  .set_name(std::string("TEST-REGISTRAR NAME"))
-//                  .set_street1(std::string("str1"))
-//                  .set_city("Praha")
-//                  .set_postalcode("11150")
-//                  .set_country("CZ"),
-//                ctx)
-            Fred::CreateRegistrar& cr = Fred::CreateRegistrar(test_handles.str())
-                .set_name(std::string("TEST-REGISTRAR NAME")+xmark+boost::lexical_cast<std::string>(i))
-                .set_street1(std::string("STR1")+xmark)
-                .set_city("Praha")
-                .set_postalcode("11150")
-                .set_country("CZ");
-            if(i > system_registars)
-            {
-                cr.set_system(true);
-            }
-            cr.exec(ctx);
-            registrar_info[test_handles.str()] =
-                    Fred::InfoRegistrarByHandle(test_handles.str())
-                    .exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
+            registrar_info[it->info_registrar_data.handle] =
+                it->info_registrar_data;
+        }
+        for(unsigned int i=0; i < total_registrars; ++i)
+        {
+            const Fred::InfoRegistrarData& ird =
+                Test::exec(
+                    Test::generate_test_data(
+                        Test::CreateX_factory<Fred::CreateRegistrar>().make())
+                        .set_system(false),
+                ctx);
+            registrar_info[ird.handle] = ird;
+        }
+        total_registrars += v.size();
+        for(unsigned int i=0; i < 3; ++i)
+        {
+            Test::exec(
+                Test::generate_test_data(
+                    Test::CreateX_factory<Fred::CreateRegistrar>().make())
+                        .set_system(true),
+                ctx);
         }
         ctx.commit_transaction();
     }
@@ -50,21 +49,39 @@ struct get_my_registrar_list_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
 {
-    Fred::OperationContext ctx;
-    std::vector<Fred::InfoRegistrarOutput> reg_list_out =
-            Fred::InfoRegistrarAllExceptSystem()
-            .exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
-    BOOST_CHECK(reg_list_out.size() == registrar_info.size() - system_registars);
-    for(unsigned int i=0; i < reg_list_out.size(); ++i)
+    std::vector<Registry::WhoisImpl::Registrar> registrar_vec =
+        impl.get_registrars();
+    BOOST_CHECK(registrar_vec.size() == total_registrars);
+    std::map<std::string, Fred::InfoRegistrarData>::iterator found;
+    for(std::vector<Registry::WhoisImpl::Registrar>::iterator it =
+              registrar_vec.begin();
+        it != registrar_vec.end();
+        ++it)
     {
-        //refactor
-        BOOST_CHECK(reg_list_out.at(i).info_registrar_data.handle == map_at(registrar_info, reg_list_out.at(i).info_registrar_data.handle).info_registrar_data.handle);
-        BOOST_CHECK(reg_list_out.at(i).info_registrar_data.id == map_at(registrar_info, reg_list_out.at(i).info_registrar_data.handle).info_registrar_data.id);
-        BOOST_CHECK(reg_list_out.at(i).info_registrar_data.street1.get_value() == map_at(registrar_info, reg_list_out.at(i).info_registrar_data.handle).info_registrar_data.street1.get_value());
-        BOOST_CHECK(reg_list_out.at(i).info_registrar_data.city.get_value() == map_at(registrar_info, reg_list_out.at(i).info_registrar_data.handle).info_registrar_data.city.get_value());
-        BOOST_CHECK(reg_list_out.at(i).info_registrar_data.postalcode.get_value() == map_at(registrar_info, reg_list_out.at(i).info_registrar_data.handle).info_registrar_data.postalcode.get_value());
-        BOOST_CHECK(reg_list_out.at(i).info_registrar_data.country.get_value() == map_at(registrar_info, reg_list_out.at(i).info_registrar_data.handle).info_registrar_data.country.get_value());
-        BOOST_CHECK(!reg_list_out.at(i).info_registrar_data.system.get_value());//neither of them to be system
+        found = registrar_info.find(it->handle);
+        BOOST_CHECK(it->address.city ==
+                found->second.city.get_value_or_default());
+        BOOST_CHECK(it->address.country_code ==
+                found->second.country.get_value_or_default());
+        BOOST_CHECK(it->address.postal_code ==
+                found->second.postalcode.get_value_or_default());
+        BOOST_CHECK(it->address.stateorprovince ==
+                found->second.stateorprovince.get_value_or_default());
+        BOOST_CHECK(it->address.street1 ==
+                found->second.street1.get_value_or_default());
+        BOOST_CHECK(it->address.street2 ==
+                found->second.street2.get_value_or_default());
+        BOOST_CHECK(it->address.street3 ==
+                found->second.street3.get_value_or_default());
+        BOOST_CHECK(it->organization ==
+                found->second.organization.get_value_or_default());
+        BOOST_CHECK(it->phone ==
+                found->second.telephone.get_value_or_default());
+        BOOST_CHECK(it->fax == found->second.fax.get_value_or_default());
+        BOOST_CHECK(it->name == found->second.name.get_value_or_default());
+        BOOST_CHECK(it->handle == found->second.handle);
+        BOOST_CHECK(it->id == found->second.id);
+        BOOST_CHECK(it->url == found->second.url.get_value_or_default());
     }
 }
 
