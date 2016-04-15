@@ -112,7 +112,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fi
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_absent_nsset, domains_by_nsset_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_absent_nsset, whois_impl_instance_fixture)
 {
     try
     {
@@ -127,7 +127,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_absent_nsset, domains_by_nsset_fixt
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_no_nsset, domains_by_nsset_fixture)
+BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_no_nsset, whois_impl_instance_fixture)
 {
     try
     {

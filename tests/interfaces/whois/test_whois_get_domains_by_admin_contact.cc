@@ -56,7 +56,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
+    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it != domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -77,7 +77,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it < domain_vec.end(); ++it)
+    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it != domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(found != domain_info.end());

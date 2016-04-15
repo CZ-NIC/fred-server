@@ -862,7 +862,7 @@ std::vector<ObjectStatusDesc> Server_impl::get_object_status_descriptions(
         state_seq.reserve(states.size());
         ObjectStatusDesc tmp;
         for(std::vector<Fred::ObjectStateDescription>::const_iterator c_it =
-                states.begin();
+                    states.begin();
             c_it != states.end();
             ++c_it)
         {
