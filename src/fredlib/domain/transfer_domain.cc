@@ -54,7 +54,6 @@ namespace Fred
 
         } catch(const Fred::InfoDomainById::Exception& e) {
             if( e.is_set_unknown_object_id() ) {
-                /* XXX relying on the fact that exception is thrown if DOMAIN is not found */
                 throw UnknownDomainId();
             }
             throw;

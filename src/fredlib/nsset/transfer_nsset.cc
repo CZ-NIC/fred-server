@@ -50,7 +50,6 @@ namespace Fred
 
         } catch(const Fred::InfoNssetById::Exception& e) {
             if( e.is_set_unknown_object_id() ) {
-                /* XXX relying on the fact that exception is thrown if NSSET is not found */
                 throw UnknownNssetId();
             }
             throw;
