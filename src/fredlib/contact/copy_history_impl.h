@@ -35,8 +35,8 @@ namespace Fred
      */
     void copy_contact_data_to_contact_history_impl(
         Fred::OperationContext& _ctx,
-        const unsigned long long _contact_id,
-        const unsigned long long _historyid
+        unsigned long long _contact_id,
+        unsigned long long _historyid
     );
 }
 

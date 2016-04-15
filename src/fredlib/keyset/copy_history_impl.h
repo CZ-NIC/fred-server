@@ -37,8 +37,8 @@ namespace Fred
      */
     void copy_keyset_data_to_keyset_history_impl(
         Fred::OperationContext& _ctx,
-        const unsigned long long _keyset_id,
-        const unsigned long long _historyid
+        unsigned long long _keyset_id,
+        unsigned long long _historyid
     );
 }
 

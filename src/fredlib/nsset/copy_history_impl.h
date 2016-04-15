@@ -37,8 +37,8 @@ namespace Fred
      */
     void copy_nsset_data_to_nsset_history_impl(
         Fred::OperationContext& _ctx,
-        const unsigned long long _nsset_id,
-        const unsigned long long _historyid
+        unsigned long long _nsset_id,
+        unsigned long long _historyid
     );
 }
 

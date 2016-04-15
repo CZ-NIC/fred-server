@@ -36,8 +36,8 @@ namespace Fred
      */
     void copy_domain_data_to_domain_history_impl(
         Fred::OperationContext& _ctx,
-        const unsigned long long _domain_id,
-        const unsigned long long _historyid
+        unsigned long long _domain_id,
+        unsigned long long _historyid
     );
 }
 
