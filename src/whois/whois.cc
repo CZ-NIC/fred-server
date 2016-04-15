@@ -657,6 +657,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             {
                 throw TooManyLabels();
             }
+//!!!!!!!!
             if(::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
                 return Domain(generate_obfuscate_domain_delete_candidate(handle));
