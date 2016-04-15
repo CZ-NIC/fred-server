@@ -2323,6 +2323,8 @@ tests_interfaces_test_whois_SOURCES = \
 		tests/interfaces/whois/test_whois_get_nsset_by_handle.cc \
 		tests/interfaces/whois/test_whois_get_nssets_by_ns.cc \
 		tests/interfaces/whois/test_whois_get_nssets_by_tech_c.cc \
+		tests/interfaces/whois/test_whois_get_registrars.cc \
+		tests/interfaces/whois/test_whois_get_object_status_descriptions.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
