@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef SAVE_HISTORY_IMPL_36978210455950
-#define SAVE_HISTORY_IMPL_36978210455950
+#ifndef COPY_HISTORY_IMPL_36978210455950
+#define COPY_HISTORY_IMPL_36978210455950
 
 #include "src/fredlib/opcontext.h"
 
