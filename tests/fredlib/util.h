@@ -76,13 +76,13 @@ struct has_domain : has_contact {
 
     has_domain() {
         {
-            const std::string admin_contact1_handle = "ADM_CONTACT1";
+            const std::string admin_contact1_handle = "ADM-CONTACT1";
             Fred::CreateContact(admin_contact1_handle, registrar.handle).exec(ctx);
             admin_contact1 = Fred::InfoContactByHandle(admin_contact1_handle).exec(ctx).info_contact_data;
         }
 
         {
-            const std::string admin_contact2_handle = "ADM_CONTACT2";
+            const std::string admin_contact2_handle = "ADM-CONTACT2";
             Fred::CreateContact(admin_contact2_handle, registrar.handle).exec(ctx);
             admin_contact2 = Fred::InfoContactByHandle(admin_contact2_handle).exec(ctx).info_contact_data;
         }
@@ -105,13 +105,13 @@ struct has_keyset : has_contact {
 
     has_keyset() {
         {
-            const std::string tech_contact1_handle = "TECH_CONTACT1";
+            const std::string tech_contact1_handle = "TECH-CONTACT1";
             Fred::CreateContact(tech_contact1_handle, registrar.handle).exec(ctx);
             tech_contact1 = Fred::InfoContactByHandle(tech_contact1_handle).exec(ctx).info_contact_data;
         }
 
         {
-            const std::string tech_contact2_handle = "TECH_CONTACT2";
+            const std::string tech_contact2_handle = "TECH-CONTACT2";
             Fred::CreateContact(tech_contact2_handle, registrar.handle).exec(ctx);
             tech_contact2 = Fred::InfoContactByHandle(tech_contact2_handle).exec(ctx).info_contact_data;
         }
@@ -139,13 +139,13 @@ struct has_nsset : has_contact {
 
     has_nsset() {
         {
-            const std::string tech_contact1_handle = "TECH_CONTACT1";
+            const std::string tech_contact1_handle = "TECH-CONTACT1";
             Fred::CreateContact(tech_contact1_handle, registrar.handle).exec(ctx);
             tech_contact1 = Fred::InfoContactByHandle(tech_contact1_handle).exec(ctx).info_contact_data;
         }
 
         {
-            const std::string tech_contact2_handle = "TECH_CONTACT2";
+            const std::string tech_contact2_handle = "TECH-CONTACT2";
             Fred::CreateContact(tech_contact2_handle, registrar.handle).exec(ctx);
             tech_contact2 = Fred::InfoContactByHandle(tech_contact2_handle).exec(ctx).info_contact_data;
         }
@@ -172,13 +172,13 @@ struct has_enum_domain : has_contact {
 
     has_enum_domain() {
         {
-            const std::string admin_contact1_handle = "ADM_CONTACT1";
+            const std::string admin_contact1_handle = "ADM-CONTACT1";
             Fred::CreateContact(admin_contact1_handle, registrar.handle).exec(ctx);
             admin_contact1 = Fred::InfoContactByHandle(admin_contact1_handle).exec(ctx).info_contact_data;
         }
 
         {
-            const std::string admin_contact2_handle = "ADM_CONTACT2";
+            const std::string admin_contact2_handle = "ADM-CONTACT2";
             Fred::CreateContact(admin_contact2_handle, registrar.handle).exec(ctx);
             admin_contact2 = Fred::InfoContactByHandle(admin_contact2_handle).exec(ctx).info_contact_data;
         }

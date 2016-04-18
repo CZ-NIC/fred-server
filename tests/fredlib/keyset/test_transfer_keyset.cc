@@ -150,7 +150,7 @@ struct has_keyset_and_a_different_registrar_and_a_different_contact : Test::has_
     Fred::InfoContactData different_contact;
 
     has_keyset_and_a_different_registrar_and_a_different_contact() {
-        const std::string different_contact_handle = "THE_DIFFERENT_ONE";
+        const std::string different_contact_handle = "THE-DIFFERENT-ONE";
         Fred::CreateContact(different_contact_handle, registrar.handle).exec(ctx);
         different_contact = Fred::InfoContactByHandle(different_contact_handle).exec(ctx).info_contact_data;
     }
