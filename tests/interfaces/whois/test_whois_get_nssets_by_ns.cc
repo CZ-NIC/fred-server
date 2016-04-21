@@ -1,5 +1,4 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "tests/setup/fixtures_utils.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_nssets_by_ns)
@@ -7,6 +6,8 @@ BOOST_AUTO_TEST_SUITE(get_nssets_by_ns)
 struct get_nssets_by_ns_fixture
 : whois_impl_instance_fixture
 {
+    typedef Registry::WhoisImpl::NSSet NSSet;
+
     Fred::OperationContext ctx;
     std::string test_fqdn;
     unsigned int test_limit;
@@ -24,10 +25,10 @@ struct get_nssets_by_ns_fixture
       contact(Test::contact::make(ctx)),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now()::timestamp")[0][0]))),
+                      .exec("SELECT now()::timestamp")[0][0]))),
       now_prague(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         for(unsigned int i = 0; i < test_limit; ++i)
         {
@@ -39,7 +40,8 @@ struct get_nssets_by_ns_fixture
                 Test::CreateX_factory<Fred::CreateNsset>()
                     .make(registrar.handle)
                     .set_dns_hosts(dns_hosts)
-                    .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+                    .set_tech_contacts(
+                        Util::vector_of<std::string>(contact.handle)),
                 ctx);
             nsset_info[ind.handle] = ind;
         }
@@ -54,7 +56,8 @@ struct get_nssets_by_ns_fixture
                 Test::CreateX_factory<Fred::CreateNsset>()
                     .make(registrar.handle)
                     .set_dns_hosts(other_hosts)
-                    .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+                    .set_tech_contacts(
+                        Util::vector_of<std::string>(contact.handle)),
                 ctx);
         }
         ctx.commit_transaction();
@@ -63,12 +66,13 @@ struct get_nssets_by_ns_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit);
+    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn,
+                                                                test_limit);
     
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::NSSet>::iterator it = nss_s.content.begin();
+    for(std::vector<NSSet>::iterator it = nss_s.content.begin();
         it != nss_s.content.end();
         ++it)
     {
@@ -82,13 +86,15 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
                 found->second.dns_hosts.at(0).get_fqdn());
         BOOST_CHECK(it->nservers.at(0).ip_addresses.at(0) ==
                 found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it->registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it->registrar_handle ==
+                found->second.create_registrar_handle);
         BOOST_CHECK(it->tech_contact_handles.at(0) ==
                 found->second.tech_contacts.at(0).handle);
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixture)
+BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded,
+                        get_nssets_by_ns_fixture)
 {
     Registry::WhoisImpl::NSSetSeq nss_s =
         impl.get_nssets_by_ns(test_fqdn, test_limit - 1);
@@ -96,7 +102,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::NSSet>::iterator it = nss_s.content.begin();
+    for(std::vector<NSSet>::iterator it = nss_s.content.begin();
         it != nss_s.content.end();
         ++it)
     {
@@ -110,7 +116,8 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
                 found->second.dns_hosts.at(0).get_fqdn());
         BOOST_CHECK(it->nservers.at(0).ip_addresses.at(0) ==
                 found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it->registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it->registrar_handle ==
+                found->second.create_registrar_handle);
         BOOST_CHECK(it->tech_contact_handles.at(0) ==
                 found->second.tech_contacts.at(0).handle);
     }

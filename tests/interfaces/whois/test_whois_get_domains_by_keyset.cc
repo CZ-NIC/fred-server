@@ -1,6 +1,5 @@
 #include "tests/interfaces/whois/fixture_common.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "tests/setup/fixtures_utils.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_domains_by_keyset)

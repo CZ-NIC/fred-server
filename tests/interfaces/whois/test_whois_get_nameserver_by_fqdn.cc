@@ -1,6 +1,5 @@
 #include "src/whois/nameserver_exists.h"
 #include "tests/interfaces/whois/fixture_common.h"
-#include "tests/setup/fixtures_utils.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)

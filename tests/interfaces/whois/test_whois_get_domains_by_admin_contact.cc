@@ -1,6 +1,5 @@
 #include "tests/interfaces/whois/fixture_common.h"
 #include "util/util.h"
-#include "tests/setup/fixtures_utils.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)

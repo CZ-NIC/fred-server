@@ -1,6 +1,6 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "tests/setup/fixtures_utils.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
+#include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(gdsd)//get_domain_status_descriptions)
@@ -9,10 +9,10 @@ struct object_status_descriptions_fixture
 : whois_impl_instance_fixture
 {
     typedef std::map<std::string, std::string> map_type;
-
-    std::string test_lang;
-    std::string object_name;
-    map_type statuses;
+    typedef Registry::WhoisImpl::ObjectStatusDesc StatusDesc;
+    std::string  test_lang;
+    std::string  object_name;
+    map_type     statuses;
     unsigned int status_number;
 
     object_status_descriptions_fixture()
@@ -20,7 +20,8 @@ struct object_status_descriptions_fixture
     {
         statuses["expired"] = "description of expired";
         statuses["unguarded"] = "description of unguarded";
-        statuses["serverTransferProhibited"] = "description of serverTransferProhibited";
+        statuses["serverTransferProhibited"] =
+            "description of serverTransferProhibited";
         Fred::OperationContext ctx;
         BOOST_FOREACH(map_type::value_type& p, statuses)
         {
@@ -46,7 +47,7 @@ struct domain_type
       object_name = ("domain");
     }
 
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    std::vector<StatusDesc> get_description(const std::string& lang)
     {
         return impl.get_domain_status_descriptions(lang);
     }
@@ -62,7 +63,7 @@ struct contact_type
       object_name = ("contact");
     }
 
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    std::vector<StatusDesc> get_description(const std::string& lang)
     {
         return impl.get_contact_status_descriptions(lang);
     }
@@ -78,7 +79,7 @@ struct nsset_type
       object_name = ("nsset");
     }
 
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    std::vector<StatusDesc> get_description(const std::string& lang)
     {
         return impl.get_nsset_status_descriptions(lang);
     }
@@ -94,7 +95,7 @@ struct keyset_type
       object_name = ("keyset");
     }
 
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> get_description(const std::string& lang)
+    std::vector<StatusDesc> get_description(const std::string& lang)
     {
         return impl.get_keyset_status_descriptions(lang);
     }
@@ -106,9 +107,11 @@ bool private_sort(T o1, T o2)
     return o1.handle < o2.handle;
 }
 
-typedef boost::mpl::list<domain_type, contact_type, nsset_type, keyset_type> test_types;
+typedef boost::mpl::list<domain_type, contact_type,
+                         nsset_type,  keyset_type> test_types;
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd/*get_domain_status_descriptions*/, T, test_types, T)
+/*get_domain_status_descriptions*/
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd, T, test_types, T)
 {
     Fred::OperationContext ctx;
     std::vector<Fred::ObjectStateDescription> states =
@@ -116,25 +119,31 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd/*get_domain_status_descriptions*/, T, test
                         .set_object_type(T::object_name)
                         .set_external()
                         .exec(ctx);
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = T::get_description(T::test_lang);
+    std::vector<StatusDesc> vec_osd = T::get_description(T::test_lang);
     BOOST_CHECK(states.size() == vec_osd.size());
-    std::sort(states.begin(), states.end(), private_sort<Fred::ObjectStateDescription>);
-    std::sort(vec_osd.begin(), vec_osd.end(), private_sort<Registry::WhoisImpl::ObjectStatusDesc>);
-    std::vector<Fred::ObjectStateDescription>::iterator it;
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it2;
-    for(it = states.begin(), it2 = vec_osd.begin(); it != states.end(); ++it, ++it2)
+    std::sort(states.begin(), states.end(),
+              private_sort<Fred::ObjectStateDescription>);
+    std::sort(vec_osd.begin(), vec_osd.end(), private_sort<StatusDesc>);
+//    std::vector<Fred::ObjectStateDescription>::iterator it;
+//    std::vector<StatusDesc>::iterator it2;
+//    for(it = states.begin(), it2 = vec_osd.begin(); it != states.end(); ++it, ++it2)
+    for(unsigned int i = 0; i < states.size(); ++i)
     {
-        BOOST_CHECK(it->handle == it2->handle);
-        BOOST_CHECK(it->description == it2->name);
+        BOOST_CHECK(states[i].handle == vec_osd[i].handle);
+        BOOST_CHECK(states[i].description == vec_osd[i].name);
+//        BOOST_CHECK(it->handle == it2->handle);
+//        BOOST_CHECK(it->description == it2->name);
     }
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm/*get_domain_status_descriptions_missing*/, T, test_types, T)
+/*get_domain_status_descriptions_missing*/
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm, T, test_types, T)
 {
     try
     {
-        std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = T::get_description("");
-        BOOST_ERROR(std::string("this ") + T::object_name + " must not have a localization");
+        std::vector<StatusDesc> vec_osd = T::get_description("");
+        BOOST_ERROR(std::string("this ") + T::object_name +
+                " must not have a localization");
     }
     catch(const Registry::WhoisImpl::MissingLocalization& ex)
     {
@@ -143,11 +152,14 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm/*get_domain_status_descriptions_missing*/
     }
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdol/*get_domain_status_descriptions_other_lang*/, T, test_types, T)
+/*get_domain_status_descriptions_other_lang*/
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdol, T, test_types, T)
 {
-    std::vector<Registry::WhoisImpl::ObjectStatusDesc> vec_osd = T::get_description("XX");
+    std::vector<StatusDesc> vec_osd = T::get_description("XX");
     BOOST_CHECK(T::status_number == vec_osd.size());
-    for(std::vector<Registry::WhoisImpl::ObjectStatusDesc>::iterator it = vec_osd.begin(); it != vec_osd.end(); ++it)
+    for(std::vector<StatusDesc>::iterator it = vec_osd.begin();
+        it != vec_osd.end();
+        ++it)
     {
         //if not present - at() throws
         BOOST_CHECK(T::statuses.at(it->handle) == it->name);

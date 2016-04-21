@@ -1,5 +1,4 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "tests/setup/fixtures_utils.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_contact_by_handle);
