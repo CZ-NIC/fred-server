@@ -14,6 +14,7 @@ struct object_status_descriptions_fixture
     std::string  object_name;
     map_type     statuses;
     unsigned int status_number;
+    Fred::OperationContextCreator ctx;
 
     object_status_descriptions_fixture()
     : test_lang("EN")
@@ -22,7 +23,6 @@ struct object_status_descriptions_fixture
         statuses["unguarded"] = "description of unguarded";
         statuses["serverTransferProhibited"] =
             "description of serverTransferProhibited";
-        Fred::OperationContext ctx;
         BOOST_FOREACH(map_type::value_type& p, statuses)
         {
             ctx.get_conn().exec_params(
@@ -113,26 +113,20 @@ typedef boost::mpl::list<domain_type, contact_type,
 /*get_domain_status_descriptions*/
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd, T, test_types, T)
 {
-    Fred::OperationContext ctx;
     std::vector<Fred::ObjectStateDescription> states =
                         Fred::GetObjectStateDescriptions(T::test_lang)
                         .set_object_type(T::object_name)
                         .set_external()
-                        .exec(ctx);
+                        .exec(T::ctx);
     std::vector<StatusDesc> vec_osd = T::get_description(T::test_lang);
     BOOST_CHECK(states.size() == vec_osd.size());
     std::sort(states.begin(), states.end(),
               private_sort<Fred::ObjectStateDescription>);
     std::sort(vec_osd.begin(), vec_osd.end(), private_sort<StatusDesc>);
-//    std::vector<Fred::ObjectStateDescription>::iterator it;
-//    std::vector<StatusDesc>::iterator it2;
-//    for(it = states.begin(), it2 = vec_osd.begin(); it != states.end(); ++it, ++it2)
     for(unsigned int i = 0; i < states.size(); ++i)
     {
         BOOST_CHECK(states[i].handle == vec_osd[i].handle);
         BOOST_CHECK(states[i].description == vec_osd[i].name);
-//        BOOST_CHECK(it->handle == it2->handle);
-//        BOOST_CHECK(it->description == it2->name);
     }
 }
 

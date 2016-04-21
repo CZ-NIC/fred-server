@@ -7,7 +7,7 @@ BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)
 struct get_nameserver_by_fqdn_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string test_nameserver_fqdn;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;

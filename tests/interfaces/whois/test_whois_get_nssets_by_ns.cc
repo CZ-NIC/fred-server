@@ -8,7 +8,7 @@ struct get_nssets_by_ns_fixture
 {
     typedef Registry::WhoisImpl::NSSet NSSet;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string test_fqdn;
     unsigned int test_limit;
     const Fred::InfoRegistrarData registrar;

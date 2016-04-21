@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(get_contact_by_handle);
 struct test_contact_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
     const boost::posix_time::ptime now_utc;

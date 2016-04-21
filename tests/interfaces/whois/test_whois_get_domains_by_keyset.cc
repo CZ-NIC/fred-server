@@ -7,7 +7,7 @@ BOOST_AUTO_TEST_SUITE(get_domains_by_keyset)
 struct domains_by_keyset_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string test_keyset;
     int regular_domains;
     std::map<std::string, Fred::InfoDomainData> domain_info;

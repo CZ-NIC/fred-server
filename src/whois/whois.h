@@ -87,23 +87,23 @@ struct ContactIdentification
 struct Contact
 {
     std::string handle; /**< handle of the contact */
-    std::string organization; /**< organization of the contact */
+    std::string   organization; /**< organization of the contact */
     bool disclose_organization; /**< whether to disclose the organization of the contact */
-    std::string name; /**< name of the contact */
+    std::string   name; /**< name of the contact */
     bool disclose_name; /**< whether to disclose the name of the contact */
-    PlaceAddress address; /**< address of the contact */
+    PlaceAddress  address; /**< address of the contact */
     bool disclose_address; /**< whether to disclose the address of the contact */
-    std::string phone; /**< phone number of the contact */
+    std::string   phone; /**< phone number of the contact */
     bool disclose_phone; /**< whether to disclose the phone number of the contact */
-    std::string fax; /**< fax number of the contact */
+    std::string   fax; /**< fax number of the contact */
     bool disclose_fax; /**< whether to disclose the fax number of the contact */
-    std::string email; /**< email address of the contact */
+    std::string   email; /**< email address of the contact */
     bool disclose_email; /**< whether to disclose the email address of the contact */
-    std::string notify_email; /**< notification email of the contact */
+    std::string   notify_email; /**< notification email of the contact */
     bool disclose_notify_email; /**< whether to disclose the notification email of the contact */
     ContactIdentification identification; /**< identification of the contact */
-    bool disclose_identification; /**< whether to disclose the identification of the contact */
-    std::string vat_number; /**< taxpayer identification number of the contact */
+    bool         disclose_identification; /**< whether to disclose the identification of the contact */
+    std::string   vat_number; /**< taxpayer identification number of the contact */
     bool disclose_vat_number; /**< whether to disclose the of taxpayer identification number the contact */
     //?
     std::string creating_registrar_handle; /**< registrar created by the contact */
@@ -374,24 +374,27 @@ class Server_impl
 {
 private:
     std::vector<ObjectStatusDesc> get_object_status_descriptions(
-        const std::string& lang,
-        const std::string& type);
+            const std::string& lang,
+            const std::string& type);
 
-    DomainSeq get_domains_by_(Fred::OperationContext& ctx,
-        unsigned long limit,
-        const InfoDomainOutputList& domain_info);
+    DomainSeq get_domains_by_(
+            Fred::OperationContextCreator& ctx,
+            unsigned long limit,
+            const InfoDomainOutputList& domain_info);
 
-    NSSetSeq get_nssets_by_(Fred::OperationContext& ctx,
-        const InfoNssetOutputList& nss_info,
-        const std::string& handle,
-        unsigned long limit);
+    NSSetSeq get_nssets_by_(
+            Fred::OperationContextCreator& ctx,
+            const InfoNssetOutputList& nss_info,
+            const std::string& handle,
+            unsigned long limit);
 
-    WhoisImpl::NSSet make_nsset_from_info_data(const Fred::InfoNssetData& ind,
-        Fred::OperationContext& ctx);
+    WhoisImpl::NSSet make_nsset_from_info_data(
+            const Fred::InfoNssetData& ind,
+            Fred::OperationContextCreator& ctx);
 
     WhoisImpl::Domain make_domain_from_info_data(
-        const Fred::InfoDomainData& idd,
-        Fred::OperationContext& ctx);
+            const Fred::InfoDomainData& idd,
+            Fred::OperationContextCreator& ctx);
 public:
     
     static const std::string output_timezone; /**< The time zone to consider for objects' dates. */
@@ -502,8 +505,7 @@ public:
      * @param limit flag whether requested limit was reached.
      * @return list of domain data with limit_exceeded flag
      */
-    DomainSeq get_domains_by_admin_contact(const std::string& handle,
-                                           unsigned long limit);
+    DomainSeq get_domains_by_admin_contact(const std::string& handle, unsigned long limit);
 
     /**
      * Returns list of domains by a handle of nsset.

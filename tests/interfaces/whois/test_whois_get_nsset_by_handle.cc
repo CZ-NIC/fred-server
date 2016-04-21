@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(get_nsset_by_handle)
 struct get_nsset_by_handle_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string test_nsset_handle;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;

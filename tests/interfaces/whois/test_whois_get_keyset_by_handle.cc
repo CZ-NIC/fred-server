@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_SUITE(get_keyset_by_handle)
 struct get_keyset_by_handle_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoKeysetData keyset;
     const boost::posix_time::ptime now_utc;

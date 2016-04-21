@@ -9,7 +9,7 @@ struct domains_by_admin_contact_fixture
 : whois_impl_instance_fixture
 {
     std::map<std::string, Fred::InfoDomainData> domain_info;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarData registrar; // rly need?
     const Fred::InfoContactData system_admin, regular_admin, contact;
     int regular_domains;

@@ -11,7 +11,7 @@ struct get_keysets_by_tech_c_fixture
     typedef Registry::WhoisImpl::KeySetSeq KeySetSeq;
     typedef Registry::WhoisImpl::KeySet KeySet;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
     const boost::posix_time::ptime now_utc;

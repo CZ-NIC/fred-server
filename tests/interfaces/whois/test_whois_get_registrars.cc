@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(get_registrars)
 struct get_my_registrar_list_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::map<std::string,Fred::InfoRegistrarData> registrar_info;
     unsigned int total_registrars;
 

@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
 struct test_domain_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoDomainData domain;
     const boost::posix_time::ptime now_utc;
@@ -92,9 +92,9 @@ struct many_labels_fixture
 : whois_impl_instance_fixture
 {
     std::vector<std::string> domain_list;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
-    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
+    std::string prepare_zone(Fred::OperationContextCreator& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try
@@ -250,7 +250,7 @@ struct invalid_toomany_fixture
 {
     std::vector<std::string> domain_list;
 
-    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
+    std::string prepare_zone(Fred::OperationContextCreator& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try
@@ -272,7 +272,7 @@ struct invalid_toomany_fixture
 
     invalid_toomany_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         domain_list.reserve(zone_seq.size());
         for(std::vector<std::string>::iterator it = zone_seq.begin();
@@ -351,7 +351,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_unmanaged_toomany, invalid_unmanaged_toomany_fix
 struct delete_candidate_fixture 
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
     std::string delete_fqdn;
@@ -395,7 +395,6 @@ struct delete_candidate_fixture
 
 BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
 {
-    Fred::OperationContext ctx;
     Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn)
         .exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(delete_fqdn);

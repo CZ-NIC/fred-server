@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 struct registrar_fixture 
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const Fred::InfoRegistrarData registrar;
 
     registrar_fixture()

@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_SUITE(get_nssets_by_tech_c)
 struct get_nssets_by_tech_c_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string test_fqdn;
     unsigned int test_limit;
     const Fred::InfoRegistrarData registrar;

@@ -7,7 +7,7 @@ BOOST_AUTO_TEST_SUITE(get_domains_by_registrant)
 struct domains_by_registrant_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::map<std::string, Fred::InfoDomainData> domain_info;
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact, other_contact;

@@ -56,7 +56,7 @@ struct test_registrar_fixture
     : xmark(RandomDataGenerator().xnumstring(6)),
       test_registrar_handle(std::string("TEST-REGISTRAR")+xmark)//from 3 to 16
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateRegistrar(test_registrar_handle)
             .set_name(std::string("TEST-REGISTRAR NAME")+xmark)
             .set_street1(std::string("STR1")+xmark)
@@ -105,7 +105,7 @@ struct get_registrar_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_fine_registrar, get_registrar_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoRegistrarData ird = Fred::InfoRegistrarByHandle(test_registrar_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_registrar_data;
     Registry::WhoisImpl::Registrar reg = impl.get_registrar_by_handle(test_registrar_handle);
 
@@ -168,7 +168,7 @@ struct get_my_registrar_list_fixture
       system_registars(5),
       total_registrars(10)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i=0; i < total_registrars; ++i)
         {
             std::ostringstream test_handles;
@@ -194,7 +194,7 @@ struct get_my_registrar_list_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoRegistrarOutput> reg_list_out =
             Fred::InfoRegistrarAllExceptSystem()
             .exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
@@ -272,7 +272,7 @@ struct test_contact_fixture
       no_contact_handle("fine-handle"),
       wrong_contact_handle("")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         contact_place.city = "Praha";
         contact_place.country = "CZ";
         contact_place.postalcode = "11150";
@@ -287,7 +287,7 @@ struct test_contact_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle, test_contact_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoContactData icd = Fred::InfoContactByHandle(test_contact_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_contact_data;
     Registry::WhoisImpl::Contact con = impl.get_contact_by_handle(test_contact_handle);
 
@@ -343,7 +343,7 @@ struct get_nsset_by_handle_fixture
       no_nsset_handle("fine-nsset-handle"),
       wrong_nsset_handle("")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<std::string> tech_contacts;
         tech_contacts.push_back("TEST-TECH-CONTACT");
 
@@ -360,7 +360,7 @@ struct get_nsset_by_handle_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoNssetData ind = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_nsset_data;
     Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle(test_nsset_handle);
 
@@ -423,7 +423,7 @@ struct get_nssets_by_ns_fixture
       test_wrong_fqdn("."),
       test_limit(10)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(unsigned long i = 0; i < test_limit; ++i)
         {
             std::ostringstream test_handles;
@@ -446,7 +446,7 @@ struct get_nssets_by_ns_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_fqdn).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit);
     for(unsigned long i = 0; i < test_limit; ++i)
@@ -519,7 +519,7 @@ struct get_nssets_by_tech_c_fixture
       test_wrong_handle(""),
       test_limit(10)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(unsigned long i = 0; i < test_limit; ++i)
         {
             std::ostringstream test_handles;
@@ -541,7 +541,7 @@ struct get_nssets_by_tech_c_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoNssetOutput> v_ino = Fred::InfoNssetByDNSFqdn(test_contact_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(test_contact_handle, test_limit);
     for(unsigned long i = 0; i < test_limit; ++i)
@@ -611,7 +611,7 @@ struct get_nameserver_by_fqdn_fixture
       test_no_handle("fine-fqdn.cz"),
       test_wrong_handle("")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateNsset("TEST-NSSET-HANDLE", test_registrar_handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))//making nameserver
             .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
@@ -622,7 +622,7 @@ struct get_nameserver_by_fqdn_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE(Whois::nameserver_exists(test_nameserver_fqdn, ctx));
 
     Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_nameserver_fqdn);
@@ -676,7 +676,7 @@ struct get_keyset_by_handle_fixture
       no_keyset_handle("fine-keyset-handle"),
       wrong_keyset_handle("")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
             .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
             .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact))
@@ -688,7 +688,7 @@ struct get_keyset_by_handle_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoKeysetData ikd = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_keyset_data;
     Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle(test_keyset_handle);
 
@@ -753,7 +753,7 @@ struct get_keysets_by_tech_c_fixture
       test_wrong_handle(""),
       test_limit(10)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(unsigned long i = 0; i < test_limit; ++i)
         {
             std::ostringstream test_handles;
@@ -770,7 +770,7 @@ struct get_keysets_by_tech_c_fixture
     
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::InfoKeysetOutput> v_iko = Fred::InfoKeysetByTechContactHandle(test_admin).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone);
     Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(test_admin, test_limit);
     for(unsigned long i = 0; i < test_limit; ++i)
@@ -846,7 +846,7 @@ struct test_domain_fixture
       wrong_fqdn(""),
       invalid_fqdn("a-.cz")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateDomain(test_fqdn, test_registrar_handle, test_registrant_handle)
             .set_admin_contacts(Util::vector_of<std::string>(test_admin))
             .exec(ctx);
@@ -857,7 +857,7 @@ struct test_domain_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domain_by_handle, test_domain_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainData idd = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(test_fqdn);
     BOOST_CHECK(dom.admin_contact_handles.at(0) == idd.admin_contacts.at(0).handle);
@@ -918,7 +918,7 @@ struct many_labels_fixture
 : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
     std::vector<std::string> domain_list;
-    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
+    std::string prepare_zone(Fred::OperationContextCreator& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try
@@ -943,7 +943,7 @@ struct many_labels_fixture
       test_registrant_fixture(),
       test_contact_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         for(std::vector<std::string>::iterator it = zone_seq.begin(); it != zone_seq.end(); ++it)
         {
@@ -1074,7 +1074,7 @@ struct invalid_toomany_fixture
 {
     std::vector<std::string> domain_list;
 
-    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
+    std::string prepare_zone(Fred::OperationContextCreator& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try
@@ -1097,7 +1097,7 @@ struct invalid_toomany_fixture
     invalid_toomany_fixture()
     : whois_impl_instance_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         domain_list.reserve(zone_seq.size());
         for(std::vector<std::string>::iterator it = zone_seq.begin(); it != zone_seq.end(); ++it)
@@ -1181,7 +1181,7 @@ struct delete_candidate_fixture //Jiri: check carefully
       delete_fqdn(std::string("test-delete") + xmark + ".cz"),
       delete_status("deleteCandidate")
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         Fred::CreateDomain(delete_fqdn, test_registrar_handle, test_registrant_handle)
             .set_admin_contacts(Util::vector_of<std::string>(test_admin))
             .exec(ctx);
@@ -1209,7 +1209,7 @@ struct delete_candidate_fixture //Jiri: check carefully
 
 BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_delete_candidate, delete_candidate_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(delete_fqdn);
     BOOST_CHECK(dom.fqdn == idd.fqdn);
@@ -1240,7 +1240,7 @@ struct domains_by_registrant_fixture
       wrong_handle(""),
       regular_domains(6)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
             Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
@@ -1264,7 +1264,7 @@ struct domains_by_registrant_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByRegistrantHandle(test_registrant_handle)
             .set_limit(regular_domains + 1)
@@ -1293,7 +1293,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_registrant_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByRegistrantHandle(test_registrant_handle)
             .set_limit(regular_domains + 1)
@@ -1371,7 +1371,7 @@ struct domains_by_admin_contact_fixture
       wrong_contact(""),
       regular_domains(6)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
             Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
@@ -1395,7 +1395,7 @@ struct domains_by_admin_contact_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByAdminContactHandle(test_admin)
             .set_limit(regular_domains + 1)
@@ -1425,7 +1425,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_admin_contact_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByAdminContactHandle(test_admin)
             .set_limit(regular_domains + 1)
@@ -1505,7 +1505,7 @@ struct domains_by_nsset_fixture
       wrong_nsset(""),
       regular_domains(6)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
             Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
@@ -1536,7 +1536,7 @@ struct domains_by_nsset_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByNssetHandle(test_nsset)
             .set_limit(regular_domains + 1)
@@ -1566,7 +1566,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByNssetHandle(test_nsset)
             .set_limit(regular_domains + 1)
@@ -1646,7 +1646,7 @@ struct domains_by_keyset_fixture
       wrong_keyset(""),
       regular_domains(6)
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         for(int i=0; i < regular_domains - 1; ++i)
         {
             Fred::CreateDomain(test_fqdn + boost::lexical_cast<std::string>(i) + ".cz", test_registrar_handle, test_registrant_handle)
@@ -1677,7 +1677,7 @@ struct domains_by_keyset_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByKeysetHandle(test_keyset)
             .set_limit(regular_domains + 1)
@@ -1707,7 +1707,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::InfoDomainOutput> domain_info =
         Fred::InfoDomainByKeysetHandle(test_keyset)
             .set_limit(regular_domains + 1)
@@ -1787,7 +1787,7 @@ struct object_status_descriptions_fixture
         statuses["expired"] = "description of expired";
         statuses["unguarded"] = "description of unguarded";
         statuses["serverTransferProhibited"] = "description of serverTransferProhibited";
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         BOOST_FOREACH(map_type::value_type& p, statuses)
         {
             ctx.get_conn().exec_params(
@@ -1872,7 +1872,7 @@ typedef boost::mpl::list<domain_type, contact_type, nsset_type, keyset_type> tes
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(get_domain_status_descriptions, T, test_types, T)
 {
     T fix;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::ObjectStateDescription> states =
                         Fred::GetObjectStateDescriptions(fix.test_lang)
                         .set_object_type(fix.object_name)

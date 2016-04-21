@@ -10,7 +10,7 @@ struct domains_by_nsset_fixture
     typedef Registry::WhoisImpl::Domain Domain;
     typedef Registry::WhoisImpl::DomainSeq DomainSeq;
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::string test_nsset;
     unsigned int regular_domains;
     std::map<std::string, Fred::InfoDomainData> domain_info;
