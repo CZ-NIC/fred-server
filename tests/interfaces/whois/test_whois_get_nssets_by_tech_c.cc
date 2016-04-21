@@ -22,10 +22,10 @@ struct get_nssets_by_tech_c_fixture
       contact(Test::contact::make(ctx)),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now()::timestamp")[0][0]))),
+                      .exec("SELECT now()::timestamp")[0][0]))),
       now_prague(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         Util::vector_of<Fred::DnsHost> dns_hosts(
             Fred::DnsHost(test_fqdn,
@@ -65,8 +65,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
     BOOST_CHECK(nss_s.content.size() == test_limit);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
     for(std::vector<Registry::WhoisImpl::NSSet>::iterator it = nss_s.content.begin();
-        it != nss_s.content.end();
-        ++it)
+            it != nss_s.content.end(); ++it)
     {
         found = nsset_info.find(it->handle);
         BOOST_REQUIRE(it->handle == found->second.handle);
@@ -93,8 +92,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
     for(std::vector<Registry::WhoisImpl::NSSet>::iterator it = nss_s.content.begin();
-        it != nss_s.content.end();
-        ++it)
+            it != nss_s.content.end(); ++it)
     {
         found = nsset_info.find(it->handle);
         BOOST_REQUIRE(it->handle == found->second.handle);

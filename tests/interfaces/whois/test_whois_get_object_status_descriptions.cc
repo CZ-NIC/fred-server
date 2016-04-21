@@ -27,10 +27,12 @@ struct object_status_descriptions_fixture
         {
             ctx.get_conn().exec_params(
                 "INSERT INTO enum_object_states_desc "
-                "VALUES ((SELECT id FROM enum_object_states WHERE name = $1::text),"
-                " $2::text,"
-                " $3::text)",
-                    Database::query_param_list(p.first)("XX")(p.second)
+                "VALUES ((SELECT id "
+                         "FROM enum_object_states "
+                         "WHERE name = $1::text), "
+                         "$2::text, "
+                         "$3::text)",
+                Database::query_param_list(p.first)("XX")(p.second)
             );
         }
         ctx.commit_transaction();
@@ -107,22 +109,20 @@ bool private_sort(T o1, T o2)
     return o1.handle < o2.handle;
 }
 
-typedef boost::mpl::list<domain_type, contact_type,
-                         nsset_type,  keyset_type> test_types;
+typedef boost::mpl::list<domain_type, contact_type, nsset_type, keyset_type> test_types;
 
 /*get_domain_status_descriptions*/
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd, T, test_types, T)
 {
     std::vector<Fred::ObjectStateDescription> states =
                         Fred::GetObjectStateDescriptions(T::test_lang)
-                        .set_object_type(T::object_name)
-                        .set_external()
-                        .exec(T::ctx);
-    std::vector<StatusDesc> vec_osd = T::get_description(T::test_lang);
+                            .set_object_type(T::object_name)
+                            .set_external()
+                            .exec(T::ctx);
+    std::vector<typename T::StatusDesc> vec_osd = T::get_description(T::test_lang);
     BOOST_CHECK(states.size() == vec_osd.size());
-    std::sort(states.begin(), states.end(),
-              private_sort<Fred::ObjectStateDescription>);
-    std::sort(vec_osd.begin(), vec_osd.end(), private_sort<StatusDesc>);
+    std::sort(states.begin(), states.end(), private_sort<Fred::ObjectStateDescription>);
+    std::sort(vec_osd.begin(), vec_osd.end(), private_sort<typename T::StatusDesc>);
     for(unsigned int i = 0; i < states.size(); ++i)
     {
         BOOST_CHECK(states[i].handle == vec_osd[i].handle);
@@ -135,9 +135,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm, T, test_types, T)
 {
     try
     {
-        std::vector<StatusDesc> vec_osd = T::get_description("");
-        BOOST_ERROR(std::string("this ") + T::object_name +
-                " must not have a localization");
+        std::vector<typename T::StatusDesc> vec_osd = T::get_description("");
+        BOOST_ERROR(std::string("this ") +
+                    T::object_name +
+                    " must not have a localization");
     }
     catch(const Registry::WhoisImpl::MissingLocalization& ex)
     {
@@ -149,11 +150,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm, T, test_types, T)
 /*get_domain_status_descriptions_other_lang*/
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdol, T, test_types, T)
 {
-    std::vector<StatusDesc> vec_osd = T::get_description("XX");
+    std::vector<typename T::StatusDesc> vec_osd = T::get_description("XX");
     BOOST_CHECK(T::status_number == vec_osd.size());
-    for(std::vector<StatusDesc>::iterator it = vec_osd.begin();
-        it != vec_osd.end();
-        ++it)
+    for(typename std::vector<typename T::StatusDesc>::iterator it = vec_osd.begin();
+            it != vec_osd.end(); ++it)
     {
         //if not present - at() throws
         BOOST_CHECK(T::statuses.at(it->handle) == it->name);

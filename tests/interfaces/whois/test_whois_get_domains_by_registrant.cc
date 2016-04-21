@@ -22,10 +22,10 @@ struct domains_by_registrant_fixture
       regular_domains(6),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now()::timestamp")[0][0]))),
+                      .exec("SELECT now()::timestamp")[0][0]))),
       now_prague(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         for(int i=0; i < regular_domains; ++i)
         {
@@ -53,8 +53,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
-        it < domain_vec.end();
-        ++it)
+            it < domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -75,8 +74,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
-        it < domain_vec.end();
-        ++it)
+            it < domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(found != domain_info.end());

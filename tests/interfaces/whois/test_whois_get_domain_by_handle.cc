@@ -26,10 +26,10 @@ struct test_domain_fixture
            ctx)),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now()::timestamp")[0][0]))),
+                      .exec("SELECT now()::timestamp")[0][0]))),
       now_prague(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         ctx.commit_transaction();
     }
@@ -118,8 +118,7 @@ struct many_labels_fixture
     {
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         for(std::vector<std::string>::iterator it = zone_seq.begin();
-            it != zone_seq.end();
-            ++it)
+                it != zone_seq.end(); ++it)
         {
             domain_list.push_back(prepare_zone(ctx, *it));
         }
@@ -129,8 +128,7 @@ struct many_labels_fixture
 BOOST_FIXTURE_TEST_CASE(too_many_labels, many_labels_fixture)
 {
     for(std::vector<std::string>::iterator it = domain_list.begin();
-        it != domain_list.end();
-        ++it)
+            it != domain_list.end(); ++it)
     {
         try
         {
@@ -276,8 +274,7 @@ struct invalid_toomany_fixture
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         domain_list.reserve(zone_seq.size());
         for(std::vector<std::string>::iterator it = zone_seq.begin();
-            it != zone_seq.end();
-            ++it)
+                it != zone_seq.end(); ++it)
         {
             domain_list.push_back(prepare_zone(ctx, *it));
         }
@@ -287,8 +284,7 @@ struct invalid_toomany_fixture
 BOOST_FIXTURE_TEST_CASE(invalid_handle_too_many_labels, invalid_toomany_fixture)
 {
     for(std::vector<std::string>::iterator it = domain_list.begin();
-        it != domain_list.end();
-        ++it)
+            it != domain_list.end(); ++it)
     {
         try
         {

@@ -27,10 +27,10 @@ struct domains_by_keyset_fixture
       other_keyset(Test::keyset::make(ctx)),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now()::timestamp")[0][0]))),
+                      .exec("SELECT now()::timestamp")[0][0]))),
       now_prague(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         for(int i=0; i < regular_domains; ++i)
         {
@@ -69,8 +69,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
-        it < domain_vec.end();
-        ++it)
+            it < domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);
@@ -95,8 +94,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin();
-        it < domain_vec.end();
-        ++it)
+            it < domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);

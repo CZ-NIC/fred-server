@@ -28,10 +28,10 @@ struct test_contact_fixture
               ctx)),
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now()::timestamp")[0][0]))),
+                      .exec("SELECT now()::timestamp")[0][0]))),
       now_prague(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
-                  .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         ctx.commit_transaction();
     }

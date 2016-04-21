@@ -75,8 +75,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
     BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Domain>::iterator it = domain_vec.begin();
-        it < domain_vec.end();
-        ++it)
+            it < domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);
@@ -102,8 +101,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded,
     BOOST_CHECK(domain_vec.size() == regular_domains - 1);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
     for(std::vector<Domain>::iterator it = domain_vec.begin();
-        it < domain_vec.end();
-        ++it)
+            it < domain_vec.end(); ++it)
     {
         found = domain_info.find(it->fqdn);
         BOOST_REQUIRE(it->fqdn == found->second.fqdn);
@@ -124,6 +122,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_absent_nsset,
 {
     try
     {
+        typedef Registry::WhoisImpl::DomainSeq DomainSeq;
         DomainSeq ds = impl.get_domains_by_nsset("absent-nsset", 0);
         BOOST_ERROR("unreported dangling nsset");
     }
@@ -139,6 +138,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_no_nsset,
 {
     try
     {
+        typedef Registry::WhoisImpl::DomainSeq DomainSeq;
         DomainSeq ds = impl.get_domains_by_nsset("", 0);
         BOOST_ERROR("nsset handle rule is wrong");
     }

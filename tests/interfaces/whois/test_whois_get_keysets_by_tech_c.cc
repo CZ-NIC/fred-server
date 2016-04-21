@@ -63,8 +63,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
     BOOST_CHECK(!ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit);
     for(std::vector<KeySet>::iterator it = ks_s.content.begin();
-        it != ks_s.content.end();
-        ++it)
+            it != ks_s.content.end(); ++it)
     {
         Fred::InfoKeysetData& found = keyset_info[it->handle];
         BOOST_REQUIRE(it->handle == found.handle);
@@ -91,8 +90,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded,
     BOOST_CHECK(ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit - 1);
     for(std::vector<KeySet>::iterator it = ks_s.content.begin();
-        it != ks_s.content.end();
-        ++it)
+            it != ks_s.content.end(); ++it)
     {
         Fred::InfoKeysetData& found = keyset_info[it->handle];
         BOOST_REQUIRE(it->handle == found.handle);

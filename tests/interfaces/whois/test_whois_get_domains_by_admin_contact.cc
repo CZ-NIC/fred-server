@@ -23,8 +23,11 @@ struct domains_by_admin_contact_fixture
       contact(Test::contact::make(ctx)),
       regular_domains(6),
       now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn().exec("SELECT now()::timestamp")[0][0]))),
-      now_prague(boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+                  static_cast<std::string>(ctx.get_conn()
+                      .exec("SELECT now()::timestamp")[0][0]))),
+      now_prague(boost::posix_time::time_from_string(
+                  static_cast<std::string>(ctx.get_conn()
+                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
         std::string tmp_handle;
         for(int i=0; i < regular_domains; ++i)
