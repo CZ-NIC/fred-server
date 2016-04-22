@@ -3,6 +3,7 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 #include "src/whois/zone_list.h"
+#include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
@@ -10,27 +11,26 @@ BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
 struct test_domain_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
-    const Fred::InfoRegistrarData registrar;
-    const Fred::InfoDomainData domain;
-    const boost::posix_time::ptime now_utc;
-    const boost::posix_time::ptime now_prague;
+    Fred::InfoDomainData domain;
+    boost::posix_time::ptime now_utc;
 
     test_domain_fixture()
-    : domain(Test::exec(
-          Test::CreateX_factory<Fred::CreateDomain>()
-              .make(Test::registrar(ctx).info_data.handle,
-                   Test::contact(ctx).info_data.handle)
-              .set_admin_contacts(Util::vector_of<std::string>(
-                   Test::contact::make(ctx).handle)),
-           ctx)),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now()::timestamp")[0][0]))),
-      now_prague(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
+        Fred::OperationContextCreator ctx;
+        domain = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(Test::registrar::make(ctx).handle,
+                          Test::contact::make(ctx).handle)
+                    .set_nsset(Test::nsset::make(ctx).handle) 
+                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_admin_contacts(Util::vector_of<std::string>(
+                            Test::contact::make(ctx).handle))
+                    .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                         boost::gregorian::date_duration(2)),
+                ctx);
+        now_utc = boost::posix_time::time_from_string(
+                static_cast<std::string>(ctx.get_conn()
+                    .exec("SELECT now()::timestamp")[0][0]));
         ctx.commit_transaction();
     }
 };
@@ -38,15 +38,34 @@ struct test_domain_fixture
 BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
 {
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(domain.fqdn);
-    BOOST_CHECK(dom.admin_contact_handles.at(0) ==
-        domain.admin_contacts.at(0).handle);
-    BOOST_CHECK(dom.changed.get_value() == ptime(not_a_date_time));
-    BOOST_CHECK(dom.fqdn == domain.fqdn);
-    BOOST_CHECK(dom.last_transfer.get_value() == ptime(not_a_date_time));
+
+    BOOST_CHECK(dom.changed.isnull());
+    BOOST_CHECK(dom.validated_to.isnull());//?
+    BOOST_CHECK(dom.last_transfer.isnull());
+    BOOST_CHECK(dom.registered        == now_utc);
+    BOOST_CHECK(dom.fqdn              == domain.fqdn);
     BOOST_CHECK(dom.registrant_handle == domain.registrant.handle);
-    BOOST_CHECK(dom.registered == now_utc);
-    BOOST_CHECK(dom.registrar_handle == domain.create_registrar_handle);
-    //Jiri: others?
+    BOOST_CHECK(dom.registrar_handle  == domain.create_registrar_handle);
+    BOOST_CHECK(dom.expire            == domain.expiration_date);
+    BOOST_CHECK(dom.fqdn              == domain.fqdn);
+    BOOST_CHECK(dom.keyset_handle     == domain.keyset.get_value_or_default().handle);
+    BOOST_CHECK(dom.nsset_handle      == domain.nsset.get_value_or_default().handle);
+
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair it, domain.admin_contacts)
+    {
+        bool found = (dom.admin_contact_handles.end() == std::find(dom.admin_contact_handles.begin(),
+                    dom.admin_contact_handles.end(), it.handle));
+        BOOST_CHECK(!found);//dirty, wasn't working with BOOST_ERROR ;(
+    }
+
+    Fred::OperationContextCreator ctx;
+    const std::vector<Fred::ObjectStateData> v_osd =
+        Fred::GetObjectStates(domain.id).exec(ctx);
+    BOOST_FOREACH(const Fred::ObjectStateData it, v_osd)
+    {
+        BOOST_CHECK(std::find(dom.statuses.begin(), dom.statuses.end(), it.state_name) !=
+                dom.statuses.end());
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(wrong_handle, whois_impl_instance_fixture)
@@ -117,22 +136,20 @@ struct many_labels_fixture
     many_labels_fixture()
     {
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
-        for(std::vector<std::string>::iterator it = zone_seq.begin();
-                it != zone_seq.end(); ++it)
+        BOOST_FOREACH(std::string it, zone_seq)
         {
-            domain_list.push_back(prepare_zone(ctx, *it));
+            domain_list.push_back(prepare_zone(ctx, it));
         }
     }
 };
 
 BOOST_FIXTURE_TEST_CASE(too_many_labels, many_labels_fixture)
 {
-    for(std::vector<std::string>::iterator it = domain_list.begin();
-            it != domain_list.end(); ++it)
+    BOOST_FOREACH(std::string it, domain_list)
     {
         try
         {
-            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(*it);
+            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(it);
             BOOST_ERROR("permitted label number is wrong");
         }
         catch(const Registry::WhoisImpl::TooManyLabels& ex)
@@ -273,22 +290,20 @@ struct invalid_toomany_fixture
         Fred::OperationContextCreator ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         domain_list.reserve(zone_seq.size());
-        for(std::vector<std::string>::iterator it = zone_seq.begin();
-                it != zone_seq.end(); ++it)
+        BOOST_FOREACH(std::string it, zone_seq)
         {
-            domain_list.push_back(prepare_zone(ctx, *it));
+            domain_list.push_back(prepare_zone(ctx, it));
         }
     }
 };
 
 BOOST_FIXTURE_TEST_CASE(invalid_handle_too_many_labels, invalid_toomany_fixture)
 {
-    for(std::vector<std::string>::iterator it = domain_list.begin();
-            it != domain_list.end(); ++it)
+    BOOST_FOREACH(std::string it, domain_list)
     {
         try
         {
-            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(*it);
+            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(it);
             BOOST_ERROR("domain must have invalid handle and exceeded number of labels");
         }
         catch(const Registry::WhoisImpl::InvalidLabel& ex)
@@ -347,18 +362,13 @@ BOOST_FIXTURE_TEST_CASE(invalid_unmanaged_toomany, invalid_unmanaged_toomany_fix
 struct delete_candidate_fixture 
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
-    const Fred::InfoRegistrarData registrar;
-    const Fred::InfoContactData contact;
     std::string delete_fqdn;
 
     delete_candidate_fixture()
-    : contact(Test::exec(
-          Test::CreateX_factory<Fred::CreateContact>()
-              .make(Test::registrar(ctx).info_data.handle),
-          ctx)),
-      delete_fqdn("test-delete.cz")
+    : delete_fqdn("test-delete.cz")
     {
+        Fred::OperationContextCreator ctx;
+
         Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
                        .make(Test::registrar(ctx).info_data.handle,
                              Test::contact(ctx).info_data.handle,
@@ -370,27 +380,37 @@ struct delete_candidate_fixture
             "UPDATE domain_history "
             "SET exdate = now() - "
                 "(SELECT val::int * '1 day'::interval "
-                    "FROM enum_parameters "
-                    "WHERE name = 'expiration_registration_protection_period') "
-            "WHERE id = (SELECT id FROM object_registry WHERE name = $1::text)",
+                 "FROM enum_parameters "
+                 "WHERE name = 'expiration_registration_protection_period') "
+            "WHERE id = "
+                "(SELECT id "
+                 "FROM object_registry "
+                 "WHERE name = $1::text)",
             Database::query_param_list(delete_fqdn));
         ctx.get_conn().exec_params(
             "UPDATE domain "
             "SET exdate = now() - "
                 "(SELECT val::int * '1 day'::interval "
-                    "FROM enum_parameters "
-                    "WHERE name = 'expiration_registration_protection_period') "
-            "WHERE id = (SELECT id FROM object_registry WHERE name = $1::text)",
+                 "FROM enum_parameters "
+                 "WHERE name = 'expiration_registration_protection_period') "
+            "WHERE id = "
+                "(SELECT id "
+                 "FROM object_registry "
+                 "WHERE name = $1::text)",
             Database::query_param_list(delete_fqdn));
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn)
-                                       .exec(ctx, impl.output_timezone);
+
+        Fred::InfoDomainOutput dom =
+            Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, impl.output_timezone);
+
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+
         ctx.commit_transaction();
     }
 };
 
 BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
 {
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn)
         .exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(delete_fqdn);

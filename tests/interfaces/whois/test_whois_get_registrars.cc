@@ -50,34 +50,32 @@ BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
         impl.get_registrars();
     BOOST_CHECK(registrar_vec.size() == total_registrars);
     std::map<std::string, Fred::InfoRegistrarData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::Registrar>::iterator it =
-              registrar_vec.begin();
-            it != registrar_vec.end(); ++it)
+    BOOST_FOREACH(Registry::WhoisImpl::Registrar it, registrar_vec)
     {
-        found = registrar_info.find(it->handle);
-        BOOST_CHECK(it->address.city ==
+        found = registrar_info.find(it.handle);
+        BOOST_CHECK(it.address.city ==
                 found->second.city.get_value_or_default());
-        BOOST_CHECK(it->address.country_code ==
+        BOOST_CHECK(it.address.country_code ==
                 found->second.country.get_value_or_default());
-        BOOST_CHECK(it->address.postal_code ==
+        BOOST_CHECK(it.address.postal_code ==
                 found->second.postalcode.get_value_or_default());
-        BOOST_CHECK(it->address.stateorprovince ==
+        BOOST_CHECK(it.address.stateorprovince ==
                 found->second.stateorprovince.get_value_or_default());
-        BOOST_CHECK(it->address.street1 ==
+        BOOST_CHECK(it.address.street1 ==
                 found->second.street1.get_value_or_default());
-        BOOST_CHECK(it->address.street2 ==
+        BOOST_CHECK(it.address.street2 ==
                 found->second.street2.get_value_or_default());
-        BOOST_CHECK(it->address.street3 ==
+        BOOST_CHECK(it.address.street3 ==
                 found->second.street3.get_value_or_default());
-        BOOST_CHECK(it->organization ==
+        BOOST_CHECK(it.organization ==
                 found->second.organization.get_value_or_default());
-        BOOST_CHECK(it->phone ==
+        BOOST_CHECK(it.phone ==
                 found->second.telephone.get_value_or_default());
-        BOOST_CHECK(it->fax == found->second.fax.get_value_or_default());
-        BOOST_CHECK(it->name == found->second.name.get_value_or_default());
-        BOOST_CHECK(it->handle == found->second.handle);
-        BOOST_CHECK(it->id == found->second.id);
-        BOOST_CHECK(it->url == found->second.url.get_value_or_default());
+        BOOST_CHECK(it.fax == found->second.fax.get_value_or_default());
+        BOOST_CHECK(it.name == found->second.name.get_value_or_default());
+        BOOST_CHECK(it.handle == found->second.handle);
+        BOOST_CHECK(it.id == found->second.id);
+        BOOST_CHECK(it.url == found->second.url.get_value_or_default());
     }
 }
 

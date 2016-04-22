@@ -9,42 +9,44 @@ struct domains_by_admin_contact_fixture
 : whois_impl_instance_fixture
 {
     std::map<std::string, Fred::InfoDomainData> domain_info;
-    Fred::OperationContextCreator ctx;
-    const Fred::InfoRegistrarData registrar; // rly need?
-    const Fred::InfoContactData system_admin, regular_admin, contact;
-    int regular_domains;
-    const boost::posix_time::ptime now_utc;
-    const boost::posix_time::ptime now_prague;
+    Fred::InfoContactData regular_admin;
+    boost::posix_time::ptime now_utc;
+    unsigned int regular_domains;
 
     domains_by_admin_contact_fixture()
-    : registrar(Test::registrar::make(ctx)),
-      system_admin(Test::contact::make(ctx)),
-      regular_admin(Test::contact::make(ctx)),
-      contact(Test::contact::make(ctx)),
-      regular_domains(6),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now()::timestamp")[0][0]))),
-      now_prague(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
     {
+        Fred::OperationContextCreator ctx;
+        Fred::InfoRegistrarData registrar;
+        Fred::InfoContactData system_admin, contact;
+        registrar = Test::registrar::make(ctx);
+        system_admin = Test::contact::make(ctx);
+        regular_admin = Test::contact::make(ctx);
+        contact = Test::contact::make(ctx);
+        now_utc = boost::posix_time::time_from_string(
+                static_cast<std::string>(ctx.get_conn()
+                    .exec("SELECT now()::timestamp")[0][0]));
+        regular_domains = 6;
         std::string tmp_handle;
-        for(int i=0; i < regular_domains; ++i)
+        for(unsigned int i=0; i < regular_domains; ++i)
         {
             const Fred::InfoDomainData& idd = Test::exec(
-                Test::CreateX_factory<Fred::CreateDomain>().make(registrar.handle, contact.handle)
-                    .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle)),
-                ctx);
+                    Test::CreateX_factory<Fred::CreateDomain>()
+                        .make(registrar.handle, contact.handle)
+                        .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
+                        .set_nsset(Test::nsset::make(ctx).handle) 
+                        .set_keyset(Test::keyset::make(ctx).handle) 
+                        .set_expiration_date(boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
+                    ctx);
+            
             domain_info[idd.fqdn] = idd;
         }
         for(int i=0; i < 3; ++i)//3 different domains for another contact
         {
             Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
-                       .make(registrar.handle, contact.handle)
-                       .set_admin_contacts(
-                           Util::vector_of<std::string>(system_admin.handle)),
-                       ctx);
+                    .make(registrar.handle, contact.handle)
+                    .set_admin_contacts(
+                        Util::vector_of<std::string>(system_admin.handle)),
+                    ctx);
         }
         ctx.commit_transaction();
     }
@@ -56,18 +58,37 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains));
+    BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it != domain_vec.end(); ++it)
+    BOOST_FOREACH(Registry::WhoisImpl::Domain it, domain_vec)
     {
-        found = domain_info.find(it->fqdn);
+        found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->second.admin_contacts.at(0).handle);
-        BOOST_CHECK(it->changed.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK(it->last_transfer.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK_EQUAL(it->registered, now_utc);
-        BOOST_CHECK(it->registrant_handle == found->second.registrant.handle);
-        BOOST_CHECK(it->registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it.changed.isnull());
+        BOOST_CHECK(it.validated_to.isnull());
+        BOOST_CHECK(it.last_transfer.isnull());
+        BOOST_CHECK(it.registered == now_utc);
+        BOOST_CHECK(it.registrant_handle == found->second.registrant.handle);
+        BOOST_CHECK(it.registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it.expire == found->second.expiration_date);
+        BOOST_CHECK(it.keyset_handle == found->second.keyset.get_value_or_default().handle);
+        BOOST_CHECK(it.nsset_handle == found->second.nsset.get_value_or_default().handle);
+
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
+        {
+            bool found = (it.admin_contact_handles.end() == std::find(it.admin_contact_handles.begin(),
+                        it.admin_contact_handles.end(), oit.handle));
+            BOOST_CHECK(!found);//dirty, wasn't working with BOOST_ERROR ;(
+        }
+
+        Fred::OperationContextCreator ctx;
+        typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
+        const ObjectStateDataList v_osd = Fred::GetObjectStates(found->second.id).exec(ctx);
+        BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
+        {
+            BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
+                    it.statuses.end());
+        }
     }
 }
 
@@ -79,16 +100,35 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    for(std::vector<Registry::WhoisImpl::Domain>::iterator it = domain_vec.begin(); it != domain_vec.end(); ++it)
+    BOOST_FOREACH(Registry::WhoisImpl::Domain it, domain_vec)
     {
-        found = domain_info.find(it->fqdn);
+        found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
-        BOOST_CHECK(it->admin_contact_handles.at(0) == found->second.admin_contacts.at(0).handle);
-        BOOST_CHECK(it->changed.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK(it->last_transfer.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK_EQUAL(it->registered, now_utc);
-        BOOST_CHECK(it->registrant_handle == found->second.registrant.handle);
-        BOOST_CHECK(it->registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it.changed.isnull());
+        BOOST_CHECK(it.validated_to.isnull());
+        BOOST_CHECK(it.last_transfer.isnull());
+        BOOST_CHECK(it.registered == now_utc);
+        BOOST_CHECK(it.registrant_handle == found->second.registrant.handle);
+        BOOST_CHECK(it.registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it.expire == found->second.expiration_date);
+        BOOST_CHECK(it.keyset_handle == found->second.keyset.get_value_or_default().handle);
+        BOOST_CHECK(it.nsset_handle == found->second.nsset.get_value_or_default().handle);
+
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
+        {
+            bool found = (it.admin_contact_handles.end() == std::find(it.admin_contact_handles.begin(),
+                        it.admin_contact_handles.end(), oit.handle));
+            BOOST_CHECK(!found);//dirty, wasn't working with BOOST_ERROR ;(
+        }
+
+        Fred::OperationContextCreator ctx;
+        typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
+        const ObjectStateDataList v_osd = Fred::GetObjectStates(found->second.id).exec(ctx);
+        BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
+        {
+            BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
+                    it.statuses.end());
+        }
     }
 }
 

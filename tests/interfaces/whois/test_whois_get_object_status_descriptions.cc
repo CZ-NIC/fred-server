@@ -14,11 +14,11 @@ struct object_status_descriptions_fixture
     std::string  object_name;
     map_type     statuses;
     unsigned int status_number;
-    Fred::OperationContextCreator ctx;
 
     object_status_descriptions_fixture()
     : test_lang("EN")
     {
+        Fred::OperationContextCreator ctx;
         statuses["expired"] = "description of expired";
         statuses["unguarded"] = "description of unguarded";
         statuses["serverTransferProhibited"] =
@@ -114,11 +114,12 @@ typedef boost::mpl::list<domain_type, contact_type, nsset_type, keyset_type> tes
 /*get_domain_status_descriptions*/
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd, T, test_types, T)
 {
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::ObjectStateDescription> states =
                         Fred::GetObjectStateDescriptions(T::test_lang)
                             .set_object_type(T::object_name)
                             .set_external()
-                            .exec(T::ctx);
+                            .exec(ctx);
     std::vector<typename T::StatusDesc> vec_osd = T::get_description(T::test_lang);
     BOOST_CHECK(states.size() == vec_osd.size());
     std::sort(states.begin(), states.end(), private_sort<Fred::ObjectStateDescription>);

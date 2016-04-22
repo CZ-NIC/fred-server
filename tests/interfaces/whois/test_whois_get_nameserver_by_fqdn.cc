@@ -7,34 +7,38 @@ BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)
 struct get_nameserver_by_fqdn_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
     std::string test_nameserver_fqdn;
-    const Fred::InfoRegistrarData registrar;
-    const Fred::InfoContactData contact;
-    const Fred::InfoNssetData nsset;
 
     get_nameserver_by_fqdn_fixture()
-    : test_nameserver_fqdn("test_nameserver"),
-      registrar(Test::registrar::make(ctx)),     
-      contact(Test::contact::make(ctx)),
-      nsset(
-          Test::exec(
-              Test::CreateX_factory<Fred::CreateNsset>().make(registrar.handle)
-              //making nameserver
-                  .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))
-                  .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
-              ctx))
+    : test_nameserver_fqdn("test_nameserver")
     {
+        Fred::OperationContextCreator ctx;
+        Fred::InfoRegistrarData registrar;
+        Fred::InfoContactData contact;
+        Fred::InfoNssetData nsset;
+
+        registrar = Test::registrar::make(ctx);     
+        contact = Test::contact::make(ctx);
+        nsset = Test::exec(
+                    Test::CreateX_factory<Fred::CreateNsset>().make(registrar.handle)
+                        //making nameserver
+                        .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))
+                        .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+                    ctx);
         ctx.commit_transaction();
     }
 };
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
 {
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE(Whois::nameserver_exists(test_nameserver_fqdn, ctx));
 
     Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_nameserver_fqdn);
     BOOST_CHECK(ns.fqdn == test_nameserver_fqdn);
+    /*
+     * ip_addresses not tested. for more info refer to implementation
+     */
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, whois_impl_instance_fixture)

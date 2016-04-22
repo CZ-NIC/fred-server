@@ -1,5 +1,4 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
@@ -15,7 +14,6 @@ struct get_keysets_by_tech_c_fixture
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
     const boost::posix_time::ptime now_utc;
-    const boost::posix_time::ptime now_prague;
     unsigned long test_limit;
     std::map<std::string, Fred::InfoKeysetData> keyset_info;
 
@@ -25,9 +23,6 @@ struct get_keysets_by_tech_c_fixture
       now_utc(boost::posix_time::time_from_string(
                   static_cast<std::string>(ctx.get_conn()
                       .exec("SELECT now()::timestamp")[0][0]))),
-      now_prague(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0]))),
       test_limit(10)
     {
         for(unsigned long i = 0; i < test_limit; ++i)
@@ -62,61 +57,80 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
     KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit);
     BOOST_CHECK(!ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit);
-    for(std::vector<KeySet>::iterator it = ks_s.content.begin();
-            it != ks_s.content.end(); ++it)
+    BOOST_FOREACH(KeySet it, ks_s.content)
     {
-        Fred::InfoKeysetData& found = keyset_info[it->handle];
-        BOOST_REQUIRE(it->handle == found.handle);
-        BOOST_CHECK(it->changed.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK(it->created == now_utc);
-        BOOST_CHECK(it->dns_keys.at(0).alg == found.dns_keys.at(0).get_alg());
-        BOOST_CHECK(it->dns_keys.at(0).flags ==
-                found.dns_keys.at(0).get_flags());
-        BOOST_CHECK(it->dns_keys.at(0).protocol ==
-                found.dns_keys.at(0).get_protocol());
-        BOOST_CHECK(it->dns_keys.at(0).public_key ==
-                found.dns_keys.at(0).get_key());
-        BOOST_CHECK(it->last_transfer.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK(it->registrar_handle == found.create_registrar_handle);
-        BOOST_CHECK(it->tech_contact_handles.at(0) ==
-                found.tech_contacts.at(0).handle);
+        Fred::InfoKeysetData& found = keyset_info[it.handle];
+        BOOST_REQUIRE(it.handle == found.handle);
+        BOOST_CHECK(it.created == now_utc);
+        BOOST_CHECK(it.changed.isnull());
+        BOOST_CHECK(it.last_transfer.isnull());
+        BOOST_CHECK(it.handle == found.handle);
+        BOOST_CHECK(it.registrar_handle == found.create_registrar_handle);
+        BOOST_FOREACH(Fred::DnsKey kit, found.dns_keys)
+        {
+            bool key_found = false;
+            BOOST_FOREACH(Registry::WhoisImpl::DNSKey dit, it.dns_keys)
+            {
+                if(kit.get_key() == dit.public_key)
+                {
+                    key_found = true;
+                    BOOST_CHECK(dit.alg == kit.get_alg());
+                    BOOST_CHECK(dit.flags == kit.get_flags());
+                    BOOST_CHECK(dit.protocol == kit.get_protocol());
+                }
+            }
+            BOOST_CHECK(key_found);
+        }
+        BOOST_FOREACH(Fred::ObjectIdHandlePair oit, found.tech_contacts)
+        {
+            BOOST_CHECK(it.tech_contact_handles.end() !=
+                    std::find(it.tech_contact_handles.begin(), it.tech_contact_handles.end(), oit.handle));
+        }
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded,
-                        get_keysets_by_tech_c_fixture)
+BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tech_c_fixture)
 {
     KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit - 1);
     BOOST_CHECK(ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit - 1);
-    for(std::vector<KeySet>::iterator it = ks_s.content.begin();
-            it != ks_s.content.end(); ++it)
+    BOOST_FOREACH(KeySet it, ks_s.content)
     {
-        Fred::InfoKeysetData& found = keyset_info[it->handle];
-        BOOST_REQUIRE(it->handle == found.handle);
-        BOOST_CHECK(it->changed.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK(it->created == now_utc);
-        BOOST_CHECK(it->dns_keys.at(0).alg == found.dns_keys.at(0).get_alg());
-        BOOST_CHECK(it->dns_keys.at(0).flags ==
-                found.dns_keys.at(0).get_flags());
-        BOOST_CHECK(it->dns_keys.at(0).protocol ==
-                found.dns_keys.at(0).get_protocol());
-        BOOST_CHECK(it->dns_keys.at(0).public_key ==
-                found.dns_keys.at(0).get_key());
-        BOOST_CHECK(it->last_transfer.get_value() == ptime(not_a_date_time));
-        BOOST_CHECK(it->registrar_handle == found.create_registrar_handle);
-        BOOST_CHECK(it->tech_contact_handles.at(0) ==
-                found.tech_contacts.at(0).handle);
+        Fred::InfoKeysetData& found = keyset_info[it.handle];
+        BOOST_REQUIRE(it.handle == found.handle);
+        BOOST_CHECK(it.created == now_utc);
+        BOOST_CHECK(it.changed.isnull());
+        BOOST_CHECK(it.last_transfer.isnull());
+        BOOST_CHECK(it.handle == found.handle);
+        BOOST_CHECK(it.registrar_handle == found.create_registrar_handle);
+        BOOST_FOREACH(Fred::DnsKey kit, found.dns_keys)
+        {
+            bool key_found = false;
+            BOOST_FOREACH(Registry::WhoisImpl::DNSKey dit, it.dns_keys)
+            {
+                if(kit.get_key() == dit.public_key)
+                {
+                    key_found = true;
+                    BOOST_CHECK(dit.alg == kit.get_alg());
+                    BOOST_CHECK(dit.flags == kit.get_flags());
+                    BOOST_CHECK(dit.protocol == kit.get_protocol());
+                }
+            }
+            BOOST_CHECK(key_found);
+        }
+        BOOST_FOREACH(Fred::ObjectIdHandlePair oit, found.tech_contacts)
+        {
+            BOOST_CHECK(it.tech_contact_handles.end() !=
+                    std::find(it.tech_contact_handles.begin(), it.tech_contact_handles.end(), oit.handle));
+        }
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_no_contact,
-                        get_keysets_by_tech_c_fixture)
+BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_no_contact, get_keysets_by_tech_c_fixture)
 {
     try
     {
-        KeySetSeq ks_s = impl.get_keysets_by_tech_c("fine-tech-c-handle",
-                                                    test_limit);
+        KeySetSeq ks_s = impl.get_keysets_by_tech_c("fine-tech-c-handle", test_limit);
         BOOST_ERROR("unreported dangling KeySets");
     }
     catch(const Registry::WhoisImpl::ObjectNotExists& ex)
@@ -126,8 +140,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_no_contact,
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_wrong_contact,
-                        get_keysets_by_tech_c_fixture)
+BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_wrong_contact, get_keysets_by_tech_c_fixture)
 {
     try
     {
