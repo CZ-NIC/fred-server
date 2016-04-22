@@ -1211,6 +1211,18 @@ Fred::UpdatePublicRequest::Result invalidate(
     return set_status(_locked_request, Fred::PublicRequest::Status::INVALIDATED, _reason, _log_request_id);
 }
 
+//ticket #15587 hack
+void invalid_birthday_looks_like_no_birthday(MojeIDImplData::InfoContact &_data)
+{
+    if (!_data.birth_date.isnull()) {
+        const boost::gregorian::date invalid_date(boost::gregorian::not_a_date_time);
+        const std::string invalid_date_str = boost::gregorian::to_iso_extended_string(invalid_date);
+        if (_data.birth_date.get_value().value == invalid_date_str) { //make believe that invalid birthday
+            _data.birth_date = Nullable< MojeIDImplData::Date >();    //is no birthday
+        }
+    }
+}
+
 }//namespace Registry::MojeID::{anonymous}
 
 void MojeIDImpl::info_contact(
@@ -1222,6 +1234,7 @@ void MojeIDImpl::info_contact(
     try {
         Fred::OperationContextCreator ctx;
         from_into(Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data, _result);
+        invalid_birthday_looks_like_no_birthday(_result);//ticket #15587 hack
         ctx.commit_transaction();
         return;
     }
