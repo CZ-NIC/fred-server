@@ -1,5 +1,6 @@
 #include "src/fredlib/notifier/gather_email_data/objecttype_specific_impl/domain.h"
 
+#include "src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h"
 #include "src/fredlib/notifier/util/add_old_new_suffix_pair.h"
 #include "src/fredlib/notifier/util/get_previous_object_historyid.h"
 #include "src/fredlib/notifier/util/string_list_utils.h"
@@ -171,32 +172,76 @@ std::set<unsigned long long> gather_contact_ids_to_notify_domain_event(
                 nssets.insert( diff.nsset.get_value().second.get_value().id );
             }
 
+            const boost::posix_time::ptime time_of_change = Notification::get_utc_time_of_event(_ctx, _event, _history_id_after_change);
+
             BOOST_FOREACH(unsigned long long nsset_id, nssets ) {
+
+                bool corresponding_nsset_history_state_found = false;
+
                 BOOST_FOREACH(
-                    const Fred::ObjectIdHandlePair& tech_c,
-                    Fred::InfoNssetById( nsset_id ).exec(_ctx).info_nsset_data.tech_contacts
+                    const Fred::InfoNssetOutput& nsset_history_state,
+                    Fred::InfoNssetHistoryById(nsset_id).exec(_ctx, "UTC")
                 ) {
-                    contact_ids.insert(tech_c.id);
+                    if(
+                        nsset_history_state.history_valid_from <= time_of_change
+                        &&
+                        time_of_change <= nsset_history_state.history_valid_to.get_value_or(boost::posix_time::pos_infin)
+                    ) {
+                        corresponding_nsset_history_state_found = true;
+                        BOOST_FOREACH(
+                            const Fred::ObjectIdHandlePair& tech_c,
+                            nsset_history_state.info_nsset_data.tech_contacts
+                        ) {
+                            contact_ids.insert(tech_c.id);
+                        }
+                        /* continuing search through other history versions - chances are there might be two history states bordering the domain event */
+                    }
+                }
+
+                if( !corresponding_nsset_history_state_found ) {
+                    throw std::runtime_error("inconsistent data - Nsset that was associated before or after event to domain should exist at that time");
                 }
             }
         }
 
         if(diff.keyset.isset()) {
 
-            std::set<unsigned long long> nssets;
+            std::set<unsigned long long> keysets;
             if( !diff.keyset.get_value().first.isnull() ) {
-                nssets.insert( diff.keyset.get_value().first.get_value().id );
+                keysets.insert( diff.keyset.get_value().first.get_value().id );
             }
             if( !diff.keyset.get_value().second.isnull() ) {
-                nssets.insert( diff.keyset.get_value().second.get_value().id );
+                keysets.insert( diff.keyset.get_value().second.get_value().id );
             }
 
-            BOOST_FOREACH(unsigned long long nsset_id, nssets ) {
+            const boost::posix_time::ptime time_of_change = Notification::get_utc_time_of_event(_ctx, _event, _history_id_after_change);
+
+            BOOST_FOREACH(unsigned long long keyset_id, keysets ) {
+
+                bool corresponding_keyset_history_state_found = false;
+
                 BOOST_FOREACH(
-                    const Fred::ObjectIdHandlePair& tech_c,
-                    Fred::InfoKeysetById( nsset_id ).exec(_ctx).info_keyset_data.tech_contacts
+                    const Fred::InfoKeysetOutput& keyset_history_state,
+                    Fred::InfoKeysetHistoryById(keyset_id).exec(_ctx, "UTC")
                 ) {
-                    contact_ids.insert(tech_c.id);
+                    if(
+                        keyset_history_state.history_valid_from <= time_of_change
+                        &&
+                        time_of_change <= keyset_history_state.history_valid_to.get_value_or(boost::posix_time::pos_infin)
+                    ) {
+                        corresponding_keyset_history_state_found = true;
+                        BOOST_FOREACH(
+                            const Fred::ObjectIdHandlePair& tech_c,
+                            keyset_history_state.info_keyset_data.tech_contacts
+                        ) {
+                            contact_ids.insert(tech_c.id);
+                        }
+                        /* continuing search through other history versions - chances are there might be two history states bordering the domain event */
+                    }
+                }
+
+                if( !corresponding_keyset_history_state_found ) {
+                    throw std::runtime_error("inconsistent data - Keyset that was associated before or after event to domain should exist at that time");
                 }
             }
         }
