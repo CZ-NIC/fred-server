@@ -1097,9 +1097,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             }
 
             {
-                const MojeIDImplInternal::CheckUpdateTransferContactPrepare result_of_check(
-                    Fred::make_args(new_data),
-                    Fred::make_args(new_data, ctx));
+                const MojeIDImplInternal::CheckUpdateTransferContactPrepare result_of_check(new_data);
 
                 if (!result_of_check.success()) {
                     MojeIDImplInternal::raise(result_of_check);
