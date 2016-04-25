@@ -143,11 +143,7 @@ typedef boost::mpl::list< Fred::MojeID::check_contact_username,
                           Fred::check_contact_place_address,
                           check_contact_optional_addresses > check_update_transfer_contact_prepare;
 
-typedef boost::mpl::list< Fred::check_contact_email_availability,
-                          Fred::check_contact_phone_availability > check_update_transfer_contact_prepare_ctx;
-
-typedef Fred::Check< boost::mpl::list< check_update_transfer_contact_prepare,
-                                       check_update_transfer_contact_prepare_ctx > > CheckUpdateTransferContactPrepare;
+typedef Fred::Check< check_update_transfer_contact_prepare > CheckUpdateTransferContactPrepare;
 
 void raise(const CheckUpdateTransferContactPrepare &result);
 

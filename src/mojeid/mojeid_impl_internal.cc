@@ -332,15 +332,11 @@ void raise(const CheckUpdateTransferContactPrepare &result)
 
     set_ssn_result(result, e);
 
-    set_validity_availability_result<
-        Fred::check_contact_email_validity,
-        Fred::check_contact_email_availability >(result, e.email);
+    set_validity_result(result.Fred::check_contact_email_validity::success(), e.email);
 
     set_validity_result(result.Fred::check_contact_notifyemail_validity::success(), e.notify_email);
 
-    set_validity_availability_result<
-        Fred::check_contact_phone_validity,
-        Fred::check_contact_phone_availability >(result, e.phone);
+    set_validity_result(result.Fred::check_contact_phone_validity::success(), e.phone);
 
     set_validity_result(result.Fred::check_contact_fax_validity::success(), e.fax);
 
