@@ -39,10 +39,12 @@ static std::string dns_host_to_string(const Fred::DnsHost& a) {
     std::vector<boost::asio::ip::address> sorted_ip_addresses = a.get_inet_addr();
     std::sort(sorted_ip_addresses.begin(), sorted_ip_addresses.end()); // boost::asio::address has operator< in sense of represented integer number
 
-    return  a.get_fqdn()
-            + " (" +
-            boost::algorithm::join( get_string_addresses(sorted_ip_addresses), " ")
-            + ")";
+    return  a.get_fqdn() +
+            (
+                sorted_ip_addresses.empty()
+                ?   ""
+                :   " (" + boost::algorithm::join( get_string_addresses(sorted_ip_addresses), " ") + ")"
+            );
 }
 
 static std::map<std::string, std::string> gather_nsset_update_data_change(
