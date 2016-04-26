@@ -608,7 +608,7 @@ Generate::MessageId send_auth_owner_letter(
         FILETYPE_MOJEID_CONTACT_IDENTIFICATION_REQUEST, "");
 
     const std::string comm_type = "letter";
-    static const char *const message_type = "mojeid_card";
+    static const char *const message_type = "mojeid_pin3";
     const Generate::MessageId message_id =
         _msg_manager.save_letter_to_send(
             contact_handle.c_str(),
