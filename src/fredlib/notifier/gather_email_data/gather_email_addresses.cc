@@ -5,6 +5,7 @@
 #include "src/fredlib/notifier/gather_email_data/objecttype_specific_impl/domain.h"
 #include "src/fredlib/notifier/gather_email_data/objecttype_specific_impl/keyset.h"
 #include "src/fredlib/notifier/gather_email_data/objecttype_specific_impl/nsset.h"
+#include "src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h"
 
 #include "src/fredlib/notifier/exception.h"
 
@@ -62,46 +63,6 @@ static std::set<std::string> get_email_addresses(
     return result;
 }
 
-boost::posix_time::ptime get_time_of_change(
-    Fred::OperationContext& _ctx,
-    notified_event _event,
-    unsigned long long _last_history_id
-) {
-    if(
-           _event != created
-        && _event != updated
-        && _event != transferred
-        && _event != renewed
-        && _event != deleted
-    ) {
-        throw ExceptionEventNotImplemented();
-    }
-
-    const std::string column_of_interest =
-        _event == created || _event == updated || _event == transferred || _event == renewed
-        ?   "valid_from"
-        :   "valid_to";
-
-    Database::query_param_list p;
-    Database::Result time_res = _ctx.get_conn().exec_params(
-        "SELECT " + column_of_interest + " AS the_time_ "
-        "FROM history "
-        "WHERE id = $" + p.add(_last_history_id) + "::INT ",
-        p
-    );
-
-    if(time_res.size() != 1) {
-        throw ExceptionUnknownHistoryId();
-    }
-
-    return
-        boost::posix_time::time_from_string(
-            static_cast<std::string>(
-                time_res[0]["the_time_"]
-            )
-        );
-}
-
 std::set<std::string> gather_email_addresses(
     Fred::OperationContext& _ctx,
     const EventOnObject& _event_on_object,
@@ -128,7 +89,7 @@ std::set<std::string> gather_email_addresses(
     return get_email_addresses(
         _ctx,
         contact_ids_to_notify,
-        get_time_of_change(_ctx, _event_on_object.get_event(), _last_history_id)
+        get_utc_time_of_event(_ctx, _event_on_object.get_event(), _last_history_id)
     );
 }
 
