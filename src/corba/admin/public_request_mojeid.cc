@@ -18,12 +18,12 @@ class MojeIDPublicRequestBase
 public:
     void sendPasswords()
     {
-        throw std::runtime_error(std::string("method ") + __PRETTY_FUNCTION__ + " has never to be called");
+        throw std::runtime_error(std::string("method ") + __PRETTY_FUNCTION__ + " should never be called");
     }
 
     std::string generatePasswords()
     {
-        throw std::runtime_error(std::string("method ") + __PRETTY_FUNCTION__ + " has never to be called");
+        throw std::runtime_error(std::string("method ") + __PRETTY_FUNCTION__ + " should never be called");
     }
 };
 
