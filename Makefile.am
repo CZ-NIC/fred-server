@@ -1491,6 +1491,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/fredlib/contact/util.cc \
 		src/corba/fred-adifd.cc \
 		src/mojeid/mojeid_public_request.cc \
+		src/corba/admin/public_request_mojeid.h \
+		src/corba/admin/public_request_mojeid.cc \
 		src/admin_block/administrativeblocking.cc \
 		src/admin_block/administrativeblocking.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
