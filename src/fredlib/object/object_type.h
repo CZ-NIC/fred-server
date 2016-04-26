@@ -36,9 +36,8 @@ typedef unsigned long long Id;
 /**
  * Bidirectional conversions between string and enum representation of object types.
  */
-class Type
+struct Type
 {
-public:
     /**
      * Names of particular object types.
      */

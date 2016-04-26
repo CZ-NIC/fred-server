@@ -42,11 +42,11 @@ typedef unsigned long long GeneralId;
 
 struct CommChannel
 {
-    enum Value
+    enum Enum
     {
-        SMS,
-        EMAIL,
-        LETTER,
+        sms,
+        email,
+        letter,
     };
 };
 
@@ -97,7 +97,7 @@ public:
         ~message_checker_always_success() { }
     };
 
-    template < CommChannel::Value COMM_CHANNEL >
+    template < CommChannel::Enum COMM_CHANNEL >
     struct Into
     {
         static void for_new_requests(
@@ -117,7 +117,7 @@ public:
             const Optional< GeneralId > &_contact_history_id = Optional< GeneralId >());
     };
 
-    template < CommChannel::Value COMM_CHANNEL >
+    template < CommChannel::Enum COMM_CHANNEL >
     static void enable(Fred::OperationContext &_ctx, bool flag);
 };
 

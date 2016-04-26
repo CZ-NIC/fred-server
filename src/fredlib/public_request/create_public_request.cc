@@ -67,7 +67,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
         else {
             params(Database::QPNull);                                                       // $6::BIGINT
         }
-        params(Conversion::Enums::to_db_handle(PublicRequest::Status::NEW));                // $7::TEXT
+        params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));             // $7::TEXT
         const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
@@ -101,9 +101,9 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
                                                   const Optional< RegistrarId > _registrar_id,
                                                   const Optional< LogRequestId > &_log_request_id)
 {
-    Database::query_param_list params(_locked_object.get_id());         // $1::BIGINT
-    params(_type);                                                      // $2::TEXT
-    params(Conversion::Enums::to_db_handle(PublicRequest::Status::NEW));// $3::TEXT
+    Database::query_param_list params(_locked_object.get_id());            // $1::BIGINT
+    params(_type);                                                         // $2::TEXT
+    params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));// $3::TEXT
     const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
         "SELECT pr.id "
         "FROM public_request pr "
@@ -114,7 +114,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
     for (::size_t idx = 0; idx < res.size(); ++idx) {
         const PublicRequestId public_request_id = static_cast< PublicRequestId >(res[idx][0]);
         UpdatePublicRequest update_public_request_op;
-        update_public_request_op.set_status(PublicRequest::Status::INVALIDATED);
+        update_public_request_op.set_status(PublicRequest::Status::invalidated);
         if (_registrar_id.isset()) {
             update_public_request_op.set_registrar_id(_registrar_id.get_value());
         }

@@ -35,11 +35,11 @@ namespace Check {
 struct states_before_transfer_into_mojeid
 {
     states_before_transfer_into_mojeid(const Object::StatesInfo &_states_info)
-    :   server_user_blocked   (_states_info.presents(Object::State::SERVER_TRANSFER_PROHIBITED) ||
-                               _states_info.presents(Object::State::SERVER_UPDATE_PROHIBITED) ||
-                               _states_info.presents(Object::State::SERVER_DELETE_PROHIBITED)),
-        server_admin_blocked  (_states_info.presents(Object::State::SERVER_BLOCKED)),
-        mojeid_contact_present(_states_info.presents(Object::State::MOJEID_CONTACT))
+    :   server_user_blocked   (_states_info.presents(Object::State::server_transfer_prohibited) ||
+                               _states_info.presents(Object::State::server_update_prohibited) ||
+                               _states_info.presents(Object::State::server_delete_prohibited)),
+        server_admin_blocked  (_states_info.presents(Object::State::server_blocked)),
+        mojeid_contact_present(_states_info.presents(Object::State::mojeid_contact))
     { }
     bool success()const
     {
