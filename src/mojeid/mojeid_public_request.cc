@@ -8,9 +8,9 @@ namespace Fred {
 
 namespace Password {
 
-enum { CHUNK_LENGTH = 8 };
+const ::size_t chunk_length = 8;
 
-std::string generate(::size_t _length = CHUNK_LENGTH)
+std::string generate(::size_t _length = chunk_length)
 {
     const std::string set_of_possible_values = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     return Random::string_from(_length, set_of_possible_values);
@@ -22,19 +22,19 @@ namespace {
 
 std::string get_demo_pin1()//11111111
 {
-    const std::string pin1(Password::CHUNK_LENGTH, '1');
+    const std::string pin1(Password::chunk_length, '1');
     return pin1;
 }
 
 std::string get_demo_pin2()//22222222
 {
-    const std::string pin2(Password::CHUNK_LENGTH, '2');
+    const std::string pin2(Password::chunk_length, '2');
     return pin2;
 }
 
 std::string get_demo_pin3()//33333333
 {
-    const std::string pin3(Password::CHUNK_LENGTH, '3');
+    const std::string pin3(Password::chunk_length, '3');
     return pin3;
 }
 
@@ -52,7 +52,7 @@ std::string generate_pin()
 
 std::string generate_pin1()
 {
-    return generate_pin();
+    return Password::generate();
 }
 
 std::string generate_pin2()
@@ -83,13 +83,26 @@ std::string conditional_contact_identification_generate_passwords()
 
 namespace MojeID {
 
-std::string contact_transfer_request_generate_passwords()
+std::string contact_transfer_request_generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)
 {
     const bool runs_in_demo_mode =
         CfgArgs::instance()->get_handler_ptr_by_type< HandleMojeIDArgs >()->demo_mode;
 
-    return runs_in_demo_mode ? get_demo_pin1()
-                             : generate_pin1();
+    if (runs_in_demo_mode) {
+        return get_demo_pin1();
+    } 
+
+    const Database::Result res = _locked_contact.get_ctx().get_conn().exec_params(
+        "SELECT authinfopw FROM object WHERE id=$1::BIGINT",
+        Database::query_param_list(_locked_contact.get_id()));
+    if (res.size() <= 0) {
+        throw std::runtime_error("object not found");
+    }
+    const std::string authinfopw = static_cast< std::string >(res[0][0]);
+    if (Password::chunk_length <= authinfopw.length()) {
+        return authinfopw.substr(0, Password::chunk_length);
+    }
+    return authinfopw + Password::generate(Password::chunk_length - authinfopw.length());
 }
 
 std::string contact_identification_generate_passwords()
@@ -105,12 +118,12 @@ namespace PublicRequest {
 
 std::string ContactConditionalIdentification::get_pin1_part(const std::string &_summary_password)
 {
-    return _summary_password.substr(0, Password::CHUNK_LENGTH);
+    return _summary_password.substr(0, Password::chunk_length);
 }
 
 std::string ContactConditionalIdentification::get_pin2_part(const std::string &_summary_password)
 {
-    return _summary_password.substr(Password::CHUNK_LENGTH, Password::CHUNK_LENGTH);
+    return _summary_password.substr(Password::chunk_length, Password::chunk_length);
 }
 
 std::string ContactConditionalIdentification::get_public_request_type()const
@@ -118,10 +131,10 @@ std::string ContactConditionalIdentification::get_public_request_type()const
     return "mojeid_contact_conditional_identification";
 }
 
-std::string ContactConditionalIdentification::generate_passwords()const
+std::string ContactConditionalIdentification::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
     const std::string cci_pass = conditional_contact_identification_generate_passwords();
-    const std::string mtr_pass = contact_transfer_request_generate_passwords();
+    const std::string mtr_pass = contact_transfer_request_generate_passwords(_locked_contact);
     /* merge transfer pin with cond. contact identification */
     return mtr_pass + cci_pass.substr(mtr_pass.length());
 }
@@ -131,7 +144,7 @@ std::string ContactIdentification::get_public_request_type()const
     return "mojeid_contact_identification";
 }
 
-std::string ContactIdentification::generate_passwords()const
+std::string ContactIdentification::generate_passwords(const LockedPublicRequestsOfObjectForUpdate&)const
 {
     const std::string ci_pass = contact_identification_generate_passwords();
     return ci_pass;
@@ -142,7 +155,7 @@ std::string ContactReidentification::get_public_request_type()const
     return "mojeid_contact_reidentification";
 }
 
-std::string ContactReidentification::generate_passwords()const
+std::string ContactReidentification::generate_passwords(const LockedPublicRequestsOfObjectForUpdate&)const
 {
     const std::string ci_pass = contact_identification_generate_passwords();
     return ci_pass;
@@ -158,9 +171,9 @@ std::string ConditionallyIdentifiedContactTransfer::get_public_request_type()con
     return "mojeid_conditionally_identified_contact_transfer";
 }
 
-std::string ConditionallyIdentifiedContactTransfer::generate_passwords()const
+std::string ConditionallyIdentifiedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
-    return contact_transfer_request_generate_passwords();
+    return contact_transfer_request_generate_passwords(_locked_contact);
 }
 
 std::string IdentifiedContactTransfer::get_public_request_type()const
@@ -168,9 +181,9 @@ std::string IdentifiedContactTransfer::get_public_request_type()const
     return "mojeid_identified_contact_transfer";
 }
 
-std::string IdentifiedContactTransfer::generate_passwords()const
+std::string IdentifiedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
-    return contact_transfer_request_generate_passwords();
+    return contact_transfer_request_generate_passwords(_locked_contact);
 }
 
 std::string PrevalidatedUnidentifiedContactTransfer::get_public_request_type()const
@@ -178,9 +191,9 @@ std::string PrevalidatedUnidentifiedContactTransfer::get_public_request_type()co
     return "mojeid_prevalidated_unidentified_contact_transfer";
 }
 
-std::string PrevalidatedUnidentifiedContactTransfer::generate_passwords()const
+std::string PrevalidatedUnidentifiedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
-    return ContactConditionalIdentification().iface().generate_passwords();
+    return ContactConditionalIdentification().iface().generate_passwords(_locked_contact);
 }
 
 std::string PrevalidatedContactTransfer::get_public_request_type()const
@@ -188,9 +201,9 @@ std::string PrevalidatedContactTransfer::get_public_request_type()const
     return "mojeid_prevalidated_contact_transfer";
 }
 
-std::string PrevalidatedContactTransfer::generate_passwords()const
+std::string PrevalidatedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
-    return contact_transfer_request_generate_passwords();
+    return contact_transfer_request_generate_passwords(_locked_contact);
 }
 
 }//Fred::MojeID::PublicRequest
