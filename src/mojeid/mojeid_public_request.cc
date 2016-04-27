@@ -93,7 +93,7 @@ std::string contact_transfer_request_generate_passwords(const LockedPublicReques
     } 
 
     const Database::Result res = _locked_contact.get_ctx().get_conn().exec_params(
-        "SELECT authinfopw FROM object WHERE id=$1::BIGINT",
+        "SELECT COALESCE(authinfopw,'') FROM object WHERE id=$1::BIGINT",
         Database::query_param_list(_locked_contact.get_id()));
     if (res.size() <= 0) {
         throw std::runtime_error("object not found");
