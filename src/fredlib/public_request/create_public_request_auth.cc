@@ -4,19 +4,10 @@
 
 namespace Fred {
 
-CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type)
-:   type_(_type.get_public_request_type()),
-    password_(_type.generate_passwords())
-{
-}
-
-CreatePublicRequestAuth::CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type,
-                                                 const Optional< std::string > &_reason,
+CreatePublicRequestAuth::CreatePublicRequestAuth(const Optional< std::string > &_reason,
                                                  const Optional< std::string > &_email_to_answer,
                                                  const Optional< RegistrarId > &_registrar_id)
-:   type_(_type.get_public_request_type()),
-    password_(_type.generate_passwords()),
-    reason_(_reason),
+:   reason_(_reason),
     email_to_answer_(_email_to_answer),
     registrar_id_(_registrar_id)
 {
@@ -54,15 +45,21 @@ CreatePublicRequestAuth& CreatePublicRequestAuth::set_registrar_id(
 }
 
 CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
+                                                              const PublicRequestAuthTypeIface &_type,
                                                               const Optional< LogRequestId > &_create_log_request_id)const
 {
     try {
-        CreatePublicRequest::invalidate_the_same(type_, _locked_object, registrar_id_, _create_log_request_id);
+        const std::string public_request_type = _type.get_public_request_type();
+        CreatePublicRequest::invalidate_the_same(public_request_type,
+                                                 _locked_object,
+                                                 registrar_id_,
+                                                 _create_log_request_id);
         Result result;
         result.identification = Random::string_alpha(PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH);
-        Database::query_param_list params(type_);                                           // $1::TEXT
+        const std::string password = _type.generate_passwords(_locked_object);
+        Database::query_param_list params(public_request_type);                             // $1::TEXT
         params(result.identification)                                                       // $2::TEXT
-              (password_)                                                                   // $3::TEXT
+              (password)                                                                    // $3::TEXT
               (_locked_object.get_id())                                                     // $4::BIGINT
               (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $5::TEXT
               (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull); // $6::TEXT
@@ -108,7 +105,7 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(const LockedPublic
             result.password          = static_cast< std::string     >(res[0][2]);
             return result;
         }
-        BOOST_THROW_EXCEPTION(Exception().set_unknown_type(type_));
+        BOOST_THROW_EXCEPTION(Exception().set_unknown_type(public_request_type));
     }
     catch (const Exception&) {
         throw;

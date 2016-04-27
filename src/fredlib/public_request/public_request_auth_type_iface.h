@@ -25,6 +25,7 @@
 #define PUBLIC_REQUEST_AUTH_TYPE_IFACE_H_F7F25DCF5675DE12A1BC3F7F86DE6750
 
 #include "src/fredlib/public_request/public_request_type_iface.h"
+#include "src/fredlib/public_request/public_request_object_lock_guard.h"
 
 namespace Fred {
 
@@ -36,9 +37,10 @@ class PublicRequestAuthTypeIface:public PublicRequestTypeIface
 public:
     /**
      * Generate unique password for new public request authentication.
+     * @param _locked_contact contact joined with public request (password can be derived from contact's authinfopw)
      * @return password
      */
-    virtual std::string generate_passwords()const = 0;
+    virtual std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const = 0;
     /**
      * Instance pointer is publicly deletable.
      */

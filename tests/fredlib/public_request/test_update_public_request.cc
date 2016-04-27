@@ -70,8 +70,8 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
             "ORDER BY id OFFSET (SELECT COUNT(*)/2 FROM enum_public_request_type) LIMIT 1");
         BOOST_CHECK(dbres.size() == 1);//expecting existing public request type
         type_name_ = static_cast< std::string >(dbres[0][0]);
-        create_result = Fred::CreatePublicRequestAuth(public_request_type)
-            .exec(locked_contact);
+        create_result = Fred::CreatePublicRequestAuth()
+            .exec(locked_contact, public_request_type);
         ctx.commit_transaction();
     }
 
@@ -85,7 +85,7 @@ protected:
     const Fred::PublicRequestAuthTypeIface &public_request_type;
 private:
     std::string get_public_request_type()const { return type_name_; }
-    std::string generate_passwords()const { return "h*vno kleslo"; }
+    std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return "h*vno kleslo"; }
     std::string type_name_;
 };
 
