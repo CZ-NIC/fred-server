@@ -911,9 +911,31 @@ void MojeIDImpl::update_contact_prepare(
             cancel_message_sending< MessageType::mojeid_card, CommType::letter >(ctx, new_data.id);
         }
         if (drop_identification) {
-            const bool reidentification_needed = states.presents(Fred::Object::State::identified_contact);
+            bool reidentification_needed = states.presents(Fred::Object::State::identified_contact);
             if (reidentification_needed) {
                 to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact));
+            }
+            else {
+                const Database::Result dbres = ctx.get_conn().exec_params(
+                    "SELECT 1 "
+                    "FROM object_registry obr "
+                    "JOIN object_state os ON os.object_id=obr.id AND "
+                                            "os.state_id=(SELECT id FROM enum_object_states WHERE name=$2::TEXT) "
+                    "WHERE obr.id=$1::BIGINT AND "
+                          "os.valid_to IS NULL AND "
+                          "EXISTS(SELECT * FROM object_state "
+                                 "WHERE object_id=obr.id AND "
+                                       "state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
+                                       "(os.valid_from<=valid_from OR "
+                                       " os.valid_from<valid_to))",
+                    Database::query_param_list
+                        (new_data.id)                                                               //$1::BIGINT
+                        (Conversion::Enums::to_db_handle(Fred::Object::State::mojeid_contact))      //$2::TEXT
+                        (Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact)));//$3::TEXT
+                const bool contact_was_identified_in_the_past = 0 < dbres.size();
+                if (contact_was_identified_in_the_past) {
+                    reidentification_needed = true;
+                }
             }
             const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
                                                                 get_handler_ptr_by_type< HandleMojeIDArgs >();
