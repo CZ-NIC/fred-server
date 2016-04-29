@@ -85,7 +85,7 @@ protected:
     const Fred::PublicRequestAuthTypeIface &public_request_type;
 private:
     std::string get_public_request_type()const { return type_name_; }
-    std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return "h*vno kleslo"; }
+    std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return "aCp2bm8ga2xlc2xv"; }
     std::string type_name_;
 };
 
