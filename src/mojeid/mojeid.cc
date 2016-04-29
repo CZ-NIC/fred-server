@@ -564,21 +564,6 @@ bool identified_data_changed(const Fred::InfoContactData &_c1, const Fred::InfoC
         return true;
     }
 
-    if (differs(_c1.ssntype, _c2.ssntype)) {
-        return true;
-    }
-
-    if (differs(_c1.ssn, _c2.ssn)) {
-        if (_c1.ssntype.get_value_or_default() != Conversion::Enums::to_db_handle(Fred::SSNType::birthday)) {
-            return true;
-        }
-        const Nullable< boost::gregorian::date > bd1 = convert_as_birthdate(_c1.ssn);
-        const Nullable< boost::gregorian::date > bd2 = convert_as_birthdate(_c2.ssn);
-        if (differs(bd1, bd2)) {
-            return true;
-        }
-    }
-
     return false;
 }
 
