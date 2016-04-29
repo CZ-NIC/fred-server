@@ -93,16 +93,23 @@ std::string contact_transfer_request_generate_passwords(const LockedPublicReques
     } 
 
     const Database::Result res = _locked_contact.get_ctx().get_conn().exec_params(
-        "SELECT COALESCE(authinfopw,'') FROM object WHERE id=$1::BIGINT",
-        Database::query_param_list(_locked_contact.get_id()));
+        "WITH object_authinfopw AS "
+            "(SELECT SUBSTRING(COALESCE(authinfopw,'') FOR $2::INTEGER) AS passwd "
+             "FROM object "
+             "WHERE id=$1::BIGINT) "
+        "SELECT passwd,LENGTH(passwd) "
+        "FROM object_authinfopw",
+        Database::query_param_list(_locked_contact.get_id())//$1::BIGINT
+                                  (Password::chunk_length));//$2::INTEGER
     if (res.size() <= 0) {
         throw std::runtime_error("object not found");
     }
     const std::string authinfopw = static_cast< std::string >(res[0][0]);
-    if (Password::chunk_length <= authinfopw.length()) {
-        return authinfopw.substr(0, Password::chunk_length);
+    const ::size_t authinfopw_length = static_cast< ::size_t >(res[0][1]);
+    if (Password::chunk_length <= authinfopw_length) {
+        return authinfopw;
     }
-    return authinfopw + Password::generate(Password::chunk_length - authinfopw.length());
+    return authinfopw + Password::generate(Password::chunk_length - authinfopw_length);
 }
 
 std::string contact_identification_generate_passwords()
@@ -118,12 +125,16 @@ namespace PublicRequest {
 
 std::string ContactConditionalIdentification::get_pin1_part(const std::string &_summary_password)
 {
-    return _summary_password.substr(0, Password::chunk_length);
+    //first part is utf-8 encoded so its length is variable
+    //length of second part is always Password::chunk_length
+    return _summary_password.substr(0, _summary_password.length() - Password::chunk_length);
 }
 
 std::string ContactConditionalIdentification::get_pin2_part(const std::string &_summary_password)
 {
-    return _summary_password.substr(Password::chunk_length, Password::chunk_length);
+    //first part is utf-8 encoded so its length is variable
+    //length of second part is always Password::chunk_length
+    return _summary_password.substr(_summary_password.length() - Password::chunk_length, Password::chunk_length);
 }
 
 std::string ContactConditionalIdentification::get_public_request_type()const
@@ -136,7 +147,7 @@ std::string ContactConditionalIdentification::generate_passwords(const LockedPub
     const std::string cci_pass = conditional_contact_identification_generate_passwords();
     const std::string mtr_pass = contact_transfer_request_generate_passwords(_locked_contact);
     /* merge transfer pin with cond. contact identification */
-    return mtr_pass + cci_pass.substr(mtr_pass.length());
+    return mtr_pass + get_pin2_part(cci_pass);
 }
 
 std::string ContactIdentification::get_public_request_type()const
