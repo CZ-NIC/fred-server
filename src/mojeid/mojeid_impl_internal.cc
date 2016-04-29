@@ -287,9 +287,7 @@ void raise(const CheckUpdateContactPrepare &result)
 
     set_validity_result(result.Fred::check_contact_notifyemail_validity::success(), e.notify_email);
 
-    set_presence_validity_result<
-        Fred::check_contact_phone_presence,
-        Fred::check_contact_phone_validity >(result, e.phone);
+    set_validity_result(result.Fred::check_contact_phone_validity::success(), e.phone);
 
     set_validity_result(result.Fred::check_contact_fax_validity::success(), e.fax);
 
