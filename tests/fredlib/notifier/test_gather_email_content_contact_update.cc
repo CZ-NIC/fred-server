@@ -239,7 +239,7 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_empty_data, has_contact_big_update<
     etalon["changes.contact.notify_email.new"]          = new_contact_data.notifyemail.get_value();
 
     etalon["changes.contact.ident_type"]                = "1";
-    etalon["changes.contact.ident_type.old"]            = "EMPTY";
+    etalon["changes.contact.ident_type.old"]            = "";
     etalon["changes.contact.ident_type.new"]            = new_contact_data.ssntype.get_value();
 
     etalon["changes.contact.ident"]                     = "1";
