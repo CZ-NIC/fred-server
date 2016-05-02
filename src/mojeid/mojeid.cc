@@ -909,6 +909,7 @@ void MojeIDImpl::update_contact_prepare(
         const bool drop_identification = identified_data_changed(current_data, new_data);
         if (drop_identification || differs(current_data.email, new_data.email)) {
             cancel_message_sending< MessageType::mojeid_card, CommType::letter >(ctx, new_data.id);
+            cancel_message_sending< MessageType::mojeid_pin3, CommType::letter >(ctx, new_data.id);
         }
         if (drop_identification) {
             bool reidentification_needed = states.presents(Fred::Object::State::identified_contact);
