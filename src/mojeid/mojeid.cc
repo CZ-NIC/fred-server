@@ -2426,6 +2426,7 @@ MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
     const Optional< boost::posix_time::ptime > &_letter_time,
     const Optional< bool > &_validated_contact)
 {
+    cancel_message_sending< MessageType::mojeid_card, CommType::letter >(_ctx, _data.id);
     check_sent_letters_limit(_ctx, _data.id, _limit_count, _limit_interval);
     std::string letter_xml("<?xml version='1.0' encoding='utf-8'?>");
 
