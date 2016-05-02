@@ -66,6 +66,10 @@ struct ExceptionDataLoss : ExceptionInterface {
     const char* what() const { return "data loss"; }
 };
 
+struct ExceptionUnknownSSNType : ExceptionInterface {
+    const char* what() const { return "unknown SSN type"; }
+};
+
 }
 
 #endif

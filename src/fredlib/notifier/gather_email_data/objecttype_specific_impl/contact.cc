@@ -155,7 +155,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
         static std::string exec(const Nullable< Fred::PersonalIdUnion > &_nullable_personal_id)
         {
             if (_nullable_personal_id.isnull() ||
-                _nullable_personal_id.get_value().get_type().empty()) { return "EMPTY"; }
+                _nullable_personal_id.get_value().get_type().empty()) { return ""; }
 
             const std::string type = _nullable_personal_id.get_value().get_type();
 
@@ -167,7 +167,7 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
                 type == "MPSV" ||
                 type == "BIRTHDAY") { return type; }
 
-            return "UNKNOWN";
+            throw ExceptionUnknownSSNType();
         }
     };
 
