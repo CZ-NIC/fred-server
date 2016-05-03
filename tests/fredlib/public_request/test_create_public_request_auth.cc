@@ -81,7 +81,7 @@ public:
     :   type_(_type),
         password_(_password) { }
     virtual std::string get_public_request_type()const { return type_; }
-    virtual std::string generate_passwords()const { return password_; }
+    virtual std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return password_; }
     virtual ~PublicRequestAuthTypeFake() { }
 private:
     const std::string type_;
@@ -111,9 +111,10 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_registrar)
         "SELECT 100+2*MAX(id) FROM registrar")[0][0]);
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::CreatePublicRequestAuth(PublicRequestAuthTypeFake("mojeid_contact_identification", password))
+        Fred::CreatePublicRequestAuth()
             .set_registrar_id(bad_registrar_id)
-            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id));
+            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id),
+                  PublicRequestAuthTypeFake("mojeid_contact_identification", password));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
         BOOST_CHECK(!e.is_set_unknown_type());
@@ -144,8 +145,9 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_wrong_type)
 
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::CreatePublicRequestAuth(PublicRequestAuthTypeFake(bad_type, password))
-            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id));
+        Fred::CreatePublicRequestAuth()
+            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id),
+                  PublicRequestAuthTypeFake(bad_type, password));
     }
     catch(const Fred::CreatePublicRequestAuth::Exception &e) {
         BOOST_CHECK(e.is_set_unknown_type());
@@ -186,8 +188,8 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
     Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
     for (TypeName::const_iterator name_ptr = type_names.begin(); name_ptr != type_names.end(); ++name_ptr) {
         const PublicRequestAuthTypeFake public_request_type(*name_ptr, password);
-        const Fred::CreatePublicRequestAuth::Result result = Fred::CreatePublicRequestAuth(public_request_type)
-            .exec(locked_contact);
+        const Fred::CreatePublicRequestAuth::Result result = Fred::CreatePublicRequestAuth()
+            .exec(locked_contact, public_request_type);
         BOOST_CHECK(result.identification != result.password);
         BOOST_CHECK(result.identification.length() == Fred::PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH);
         const Database::Result res = ctx.get_conn().exec_params(
@@ -233,13 +235,13 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
     const PublicRequestAuthTypeFake public_request_type(*type_names.begin(), password);
     Fred::CreatePublicRequestAuth::Result result[2];
     result[0] = Fred::CreatePublicRequestAuth(
-        public_request_type, reason, email_to_answer, registrar_id)
-        .exec(locked_contact);
-    result[1] = Fred::CreatePublicRequestAuth(public_request_type)
+        reason, email_to_answer, registrar_id)
+        .exec(locked_contact, public_request_type);
+    result[1] = Fred::CreatePublicRequestAuth()
         .set_reason(reason)
         .set_email_to_answer(email_to_answer)
         .set_registrar_id(registrar_id)
-        .exec(locked_contact);
+        .exec(locked_contact, public_request_type);
     const Database::Result res = ctx.get_conn().exec_params(
         "SELECT "
             "pr.id,"

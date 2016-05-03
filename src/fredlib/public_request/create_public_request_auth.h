@@ -51,21 +51,19 @@ public:
 
     /**
      * Constructor with mandatory parameter.
-     * @param _type type of public request
      */
-    CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type);
+    CreatePublicRequestAuth() { }
 
     /**
      * Constructor with all parameters.
-     * @param _type type of public request
      * @param _reason reason of public request creation
      * @param _email_to_answer the answer recipient's email address
      * @param _registrar_id I don't know relationship between this registrar and public request!
      */
-    CreatePublicRequestAuth(const PublicRequestAuthTypeIface &_type,
-                            const Optional< std::string > &_reason,
+    CreatePublicRequestAuth(const Optional< std::string > &_reason,
                             const Optional< std::string > &_email_to_answer,
                             const Optional< RegistrarId > &_registrar_id);
+
     ~CreatePublicRequestAuth() { }
 
     /**
@@ -113,15 +111,15 @@ public:
     /**
      * Executes creation.
      * @param _locked_object guarantees exclusive access to all public requests of given object
+     * @param _type type of public request
      * @param _create_log_request_id associated request id in logger
      * @return @ref Result object corresponding with performed operation
      * @throw Exception if something wrong happened
      */
     Result exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
+                const PublicRequestAuthTypeIface &_type,
                 const Optional< LogRequestId > &_create_log_request_id = Optional< LogRequestId >())const;
 private:
-    const std::string type_;
-    const std::string password_;
     Optional< std::string > reason_;
     Optional< std::string > email_to_answer_;
     Optional< RegistrarId > registrar_id_;

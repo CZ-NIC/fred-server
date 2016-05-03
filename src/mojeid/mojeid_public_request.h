@@ -32,7 +32,7 @@ std::string conditional_contact_identification_generate_passwords();
 
 namespace MojeID {
 
-std::string contact_transfer_request_generate_passwords();
+std::string contact_transfer_request_generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact);
 
 std::string contact_identification_generate_passwords();
 
@@ -47,7 +47,7 @@ public:
     static std::string get_pin1_part(const std::string &_summary_password);
     static std::string get_pin2_part(const std::string &_summary_password);
 private:
-    std::string generate_passwords()const;
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
 class ContactIdentification:public PublicRequestAuthTypeIface
@@ -57,7 +57,7 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    std::string generate_passwords()const;
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
 class ContactReidentification:public PublicRequestAuthTypeIface
@@ -67,7 +67,7 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    std::string generate_passwords()const;
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
 class ContactValidation:public PublicRequestTypeIface
@@ -85,7 +85,7 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    std::string generate_passwords()const;
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
 class IdentifiedContactTransfer:public PublicRequestAuthTypeIface
@@ -95,7 +95,7 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    std::string generate_passwords()const;
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
 class PrevalidatedUnidentifiedContactTransfer:public PublicRequestAuthTypeIface
@@ -105,7 +105,7 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    std::string generate_passwords()const;
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
 class PrevalidatedContactTransfer:public PublicRequestAuthTypeIface
@@ -115,7 +115,7 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    std::string generate_passwords()const;
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
 }//Fred::MojeID::PublicRequest
