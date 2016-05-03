@@ -25,7 +25,7 @@
 #define PUBLIC_REQUEST_TYPE_IFACE_H_E9BC2123C0A6C5F6CF12FF83939D575D
 
 #include <string>
-#include <memory>
+#include <set>
 
 namespace Fred {
 
@@ -44,6 +44,26 @@ public:
      * Instance pointer is publicly deletable.
      */
     virtual ~PublicRequestTypeIface() { }
+    /**
+     * Collection of public request type handles.
+     */
+    typedef std::set< std::string > PublicRequestTypes;
+    /**
+     * Get collection of public request types which have to be cancelled before creation of this.
+     * @return collection of public request types to cancel before creation of this
+     */
+    virtual PublicRequestTypes get_public_request_types_to_cancel_on_create()const = 0;
+protected:
+    /**
+     * Cancel only public requests of exactly the same type.
+     * @return collection with one item only
+     */
+    PublicRequestTypes default_impl_of_get_public_request_types_to_cancel_on_create()const
+    {
+        PublicRequestTypes only_me;
+        only_me.insert(this->get_public_request_type());
+        return only_me;
+    }
 };
 
 }//namespace Fred

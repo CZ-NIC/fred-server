@@ -47,6 +47,7 @@ public:
     static std::string get_pin1_part(const std::string &_summary_password);
     static std::string get_pin2_part(const std::string &_summary_password);
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -57,6 +58,7 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -67,6 +69,10 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+    }
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -76,6 +82,11 @@ public:
     ~ContactValidation() { }
     const PublicRequestTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
+private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+    }
 };
 
 class ConditionallyIdentifiedContactTransfer:public PublicRequestAuthTypeIface
@@ -85,6 +96,10 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+    }
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -95,6 +110,10 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+    }
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -105,6 +124,10 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+    }
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -115,6 +138,10 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+    }
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 

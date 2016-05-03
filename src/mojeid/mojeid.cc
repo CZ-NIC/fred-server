@@ -1832,8 +1832,9 @@ void MojeIDImpl::create_validation_request(
                 MojeIDImplInternal::raise(check_create_validation_request);
             }
         }
-        Fred::CreatePublicRequest create_public_request_op(Fred::MojeID::PublicRequest::ContactValidation().iface());
-        create_public_request_op.exec(locked_contact, _log_request_id);
+        Fred::CreatePublicRequest().exec(locked_contact,
+                                         Fred::MojeID::PublicRequest::ContactValidation().iface(),
+                                         _log_request_id);
         ctx.commit_transaction();
         return;
     }

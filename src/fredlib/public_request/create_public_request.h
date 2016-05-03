@@ -47,19 +47,16 @@ public:
 
     /**
      * Constructor with mandatory parameter.
-     * @param _type type of public request
      */
-    CreatePublicRequest(const PublicRequestTypeIface &_type);
+    CreatePublicRequest() { }
 
     /**
      * Constructor with all parameters.
-     * @param _type type of public request
      * @param _reason reason of public request creation
      * @param _email_to_answer the answer recipient's email address
      * @param _registrar_id I don't know relationship between this registrar and public request!
      */
-    CreatePublicRequest(const PublicRequestTypeIface &_type,
-                        const Optional< std::string > &_reason,
+    CreatePublicRequest(const Optional< std::string > &_reason,
                         const Optional< std::string > &_email_to_answer,
                         const Optional< RegistrarId > &_registrar_id);
     ~CreatePublicRequest() { }
@@ -88,28 +85,29 @@ public:
     /**
      * Executes creation.
      * @param _locked_object guarantees exclusive access to all public requests of given object
+     * @param _type type of public request
      * @param _create_log_request_id associated request id in logger
      * @return unique numeric identification of just created public request
      * @throw Exception if something wrong happened
      */
     PublicRequestId exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
+                         const PublicRequestTypeIface &_type,
                          const Optional< LogRequestId > &_create_log_request_id = Optional< LogRequestId >())const;
 
     /**
-     * Invalidates my opened requests of the same type.
-     * @param _type type of public request
+     * Invalidates my opened requests of the specified types.
+     * @param _type_to_create type of public request which will be created
      * @param _locked_object guarantees exclusive access to all public requests of given object
      * @param _registrar_id registrar which calls this function
      * @param _log_request_id associated request id in logger
      * @return the number of invalidated public requests
      * @throw Exception if something wrong happened
      */
-    static ::size_t invalidate_the_same(const std::string &_type,
-                                        const LockedPublicRequestsOfObjectForUpdate &_locked_object,
-                                        const Optional< RegistrarId > _registrar_id = Optional< RegistrarId >(),
-                                        const Optional< LogRequestId > &_log_request_id = Optional< LogRequestId >());
+    static ::size_t cancel_on_create(const PublicRequestTypeIface &_type_to_create,
+                                     const LockedPublicRequestsOfObjectForUpdate &_locked_object,
+                                     const Optional< RegistrarId > _registrar_id = Optional< RegistrarId >(),
+                                     const Optional< LogRequestId > &_log_request_id = Optional< LogRequestId >());
 private:
-    const std::string type_;
     Optional< std::string > reason_;
     Optional< std::string > email_to_answer_;
     Optional< RegistrarId > registrar_id_;

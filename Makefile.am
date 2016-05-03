@@ -977,6 +977,8 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 		src/fredlib/public_request/public_request.h \
 		src/fredlib/public_request/public_request_impl.cc \
 		src/fredlib/public_request/public_request_impl.h \
+		src/fredlib/public_request/public_request_type_iface.h \
+		src/fredlib/public_request/public_request_auth_type_iface.h \
 		src/fredlib/public_request/public_request_authinfo_impl.cc \
 		src/fredlib/public_request/public_request_authinfo_impl.h \
 		src/fredlib/public_request/public_request_block_impl.cc \

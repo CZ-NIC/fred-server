@@ -142,6 +142,14 @@ std::string ContactConditionalIdentification::get_public_request_type()const
     return "mojeid_contact_conditional_identification";
 }
 
+PublicRequestTypeIface::PublicRequestTypes ContactConditionalIdentification::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(this->get_public_request_type());
+    result.insert("contact_conditional_identification");
+    return result;
+}
+
 std::string ContactConditionalIdentification::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
     const std::string cci_pass = conditional_contact_identification_generate_passwords();
@@ -153,6 +161,14 @@ std::string ContactConditionalIdentification::generate_passwords(const LockedPub
 std::string ContactIdentification::get_public_request_type()const
 {
     return "mojeid_contact_identification";
+}
+
+PublicRequestTypeIface::PublicRequestTypes ContactIdentification::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(this->get_public_request_type());
+    result.insert("contact_identification");
+    return result;
 }
 
 std::string ContactIdentification::generate_passwords(const LockedPublicRequestsOfObjectForUpdate&)const

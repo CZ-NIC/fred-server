@@ -18,6 +18,7 @@
 
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "src/fredlib/public_request/update_public_request.h"
+#include "src/fredlib/public_request/public_request_auth_type_iface.h"
 #include "src/fredlib/contact/create_contact.h"
 
 #include "util/random_data_generator.h"
@@ -85,6 +86,10 @@ protected:
     const Fred::PublicRequestAuthTypeIface &public_request_type;
 private:
     std::string get_public_request_type()const { return type_name_; }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+    }
     std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return "aCp2bm8ga2xlc2xv"; }
     std::string type_name_;
 };
