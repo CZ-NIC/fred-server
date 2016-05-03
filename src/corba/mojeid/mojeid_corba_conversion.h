@@ -137,6 +137,7 @@ void raise_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::Registr
 void raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(const Registry::MojeIDImplData::UpdateContactPrepareValidationResult &src);
 void raise_MESSAGE_LIMIT_EXCEEDED(const Registry::MojeIDImplData::MessageLimitExceeded &src);
 void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Registry::MojeIDImplData::CreateValidationRequestValidationResult &src);
+void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::ProcessRegistrationValidationResult &src);
 
 }//namespace CorbaConversion
 

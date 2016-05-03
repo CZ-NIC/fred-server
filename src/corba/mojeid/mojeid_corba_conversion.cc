@@ -637,4 +637,16 @@ void raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(const Registry::MojeIDImpl
     throw e;
 }
 
+void raise_PROCESS_REGISTRATION_VALIDATION_ERROR(const Registry::MojeIDImplData::ProcessRegistrationValidationResult &src)
+{
+    Registry::MojeID::Server::PROCESS_REGISTRATION_VALIDATION_ERROR e;
+    try {
+        wrap_ProcessRegistrationValidationResult(src, e);
+    }
+    catch (...) {
+        throw Registry::MojeID::Server::INTERNAL_SERVER_ERROR();
+    }
+    throw e;
+}
+
 }//namespace CorbaConversion

@@ -218,6 +218,9 @@ ContactId Server_i::process_registration_request(
     catch (const MojeIDImplData::PublicRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
+    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
+    }
     catch (const MojeIDImplData::IdentificationFailed&) {
         throw IDL::IDENTIFICATION_FAILED();
     }
@@ -238,6 +241,10 @@ ContactId Server_i::process_registration_request(
     }
     catch (const MojeIDImplData::ObjectUserBlocked&) {
         throw IDL::OBJECT_USER_BLOCKED();
+    }
+    catch (const MojeIDImplData::ProcessRegistrationValidationResult &e) {
+        CorbaConversion::raise_PROCESS_REGISTRATION_VALIDATION_ERROR(e);
+        throw IDL::INTERNAL_SERVER_ERROR();//should never be used
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -261,8 +268,8 @@ void Server_i::process_identification_request(
     catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
         throw IDL::IDENTIFICATION_ALREADY_PROCESSED();
     }
-    catch (const MojeIDImplData::UpdateContactPrepareValidationResult &e) {
-        CorbaConversion::raise_UPDATE_CONTACT_PREPARE_VALIDATION_ERROR(e);
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
     }
     catch (...) {
         throw IDL::INTERNAL_SERVER_ERROR();
@@ -398,7 +405,7 @@ void Server_i::send_new_pin3(
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
         CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(e);
     }
-    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
+    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
@@ -418,9 +425,6 @@ void Server_i::send_mojeid_card(
     }
     catch (const MojeIDImplData::MessageLimitExceeded &e) {
         CorbaConversion::raise_MESSAGE_LIMIT_EXCEEDED(e);
-    }
-    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
-        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         throw IDL::OBJECT_NOT_EXISTS();
