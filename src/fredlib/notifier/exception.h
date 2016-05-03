@@ -23,47 +23,50 @@
 #ifndef FREDLIB_NOTIFIER2_EXCEPTIONS_06873297102
 #define FREDLIB_NOTIFIER2_EXCEPTIONS_06873297102
 
+#include <exception>
+
 namespace Notification {
 
-struct ExceptionInterface {
-    virtual const char* what() const = 0;
-    virtual ~ExceptionInterface() {}
-};
+struct ExceptionInterface : std::exception { };
 
 struct ExceptionEventNotImplemented : ExceptionInterface {
-    const char* what() const { return "event not implemented"; }
+    const char* what() const throw() { return "event not implemented"; }
 };
 
 struct ExceptionObjectTypeNotImplemented : ExceptionInterface {
-    const char* what() const { return "object type not yet implemented"; }
+    const char* what() const throw() { return "object type not yet implemented"; }
 };
 
 struct ExceptionAddressTypeNotImplemented : ExceptionInterface {
-    const char* what() const { return "address type not yet implemented"; }
+    const char* what() const throw() { return "address type not yet implemented"; }
 };
 
 struct ExceptionUnknownHistoryId : ExceptionInterface {
-    const char* what() const { return "unknown history id"; }
+    const char* what() const throw() { return "unknown history id"; }
 };
 
 struct ExceptionInvalidUpdateEvent : ExceptionInterface {
-    const char* what() const { return "invalid update event"; }
+    const char* what() const throw() { return "invalid update event"; }
 };
 
 struct ExceptionUnknownEmailTemplate : ExceptionInterface {
-    const char* what() const { return "unknown e-mail template"; }
+    const char* what() const throw() { return "unknown e-mail template"; }
 };
 
 struct ExceptionMissingChangesFlagInUpdateNotificationContent : ExceptionInterface {
-    const char* what() const { return "missing changes flag in update notification content"; }
+    const char* what() const throw() { return "missing changes flag in update notification content"; }
 };
 
 struct ExceptionInvalidNotificationContent : ExceptionInterface {
-    const char* what() const { return "invalid notification content"; }
+    const char* what() const throw() { return "invalid notification content"; }
 };
 
 struct ExceptionDataLoss : ExceptionInterface {
-    const char* what() const { return "data loss"; }
+    const char* what() const throw() { return "data loss"; }
+};
+
+struct ExceptionUnknownSSNType : ExceptionInterface {
+    const char* what() const throw() { return "unknown SSN type"; }
 };
 
 }
