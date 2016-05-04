@@ -148,6 +148,16 @@ typedef Fred::Check< check_update_transfer_contact_prepare > CheckUpdateTransfer
 
 void raise(const CheckUpdateTransferContactPrepare &result);
 
+
+typedef boost::mpl::list< Fred::check_contact_email_presence,
+                          Fred::check_contact_email_validity,
+                          Fred::check_contact_phone_presence,
+                          Fred::check_contact_phone_validity > check_process_registration_validation;
+
+typedef Fred::Check< check_process_registration_validation > CheckProcessRegistrationValidation;
+
+void raise(const CheckProcessRegistrationValidation &result);
+
 }//namespace Registry::MojeIDImplInternal
 }//namespace Registry
 

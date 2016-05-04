@@ -340,29 +340,62 @@ typedef std::vector< ContactStateInfo > ContactStateInfoList;
 
 typedef std::vector< std::string > ContactHandleList;
 
-struct IdentificationFailed { };
+struct Exception:std::exception { };
 
-struct IdentificationAlreadyProcessed { };
+struct IdentificationFailed:Exception
+{
+    const char* what()const throw() { return "IdentificationFailed"; }
+};
 
-struct IdentificationAlreadyInvalidated { };
+struct IdentificationAlreadyProcessed:Exception
+{
+    const char* what()const throw() { return "IdentificationAlreadyProcessed"; }
+};
 
-struct ContactChanged { };
+struct IdentificationAlreadyInvalidated:Exception
+{
+    const char* what()const throw() { return "IdentificationAlreadyInvalidated"; }
+};
 
-struct PublicRequestDoesntExist { };
+struct ContactChanged:Exception
+{
+    const char* what()const throw() { return "ContactChanged"; }
+};
 
-struct ObjectAdminBlocked { };
+struct ObjectAdminBlocked:Exception
+{
+    const char* what()const throw() { return "ObjectAdminBlocked"; }
+};
 
-struct ObjectUserBlocked { };
+struct ObjectUserBlocked:Exception
+{
+    const char* what()const throw() { return "ObjectUserBlocked"; }
+};
 
-struct AlreadyMojeidContact { };
+struct AlreadyMojeidContact:Exception
+{
+    const char* what()const throw() { return "AlreadyMojeidContact"; }
+};
 
-struct ObjectDoesntExist { };
+struct ObjectDoesntExist:Exception
+{
+    const char* what()const throw() { return "ObjectDoesntExist"; }
+};
 
-struct IdentificationRequestDoesntExist { };
+struct IdentificationRequestDoesntExist:Exception
+{
+    const char* what()const throw() { return "IdentificationRequestDoesntExist"; }
+};
 
-struct ValidationRequestExists { };
+struct ValidationRequestExists:Exception
+{
+    const char* what()const throw() { return "ValidationRequestExists"; }
+};
 
-struct ValidationAlreadyProcessed { };
+struct ValidationAlreadyProcessed:Exception
+{
+    const char* what()const throw() { return "ValidationAlreadyProcessed"; }
+};
 
 }//namespace Registry::MojeIDImplData
 }//namespace Registry

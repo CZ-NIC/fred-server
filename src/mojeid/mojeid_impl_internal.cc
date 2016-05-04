@@ -348,5 +348,20 @@ void raise(const CheckUpdateTransferContactPrepare &result)
     throw e;
 }
 
+void raise(const CheckProcessRegistrationValidation &result)
+{
+    MojeIDImplData::ProcessRegistrationValidationResult e;
+
+    set_presence_validity_result<
+        Fred::check_contact_email_presence,
+        Fred::check_contact_email_validity >(result, e.email);
+
+    set_presence_validity_result<
+        Fred::check_contact_phone_presence,
+        Fred::check_contact_phone_validity >(result, e.phone);
+
+    throw e;
+}
+
 }//namespace Registry::MojeIDImplInternal
 }//namespace Registry

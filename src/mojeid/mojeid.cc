@@ -1421,6 +1421,12 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             Fred::PerformObjectStateRequest(contact_id).exec(ctx);
 
             const Fred::InfoContactData contact = Fred::InfoContactById(contact_id).exec(ctx).info_contact_data;
+            {
+                const MojeIDImplInternal::CheckProcessRegistrationValidation check_result(contact);
+                if (!check_result.success()) {
+                    MojeIDImplInternal::raise(check_result);
+                }
+            }
             if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
                 Fred::TransferContact transfer_contact_op(contact.id, mojeid_registrar_handle_, contact.authinfopw);
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
@@ -1459,10 +1465,13 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
     catch (const MojeIDImplData::ContactChanged&) {
         throw;
     }
+    catch (const MojeIDImplData::ProcessRegistrationValidationResult&) {
+        throw;
+    }
     catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         if (e.is_set_public_request_doesnt_exist()) {
-            throw MojeIDImplData::PublicRequestDoesntExist();
+            throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
         throw std::runtime_error(e.what());
     }
@@ -1510,7 +1519,7 @@ void MojeIDImpl::process_identification_request(
             }
             catch (const Fred::GetActivePublicRequest::Exception &e) {
                 if (e.is_set_no_request_found()) {
-                    throw MojeIDImplData::PublicRequestDoesntExist();
+                    throw MojeIDImplData::IdentificationRequestDoesntExist();
                 }
                 throw;
             }
@@ -1535,13 +1544,6 @@ void MojeIDImpl::process_identification_request(
             throw std::runtime_error("contact not protected against changes");
         }
 
-        const Fred::InfoContactData current_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
-        {
-            const MojeIDImplInternal::CheckUpdateContactPrepare check_contact_data(current_data);
-            if (!check_contact_data.success()) {
-                MojeIDImplInternal::raise(check_contact_data);
-            }
-        }
         Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
         if (!Fred::PublicRequestAuthInfo(ctx, locked_request).check_password(_password)) {
             throw MojeIDImplData::IdentificationFailed();
@@ -1553,8 +1555,8 @@ void MojeIDImpl::process_identification_request(
         answer(locked_request, "successfully processed", _log_request_id);
         ctx.commit_transaction();
     }
-    catch (const MojeIDImplData::UpdateContactPrepareValidationResult&) {
-        LOGGER(PACKAGE).info("request failed (UpdateContactPrepareValidationResult)");
+    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+        LOGGER(PACKAGE).info("request failed (IdentificationRequestDoesntExist)");
         throw;
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
@@ -1839,6 +1841,10 @@ void MojeIDImpl::create_validation_request(
     }
     catch (const MojeIDImplData::ValidationRequestExists&) {
         LOGGER(PACKAGE).warning("unable to create new request (ValidationRequestExists)");
+        throw;
+    }
+    catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
+        LOGGER(PACKAGE).warning("contact already validated (ValidationAlreadyProcessed)");
         throw;
     }
     catch (const MojeIDImplData::CreateValidationRequestValidationResult&) {
