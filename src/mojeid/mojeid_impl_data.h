@@ -340,69 +340,61 @@ typedef std::vector< ContactStateInfo > ContactStateInfoList;
 
 typedef std::vector< std::string > ContactHandleList;
 
-class Exception:public std::exception
-{
-public:
-    Exception(const std::string &_msg):msg_(_msg) { }
-    ~Exception()throw() { }
-    const char* what()const throw() { return msg_.c_str(); }
-private:
-    const std::string msg_;
-};
+struct Exception:std::exception { };
 
 struct IdentificationFailed:Exception
 {
-    IdentificationFailed():Exception("IdentificationFailed") { }
+    const char* what()const throw() { return "IdentificationFailed"; }
 };
 
 struct IdentificationAlreadyProcessed:Exception
 {
-    IdentificationAlreadyProcessed():Exception("IdentificationAlreadyProcessed") { }
+    const char* what()const throw() { return "IdentificationAlreadyProcessed"; }
 };
 
 struct IdentificationAlreadyInvalidated:Exception
 {
-    IdentificationAlreadyInvalidated():Exception("IdentificationAlreadyInvalidated") { }
+    const char* what()const throw() { return "IdentificationAlreadyInvalidated"; }
 };
 
 struct ContactChanged:Exception
 {
-    ContactChanged():Exception("ContactChanged") { }
+    const char* what()const throw() { return "ContactChanged"; }
 };
 
 struct ObjectAdminBlocked:Exception
 {
-    ObjectAdminBlocked():Exception("ObjectAdminBlocked") { }
+    const char* what()const throw() { return "ObjectAdminBlocked"; }
 };
 
 struct ObjectUserBlocked:Exception
 {
-    ObjectUserBlocked():Exception("ObjectUserBlocked") { }
+    const char* what()const throw() { return "ObjectUserBlocked"; }
 };
 
 struct AlreadyMojeidContact:Exception
 {
-    AlreadyMojeidContact():Exception("AlreadyMojeidContact") { }
+    const char* what()const throw() { return "AlreadyMojeidContact"; }
 };
 
 struct ObjectDoesntExist:Exception
 {
-    ObjectDoesntExist():Exception("ObjectDoesntExist") { }
+    const char* what()const throw() { return "ObjectDoesntExist"; }
 };
 
 struct IdentificationRequestDoesntExist:Exception
 {
-    IdentificationRequestDoesntExist():Exception("IdentificationRequestDoesntExist") { }
+    const char* what()const throw() { return "IdentificationRequestDoesntExist"; }
 };
 
 struct ValidationRequestExists:Exception
 {
-    ValidationRequestExists():Exception("ValidationRequestExists") { }
+    const char* what()const throw() { return "ValidationRequestExists"; }
 };
 
 struct ValidationAlreadyProcessed:Exception
 {
-    ValidationAlreadyProcessed():Exception("ValidationAlreadyProcessed") { }
+    const char* what()const throw() { return "ValidationAlreadyProcessed"; }
 };
 
 }//namespace Registry::MojeIDImplData
