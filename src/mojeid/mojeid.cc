@@ -1471,7 +1471,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
     catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         if (e.is_set_public_request_doesnt_exist()) {
-            throw MojeIDImplData::PublicRequestDoesntExist();
+            throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
         throw std::runtime_error(e.what());
     }
@@ -1519,7 +1519,7 @@ void MojeIDImpl::process_identification_request(
             }
             catch (const Fred::GetActivePublicRequest::Exception &e) {
                 if (e.is_set_no_request_found()) {
-                    throw MojeIDImplData::PublicRequestDoesntExist();
+                    throw MojeIDImplData::IdentificationRequestDoesntExist();
                 }
                 throw;
             }
@@ -1555,8 +1555,8 @@ void MojeIDImpl::process_identification_request(
         answer(locked_request, "successfully processed", _log_request_id);
         ctx.commit_transaction();
     }
-    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
-        LOGGER(PACKAGE).info("request failed (PublicRequestDoesntExist)");
+    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+        LOGGER(PACKAGE).info("request failed (IdentificationRequestDoesntExist)");
         throw;
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {

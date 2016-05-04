@@ -215,9 +215,6 @@ ContactId Server_i::process_registration_request(
     try {
         return impl_ptr_->process_registration_request(ident_request_id, password, log_request_id);
     }
-    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
-        throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
-    }
     catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
@@ -259,7 +256,7 @@ void Server_i::process_identification_request(
     try {
         impl_ptr_->process_identification_request(contact_id, password, log_request_id);
     }
-    catch (const MojeIDImplData::PublicRequestDoesntExist&) {
+    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
         throw IDL::IDENTIFICATION_REQUEST_NOT_EXISTS();
     }
     catch (const MojeIDImplData::IdentificationFailed&) {

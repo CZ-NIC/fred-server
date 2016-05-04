@@ -348,8 +348,6 @@ struct IdentificationAlreadyInvalidated { };
 
 struct ContactChanged { };
 
-struct PublicRequestDoesntExist { };
-
 struct ObjectAdminBlocked { };
 
 struct ObjectUserBlocked { };
