@@ -340,27 +340,70 @@ typedef std::vector< ContactStateInfo > ContactStateInfoList;
 
 typedef std::vector< std::string > ContactHandleList;
 
-struct IdentificationFailed { };
+class Exception:public std::exception
+{
+public:
+    Exception(const std::string &_msg):msg_(_msg) { }
+    ~Exception()throw() { }
+    const char* what()const throw() { return msg_.c_str(); }
+private:
+    const std::string msg_;
+};
 
-struct IdentificationAlreadyProcessed { };
+struct IdentificationFailed:Exception
+{
+    IdentificationFailed():Exception("IdentificationFailed") { }
+};
 
-struct IdentificationAlreadyInvalidated { };
+struct IdentificationAlreadyProcessed:Exception
+{
+    IdentificationAlreadyProcessed():Exception("IdentificationAlreadyProcessed") { }
+};
 
-struct ContactChanged { };
+struct IdentificationAlreadyInvalidated:Exception
+{
+    IdentificationAlreadyInvalidated():Exception("IdentificationAlreadyInvalidated") { }
+};
 
-struct ObjectAdminBlocked { };
+struct ContactChanged:Exception
+{
+    ContactChanged():Exception("ContactChanged") { }
+};
 
-struct ObjectUserBlocked { };
+struct ObjectAdminBlocked:Exception
+{
+    ObjectAdminBlocked():Exception("ObjectAdminBlocked") { }
+};
 
-struct AlreadyMojeidContact { };
+struct ObjectUserBlocked:Exception
+{
+    ObjectUserBlocked():Exception("ObjectUserBlocked") { }
+};
 
-struct ObjectDoesntExist { };
+struct AlreadyMojeidContact:Exception
+{
+    AlreadyMojeidContact():Exception("AlreadyMojeidContact") { }
+};
 
-struct IdentificationRequestDoesntExist { };
+struct ObjectDoesntExist:Exception
+{
+    ObjectDoesntExist():Exception("ObjectDoesntExist") { }
+};
 
-struct ValidationRequestExists { };
+struct IdentificationRequestDoesntExist:Exception
+{
+    IdentificationRequestDoesntExist():Exception("IdentificationRequestDoesntExist") { }
+};
 
-struct ValidationAlreadyProcessed { };
+struct ValidationRequestExists:Exception
+{
+    ValidationRequestExists():Exception("ValidationRequestExists") { }
+};
+
+struct ValidationAlreadyProcessed:Exception
+{
+    ValidationAlreadyProcessed():Exception("ValidationAlreadyProcessed") { }
+};
 
 }//namespace Registry::MojeIDImplData
 }//namespace Registry
