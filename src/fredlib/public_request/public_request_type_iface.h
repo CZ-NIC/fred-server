@@ -24,8 +24,10 @@
 #ifndef PUBLIC_REQUEST_TYPE_IFACE_H_E9BC2123C0A6C5F6CF12FF83939D575D//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define PUBLIC_REQUEST_TYPE_IFACE_H_E9BC2123C0A6C5F6CF12FF83939D575D
 
-#include <string>
+#include "src/fredlib/public_request/public_request_status.h"
+
 #include <set>
+#include <boost/shared_ptr.hpp>
 
 namespace Fred {
 
@@ -44,26 +46,38 @@ public:
      * Instance pointer is publicly deletable.
      */
     virtual ~PublicRequestTypeIface() { }
+    class IfacePtr
+    {
+    public:
+        IfacePtr(const boost::shared_ptr< PublicRequestTypeIface > &_impl_ptr):impl_ptr_(_impl_ptr) { }
+        IfacePtr(const IfacePtr &_src):impl_ptr_(_src.impl_ptr_) { }
+        IfacePtr& operator=(const IfacePtr &_src) { impl_ptr_ = _src.impl_ptr_; return *this; }
+        IfacePtr& operator=(const boost::shared_ptr< PublicRequestTypeIface > &_impl_ptr) { impl_ptr_ = _impl_ptr; return *this; }
+        PublicRequestTypeIface* operator->()const { return impl_ptr_.get(); }
+        PublicRequestTypeIface& operator*()const { return *impl_ptr_; }
+        bool operator<(const IfacePtr &_b)const
+        {
+            const IfacePtr &_a = *this;
+            return _a->get_public_request_type() < _b->get_public_request_type();
+        }
+    private:
+        boost::shared_ptr< PublicRequestTypeIface > impl_ptr_;
+    };
     /**
-     * Collection of public request type handles.
+     * Collection of public request type interfaces.
      */
-    typedef std::set< std::string > PublicRequestTypes;
+    typedef std::set< IfacePtr > PublicRequestTypes;
     /**
      * Get collection of public request types which have to be cancelled before creation of this.
      * @return collection of public request types to cancel before creation of this
      */
     virtual PublicRequestTypes get_public_request_types_to_cancel_on_create()const = 0;
-protected:
     /**
-     * Cancel only public requests of exactly the same type.
-     * @return collection with one item only
+     * Get collection of public request types which have to be cancelled after changing status of this.
+     * @return collection of public request types to cancel after changing status of this
      */
-    PublicRequestTypes default_impl_of_get_public_request_types_to_cancel_on_create()const
-    {
-        PublicRequestTypes only_me;
-        only_me.insert(this->get_public_request_type());
-        return only_me;
-    }
+    virtual PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        PublicRequest::Status::Enum _old_status, PublicRequest::Status::Enum _new_status)const = 0;
 };
 
 }//namespace Fred

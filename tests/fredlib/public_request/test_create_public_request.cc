@@ -81,7 +81,18 @@ public:
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const
     {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+        PublicRequestTypes result;
+        result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PublicRequestTypeFake(this->get_public_request_type())));
+        return result;
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        PublicRequestTypes result;
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::answered)) {
+        }
+        return result;
     }
     const std::string type_;
 };

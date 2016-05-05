@@ -103,7 +103,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
          to_cancel_ptr != to_cancel.end(); ++to_cancel_ptr)
     {
         Database::query_param_list params(_locked_object.get_id());            // $1::BIGINT
-        params(*to_cancel_ptr);                                                // $2::TEXT
+        params((*to_cancel_ptr)->get_public_request_type());                   // $2::TEXT
         params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));// $3::TEXT
         const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
             "SELECT pr.id "
@@ -120,7 +120,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
                 update_public_request_op.set_registrar_id(_registrar_id.get_value());
             }
             PublicRequestLockGuardById locked_public_request(_locked_object.get_ctx(), public_request_id);
-            update_public_request_op.exec(locked_public_request, _log_request_id);
+            update_public_request_op.exec(locked_public_request, **to_cancel_ptr, _log_request_id);
         }
         number_of_cancelled += res.size();
     }

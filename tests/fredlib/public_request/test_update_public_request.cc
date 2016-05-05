@@ -31,8 +31,40 @@
 
 const std::string server_name = "test-update-public-request";
 
+namespace {
+
+class PublicRequestAuthTypeFake:public Fred::PublicRequestAuthTypeIface
+{
+public:
+    PublicRequestAuthTypeFake() { }
+    PublicRequestAuthTypeFake(const std::string &_type):type_(_type) { }
+    ~PublicRequestAuthTypeFake() { }
+    PublicRequestAuthTypeFake& set_public_request_type(const std::string &_type) { type_ = _type; return *this; }
+private:
+    std::string get_public_request_type()const { return type_; }
+    std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return "aG92bioga2xlc2xv"; }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        PublicRequestTypes result;
+        result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PublicRequestAuthTypeFake(this->get_public_request_type())));
+        return result;
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        PublicRequestTypes result;
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::answered)) {
+        }
+        return result;
+    }
+    std::string type_;
+};
+
+}
+
 struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_template,
-                                       private Fred::PublicRequestAuthTypeIface
+                                       PublicRequestAuthTypeFake
 {
     update_public_request_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
@@ -70,7 +102,7 @@ struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_tem
             "SELECT name FROM enum_public_request_type "
             "ORDER BY id OFFSET (SELECT COUNT(*)/2 FROM enum_public_request_type) LIMIT 1");
         BOOST_CHECK(dbres.size() == 1);//expecting existing public request type
-        type_name_ = static_cast< std::string >(dbres[0][0]);
+        this->set_public_request_type(static_cast< std::string >(dbres[0][0]));
         create_result = Fred::CreatePublicRequestAuth()
             .exec(locked_contact, public_request_type);
         ctx.commit_transaction();
@@ -84,14 +116,6 @@ protected:
     Fred::ObjectId contact_id;
     Fred::CreatePublicRequestAuth::Result create_result;
     const Fred::PublicRequestAuthTypeIface &public_request_type;
-private:
-    std::string get_public_request_type()const { return type_name_; }
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
-    {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
-    }
-    std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return "aCp2bm8ga2xlc2xv"; }
-    std::string type_name_;
 };
 
 BOOST_FIXTURE_TEST_SUITE(TestUpdatePublicRequest, update_public_request_fixture)
@@ -181,7 +205,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_without_changes)
     BOOST_CHECK_EXCEPTION(
     try {
         Fred::UpdatePublicRequest()
-            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id), public_request_type);
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(e.is_set_nothing_to_do());
@@ -232,7 +256,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_id)
     try {
         Fred::UpdatePublicRequest()
             .set_status(Fred::PublicRequest::Status::answered)
-            .exec(PublicRequestLockGuardFake(ctx, bad_public_request_id));
+            .exec(PublicRequestLockGuardFake(ctx, bad_public_request_id), public_request_type);
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -272,7 +296,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
     try {
         Fred::UpdatePublicRequest()
             .set_answer_email_id(bad_email_id)
-            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id), public_request_type);
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -299,7 +323,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
     try {
         Fred::UpdatePublicRequest()
             .set_registrar_id(bad_registrar_id)
-            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id), public_request_type);
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -327,7 +351,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_email_or_registrar)
         Fred::UpdatePublicRequest()
             .set_answer_email_id(bad_email_id)
             .set_registrar_id(bad_registrar_id)
-            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id), public_request_type);
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -367,7 +391,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_wrong_public_request_status)
         Fred::UpdatePublicRequest()
             .set_status(incorrect_status_value)
             .set_email_to_answer(email)
-            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id));
+            .exec(Fred::PublicRequestLockGuardById(ctx, create_result.public_request_id), public_request_type);
     }
     catch(const Fred::UpdatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_nothing_to_do());
@@ -412,7 +436,7 @@ BOOST_AUTO_TEST_CASE(update_public_request_ok)
         .set_email_to_answer(email)
         .set_answer_email_id(email_id)
         .set_registrar_id(registrar_id)
-        .exec(locked_request, resolve_request_id);
+        .exec(locked_request, public_request_type, resolve_request_id);
     BOOST_CHECK(result.affected_requests.size() == 1);
     BOOST_CHECK(!result.affected_requests.empty() &&
                 (result.affected_requests[0] == create_result.public_request_id));

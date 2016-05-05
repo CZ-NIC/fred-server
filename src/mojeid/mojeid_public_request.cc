@@ -20,6 +20,60 @@ std::string generate(::size_t _length = chunk_length)
 
 namespace {
 
+class ContactConditionalIdentificationFake:public PublicRequestAuthTypeIface
+{
+public:
+    ~ContactConditionalIdentificationFake() { }
+    std::string get_public_request_type()const { return "contact_conditional_identification"; }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
+private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        throw std::runtime_error("get_public_request_types_to_cancel_on_create method should never be called");
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::invalidated)) {
+            return PublicRequestTypes();
+        }
+        throw std::runtime_error("get_public_request_types_to_cancel_on_update method can be used "
+                                 "for invalidating of active requests only");
+    }
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
+    {
+        throw std::runtime_error("generate_passwords method should never be called");
+    }
+};
+
+class ContactIdentificationFake:public PublicRequestAuthTypeIface
+{
+public:
+    ~ContactIdentificationFake() { }
+    std::string get_public_request_type()const { return "contact_identification"; }
+    const PublicRequestAuthTypeIface& iface()const { return *this; }
+private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        throw std::runtime_error("get_public_request_types_to_cancel_on_create method should never be called");
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::invalidated)) {
+            return PublicRequestTypes();
+        }
+        throw std::runtime_error("get_public_request_types_to_cancel_on_update method can be used "
+                                 "for invalidating of active requests only");
+    }
+    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
+    {
+        throw std::runtime_error("generate_passwords method should never be called");
+    }
+};
+
 std::string get_demo_pin1()//11111111
 {
     const std::string pin1(Password::chunk_length, '1');
@@ -142,11 +196,23 @@ std::string ContactConditionalIdentification::get_public_request_type()const
     return "mojeid_contact_conditional_identification";
 }
 
-PublicRequestTypeIface::PublicRequestTypes ContactConditionalIdentification::get_public_request_types_to_cancel_on_create()const
+PublicRequestTypeIface::PublicRequestTypes
+ContactConditionalIdentification::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(this->get_public_request_type());
-    result.insert("contact_conditional_identification");
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactConditionalIdentification));
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new Fred::ContactConditionalIdentificationFake));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+ContactConditionalIdentification::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
     return result;
 }
 
@@ -163,11 +229,23 @@ std::string ContactIdentification::get_public_request_type()const
     return "mojeid_contact_identification";
 }
 
-PublicRequestTypeIface::PublicRequestTypes ContactIdentification::get_public_request_types_to_cancel_on_create()const
+PublicRequestTypeIface::PublicRequestTypes
+ContactIdentification::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(this->get_public_request_type());
-    result.insert("contact_identification");
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactIdentification));
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new Fred::ContactIdentificationFake));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+ContactIdentification::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
     return result;
 }
 
@@ -182,6 +260,25 @@ std::string ContactReidentification::get_public_request_type()const
     return "mojeid_contact_reidentification";
 }
 
+PublicRequestTypeIface::PublicRequestTypes
+ContactReidentification::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactReidentification));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+ContactReidentification::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
+    return result;
+}
+
 std::string ContactReidentification::generate_passwords(const LockedPublicRequestsOfObjectForUpdate&)const
 {
     const std::string ci_pass = contact_identification_generate_passwords();
@@ -193,9 +290,47 @@ std::string ContactValidation::get_public_request_type()const
     return "mojeid_contact_validation";
 }
 
+PublicRequestTypeIface::PublicRequestTypes
+ContactValidation::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactValidation));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+ContactValidation::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
+    return result;
+}
+
 std::string ConditionallyIdentifiedContactTransfer::get_public_request_type()const
 {
     return "mojeid_conditionally_identified_contact_transfer";
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+ConditionallyIdentifiedContactTransfer::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ConditionallyIdentifiedContactTransfer));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+ConditionallyIdentifiedContactTransfer::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
+    return result;
 }
 
 std::string ConditionallyIdentifiedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
@@ -208,6 +343,25 @@ std::string IdentifiedContactTransfer::get_public_request_type()const
     return "mojeid_identified_contact_transfer";
 }
 
+PublicRequestTypeIface::PublicRequestTypes
+IdentifiedContactTransfer::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new IdentifiedContactTransfer));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+IdentifiedContactTransfer::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
+    return result;
+}
+
 std::string IdentifiedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
     return contact_transfer_request_generate_passwords(_locked_contact);
@@ -218,6 +372,25 @@ std::string PrevalidatedUnidentifiedContactTransfer::get_public_request_type()co
     return "mojeid_prevalidated_unidentified_contact_transfer";
 }
 
+PublicRequestTypeIface::PublicRequestTypes
+PrevalidatedUnidentifiedContactTransfer::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PrevalidatedUnidentifiedContactTransfer));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+PrevalidatedUnidentifiedContactTransfer::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
+    return result;
+}
+
 std::string PrevalidatedUnidentifiedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
 {
     return ContactConditionalIdentification().iface().generate_passwords(_locked_contact);
@@ -226,6 +399,25 @@ std::string PrevalidatedUnidentifiedContactTransfer::generate_passwords(const Lo
 std::string PrevalidatedContactTransfer::get_public_request_type()const
 {
     return "mojeid_prevalidated_contact_transfer";
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+PrevalidatedContactTransfer::get_public_request_types_to_cancel_on_create()const
+{
+    PublicRequestTypes result;
+    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PrevalidatedContactTransfer));
+    return result;
+}
+
+PublicRequestTypeIface::PublicRequestTypes
+PrevalidatedContactTransfer::get_public_request_types_to_cancel_on_update(
+    Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+{
+    PublicRequestTypes result;
+    if ((_old_status == Fred::PublicRequest::Status::active) &&
+        (_new_status == Fred::PublicRequest::Status::answered)) {
+    }
+    return result;
 }
 
 std::string PrevalidatedContactTransfer::generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const

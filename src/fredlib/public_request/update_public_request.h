@@ -34,6 +34,31 @@
 
 namespace Fred {
 
+class FakePublicRequestForInvalidating:private Fred::PublicRequestTypeIface
+{
+public:
+    FakePublicRequestForInvalidating(const std::string &_type):type_(_type) { }
+    ~FakePublicRequestForInvalidating() { }
+    const PublicRequestTypeIface& iface()const { return *this; }
+private:
+    std::string get_public_request_type()const { return type_; }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        throw std::runtime_error("get_public_request_types_to_cancel_on_create method should never be called");
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::invalidated)) {
+            return PublicRequestTypes();
+        }
+        throw std::runtime_error("get_public_request_types_to_cancel_on_update method can be used "
+                                 "for invalidating of active requests only");
+    }
+    const std::string type_;
+};
+
 /**
  * Operation for public request update.
  */
@@ -136,19 +161,31 @@ public:
     /**
      * Executes update.
      * @param _locked_public_request guarantees exclusive access to public request data
+     * @param _public_request_type traits of updated public request type
      * @param _resolve_log_request_id associated request id in logger
      * @return @ref Result object corresponding with performed operation
      * @throw Exception if something wrong happened
      */
     Result exec(const LockedPublicRequestForUpdate &_locked_public_request,
+                const PublicRequestTypeIface &_public_request_type,
                 const Optional< LogRequestId > &_resolve_log_request_id = Optional< LogRequestId >())const;
 
+    /**
+     * Executes update.
+     * @param _locked_public_requests guarantees exclusive access to data of all public requests
+     *                                associated with given object
+     * @param _public_request_type specifies type of updated public requests and its traits
+     * @param _resolve_log_request_id associated request id in logger
+     * @return @ref Result object corresponding with performed operation
+     * @throw Exception if something wrong happened
+     */
     Result exec(const LockedPublicRequestsOfObjectForUpdate &_locked_public_requests,
                 const PublicRequestTypeIface &_public_request_type,
                 const Optional< LogRequestId > &_resolve_log_request_id = Optional< LogRequestId >())const;
 private:
     Result update(OperationContext &_ctx,
                   PublicRequestId _public_request_id,
+                  const PublicRequestTypeIface &_public_request_type,
                   const Optional< LogRequestId > &_resolve_log_request_id)const;
     Optional< PublicRequest::Status::Enum > status_;
     Optional< Nullable< std::string > > reason_;

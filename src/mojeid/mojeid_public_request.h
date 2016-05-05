@@ -48,6 +48,8 @@ public:
     static std::string get_pin2_part(const std::string &_summary_password);
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -59,6 +61,8 @@ public:
     std::string get_public_request_type()const;
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -69,10 +73,9 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
-    {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
-    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -83,10 +86,9 @@ public:
     const PublicRequestTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
-    {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
-    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
 };
 
 class ConditionallyIdentifiedContactTransfer:public PublicRequestAuthTypeIface
@@ -96,10 +98,9 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
-    {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
-    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -110,10 +111,9 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
-    {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
-    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -124,10 +124,9 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
-    {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
-    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 
@@ -138,10 +137,9 @@ public:
     const PublicRequestAuthTypeIface& iface()const { return *this; }
     std::string get_public_request_type()const;
 private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
-    {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
-    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const;
     std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const;
 };
 

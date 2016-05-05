@@ -74,11 +74,13 @@ struct create_public_request_auth_fixture : public virtual Test::Fixture::instan
     Fred::ObjectId contact_id;
 };
 
+namespace {
+
 class PublicRequestAuthTypeFake:public Fred::PublicRequestAuthTypeIface
 {
 public:
     PublicRequestAuthTypeFake(const std::string &_type,
-                          const std::string &_password)
+                              const std::string &_password)
     :   type_(_type),
         password_(_password) { }
     virtual std::string get_public_request_type()const { return type_; }
@@ -87,11 +89,24 @@ public:
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const
     {
-        return this->PublicRequestTypeIface::default_impl_of_get_public_request_types_to_cancel_on_create();
+        PublicRequestTypes result;
+        result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PublicRequestAuthTypeFake(type_, password_)));
+        return result;
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        PublicRequestTypes result;
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::answered)) {
+        }
+        return result;
     }
     const std::string type_;
     const std::string password_;
 };
+
+}
 
 BOOST_FIXTURE_TEST_SUITE(TestCreatePublicRequestAuth, create_public_request_auth_fixture)
 
