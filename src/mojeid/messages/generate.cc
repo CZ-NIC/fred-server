@@ -827,17 +827,16 @@ Generate::MessageId send_email(
     const std::string &_link_hostname_part,
     const Optional< GeneralId > &_contact_history_id)
 {
-    Database::query_param_list params;
-    params(_locked_request.get_id())
-          (_locked_contact.get_id());
     const Database::Result dbres = _ctx.get_conn().exec_params(
-        "SELECT pr.create_time,"
-               "pra.identification,"
-               "pra.password,"
-               "(SELECT UPPER(name) FROM object_registry WHERE id=$2::BIGINT) "
+        "SELECT pr.create_time,pra.identification,pra.password,eprt.name,UPPER(obr.name) "
         "FROM public_request pr "
         "JOIN public_request_auth pra ON pra.id=pr.id "
-        "WHERE pr.id=$1::BIGINT", params);
+        "JOIN enum_public_request_type eprt ON eprt.id=pr.request_type,"
+             "object_registry obr "
+        "WHERE pr.id=$1::BIGINT AND "
+              "obr.id=$2::BIGINT",
+        Database::query_param_list(_locked_request.get_id())
+                                  (_locked_contact.get_id()));
     if (dbres.size() <= 0) {
         throw std::runtime_error("no public request found");
     }
@@ -845,7 +844,8 @@ Generate::MessageId send_email(
     const std::string public_request_time = static_cast< std::string >(dbres[0][0]);
     const std::string identification      = static_cast< std::string >(dbres[0][1]);
     const std::string password            = static_cast< std::string >(dbres[0][2]);
-    const std::string contact_handle      = static_cast< std::string >(dbres[0][3]);
+    const std::string pub_req_type        = static_cast< std::string >(dbres[0][3]);
+    const std::string contact_handle      = static_cast< std::string >(dbres[0][4]);
 
     const bool use_historic_data = _contact_history_id.isset();
     const Fred::InfoContactData contact_data = use_historic_data
@@ -853,8 +853,13 @@ Generate::MessageId send_email(
                                                      _contact_history_id.get_value()).exec(_ctx).info_contact_data
                                                : Fred::InfoContactById(
                                                      _locked_contact.get_id()).exec(_ctx).info_contact_data;
-    const std::string pin1 = Fred::MojeID::PublicRequest::ContactConditionalIdentification::
-                                 get_pin1_part(password);
+    // mojeid_contact_conditional_identification and mojeid_prevalidated_unidentified_contact_transfer public
+    // requests password is composed of PIN1 and PIN2, other public requests password contains only PIN1
+    const std::string pin1 =
+        (pub_req_type == Fred::MojeID::PublicRequest::ContactConditionalIdentification().iface().get_public_request_type()) ||
+        (pub_req_type == Fred::MojeID::PublicRequest::PrevalidatedUnidentifiedContactTransfer().iface().get_public_request_type())
+        ? Fred::MojeID::PublicRequest::ContactConditionalIdentification::get_pin1_part(password)//password = PIN1 & PIN2
+        : password;                                                                             //password = PIN1
 
     const std::string sender;//default sender from notification system
     const std::string recipient = contact_data.email.get_value_or_default();
