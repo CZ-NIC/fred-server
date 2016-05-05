@@ -14,7 +14,6 @@
 #include "common.h"
 #include "src/fredlib/public_request/public_request_authinfo_impl.h"
 #include "src/fredlib/public_request/public_request_block_impl.h"
-#include "src/mojeid/mojeid_public_request.h"
 #include "src/contact_verification/public_request_contact_verification_impl.h"
 #include "log/logger.h"
 #include "log/context.h"
@@ -1479,17 +1478,6 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _regist
 
 }
 
-namespace
-{
-
-template < class PUB_REQ_CLASS >
-std::string get_type_of()
-{
-    return PUB_REQ_CLASS().get_public_request_type();
-}
-
-}
-
 Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred::PublicRequest::PublicRequest* _request) {
   Registry::PublicRequest::Detail *detail = new Registry::PublicRequest::Detail();
 
@@ -1543,10 +1531,10 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
   else if (_request->getType() == Fred::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF) {
       detail->type = Registry::PublicRequest::PRT_UNBLOCK_TRANSFER_POST_PIF;
   }
-  else if (_request->getType() == get_type_of< Fred::MojeID::PublicRequest::ContactConditionalIdentification >()) {
+  else if (_request->getType() == "mojeid_contact_conditional_identification") {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_CONDITIONAL_IDENTIFICATION;
   }
-  else if (_request->getType() == get_type_of< Fred::MojeID::PublicRequest::ContactIdentification >()) {
+  else if (_request->getType() == "mojeid_contact_identification") {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
   }
   else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ) {
@@ -1555,10 +1543,10 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
   else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_IDENTIFICATION;
   }
-  else if (_request->getType() == get_type_of< Fred::MojeID::PublicRequest::ContactValidation >()) {
+  else if (_request->getType() == "mojeid_contact_validation") {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
   }
-  else if (_request->getType() == get_type_of< Fred::MojeID::PublicRequest::ContactReidentification >()) {
+  else if (_request->getType() == "mojeid_contact_reidentification") {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
   }
   else {
