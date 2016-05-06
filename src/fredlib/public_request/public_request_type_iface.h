@@ -46,27 +46,18 @@ public:
      * Instance pointer is publicly deletable.
      */
     virtual ~PublicRequestTypeIface() { }
-    class IfacePtr
+    typedef boost::shared_ptr< PublicRequestTypeIface > IfacePtr;
+    struct IfaceCompare
     {
-    public:
-        IfacePtr(const boost::shared_ptr< PublicRequestTypeIface > &_impl_ptr):impl_ptr_(_impl_ptr) { }
-        IfacePtr(const IfacePtr &_src):impl_ptr_(_src.impl_ptr_) { }
-        IfacePtr& operator=(const IfacePtr &_src) { impl_ptr_ = _src.impl_ptr_; return *this; }
-        IfacePtr& operator=(const boost::shared_ptr< PublicRequestTypeIface > &_impl_ptr) { impl_ptr_ = _impl_ptr; return *this; }
-        PublicRequestTypeIface* operator->()const { return impl_ptr_.get(); }
-        PublicRequestTypeIface& operator*()const { return *impl_ptr_; }
-        bool operator<(const IfacePtr &_b)const
+        bool operator()(const IfacePtr &_a, const IfacePtr &_b)const
         {
-            const IfacePtr &_a = *this;
             return _a->get_public_request_type() < _b->get_public_request_type();
         }
-    private:
-        boost::shared_ptr< PublicRequestTypeIface > impl_ptr_;
     };
     /**
      * Collection of public request type interfaces.
      */
-    typedef std::set< IfacePtr > PublicRequestTypes;
+    typedef std::set< IfacePtr, IfaceCompare > PublicRequestTypes;
     /**
      * Get collection of public request types which have to be cancelled before creation of this.
      * @return collection of public request types to cancel before creation of this

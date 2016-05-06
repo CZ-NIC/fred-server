@@ -200,8 +200,8 @@ PublicRequestTypeIface::PublicRequestTypes
 ContactConditionalIdentification::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactConditionalIdentification));
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new Fred::ContactConditionalIdentificationFake));
+    result.insert(IfacePtr(new ContactConditionalIdentification));
+    result.insert(IfacePtr(new Fred::ContactConditionalIdentificationFake));
     return result;
 }
 
@@ -233,8 +233,8 @@ PublicRequestTypeIface::PublicRequestTypes
 ContactIdentification::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactIdentification));
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new Fred::ContactIdentificationFake));
+    result.insert(IfacePtr(new ContactIdentification));
+    result.insert(IfacePtr(new Fred::ContactIdentificationFake));
     return result;
 }
 
@@ -264,7 +264,7 @@ PublicRequestTypeIface::PublicRequestTypes
 ContactReidentification::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactReidentification));
+    result.insert(IfacePtr(new ContactReidentification));
     return result;
 }
 
@@ -294,7 +294,7 @@ PublicRequestTypeIface::PublicRequestTypes
 ContactValidation::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ContactValidation));
+    result.insert(IfacePtr(new ContactValidation));
     return result;
 }
 
@@ -318,7 +318,7 @@ PublicRequestTypeIface::PublicRequestTypes
 ConditionallyIdentifiedContactTransfer::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new ConditionallyIdentifiedContactTransfer));
+    result.insert(IfacePtr(new ConditionallyIdentifiedContactTransfer));
     return result;
 }
 
@@ -347,7 +347,7 @@ PublicRequestTypeIface::PublicRequestTypes
 IdentifiedContactTransfer::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new IdentifiedContactTransfer));
+    result.insert(IfacePtr(new IdentifiedContactTransfer));
     return result;
 }
 
@@ -376,7 +376,7 @@ PublicRequestTypeIface::PublicRequestTypes
 PrevalidatedUnidentifiedContactTransfer::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PrevalidatedUnidentifiedContactTransfer));
+    result.insert(IfacePtr(new PrevalidatedUnidentifiedContactTransfer));
     return result;
 }
 
@@ -405,7 +405,7 @@ PublicRequestTypeIface::PublicRequestTypes
 PrevalidatedContactTransfer::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
-    result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PrevalidatedContactTransfer));
+    result.insert(IfacePtr(new PrevalidatedContactTransfer));
     return result;
 }
 

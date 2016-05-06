@@ -90,7 +90,7 @@ private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const
     {
         PublicRequestTypes result;
-        result.insert(boost::shared_ptr< PublicRequestTypeIface >(new PublicRequestAuthTypeFake(type_, password_)));
+        result.insert(IfacePtr(new PublicRequestAuthTypeFake(type_, password_)));
         return result;
     }
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
