@@ -778,6 +778,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/enum_validation_extension.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.h \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
+		src/fredlib/domain/transfer_domain.h \
+		src/fredlib/domain/transfer_domain.cc \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
 		src/fredlib/nsset/info_nsset.h \
@@ -805,6 +807,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/keyset/info_keyset_impl.h \
 		src/fredlib/keyset/info_keyset_output.cc \
 		src/fredlib/keyset/info_keyset_output.h \
+		src/fredlib/keyset/transfer_keyset.h \
+		src/fredlib/keyset/transfer_keyset.cc \
 		src/fredlib/contact/delete_contact.h \
 		src/fredlib/contact/delete_contact.cc \
 		src/fredlib/contact/info_contact_data.h \
@@ -849,6 +853,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_delete_domain_poll_message.h \
 		src/fredlib/poll/create_delete_domain_poll_message.cc \
 		src/fredlib/opexception.h \
+		src/fredlib/contact/copy_history_impl.h \
+		src/fredlib/contact/copy_history_impl.cc \
 		src/fredlib/contact/merge_contact.h \
 		src/fredlib/contact/merge_contact.cc \
 		src/fredlib/contact/create_contact.cc \
@@ -861,8 +867,12 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/create_nsset.cc \
 		src/fredlib/nsset/create_nsset.h \
 		src/fredlib/nsset/nsset_dns_host.h \
+		src/fredlib/nsset/transfer_nsset.h \
+		src/fredlib/nsset/transfer_nsset.cc \
 		src/fredlib/domain/create_domain.cc \
 		src/fredlib/domain/create_domain.h \
+		src/fredlib/domain/copy_history_impl.h \
+		src/fredlib/domain/copy_history_impl.cc \
 		src/fredlib/contact/merge_contact_selection.cc \
 		src/fredlib/contact/merge_contact_selection.h \
 		src/fredlib/contact/find_contact_duplicates.cc \
@@ -897,8 +907,12 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/check_nsset.h \
 		src/fredlib/nsset/delete_nsset.cc \
 		src/fredlib/nsset/delete_nsset.h \
+		src/fredlib/nsset/copy_history_impl.h \
+		src/fredlib/nsset/copy_history_impl.cc \
 		src/fredlib/keyset/check_keyset.cc \
 		src/fredlib/keyset/check_keyset.h \
+		src/fredlib/keyset/copy_history_impl.h \
+		src/fredlib/keyset/copy_history_impl.cc \
 		src/fredlib/object/check_handle.cc \
 		src/fredlib/object/check_handle.h\
 		src/fredlib/object/transfer_object.cc \
@@ -2397,12 +2411,15 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/domain/test_check_domain.cc \
 		tests/fredlib/domain/test_domain_name.cc \
 		tests/fredlib/domain/test_create_domain_name_blacklist_id.cc \
+		tests/fredlib/domain/test_transfer_domain.cc \
 		tests/fredlib/keyset/test_delete_keyset.cc \
 		tests/fredlib/keyset/test_info_keyset.cc \
 		tests/fredlib/keyset/test_update_keyset.cc \
+		tests/fredlib/keyset/test_transfer_keyset.cc \
 		tests/fredlib/nsset/test_update_nsset.cc \
 		tests/fredlib/nsset/test_delete_nsset.cc \
 		tests/fredlib/nsset/test_info_nsset.cc \
+		tests/fredlib/nsset/test_transfer_nsset.cc \
 		tests/fredlib/public_request/test_create_public_request.cc \
 		tests/fredlib/public_request/test_create_public_request_auth.cc \
 		tests/fredlib/public_request/test_update_public_request.cc \

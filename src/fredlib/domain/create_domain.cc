@@ -31,6 +31,7 @@
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/check_domain.h"
+#include "src/fredlib/domain/copy_history_impl.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/object/object_impl.h"
@@ -429,31 +430,7 @@ namespace Fred
                 ctx.get_conn().exec_params(col_sql.str() + val_sql.str(), params);
             }
 
-            //save history
-            {
-                //domain_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO domain_history(historyid,id,zone, registrant, nsset, exdate, keyset) "
-                    " SELECT $1::bigint, id, zone, registrant, nsset, exdate, keyset FROM domain "
-                        " WHERE id = $2::integer"
-                        , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-                //domain_contact_map_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO domain_contact_map_history(historyid,domainid,contactid, role) "
-                    " SELECT $1::bigint, domainid,contactid, role FROM domain_contact_map "
-                        " WHERE domainid = $2::integer"
-                        , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-                //enumval_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO enumval_history(historyid,domainid,exdate, publish) "
-                    " SELECT $1::bigint, domainid,exdate, publish FROM enumval "
-                        " WHERE domainid = $2::integer"
-                        , Database::query_param_list(create_object_result.history_id)(create_object_result.object_id));
-
-            }//save history
-
+            copy_domain_data_to_domain_history_impl(ctx, create_object_result.object_id, create_object_result.history_id);
 
         }//try
         catch(ExceptionStack& ex)

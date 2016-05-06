@@ -76,7 +76,7 @@ struct create_domain_fixture : public Test::Fixture::instantiate_db_template
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(TestCreateDomainNameBlacklistId, create_domain_fixture)
+BOOST_FIXTURE_TEST_SUITE(TestCreateDomain, create_domain_fixture)
 
 /**
  * test CreateDomain with wrong registrar

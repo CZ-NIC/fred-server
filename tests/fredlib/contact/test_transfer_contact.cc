@@ -51,7 +51,7 @@ namespace {
 
 BOOST_FIXTURE_TEST_SUITE(TestTransferContact, has_contact_with_mailing_address_and_a_different_registrar)
 
-BOOST_AUTO_TEST_CASE(test_transfer_ok)
+BOOST_AUTO_TEST_CASE(test_transfer_ok_data)
 {
     const unsigned long long logd_request_id = 123123;
 
@@ -61,6 +61,7 @@ BOOST_AUTO_TEST_CASE(test_transfer_ok)
 
     const Fred::InfoContactOutput post_transfer_contact_metadata = Fred::InfoContactById(contact.id).exec(ctx);
     const Fred::InfoContactData& post_transfer_contact_data = post_transfer_contact_metadata.info_contact_data;
+
 
     BOOST_CHECK_EQUAL(
         Fred::InfoRegistrarByHandle(post_transfer_contact_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id,
@@ -107,6 +108,11 @@ BOOST_AUTO_TEST_CASE(test_transfer_ok)
             )[0]["current_hid_"]
         ),
         post_transfer_history_id
+    );
+
+    BOOST_CHECK_EQUAL(
+        post_transfer_contact_data,
+        Fred::InfoContactHistoryById(contact.id).exec(ctx).at(0).info_contact_data
     );
 }
 

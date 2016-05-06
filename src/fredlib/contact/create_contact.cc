@@ -29,6 +29,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/contact/copy_history_impl.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/contact/contact_enum.h"
 
@@ -562,33 +563,7 @@ namespace Fred
                 }
             }
 
-            //save history
-            {
-                //contact_history
-                ctx.get_conn().exec_params(
-                    "INSERT INTO contact_history(historyid,id "
-                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
-                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
-                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
-                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
-                    " ) "
-                    " SELECT $1::bigint, id "
-                    " , name, organization, street1, street2, street3, city, stateorprovince, postalcode "
-                    " , country, telephone, fax, email, notifyemail, vat, ssntype, ssn "
-                    " , disclosename, discloseorganization, discloseaddress, disclosetelephone "
-                    " , disclosefax, discloseemail, disclosevat, discloseident, disclosenotifyemail "
-                    " FROM contact "
-                    " WHERE id = $2::integer"
-                    , Database::query_param_list(result.create_object_result.history_id)(result.create_object_result.object_id));
-
-                ctx.get_conn().exec_params(
-                    "INSERT INTO contact_address_history (historyid, id, contactid, type, company_name,"
-                    " street1, street2, street3, city, stateorprovince, postalcode, country)"
-                    " SELECT $1::bigint, id, contactid, type, company_name,"
-                    " street1, street2, street3, city, stateorprovince, postalcode, country"
-                    " FROM contact_address WHERE contactid=$2::bigint"
-                    , Database::query_param_list(result.create_object_result.history_id)(result.create_object_result.object_id));
-            }//save history
+            copy_contact_data_to_contact_history_impl(ctx, result.create_object_result.object_id, result.create_object_result.history_id);
 
         }//try
         catch(ExceptionStack& ex)
