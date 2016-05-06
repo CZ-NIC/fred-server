@@ -20,10 +20,10 @@ std::string generate(::size_t _length = chunk_length)
 
 namespace {
 
-class ContactConditionalIdentificationFake:public PublicRequestTypeIface
+class ContactConditionalIdentificationForInvalidationOnly:public PublicRequestTypeIface
 {
 public:
-    ~ContactConditionalIdentificationFake() { }
+    ~ContactConditionalIdentificationForInvalidationOnly() { }
     std::string get_public_request_type()const { return "contact_conditional_identification"; }
     const PublicRequestTypeIface& iface()const { return *this; }
 private:
@@ -43,10 +43,10 @@ private:
     }
 };
 
-class ContactIdentificationFake:public PublicRequestTypeIface
+class ContactIdentificationForInvalidationOnly:public PublicRequestTypeIface
 {
 public:
-    ~ContactIdentificationFake() { }
+    ~ContactIdentificationForInvalidationOnly() { }
     std::string get_public_request_type()const { return "contact_identification"; }
     const PublicRequestTypeIface& iface()const { return *this; }
 private:
@@ -203,7 +203,7 @@ ContactConditionalIdentification::get_public_request_types_to_cancel_on_update(
     PublicRequestTypes result;
     if ((_old_status == Fred::PublicRequest::Status::active) &&
         (_new_status == Fred::PublicRequest::Status::answered)) {
-        result.insert(IfacePtr(new Fred::ContactConditionalIdentificationFake));
+        result.insert(IfacePtr(new Fred::ContactConditionalIdentificationForInvalidationOnly));
     }
     return result;
 }
@@ -226,7 +226,7 @@ ContactIdentification::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
     result.insert(IfacePtr(new ContactIdentification));
-    result.insert(IfacePtr(new Fred::ContactIdentificationFake));
+    result.insert(IfacePtr(new Fred::ContactIdentificationForInvalidationOnly));
     return result;
 }
 
@@ -321,7 +321,7 @@ ConditionallyIdentifiedContactTransfer::get_public_request_types_to_cancel_on_up
     PublicRequestTypes result;
     if ((_old_status == Fred::PublicRequest::Status::active) &&
         (_new_status == Fred::PublicRequest::Status::answered)) {
-        result.insert(IfacePtr(new Fred::ContactIdentificationFake));
+        result.insert(IfacePtr(new Fred::ContactIdentificationForInvalidationOnly));
         result.insert(IfacePtr(new PrevalidatedContactTransfer));
     }
     return result;
@@ -371,7 +371,7 @@ PrevalidatedUnidentifiedContactTransfer::get_public_request_types_to_cancel_on_c
 {
     PublicRequestTypes result;
     result.insert(IfacePtr(new PrevalidatedUnidentifiedContactTransfer));
-    result.insert(IfacePtr(new Fred::ContactConditionalIdentificationFake));
+    result.insert(IfacePtr(new Fred::ContactConditionalIdentificationForInvalidationOnly));
     result.insert(IfacePtr(new ContactConditionalIdentification));
     return result;
 }
