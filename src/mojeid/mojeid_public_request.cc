@@ -20,12 +20,12 @@ std::string generate(::size_t _length = chunk_length)
 
 namespace {
 
-class ContactConditionalIdentificationFake:public PublicRequestAuthTypeIface
+class ContactConditionalIdentificationFake:public PublicRequestTypeIface
 {
 public:
     ~ContactConditionalIdentificationFake() { }
     std::string get_public_request_type()const { return "contact_conditional_identification"; }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const PublicRequestTypeIface& iface()const { return *this; }
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const
     {
@@ -41,18 +41,14 @@ private:
         throw std::runtime_error("get_public_request_types_to_cancel_on_update method can be used "
                                  "for invalidating of active requests only");
     }
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
-    {
-        throw std::runtime_error("generate_passwords method should never be called");
-    }
 };
 
-class ContactIdentificationFake:public PublicRequestAuthTypeIface
+class ContactIdentificationFake:public PublicRequestTypeIface
 {
 public:
     ~ContactIdentificationFake() { }
     std::string get_public_request_type()const { return "contact_identification"; }
-    const PublicRequestAuthTypeIface& iface()const { return *this; }
+    const PublicRequestTypeIface& iface()const { return *this; }
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create()const
     {
@@ -67,10 +63,6 @@ private:
         }
         throw std::runtime_error("get_public_request_types_to_cancel_on_update method can be used "
                                  "for invalidating of active requests only");
-    }
-    std::string generate_passwords(const LockedPublicRequestsOfObjectForUpdate &_locked_contact)const
-    {
-        throw std::runtime_error("generate_passwords method should never be called");
     }
 };
 
@@ -201,7 +193,6 @@ ContactConditionalIdentification::get_public_request_types_to_cancel_on_create()
 {
     PublicRequestTypes result;
     result.insert(IfacePtr(new ContactConditionalIdentification));
-    result.insert(IfacePtr(new Fred::ContactConditionalIdentificationFake));
     return result;
 }
 
@@ -212,6 +203,7 @@ ContactConditionalIdentification::get_public_request_types_to_cancel_on_update(
     PublicRequestTypes result;
     if ((_old_status == Fred::PublicRequest::Status::active) &&
         (_new_status == Fred::PublicRequest::Status::answered)) {
+        result.insert(IfacePtr(new Fred::ContactConditionalIdentificationFake));
     }
     return result;
 }
@@ -329,6 +321,8 @@ ConditionallyIdentifiedContactTransfer::get_public_request_types_to_cancel_on_up
     PublicRequestTypes result;
     if ((_old_status == Fred::PublicRequest::Status::active) &&
         (_new_status == Fred::PublicRequest::Status::answered)) {
+        result.insert(IfacePtr(new Fred::ContactIdentificationFake));
+        result.insert(IfacePtr(new PrevalidatedContactTransfer));
     }
     return result;
 }
@@ -377,6 +371,8 @@ PrevalidatedUnidentifiedContactTransfer::get_public_request_types_to_cancel_on_c
 {
     PublicRequestTypes result;
     result.insert(IfacePtr(new PrevalidatedUnidentifiedContactTransfer));
+    result.insert(IfacePtr(new Fred::ContactConditionalIdentificationFake));
+    result.insert(IfacePtr(new ContactConditionalIdentification));
     return result;
 }
 
@@ -406,6 +402,8 @@ PrevalidatedContactTransfer::get_public_request_types_to_cancel_on_create()const
 {
     PublicRequestTypes result;
     result.insert(IfacePtr(new PrevalidatedContactTransfer));
+    result.insert(IfacePtr(new ConditionallyIdentifiedContactTransfer));
+    result.insert(IfacePtr(new IdentifiedContactTransfer));
     return result;
 }
 
