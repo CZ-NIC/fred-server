@@ -1113,6 +1113,13 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                     MojeIDImplInternal::raise(result_of_check);
                 }
             }
+            if (current_data.sponsoring_registrar_handle != mojeid_registrar_handle_) {
+                Fred::TransferContact transfer_contact_op(current_data.id, mojeid_registrar_handle_, current_data.authinfopw);
+                //transfer contact to 'REG-MOJEID' sponsoring registrar
+                const unsigned long long history_id = transfer_contact_op.exec(ctx);
+                notify(ctx, Notification::transferred,
+                       mojeid_registrar_id_, history_id, _log_request_id);
+            }
             //perform changes
             Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
             set_update_contact_op(Fred::diff_contact_data(current_data, new_data), update_contact_op);
