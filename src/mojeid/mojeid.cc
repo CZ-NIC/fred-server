@@ -48,6 +48,7 @@
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/messages/messages_impl.h"
 #include "src/fredlib/notifier/enqueue_notification.h"
+#include "src/fredlib/poll/create_transfer_contact_poll_message.h"
 #include "util/random.h"
 #include "util/xmlgen.h"
 #include "util/log/context.h"
@@ -1119,6 +1120,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
                 notify(ctx, Notification::transferred,
                        mojeid_registrar_id_, history_id, _log_request_id);
+                Fred::Poll::CreateTransferContactPollMessage(history_id).exec(ctx);
             }
             //perform changes
             Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
@@ -1440,6 +1442,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
                 notify(ctx, Notification::transferred,
                        mojeid_registrar_id_, history_id, _log_request_id);
+                Fred::Poll::CreateTransferContactPollMessage(history_id).exec(ctx);
             }
             answer(locked_request, "successfully processed", _log_request_id);
 
