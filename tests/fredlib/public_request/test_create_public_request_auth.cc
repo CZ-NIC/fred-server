@@ -18,6 +18,7 @@
 
 #include "src/fredlib/public_request/create_public_request_auth.h"
 #include "src/fredlib/public_request/public_request_status.h"
+#include "src/fredlib/public_request/public_request_auth_type_iface.h"
 #include "src/fredlib/contact/create_contact.h"
 
 #include "util/random_data_generator.h"
@@ -34,7 +35,7 @@ struct create_public_request_auth_fixture : public virtual Test::Fixture::instan
 {
     create_public_request_auth_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),
-        password("*ovno kleslo")
+        password("Km92bm8ga2xlc2xv")
     {
         Fred::OperationContextCreator ctx;
         Database::Result dbres = ctx.get_conn().exec(
@@ -73,20 +74,39 @@ struct create_public_request_auth_fixture : public virtual Test::Fixture::instan
     Fred::ObjectId contact_id;
 };
 
+namespace {
+
 class PublicRequestAuthTypeFake:public Fred::PublicRequestAuthTypeIface
 {
 public:
     PublicRequestAuthTypeFake(const std::string &_type,
-                          const std::string &_password)
+                              const std::string &_password)
     :   type_(_type),
         password_(_password) { }
     virtual std::string get_public_request_type()const { return type_; }
     virtual std::string generate_passwords(const Fred::LockedPublicRequestsOfObjectForUpdate&)const { return password_; }
     virtual ~PublicRequestAuthTypeFake() { }
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        PublicRequestTypes result;
+        result.insert(IfacePtr(new PublicRequestAuthTypeFake(type_, password_)));
+        return result;
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        PublicRequestTypes result;
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::answered)) {
+        }
+        return result;
+    }
     const std::string type_;
     const std::string password_;
 };
+
+}
 
 BOOST_FIXTURE_TEST_SUITE(TestCreatePublicRequestAuth, create_public_request_auth_fixture)
 
@@ -234,8 +254,7 @@ BOOST_AUTO_TEST_CASE(create_public_request_auth_ok)
     BOOST_CHECK(reason != email_to_answer);
     const PublicRequestAuthTypeFake public_request_type(*type_names.begin(), password);
     Fred::CreatePublicRequestAuth::Result result[2];
-    result[0] = Fred::CreatePublicRequestAuth(
-        reason, email_to_answer, registrar_id)
+    result[0] = Fred::CreatePublicRequestAuth(reason, email_to_answer, registrar_id)
         .exec(locked_contact, public_request_type);
     result[1] = Fred::CreatePublicRequestAuth()
         .set_reason(reason)

@@ -49,13 +49,10 @@ CreatePublicRequestAuth::Result CreatePublicRequestAuth::exec(const LockedPublic
                                                               const Optional< LogRequestId > &_create_log_request_id)const
 {
     try {
-        const std::string public_request_type = _type.get_public_request_type();
-        CreatePublicRequest::invalidate_the_same(public_request_type,
-                                                 _locked_object,
-                                                 registrar_id_,
-                                                 _create_log_request_id);
+        CreatePublicRequest::cancel_on_create(_type, _locked_object, registrar_id_, _create_log_request_id);
         Result result;
         result.identification = Random::string_alpha(PUBLIC_REQUEST_AUTH_IDENTIFICATION_LENGTH);
+        const std::string public_request_type = _type.get_public_request_type();
         const std::string password = _type.generate_passwords(_locked_object);
         Database::query_param_list params(public_request_type);                             // $1::TEXT
         params(result.identification)                                                       // $2::TEXT

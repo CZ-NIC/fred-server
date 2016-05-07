@@ -24,8 +24,10 @@
 #ifndef PUBLIC_REQUEST_TYPE_IFACE_H_E9BC2123C0A6C5F6CF12FF83939D575D//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define PUBLIC_REQUEST_TYPE_IFACE_H_E9BC2123C0A6C5F6CF12FF83939D575D
 
-#include <string>
-#include <memory>
+#include "src/fredlib/public_request/public_request_status.h"
+
+#include <set>
+#include <boost/shared_ptr.hpp>
 
 namespace Fred {
 
@@ -44,6 +46,29 @@ public:
      * Instance pointer is publicly deletable.
      */
     virtual ~PublicRequestTypeIface() { }
+    typedef boost::shared_ptr< PublicRequestTypeIface > IfacePtr;
+    struct IfaceCompare
+    {
+        bool operator()(const IfacePtr &_a, const IfacePtr &_b)const
+        {
+            return _a->get_public_request_type() < _b->get_public_request_type();
+        }
+    };
+    /**
+     * Collection of public request type interfaces.
+     */
+    typedef std::set< IfacePtr, IfaceCompare > PublicRequestTypes;
+    /**
+     * Get collection of public request types which have to be cancelled before creation of this.
+     * @return collection of public request types to cancel before creation of this
+     */
+    virtual PublicRequestTypes get_public_request_types_to_cancel_on_create()const = 0;
+    /**
+     * Get collection of public request types which have to be cancelled after changing status of this.
+     * @return collection of public request types to cancel after changing status of this
+     */
+    virtual PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        PublicRequest::Status::Enum _old_status, PublicRequest::Status::Enum _new_status)const = 0;
 };
 
 }//namespace Fred
