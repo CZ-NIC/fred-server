@@ -5,17 +5,10 @@
 
 namespace Fred {
 
-CreatePublicRequest::CreatePublicRequest(const PublicRequestTypeIface &_type)
-:   type_(_type.get_public_request_type())
-{
-}
-
-CreatePublicRequest::CreatePublicRequest(const PublicRequestTypeIface &_type,
-                                         const Optional< std::string > &_reason,
+CreatePublicRequest::CreatePublicRequest(const Optional< std::string > &_reason,
                                          const Optional< std::string > &_email_to_answer,
                                          const Optional< RegistrarId > &_registrar_id)
-:   type_(_type.get_public_request_type()),
-    reason_(_reason),
+:   reason_(_reason),
     email_to_answer_(_email_to_answer),
     registrar_id_(_registrar_id)
 {
@@ -40,11 +33,13 @@ CreatePublicRequest& CreatePublicRequest::set_registrar_id(RegistrarId _id)
 }
 
 PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
+                                          const PublicRequestTypeIface &_type,
                                           const Optional< LogRequestId > &_create_log_request_id)const
 {
     try {
-        invalidate_the_same(type_, _locked_object, registrar_id_, _create_log_request_id);
-        Database::query_param_list params(type_);                                           // $1::TEXT
+        cancel_on_create(_type, _locked_object, registrar_id_, _create_log_request_id);
+        const std::string public_request_type = _type.get_public_request_type();
+        Database::query_param_list params(public_request_type);                             // $1::TEXT
         params(_locked_object.get_id())                                                     // $2::BIGINT
               (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $3::TEXT
               (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull); // $4::TEXT
@@ -86,7 +81,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
             const PublicRequestId public_request_id = static_cast< PublicRequestId >(res[0][0]);
             return public_request_id;
         }
-        BOOST_THROW_EXCEPTION(Exception().set_unknown_type(type_));
+        BOOST_THROW_EXCEPTION(Exception().set_unknown_type(public_request_type));
     }
     catch (const Exception&) {
         throw;
@@ -96,32 +91,40 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
     }
 }
 
-::size_t CreatePublicRequest::invalidate_the_same(const std::string &_type,
-                                                  const LockedPublicRequestsOfObjectForUpdate &_locked_object,
-                                                  const Optional< RegistrarId > _registrar_id,
-                                                  const Optional< LogRequestId > &_log_request_id)
+::size_t CreatePublicRequest::cancel_on_create(const PublicRequestTypeIface &_type_to_create,
+                                               const LockedPublicRequestsOfObjectForUpdate &_locked_object,
+                                               const Optional< RegistrarId > _registrar_id,
+                                               const Optional< LogRequestId > &_log_request_id)
 {
-    Database::query_param_list params(_locked_object.get_id());            // $1::BIGINT
-    params(_type);                                                         // $2::TEXT
-    params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));// $3::TEXT
-    const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
-        "SELECT pr.id "
-        "FROM public_request pr "
-        "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
-        "WHERE prom.object_id=$1::BIGINT AND "
-              "pr.request_type=(SELECT id FROM enum_public_request_type WHERE name=$2::TEXT) AND "
-              "pr.status=(SELECT id FROM enum_public_request_status WHERE name=$3::TEXT)", params);
-    for (::size_t idx = 0; idx < res.size(); ++idx) {
-        const PublicRequestId public_request_id = static_cast< PublicRequestId >(res[idx][0]);
-        UpdatePublicRequest update_public_request_op;
-        update_public_request_op.set_status(PublicRequest::Status::invalidated);
-        if (_registrar_id.isset()) {
-            update_public_request_op.set_registrar_id(_registrar_id.get_value());
+    const PublicRequestTypeIface::PublicRequestTypes to_cancel =
+        _type_to_create.get_public_request_types_to_cancel_on_create();
+    ::size_t number_of_cancelled = 0;
+    for (PublicRequestTypeIface::PublicRequestTypes::const_iterator to_cancel_ptr = to_cancel.begin();
+         to_cancel_ptr != to_cancel.end(); ++to_cancel_ptr)
+    {
+        Database::query_param_list params(_locked_object.get_id());            // $1::BIGINT
+        params((*to_cancel_ptr)->get_public_request_type());                   // $2::TEXT
+        params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));// $3::TEXT
+        const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
+            "SELECT pr.id "
+            "FROM public_request pr "
+            "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
+            "WHERE prom.object_id=$1::BIGINT AND "
+                  "pr.request_type=(SELECT id FROM enum_public_request_type WHERE name=$2::TEXT) AND "
+                  "pr.status=(SELECT id FROM enum_public_request_status WHERE name=$3::TEXT)", params);
+        for (::size_t idx = 0; idx < res.size(); ++idx) {
+            const PublicRequestId public_request_id = static_cast< PublicRequestId >(res[idx][0]);
+            UpdatePublicRequest update_public_request_op;
+            update_public_request_op.set_status(PublicRequest::Status::invalidated);
+            if (_registrar_id.isset()) {
+                update_public_request_op.set_registrar_id(_registrar_id.get_value());
+            }
+            PublicRequestLockGuardById locked_public_request(_locked_object.get_ctx(), public_request_id);
+            update_public_request_op.exec(locked_public_request, **to_cancel_ptr, _log_request_id);
         }
-        PublicRequestLockGuardById locked_public_request(_locked_object.get_ctx(), public_request_id);
-        update_public_request_op.exec(locked_public_request, _log_request_id);
+        number_of_cancelled += res.size();
     }
-    return res.size();
+    return number_of_cancelled;
 }
 
 }//namespace Fred

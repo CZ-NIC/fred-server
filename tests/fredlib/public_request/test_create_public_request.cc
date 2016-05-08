@@ -18,6 +18,7 @@
 
 #include "src/fredlib/public_request/create_public_request.h"
 #include "src/fredlib/public_request/public_request_status.h"
+#include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/contact/create_contact.h"
 
 #include "util/random_data_generator.h"
@@ -78,6 +79,21 @@ public:
     std::string get_public_request_type()const { return type_; }
     ~PublicRequestTypeFake() { }
 private:
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const
+    {
+        PublicRequestTypes result;
+        result.insert(IfacePtr(new PublicRequestTypeFake(this->get_public_request_type())));
+        return result;
+    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+        Fred::PublicRequest::Status::Enum _old_status, Fred::PublicRequest::Status::Enum _new_status)const
+    {
+        PublicRequestTypes result;
+        if ((_old_status == Fred::PublicRequest::Status::active) &&
+            (_new_status == Fred::PublicRequest::Status::answered)) {
+        }
+        return result;
+    }
     const std::string type_;
 };
 
@@ -135,9 +151,10 @@ BOOST_AUTO_TEST_CASE(create_public_request_wrong_registrar)
         "SELECT 100+2*MAX(id) FROM registrar")[0][0]);
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::CreatePublicRequest(PublicRequestTypeFake("mojeid_contact_identification"))
+        Fred::CreatePublicRequest()
             .set_registrar_id(bad_registrar_id)
-            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id));
+            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id),
+                  PublicRequestTypeFake("mojeid_contact_identification"));
     }
     catch(const Fred::CreatePublicRequest::Exception &e) {
         BOOST_CHECK(!e.is_set_unknown_type());
@@ -168,8 +185,9 @@ BOOST_AUTO_TEST_CASE(create_public_request_wrong_type)
 
     BOOST_CHECK_EXCEPTION(
     try {
-        Fred::CreatePublicRequest(PublicRequestTypeFake(bad_type))
-            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id));
+        Fred::CreatePublicRequest()
+            .exec(Fred::PublicRequestsOfObjectLockGuardByObjectId(ctx, contact_id),
+                  PublicRequestTypeFake(bad_type));
     }
     catch(const Fred::CreatePublicRequest::Exception &e) {
         BOOST_CHECK(e.is_set_unknown_type());
@@ -210,8 +228,8 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
     Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
     for (TypeName::const_iterator name_ptr = type_names.begin(); name_ptr != type_names.end(); ++name_ptr) {
         const PublicRequestTypeFake public_request_type(*name_ptr);
-        const Fred::PublicRequestId public_request_id = Fred::CreatePublicRequest(public_request_type)
-            .exec(locked_contact);
+        const Fred::PublicRequestId public_request_id = Fred::CreatePublicRequest()
+            .exec(locked_contact, public_request_type);
         const Database::Result res = ctx.get_conn().exec_params(
             "SELECT "
                 "id,"
@@ -247,14 +265,13 @@ BOOST_AUTO_TEST_CASE(create_public_request_ok)
     BOOST_CHECK(reason != email_to_answer);
     const PublicRequestTypeFake public_request_type(*type_names.begin());
     Fred::PublicRequestId public_request_id[2];
-    public_request_id[0] = Fred::CreatePublicRequest(
-        public_request_type, reason, email_to_answer, registrar_id)
-        .exec(locked_contact);
-    public_request_id[1] = Fred::CreatePublicRequest(public_request_type)
+    public_request_id[0] = Fred::CreatePublicRequest(reason, email_to_answer, registrar_id)
+        .exec(locked_contact, public_request_type);
+    public_request_id[1] = Fred::CreatePublicRequest()
         .set_reason(reason)
         .set_email_to_answer(email_to_answer)
         .set_registrar_id(registrar_id)
-        .exec(locked_contact);
+        .exec(locked_contact, public_request_type);
     const Database::Result res = ctx.get_conn().exec_params(
         "SELECT "
             "id,"

@@ -852,6 +852,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_delete_contact_poll_message.cc \
 		src/fredlib/poll/create_delete_domain_poll_message.h \
 		src/fredlib/poll/create_delete_domain_poll_message.cc \
+		src/fredlib/poll/create_transfer_contact_poll_message.h \
+		src/fredlib/poll/create_transfer_contact_poll_message.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/copy_history_impl.h \
 		src/fredlib/contact/copy_history_impl.cc \
@@ -989,6 +991,8 @@ src_fredlib_public_request_libpublic_request_a_SOURCES = \
 		src/fredlib/public_request/public_request.h \
 		src/fredlib/public_request/public_request_impl.cc \
 		src/fredlib/public_request/public_request_impl.h \
+		src/fredlib/public_request/public_request_type_iface.h \
+		src/fredlib/public_request/public_request_auth_type_iface.h \
 		src/fredlib/public_request/public_request_authinfo_impl.cc \
 		src/fredlib/public_request/public_request_authinfo_impl.h \
 		src/fredlib/public_request/public_request_block_impl.cc \

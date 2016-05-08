@@ -84,9 +84,13 @@ namespace {
 }
 
 UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequestForUpdate &_locked_public_request,
+                                                      const PublicRequestTypeIface &_public_request_type,
                                                       const Optional< LogRequestId > &_resolve_log_request_id)const
 {
-    return this->update(_locked_public_request.get_ctx(), _locked_public_request.get_id(), _resolve_log_request_id);
+    return this->update(_locked_public_request.get_ctx(),
+                        _locked_public_request.get_id(),
+                        _public_request_type,
+                        _resolve_log_request_id);
 }
 
 UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequestsOfObjectForUpdate &_locked_public_requests,
@@ -102,7 +106,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequests
                                                           .exec(_locked_public_requests.get_ctx(),
                                                                 _locked_public_requests);
             const Result updated = this->update(_locked_public_requests.get_ctx(), public_request_id,
-                                                _resolve_log_request_id);
+                                                _public_request_type, _resolve_log_request_id);
             if (updated.public_request_type != result.public_request_type) {
                 throw std::runtime_error("unexpected public_request_type");
             }
@@ -125,6 +129,7 @@ UpdatePublicRequest::Result UpdatePublicRequest::exec(const LockedPublicRequests
 
 UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
                                                         PublicRequestId _public_request_id,
+                                                        const PublicRequestTypeIface &_public_request_type,
                                                         const Optional< LogRequestId > &_resolve_log_request_id)const
 {
     Database::query_param_list params(_public_request_id);
@@ -216,19 +221,67 @@ UpdatePublicRequest::Result UpdatePublicRequest::update(OperationContext &_ctx,
     }
     const std::string to_set = sql_set.str().substr(0, sql_set.str().length() - 1);//last ',' removed
     const Database::Result res = _ctx.get_conn().exec_params(
+        "WITH public_request_before_update AS ("
+            "SELECT pr.id AS id,eprs.name AS status "
+            "FROM public_request pr "
+            "JOIN enum_public_request_status eprs ON eprs.id=pr.status "
+            "WHERE pr.id=$1::BIGINT) "
         "UPDATE public_request pr SET " + to_set + " "
         "WHERE id=$1::BIGINT "
         "RETURNING pr.id,"
                   "(SELECT name FROM enum_public_request_type WHERE id=pr.request_type),"
-                  "(SELECT object_id FROM public_request_objects_map WHERE request_id=pr.id)", params);
-    if (0 < res.size()) {
-        Result result;
-        result.affected_requests.push_back(static_cast< PublicRequestId >(res[0][0]));
-        result.public_request_type       = static_cast< std::string     >(res[0][1]);
-        result.object_id                 = static_cast< ObjectId        >(res[0][2]);
+                  "(SELECT object_id FROM public_request_objects_map WHERE request_id=pr.id),"
+                  "(SELECT status FROM public_request_before_update WHERE id=pr.id)", params);
+    if (res.size() <= 0) {
+        BOOST_THROW_EXCEPTION(bad_params.set_public_request_doesnt_exist(_public_request_id));
+    }
+    Result result;
+    result.affected_requests.push_back(static_cast< PublicRequestId >(res[0][0]));
+    result.public_request_type       = static_cast< std::string     >(res[0][1]);
+    result.object_id                 = static_cast< ObjectId        >(res[0][2]);
+    if (!status_.isset()) {
         return result;
     }
-    BOOST_THROW_EXCEPTION(bad_params.set_public_request_doesnt_exist(_public_request_id));
+    const PublicRequest::Status::Enum old_status =
+        Conversion::Enums::from_db_handle< PublicRequest::Status >(static_cast< std::string >(res[0][3]));
+    if (status_.get_value() == old_status) {
+        return result;
+    }
+    const PublicRequestTypeIface::PublicRequestTypes types_to_cancel =
+        _public_request_type.get_public_request_types_to_cancel_on_update(old_status,
+                                                                          status_.get_value());
+    if (types_to_cancel.empty()) {
+        return result;
+    }
+    const PublicRequestsOfObjectLockGuardByObjectId locked_contact(_ctx, result.object_id);
+    UpdatePublicRequest invalidate_public_request;
+    invalidate_public_request.set_status(PublicRequest::Status::invalidated);
+    invalidate_public_request.set_reason("due to answering public request of " +
+                                         result.public_request_type + " type");
+    if (registrar_id_.isset()) {
+        invalidate_public_request.set_registrar_id(registrar_id_.get_value());
+    }
+    typedef PublicRequestTypeIface::PublicRequestTypes PublicRequestsToCancel;
+    for (PublicRequestsToCancel::const_iterator type_to_cancel_ptr = types_to_cancel.begin();
+         type_to_cancel_ptr != types_to_cancel.end(); ++type_to_cancel_ptr)
+    {
+        Database::query_param_list params(result.object_id);                   // $1::BIGINT
+        params((*type_to_cancel_ptr)->get_public_request_type());              // $2::TEXT
+        params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));// $3::TEXT
+        const Database::Result res = _ctx.get_conn().exec_params(
+            "SELECT pr.id "
+            "FROM public_request pr "
+            "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
+            "WHERE prom.object_id=$1::BIGINT AND "
+                  "pr.request_type=(SELECT id FROM enum_public_request_type WHERE name=$2::TEXT) AND "
+                  "pr.status=(SELECT id FROM enum_public_request_status WHERE name=$3::TEXT)", params);
+        for (::size_t idx = 0; idx < res.size(); ++idx) {
+            const PublicRequestId to_cancel_id = static_cast< PublicRequestId >(res[idx][0]);
+            PublicRequestLockGuardById locked_public_request(_ctx, to_cancel_id);
+            invalidate_public_request.exec(locked_public_request, **type_to_cancel_ptr, _resolve_log_request_id);
+        }
+    }
+    return result;
 }
 
 UpdatePublicRequest::Result::Result(const Result &_src)
