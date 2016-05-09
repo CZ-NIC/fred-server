@@ -1,5 +1,6 @@
-#include "create_epp_action_poll_message_impl.h"
-#include "create_poll_message_impl.h"
+#include "src/fredlib/poll/create_epp_action_poll_message_impl.h"
+#include "src/fredlib/poll/create_poll_message_impl.h"
+#include "src/fredlib/poll/message_types.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/assign/list_of.hpp>
