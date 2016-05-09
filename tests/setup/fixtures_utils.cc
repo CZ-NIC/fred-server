@@ -20,7 +20,7 @@ namespace Test {
     }
 
     std::string get_nonexistent_object_handle(Fred::OperationContext& ctx) {
-        return get_nonexistent_value(ctx, "object_registry", "handle", "text", generate_random_handle);
+        return get_nonexistent_value(ctx, "object_registry", "name", "text", generate_random_handle);
     }
 
     unsigned long long get_nonexistent_registrar_id(Fred::OperationContext& ctx) {
