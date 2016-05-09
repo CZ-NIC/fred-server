@@ -26,6 +26,7 @@
 #include "tests/fredlib/notifier/util.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_addresses.h"
+#include "src/fredlib/keyset/transfer_keyset.h"
 
 #include <boost/foreach.hpp>
 
@@ -128,13 +129,13 @@ struct has_keyset : has_autocomitting_ctx {
     }
 };
 
-struct has_updated_keyset_followed_by_future_changes {
+template<typename Tkeysetoperation = Fred::UpdateKeyset> struct has_keyset_operation_followed_by_future_changes {
     Fred::InfoKeysetData keyset_data_to_be_notified;
 
-    has_updated_keyset_followed_by_future_changes(
+    has_keyset_operation_followed_by_future_changes(
         const std::string _handle,
         const std::string _registrar_handle,
-        Fred::UpdateKeyset& _update,
+        Tkeysetoperation& _update,
         Fred::OperationContext& _ctx
     ) {
         const unsigned long long to_be_notified_hid = _update.exec(_ctx);
@@ -184,10 +185,13 @@ struct has_transferred_keyset : has_keyset {
         has_keyset(),
         new_registrar(Test::registrar(ctx).info_data)
     {
-        keyset_data_to_be_notified = has_updated_keyset_followed_by_future_changes(
+        const Fred::InfoKeysetData keyset_data = Fred::InfoKeysetByHandle(keyset_handle).exec(ctx).info_keyset_data;
+        Fred::TransferKeyset transfer(keyset_data.id, new_registrar.handle, keyset_data.authinfopw, Nullable<unsigned long long>());
+
+        keyset_data_to_be_notified = has_keyset_operation_followed_by_future_changes<Fred::TransferKeyset>(
             keyset_handle,
             registrar.handle,
-            Fred::UpdateKeyset(keyset_handle, new_registrar.handle).set_sponsoring_registrar(new_registrar.handle),
+            transfer,
             ctx
         ).keyset_data_to_be_notified;
     }

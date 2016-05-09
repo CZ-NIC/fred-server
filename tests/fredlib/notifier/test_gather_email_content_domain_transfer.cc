@@ -27,6 +27,7 @@
 #include "tests/fredlib/notifier/fixture_data.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_content.h"
+#include "src/fredlib/domain/transfer_domain.h"
 
 
 BOOST_AUTO_TEST_SUITE(TestNotifier2)
@@ -44,10 +45,12 @@ template<typename T_has_domain>struct has_domain_transferred : T_has_domain {
     :   logd_request_id(12345),
         new_registrar( Test::registrar(T_has_domain::ctx).info_data ),
         new_historyid(
-            Fred::UpdateDomain(T_has_domain::dom.fqdn, T_has_domain::registrar.handle)
-                .set_sponsoring_registrar(new_registrar.handle)
-                .set_logd_request_id(logd_request_id)
-                .exec(T_has_domain::ctx)
+            Fred::TransferDomain(
+                T_has_domain::dom.id,
+                new_registrar.handle,
+                T_has_domain::dom.authinfopw,
+                logd_request_id
+            ).exec(T_has_domain::ctx)
         )
     { }
 };

@@ -27,6 +27,7 @@
 #include "tests/fredlib/notifier/fixture_data.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_content.h"
+#include "src/fredlib/nsset/transfer_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestNotifier2)
 BOOST_AUTO_TEST_SUITE(GatherEmailContent)
@@ -43,10 +44,12 @@ template<typename T_has_nsset>struct has_nsset_transferred : T_has_nsset {
     :   logd_request_id(12345),
         new_registrar( Test::registrar(T_has_nsset::ctx).info_data ),
         new_historyid(
-            Fred::UpdateNsset(T_has_nsset::nsset.handle, T_has_nsset::registrar.handle)
-                .set_sponsoring_registrar(new_registrar.handle)
-                .set_logd_request_id(logd_request_id)
-                .exec(T_has_nsset::ctx)
+            Fred::TransferNsset(
+                T_has_nsset::nsset.id,
+                new_registrar.handle,
+                T_has_nsset::nsset.authinfopw,
+                logd_request_id
+            ).exec(T_has_nsset::ctx)
         )
     { }
 };

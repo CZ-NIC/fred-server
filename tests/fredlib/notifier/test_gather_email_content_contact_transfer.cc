@@ -27,6 +27,7 @@
 #include "tests/fredlib/notifier/fixture_data.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_content.h"
+#include "src/fredlib/contact/transfer_contact.h"
 
 
 BOOST_AUTO_TEST_SUITE(TestNotifier2)
@@ -44,10 +45,7 @@ template<typename T_has_contact>struct has_contact_transferred : T_has_contact {
     :   logd_request_id(12345),
         new_registrar( Test::registrar(T_has_contact::ctx).info_data ),
         new_historyid(
-            Fred::UpdateContactByHandle(T_has_contact::contact.handle, T_has_contact::registrar.handle)
-                .set_sponsoring_registrar(new_registrar.handle)
-                .set_logd_request_id(logd_request_id)
-                .exec(T_has_contact::ctx)
+            Fred::TransferContact(T_has_contact::contact.id, new_registrar.handle, T_has_contact::contact.authinfopw).exec(T_has_contact::ctx)
         )
     { }
 };

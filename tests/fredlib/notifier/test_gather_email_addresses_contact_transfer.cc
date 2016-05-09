@@ -26,6 +26,7 @@
 #include "tests/fredlib/notifier/util.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_addresses.h"
+#include "src/fredlib/contact/transfer_contact.h"
 
 
 BOOST_AUTO_TEST_SUITE(TestNotifier2)
@@ -75,11 +76,8 @@ struct has_transferred_contact : public has_contact {
 
     has_transferred_contact() {
         new_registrar = Test::registrar(ctx).info_data;
-        const unsigned long long post_transfer_hid =
-            Fred::UpdateContactByHandle(cont.handle, new_registrar.handle)
-                .set_sponsoring_registrar(new_registrar.handle)
-                .exec(ctx);
 
+        const unsigned long long post_transfer_hid = Fred::TransferContact(cont.id, new_registrar.handle, cont.authinfopw).exec(ctx);
         const unsigned long long future_begin_hid =
             Fred::UpdateContactByHandle(cont.handle, registrar.handle)
                 .set_email("future.contact.1%nic.cz")
