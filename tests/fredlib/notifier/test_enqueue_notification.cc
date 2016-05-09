@@ -27,7 +27,7 @@
 
 #include "src/fredlib/notifier/enqueue_notification.h"
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(EnqueueNotification)
 
 struct has_domain : has_autocomitting_ctx {

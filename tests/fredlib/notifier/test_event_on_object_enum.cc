@@ -27,7 +27,7 @@
 
 #include "src/fredlib/notifier/event_on_object_enum.h"
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(EventOnObjectEnum)
 
 BOOST_AUTO_TEST_CASE(renew_only_with_domain)

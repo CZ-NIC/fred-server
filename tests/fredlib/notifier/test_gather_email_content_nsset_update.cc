@@ -33,7 +33,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailContent)
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(Update)

@@ -34,7 +34,7 @@
 #include <boost/foreach.hpp>
 #include <boost/assign/list_of.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(SendNotification)
 
 struct MockMailerManager : public Fred::Mailer::Manager {

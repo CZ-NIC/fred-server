@@ -30,7 +30,7 @@
 #include "src/fredlib/domain/transfer_domain.h"
 
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailContent)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(Transfer)
