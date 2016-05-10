@@ -1537,23 +1537,29 @@ Registry::PublicRequest::Detail* ccReg_Session_i::createPublicRequestDetail(Fred
   else if (_request->getType() == "mojeid_contact_identification") {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_IDENTIFICATION;
   }
+  else if (_request->getType() == "mojeid_contact_validation") {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
+  }
   else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_CONDITIONAL_IDENTIFICATION ;
   }
   else if (_request->getType() == Fred::PublicRequest::PRT_CONTACT_IDENTIFICATION) {
       detail->type = Registry::PublicRequest::PRT_CONTACT_IDENTIFICATION;
   }
-  else if (_request->getType() == "mojeid_contact_validation") {
-      detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_VALIDATION;
+  else if (_request->getType() == "mojeid_conditionally_identified_contact_transfer") {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_CONDITIONALLY_IDENTIFIED_CONTACT_TRANSFER;
+  }
+  else if (_request->getType() == "mojeid_identified_contact_transfer") {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_IDENTIFIED_CONTACT_TRANSFER;
   }
   else if (_request->getType() == "mojeid_contact_reidentification") {
       detail->type = Registry::PublicRequest::PRT_MOJEID_CONTACT_REIDENTIFICATION;
   }
-  else if (_request->getType() == "mojeid_prevalidated_contact_transfer") {
-      detail->type = Registry::PublicRequest::PRT_MOJEID_PREVALIDATED_CONTACT_TRANSFER;
-  }
   else if (_request->getType() == "mojeid_prevalidated_unidentified_contact_transfer") {
       detail->type = Registry::PublicRequest::PRT_MOJEID_PREVALIDATED_UNIDENTIFIED_CONTACT_TRANSFER;
+  }
+  else if (_request->getType() == "mojeid_prevalidated_contact_transfer") {
+      detail->type = Registry::PublicRequest::PRT_MOJEID_PREVALIDATED_CONTACT_TRANSFER;
   }
   else {
       throw std::runtime_error("unknown public request type");
