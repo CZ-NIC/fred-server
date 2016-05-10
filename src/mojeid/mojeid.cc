@@ -1133,7 +1133,11 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                 }
             }
             if (current_data.sponsoring_registrar_handle != mojeid_registrar_handle_) {
-                Fred::TransferContact transfer_contact_op(current_data.id, mojeid_registrar_handle_, current_data.authinfopw);
+                Fred::TransferContact transfer_contact_op(current_data.id,
+                                                          mojeid_registrar_handle_,
+                                                          current_data.authinfopw,
+                                                          0 < _log_request_id ? _log_request_id
+                                                                              : Nullable< LogRequestId >());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
                 notify(ctx, Notification::transferred,
@@ -1464,7 +1468,11 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 }
             }
             if (contact.sponsoring_registrar_handle != mojeid_registrar_handle_) {
-                Fred::TransferContact transfer_contact_op(contact.id, mojeid_registrar_handle_, contact.authinfopw);
+                Fred::TransferContact transfer_contact_op(contact.id,
+                                                          mojeid_registrar_handle_,
+                                                          contact.authinfopw,
+                                                          0 < _log_request_id ? _log_request_id
+                                                                              : Nullable< LogRequestId >());
                 //transfer contact to 'REG-MOJEID' sponsoring registrar
                 const unsigned long long history_id = transfer_contact_op.exec(ctx);
                 notify(ctx, Notification::transferred,
