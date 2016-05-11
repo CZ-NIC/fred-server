@@ -164,7 +164,7 @@ struct contact_merge_duplicate_auto_impl
                 .set_dry_run(params.dry_run)
                 .set_verbose(params.verbose.is_value_set() ? Optional<unsigned short>(params.verbose.get_value()) : Optional<unsigned short>())
                 .set_selection_filter_order(params.selection_filter_order)
-            .exec();
+            .exec(std::cout);
         }
         return;
     }

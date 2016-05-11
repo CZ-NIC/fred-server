@@ -218,7 +218,7 @@ unsigned short MergeContactAutoProcedure::get_verbose_level() const
 }
 
 
-std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedure::exec()
+std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedure::exec(std::ostream &_output_stream)
 {
     std::vector<Fred::MergeContactNotificationEmailWithAddr> ret_email_notifications;
     Fred::OperationContextCreator octx;
@@ -252,7 +252,7 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
     MergeContactSummaryInfo summary_info;
     MergeContactOperationSummary all_merge_operation_info;
     OutputIndenter indenter(2, 0, ' ');
-    std::ostream &out_stream = std::cout;
+    std::ostream &out_stream = _output_stream;
 
     if (this->get_verbose_level() > 0) {
         out_stream << format_header(str(boost::format("REGISTRAR: %1%")

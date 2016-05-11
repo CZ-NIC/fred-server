@@ -6,6 +6,7 @@
  *  contact merge auto procedure
  */
 
+#include <ostream>
 #include "util/optional_value.h"
 #include "src/fredlib/logger_client.h"
 #include "src/fredlib/mailer.h"
@@ -66,7 +67,7 @@ public:
      * Execute automatic merge of duplicate contacts.
      * @return email notification data about object changes for testing purposes only
      */
-    std::vector<Fred::MergeContactNotificationEmailWithAddr> exec();
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> exec(std::ostream& _output_stream);
 
 private:
     bool is_set_dry_run() const;
