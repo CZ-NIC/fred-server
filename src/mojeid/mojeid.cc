@@ -1011,6 +1011,9 @@ void MojeIDImpl::update_contact_prepare(
         if (!addr_can_be_hidden) {
             update_contact_op.set_discloseaddress(true);
         }
+        if (0 < _log_request_id) {
+            update_contact_op.set_logd_request_id(_log_request_id);
+        }
         const unsigned long long history_id = update_contact_op.exec(ctx);
 
         notify(ctx, Notification::updated, mojeid_registrar_id_, history_id, _log_request_id);
@@ -1147,7 +1150,9 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             //perform changes
             Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
             set_update_contact_op(Fred::diff_contact_data(current_data, new_data), update_contact_op);
-            update_contact_op.set_logd_request_id(_log_request_id);
+            if (0 < _log_request_id) {
+                update_contact_op.set_logd_request_id(_log_request_id);
+            }
             history_id = update_contact_op.exec(ctx);
         }
         const bool is_cond_identified = states.presents(Fred::Object::State::conditionally_identified_contact) &&
@@ -1217,8 +1222,6 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
 
 namespace {
 
-enum { INVALID_LOG_REQUEST_ID = 0 };
-
 Fred::UpdatePublicRequest::Result set_status(
     const Fred::LockedPublicRequestForUpdate &_locked_request,
     const Fred::PublicRequestTypeIface &_request_type,
@@ -1231,17 +1234,14 @@ Fred::UpdatePublicRequest::Result set_status(
     if (!_reason.empty()) {
         op_update_public_request.set_reason(_reason);
     }
-    if (_log_request_id == INVALID_LOG_REQUEST_ID) {
-        return op_update_public_request.exec(_locked_request, _request_type);
-    }
-    return op_update_public_request.exec(_locked_request, _request_type, _log_request_id);
+    return op_update_public_request.exec(_locked_request, _request_type, get_optional_log_request_id(_log_request_id));
 }
 
 Fred::UpdatePublicRequest::Result answer(
     const Fred::LockedPublicRequestForUpdate &_locked_request,
     const Fred::PublicRequestTypeIface &_request_type,
-    const std::string &_reason = "",
-    MojeIDImpl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+    const std::string &_reason,
+    MojeIDImpl::LogRequestId _log_request_id)
 {
     return set_status(_locked_request, _request_type, Fred::PublicRequest::Status::answered, _reason, _log_request_id);
 }
@@ -1249,8 +1249,8 @@ Fred::UpdatePublicRequest::Result answer(
 Fred::UpdatePublicRequest::Result invalidate(
     const Fred::LockedPublicRequestForUpdate &_locked_request,
     const Fred::PublicRequestTypeIface &_request_type,
-    const std::string &_reason = "",
-    MojeIDImpl::LogRequestId _log_request_id = INVALID_LOG_REQUEST_ID)
+    const std::string &_reason,
+    MojeIDImpl::LogRequestId _log_request_id)
 {
     return set_status(_locked_request, _request_type, Fred::PublicRequest::Status::invalidated, _reason, _log_request_id);
 }
@@ -2165,21 +2165,26 @@ void MojeIDImpl::cancel_account_prepare(
         }
         Fred::CancelObjectStateRequestId(_contact_id, to_cancel).exec(ctx);
 
-        Fred::UpdateContactById(_contact_id, mojeid_registrar_handle_)
-            .unset_domain_expiration_letter_flag()
-            .reset_address< Fred::ContactAddressType::MAILING >()
-            .reset_address< Fred::ContactAddressType::BILLING >()
-            .reset_address< Fred::ContactAddressType::SHIPPING >()
-            .reset_address< Fred::ContactAddressType::SHIPPING_2 >()
-            .reset_address< Fred::ContactAddressType::SHIPPING_3 >()
-            .exec(ctx);
+        {
+            Fred::UpdateContactById update_contact_op(_contact_id, mojeid_registrar_handle_);
+            update_contact_op.unset_domain_expiration_letter_flag()
+                             .reset_address< Fred::ContactAddressType::MAILING >()
+                             .reset_address< Fred::ContactAddressType::BILLING >()
+                             .reset_address< Fred::ContactAddressType::SHIPPING >()
+                             .reset_address< Fred::ContactAddressType::SHIPPING_2 >()
+                             .reset_address< Fred::ContactAddressType::SHIPPING_3 >();
+            if (0 < _log_request_id) {
+                update_contact_op.set_logd_request_id(_log_request_id);
+            }
+            update_contact_op.exec(ctx);
+        }
 
         Fred::UpdatePublicRequest().set_status(Fred::PublicRequest::Status::invalidated)
                                    .set_reason("cancel_account_prepare call")
                                    .set_registrar_id(ctx, mojeid_registrar_handle_)
                                    .exec(locked_contact,
                                          Fred::MojeID::PublicRequest::ContactValidation(),
-                                         _log_request_id);
+                                         get_optional_log_request_id(_log_request_id));
         prepare_transaction_storage()->store(_trans_id, _contact_id);
         ctx.commit_transaction();
         return;
@@ -2235,7 +2240,7 @@ void MojeIDImpl::send_new_pin3(
                 update_public_request_op.set_status(Fred::PublicRequest::Status::invalidated);
                 update_public_request_op.set_reason("new pin3 generated");
                 update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
-                update_public_request_op.exec(locked_request, type.iface());
+                update_public_request_op.exec(locked_request, type.iface(), get_optional_log_request_id(_log_request_id));
                 has_identification_request = true;
             }
         }
@@ -2256,7 +2261,7 @@ void MojeIDImpl::send_new_pin3(
                 update_public_request_op.set_status(Fred::PublicRequest::Status::invalidated);
                 update_public_request_op.set_reason("new pin3 generated");
                 update_public_request_op.set_registrar_id(ctx, mojeid_registrar_handle_);
-                update_public_request_op.exec(locked_request, type.iface());
+                update_public_request_op.exec(locked_request, type.iface(), get_optional_log_request_id(_log_request_id));
                 has_reidentification_request = true;
             }
         }
