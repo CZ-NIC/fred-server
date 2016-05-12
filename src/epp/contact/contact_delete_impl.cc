@@ -54,6 +54,8 @@ unsigned long long contact_delete_impl(
         Fred::ObjectHasState(contact_data_before_delete.id, Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(_ctx)
         ||
         Fred::ObjectHasState(contact_data_before_delete.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
+        ||
+        Fred::ObjectHasState(contact_data_before_delete.id, Fred::ObjectState::LINKED).exec(_ctx)
     ) {
         throw ObjectStatusProhibitingOperation();
     }
