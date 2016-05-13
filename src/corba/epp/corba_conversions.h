@@ -24,11 +24,13 @@
 #define CORBA_EPP_CORBA_CONVERSIONS_4505534138350
 
 #include "src/corba/EPP.hh"
-#include "src/epp/localized_response.h"
+
+#include "src/epp/request_params.h"
 #include "src/epp/contact/contact_info.h"
 #include "src/epp/contact/contact_create.h"
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_check.h"
+#include "src/epp/localized_response.h"
 
 namespace Corba {
 
@@ -37,6 +39,8 @@ namespace Corba {
     Epp::ContactUpdateInputData unwrap_contact_update_input_data(const char* const handle, const ccReg::ContactChange& c);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
+
+    Epp::RequestParams unwrap_epp_request_params(const ccReg::EppParams& _epp_request_params);
 
 
 

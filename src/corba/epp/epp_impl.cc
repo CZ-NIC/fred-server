@@ -87,6 +87,9 @@
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
 #include "src/epp/session_lang.h"
+#include "src/epp/get_registrar_session_data.h"
+#include "src/epp/registrar_session_data.h"
+#include "src/epp/request_params.h"
 #include "src/epp/localization.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
@@ -2577,11 +2580,13 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
     try {
         /* output data must be ordered exactly the same */
         const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedCheckContactResponse response = Epp::contact_check(
             std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
-            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
-            Legacy::get_lang(epp_sessions, _epp_params.loginID),
+            session_data.registrar_id,
+            session_data.language,
             server_transaction_handle
         );
 
@@ -2649,10 +2654,16 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
 ) {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
+
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(
+            epp_sessions,
+            Corba::unwrap_epp_request_params(_epp_params).session_id
+        );
+
         const Epp::LocalizedInfoContactResponse response = Epp::contact_info(
             Corba::unwrap_string(_handle),
-            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
-            Legacy::get_lang(epp_sessions, _epp_params.loginID),
+            session_data.registrar_id,
+            session_data.language,
             server_transaction_handle
         );
 
@@ -2675,14 +2686,15 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 ) {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::SessionLang::Enum lang = Legacy::get_lang(epp_sessions, _epp_params.loginID);
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::contact_delete(
             Corba::unwrap_string(_handle),
-            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
-            lang,
+            session_data.registrar_id,
+            session_data.language,
             server_transaction_handle,
-            Corba::unwrap_string(_epp_params.clTRID),
+            request_params.client_transaction_id,
             disable_epp_notifier_cltrid_prefix_
         );
 
@@ -2700,16 +2712,17 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
 ) {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::SessionLang::Enum lang = Legacy::get_lang(epp_sessions, _epp_params.loginID);
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::contact_update(
             Corba::unwrap_contact_update_input_data(_handle, _data_change),
-            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
-            _epp_params.requestID,
+            session_data.registrar_id,
+            request_params.log_request_id,
             epp_update_contact_enqueue_check_,
-            lang,
+            session_data.language,
             server_transaction_handle,
-            Corba::unwrap_string(_epp_params.clTRID),
+            request_params.client_transaction_id,
             disable_epp_notifier_cltrid_prefix_
         );
 
@@ -2728,15 +2741,16 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
 ) {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::SessionLang::Enum lang = Legacy::get_lang(epp_sessions, _epp_params.loginID);
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedCreateContactResponse response = contact_create(
             Corba::unwrap_contact_create_input_data(_handle, _contact_data),
-            Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
-            _epp_params.requestID,
-            lang,
+            session_data.registrar_id,
+            request_params.log_request_id,
+            session_data.language,
             server_transaction_handle,
-            Corba::unwrap_string(_epp_params.clTRID),
+            request_params.client_transaction_id,
             disable_epp_notifier_cltrid_prefix_
         );
 
@@ -2987,16 +3001,19 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
 
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
         return new ccReg::Response(
             Corba::wrap_response(
                 contact_transfer(
                     Corba::unwrap_string(_handle),
                     Corba::unwrap_string(_auth_info),
-                    Legacy::get_registrar_id(epp_sessions, _epp_params.loginID),
-                    _epp_params.requestID,
-                    Legacy::get_lang(epp_sessions, _epp_params.loginID),
+                    session_data.registrar_id,
+                    request_params.log_request_id,
+                    session_data.language,
                     server_transaction_handle,
-                    Corba::unwrap_string(_epp_params.clTRID),
+                    request_params.client_transaction_id,
                     disable_epp_notifier_cltrid_prefix_
                 ),
                 server_transaction_handle

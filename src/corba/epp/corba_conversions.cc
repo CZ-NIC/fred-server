@@ -45,6 +45,15 @@ namespace Corba {
         return result;
     }
 
+    Epp::RequestParams unwrap_epp_request_params(const ccReg::EppParams& _epp_request_params) {
+
+        return Epp::RequestParams(
+            _epp_request_params.loginID,
+            Corba::unwrap_string(_epp_request_params.clTRID),
+            _epp_request_params.requestID
+        );
+    }
+
     struct ExceptionInvalidIdentType {};
 
     /**
