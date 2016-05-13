@@ -2576,7 +2576,7 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
     const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
     try {
         /* output data must be ordered exactly the same */
-        const std::vector<std::string> handles_to_be_checked = Corba::unwrap_contact_handles_to_be_checked(_handles_to_be_checked);
+        const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
 
         const Epp::LocalizedCheckContactResponse response = Epp::contact_check(
             std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),

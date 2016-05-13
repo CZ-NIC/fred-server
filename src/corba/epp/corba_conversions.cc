@@ -33,7 +33,7 @@ namespace Corba {
         return Nullable<Epp::IdentType::Enum>();
     }
 
-    std::vector<std::string> unwrap_contact_handles_to_be_checked(const ccReg::Check& handles) {
+    std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles) {
         std::vector<std::string> result;
 
         result.reserve(handles.length());
