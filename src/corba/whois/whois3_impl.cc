@@ -43,7 +43,7 @@ Registrar* Server_impl::get_registrar_by_handle(const char* handle)
     try
     {
         Registry::WhoisImpl::Registrar whois_reg =
-            pimpl_->get_registrar_by_handle(std::string(handle));
+                pimpl_->get_registrar_by_handle(std::string(handle));
         return new Registrar(wrap_registrar(whois_reg));//?
     }
     catch (...)
@@ -59,7 +59,7 @@ RegistrarSeq* Server_impl::get_registrars()
     {
         RegistrarSeq_var result = new RegistrarSeq;
         std::vector<Registry::WhoisImpl::Registrar> registrars =
-            pimpl_->get_registrars();
+                pimpl_->get_registrars();
         result->length(registrars.size());
         for(CORBA::ULong i = 0; i < result->length(); ++i)
         {
@@ -110,8 +110,10 @@ RegistrarGroup wrap_registrar_group(const Registry::WhoisImpl::RegistrarGroup& g
     return result;
 }
 
-template<> RegistrarGroup set_element_of_corba_seq<
-    RegistrarGroup, Registry::WhoisImpl::RegistrarGroup>(
+template<> 
+RegistrarGroup set_element_of_corba_seq<
+    RegistrarGroup, 
+    Registry::WhoisImpl::RegistrarGroup>(
         const Registry::WhoisImpl::RegistrarGroup& ile)
 {
     return wrap_registrar_group(ile);
@@ -124,7 +126,8 @@ RegistrarGroupList* Server_impl::get_registrar_groups()
         RegistrarGroupList_var result = new RegistrarGroupList;
 
         set_corba_seq<RegistrarGroupList, RegistrarGroup>(
-                result, pimpl_->get_registrar_groups());
+                result, 
+                pimpl_->get_registrar_groups());
 
         return result._retn();
     }
@@ -145,8 +148,10 @@ RegistrarCertification wrap_registrar_certification(
     return result;
 }
 
-template<> RegistrarCertification set_element_of_corba_seq<
-    RegistrarCertification, Registry::WhoisImpl::RegistrarCertification>(
+template<> 
+RegistrarCertification set_element_of_corba_seq<
+    RegistrarCertification, 
+    Registry::WhoisImpl::RegistrarCertification>(
         const Registry::WhoisImpl::RegistrarCertification& ile)
 {
     return wrap_registrar_certification(ile);
@@ -158,7 +163,8 @@ RegistrarCertificationList* Server_impl::get_registrar_certification_list()
     {
         RegistrarCertificationList_var result = new RegistrarCertificationList;
         set_corba_seq<RegistrarCertificationList, RegistrarCertification>(
-                result, pimpl_->get_registrar_certification_list());
+                result, 
+                pimpl_->get_registrar_certification_list());
         return result._retn();
     }
     catch (...)
@@ -174,7 +180,8 @@ ZoneFqdnList* Server_impl::get_managed_zone_list()
     {
         ZoneFqdnList_var zone_seq = new ZoneFqdnList;
         set_corba_seq<ZoneFqdnList, CORBA::String_var>(
-                zone_seq, pimpl_->get_managed_zone_list());
+                zone_seq, 
+                pimpl_->get_managed_zone_list());
         return zone_seq._retn();
     }
     catch (...)
@@ -201,16 +208,18 @@ void wrap_object_states(StringSeq& states_seq, std::vector<std::string>& statuse
     set_corba_seq<StringSeq, CORBA::String_var>(states_seq, statuses);
 }
 
-DisclosablePlaceAddress wrap_disclosable_address(const Registry::WhoisImpl::PlaceAddress& addr, bool disclose)
+DisclosablePlaceAddress wrap_disclosable_address(
+    const Registry::WhoisImpl::PlaceAddress& addr,
+    bool disclose)
 {
     DisclosablePlaceAddress temp;
     temp.value.street1 = Corba::wrap_string_to_corba_string(addr.street1);
     temp.value.street2 = Corba::wrap_string_to_corba_string(addr.street2);
     temp.value.street3 = Corba::wrap_string_to_corba_string(addr.street3);
-    temp.value.city = Corba::wrap_string_to_corba_string(addr.city);
+    temp.value.city    = Corba::wrap_string_to_corba_string(addr.city);
     temp.value.stateorprovince = Corba::wrap_string_to_corba_string(addr.stateorprovince);
-    temp.value.postalcode = Corba::wrap_string_to_corba_string(addr.postal_code); //fix consistency?
-    temp.value.country_code = Corba::wrap_string_to_corba_string(addr.country_code);
+    temp.value.postalcode      = Corba::wrap_string_to_corba_string(addr.postal_code); //fix consistency?
+    temp.value.country_code    = Corba::wrap_string_to_corba_string(addr.country_code);
     temp.disclose = disclose;
     return temp;
 }
@@ -229,15 +238,15 @@ Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
     result.vat_number   = wrap_disclosable_string(con.vat_number, con.disclose_vat_number);
 
     result.identification.value.identification_type =
-        Corba::wrap_string_to_corba_string(con.identification.identification_type);
+            Corba::wrap_string_to_corba_string(con.identification.identification_type);
     result.identification.value.identification_data =
-        Corba::wrap_string_to_corba_string(con.identification.identification_data);
+            Corba::wrap_string_to_corba_string(con.identification.identification_data);
     result.identification.disclose = con.disclose_identification;
 
     result.creating_registrar_handle =
-        Corba::wrap_string_to_corba_string(con.creating_registrar_handle);
+            Corba::wrap_string_to_corba_string(con.creating_registrar_handle);
     result.sponsoring_registrar_handle =
-        Corba::wrap_string_to_corba_string(con.sponsoring_registrar_handle);
+            Corba::wrap_string_to_corba_string(con.sponsoring_registrar_handle);
     result.created = Corba::wrap_time(con.created);
     result.changed = Corba::wrap_nullable_datetime(con.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(con.last_transfer);
@@ -264,12 +273,13 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-struct InvalidIPAddressException : public std::runtime_error {
+struct InvalidIPAddressException : public std::runtime_error 
+{
     static const char* what_msg() throw() {return "invalid IP address";}
 
     InvalidIPAddressException()
-        : std::runtime_error(what_msg())
-    { }
+    : std::runtime_error(what_msg())
+    {}
 
     const char* what() const throw() {return what_msg();}
 };
@@ -277,27 +287,37 @@ struct InvalidIPAddressException : public std::runtime_error {
 /**
  * @throws InvalidIPAddressException
  */
-void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out ) {
+void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out )
+{
     out.address = Corba::wrap_string(in.to_string());
-    if(in.is_v4()) {
+    if(in.is_v4()) 
+    {
         out.version = IPv4;
-    } else if(in.is_v6()) {
+    }
+    else if(in.is_v6()) 
+    {
         out.version = IPv6;
-    } else {
+    }
+    else 
+    {
         throw InvalidIPAddressException();
     }
 }
 
-template<> IPAddress set_element_of_corba_seq<
-    IPAddress, boost::asio::ip::address>(const boost::asio::ip::address& ile)
+template<> 
+IPAddress set_element_of_corba_seq<
+    IPAddress, 
+    boost::asio::ip::address>(
+        const boost::asio::ip::address& ile)
 {
     IPAddress ip;
     wrap_ipaddress(ile,ip);
     return ip;
 }
 
-template<> NameServer set_element_of_corba_seq<
-    NameServer, Registry::WhoisImpl::NameServer>(const Registry::WhoisImpl::NameServer& ns)
+template<> 
+NameServer set_element_of_corba_seq<NameServer, Registry::WhoisImpl::NameServer>(
+    const Registry::WhoisImpl::NameServer& ns)
 {
     NameServer result;
     result.fqdn = Corba::wrap_string_to_corba_string(ns.fqdn);
@@ -318,7 +338,8 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
     set_corba_seq<NameServerSeq, NameServer>(result.nservers, nsset.nservers);
 
     set_corba_seq<StringSeq, CORBA::String_var>(
-            result.tech_contact_handles, nsset.tech_contact_handles);
+            result.tech_contact_handles, 
+            nsset.tech_contact_handles);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, nsset.statuses);
     return result;
@@ -341,7 +362,8 @@ NSSet* Server_impl::get_nsset_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-template<> NSSet set_element_of_corba_seq<NSSet, Registry::WhoisImpl::NSSet>(
+template<> 
+NSSet set_element_of_corba_seq<NSSet, Registry::WhoisImpl::NSSet>(
     const Registry::WhoisImpl::NSSet& nsset)
 {
     return wrap_nsset(nsset);
@@ -401,7 +423,8 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
     try
     {
         NameServer result;
-        result.fqdn = Corba::wrap_string_to_corba_string(pimpl_->get_nameserver_by_fqdn(handle).fqdn);
+        result.fqdn = Corba::wrap_string_to_corba_string(
+                pimpl_->get_nameserver_by_fqdn(handle).fqdn);
         /*
          * Because of grouping nameservers in NSSet we don't include
          * IP address in output (given nameserver can be in different
@@ -422,8 +445,9 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-template<> DNSKey set_element_of_corba_seq<
-    DNSKey, Registry::WhoisImpl::DNSKey>(const Registry::WhoisImpl::DNSKey& dnskey)
+template<> 
+DNSKey set_element_of_corba_seq<DNSKey, Registry::WhoisImpl::DNSKey>(
+    const Registry::WhoisImpl::DNSKey& dnskey)
 {
     DNSKey result;
     result.flags      = dnskey.flags;
@@ -443,7 +467,8 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
     result.changed = Corba::wrap_nullable_datetime(keyset.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(keyset.last_transfer);
 
-    set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, keyset.tech_contact_handles);
+    set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, 
+                                                keyset.tech_contact_handles);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, keyset.statuses);
 
@@ -469,7 +494,8 @@ KeySet* Server_impl::get_keyset_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-template<> KeySet set_element_of_corba_seq<KeySet, Registry::WhoisImpl::KeySet>(
+template<> 
+KeySet set_element_of_corba_seq<KeySet, Registry::WhoisImpl::KeySet>(
     const Registry::WhoisImpl::KeySet& keyset)
 {
     return wrap_keyset(keyset);
@@ -509,7 +535,8 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else 
     {
-        result.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.nsset_handle));
+        result.nsset_handle = new NullableString(
+                Corba::wrap_string_to_corba_string(domain.nsset_handle));
     }
     if(domain.keyset_handle.size() == 0)
     {
@@ -517,7 +544,8 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else 
     {
-        result.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.keyset_handle));
+        result.keyset_handle = new NullableString(
+                Corba::wrap_string_to_corba_string(domain.keyset_handle));
     }
     result.registrar_handle = Corba::wrap_string_to_corba_string(domain.registrar_handle);
     result.registered = Corba::wrap_time(domain.registered);
@@ -541,7 +569,8 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
 //        result.validated_to_time_estimate = Corba::wrap_optional_datetime(_val_expire_time_estimate);
 //        result.validated_to_time_actual = Corba::wrap_optional_datetime(_val_expire_time_actual);
     } 
-    set_corba_seq<StringSeq, CORBA::String_var>(result.admin_contact_handles, domain.admin_contact_handles);
+    set_corba_seq<StringSeq, CORBA::String_var>(result.admin_contact_handles, 
+                                                domain.admin_contact_handles);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, domain.statuses);
     return result;
@@ -565,7 +594,8 @@ Domain* Server_impl::get_domain_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-DomainSeq* Server_impl::get_domains_by_(const Registry::WhoisImpl::DomainSeq& dom_seq, ::CORBA::Boolean& limit_exceeded)
+DomainSeq* Server_impl::get_domains_by_(const Registry::WhoisImpl::DomainSeq& dom_seq,
+                                        ::CORBA::Boolean& limit_exceeded)
 {
     try
     {
@@ -617,7 +647,8 @@ DomainSeq* Server_impl::get_domains_by_keyset(
     return get_domains_by_(pimpl_->get_domains_by_keyset(handle, limit), limit_exceeded);
 }
 
-ObjectStatusDescSeq* Server_impl::get_object_status_descriptions(const std::vector<Registry::WhoisImpl::ObjectStatusDesc>& state_vec)
+ObjectStatusDescSeq* Server_impl::get_object_status_descriptions(
+    const std::vector<Registry::WhoisImpl::ObjectStatusDesc>& state_vec)
 {
     try
     {
@@ -652,5 +683,5 @@ ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lan
     return get_object_status_descriptions(pimpl_->get_keyset_status_descriptions(lang));
 }
 
-}
-}
+}//Registry
+}//Whois 
