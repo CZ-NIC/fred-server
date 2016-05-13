@@ -214,7 +214,7 @@ unsigned long long contact_update_impl(
     if( _data.country_code.isset() && !_data.country_code.get_value().empty() ) {
         if ( !is_country_code_valid(_ctx, _data.country_code.get_value() ) ) {
             AggregatedParamErrors exception;
-            exception.add( Error( Param::contact_cc, 1, Reason::country_notexist ) );
+            exception.add( Error( Param::contact_cc, 0, Reason::country_notexist ) );
             throw exception;
         }
     }
@@ -330,7 +330,7 @@ unsigned long long contact_update_impl(
 
             if( e.is_set_unknown_country() ) {
                 AggregatedParamErrors exception;
-                exception.add( Error( Param::contact_cc, 1, Reason::country_notexist ) );
+                exception.add( Error( Param::contact_cc, 0, Reason::country_notexist ) );
                 throw exception;
             }
 

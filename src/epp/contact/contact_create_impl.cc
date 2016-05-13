@@ -34,15 +34,15 @@ ContactCreateResult contact_create_impl(
         AggregatedParamErrors exception;
 
         if(check.is_invalid_handle()) {
-            exception.add( Error( Param::contact_handle, 1, Reason::bad_format_contact_handle ) );
+            exception.add( Error( Param::contact_handle, 0, Reason::bad_format_contact_handle ) );
         }
 
         if(check.is_protected(_ctx)) {
-            exception.add( Error( Param::contact_handle, 1, Reason::protected_period ) );
+            exception.add( Error( Param::contact_handle, 0, Reason::protected_period ) );
         }
 
         if ( !is_country_code_valid(_ctx, _data.country_code) ) {
-            exception.add( Error( Param::contact_cc, 1, Reason::country_notexist ) );
+            exception.add( Error( Param::contact_cc, 0, Reason::country_notexist ) );
         }
 
         if ( !exception.is_empty() ) {
@@ -113,7 +113,7 @@ ContactCreateResult contact_create_impl(
 
         if( e.is_set_unknown_country() ) {
             AggregatedParamErrors exception;
-            exception.add( Error( Param::contact_cc, 1, Reason::country_notexist ) );
+            exception.add( Error( Param::contact_cc, 0, Reason::country_notexist ) );
             throw exception;
         }
 

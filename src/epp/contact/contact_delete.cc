@@ -62,7 +62,7 @@ LocalizedSuccessResponse contact_delete(
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::parametr_error,
-            Error(Param::contact_handle, 1, Reason::bad_format_contact_handle),
+            Error(Param::contact_handle, 0, Reason::bad_format_contact_handle),
             _lang
         );
 
