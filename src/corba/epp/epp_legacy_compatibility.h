@@ -41,9 +41,6 @@ inline unsigned long long get_registrar_id(EppSessionContainer& epp_sessions, un
 
     const unsigned long long result = epp_sessions.get_registrar_id(session_id);
 
-    if(result == 0) {
-        throw std::runtime_error("unable to get session registrar id");
-    }
     return result;
 }
 
