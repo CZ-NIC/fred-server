@@ -1140,6 +1140,9 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                         if (e.is_set_state_not_found()) {
                             LOGGER(PACKAGE).info("unable clear state " + e.get_state_not_found());
                         }
+                        else {
+                            throw;
+                        }
                     }
                 }
             }
