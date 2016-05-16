@@ -27,6 +27,8 @@
 #include <time.h>
 
 #include <boost/regex.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/null.hpp>
 
 #include "util/printable.h"
 #include "cfg/handle_corbanameservice_args.h"
@@ -52,6 +54,9 @@
 BOOST_AUTO_TEST_SUITE(TestMergeContactAutoProc)
 
 const std::string server_name = "test-merge-contact-auto-proc";
+
+
+boost::iostreams::stream<boost::iostreams::null_sink> null_stream((boost::iostreams::null_sink()));
 
 
 /**
@@ -98,7 +103,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
             *(logger_client.get()),
             registrar_mc_1_handle)
         .set_dry_run(true)
-    .exec();
+    .exec(null_stream);
 
     BOOST_CHECK(nemail.empty());//no notifications
 
@@ -116,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
             registrar_mc_1_handle)
         .set_verbose(100)
         .set_dry_run(true)
-    .exec();
+    .exec(null_stream);
 
     BOOST_CHECK(nemail.empty());//no notifications
 
@@ -162,7 +167,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             *(mm.get()),
             *(logger_client.get()),
             registrar_mc_1_handle)
-    .exec();
+    .exec(null_stream);
 
     BOOST_CHECK(nemail.size() == 1);//have just 1 group of mergeable contacts with given registrar
 
@@ -373,7 +378,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
             *(mm.get()),
             *(logger_client.get()),
             fixture.registrar_mc_1_handle)
-        .exec();
+        .exec(null_stream);
 
         //data changes
         contact_changes1 = fixture.diff_contacts();
@@ -395,7 +400,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
             *(logger_client.get()),
             fixture.registrar_mc_1_handle)
         .set_verbose(100)
-        .exec();
+        .exec(null_stream);
 
         //data changes
         contact_changes2 = fixture.diff_contacts();
