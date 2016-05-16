@@ -1118,14 +1118,33 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             if (drop_cond_identification || drop_identification) {
                 Fred::StatusList to_cancel;
                 //drop conditionally identified flag if e-mail or mobile changed
-                if (drop_cond_identification) {
+                if (drop_cond_identification &&
+                    states.presents(Fred::Object::State::conditionally_identified_contact))
+                {
                     to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact));
                 }
                 //drop identified flag if name, mailing address, e-mail or mobile changed
-                if (drop_identification) {
+                if (drop_identification &&
+                    states.presents(Fred::Object::State::identified_contact))
+                {
                     to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact));
                 }
-                Fred::CancelObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
+                if (!to_cancel.empty()) {
+                    try {
+                        Fred::CancelObjectStateRequestId(current_data.id, to_cancel).exec(ctx);
+                    }
+                    catch (const Fred::CancelObjectStateRequestId::Exception &e) {
+                        if (e.is_set_object_id_not_found()) {
+                            throw MojeIDImplData::ObjectDoesntExist();
+                        }
+                        if (e.is_set_state_not_found()) {
+                            LOGGER(PACKAGE).info("unable clear state " + e.get_state_not_found());
+                        }
+                        else {
+                            throw;
+                        }
+                    }
+                }
             }
 
             {
@@ -1208,6 +1227,10 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
     }
     catch(const MojeIDImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
+        throw;
+    }
+    catch(const MojeIDImplData::ObjectDoesntExist &e) {
+        LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
         throw;
     }
     catch (const std::exception &e) {
