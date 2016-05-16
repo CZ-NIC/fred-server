@@ -566,7 +566,6 @@ namespace Registry
                     try {
                         Fred::CreateAdminObjectStateRestoreRequestId create_object_state_restore_request(object_id, _reason, _log_req_id);
                         create_object_state_restore_request.exec(ctx);
-                        Fred::PerformObjectStateRequest(object_id).exec(ctx);
                         const std::string fqdn = get_object_handle(ctx, object_id);
 
                         if (sys_registrar.empty()) {
@@ -597,8 +596,11 @@ namespace Registry
                             if (0 < _log_req_id) {
                                 update_domain.set_logd_request_id(_log_req_id);
                             }
+                            //domain expiration has to be set before update_object_states invocation
                             update_domain.exec(ctx);
                         }
+                        //update_object_states invocation
+                        Fred::PerformObjectStateRequest(object_id).exec(ctx);
                     }
                     catch (const Fred::CreateAdminObjectStateRestoreRequestId::Exception &e) {
                         if (e.is_set_server_blocked_absent()) {
