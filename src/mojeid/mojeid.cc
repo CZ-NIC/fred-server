@@ -1670,8 +1670,7 @@ void MojeIDImpl::commit_prepared_transaction(const std::string &_trans_id)const
         prepare_transaction_storage()->release(_trans_id);
     }
     catch (const prepare_transaction_data_not_found&) {
-        LOGGER(PACKAGE).error("request failed (cannot retrieve saved transaction data "
-                              "using transaction identifier " + _trans_id + ")");
+        LOGGER(PACKAGE).info("no saved transaction data for " + _trans_id + " identifier)");
     }
     catch (const std::exception &e) {
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
@@ -1732,8 +1731,7 @@ void MojeIDImpl::rollback_prepared_transaction(const std::string &_trans_id)cons
         prepare_transaction_storage()->release(_trans_id);
     }
     catch (const prepare_transaction_data_not_found&) {
-        LOGGER(PACKAGE).error("request failed (cannot retrieve saved transaction data "
-                              "using transaction identifier " + _trans_id + ")");
+        LOGGER(PACKAGE).info("no saved transaction data for " + _trans_id + " identifier)");
     }
 }
 
