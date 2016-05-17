@@ -1,6 +1,7 @@
 #include "src/epp/contact/contact_check_impl.h"
 
 #include "src/fredlib/contact/check_contact.h"
+#include "src/epp/contact/contact_handle_state_to_check_result.h"
 
 #include <boost/foreach.hpp>
 
@@ -13,21 +14,11 @@ std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > con
     std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > result;
 
     BOOST_FOREACH(const std::string& handle, _contact_handles) {
-        Fred::CheckContact check(handle);
 
-        if(check.is_invalid_handle()) {
-            result[handle] = ContactHandleRegistrationObstruction::invalid_handle;
-
-        } else if(check.is_protected(_ctx)) {
-            result[handle] = ContactHandleRegistrationObstruction::protected_handle;
-
-        } else if(check.is_registered(_ctx)) {
-            result[handle] = ContactHandleRegistrationObstruction::registered_handle;
-
-        } else {
-            result[handle] = Nullable<ContactHandleRegistrationObstruction::Enum>();
-
-        }
+        result[handle] = contact_handle_state_to_check_result(
+            Fred::Contact::is_handle_valid(handle),
+            Fred::Contact::is_handle_in_registry(_ctx, handle)
+        );
     }
 
     return result;

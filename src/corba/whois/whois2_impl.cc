@@ -669,7 +669,7 @@ namespace Whois {
             {
                 if(e.is_set_unknown_contact_handle())
                 {
-                    if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                    if( Fred::Contact::is_handle_valid(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
                     {
                         throw INVALID_HANDLE();
                     }
@@ -796,7 +796,7 @@ namespace Whois {
 
             if(nss_info.empty())
             {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if( Fred::Contact::is_handle_valid(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
                 {
                     throw INVALID_HANDLE();
                 }
@@ -926,7 +926,7 @@ namespace Whois {
 
             if(ks_info.empty())
             {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if( Fred::Contact::is_handle_valid(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
                 {
                     throw INVALID_HANDLE();
                 }
@@ -1050,7 +1050,7 @@ namespace Whois {
 
             if(domain_info.empty())
             {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if( Fred::Contact::is_handle_valid(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
                 {
                     throw INVALID_HANDLE();
                 }
@@ -1096,7 +1096,7 @@ namespace Whois {
 
             if(domain_info.empty())
             {
-                if(Fred::CheckContact(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
+                if( Fred::Contact::is_handle_valid(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
                 {
                     throw INVALID_HANDLE();
                 }

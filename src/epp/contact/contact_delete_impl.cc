@@ -4,6 +4,7 @@
 
 #include <fredlib/contact.h>
 #include <fredlib/registrar.h>
+#include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
@@ -22,15 +23,11 @@ unsigned long long contact_delete_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    {
-        Fred::CheckContact check(_handle);
+    if( Fred::Contact::is_handle_valid(_handle) == Fred::ContactHandleState::SyntaxValidity::invalid ) {
+        throw InvalidHandle();
 
-        if(check.is_invalid_handle()) {
-            throw InvalidHandle();
-
-        } else if(!check.is_registered(_ctx)) {
-            throw NonexistentHandle();
-        }
+    } else if( Fred::Contact::is_handle_in_registry(_ctx, _handle) == Fred::ContactHandleState::InRegistry::unregistered ) {
+        throw NonexistentHandle();
     }
 
     const Fred::InfoContactData contact_data_before_delete = Fred::InfoContactByHandle(_handle).set_lock().exec(_ctx).info_contact_data;

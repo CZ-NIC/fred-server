@@ -20,23 +20,42 @@
  *  @file
  */
 
-#ifndef CHECK_CONTACT_H
-#define CHECK_CONTACT_H
-
-#include "src/fredlib/contact/handle_state.h"
-
-#include <string>
-
-#include "src/fredlib/opcontext.h"
+#ifndef FQDN_STATE_23678947113
+#define FQDN_STATE_23678947113
 
 namespace Fred
 {
-namespace Contact
-{
-    ContactHandleState::SyntaxValidity::Enum is_handle_valid(const std::string& _contact_handle);
 
-    ContactHandleState::InRegistry::Enum is_handle_in_registry(OperationContext& ctx, const std::string& _contact_handle);
-}
+namespace DomainFqdnState {
+    struct InRegistry {
+        enum Enum {
+            registered,
+            in_protection_period,
+            unregistered,
+        };
+    };
+
+    struct SyntaxValidity {
+        enum Enum {
+            valid,
+            invalid,
+        };
+    };
+
+    struct Blacklisted {
+        enum Enum {
+            blacklisted,
+            not_blacklisted,
+        };
+    };
+
+    struct ZoneInRegister {
+        enum Enum {
+            zone_in_registry,
+            zone_not_in_registry
+        };
+    };
 }
 
+}
 #endif

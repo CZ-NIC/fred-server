@@ -162,15 +162,11 @@ unsigned long long contact_update_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    {
-        Fred::CheckContact check(_data.handle);
+    if( Fred::Contact::is_handle_valid(_data.handle) == Fred::ContactHandleState::SyntaxValidity::invalid ) {
+        throw InvalidHandle();
 
-        if(check.is_invalid_handle()) {
-            throw InvalidHandle();
-
-        } else if(!check.is_registered(_ctx)) {
-            throw NonexistentHandle();
-        }
+    } else if( Fred::Contact::is_handle_in_registry(_ctx, _data.handle) == Fred::ContactHandleState::InRegistry::unregistered ) {
+        throw NonexistentHandle();
     }
 
     struct translate_info_contact_exception {

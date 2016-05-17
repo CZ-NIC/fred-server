@@ -99,5 +99,12 @@ namespace Fred
         return false;
     }
 
+    //check if handle is already registered, if true then set conflicting handle
+    bool TestHandle::is_registered(OperationContext& ctx, const std::string& object_type_name) const {
+        std::string dummy;
+
+        return is_registered(ctx, object_type_name, dummy);
+    }
+
 }//namespace Fred
 

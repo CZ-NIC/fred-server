@@ -25,19 +25,19 @@ ContactCreateResult contact_create_impl(
     }
 
     {
-        Fred::CheckContact check(_data.handle);
+        const Fred::ContactHandleState::InRegistry::Enum in_registry = Fred::Contact::is_handle_in_registry(_ctx, _data.handle);
 
-        if(check.is_registered(_ctx)) {
+        if(in_registry == Fred::ContactHandleState::InRegistry::registered) {
             throw ObjectExists();
         }
 
         AggregatedParamErrors exception;
 
-        if(check.is_invalid_handle()) {
+        if( Fred::Contact::is_handle_valid(_data.handle) == Fred::ContactHandleState::SyntaxValidity::invalid ) {
             exception.add( Error( Param::contact_handle, 0, Reason::bad_format_contact_handle ) );
         }
 
-        if(check.is_protected(_ctx)) {
+        if(in_registry == Fred::ContactHandleState::InRegistry::in_protection_period) {
             exception.add( Error( Param::contact_handle, 0, Reason::protected_period ) );
         }
 

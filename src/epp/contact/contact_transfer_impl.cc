@@ -32,16 +32,11 @@ unsigned long long contact_transfer_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    {
-        const Fred::CheckContact check(_contact_handle);
+    if( Fred::Contact::is_handle_valid(_contact_handle) == Fred::ContactHandleState::SyntaxValidity::invalid ) {
+        throw InvalidHandle();
 
-        if(check.is_invalid_handle()) {
-            throw InvalidHandle();
-        }
-
-        if(!check.is_registered(_ctx)) {
-            throw NonexistentHandle();
-        }
+    } else if( Fred::Contact::is_handle_in_registry(_ctx, _contact_handle) == Fred::ContactHandleState::InRegistry::unregistered ) {
+        throw NonexistentHandle();
     }
 
     // TODO optimize out

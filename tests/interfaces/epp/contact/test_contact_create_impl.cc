@@ -115,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
             42 /* TODO */
         );
     } catch(...) {
-        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_handle, 1, Epp::Reason::bad_format_contact_handle ) );
+        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_handle, 0, Epp::Reason::bad_format_contact_handle ) );
     }
 }
 
@@ -206,7 +206,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
             42 /* TODO */
         );
     } catch (...) {
-        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_handle, 1, Epp::Reason::protected_period ) );
+        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_handle, 0, Epp::Reason::protected_period ) );
     }
 }
 
@@ -250,7 +250,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
             42 /* TODO */
         );
     } catch (...) {
-        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_cc, 1, Epp::Reason::country_notexist ) );
+        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_cc, 0, Epp::Reason::country_notexist ) );
     }
 }
 

@@ -136,16 +136,6 @@ BOOST_AUTO_TEST_CASE(delete_contact)
 }
 
 /**
- * test CheckContact print to string
- */
-BOOST_AUTO_TEST_CASE(check_contact)
-{
-    printable_test(
-    Fred::CheckContact("TEST-CHECK-CONTACT-HANDLE")
-    );
-}
-
-/**
  * test InfoContactData print to string
  */
 BOOST_AUTO_TEST_CASE(info_contact_data)

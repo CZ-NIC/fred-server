@@ -393,7 +393,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
                 42 /* TODO */
             );
         } catch(...) {
-            Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_cc, 1, Epp::Reason::country_notexist ) );
+            Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::contact_cc, 0, Epp::Reason::country_notexist ) );
         }
     } catch (const std::exception& e) {
         BOOST_MESSAGE(e.what());

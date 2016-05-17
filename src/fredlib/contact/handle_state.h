@@ -20,23 +20,28 @@
  *  @file
  */
 
-#ifndef CHECK_CONTACT_H
-#define CHECK_CONTACT_H
-
-#include "src/fredlib/contact/handle_state.h"
-
-#include <string>
-
-#include "src/fredlib/opcontext.h"
+#ifndef HANDLE_STATE_35441783769
+#define HANDLE_STATE_35441783769
 
 namespace Fred
 {
-namespace Contact
-{
-    ContactHandleState::SyntaxValidity::Enum is_handle_valid(const std::string& _contact_handle);
 
-    ContactHandleState::InRegistry::Enum is_handle_in_registry(OperationContext& ctx, const std::string& _contact_handle);
-}
+namespace ContactHandleState {
+    struct InRegistry {
+        enum Enum {
+            registered,
+            in_protection_period,
+            unregistered,
+        };
+    };
+
+    struct SyntaxValidity {
+        enum Enum {
+            valid,
+            invalid,
+        };
+    };
 }
 
+}
 #endif
