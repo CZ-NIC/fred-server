@@ -12,6 +12,61 @@
 
 namespace Notification {
 
+namespace Convert {
+    void aggregate_nonempty(std::vector<std::string>& _target, const std::string& _raw_input) {
+        if( !_raw_input.empty() ) {
+            _target.push_back(_raw_input);
+        }
+    }
+
+    std::string to_string(const Fred::Contact::PlaceAddress& _address) {
+        std::vector<std::string> non_empty_parts;
+
+        aggregate_nonempty(non_empty_parts, _address.street1);
+        aggregate_nonempty(non_empty_parts, _address.street2.get_value_or(""));
+        aggregate_nonempty(non_empty_parts, _address.street3.get_value_or(""));
+        aggregate_nonempty(non_empty_parts, _address.stateorprovince.get_value_or(""));
+        aggregate_nonempty(non_empty_parts, _address.postalcode);
+        aggregate_nonempty(non_empty_parts, _address.city);
+        aggregate_nonempty(non_empty_parts, _address.country);
+
+        return boost::join(non_empty_parts, ", ");
+    }
+
+    std::string to_string(const Fred::ContactAddress& _address) {
+        std::vector<std::string> non_empty_parts;
+
+        aggregate_nonempty(non_empty_parts, _address.company_name.get_value_or(""));
+        aggregate_nonempty(
+                non_empty_parts,
+                to_string(
+                    static_cast<const Fred::Contact::PlaceAddress&>(_address)
+                    )
+                );
+
+        return boost::join(non_empty_parts, ", ");
+    }
+};
+
+/* Yes we are using database "enum" values as e-mail template parameters. It's flexible. And it works! A vubec! */
+static std::string translate_ssntypes(const Nullable< Fred::PersonalIdUnion > &_nullable_personal_id)
+{
+    if (_nullable_personal_id.isnull() ||
+        _nullable_personal_id.get_value().get_type().empty()) { return "EMPTY"; }
+
+    const std::string type = _nullable_personal_id.get_value().get_type();
+
+    if (type == "PASS") { return "PASSPORT"; }
+
+    if (type == "RC"   ||
+        type == "OP"   ||
+        type == "ICO"  ||
+        type == "MPSV" ||
+        type == "BIRTHDAY") { return type; }
+
+    return "UNKNOWN";
+}
+
 std::string to_template_handle(Fred::ContactAddressType::Value _type) {
     switch (_type) {
         case Fred::ContactAddressType::MAILING      : return "mailing";
@@ -22,6 +77,136 @@ std::string to_template_handle(Fred::ContactAddressType::Value _type) {
     };
 
     throw ExceptionAddressTypeNotImplemented();
+}
+
+
+inline void add_contact_data_pair(std::map<std::string, std::string>& _target, std::string _data, const std::string& _value)
+{
+    if(
+        _target.insert(
+            std::make_pair("new." + _data, _value) //text?
+        ).second == false /* existing value */
+    ) {
+        throw ExceptionInvalidNotificationContent();
+    };
+}
+
+static std::map<std::string, std::string> gather_contact_contact_data_change(
+    const Fred::InfoContactData& _fresh
+) {
+    std::map<std::string, std::string> result;
+
+    add_contact_data_pair(result, "object.authinfo", _fresh.authinfopw);
+    add_contact_data_pair(result, "contact.name", _fresh.name);
+    add_contact_data_pair(result, "contact.org", _fresh.organization);
+    add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
+    add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
+
+    const std::map<Fred::ContactAddressType, Fred::ContactAddress> fresh_addresses = _fresh.addresses.get_value();
+    BOOST_FOREACH( Fred::ContactAddressType::Value type, Fred::ContactAddressType::get_all() ) {
+        const std::map<Fred::ContactAddressType, Fred::ContactAddress>::const_iterator fresh_it = fresh_addresses.find(type);
+
+        add_contact_data_pair(
+            result, "contact.address." + to_template_handle(type),
+            fresh_it != fresh_addresses.end() ? Convert::to_string( fresh_it->second ) : "",
+        );
+    }
+    add_contact_data_pair(result, "contact.telephone", _fresh.telephone);
+    add_contact_data_pair(result, "contact.fax", _fresh.fax);
+    add_contact_data_pair(result, "contact.email", _fresh.email);
+    add_contact_data_pair(result, "contact.notify_email", _fresh.notifyemail);
+
+    const Nullable< PersonalIdUnion > nullable_personal_id = _fresh.ssntype.isnull() || _fresh.ssn.isnull()
+        ? Nullable< PersonalIdUnion >()
+        : Nullable< PersonalIdUnion >(
+                PersonalIdUnion::get_any_type(_fresh.ssntype.get_value(), _fresh.ssn.get_value()));
+    add_contact_data_pair(result, "contact.ident_type", translate_ssntypes(nullable_personal_id));
+    add_contact_data_pair(result, "contact.ident", nullable_personal_id.get_value_or_default().get());
+
+//FROM HERE ON
+    if(diff.vat.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.vat",
+            diff.vat.get_value().first.get_value_or(""),
+            diff.vat.get_value().second.get_value_or("")
+        );
+    }
+
+    if(diff.disclosename.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.name",
+            to_string( diff.disclosename.get_value().first ),
+            to_string( diff.disclosename.get_value().second )
+        );
+    }
+
+    if(diff.discloseorganization.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.org",
+            to_string( diff.discloseorganization.get_value().first ),
+            to_string( diff.discloseorganization.get_value().second )
+        );
+    }
+
+    if(diff.discloseemail.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.email",
+            to_string( diff.discloseemail.get_value().first ),
+            to_string( diff.discloseemail.get_value().second )
+        );
+    }
+
+    if(diff.discloseaddress.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.address",
+            to_string( diff.discloseaddress.get_value().first ),
+            to_string( diff.discloseaddress.get_value().second )
+        );
+    }
+
+    if(diff.disclosenotifyemail.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.notify_email",
+            to_string( diff.disclosenotifyemail.get_value().first ),
+            to_string( diff.disclosenotifyemail.get_value().second )
+        );
+    }
+
+    if(diff.discloseident.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.ident",
+            to_string( diff.discloseident.get_value().first ),
+            to_string( diff.discloseident.get_value().second )
+        );
+    }
+
+    if(diff.disclosevat.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.vat",
+            to_string( diff.disclosevat.get_value().first ),
+            to_string( diff.disclosevat.get_value().second )
+        );
+    }
+
+    if(diff.disclosetelephone.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.telephone",
+            to_string( diff.disclosetelephone.get_value().first ),
+            to_string( diff.disclosetelephone.get_value().second )
+        );
+    }
+
+    if(diff.disclosefax.isset()) {
+        add_old_new_changes_pair_if_different(
+            result, "contact.disclose.fax",
+            to_string( diff.disclosefax.get_value().first ),
+            to_string( diff.disclosefax.get_value().second )
+        );
+    }
+
+    result["changes"] = result.empty() ? "0" : "1";
+
+
 }
 
 static std::map<std::string, std::string> gather_contact_update_data_change(
@@ -56,48 +241,11 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
         );
     }
 
-    struct convert {
-        private:
-            static void aggregate_nonempty(std::vector<std::string>& _target, const std::string& _raw_input) {
-                if( !_raw_input.empty() ) {
-                    _target.push_back(_raw_input);
-                }
-            }
-        public:
-            static std::string to_string(const Fred::Contact::PlaceAddress& _address) {
-                std::vector<std::string> non_empty_parts;
-
-                aggregate_nonempty(non_empty_parts, _address.street1);
-                aggregate_nonempty(non_empty_parts, _address.street2.get_value_or(""));
-                aggregate_nonempty(non_empty_parts, _address.street3.get_value_or(""));
-                aggregate_nonempty(non_empty_parts, _address.stateorprovince.get_value_or(""));
-                aggregate_nonempty(non_empty_parts, _address.postalcode);
-                aggregate_nonempty(non_empty_parts, _address.city);
-                aggregate_nonempty(non_empty_parts, _address.country);
-
-                return boost::join(non_empty_parts, ", ");
-            }
-
-            static std::string to_string(const Fred::ContactAddress& _address) {
-                std::vector<std::string> non_empty_parts;
-
-                aggregate_nonempty(non_empty_parts, _address.company_name.get_value_or(""));
-                aggregate_nonempty(
-                    non_empty_parts,
-                    to_string(
-                        static_cast<const Fred::Contact::PlaceAddress&>(_address)
-                    )
-                );
-
-                return boost::join(non_empty_parts, ", ");
-            }
-    };
-
     if(diff.place.isset()) {
         add_old_new_changes_pair_if_different(
             result, "contact.address.permanent",
-            convert::to_string( diff.place.get_value().first.get_value_or( Fred::Contact::PlaceAddress() ) ),
-            convert::to_string( diff.place.get_value().second.get_value_or( Fred::Contact::PlaceAddress() ) )
+            Convert::to_string( diff.place.get_value().first.get_value_or( Fred::Contact::PlaceAddress() ) ),
+            Convert::to_string( diff.place.get_value().second.get_value_or( Fred::Contact::PlaceAddress() ) )
         );
     }
 
@@ -111,8 +259,8 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
 
             add_old_new_changes_pair_if_different(
                 result, "contact.address." + to_template_handle(type),
-                old_it != old_addresses.end() ? convert::to_string( old_it->second ) : "",
-                new_it != new_addresses.end() ? convert::to_string( new_it->second ) : ""
+                old_it != old_addresses.end() ? Convert::to_string( old_it->second ) : "",
+                new_it != new_addresses.end() ? Convert::to_string( new_it->second ) : ""
             );
         }
     }
@@ -149,35 +297,13 @@ static std::map<std::string, std::string> gather_contact_update_data_change(
         );
     }
 
-    /* Yes we are using database "enum" values as e-mail template parameters. It's flexible. And it works! A vubec! */
-    struct translate_ssntypes
-    {
-        static std::string exec(const Nullable< Fred::PersonalIdUnion > &_nullable_personal_id)
-        {
-            if (_nullable_personal_id.isnull() ||
-                _nullable_personal_id.get_value().get_type().empty()) { return ""; }
-
-            const std::string type = _nullable_personal_id.get_value().get_type();
-
-            if (type == "PASS") { return "PASSPORT"; }
-
-            if (type == "RC"   ||
-                type == "OP"   ||
-                type == "ICO"  ||
-                type == "MPSV" ||
-                type == "BIRTHDAY") { return type; }
-
-            throw ExceptionUnknownSSNType();
-        }
-    };
-
     if (diff.personal_id.isset()) {
         const Nullable< Fred::PersonalIdUnion > nullable_personal_id_a = diff.personal_id.get_value().first;
         const Nullable< Fred::PersonalIdUnion > nullable_personal_id_b = diff.personal_id.get_value().second;
         add_old_new_changes_pair_if_different(
             result, "contact.ident_type",
-            translate_ssntypes::exec(nullable_personal_id_a),
-            translate_ssntypes::exec(nullable_personal_id_b));
+            translate_ssntypes(nullable_personal_id_a),
+            translate_ssntypes(nullable_personal_id_b));
         add_old_new_changes_pair_if_different(
             result, "contact.ident",
             nullable_personal_id_a.get_value_or_default().get(),
