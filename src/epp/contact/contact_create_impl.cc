@@ -33,7 +33,7 @@ ContactCreateResult contact_create_impl(
 
         AggregatedParamErrors exception;
 
-        if( Fred::Contact::is_handle_valid(_data.handle) == Fred::ContactHandleState::SyntaxValidity::invalid ) {
+        if( Fred::Contact::is_handle_valid(_data.handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
             exception.add( Error( Param::contact_handle, 0, Reason::bad_format_contact_handle ) );
         }
 

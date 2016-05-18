@@ -30,7 +30,7 @@ ContactInfoOutputData contact_info_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Contact::is_handle_valid(_handle) == Fred::ContactHandleState::SyntaxValidity::invalid ) {
+    if( Fred::Contact::is_handle_valid(_handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
         throw InvalidHandle();
     }
 
