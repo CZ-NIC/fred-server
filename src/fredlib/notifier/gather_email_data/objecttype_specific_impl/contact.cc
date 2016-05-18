@@ -100,7 +100,6 @@ static std::map<std::string, std::string> gather_contact_create_data_change(
     add_contact_data_pair(result, "contact.name",    _fresh.name);
     add_contact_data_pair(result, "contact.org",     _fresh.organization);
     add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
-    add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
 
     const std::map<Fred::ContactAddressType, Fred::ContactAddress> fresh_addresses = _fresh.addresses.get_value();
     BOOST_FOREACH( Fred::ContactAddressType::Value type, Fred::ContactAddressType::get_all() ) {
