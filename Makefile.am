@@ -1488,7 +1488,9 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_transfer_impl.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
 		src/epp/contact/post_contact_update_hooks.cc \
-		src/epp/contact/post_contact_update_hooks.h
+		src/epp/contact/post_contact_update_hooks.h \
+		util/corba_conversion.h \
+		util/corba_conversion.cc
 #
 # src/corba/epp/libepp_impl.a
 

@@ -9,6 +9,7 @@
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
 
+#include "util/corba_conversion.h"
 #include "util/db/nullable.h"
 #include "util/map_at.h"
 #include "util/optional_value.h"
@@ -48,9 +49,9 @@ namespace Corba {
     Epp::RequestParams unwrap_epp_request_params(const ccReg::EppParams& _epp_request_params) {
 
         return Epp::RequestParams(
-            _epp_request_params.loginID,
+            CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.loginID),
             Corba::unwrap_string(_epp_request_params.clTRID),
-            _epp_request_params.requestID
+            CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.requestID)
         );
     }
 
@@ -127,7 +128,7 @@ namespace Corba {
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle) {
         ccReg::Response result;
 
-        result.code = static_cast<short>(_input.response);
+        CorbaConversion::int_to_int( static_cast<short>(_input.response), result.code );
         result.svTRID = Corba::wrap_string_to_corba_string(_server_transaction_handle);
         result.msg = Corba::wrap_string_to_corba_string(_input.localized_msg);
 
@@ -137,7 +138,7 @@ namespace Corba {
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle) {
         ccReg::EPP::EppError result;
 
-        result.errCode = static_cast<short>(_input.response);
+        CorbaConversion::int_to_int( static_cast<short>(_input.response), result.errCode );
         result.svTRID = Corba::wrap_string_to_corba_string(_server_transaction_handle);
         result.errMsg = Corba::wrap_string_to_corba_string(_input.localized_msg);
 
@@ -150,7 +151,7 @@ namespace Corba {
             ++it, ++i
         ) {
             result.errorList[i].code = Corba::wrap_param_error(it->param);
-            result.errorList[i].position = it->position;
+            CorbaConversion::int_to_int(it->position, result.errorList[i].position);
             result.errorList[i].reason = Corba::wrap_string_to_corba_string(it->localized_reason_description);
         }
 

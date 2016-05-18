@@ -68,6 +68,26 @@ void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
 }
 
 /**
+ * Basic integral types conversion with overflow detection
+ */
+template < class TARGET_INTEGRAL_TYPE, class SOURCE_INTEGRAL_TYPE > TARGET_INTEGRAL_TYPE int_to_int(SOURCE_INTEGRAL_TYPE src)
+{
+    typedef boost::integer_traits< SOURCE_INTEGRAL_TYPE > source_integral_type_traits;
+    typedef boost::integer_traits< TARGET_INTEGRAL_TYPE > target_integral_type_traits;
+
+    BOOST_MPL_ASSERT_MSG(source_integral_type_traits::is_integral, source_type_have_to_be_integral, (SOURCE_INTEGRAL_TYPE));
+    BOOST_MPL_ASSERT_MSG(target_integral_type_traits::is_integral, target_type_have_to_be_integral, (TARGET_INTEGRAL_TYPE));
+
+    try {
+        const TARGET_INTEGRAL_TYPE dst = boost::numeric_cast< TARGET_INTEGRAL_TYPE >(src);
+        return dst;
+    }
+    catch (const boost::numeric::bad_numeric_cast &e) {
+        throw IntegralConversionOutOfRange(e.what());
+    }
+}
+
+/**
  * Converts C++ string into CORBA specific string class.
  * @note In most cases is c_str() enough.
  */
