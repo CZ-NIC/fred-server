@@ -158,12 +158,6 @@ void set_validity_result(bool valid, MojeIDImplData::ValidationResult::Value &re
                    : MojeIDImplData::ValidationResult::INVALID;
 }
 
-void set_availability_result(bool available, MojeIDImplData::ValidationResult::Value &result)
-{
-    result = available ? MojeIDImplData::ValidationResult::OK
-                       : MojeIDImplData::ValidationResult::NOT_AVAILABLE;
-}
-
 template < class EXCEPTION_CLASS >
 void set_ssn_result(const Fred::MojeID::check_contact_ssn &result, EXCEPTION_CLASS &e)
 {
