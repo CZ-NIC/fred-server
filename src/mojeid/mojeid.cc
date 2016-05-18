@@ -906,6 +906,7 @@ void MojeIDImpl::update_contact_prepare(
         const Fred::InfoContactDiff data_changes = Fred::diff_contact_data(current_data, new_data);
         if (!(data_changes.name.isset()         ||
               data_changes.organization.isset() ||
+              data_changes.vat.isset()          ||
               data_changes.personal_id.isset()  ||
               data_changes.place.isset()        ||
               data_changes.addresses.isset()    ||
