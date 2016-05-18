@@ -91,14 +91,14 @@ inline void add_contact_data_pair(std::map<std::string, std::string>& _target, s
     };
 }
 
-static std::map<std::string, std::string> gather_contact_contact_data_change(
+static std::map<std::string, std::string> gather_contact_create_data_change(
     const Fred::InfoContactData& _fresh
 ) {
     std::map<std::string, std::string> result;
 
     add_contact_data_pair(result, "object.authinfo", _fresh.authinfopw);
-    add_contact_data_pair(result, "contact.name", _fresh.name);
-    add_contact_data_pair(result, "contact.org", _fresh.organization);
+    add_contact_data_pair(result, "contact.name",    _fresh.name);
+    add_contact_data_pair(result, "contact.org",     _fresh.organization);
     add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
     add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
 
@@ -111,102 +111,33 @@ static std::map<std::string, std::string> gather_contact_contact_data_change(
             fresh_it != fresh_addresses.end() ? Convert::to_string( fresh_it->second ) : "",
         );
     }
-    add_contact_data_pair(result, "contact.telephone", _fresh.telephone);
-    add_contact_data_pair(result, "contact.fax", _fresh.fax);
-    add_contact_data_pair(result, "contact.email", _fresh.email);
+    add_contact_data_pair(result, "contact.telephone",    _fresh.telephone);
+    add_contact_data_pair(result, "contact.fax",          _fresh.fax);
+    add_contact_data_pair(result, "contact.email",        _fresh.email);
     add_contact_data_pair(result, "contact.notify_email", _fresh.notifyemail);
 
+    //DOUBLECHECK
     const Nullable< PersonalIdUnion > nullable_personal_id = _fresh.ssntype.isnull() || _fresh.ssn.isnull()
         ? Nullable< PersonalIdUnion >()
         : Nullable< PersonalIdUnion >(
-                PersonalIdUnion::get_any_type(_fresh.ssntype.get_value(), _fresh.ssn.get_value()));
+                PersonalIdUnion::get_any_type(_fresh.ssntype.get_value(),
+                                              _fresh.ssn.get_value())); //PersonalIdUnion(_type, _value)
     add_contact_data_pair(result, "contact.ident_type", translate_ssntypes(nullable_personal_id));
     add_contact_data_pair(result, "contact.ident", nullable_personal_id.get_value_or_default().get());
 
-//FROM HERE ON
-    if(diff.vat.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.vat",
-            diff.vat.get_value().first.get_value_or(""),
-            diff.vat.get_value().second.get_value_or("")
-        );
-    }
-
-    if(diff.disclosename.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.name",
-            to_string( diff.disclosename.get_value().first ),
-            to_string( diff.disclosename.get_value().second )
-        );
-    }
-
-    if(diff.discloseorganization.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.org",
-            to_string( diff.discloseorganization.get_value().first ),
-            to_string( diff.discloseorganization.get_value().second )
-        );
-    }
-
-    if(diff.discloseemail.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.email",
-            to_string( diff.discloseemail.get_value().first ),
-            to_string( diff.discloseemail.get_value().second )
-        );
-    }
-
-    if(diff.discloseaddress.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.address",
-            to_string( diff.discloseaddress.get_value().first ),
-            to_string( diff.discloseaddress.get_value().second )
-        );
-    }
-
-    if(diff.disclosenotifyemail.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.notify_email",
-            to_string( diff.disclosenotifyemail.get_value().first ),
-            to_string( diff.disclosenotifyemail.get_value().second )
-        );
-    }
-
-    if(diff.discloseident.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.ident",
-            to_string( diff.discloseident.get_value().first ),
-            to_string( diff.discloseident.get_value().second )
-        );
-    }
-
-    if(diff.disclosevat.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.vat",
-            to_string( diff.disclosevat.get_value().first ),
-            to_string( diff.disclosevat.get_value().second )
-        );
-    }
-
-    if(diff.disclosetelephone.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.telephone",
-            to_string( diff.disclosetelephone.get_value().first ),
-            to_string( diff.disclosetelephone.get_value().second )
-        );
-    }
-
-    if(diff.disclosefax.isset()) {
-        add_old_new_changes_pair_if_different(
-            result, "contact.disclose.fax",
-            to_string( diff.disclosefax.get_value().first ),
-            to_string( diff.disclosefax.get_value().second )
-        );
-    }
+    add_contact_data_pair(result, "contact.vat", _fresh.vat);
+    add_contact_data_pair(result, "contact.disclose.name",         to_string(_fresh.disclosename));
+    add_contact_data_pair(result, "contact.disclose.org",          to_string(_fresh.discloseorganization);
+    add_contact_data_pair(result, "contact.disclose.email",        to_string(_fresh.discloseemail);
+    add_contact_data_pair(result, "contact.disclose.address",      to_string(_fresh.discloseaddress);
+    add_contact_data_pair(result, "contact.disclose.notify_email", to_string(_fresh.disclosenotifyemail);
+    add_contact_data_pair(result, "contact.disclose.ident",        to_string(_fresh.discloseident);
+    add_contact_data_pair(result, "contact.disclose.vat",          to_string(_fresh.disclosevat);
+    add_contact_data_pair(result, "contact.disclose.telephone",    to_string(_fresh.disclosetelephone);
+    add_contact_data_pair(result, "contact.disclose.fax",          to_string(_fresh.disclosefax);
 
     result["changes"] = result.empty() ? "0" : "1";
-
-
+    return result;
 }
 
 static std::map<std::string, std::string> gather_contact_update_data_change(
