@@ -1515,7 +1515,8 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                    "successfully processed",
                    _log_request_id);
 
-            if (pub_req_type != PubReqType::identified_contact_transfer) {
+            if (Fred::Object::StatesInfo(Fred::GetObjectStates(contact_id).exec(ctx))
+                    .absents(Fred::Object::State::identified_contact)) {
                 Fred::CreatePublicRequestAuth op_create_pub_req;
                 op_create_pub_req.set_registrar_id(mojeid_registrar_id_);
                 Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
