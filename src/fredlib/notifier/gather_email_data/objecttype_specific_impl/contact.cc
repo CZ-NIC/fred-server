@@ -46,7 +46,7 @@ namespace Convert {
 
         return boost::join(non_empty_parts, ", ");
     }
-};
+}; //namespace Convert
 
 /* Yes we are using database "enum" values as e-mail template parameters. It's flexible. And it works! A vubec! */
 static std::string translate_ssntypes(const Nullable< Fred::PersonalIdUnion > &_nullable_personal_id)
@@ -331,23 +331,27 @@ std::map<std::string, std::string> gather_contact_data_change(
     const notified_event& _event,
     unsigned long long _history_id_post_change
 ) {
+    if( _event == created ) {
 
-    if( _event != updated ) {
+        return gather_contact_create_data_change(
+                Fred::InfoContactHistoryByHistoryid(_history_id_post_change).exec(_ctx).info_contact_data
+                );
 
-        return std::map<std::string, std::string>();
+    } else if( _event == updated ) {
+
+        return gather_contact_update_data_change(
+                Fred::InfoContactHistoryByHistoryid(
+                    Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
+                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
+                    ).exec(_ctx).info_contact_data,
+                Fred::InfoContactHistoryByHistoryid(_history_id_post_change).exec(_ctx).info_contact_data
+                );
 
     } else {
 
-        return gather_contact_update_data_change(
-            Fred::InfoContactHistoryByHistoryid(
-                Fred::get_previous_object_historyid(_ctx, _history_id_post_change)
-                    .get_value_or_throw<ExceptionInvalidUpdateEvent>()
-            ).exec(_ctx).info_contact_data,
-            Fred::InfoContactHistoryByHistoryid(_history_id_post_change).exec(_ctx).info_contact_data
-        );
+        return std::map<std::string, std::string>();
 
     }
-
 }
 
 std::set<std::string> get_emails_to_notify_contact_event(
@@ -384,4 +388,4 @@ std::set<std::string> get_emails_to_notify_contact_event(
     return emails_to_notify;
 }
 
-}
+}//namespace Notification
