@@ -21,12 +21,12 @@ LocalizedCreateContactResponse contact_create(
     const std::string& _client_transaction_handle,
     const std::string& _client_transaction_handles_prefix_not_to_nofify
 ) {
-    Logging::Context logging_ctx("rifd");
-    Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
-    Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactCreate) ) );
 
     try {
+        Logging::Context logging_ctx("rifd");
+        Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
+        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactCreate) ) );
 
         Fred::OperationContextCreator ctx;
 
@@ -87,6 +87,18 @@ LocalizedCreateContactResponse contact_create(
             exception_localization_ctx,
             Response::parametr_error,
             e.get(),
+            _lang
+        );
+
+    } catch(const LocalizedFailResponse&) {
+        throw;
+
+    } catch(...) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::failed,
+            std::set<Error>(),
             _lang
         );
     }
