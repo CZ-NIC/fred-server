@@ -294,10 +294,8 @@ namespace Corba {
             it != _input.localized_external_states.end();
             ++it, ++i
         ) {
-            ccReg::Status_str tmp_status;
-            tmp_status.value = wrap_string_to_corba_string( it->first );
-            tmp_status.text = wrap_string_to_corba_string( it->second );
-            result.stat[i] = tmp_status;
+            result.stat[i].value = wrap_string_to_corba_string( it->first );
+            result.stat[i].text = wrap_string_to_corba_string( it->second );
         }
 
         result.CrDate = wrap_string_to_corba_string( formatTime( _input.crdate ) );
