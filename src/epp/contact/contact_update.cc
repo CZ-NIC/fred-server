@@ -19,7 +19,7 @@ namespace Epp {
 LocalizedSuccessResponse contact_update(
     const ContactUpdateInputData& _data,
     const unsigned long long _registrar_id,
-    const unsigned long long _logd_request_id,
+    const Optional<unsigned long long>& _logd_request_id,
     const bool _epp_update_contact_enqueue_check,
     const SessionLang::Enum _lang,
     const std::string& _server_transaction_handle,

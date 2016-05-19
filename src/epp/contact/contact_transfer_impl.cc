@@ -25,7 +25,7 @@ unsigned long long contact_transfer_impl(
     const std::string& _contact_handle,
     const std::string& _authinfopw,
     const unsigned long long _registrar_id,
-    const unsigned long long _logd_request_id
+    const Optional<unsigned long long>& _logd_request_id
 ) {
 
     if( _registrar_id == 0 ) {
@@ -68,7 +68,7 @@ unsigned long long contact_transfer_impl(
                 contact_data.id,
                 session_registrar_handle,
                 _authinfopw,
-                _logd_request_id
+                _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>()
             ).exec(_ctx);
 
     } catch (const Fred::UnknownContactId&) {

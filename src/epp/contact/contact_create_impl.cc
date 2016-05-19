@@ -17,7 +17,7 @@ ContactCreateResult contact_create_impl(
     Fred::OperationContext& _ctx,
     const ContactCreateInputData& _data,
     const unsigned long long _registrar_id,
-    const unsigned long long _logd_request_id
+    const Optional<unsigned long long>& _logd_request_id
 ) {
 
     if( _registrar_id == 0 ) {

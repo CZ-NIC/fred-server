@@ -24,6 +24,7 @@
 #define EPP_POST_CONTACT_UPDATE_HOOKS_H_30869764400878103641
 
 #include "src/fredlib/opcontext.h"
+#include "util/optional_value.h"
 
 #include <string>
 
@@ -32,7 +33,7 @@ namespace Epp {
     void post_contact_update_hooks(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
-        unsigned long long _logd_requst_id,
+        const Optional<unsigned long long>& _logd_requst_id,
         bool _epp_update_contact_enqueue_check
     );
 }

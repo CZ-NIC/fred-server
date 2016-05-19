@@ -155,7 +155,7 @@ unsigned long long contact_update_impl(
     Fred::OperationContext& _ctx,
     const ContactUpdateInputData& _data,
     const unsigned long long _registrar_id,
-    const unsigned long long _logd_request_id
+    const Optional<unsigned long long>& _logd_request_id
 ) {
 
     if( _registrar_id == 0 ) {

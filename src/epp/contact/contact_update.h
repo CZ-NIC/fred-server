@@ -134,7 +134,7 @@ struct ContactUpdateInputData {
 LocalizedSuccessResponse contact_update(
     const ContactUpdateInputData& _data,
     unsigned long long _registrar_id,
-    unsigned long long _logd_request_id,
+    const Optional<unsigned long long>& _logd_request_id,
     bool _epp_update_contact_enqueue_check,
     SessionLang::Enum _lang,
     const std::string& _server_transaction_handle,

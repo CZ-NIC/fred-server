@@ -25,17 +25,19 @@
 
 #include <string>
 
+#include "util/optional_value.h"
+
 namespace Epp {
 
 struct RequestParams {
     unsigned long long session_id;
     std::string client_transaction_id;
-    unsigned long long log_request_id;
+    Optional<unsigned long long> log_request_id;
 
     RequestParams(
         unsigned long long _session_id,
         const std::string& _client_transaction_id,
-        unsigned long long _log_request_id
+        const Optional<unsigned long long>& _log_request_id
     ) :
         session_id(_session_id),
         client_transaction_id(_client_transaction_id),

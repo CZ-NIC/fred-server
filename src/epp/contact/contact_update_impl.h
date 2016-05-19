@@ -44,7 +44,7 @@ unsigned long long contact_update_impl(
     Fred::OperationContext& _ctx,
     const ContactUpdateInputData& _data,
     unsigned long long _registrar_id,
-    unsigned long long _logd_request_id
+    const Optional<unsigned long long>& _logd_request_id
 );
 
 }

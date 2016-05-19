@@ -51,7 +51,9 @@ namespace Corba {
         return Epp::RequestParams(
             CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.loginID),
             Corba::unwrap_string(_epp_request_params.clTRID),
-            CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.requestID)
+            _epp_request_params.requestID == 0
+                ?   Optional<unsigned long long>()
+                :   Optional<unsigned long long>( CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.requestID) )
         );
     }
 

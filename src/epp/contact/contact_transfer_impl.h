@@ -47,7 +47,7 @@ unsigned long long contact_transfer_impl(
     const std::string& _contact_handle,
     const std::string& _authinfopw,
     unsigned long long _registrar_id,
-    unsigned long long _logd_request_id
+    const Optional<unsigned long long>& _logd_request_id
 );
 
 }

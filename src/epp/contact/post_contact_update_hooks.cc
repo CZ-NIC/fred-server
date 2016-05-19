@@ -67,7 +67,7 @@ static void conditionally_cancel_contact_verification_states(Fred::OperationCont
 void post_contact_update_hooks(
     Fred::OperationContext& _ctx,
     const std::string& _contact_handle,
-    const unsigned long long _logd_requst_id,
+    const Optional<unsigned long long>& _logd_requst_id,
     const bool _epp_update_contact_enqueue_check
 ) {
     _ctx.get_conn().exec("SAVEPOINT before_post_contact_update_hooks");
