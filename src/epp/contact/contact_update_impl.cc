@@ -65,7 +65,7 @@ static void conditionall_set_ContactUpdate_member(
 
 static bool should_address_be_disclosed(
     Fred::OperationContext& _ctx,
-    unsigned long long _contact_id,
+    const unsigned long long _contact_id,
     const Fred::InfoContactData& _contact_data_before_update,
     const ContactUpdateInputData& _data
 ) {
