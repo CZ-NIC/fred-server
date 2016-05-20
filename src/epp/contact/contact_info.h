@@ -26,7 +26,6 @@
 #include "src/epp/contact/ident_type.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
-#include "src/epp/object_state.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
