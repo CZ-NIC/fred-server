@@ -2228,6 +2228,7 @@ tests_interfaces_test_admin_contact_automerge_LDADD = \
 #
 tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/main.cc \
+		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
 		tests/interfaces/epp/contact/test_contact_create_impl.cc \
 		tests/interfaces/epp/contact/test_contact_delete_impl.cc \
 		tests/interfaces/epp/contact/test_contact_info_impl.cc \
