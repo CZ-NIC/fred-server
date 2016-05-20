@@ -845,22 +845,20 @@ template < typename UPDATE_CONTACT >
 void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
                            Fred::UpdateContact< UPDATE_CONTACT > &_update_op)
 {
-    if (_data_changes.name.isset() && !_data_changes.name.get_value().second.isnull()) {
-        _update_op.set_name(_data_changes.name.get_value().second.get_value());
+    if (_data_changes.name.isset()) {
+        _update_op.set_name(_data_changes.name.get_value().second);
     }
-    if (_data_changes.organization.isset() && !_data_changes.organization.get_value().second.isnull()) {
-        _update_op.set_organization(_data_changes.organization.get_value().second.get_value());
+    if (_data_changes.organization.isset()) {
+        _update_op.set_organization(_data_changes.organization.get_value().second);
+    }
+    if (_data_changes.vat.isset()) {
+        _update_op.set_vat(_data_changes.vat.get_value().second);
     }
     if (_data_changes.personal_id.isset()) {
-        if (!_data_changes.personal_id.get_value().second.isnull()) {
-            _update_op.set_personal_id(_data_changes.personal_id.get_value().second.get_value());
-        }
-        else {
-            _update_op.set_personal_id(Nullable< Fred::PersonalIdUnion >());
-        }
+        _update_op.set_personal_id(_data_changes.personal_id.get_value().second);
     }
-    if (_data_changes.place.isset() && !_data_changes.place.get_value().second.isnull()) {
-        _update_op.set_place(_data_changes.place.get_value().second.get_value());
+    if (_data_changes.place.isset()) {
+        _update_op.set_place(_data_changes.place.get_value().second);
     }
     if (_data_changes.addresses.isset()) {
         update_address< Fred::ContactAddressType::MAILING >   (_data_changes, _update_op);
@@ -869,17 +867,17 @@ void set_update_contact_op(const Fred::InfoContactDiff &_data_changes,
         update_address< Fred::ContactAddressType::SHIPPING_2 >(_data_changes, _update_op);
         update_address< Fred::ContactAddressType::SHIPPING_3 >(_data_changes, _update_op);
     }
-    if (_data_changes.email.isset() && !_data_changes.email.get_value().second.isnull()) {
-        _update_op.set_email(_data_changes.email.get_value().second.get_value());
+    if (_data_changes.email.isset()) {
+        _update_op.set_email(_data_changes.email.get_value().second);
     }
-    if (_data_changes.notifyemail.isset() && !_data_changes.notifyemail.get_value().second.isnull()) {
-        _update_op.set_notifyemail(_data_changes.notifyemail.get_value().second.get_value());
+    if (_data_changes.notifyemail.isset()) {
+        _update_op.set_notifyemail(_data_changes.notifyemail.get_value().second);
     }
-    if (_data_changes.telephone.isset() && !_data_changes.telephone.get_value().second.isnull()) {
-        _update_op.set_telephone(_data_changes.telephone.get_value().second.get_value());
+    if (_data_changes.telephone.isset()) {
+        _update_op.set_telephone(_data_changes.telephone.get_value().second);
     }
-    if (_data_changes.fax.isset() && !_data_changes.fax.get_value().second.isnull()) {
-        _update_op.set_fax(_data_changes.fax.get_value().second.get_value());
+    if (_data_changes.fax.isset()) {
+        _update_op.set_fax(_data_changes.fax.get_value().second);
     }
 }
 
