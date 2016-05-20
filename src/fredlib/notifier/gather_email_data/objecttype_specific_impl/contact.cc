@@ -6,6 +6,7 @@
 #include "src/fredlib/notifier/exception.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/info_contact_diff.h"
+#include "src/fredlib/contact/info_contact_data.h"
 
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -79,12 +80,11 @@ std::string to_template_handle(Fred::ContactAddressType::Value _type) {
     throw ExceptionAddressTypeNotImplemented();
 }
 
-
 inline void add_contact_data_pair(std::map<std::string, std::string>& _target, std::string _data, const std::string& _value)
 {
     if(
         _target.insert(
-            std::make_pair("new." + _data, _value) //text?
+            std::make_pair("fresh." + _data, _value) //<-> mail template
         ).second == false /* existing value */
     ) {
         throw ExceptionInvalidNotificationContent();
@@ -97,43 +97,43 @@ static std::map<std::string, std::string> gather_contact_create_data_change(
     std::map<std::string, std::string> result;
 
     add_contact_data_pair(result, "object.authinfo", _fresh.authinfopw);
-    add_contact_data_pair(result, "contact.name",    _fresh.name);
-    add_contact_data_pair(result, "contact.org",     _fresh.organization);
+    add_contact_data_pair(result, "contact.name",    _fresh.name.get_value_or_default()); //get_value()?
+    add_contact_data_pair(result, "contact.org",     _fresh.organization.get_value_or_default());
     add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
 
-    const std::map<Fred::ContactAddressType, Fred::ContactAddress> fresh_addresses = _fresh.addresses.get_value();
+    const std::map<Fred::ContactAddressType, Fred::ContactAddress> fresh_addresses = _fresh.addresses;
     BOOST_FOREACH( Fred::ContactAddressType::Value type, Fred::ContactAddressType::get_all() ) {
         const std::map<Fred::ContactAddressType, Fred::ContactAddress>::const_iterator fresh_it = fresh_addresses.find(type);
 
         add_contact_data_pair(
             result, "contact.address." + to_template_handle(type),
-            fresh_it != fresh_addresses.end() ? Convert::to_string( fresh_it->second ) : "",
+            fresh_it != fresh_addresses.end() ? Convert::to_string( fresh_it->second ) : ""
         );
     }
-    add_contact_data_pair(result, "contact.telephone",    _fresh.telephone);
-    add_contact_data_pair(result, "contact.fax",          _fresh.fax);
-    add_contact_data_pair(result, "contact.email",        _fresh.email);
-    add_contact_data_pair(result, "contact.notify_email", _fresh.notifyemail);
+    add_contact_data_pair(result, "contact.telephone",    _fresh.telephone.get_value_or_default());
+    add_contact_data_pair(result, "contact.fax",          _fresh.fax.get_value_or_default());
+    add_contact_data_pair(result, "contact.email",        _fresh.email.get_value_or_default());
+    add_contact_data_pair(result, "contact.notify_email", _fresh.notifyemail.get_value_or_default());
 
     //DOUBLECHECK
-    const Nullable< PersonalIdUnion > nullable_personal_id = _fresh.ssntype.isnull() || _fresh.ssn.isnull()
-        ? Nullable< PersonalIdUnion >()
-        : Nullable< PersonalIdUnion >(
-                PersonalIdUnion::get_any_type(_fresh.ssntype.get_value(),
-                                              _fresh.ssn.get_value())); //PersonalIdUnion(_type, _value)
+    const Nullable< Fred::PersonalIdUnion > nullable_personal_id = _fresh.ssntype.isnull() || _fresh.ssn.isnull()
+        ? Nullable< Fred::PersonalIdUnion >()
+        : Nullable< Fred::PersonalIdUnion >(
+                Fred::PersonalIdUnion::get_any_type(_fresh.ssntype.get_value(),
+                                                    _fresh.ssn.get_value())); //Fred::PersonalIdUnion(_type, _value)
     add_contact_data_pair(result, "contact.ident_type", translate_ssntypes(nullable_personal_id));
     add_contact_data_pair(result, "contact.ident", nullable_personal_id.get_value_or_default().get());
 
-    add_contact_data_pair(result, "contact.vat", _fresh.vat);
+    add_contact_data_pair(result, "contact.vat", _fresh.vat.get_value_or_default());
     add_contact_data_pair(result, "contact.disclose.name",         to_string(_fresh.disclosename));
-    add_contact_data_pair(result, "contact.disclose.org",          to_string(_fresh.discloseorganization);
-    add_contact_data_pair(result, "contact.disclose.email",        to_string(_fresh.discloseemail);
-    add_contact_data_pair(result, "contact.disclose.address",      to_string(_fresh.discloseaddress);
-    add_contact_data_pair(result, "contact.disclose.notify_email", to_string(_fresh.disclosenotifyemail);
-    add_contact_data_pair(result, "contact.disclose.ident",        to_string(_fresh.discloseident);
-    add_contact_data_pair(result, "contact.disclose.vat",          to_string(_fresh.disclosevat);
-    add_contact_data_pair(result, "contact.disclose.telephone",    to_string(_fresh.disclosetelephone);
-    add_contact_data_pair(result, "contact.disclose.fax",          to_string(_fresh.disclosefax);
+    add_contact_data_pair(result, "contact.disclose.org",          to_string(_fresh.discloseorganization));
+    add_contact_data_pair(result, "contact.disclose.email",        to_string(_fresh.discloseemail));
+    add_contact_data_pair(result, "contact.disclose.address",      to_string(_fresh.discloseaddress));
+    add_contact_data_pair(result, "contact.disclose.notify_email", to_string(_fresh.disclosenotifyemail));
+    add_contact_data_pair(result, "contact.disclose.ident",        to_string(_fresh.discloseident));
+    add_contact_data_pair(result, "contact.disclose.vat",          to_string(_fresh.disclosevat));
+    add_contact_data_pair(result, "contact.disclose.telephone",    to_string(_fresh.disclosetelephone));
+    add_contact_data_pair(result, "contact.disclose.fax",          to_string(_fresh.disclosefax));
 
     result["changes"] = result.empty() ? "0" : "1";
     return result;
