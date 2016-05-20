@@ -281,6 +281,10 @@ unsigned long long contact_update_impl(
             );
         }
 
+        if( _logd_request_id.isset() ) {
+            update.set_logd_request_id( _logd_request_id.get_value() );
+        }
+
         try {
             const unsigned long long new_history_id = update.exec(_ctx);
 
