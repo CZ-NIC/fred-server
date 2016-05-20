@@ -51,7 +51,7 @@ void conditionally_enqueue_notification(
             /* not propagating exception further */
         }
     } catch (...) {
-        /* second line of defense - needed because I would like to log exceptions if possible and the could throw */
+        /* second line of defense - needed because I would like to log exceptions if possible and that could throw */
     }
 }
 
