@@ -1,7 +1,5 @@
 #include "whois.h"
 
-//#include "src/corba/admin/common.h"
-
 #include "src/fredlib/registrar/info_registrar_output.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/whois/zone_list.h"
@@ -237,7 +235,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             con.created = icd.creation_time;
             con.changed = icd.update_time;
             con.last_transfer = icd.transfer_time;
-//?            con.identification = icd.;
+//TODO            con.identification = icd.;
             con.address.city         = icd.place.get_value_or_default().city;
             con.address.country_code = icd.place.get_value_or_default().country;
             con.address.postal_code  = icd.place.get_value_or_default().postalcode;
@@ -663,7 +661,6 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             {
                 throw TooManyLabels();
             }
-//!!!!!!!!
             if(::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
                 return Domain(generate_obfuscate_domain_delete_candidate(handle));

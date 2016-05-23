@@ -54,7 +54,7 @@ struct test_registrar_fixture
 
     test_registrar_fixture()
     : xmark(RandomDataGenerator().xnumstring(6)),
-      test_registrar_handle(std::string("TEST-REGISTRAR")+xmark)//from 3 to 16
+      test_registrar_handle(std::string("TEST-REGISTRAR")+xmark)
     {
         Fred::OperationContextCreator ctx;
         Fred::CreateRegistrar(test_registrar_handle)
@@ -69,7 +69,7 @@ struct test_registrar_fixture
     }
 };
 
-struct test_registrant_fixture //is always used in conjunction with registrar and contact
+struct test_registrant_fixture
 {
     std::string test_registrant_handle;
 
@@ -462,10 +462,10 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 
         BOOST_CHECK(nss_s.content.at(i).changed.isnull());
         BOOST_CHECK(nss_s.content.at(i).last_transfer.isnull());
-        BOOST_CHECK(nss_s.content.at(i).created == found.creation_time);//as that or greater than __
+        BOOST_CHECK(nss_s.content.at(i).created == found.creation_time);
         BOOST_CHECK(nss_s.content.at(i).handle == found.handle);
         BOOST_CHECK(nss_s.content.at(i).nservers.at(0).fqdn == found.dns_hosts.at(0).get_fqdn());
-        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0)); //comparing two boost::address'es
+        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0));
         BOOST_CHECK(nss_s.content.at(i).registrar_handle == found.create_registrar_handle);
         BOOST_CHECK(nss_s.content.at(i).tech_contact_handles.at(0) == found.tech_contacts.at(0).handle);
     }
@@ -508,7 +508,7 @@ struct get_nssets_by_tech_c_fixture
 : test_registrar_fixture
 {
     std::string test_contact_handle;
-    std::string test_no_handle;//better name
+    std::string test_no_handle;//non-existent?
     std::string test_wrong_handle;
     unsigned long test_limit;
 
@@ -556,10 +556,10 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
         Fred::InfoNssetData found = it->info_nsset_data;
         BOOST_CHECK(nss_s.content.at(i).changed.isnull());
         BOOST_CHECK(nss_s.content.at(i).last_transfer.isnull());
-        BOOST_CHECK(nss_s.content.at(i).created == found.creation_time);//as that or greater than __
+        BOOST_CHECK(nss_s.content.at(i).created == found.creation_time);
         BOOST_CHECK(nss_s.content.at(i).handle == found.handle);
         BOOST_CHECK(nss_s.content.at(i).nservers.at(0).fqdn == found.dns_hosts.at(0).get_fqdn());
-        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0)); //comparing two boost::address'es
+        BOOST_CHECK(nss_s.content.at(i).nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0));
         BOOST_CHECK(nss_s.content.at(i).registrar_handle == found.create_registrar_handle);
         BOOST_CHECK(nss_s.content.at(i).tech_contact_handles.at(0) == found.tech_contacts.at(0).handle);
     }
@@ -613,7 +613,9 @@ struct get_nameserver_by_fqdn_fixture
     {
         Fred::OperationContextCreator ctx;
         Fred::CreateNsset("TEST-NSSET-HANDLE", test_registrar_handle)
-            .set_dns_hosts(Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))//making nameserver
+            .set_dns_hosts(
+                Util::vector_of<Fred::DnsHost>(Fred::DnsHost(test_nameserver_fqdn, Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address())))
+            )
             .set_tech_contacts(Util::vector_of<std::string>("TEST-TECH-CONTACT"))
             .exec(ctx);
         ctx.commit_transaction();
@@ -678,7 +680,7 @@ struct get_keyset_by_handle_fixture
     {
         Fred::OperationContextCreator ctx;
         Fred::CreateKeyset(test_keyset_handle, test_registrar_handle)
-            .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
+            .set_dns_keys(Util::vector_of<Fred::DnsKey>(Fred::DnsKey(42, 777, 13, "any-key")))
             .set_tech_contacts(Util::vector_of<std::string>(test_admin)(test_contact))
             .exec(ctx);
         ctx.commit_transaction();
@@ -692,14 +694,14 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
     Fred::InfoKeysetData ikd = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx, Registry::WhoisImpl::Server_impl::output_timezone).info_keyset_data;
     Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle(test_keyset_handle);
 
-    BOOST_CHECK(ks.changed.isnull());//new has to be unchanged
+    BOOST_CHECK(ks.changed.isnull());//new keyset has to be unchanged
     BOOST_CHECK(ks.created == ikd.creation_time);
     BOOST_CHECK(ks.dns_keys.at(0).alg == ikd.dns_keys.at(0).get_alg());
     BOOST_CHECK(ks.dns_keys.at(0).flags == ikd.dns_keys.at(0).get_flags());
     BOOST_CHECK(ks.dns_keys.at(0).protocol == ikd.dns_keys.at(0).get_protocol());
     BOOST_CHECK(ks.dns_keys.at(0).public_key == ikd.dns_keys.at(0).get_key());
     BOOST_CHECK(ks.handle == ikd.handle);
-    BOOST_CHECK(ks.last_transfer.isnull());//new has to have no transfer
+    BOOST_CHECK(ks.last_transfer.isnull());//new keyset has to have no transfer
     BOOST_CHECK(ks.registrar_handle == ikd.create_registrar_handle);
     BOOST_CHECK(ks.tech_contact_handles.at(0) == ikd.tech_contacts.at(0).handle);
 }
@@ -887,7 +889,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_by_handle_wrong_handle, test_domain_fixture)
 struct wrong_zone_fixture
 : test_registrar_fixture, test_registrant_fixture, test_contact_fixture
 {
-    std::string test_fqdn_bad_zone; //separate so a different fixture
+    std::string test_fqdn_bad_zone;
 
     wrong_zone_fixture()
     : test_registrar_fixture(),
@@ -930,7 +932,7 @@ struct many_labels_fixture
             BOOST_ERROR("test zone was not created properly");
         }
         std::ostringstream labeled_zone;
-        for(unsigned int i=0; i < 256; ++i) // !!!
+        for(unsigned int i=0; i < 256; ++i) // make constant for this magic
         {
             labeled_zone << "1.";
         }
@@ -1006,7 +1008,7 @@ struct invalid_unmanaged_fixture
     : wrong_zone_fixture()//do not create bad_zone domain for it
     {
         std::ostringstream prefix;
-        for(unsigned int i=0; i < 256; ++i)//exceed the size of valid label
+        for(unsigned int i=0; i < 256; ++i)// constant for magic
         {
             prefix << "1";//invalid part
         }
@@ -1042,7 +1044,7 @@ struct unmanaged_toomany_fixture
     : wrong_zone_fixture()
     {
         std::ostringstream prefix;
-        for(unsigned int i=0; i < 20; ++i) // !!!
+        for(unsigned int i=0; i < 20; ++i) // constant
         {
             prefix << "1.";//toomany part
         }
@@ -1086,7 +1088,7 @@ struct invalid_toomany_fixture
             BOOST_ERROR("test zone was not created properly");
         }
         std::ostringstream labeled_zone, invalid_offset;
-        for(unsigned int i=0; i < 256; ++i) // !!!
+        for(unsigned int i=0; i < 256; ++i) // constant
         {
             labeled_zone << "1.";// invalid + toomany part
         }
@@ -1777,7 +1779,7 @@ struct object_status_descriptions_fixture
     std::string no_lang;
     std::string other_lang;
     std::string object_name;
-    map_type statuses;
+    map_type statuses;//statuses descriptions
 
     object_status_descriptions_fixture()
     : test_lang("EN"),

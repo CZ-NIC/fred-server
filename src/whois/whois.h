@@ -105,10 +105,8 @@ struct Contact
     bool         disclose_identification; /**< whether to disclose the identification of the contact */
     std::string   vat_number; /**< taxpayer identification number of the contact */
     bool disclose_vat_number; /**< whether to disclose the of taxpayer identification number the contact */
-    //?
-    std::string creating_registrar_handle; /**< registrar created by the contact */
-    //?
-    std::string sponsoring_registrar_handle; /**< registrar sponsored the contact */
+    std::string creating_registrar_handle; /**< registrar that created the contact */
+    std::string sponsoring_registrar_handle; /**< registrar sponsoring the contact */
     boost::posix_time::ptime created; /**< creation date of the contact */
     Nullable<boost::posix_time::ptime> changed; /**< date contact was last changed */
     Nullable<boost::posix_time::ptime> last_transfer; /**< date contact was last transfered */
@@ -132,7 +130,6 @@ struct Contact
  */
 struct NameServer
 {
-    //?
     std::string fqdn; /**< fully qualified domain name **/
     std::vector<boost::asio::ip::address> ip_addresses; /**< IP addresses of the name server */
 };
@@ -185,7 +182,7 @@ struct KeySet
     std::vector<DNSKey> dns_keys; /**< list of DNSKeys of the KeySet */
     std::vector<std::string> tech_contact_handles; /**< technical contact handles of the KeySet */
     //?
-    std::string registrar_handle; /**< registrar handle of the KeySet */
+    std::string creating_registrar; /**< registrar handle of the KeySet */
     boost::posix_time::ptime created; /**< date of creation of the KeySet */
     Nullable<boost::posix_time::ptime> changed; /**< date the KeySet was last changed */
     Nullable<boost::posix_time::ptime> last_transfer; /**< date the KeySet was last transfered */
@@ -246,14 +243,13 @@ struct RegistrarGroup
     std::vector<std::string> members; /**< members of the group */
 };
 
-//?
 /**
  * Details data of the registrar certification.
  */
 struct RegistrarCertification
 {
     std::string registrar_handle; /**< handle of the registrar */
-    short score; /**< score of the registrar */
+    short score; /**< score of the certification */
     unsigned long long evaluation_file_id; /**< id of the evaluation file of registrar */
 };
 
@@ -321,7 +317,6 @@ struct InvalidLabel
     const char* what() const throw() {return "the label is invalid";}
 };
 
-//?
 /**
  * Zone of the domain is not managed by the service.
  */
@@ -361,7 +356,7 @@ struct MissingLocalization
     const char* what() const throw() {return "the localization is missing";}
 };
 
-//?
+//GET RID OF
 typedef std::vector< std::pair<std::string, std::string> > str_str_vector;
 typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
 typedef std::vector<Fred::InfoNssetOutput> InfoNssetOutputList;
