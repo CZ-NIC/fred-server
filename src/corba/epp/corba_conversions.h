@@ -35,6 +35,10 @@
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_check.h"
 
+#include <boost/optional.hpp>
+#include "src/epp/nsset/nsset_check.h"
+#include "src/epp/nsset/nsset_info.h"
+
 namespace Corba {
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
@@ -67,6 +71,8 @@ namespace Corba {
 
     void wrap_LocalizedContactInfoOutputData(const Epp::LocalizedContactInfoOutputData &src, ccReg::Contact &dst);
 
+    ccReg::NSSet wrap_localized_info_nsset(const Epp::LocalizedNssetInfoOutputData& _input );
+
     /**
      * @returns data ordered the same way as input contact_handles
      */
@@ -88,6 +94,14 @@ namespace Corba {
     void wrap_Epp_KeysetInfoData_TechContacts(const Epp::KeysetInfoData::TechContacts &_src, ccReg::TechContact &_dst);
 
     void wrap_Epp_KeySet_Localized_InfoData(const Epp::KeySet::Localized::InfoData &_src, ccReg::KeySet &_dst);
+
+    /**
+     * @returns data ordered the same way as input nsset_handles
+     */
+    ccReg::CheckResp wrap_localized_check_info(
+        const std::vector<std::string>& nsset_handles,
+        const std::map<std::string, boost::optional<Epp::LocalizedNssetHandleRegistrationObstruction> >& nsset_handle_check_results
+    );
 }
 
 #endif

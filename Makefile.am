@@ -1585,8 +1585,19 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/transfer.h \
 		src/epp/keyset/localized_transfer.cc \
 		src/epp/keyset/localized_transfer.h \
+		src/epp/nsset/nsset_check.cc \
+		src/epp/nsset/nsset_check.h \
+		src/epp/nsset/nsset_check_impl.cc \
+		src/epp/nsset/nsset_check_impl.h \
+		src/epp/nsset/nsset_handle_registration_obstruction.h\
+		src/epp/nsset/nsset_info.cc \
+		src/epp/nsset/nsset_info.h \
+		src/epp/nsset/nsset_info_impl.cc \
+		src/epp/nsset/nsset_info_impl.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
+
+
 #
 # src/corba/epp/libepp_impl.a
 
@@ -2385,6 +2396,10 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
 		tests/interfaces/epp/keyset/test_create.cc \
+		tests/interfaces/epp/nsset/test_nsset_check_impl.cc \
+		tests/interfaces/epp/nsset/test_nsset_info_impl.cc \
+		util/corba_conversion.h \
+		util/corba_conversion.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \

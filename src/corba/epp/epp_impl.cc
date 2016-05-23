@@ -2605,14 +2605,40 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(
-  const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params)
+  const ccReg::Check& _handles_to_be_checked, ccReg::CheckResp_out _check_results, const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
 
-  return ObjectCheck( EPP_NSsetCheck , "NSSET" , "handle" , handle , a , params);
+    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
+    try {
+        /* output data must be ordered exactly the same */
+        const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        const Epp::LocalizedCheckNssetResponse response = Epp::nsset_check(
+                    std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
+                    session_data.registrar_id,
+                    session_data.language,
+                    server_transaction_handle
+                );
+
+        ccReg::CheckResp_var check_results = new ccReg::CheckResp(
+            Corba::wrap_localized_check_info(
+                handles_to_be_checked,
+                response.nsset_statuses
+            )
+        );
+
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+
+        /* No exception shall be thrown from here onwards. */
+
+        _check_results = check_results._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainCheck(
@@ -3124,44 +3150,35 @@ ccReg_EPP_i::KeySetTransfer(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetInfo(
-  const char* handle, ccReg::NSSet_out n,
-  const ccReg::EppParams &params)
+  const char* _handle, ccReg::NSSet_out _info_result,
+  const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
 
-  LOG(
-      NOTICE_LOG,
-      "NSSetInfo: clientID -> %llu clTRID [%s] handle [%s] ",
-       params.loginID, static_cast<const char*>(params.clTRID), handle
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_NSsetInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  // initialize managers for nsset manipulation
-  std::auto_ptr<Fred::Zone::Manager>
-      zman(Fred::Zone::Manager::create() );
-  std::auto_ptr<Fred::NSSet::Manager>
-      nman(Fred::NSSet::Manager::create(a.getDB(), zman.get(),
-          restricted_handles_ ) );
-  // first check handle for proper format
-  if (!nman->checkHandleFormat(handle))
-    // failure in handle check, throw exception
-    a.failed(SetReasonNSSetHandle(a.getErrors(), handle, a.getLang()));
-  // now load nsset by handle
-  std::auto_ptr<Fred::NSSet::List> nlist(nman->createList());
-  nlist->setHandleFilter(handle);
-  try {nlist->reload();}
-  catch (...) {a.failedInternal("Cannot load nsset");}
-  if (nlist->getCount() != 1)
-    // failer because non existance, throw exception
-    a.failed(COMMAND_OBJECT_NOT_EXIST);
-  // start filling output nsset structure
-  Fred::NSSet::NSSet *nss = nlist->getNSSet(0);
-  n = new ccReg::NSSet;
-  corba_nsset_data_copy(a, regMan.get(), n, nss);
-  return a.getRet()._retn();
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(
+            epp_sessions,
+            Corba::unwrap_epp_request_params(_epp_params).session_id
+        );
+
+        const Epp::LocalizedInfoNssetResponse response = Epp::nsset_info(
+            Corba::unwrap_string(_handle),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle
+        );
+
+        ccReg::NSSet_var info_result = new ccReg::NSSet( Corba::wrap_localized_info_nsset(response.payload) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+
+        /* No exception shall be thrown from here onwards. */
+
+        _info_result = info_result._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 /***********************************************************************
