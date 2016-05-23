@@ -222,23 +222,25 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             const Fred::InfoContactData icd =
                 Fred::InfoContactByHandle(handle).exec(ctx, output_timezone).info_contact_data;
             Contact con;
-            con.handle = icd.handle;
-            con.organization = icd.organization.get_value_or_default();
-            con.name = icd.name.get_value_or_default();
-            con.phone = icd.telephone.get_value_or_default();
-            con.fax = icd.fax.get_value_or_default();
-            con.email = icd.email.get_value_or_default();
-            con.notify_email = icd.notifyemail.get_value_or_default();
-            con.vat_number = icd.vat.get_value_or_default();
-            con.creating_registrar_handle = icd.create_registrar_handle;
-            con.sponsoring_registrar_handle = icd.sponsoring_registrar_handle;
-            con.created = icd.creation_time;
-            con.changed = icd.update_time;
-            con.last_transfer = icd.transfer_time;
-//TODO            con.identification = icd.;
-            con.address.city         = icd.place.get_value_or_default().city;
-            con.address.country_code = icd.place.get_value_or_default().country;
-            con.address.postal_code  = icd.place.get_value_or_default().postalcode;
+            con.handle                             = icd.handle;
+            con.organization                       = icd.organization.get_value_or_default();
+            con.name                               = icd.name.get_value_or_default();
+            con.phone                              = icd.telephone.get_value_or_default();
+            con.fax                                = icd.fax.get_value_or_default();
+            con.email                              = icd.email.get_value_or_default();
+            con.notify_email                       = icd.notifyemail.get_value_or_default();
+            con.vat_number                         = icd.vat.get_value_or_default();
+            con.creating_registrar_handle          = icd.create_registrar_handle;
+            con.sponsoring_registrar_handle        = icd.sponsoring_registrar_handle;
+            con.created                            = icd.creation_time;
+            con.changed                            = icd.update_time;
+            con.last_transfer                      = icd.transfer_time;
+            con.identification.identification_type = icd.ssntype.get_value_or_default();
+            con.identification.identification_data = icd.ssn.get_value_or_default();
+            con.disclose_identification            = icd.discloseident;
+            con.address.city                       = icd.place.get_value_or_default().city;
+            con.address.country_code               = icd.place.get_value_or_default().country;
+            con.address.postal_code                = icd.place.get_value_or_default().postalcode;
             con.address.stateorprovince =
                 icd.place.get_value_or_default().stateorprovince.get_value_or_default();
             con.address.street1 =
@@ -248,9 +250,9 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             con.address.street3 =
                 icd.place.get_value_or_default().street3.get_value_or_default();
 
-            const ObjectStateDataList v_osd = Fred::GetObjectStates(icd.id).exec(ctx);
+            const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(icd.id).exec(ctx);
             con.statuses.reserve(v_osd.size());
-            for(ObjectStateDataList::const_iterator it = v_osd.begin(); it != v_osd.end(); ++it)
+            for(std::vector<Fred::ObjectStateData>::const_iterator it = v_osd.begin(); it != v_osd.end(); ++it)
             {
                 if(it->is_external)
                     con.statuses.push_back(it->state_name);
@@ -282,9 +284,9 @@ WhoisImpl::NSSet Server_impl::make_nsset_from_info_data(
         Fred::OperationContextCreator& ctx)
 {
     WhoisImpl::NSSet nss;
-    nss.changed = ind.update_time;
-    nss.created = ind.creation_time;
-    nss.handle = ind.handle;
+    nss.changed       = ind.update_time;
+    nss.created       = ind.creation_time;
+    nss.handle        = ind.handle;
     nss.last_transfer = ind.transfer_time;
     nss.nservers.reserve(ind.dns_hosts.size());
     WhoisImpl::NameServer ns;
@@ -310,9 +312,9 @@ WhoisImpl::NSSet Server_impl::make_nsset_from_info_data(
     {
         nss.tech_contact_handles.push_back(it->handle);
     }
-    const ObjectStateDataList v_osd = Fred::GetObjectStates(ind.id).exec(ctx);
+    const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(ind.id).exec(ctx);
     nss.statuses.reserve(v_osd.size());
-    for(ObjectStateDataList::const_iterator it2 = v_osd.begin(); it2 != v_osd.end(); ++it2)
+    for(std::vector<Fred::ObjectStateData>::const_iterator it2 = v_osd.begin(); it2 != v_osd.end(); ++it2)
     {
         if(it2->is_external)
             nss.statuses.push_back(it2->state_name);
@@ -353,13 +355,13 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
 }
 
 NSSetSeq Server_impl::get_nssets_by_(Fred::OperationContextCreator& ctx,
-                                     const InfoNssetOutputList& nss_info,
+                                     const std::vector<Fred::InfoNssetOutput>& nss_info,
                                      const std::string& handle,
                                      unsigned long limit)
 {
     NSSetSeq nss_seq;
     nss_seq.content.reserve(nss_info.size());
-    InfoNssetOutputList::const_iterator it = nss_info.begin(), end;
+    std::vector<Fred::InfoNssetOutput>::const_iterator it = nss_info.begin(), end;
     if(nss_info.size() > limit)
     {
         nss_seq.limit_exceeded = true;
@@ -382,7 +384,7 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
     Fred::OperationContextCreator ctx;
     try
     {
-        const InfoNssetOutputList nss_info =
+        const std::vector<Fred::InfoNssetOutput> nss_info =
                 Fred::InfoNssetByDNSFqdn(handle)
                     .set_limit(limit + 1)
                     .exec(ctx, output_timezone);
@@ -409,7 +411,7 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
     Fred::OperationContextCreator ctx;
     try
     {
-        const InfoNssetOutputList nss_info =
+        const std::vector<Fred::InfoNssetOutput> nss_info =
                 Fred::InfoNssetByTechContactHandle(handle)
                     .set_limit(limit + 1)
                     .exec(ctx, output_timezone);
@@ -476,19 +478,19 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
             const Fred::InfoKeysetData ikd =
                 Fred::InfoKeysetByHandle(handle).exec(ctx, output_timezone).info_keyset_data;
             WhoisImpl::KeySet ks;
-            ks.handle = ikd.handle;
-            ks.changed = ikd.update_time;
-            ks.created = ikd.creation_time;
-            ks.registrar_handle = ikd.create_registrar_handle;
+            ks.handle             = ikd.handle;
+            ks.changed            = ikd.update_time;
+            ks.created            = ikd.creation_time;
+            ks.creating_registrar = ikd.create_registrar_handle;
             ks.dns_keys.reserve(ikd.dns_keys.size());
-            ks.last_transfer = ikd.transfer_time;
+            ks.last_transfer      = ikd.transfer_time;
             DNSKey dns_k;
             for(std::vector<Fred::DnsKey>::const_iterator it = ikd.dns_keys.begin();
                     it != ikd.dns_keys.end(); ++it)
             {
-                dns_k.alg = it->get_alg();
-                dns_k.flags = it->get_flags();
-                dns_k.protocol = it->get_protocol();
+                dns_k.alg        = it->get_alg();
+                dns_k.flags      = it->get_flags();
+                dns_k.protocol   = it->get_protocol();
                 dns_k.public_key = it->get_key();
                 ks.dns_keys.push_back(dns_k);
             }
@@ -561,20 +563,20 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
                     it->info_keyset_data.dns_keys.begin();
                     it_dns != it->info_keyset_data.dns_keys.end(); ++it_dns)
             {
-                tmp_dns.alg = it_dns->get_alg();
-                tmp_dns.flags = it_dns->get_flags();
-                tmp_dns.protocol = it_dns->get_protocol();
+                tmp_dns.alg        = it_dns->get_alg();
+                tmp_dns.flags      = it_dns->get_flags();
+                tmp_dns.protocol   = it_dns->get_protocol();
                 tmp_dns.public_key = it_dns->get_key();
                 temp.dns_keys.push_back(tmp_dns);
             }
 
             temp.handle = it->info_keyset_data.handle;
             temp.last_transfer = it->info_keyset_data.transfer_time;
-            temp.registrar_handle = it->info_keyset_data.create_registrar_handle;
+            temp.creating_registrar = it->info_keyset_data.create_registrar_handle;
 
-            const ObjectStateDataList v_osd = Fred::GetObjectStates(it->info_keyset_data.id).exec(ctx);
+            const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(it->info_keyset_data.id).exec(ctx);
             temp.statuses.reserve(v_osd.size());
-            for(ObjectStateDataList::const_iterator it_osd = v_osd.begin();
+            for(std::vector<Fred::ObjectStateData>::const_iterator it_osd = v_osd.begin();
                     it_osd != v_osd.end(); ++it_osd)
             {
                 temp.statuses.push_back(it_osd->state_name);
@@ -617,18 +619,18 @@ WhoisImpl::Domain Server_impl::make_domain_from_info_data(const Fred::InfoDomain
             idd.admin_contacts.begin();
     for(; it != idd.admin_contacts.end(); ++it)
         result.admin_contact_handles.push_back(it->handle);
-    result.changed = idd.update_time;
-    result.expire = idd.expiration_date;
-    result.fqdn = idd.fqdn;
-    result.keyset_handle = idd.keyset.get_value_or_default().handle;
-    result.last_transfer = idd.transfer_time;
-    result.nsset_handle = idd.nsset.get_value_or_default().handle;
-    result.registered = idd.creation_time;
+    result.changed           = idd.update_time;
+    result.expire            = idd.expiration_date;
+    result.fqdn              = idd.fqdn;
+    result.keyset_handle     = idd.keyset.get_value_or_default().handle;
+    result.last_transfer     = idd.transfer_time;
+    result.nsset_handle      = idd.nsset.get_value_or_default().handle;
+    result.registered        = idd.creation_time;
     result.registrant_handle = idd.registrant.handle;
-    result.registrar_handle = idd.create_registrar_handle;
-    const ObjectStateDataList v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
+    result.registrar_handle  = idd.create_registrar_handle;
+    const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
     result.statuses.reserve(v_osd.size());
-    for(ObjectStateDataList::const_iterator it = v_osd.begin();
+    for(std::vector<Fred::ObjectStateData>::const_iterator it = v_osd.begin();
             it != v_osd.end(); ++it)
     {
         result.statuses.push_back(it->state_name);
@@ -696,13 +698,13 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
     Fred::OperationContextCreator ctx;
     try
     {
-        const InfoDomainOutputList domain_info =
+        const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByRegistrantHandle(handle)
                     .set_limit(limit + 1)
                     .exec(ctx, output_timezone);
         DomainSeq domain_seq;
         domain_seq.content.reserve(domain_info.size());
-        InfoDomainOutputList::const_iterator it = domain_info.begin(), end;
+        std::vector<Fred::InfoDomainOutput>::const_iterator it = domain_info.begin(), end;
         if(domain_info.empty())
         {
             if(Fred::CheckContact(handle).is_invalid_handle())
@@ -747,11 +749,11 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
 
 DomainSeq Server_impl::get_domains_by_(Fred::OperationContextCreator& ctx,
                                        unsigned long limit,
-                                       const InfoDomainOutputList& domain_info)
+                                       const std::vector<Fred::InfoDomainOutput>& domain_info)
 {
     DomainSeq domain_seq;
     domain_seq.content.reserve(domain_info.size());
-    InfoDomainOutputList::const_iterator it = domain_info.begin(), end;
+    std::vector<Fred::InfoDomainOutput>::const_iterator it = domain_info.begin(), end;
     if(domain_info.size() > limit)
     {
         domain_seq.limit_exceeded = true;
@@ -775,7 +777,7 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
     Fred::OperationContextCreator ctx;
     try
     {
-        const InfoDomainOutputList domain_info =
+        const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByAdminContactHandle(handle).set_limit(limit + 1)
                     .exec(ctx, output_timezone);
         if(domain_info.empty())
@@ -801,7 +803,7 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle,
     Fred::OperationContextCreator ctx;
     try
     {
-        const InfoDomainOutputList domain_info =
+        const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByNssetHandle(handle).set_limit(limit + 1)
                     .exec(ctx, output_timezone);
         if(domain_info.empty())
@@ -827,7 +829,7 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
     Fred::OperationContextCreator ctx;
     try
     {
-        const InfoDomainOutputList domain_info =
+        const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByKeysetHandle(handle).set_limit(limit + 1)
                     .exec(ctx, output_timezone);
         if(domain_info.empty())
