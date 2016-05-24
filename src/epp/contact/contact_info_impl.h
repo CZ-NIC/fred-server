@@ -148,7 +148,6 @@ struct ContactInfoOutputData {
 
 /**
  * @throws ExceptionAuthErrorServerClosingConnection
- * @throws ExceptionInvalidHandle
  * @throws ExceptionNonexistentHandle
  */
 ContactInfoOutputData contact_info_impl(

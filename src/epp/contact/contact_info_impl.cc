@@ -30,10 +30,6 @@ ContactInfoOutputData contact_info_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Contact::is_handle_valid(_handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
-        throw InvalidHandle();
-    }
-
     try {
         const Fred::InfoContactData contact_info_data = Fred::InfoContactByHandle(_handle).exec(_ctx, "UTC").info_contact_data;
 
