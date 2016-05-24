@@ -32,7 +32,6 @@ namespace Epp {
 
     struct AuthErrorServerClosingConnection : Exception {   const char* what() const { return "authorization error: server is closing connection"; }    };
     struct AutorError                       : Exception {   const char* what() const { return "autor error"; }  }; /* TODO some better name, what() */
-    struct InvalidHandle                    : Exception {   const char* what() const { return "invalid handle"; }   };
     struct InvalidSessionLang               : Exception {   const char* what() const { return "invalid session language";   }   };
     struct NonexistentHandle                : Exception {   const char* what() const { return "nonexistent handle"; }   };
     struct ObjectExists                     : Exception {   const char* what() const { return "object exists"; }    };
