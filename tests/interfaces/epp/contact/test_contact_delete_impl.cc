@@ -44,18 +44,6 @@ BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_contact)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_handle_format, has_contact)
-{
-    BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
-            ctx,
-            "SOME_obscure_String*/-+!#*",
-            registrar.id
-        ),
-        Epp::InvalidHandle
-    );
-}
-
 BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, has_contact)
 {
     BOOST_CHECK_THROW(

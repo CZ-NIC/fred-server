@@ -34,7 +34,6 @@ namespace Epp {
  * @returns new contact history id
  *
  * @throws AuthErrorServerClosingConnection
- * @throws InvalidHandle
  * @throws NonexistentHandle
  * @throws AutorError
  * @throws ObjectStatusProhibitingOperation in case conatct has serverUpdateProhibited or deleteCandidate status (or request)

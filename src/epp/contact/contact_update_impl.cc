@@ -162,10 +162,7 @@ unsigned long long contact_update_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Contact::is_handle_valid(_data.handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
-        throw InvalidHandle();
-
-    } else if( Fred::Contact::is_handle_in_registry(_ctx, _data.handle) == Fred::ContactHandleState::Registrability::available ) {
+    if( Fred::Contact::is_handle_in_registry(_ctx, _data.handle) != Fred::ContactHandleState::Registrability::registered ) {
         throw NonexistentHandle();
     }
 

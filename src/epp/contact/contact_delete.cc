@@ -58,15 +58,6 @@ LocalizedSuccessResponse contact_delete(
             _lang
         );
 
-    } catch(const InvalidHandle& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::parametr_error,
-            Error(Param::contact_handle, 0, Reason::bad_format_contact_handle),
-            _lang
-        );
-
     } catch(const NonexistentHandle& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(

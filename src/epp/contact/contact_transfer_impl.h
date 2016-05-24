@@ -36,7 +36,6 @@ namespace Epp {
  * @returns new history id
  *
  * @throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
- * @throws InvalidHandle
  * @throws NonexistentHandle
  * @throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
  * @throws ObjectStatusProhibitingOperation

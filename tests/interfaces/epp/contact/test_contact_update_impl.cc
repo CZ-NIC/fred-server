@@ -75,49 +75,6 @@ BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_handle_format, has_contact)
-{
-    const Epp::ContactUpdateInputData data(
-        contact.handle + "*?!",
-        "Jan Novak",
-        "Firma, a. s.",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>()
-    );
-
-    BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
-            ctx,
-            data,
-            registrar.id,
-            42 /* TODO */
-        ),
-        Epp::InvalidHandle
-    );
-}
-
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
 {
     const Epp::ContactUpdateInputData data(

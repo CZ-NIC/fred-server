@@ -46,20 +46,6 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_co
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_invalid_handle, has_registrar)
-{
-    BOOST_CHECK_THROW(
-        Epp::contact_transfer_impl(
-            ctx,
-            "The_most_invalid_handle_ever:*!@/",
-            "abc-it-doesnt-matter-operation-should-fail-even-sooner",
-            registrar.id,
-            42
-        ),
-        Epp::InvalidHandle
-    );
-}
-
 BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
 {
     BOOST_CHECK_THROW(
