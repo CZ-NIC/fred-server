@@ -101,7 +101,6 @@ struct NssetInfoOutputData {
 
 /**
  * @throws ExceptionAuthErrorServerClosingConnection
- * @throws ExceptionInvalidHandle
  * @throws ExceptionNonexistentHandle
  */
 NssetInfoOutputData nsset_info_impl(

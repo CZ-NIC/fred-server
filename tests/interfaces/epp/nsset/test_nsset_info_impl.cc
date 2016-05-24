@@ -46,19 +46,6 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(info_fail_handle_format, has_nsset)
-{
-    BOOST_CHECK_THROW(
-        Epp::nsset_info_impl(
-            ctx,
-            "SOME_obscure_String*/-+!#*",
-            Epp::SessionLang::en,
-            42 /* TODO */
-        ),
-        Epp::InvalidHandle
-    );
-}
-
 BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
 {
     BOOST_CHECK_THROW(

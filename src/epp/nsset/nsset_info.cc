@@ -125,14 +125,6 @@ LocalizedInfoNssetResponse nsset_info(
             _lang
         );
 
-    } catch (const InvalidHandle& e) {
-        throw create_localized_fail_response(
-            ctx,
-            Response::parametr_error,
-            Error( Param::nsset_handle, 1, Reason::bad_format_nsset_handle ),
-            _lang
-        );
-
     } catch (const NonexistentHandle& e) {
         throw create_localized_fail_response(
             ctx,

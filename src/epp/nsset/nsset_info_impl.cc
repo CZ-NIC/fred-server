@@ -56,10 +56,6 @@ NssetInfoOutputData nsset_info_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if(Fred::CheckNsset(_handle).is_invalid_handle()) {
-        throw InvalidHandle();
-    }
-
     try {
         const Fred::InfoNssetData nsset_info_data = Fred::InfoNssetByHandle(_handle).exec(_ctx, "UTC").info_nsset_data;
 
