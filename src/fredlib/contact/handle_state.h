@@ -27,11 +27,11 @@ namespace Fred
 {
 
 namespace ContactHandleState {
-    struct InRegistry {
+    struct Registrability {
         enum Enum {
             registered,
             in_protection_period,
-            unregistered,
+            available,
         };
     };
 

@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
     BOOST_CHECK(
         Epp::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::invalid,
-            Fred::ContactHandleState::InRegistry::registered
+            Fred::ContactHandleState::Registrability::registered
         )
         ==
         Epp::ContactHandleRegistrationObstruction::invalid_handle
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
     BOOST_CHECK(
         Epp::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::invalid,
-            Fred::ContactHandleState::InRegistry::unregistered
+            Fred::ContactHandleState::Registrability::available
         )
         ==
         Epp::ContactHandleRegistrationObstruction::invalid_handle
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
     BOOST_CHECK(
         Epp::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::invalid,
-            Fred::ContactHandleState::InRegistry::in_protection_period
+            Fred::ContactHandleState::Registrability::in_protection_period
         )
         ==
         Epp::ContactHandleRegistrationObstruction::invalid_handle
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
     BOOST_CHECK(
         Epp::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::valid,
-            Fred::ContactHandleState::InRegistry::registered
+            Fred::ContactHandleState::Registrability::registered
         )
         ==
         Epp::ContactHandleRegistrationObstruction::registered_handle
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
     BOOST_CHECK(
         Epp::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::valid,
-            Fred::ContactHandleState::InRegistry::unregistered
+            Fred::ContactHandleState::Registrability::available
         )
         ==
         Nullable<Epp::ContactHandleRegistrationObstruction::Enum>()
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
     BOOST_CHECK(
         Epp::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::valid,
-            Fred::ContactHandleState::InRegistry::in_protection_period
+            Fred::ContactHandleState::Registrability::in_protection_period
         )
         ==
         Epp::ContactHandleRegistrationObstruction::protected_handle

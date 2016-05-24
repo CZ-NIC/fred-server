@@ -35,7 +35,7 @@ namespace Contact
 {
     ContactHandleState::SyntaxValidity::Enum is_handle_valid(const std::string& _contact_handle);
 
-    ContactHandleState::InRegistry::Enum is_handle_in_registry(OperationContext& ctx, const std::string& _contact_handle);
+    ContactHandleState::Registrability::Enum is_handle_in_registry(OperationContext& ctx, const std::string& _contact_handle);
 }
 }
 

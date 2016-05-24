@@ -35,7 +35,7 @@ unsigned long long contact_transfer_impl(
     if( Fred::Contact::is_handle_valid(_contact_handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
         throw InvalidHandle();
 
-    } else if( Fred::Contact::is_handle_in_registry(_ctx, _contact_handle) != Fred::ContactHandleState::InRegistry::registered ) {
+    } else if( Fred::Contact::is_handle_in_registry(_ctx, _contact_handle) == Fred::ContactHandleState::Registrability::available ) {
         throw NonexistentHandle();
     }
 

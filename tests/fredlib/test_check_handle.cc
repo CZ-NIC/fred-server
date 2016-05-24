@@ -130,19 +130,19 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
     BOOST_CHECK(
         Fred::Contact::is_handle_in_registry(ctx, admin_contact_handle)
         ==
-        Fred::ContactHandleState::InRegistry::registered
+        Fred::ContactHandleState::Registrability::registered
     );
 
     BOOST_CHECK(
         Fred::Contact::is_handle_in_registry(ctx, admin_contact_handle_rem)
         ==
-        Fred::ContactHandleState::InRegistry::in_protection_period
+        Fred::ContactHandleState::Registrability::in_protection_period
     );
 
     BOOST_CHECK(
         Fred::Contact::is_handle_in_registry(ctx, admin_contact_handle + xmark)
         ==
-        Fred::ContactHandleState::InRegistry::unregistered
+        Fred::ContactHandleState::Registrability::available
     );
 }
 

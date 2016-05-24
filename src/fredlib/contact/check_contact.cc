@@ -33,16 +33,16 @@ namespace Contact
         return ContactHandleState::SyntaxValidity::valid;
     }
 
-    ContactHandleState::InRegistry::Enum is_handle_in_registry(OperationContext& ctx, const std::string& _contact_handle) {
+    ContactHandleState::Registrability::Enum is_handle_in_registry(OperationContext& ctx, const std::string& _contact_handle) {
         if( TestHandle(_contact_handle).is_registered(ctx, "contact") ) {
-            return ContactHandleState::InRegistry::registered;
+            return ContactHandleState::Registrability::registered;
         }
 
         if( TestHandle(_contact_handle).is_protected(ctx, "contact") ) {
-            return ContactHandleState::InRegistry::in_protection_period;
+            return ContactHandleState::Registrability::in_protection_period;
         }
 
-        return ContactHandleState::InRegistry::unregistered;
+        return ContactHandleState::Registrability::available;
     }
 }
 

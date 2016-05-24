@@ -26,7 +26,7 @@ unsigned long long contact_delete_impl(
     if( Fred::Contact::is_handle_valid(_handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
         throw InvalidHandle();
 
-    } else if( Fred::Contact::is_handle_in_registry(_ctx, _handle) != Fred::ContactHandleState::InRegistry::registered ) {
+    } else if( Fred::Contact::is_handle_in_registry(_ctx, _handle) == Fred::ContactHandleState::Registrability::available ) {
         throw NonexistentHandle();
     }
 

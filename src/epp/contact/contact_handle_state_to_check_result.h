@@ -34,7 +34,7 @@ namespace Epp {
 
 inline Nullable<ContactHandleRegistrationObstruction::Enum> contact_handle_state_to_check_result(
     const Fred::ContactHandleState::SyntaxValidity::Enum _handle_validity,
-    const Fred::ContactHandleState::InRegistry::Enum _handle_in_registry
+    const Fred::ContactHandleState::Registrability::Enum _handle_in_registry
 ) {
     if(_handle_validity == Fred::ContactHandleState::SyntaxValidity::invalid) {
 
@@ -43,9 +43,9 @@ inline Nullable<ContactHandleRegistrationObstruction::Enum> contact_handle_state
     } else if(_handle_validity == Fred::ContactHandleState::SyntaxValidity::valid) {
 
         switch(_handle_in_registry) {
-            case Fred::ContactHandleState::InRegistry::registered           : return ContactHandleRegistrationObstruction::registered_handle;
-            case Fred::ContactHandleState::InRegistry::in_protection_period : return ContactHandleRegistrationObstruction::protected_handle;
-            case Fred::ContactHandleState::InRegistry::unregistered         : return Nullable<ContactHandleRegistrationObstruction::Enum>();
+            case Fred::ContactHandleState::Registrability::registered           : return ContactHandleRegistrationObstruction::registered_handle;
+            case Fred::ContactHandleState::Registrability::in_protection_period : return ContactHandleRegistrationObstruction::protected_handle;
+            case Fred::ContactHandleState::Registrability::available         : return Nullable<ContactHandleRegistrationObstruction::Enum>();
             default: throw std::runtime_error("Invalid Handle::{SyntaxValidity, InRegistry} combination.");
         }
 

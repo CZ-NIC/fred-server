@@ -25,9 +25,9 @@ ContactCreateResult contact_create_impl(
     }
 
     {
-        const Fred::ContactHandleState::InRegistry::Enum in_registry = Fred::Contact::is_handle_in_registry(_ctx, _data.handle);
+        const Fred::ContactHandleState::Registrability::Enum in_registry = Fred::Contact::is_handle_in_registry(_ctx, _data.handle);
 
-        if(in_registry == Fred::ContactHandleState::InRegistry::registered) {
+        if(in_registry == Fred::ContactHandleState::Registrability::registered) {
             throw ObjectExists();
         }
 
@@ -37,7 +37,7 @@ ContactCreateResult contact_create_impl(
             exception.add( Error( Param::contact_handle, 0, Reason::bad_format_contact_handle ) );
         }
 
-        if(in_registry == Fred::ContactHandleState::InRegistry::in_protection_period) {
+        if(in_registry == Fred::ContactHandleState::Registrability::in_protection_period) {
             exception.add( Error( Param::contact_handle, 0, Reason::protected_period ) );
         }
 
