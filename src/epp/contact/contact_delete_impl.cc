@@ -23,7 +23,7 @@ unsigned long long contact_delete_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Contact::is_handle_in_registry(_ctx, _handle) != Fred::ContactHandleState::Registrability::registered ) {
+    if( Fred::Contact::get_handle_registrability(_ctx, _handle) != Fred::ContactHandleState::Registrability::registered ) {
         throw NonexistentHandle();
     }
 

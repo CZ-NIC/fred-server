@@ -24,14 +24,14 @@ ContactCreateResult contact_create_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Contact::is_handle_valid(_data.handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
+    if( Fred::Contact::get_handle_syntax_validity(_data.handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
         AggregatedParamErrors invalid_handle_exception;
         invalid_handle_exception.add( Error(Param::contact_handle, 0, Reason::bad_format_contact_handle) );
         throw invalid_handle_exception;
     }
 
     {
-        const Fred::ContactHandleState::Registrability::Enum in_registry = Fred::Contact::is_handle_in_registry(_ctx, _data.handle);
+        const Fred::ContactHandleState::Registrability::Enum in_registry = Fred::Contact::get_handle_registrability(_ctx, _data.handle);
 
         if(in_registry == Fred::ContactHandleState::Registrability::registered) {
             throw ObjectExists();
