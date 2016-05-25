@@ -536,7 +536,39 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else
     {
-        result.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.keyset));
+        try
+        {
+            LOGGING_CONTEXT(log_ctx);
+            try
+            {
+                Fred::OperationContextCreator ctx;
+                return new NSSet(wrap_nsset(Fred::InfoNssetByHandle(
+                    Corba::unwrap_string_from_const_char_ptr(handle)
+                        ).exec(ctx, output_timezone).info_nsset_data));
+            }
+            catch(const Fred::InfoNssetByHandle::Exception& e)
+            {
+                if(e.is_set_unknown_handle())
+                {
+                    if(Fred::Nsset::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)
+                        ) == Fred::NssetHandleState::SyntaxValidity::invalid)
+                    {
+                        throw INVALID_HANDLE();
+                    }
+
+                    throw OBJECT_NOT_FOUND();
+                }
+            }
+        }
+        catch(const ::CORBA::UserException& )
+        {
+            throw;
+        }
+        catch (...)
+        { }
+
+        // default exception handling
+        throw INTERNAL_SERVER_ERROR();
     }
     result.registrar_handle = Corba::wrap_string_to_corba_string(domain.sponsoring_registrar);
     result.registered = Corba::wrap_time(domain.registered);
@@ -658,9 +690,36 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        throw Registry::Whois::OBJECT_NOT_FOUND();
-    }
-    catch (...) { }
+        try
+        {
+            LOGGING_CONTEXT(log_ctx);
+
+            Fred::OperationContextCreator ctx;
+            DomainSeq_var domain_seq = new DomainSeq;
+
+            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
+                Corba::unwrap_string_from_const_char_ptr(handle)
+            ).set_limit(limit + 1).exec(ctx, output_timezone);
+
+            if(domain_info.empty())
+            {
+                if(Fred::Nsset::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)
+                    ) == Fred::NssetHandleState::SyntaxValidity::invalid)
+                {
+                    throw INVALID_HANDLE();
+                }
+
+                throw OBJECT_NOT_FOUND();
+            }
+
+            limit_exceeded = false;
+            if(domain_info.size() > limit)
+            {
+                limit_exceeded = true;
+                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
+            }
+
+            set_domains_seq(domain_seq.inout(),domain_info,ctx);
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();

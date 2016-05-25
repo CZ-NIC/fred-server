@@ -197,28 +197,65 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
 }
 
 /**
- * test CheckNsset true returning cases
+ * test nsset handle ok cases
  */
-BOOST_FIXTURE_TEST_CASE(check_nsset_handle_true, check_handle_fixture)
+BOOST_FIXTURE_TEST_CASE(check_nsset_handle_ok, check_handle_fixture)
 {
     Fred::OperationContextCreator ctx;
-    BOOST_CHECK(Fred::CheckNsset(test_nsset_handle).is_registered(ctx));
-    BOOST_CHECK(Fred::CheckNsset(test_nsset_handle+"@").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckNsset(test_nsset_handle_rem).is_protected(ctx));
-    BOOST_CHECK(Fred::CheckNsset(test_nsset_handle+xmark).is_free(ctx));
+    BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle) == Fred::NssetHandleState::Registrability::registered);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(test_nsset_handle+"@") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle_rem) == Fred::NssetHandleState::Registrability::in_protection_period);
+    BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle+"1") == Fred::NssetHandleState::Registrability::unregistered);
+
+}
+
+BOOST_AUTO_TEST_CASE(check_nsset_handle_validity_invalid)
+{
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("!") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("@") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("#") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("$") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("%") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("^") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("&") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("*") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("(") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(")") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("[") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("]") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("/") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(".") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(",") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(":") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("{") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("}") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("~") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("'") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("+") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("-") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("\"") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("\\") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOO--BAR") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("-FOOBAR") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOOBAR-") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOOBAR-") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("1234567890123456789012345678901") == Fred::NssetHandleState::SyntaxValidity::invalid);
 }
 
 /**
- * test CheckNsset false returning cases
+ * test nsset handle handle - ok cases
  */
-BOOST_FIXTURE_TEST_CASE(check_nsset_handle_false, check_handle_fixture)
+BOOST_AUTO_TEST_CASE(check_nsset_handle_validity_ok)
 {
-    BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle).is_invalid_handle());
-    Fred::OperationContextCreator ctx;
-    BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle+xmark).is_registered(ctx));
-    BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle).is_protected(ctx));
-    BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle).is_free(ctx));
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("F") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOOBAR") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOO-BAR") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("123-BAR") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOO-BAR-BAZ") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("123456789012345678901234567890") == Fred::NssetHandleState::SyntaxValidity::valid);
 }
+
 
 
 /**

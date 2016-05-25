@@ -23,10 +23,12 @@
 #include "src/epp/nsset/nsset_check_impl.h"
 
 #include "src/fredlib/nsset/check_nsset.h"
+#include "src/epp/nsset/nsset_handle_state_to_check_result.h"
 
 #include <boost/foreach.hpp>
 
 namespace Epp {
+
 
 std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > nsset_check_impl(
     Fred::OperationContext& _ctx,
@@ -35,21 +37,10 @@ std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > nsset
     std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > result;
 
     BOOST_FOREACH(const std::string& handle, _nsset_handles) {
-        Fred::CheckNsset check(handle);
-
-        if(check.is_invalid_handle()) {
-            result[handle] = NssetHandleRegistrationObstruction::invalid_handle;
-
-        } else if(check.is_protected(_ctx)) {
-            result[handle] = NssetHandleRegistrationObstruction::protected_handle;
-
-        } else if(check.is_registered(_ctx)) {
-            result[handle] = NssetHandleRegistrationObstruction::registered_handle;
-
-        } else {
-            result[handle] = Nullable<NssetHandleRegistrationObstruction::Enum>();
-
-        }
+        result[handle] = nsset_handle_state_to_check_result(
+            Fred::Nsset::get_handle_syntax_validity(handle),
+            Fred::Nsset::get_handle_registrability(_ctx, handle)
+        );
     }
 
     return result;
