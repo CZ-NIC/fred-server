@@ -5288,10 +5288,12 @@ ccReg_EPP_i::KeySetInfo(
                              server_transaction_handle);
 
         ccReg::KeySet_var keyset = new ccReg::KeySet;
-        Corba::wrap_info_keyset(info_result.data, keyset);
+        Corba::wrap_Epp_LocalizedKeysetInfoData(info_result.data, keyset);
 
         ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_response(info_result.response, return_value);
+        Corba::wrap_response(info_result.response,
+                             server_transaction_handle,
+                             return_value);
 
         /* No exception shall be thrown from here onwards. */
         _keyset_info = keyset._retn();

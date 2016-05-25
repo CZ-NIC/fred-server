@@ -32,6 +32,7 @@
 #include "src/epp/contact/contact_check.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/localized_response.h"
+#include "src/epp/keyset/localized_info.h"
 
 namespace Corba {
 
@@ -44,6 +45,10 @@ namespace Corba {
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
+    void wrap_response(const Epp::LocalizedSuccessResponse &_src,
+                       const std::string &_server_transaction_handle,
+                       ccReg::Response &_dst);
+
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
 
     void wrap_LocalizedContactInfoOutputData(const Epp::LocalizedContactInfoOutputData &src, ccReg::Contact &dst);
@@ -55,6 +60,8 @@ namespace Corba {
         const std::vector<std::string>& contact_handles,
         const std::map< std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > >& contact_handle_check_results
     );
+
+    void wrap_Epp_LocalizedKeysetInfoData(const Epp::LocalizedKeysetInfoData &_src, ccReg::KeySet &_dst);
 }
 
 #endif

@@ -24,7 +24,7 @@
 #define LOCALIZED_INFO_H_30CFD670609F21298BB96EE14BB345B0
 
 #include "src/epp/keyset/info.h"
-#include "src/epp/response.h"
+#include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 
 #include <map>
@@ -52,7 +52,7 @@ struct LocalizedKeysetInfoData
 struct LocalizedKeysetInfoResult
 {
     LocalizedKeysetInfoData data;
-    Response response;
+    LocalizedSuccessResponse response;
 };
 
 /**
