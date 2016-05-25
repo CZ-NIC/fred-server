@@ -32,15 +32,16 @@ namespace Corba {
         return result;
     }
 
-    Epp::RequestParams unwrap_epp_request_params(const ccReg::EppParams& _epp_request_params) {
-
-        return Epp::RequestParams(
-            CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.loginID),
-            Corba::unwrap_string(_epp_request_params.clTRID),
-            _epp_request_params.requestID == 0
-                ?   Optional<unsigned long long>()
-                :   Optional<unsigned long long>(CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.requestID))
-        );
+    Epp::RequestParams unwrap_EppParams(const ccReg::EppParams &_epp_request_params) {
+        Epp::RequestParams result;
+        CorbaConversion::unwrap_int(_epp_request_params.loginID, result.session_id);
+        result.client_transaction_id = Corba::unwrap_string(_epp_request_params.clTRID);
+        unsigned long long log_request_id;
+        CorbaConversion::unwrap_int(_epp_request_params.requestID, log_request_id);
+        if (log_request_id != 0) {
+            result.log_request_id = log_request_id;
+        }
+        return result;
     }
 
     struct ExceptionInvalidParam {};

@@ -83,6 +83,9 @@
 #include "src/epp/contact/contact_delete.h"
 #include "src/epp/contact/contact_transfer.h"
 #include "src/epp/contact/post_contact_update_hooks.h"
+
+#include "src/epp/keyset/localized_info.h"
+
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
@@ -2581,7 +2584,7 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
     try {
         /* output data must be ordered exactly the same */
         const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedCheckContactResponse response = Epp::contact_check(
@@ -2658,7 +2661,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
 
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(
             epp_sessions,
-            Corba::unwrap_epp_request_params(_epp_params).session_id
+            Corba::unwrap_EppParams(_epp_params).session_id
         );
 
         const Epp::LocalizedInfoContactResponse response = Epp::contact_info(
@@ -2688,7 +2691,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
 ) {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::contact_delete(
@@ -2715,7 +2718,7 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
 ) {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         Epp::ContactChange contact_update_data;
@@ -2724,7 +2727,7 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
             Corba::unwrap_string(_handle),
             contact_update_data,
             session_data.registrar_id,
-            request_params.log_request_id,
+            request_params.log_request_id.get_value_or(0),
             epp_update_contact_enqueue_check_,
             session_data.language,
             server_transaction_handle,
@@ -2747,7 +2750,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
 ) {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         Epp::ContactChange contact_create_data;
@@ -2756,7 +2759,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
             Corba::unwrap_string(_handle),
             contact_create_data,
             session_data.registrar_id,
-            request_params.log_request_id,
+            request_params.log_request_id.get_value_or(0),
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
@@ -3011,7 +3014,7 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
 
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         return new ccReg::Response(
@@ -3020,7 +3023,7 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
                     Corba::unwrap_string(_handle),
                     Corba::unwrap_string(_auth_info),
                     session_data.registrar_id,
-                    request_params.log_request_id,
+                    request_params.log_request_id.get_value_or(0),
                     session_data.language,
                     server_transaction_handle,
                     request_params.client_transaction_id,
@@ -5264,12 +5267,40 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
  * Function:    KeySetInfo
  *
  *************************************************************/
-ccReg::Response *
+ccReg::Response*
 ccReg_EPP_i::KeySetInfo(
-        const char *handle,
-        ccReg::KeySet_out k,
-        const ccReg::EppParams &params)
+        const char* const _keyset_handle,
+        ccReg::KeySet_out _keyset_info,
+        const ccReg::EppParams &_epp_params)
 {
+#if 1
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+    try {
+        const Epp::RegistrarSessionData session_data =
+            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
+
+        const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
+        const Epp::LocalizedKeysetInfoResult info_result =
+            Epp::keyset_info(keyset_handle,
+                             session_data.registrar_id,
+                             session_data.language,
+                             server_transaction_handle);
+
+        ccReg::KeySet_var keyset = new ccReg::KeySet;
+        Corba::wrap_info_keyset(info_result.data, keyset);
+
+        ccReg::Response_var return_value = new ccReg::Response;
+        Corba::wrap_response(info_result.response, return_value);
+
+        /* No exception shall be thrown from here onwards. */
+        _keyset_info = keyset._retn();
+        return return_value._retn();
+    }
+    catch (const Epp::LocalizedFailResponse &e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+#else
   Logging::Context::clear();
   Logging::Context ctx("rifd");
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
@@ -5317,6 +5348,7 @@ ccReg_EPP_i::KeySetInfo(
     k = new ccReg::KeySet;
     corba_keyset_data_copy(a, regMan.get(), k, kss);
     return a.getRet()._retn();
+#endif
 }
 
 /*************************************************************

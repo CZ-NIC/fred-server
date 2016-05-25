@@ -20,28 +20,18 @@
  *  @file
  */
 
-#ifndef CORBA_EPP_REQUEST_PARAMS_90798304534
-#define CORBA_EPP_REQUEST_PARAMS_90798304534
+#ifndef INFO_H_80E554AABD337834F50F713FEACE5923//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define INFO_H_80E554AABD337834F50F713FEACE5923
 
-#include "util/util.h"
-#include "util/optional_value.h"
-
-#include <string>
+#include "src/epp/keyset/info_data.h"
+#include "src/fredlib/opcontext.h"
 
 namespace Epp {
 
-struct RequestParams
-{
-    std::string get_server_transaction_handle()const
-    {
-        return Util::make_svtrid(log_request_id.get_value_or(0));
-    }
+KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
+                           const std::string &_keyset_handle,
+                           unsigned long long _registrar_id);
 
-    unsigned long long session_id;
-    std::string client_transaction_id;
-    Optional< unsigned long long > log_request_id;
-};
+}//namespace Epp
 
-}
-
-#endif
+#endif//INFO_H_80E554AABD337834F50F713FEACE5923

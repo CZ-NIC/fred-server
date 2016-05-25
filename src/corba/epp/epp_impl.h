@@ -1,19 +1,18 @@
-#include <memory>
-#include "countrycode.h"
-#include "messages.h"
+#include "src/corba/epp/countrycode.h"
+#include "src/corba/epp/messages.h"
+#include "src/corba/epp/epp_session.h"
 #include "src/corba/mailer_manager.h"
 #include "src/old_utils/dbsql.h"
 #include "src/fredlib/registry.h"
 
+#include "src/corba/EPP.hh"
+
 #include <vector>
 #include <stdexcept>
+#include <memory>
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
-
-#include "epp_session.h"
-
-#include "src/corba/EPP.hh"
 
 //value class to fix return of local char*
 class EppString
