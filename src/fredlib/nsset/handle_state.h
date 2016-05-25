@@ -26,7 +26,7 @@
 namespace Fred
 {
 
-namespace NssetsetHandleState {
+namespace NssetHandleState {
     struct InRegistry {
         enum Enum {
             registered,
