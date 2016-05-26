@@ -1306,9 +1306,10 @@ void MojeIDImpl::info_contact(
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
-            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
             throw MojeIDImplData::ObjectDoesntExist();
         }
+        LOGGER(PACKAGE).error("request failed (Fred::InfoContactByHandle failure)");
         throw;
     }
     catch (const std::exception &e) {
