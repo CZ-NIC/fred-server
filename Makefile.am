@@ -2170,7 +2170,8 @@ SERVER_TESTS = \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
-		tests/test-optys 
+		tests/test-optys \
+		tests/test-corba-convertion 
 
 # tests/interfaces/test-admin-contact-verification
 #
