@@ -51,6 +51,11 @@ struct LocalizedKeysetInfoData
 
 struct LocalizedKeysetInfoResult
 {
+    LocalizedKeysetInfoResult(const LocalizedKeysetInfoData &_data,
+                              const LocalizedSuccessResponse &_response)
+    :   data(_data),
+        response(_response)
+    { }
     LocalizedKeysetInfoData data;
     LocalizedSuccessResponse response;
 };
@@ -63,7 +68,7 @@ struct LocalizedKeysetInfoResult
 LocalizedKeysetInfoResult keyset_info(
     const std::string &_keyset_handle,
     unsigned long long _registrar_id,
-    SessionLang::Enum _object_state_description_lang,
+    SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
 }
