@@ -41,35 +41,6 @@ struct KeysetInfoData
     typedef std::set< KeySet::DnsKey > DnsKeys;
     typedef std::set< std::string > TechContacts;
 
-    KeysetInfoData(
-            const std::string &_handle,
-            const std::string &_roid,
-            const std::string &_sponsoring_registrar_handle,
-            const std::string &_creating_registrar_handle,
-            const Nullable< std::string > &_last_update_registrar_handle,
-            const States &_states,
-            const boost::posix_time::ptime &_crdate,
-            const Nullable< boost::posix_time::ptime > &_last_update,
-            const Nullable< boost::posix_time::ptime > &_last_transfer,
-            const Nullable< std::string > &_auth_info_pw,
-            const DsRecords &_ds_records,
-            const DnsKeys &_dns_keys,
-            const TechContacts &_tech_contacts)
-    :   handle(_handle),
-        roid(_roid),
-        sponsoring_registrar_handle(_sponsoring_registrar_handle),
-        creating_registrar_handle(_creating_registrar_handle),
-        last_update_registrar_handle(_last_update_registrar_handle),
-        states(_states),
-        crdate(_crdate),
-        last_update(_last_update),
-        last_transfer(_last_transfer),
-        auth_info_pw(_auth_info_pw),
-        ds_records(_ds_records),
-        dns_keys(_dns_keys),
-        tech_contacts(_tech_contacts)
-    { }
-
     std::string handle; ///< KeySet handle
     std::string roid; ///< KeySet identifier - repository ID
     std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
