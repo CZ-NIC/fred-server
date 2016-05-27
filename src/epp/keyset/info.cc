@@ -32,7 +32,11 @@ KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
         result.crdate = data.creation_time;
         result.last_update = data.update_time;
         result.last_transfer = data.transfer_time;
-        result.auth_info_pw = data.authinfopw;
+        /* show object authinfo only to sponsoring registrar */
+        if (Fred::InfoRegistrarByHandleId(data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id ==
+            _registrar_id) {
+            result.auth_info_pw = data.authinfopw;
+        }
 //        result.ds_records = ... // Fred::InfoKeysetData doesn't contain any ds record informations
         {
             typedef std::vector< Fred::DnsKey > FredDnsKeys;
