@@ -682,7 +682,7 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         return new_contact.create_object_result.object_id;
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data)");
         throw;
     }
     catch (const std::exception &e) {
@@ -778,26 +778,27 @@ void MojeIDImpl::transfer_contact_prepare(
         return;
     }
     catch (const MojeIDImplData::AlreadyMojeidContact&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - AlreadyMojeidContact)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - AlreadyMojeidContact)");
         throw;
     }
     catch (const MojeIDImplData::ObjectAdminBlocked&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - ObjectAdminBlocked)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectAdminBlocked)");
         throw;
     }
     catch (const MojeIDImplData::ObjectUserBlocked&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - ObjectUserBlocked)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectUserBlocked)");
         throw;
     }
     catch (const MojeIDImplData::RegistrationValidationResult&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - RegistrationValidationResult)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - RegistrationValidationResult)");
         throw;
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
-            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            LOGGER(PACKAGE).info("request failed (incorrect input data)");
             throw MojeIDImplData::ObjectDoesntExist();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1380,9 +1381,10 @@ void MojeIDImpl::get_contact_info_publish_flags(
     }
     catch (const Fred::InfoContactById::Exception &e) {
         if (e.is_set_unknown_object_id()) {
-            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            LOGGER(PACKAGE).info("request failed (incorrect input data)");
             throw MojeIDImplData::ObjectDoesntExist();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1551,17 +1553,19 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         throw;
     }
     catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         if (e.is_set_public_request_doesnt_exist()) {
+            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
             throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw std::runtime_error(e.what());
     }
     catch (const Fred::InfoContactById::Exception &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         if (e.is_set_unknown_object_id()) {
+            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
             throw MojeIDImplData::IdentificationFailed();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1653,7 +1657,7 @@ void MojeIDImpl::process_identification_request(
         throw;
     }
     catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
-        LOGGER(PACKAGE).error("request failed (IdentificationAlreadyProcessed)");
+        LOGGER(PACKAGE).info("request failed (IdentificationAlreadyProcessed)");
         throw;
     }
     catch (const MojeIDImplData::IdentificationFailed&) {
