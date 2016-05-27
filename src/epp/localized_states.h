@@ -29,7 +29,13 @@
 
 namespace Epp {
 
-typedef std::map< Fred::Object_State::Enum, std::string > LocalizedStates;
+struct LocalizedStates
+{
+    typedef std::map< Fred::Object_State::Enum, std::string > Descriptions;
+    Descriptions descriptions;
+    std::string ok_state_description;
+};
+
 
 }
 

@@ -415,4 +415,35 @@ namespace Corba {
         return result;
     }
 
+    void wrap_Epp_LocalizedKeysetInfoData(const Epp::LocalizedKeysetInfoData &_src, ccReg::KeySet &_dst)
+    {
+        _dst.handle = _src.handle.c_str();
+        _dst.ROID = _src.roid.c_str();
+        _dst.ClID = _src.sponsoring_registrar_handle.c_str();
+        _dst.CrID = _src.creating_registrar_handle.c_str();
+        _dst.UpID = wrap_Nullable_string_to_string(_src.last_update_registrar_handle).c_str();
+        if (_src.states.descriptions.empty()) {
+            _dst.stat.length(1);
+            _dst.stat[0].value = "ok";
+            _dst.stat[0].text = _src.states.ok_state_description.c_str();
+        }
+        else {
+            _dst.stat.length(_src.states.descriptions.size());
+            ::size_t idx = 0;
+            for (Epp::LocalizedStates::Descriptions::const_iterator state_ptr = _src.states.descriptions.begin();
+                 state_ptr != _src.states.descriptions.end(); ++state_ptr, ++idx)
+            {
+                _dst.stat[idx].value = Conversion::Enums::to_db_handle(state_ptr->first).c_str();
+                _dst.stat[idx].text = state_ptr->second.c_str();
+            }
+        }
+        _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate).c_str();
+        _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update).c_str();
+        _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer).c_str();
+        _dst.AuthInfoPw = wrap_Nullable_string_to_string(_src.auth_info_pw).c_str();
+//        _dst.dsrec = _src.;
+//        _dst.dnsk = _src.;
+//        _dst.tech;
+
+    }
 }//namespace Corba

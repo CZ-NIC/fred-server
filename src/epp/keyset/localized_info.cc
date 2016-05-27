@@ -29,7 +29,7 @@ LocalizedKeysetInfoResult localized_keyset_info(
         data.sponsoring_registrar_handle = keyset_info_data.sponsoring_registrar_handle;
         data.creating_registrar_handle = keyset_info_data.creating_registrar_handle;
         data.last_update_registrar_handle = keyset_info_data.last_update_registrar_handle;
-        data.states_description = get_localized_object_state(ctx, keyset_info_data.states, _lang);
+        data.states = get_localized_object_state(ctx, keyset_info_data.states, _lang);
         data.crdate = keyset_info_data.crdate;
         data.last_update = keyset_info_data.last_update;
         data.last_transfer = keyset_info_data.last_transfer;

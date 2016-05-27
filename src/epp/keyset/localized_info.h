@@ -38,7 +38,7 @@ struct LocalizedKeysetInfoData
     std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
     std::string creating_registrar_handle; ///< Registrar identifier, which created contact
     Nullable< std::string > last_update_registrar_handle; ///< Registrar identifier, which realized changes
-    LocalizedStates states_description; ///< KeySet states list
+    LocalizedStates states; ///< KeySet states list
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable< boost::posix_time::ptime > last_update; ///< Date and time of last change
     Nullable< boost::posix_time::ptime > last_transfer; ///< Date and time of last transfer
@@ -59,11 +59,6 @@ struct LocalizedKeysetInfoResult
     LocalizedSuccessResponse response;
 };
 
-/**
- * @throws ExceptionAuthErrorServerClosingConnection
- * @throws ExceptionInvalidHandle
- * @throws ExceptionNonexistentHandle
- */
 LocalizedKeysetInfoResult localized_keyset_info(
     const std::string &_keyset_handle,
     unsigned long long _registrar_id,

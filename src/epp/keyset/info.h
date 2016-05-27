@@ -28,6 +28,9 @@
 
 namespace Epp {
 
+/**
+ * @throws NonexistentHandle
+ */
 KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
                            const std::string &_keyset_handle,
                            unsigned long long _registrar_id);
