@@ -3197,82 +3197,27 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetDelete(
-  const char* handle, const ccReg::EppParams &params)
+  const char* _handle, const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    int id;
-    short int code = 0;
-
-    EPPAction action(this, params.loginID, EPP_NSsetDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    LOGGER(PACKAGE).notice(boost::format("NSSetDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
-
-    // lock row
-    id = getIdOfNSSet(action.getDB(), handle, restricted_handles_
-            , lock_epp_commands_, true);
-    if (id < 0) {
-        LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::nsset_handle, 1,
-                REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
-    } else if (id == 0) {
-        LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-        code = COMMAND_OBJECT_NOT_EXIST;
-    }
-    if (!code &&  !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) // if not client od the object
-    {
-        LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
-    }
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        if (!code && (
-                    testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
-                    testObjectHasState(action,id,FLAG_deleteCandidate)
-                    ))
-        {
-            LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
-        }
-    } catch (...) {
-        code = COMMAND_FAILED;
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        const Epp::LocalizedSuccessResponse response = Epp::nsset_delete(
+            Corba::unwrap_string(_handle),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_cltrid_prefix_
+        );
+
+        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    if (!code) {
-
-        // test to  table domain if relations to nsset
-        if (action.getDB()->TestNSSetRelations(id) ) //  can not be delete
-        {
-            LOG( WARNING_LOG, "database relations" );
-            code = COMMAND_PROHIBITS_OPERATION;
-        } else {
-            if (action.getDB()->SaveObjectDelete(id) ) // save to delete object
-            {
-                if (action.getDB()->DeleteNSSetObject(id) )
-                    code = COMMAND_OK; // if is OK
-            }
-        }
-
-        if (code == COMMAND_OK)
-        {
-            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
-        }
-    }
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("NSSetDelete");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************

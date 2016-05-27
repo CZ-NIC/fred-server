@@ -38,6 +38,7 @@
 #include <boost/optional.hpp>
 #include "src/epp/nsset/nsset_check.h"
 #include "src/epp/nsset/nsset_info.h"
+#include "src/epp/nsset/nsset_delete.h"
 
 namespace Corba {
 
