@@ -143,7 +143,8 @@ std::map<std::string, std::string> get_object_state_descriptions(
 ) {
     std::map<std::string, std::string> handle_to_description;
     {
-        const std::vector<Fred::ObjectStateDescription> all_state_descriptions = Fred::GetObjectStateDescriptions( to_db_handle(_lang) ).exec(_ctx);
+        const std::vector< Fred::ObjectStateDescription > all_state_descriptions =
+            Fred::GetObjectStateDescriptions(Conversion::Enums::to_db_handle(_lang)).exec(_ctx);
         BOOST_FOREACH(const Fred::ObjectStateDescription& state_description, all_state_descriptions) {
             handle_to_description.insert(std::make_pair(state_description.handle, state_description.description));
         }
@@ -173,6 +174,28 @@ std::map<std::string, std::string> get_object_state_descriptions(
     }
 
     return result;
+}
+
+LocalizedStates get_localized_object_state(
+    Fred::OperationContext &_ctx,
+    const std::set< Fred::Object_State::Enum > &_states,
+    SessionLang::Enum _lang)
+{
+    typedef std::vector< Fred::ObjectStateDescription > ObjectStateDescriptions;
+    const ObjectStateDescriptions all_state_descriptions =
+        Fred::GetObjectStateDescriptions(Conversion::Enums::to_db_handle(_lang)).exec(_ctx);
+
+    LocalizedStates state_description;
+    for (ObjectStateDescriptions::const_iterator state_ptr = all_state_descriptions.begin();
+         state_ptr != all_state_descriptions.end(); ++state_ptr)
+    {
+        const Fred::Object_State::Enum state =
+            Conversion::Enums::from_db_handle< Fred::Object_State >(state_ptr->handle);
+        if (_states.find(state) != _states.end()) {
+            state_description[state] = state_ptr->description;
+        }
+    }
+    return state_description;
 }
 
 }

@@ -25,6 +25,7 @@
 
 #include "src/epp/error.h"
 #include "src/epp/localized_response.h"
+#include "src/epp/localized_states.h"
 #include "src/epp/response.h"
 #include "src/epp/session_lang.h"
 
@@ -59,6 +60,11 @@ std::map<std::string, std::string> get_object_state_descriptions(
     const std::set<std::string>& _state_handles,
     SessionLang::Enum _lang
 );
+
+LocalizedStates get_localized_object_state(
+    Fred::OperationContext &_ctx,
+    const std::set< Fred::Object_State::Enum > &_states,
+    SessionLang::Enum _lang);
 
 }
 

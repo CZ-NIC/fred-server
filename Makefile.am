@@ -1515,6 +1515,9 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/disclose_policy.h \
 		src/epp/localization.h \
 		src/epp/localization.cc \
+		src/epp/localized_response.h \
+		src/epp/localized_states.h \
+		src/epp/util.h \
 		src/epp/param.h \
 		src/epp/reason.h \
 		src/epp/response.h \
