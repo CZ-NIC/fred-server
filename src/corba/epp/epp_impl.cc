@@ -77,6 +77,10 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+#include "src/epp/nsset/nsset_check.h"
+#include "src/epp/nsset/nsset_info.h"
+#include "src/epp/nsset/nsset_delete.h"
+
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_create.h"
 #include "src/epp/contact/contact_info.h"
