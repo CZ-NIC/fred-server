@@ -5,6 +5,7 @@
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
 
@@ -33,7 +34,7 @@ KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
         result.last_update = data.update_time;
         result.last_transfer = data.transfer_time;
         /* show object authinfo only to sponsoring registrar */
-        if (Fred::InfoRegistrarByHandleId(data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id ==
+        if (Fred::InfoRegistrarByHandle(data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id ==
             _registrar_id) {
             result.auth_info_pw = data.authinfopw;
         }
