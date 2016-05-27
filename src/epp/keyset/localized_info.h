@@ -23,23 +23,22 @@
 #ifndef LOCALIZED_INFO_H_30CFD670609F21298BB96EE14BB345B0//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define LOCALIZED_INFO_H_30CFD670609F21298BB96EE14BB345B0
 
-#include "src/epp/keyset/info.h"
+#include "src/epp/keyset/info_data.h"
+#include "src/epp/localized_states.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
-
-#include <map>
+#include "src/fredlib/object/object_state.h"
 
 namespace Epp {
 
 struct LocalizedKeysetInfoData
 {
-    typedef std::map< Fred::Object_State::Enum, std::string > StatesDescription;
     std::string handle; ///< KeySet handle
     std::string roid; ///< KeySet identifier - repository ID
     std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
     std::string creating_registrar_handle; ///< Registrar identifier, which created contact
     Nullable< std::string > last_update_registrar_handle; ///< Registrar identifier, which realized changes
-    StatesDescription states_description; ///< KeySet states list
+    LocalizedStates states_description; ///< KeySet states list
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable< boost::posix_time::ptime > last_update; ///< Date and time of last change
     Nullable< boost::posix_time::ptime > last_transfer; ///< Date and time of last transfer
@@ -65,7 +64,7 @@ struct LocalizedKeysetInfoResult
  * @throws ExceptionInvalidHandle
  * @throws ExceptionNonexistentHandle
  */
-LocalizedKeysetInfoResult keyset_info(
+LocalizedKeysetInfoResult localized_keyset_info(
     const std::string &_keyset_handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,

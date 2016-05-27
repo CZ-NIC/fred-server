@@ -5282,10 +5282,10 @@ ccReg_EPP_i::KeySetInfo(
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const Epp::LocalizedKeysetInfoResult info_result =
-            Epp::keyset_info(keyset_handle,
-                             session_data.registrar_id,
-                             session_data.language,
-                             server_transaction_handle);
+            Epp::localized_keyset_info(keyset_handle,
+                                       session_data.registrar_id,
+                                       session_data.language,
+                                       server_transaction_handle);
 
         ccReg::KeySet_var keyset = new ccReg::KeySet;
         Corba::wrap_Epp_LocalizedKeysetInfoData(info_result.data, keyset);
