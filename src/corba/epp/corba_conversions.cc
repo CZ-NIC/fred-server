@@ -415,6 +415,49 @@ namespace Corba {
         return result;
     }
 
+    void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst)
+    {
+        if (_src.descriptions.empty()) {
+            _dst.length(1);
+            _dst[0].value = "ok";
+            _dst[0].text = _src.ok_state_description.c_str();
+            return;
+        }
+        _dst.length(_src.descriptions.size());
+        ::size_t idx = 0;
+        for (Epp::LocalizedStates::Descriptions::const_iterator state_ptr = _src.descriptions.begin();
+             state_ptr != _src.descriptions.end(); ++state_ptr, ++idx)
+        {
+            _dst[idx].value = Conversion::Enums::to_db_handle(state_ptr->first).c_str();
+            _dst[idx].text = state_ptr->second.c_str();
+        }
+    }
+
+    static void wrap_Epp_KeysetInfoData_DnsKeys(const Epp::KeysetInfoData::DnsKeys &_src, ccReg::DNSKey &_dst)
+    {
+        _dst.length(_src.size());
+        ::size_t idx = 0;
+        for (Epp::KeysetInfoData::DnsKeys::const_iterator data_ptr = _src.begin();
+             data_ptr != _src.end(); ++data_ptr, ++idx)
+        {
+            CorbaConversion::wrap_int(data_ptr->get_flags(),    _dst[idx].flags);
+            CorbaConversion::wrap_int(data_ptr->get_protocol(), _dst[idx].protocol);
+            CorbaConversion::wrap_int(data_ptr->get_alg(),      _dst[idx].alg);
+            _dst[idx].key = data_ptr->get_key().c_str();
+        }
+    }
+
+    void wrap_Epp_KeysetInfoData_TechContacts(const Epp::KeysetInfoData::TechContacts &_src, ccReg::TechContact &_dst)
+    {
+        _dst.length(_src.size());
+        ::size_t idx = 0;
+        for (Epp::KeysetInfoData::TechContacts::const_iterator data_ptr = _src.begin();
+             data_ptr != _src.end(); ++data_ptr, ++idx)
+        {
+            _dst[idx] = data_ptr->c_str();
+        }
+    }
+
     void wrap_Epp_LocalizedKeysetInfoData(const Epp::LocalizedKeysetInfoData &_src, ccReg::KeySet &_dst)
     {
         _dst.handle = _src.handle.c_str();
@@ -422,28 +465,13 @@ namespace Corba {
         _dst.ClID = _src.sponsoring_registrar_handle.c_str();
         _dst.CrID = _src.creating_registrar_handle.c_str();
         _dst.UpID = wrap_Nullable_string_to_string(_src.last_update_registrar_handle).c_str();
-        if (_src.states.descriptions.empty()) {
-            _dst.stat.length(1);
-            _dst.stat[0].value = "ok";
-            _dst.stat[0].text = _src.states.ok_state_description.c_str();
-        }
-        else {
-            _dst.stat.length(_src.states.descriptions.size());
-            ::size_t idx = 0;
-            for (Epp::LocalizedStates::Descriptions::const_iterator state_ptr = _src.states.descriptions.begin();
-                 state_ptr != _src.states.descriptions.end(); ++state_ptr, ++idx)
-            {
-                _dst.stat[idx].value = Conversion::Enums::to_db_handle(state_ptr->first).c_str();
-                _dst.stat[idx].text = state_ptr->second.c_str();
-            }
-        }
+        wrap_Epp_LocalizedStates(_src.states, _dst.stat);
         _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate).c_str();
         _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update).c_str();
         _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer).c_str();
         _dst.AuthInfoPw = wrap_Nullable_string_to_string(_src.auth_info_pw).c_str();
-//        _dst.dsrec = _src.;
-//        _dst.dnsk = _src.;
-//        _dst.tech;
-
+        _dst.dsrec.length(0); // has to be empty
+        wrap_Epp_KeysetInfoData_DnsKeys(_src.dns_keys, _dst.dnsk);
+        wrap_Epp_KeysetInfoData_TechContacts(_src.tech_contacts, _dst.tech);
     }
 }//namespace Corba
