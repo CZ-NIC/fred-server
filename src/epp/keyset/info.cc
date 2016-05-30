@@ -15,7 +15,8 @@ KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
 {
     try {
         KeysetInfoData result;
-        const Fred::InfoKeysetData data = Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx).info_keyset_data;
+        static const char *const utc_timezone = "UTC";
+        const Fred::InfoKeysetData data = Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx, utc_timezone).info_keyset_data;
         result.handle = data.handle;
         result.roid = data.roid;
         result.sponsoring_registrar_handle = data.sponsoring_registrar_handle;
