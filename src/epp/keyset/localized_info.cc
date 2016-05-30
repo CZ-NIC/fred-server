@@ -37,11 +37,13 @@ LocalizedKeysetInfoResult localized_keyset_info(
         data.ds_records = keyset_info_data.ds_records;
         data.dns_keys = keyset_info_data.dns_keys;
         data.tech_contacts = keyset_info_data.tech_contacts;
+        const LocalizedKeysetInfoResult result(data, create_localized_success_response(Response::ok, ctx, _lang));
         ctx.commit_transaction();
-        return LocalizedKeysetInfoResult(data, create_localized_success_response(Response::ok, ctx, _lang));
+        return result;
     }
-    catch (const NonexistentHandle &e) {
+    catch (const NonexistentHandle&) {
         Fred::OperationContextCreator ctx;
+        ctx.get_log().info("localized_keyset_info failure: NonexistentHandle");
         throw create_localized_fail_response(ctx, Response::object_not_exist, std::set< Error >(), _lang);
     }
     catch(const LocalizedFailResponse&) {
@@ -49,6 +51,7 @@ LocalizedKeysetInfoResult localized_keyset_info(
     }
     catch(...) {
         Fred::OperationContextCreator ctx;
+        ctx.get_log().info("localized_keyset_info failure: unexpected exception");
         throw create_localized_fail_response(ctx, Response::failed, std::set< Error >(), _lang);
     }
 }
