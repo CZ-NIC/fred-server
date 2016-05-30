@@ -39,7 +39,7 @@ struct SessionLang {
 inline std::string to_db_handle(const SessionLang::Enum lang) {
     switch(lang) {
         case SessionLang::en : return "en";
-        case SessionLang::cz : return "cz";
+        case SessionLang::cz : return "cs";
     }
 
     throw InvalidSessionLang();
