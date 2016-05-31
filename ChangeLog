@@ -1,3 +1,7 @@
+2016-05-31 (2.24.1)
+
+  * fix - mojeid backend log severity
+
 2016-04-10 (2.24.0)
 
   * mojeid backend rewrite
