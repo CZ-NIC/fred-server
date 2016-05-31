@@ -682,7 +682,7 @@ MojeIDImpl::ContactId MojeIDImpl::create_contact_prepare(
         return new_contact.create_object_result.object_id;
     }
     catch (const MojeIDImplData::RegistrationValidationResult &e) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data)");
         throw;
     }
     catch (const std::exception &e) {
@@ -778,26 +778,27 @@ void MojeIDImpl::transfer_contact_prepare(
         return;
     }
     catch (const MojeIDImplData::AlreadyMojeidContact&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - AlreadyMojeidContact)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - AlreadyMojeidContact)");
         throw;
     }
     catch (const MojeIDImplData::ObjectAdminBlocked&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - ObjectAdminBlocked)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectAdminBlocked)");
         throw;
     }
     catch (const MojeIDImplData::ObjectUserBlocked&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - ObjectUserBlocked)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - ObjectUserBlocked)");
         throw;
     }
     catch (const MojeIDImplData::RegistrationValidationResult&) {
-        LOGGER(PACKAGE).error("request failed (incorrect input data - RegistrationValidationResult)");
+        LOGGER(PACKAGE).info("request failed (incorrect input data - RegistrationValidationResult)");
         throw;
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
-            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            LOGGER(PACKAGE).info("request failed (incorrect input data)");
             throw MojeIDImplData::ObjectDoesntExist();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1029,18 +1030,18 @@ void MojeIDImpl::update_contact_prepare(
             LOGGER(PACKAGE).info("request failed (InfoContactById::Exception - unknown_object_id)");
             throw MojeIDImplData::ObjectDoesntExist();
         }
-        LOGGER(PACKAGE).info("request failed (InfoContactById::Exception)");
+        LOGGER(PACKAGE).error("request failed (InfoContactById::Exception)");
         throw;
     }
     catch (const MojeIDImplData::ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
         throw;
     }
-    catch(const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIDImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
-    catch(const MojeIDImplInternal::CheckUpdateContactPrepare &e) {
+    catch (const MojeIDImplInternal::CheckUpdateContactPrepare &e) {
         LOGGER(PACKAGE).info("request failed (CheckUpdateContactPrepare)");
         MojeIDImplInternal::raise(e);
     }
@@ -1224,11 +1225,11 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         LOGGER(PACKAGE).info("request failed (ObjectUserBlocked)");
         throw;
     }
-    catch(const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIDImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
-    catch(const MojeIDImplData::ObjectDoesntExist &e) {
+    catch (const MojeIDImplData::ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
         throw;
     }
@@ -1306,9 +1307,10 @@ void MojeIDImpl::info_contact(
     }
     catch (const Fred::InfoContactByHandle::Exception &e) {
         if (e.is_set_unknown_contact_handle()) {
-            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            LOGGER(PACKAGE).info("request failed (ObjectDoesntExist)");
             throw MojeIDImplData::ObjectDoesntExist();
         }
+        LOGGER(PACKAGE).error("request failed (Fred::InfoContactByHandle failure)");
         throw;
     }
     catch (const std::exception &e) {
@@ -1379,9 +1381,10 @@ void MojeIDImpl::get_contact_info_publish_flags(
     }
     catch (const Fred::InfoContactById::Exception &e) {
         if (e.is_set_unknown_object_id()) {
-            LOGGER(PACKAGE).error("request failed (incorrect input data)");
+            LOGGER(PACKAGE).info("request failed (incorrect input data)");
             throw MojeIDImplData::ObjectDoesntExist();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1538,29 +1541,35 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         }
     }
     catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
+        LOGGER(PACKAGE).info("request failed (identification request doesn't exist)");
         throw;
     }
     catch (const MojeIDImplData::IdentificationFailed&) {
+        LOGGER(PACKAGE).info("request failed (identification failed)");
         throw;
     }
     catch (const MojeIDImplData::ContactChanged&) {
+        LOGGER(PACKAGE).info("request failed (contact changed)");
         throw;
     }
     catch (const MojeIDImplData::ProcessRegistrationValidationResult&) {
+        LOGGER(PACKAGE).info("request failed (incorrect data)");
         throw;
     }
     catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         if (e.is_set_public_request_doesnt_exist()) {
+            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
             throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw std::runtime_error(e.what());
     }
     catch (const Fred::InfoContactById::Exception &e) {
-        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         if (e.is_set_unknown_object_id()) {
+            LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
             throw MojeIDImplData::IdentificationFailed();
         }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const std::exception &e) {
@@ -1652,11 +1661,11 @@ void MojeIDImpl::process_identification_request(
         throw;
     }
     catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
-        LOGGER(PACKAGE).error("request failed (IdentificationAlreadyProcessed)");
+        LOGGER(PACKAGE).info("request failed (IdentificationAlreadyProcessed)");
         throw;
     }
     catch (const MojeIDImplData::IdentificationFailed&) {
-        LOGGER(PACKAGE).warning("request failed (IdentificationFailed)");
+        LOGGER(PACKAGE).info("request failed (IdentificationFailed)");
         throw;
     }
     catch (const std::exception &e) {
@@ -1855,14 +1864,14 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
     }
     catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
-            LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIDImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
-        LOGGER(PACKAGE).warning("request doesn't exist (ObjectDoesntExist)");
+        LOGGER(PACKAGE).info("request doesn't exist (ObjectDoesntExist)");
         throw;
     }
     catch (const std::exception &e) {
@@ -1917,26 +1926,26 @@ void MojeIDImpl::create_validation_request(
     }
     catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
-            LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIDImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
-        LOGGER(PACKAGE).warning("contact doesn't exist (ObjectDoesntExist)");
+        LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
     catch (const MojeIDImplData::ValidationRequestExists&) {
-        LOGGER(PACKAGE).warning("unable to create new request (ValidationRequestExists)");
+        LOGGER(PACKAGE).info("unable to create new request (ValidationRequestExists)");
         throw;
     }
     catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
-        LOGGER(PACKAGE).warning("contact already validated (ValidationAlreadyProcessed)");
+        LOGGER(PACKAGE).info("contact already validated (ValidationAlreadyProcessed)");
         throw;
     }
     catch (const MojeIDImplData::CreateValidationRequestValidationResult&) {
-        LOGGER(PACKAGE).warning("request failed (CreateValidationRequestValidationResult)");
+        LOGGER(PACKAGE).info("request failed (CreateValidationRequestValidationResult)");
         throw;
     }
     catch (const std::exception &e) {
@@ -2128,7 +2137,7 @@ void MojeIDImpl::get_contact_state(
         add_state(rcontact[0][5], Fred::Object::State::linked, _result);
     }//try
     catch (const MojeIDImplData::ObjectDoesntExist&) {
-        LOGGER(PACKAGE).warning("ObjectDoesntExist");
+        LOGGER(PACKAGE).info("ObjectDoesntExist");
         throw;
     }
     catch (const std::exception &e) {
@@ -2212,14 +2221,14 @@ void MojeIDImpl::cancel_account_prepare(
     }
     catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
-            LOGGER(PACKAGE).warning(boost::format("contact doesn't exist (%1%)") % e.what());
+            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
             throw MojeIDImplData::ObjectDoesntExist();
         }
         LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
         throw;
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
-        LOGGER(PACKAGE).warning("contact doesn't exist (ObjectDoesntExist)");
+        LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
         throw;
     }
     catch (const std::exception &e) {
@@ -2315,15 +2324,15 @@ void MojeIDImpl::send_new_pin3(
         ctx.commit_transaction();
         return;
     }
-    catch(const MojeIDImplData::ObjectDoesntExist &e) {
+    catch (const MojeIDImplData::ObjectDoesntExist &e) {
         LOGGER(PACKAGE).info("ObjectDoesntExist");
         throw;
     }
-    catch(const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIDImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
-    catch(const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
+    catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
         if (e.is_set_object_doesnt_exist()) {
             LOGGER(PACKAGE).info(e.what());
             throw MojeIDImplData::ObjectDoesntExist();
@@ -2331,7 +2340,7 @@ void MojeIDImpl::send_new_pin3(
         LOGGER(PACKAGE).error(e.what());
         throw;
     }
-    catch(const MojeIDImplData::IdentificationRequestDoesntExist&) {
+    catch (const MojeIDImplData::IdentificationRequestDoesntExist&) {
         LOGGER(PACKAGE).info("IdentificationRequestDoesntExist");
         throw;
     }
@@ -2372,11 +2381,11 @@ void MojeIDImpl::send_mojeid_card(
             states.presents(Fred::Object::State::validated_contact));
         ctx.commit_transaction();
     }
-    catch(const MojeIDImplData::ObjectDoesntExist&) {
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("ObjectDoesntExist");
         throw;
     }
-    catch(const MojeIDImplData::MessageLimitExceeded &e) {
+    catch (const MojeIDImplData::MessageLimitExceeded &e) {
         LOGGER(PACKAGE).info(e.as_string());
         throw;
     }
