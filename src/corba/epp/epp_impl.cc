@@ -85,6 +85,7 @@
 #include "src/epp/contact/post_contact_update_hooks.h"
 
 #include "src/epp/keyset/localized_info.h"
+#include "src/epp/keyset/localized_check.h"
 
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
@@ -2635,20 +2636,37 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
   return ObjectCheck( EPP_DomainCheck , "DOMAIN" , "fqdn" , fqdn , a , params);
 }
 
-ccReg::Response *
-ccReg_EPP_i::KeySetCheck(
-        const ccReg::Check &handle,
-        ccReg::CheckResp_out a,
-        const ccReg::EppParams &params)
+ccReg::Response* ccReg_EPP_i::KeySetCheck(
+    const ccReg::Check& _handles_to_be_checked,
+    ccReg::CheckResp_out _check_results,
+    const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+    try {
+        const Epp::RegistrarSessionData session_data =
+            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
-    return ObjectCheck(
-            EPP_KeySetCheck, "KEYSET", "handle", handle,
-            a, params);
+        const std::vector< std::string > handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
+        const Epp::Keyset::LocalizedHandleCheckResponse localized_response = Epp::Keyset::get_localized_check(
+            std::set< std::string >(handles_to_be_checked.begin(), handles_to_be_checked.end()),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle);
+
+        ccReg::CheckResp_var check_results = new ccReg::CheckResp(
+            Corba::wrap_localized_check_info(handles_to_be_checked, localized_response.results));
+
+        ccReg::Response_var return_value =
+            new ccReg::Response(Corba::wrap_response(localized_response.ok_response, server_transaction_handle));
+
+        /* No exception shall be thrown from here onwards. */
+        _check_results = check_results._retn();
+        return return_value._retn();
+    }
+    catch (const Epp::LocalizedFailResponse &e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
@@ -5273,7 +5291,6 @@ ccReg_EPP_i::KeySetInfo(
         ccReg::KeySet_out _keyset_info,
         const ccReg::EppParams &_epp_params)
 {
-#if 1
     const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
     try {
@@ -5302,55 +5319,6 @@ ccReg_EPP_i::KeySetInfo(
     catch (const Epp::LocalizedFailResponse &e) {
         throw Corba::wrap_error(e, server_transaction_handle);
     }
-#else
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
-
-    LOG(NOTICE_LOG, "KeySetInfo: clientID -> %llu clTRID [%s] handle [%s] ",
-            params.loginID, static_cast<const char*>(params.clTRID), handle);
-
-    EPPAction a(this, params.loginID, EPP_KeySetInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    std::auto_ptr<Fred::KeySet::Manager> kman(
-            Fred::KeySet::Manager::create(
-                a.getDB(), restricted_handles_)
-            );
-    // first check handle for proper format
-    if (!kman->checkHandleFormat(handle))
-        a.failed(SetReasonKeySetHandle(
-                    a.getErrors(), handle, a.getLang())
-                );
-
-    // load keyset by handle
-    std::auto_ptr<Fred::KeySet::List> klist(kman->createList());
-
-    Database::Filters::Union unionFilter;
-    Database::Filters::KeySet *keyFilter = new Database::Filters::KeySetHistoryImpl();
-
-    keyFilter->addHandle().setValue(std::string(handle));
-    keyFilter->addDeleteTime().setNULL();
-    unionFilter.addFilter(keyFilter);
-
-    klist->reload(unionFilter);
-
-
-    //klist->setHandleFilter(handle);
-    // try {
-        // klist->reload();
-    // } catch (...) {
-        // a.failedInternal("Cannot load keyset");
-    // }
-    if (klist->getCount() != 1)
-        // failed because of non existence
-        a.failed(COMMAND_OBJECT_NOT_EXIST);
-
-    Fred::KeySet::KeySet *kss = klist->getKeySet(0);
-    k = new ccReg::KeySet;
-    corba_keyset_data_copy(a, regMan.get(), k, kss);
-    return a.getRet()._retn();
-#endif
 }
 
 /*************************************************************
