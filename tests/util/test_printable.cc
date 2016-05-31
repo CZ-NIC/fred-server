@@ -345,16 +345,6 @@ BOOST_AUTO_TEST_CASE(delete_keyset)
 }
 
 /**
- * test CheckKeyset print to string
- */
-BOOST_AUTO_TEST_CASE(check_keyset)
-{
-    printable_test(
-    Fred::CheckKeyset("TEST-CHECK-KEYSET-HANDLE")
-    );
-}
-
-/**
  * test InfoKeysetData print to string
  */
 BOOST_AUTO_TEST_CASE(info_keyset_data)
