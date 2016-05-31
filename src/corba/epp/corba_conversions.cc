@@ -415,6 +415,47 @@ namespace Corba {
         return result;
     }
 
+    static ccReg::CheckAvail wrap_keyset_handle_check_result(
+        const Nullable< Epp::Keyset::LocalizedHandleCheckResult > &_check_result)
+    {
+        if (_check_result.isnull()) {
+            return ccReg::NotExist;
+        }
+
+        switch (_check_result.get_value().state)
+        {
+            case Epp::Keyset::HandleCheckResult::invalid_handle   : return ccReg::BadFormat;
+            case Epp::Keyset::HandleCheckResult::protected_handle : return ccReg::DelPeriod;
+            case Epp::Keyset::HandleCheckResult::registered_handle: return ccReg::Exist;
+        }
+
+        throw std::runtime_error("unknown keyset handle check result");
+    }
+
+    ccReg::CheckResp wrap_localized_check_info(
+        const std::vector< std::string > &handles,
+        const std::map< std::string, Nullable< Epp::Keyset::LocalizedHandleCheckResult > > &check_results)
+    {
+        ccReg::CheckResp result;
+        result.length(handles.size());
+
+        typedef std::vector< std::string > Handles;
+        ::size_t idx = 0;
+        for (Handles::const_iterator handle_ptr = handles.begin(); handle_ptr != handles.end(); ++handle_ptr, ++idx)
+        {
+            typedef std::map< std::string, Nullable< Epp::Keyset::LocalizedHandleCheckResult > > CheckResults;
+            const CheckResults::const_iterator result_ptr = check_results.find(*handle_ptr);
+            if (result_ptr == check_results.end()) {
+                throw std::out_of_range("handle " + (*handle_ptr) + " not found");
+            }
+            result[idx].avail = wrap_keyset_handle_check_result(result_ptr->second);
+            result[idx].reason = result_ptr->second.isnull() ? ""
+                                                             : result_ptr->second.get_value().description.c_str();
+        }
+
+        return result;
+    }
+
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst)
     {
         if (_src.descriptions.empty()) {

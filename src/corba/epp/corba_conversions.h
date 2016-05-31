@@ -33,6 +33,7 @@
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/keyset/localized_info.h"
+#include "src/epp/keyset/localized_check.h"
 
 namespace Corba {
 
@@ -60,6 +61,13 @@ namespace Corba {
         const std::vector<std::string>& contact_handles,
         const std::map< std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > >& contact_handle_check_results
     );
+
+    /**
+     * @returns data ordered the same way as input contact_handles
+     */
+    ccReg::CheckResp wrap_localized_check_info(
+        const std::vector< std::string > &handles,
+        const std::map< std::string, Nullable< Epp::Keyset::LocalizedHandleCheckResult > > &check_results);
 
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst);
 
