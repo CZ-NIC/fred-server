@@ -49,7 +49,7 @@ std::map< std::string, Nullable< LocalizedHandleCheckResult > > localize_check_r
                     column_name = "reason";
                     break;
                 case SessionLang::cz:
-                    column_name = "reason_cz";
+                    column_name = "reason_cs";
                     break;
             }
             if (column_name.empty()) {
@@ -121,13 +121,15 @@ LocalizedHandleCheckResponse get_localized_check(
     catch (const LocalizedFailResponse&) {
         throw;
     }
+    catch (const std::exception &e) {
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info(std::string("get_localized_check failure: ") + e.what());
+        throw create_localized_fail_response(ctx, Response::failed, std::set< Error >(), _lang);
+    }
     catch (...) {
         Fred::OperationContextCreator ctx;
-        throw create_localized_fail_response(
-            ctx,
-            Response::failed,
-            std::set<Error>(),
-            _lang);
+        ctx.get_log().info("unexpected exception in get_localized_check function");
+        throw create_localized_fail_response(ctx, Response::failed, std::set< Error >(), _lang);
     }
 }
 
