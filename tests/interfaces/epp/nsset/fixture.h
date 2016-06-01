@@ -30,6 +30,8 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
+#include "src/epp/nsset/nsset_create.h"
+
 struct has_registrar : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData registrar;
 
@@ -93,6 +95,118 @@ struct has_nsset_with_all_data_set : has_registrar {
         nsset = Fred::InfoNssetByHandle(nsset_handle).exec(ctx).info_nsset_data;
     }
 };
+
+struct has_nsset_input_data_set : has_registrar
+{
+    Epp::NssetCreateInputData nsset_input_data;
+
+    has_nsset_input_data_set()
+    : nsset_input_data(Epp::NssetCreateInputData(
+            "NSSET1",
+            "authInfo123",
+            Util::vector_of<Epp::DNShostData>
+                (Epp::DNShostData("a.ns.nic.cz",
+                    Util::vector_of<boost::asio::ip::address>
+                        (boost::asio::ip::address::from_string("127.0.0.3"))
+                        (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
+                (Epp::DNShostData("c.ns.nic.cz",
+                    Util::vector_of<boost::asio::ip::address>
+                        (boost::asio::ip::address::from_string("127.0.0.4"))
+                        (boost::asio::ip::address::from_string("127.1.1.4")))), //add_dns
+            Util::vector_of<std::string>
+                ("TEST-ADMIN-CONTACT3")
+                ("TEST-ADMIN-CONTACT2"),
+            3
+        ))
+    {
+        Fred::Contact::PlaceAddress place;
+        place.street1 = "street 1";
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
+
+        std::string admin_contact2_handle = nsset_input_data.tech_contacts.at(1);
+
+        Fred::CreateContact(admin_contact2_handle,registrar.handle)
+            .set_name("TEST-ADMIN-CONTACT2 NAME")
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        std::string admin_contact3_handle = nsset_input_data.tech_contacts.at(0);
+
+        Fred::CreateContact(admin_contact3_handle,registrar.handle)
+            .set_name("TEST-ADMIN-CONTACT3 NAME")
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+    }
+};
+
+
+struct has_nsset_with_input_data_set : has_registrar {
+    Fred::InfoNssetData nsset;
+    Epp::NssetCreateInputData nsset_input_data;
+
+    has_nsset_with_input_data_set()
+    : nsset_input_data(Epp::NssetCreateInputData(
+            "NSSET1",
+            "authInfo123",
+            Util::vector_of<Epp::DNShostData>
+                (Epp::DNShostData("a.ns.nic.cz",
+                    Util::vector_of<boost::asio::ip::address>
+                        (boost::asio::ip::address::from_string("127.0.0.3"))
+                        (boost::asio::ip::address::from_string("127.1.1.3")))) //add_dns
+                (Epp::DNShostData("c.ns.nic.cz",
+                    Util::vector_of<boost::asio::ip::address>
+                        (boost::asio::ip::address::from_string("127.0.0.4"))
+                        (boost::asio::ip::address::from_string("127.1.1.4")))), //add_dns
+            Util::vector_of<std::string>
+                ("TEST-ADMIN-CONTACT3")
+                ("TEST-ADMIN-CONTACT2"),
+            3
+        ))
+    {
+        Fred::Contact::PlaceAddress place;
+        place.street1 = "street 1";
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
+
+        std::string admin_contact2_handle = nsset_input_data.tech_contacts.at(1);
+
+        Fred::CreateContact(admin_contact2_handle,registrar.handle)
+            .set_name("TEST-ADMIN-CONTACT2 NAME")
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        std::string admin_contact3_handle = nsset_input_data.tech_contacts.at(0);
+
+        Fred::CreateContact(admin_contact3_handle,registrar.handle)
+            .set_name("TEST-ADMIN-CONTACT3 NAME")
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        Fred::CreateNsset(nsset_input_data.handle, registrar.handle)
+            .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+                (Fred::DnsHost(nsset_input_data.dns_hosts.at(0).fqdn, nsset_input_data.dns_hosts.at(0).inet_addr )) //add_dns
+                (Fred::DnsHost(nsset_input_data.dns_hosts.at(1).fqdn, nsset_input_data.dns_hosts.at(1).inet_addr )) //add_dns
+                )
+            .set_authinfo(nsset_input_data.authinfo)
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle)(admin_contact2_handle))
+            .set_tech_check_level(nsset_input_data.tech_check_level)
+            .exec(ctx);
+        nsset = Fred::InfoNssetByHandle(nsset_input_data.handle).exec(ctx).info_nsset_data;
+
+    }
+};
+
 
 struct has_nsset_and_a_different_registrar : has_nsset {
     Fred::InfoRegistrarData the_different_registrar;
