@@ -29,7 +29,7 @@ NssetCreateResult nsset_create_impl(
 
     if( Fred::Nsset::get_handle_syntax_validity(_data.handle) != Fred::NssetHandleState::SyntaxValidity::valid ) {
         AggregatedParamErrors invalid_handle_exception;
-        invalid_handle_exception.add( Error(Param::contact_handle, 0, Reason::bad_format_contact_handle) );
+        invalid_handle_exception.add( Error(Param::nsset_handle, 0, Reason::bad_format_nsset_handle) );
         throw invalid_handle_exception;
     }
 
