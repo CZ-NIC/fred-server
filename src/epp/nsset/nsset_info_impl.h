@@ -24,6 +24,7 @@
 #define EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
 
 #include "src/epp/session_lang.h"
+#include "src/epp/nsset/nsset_dns_host_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
@@ -33,24 +34,6 @@
 #include <boost/asio/ip/address.hpp>
 
 namespace Epp {
-
-    /**
-     * DNS host data.
-     */
-    struct DNShostData {
-        std::string fqdn;/**< nameserver host name*/
-        std::vector<boost::asio::ip::address> inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
-
-        /**
-         * Constructor initializing all attributes.
-         * @param _fqdn nameserver name
-         * @param _inet_addr addresses of the nameserver
-         */
-        DNShostData(const std::string& _fqdn, const std::vector<boost::asio::ip::address>& _inet_addr)
-        : fqdn(_fqdn)
-        , inet_addr(_inet_addr)
-        {}
-    };
 
 struct NssetInfoOutputData {
     std::string handle;

@@ -1598,6 +1598,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/nsset_delete.h \
 		src/epp/nsset/nsset_delete_impl.cc \
 		src/epp/nsset/nsset_delete_impl.h \
+		src/epp/nsset/nsset_create.cc \
+		src/epp/nsset/nsset_create.h \
+		src/epp/nsset/nsset_create_impl.cc \
+		src/epp/nsset/nsset_create_impl.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
 

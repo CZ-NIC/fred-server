@@ -4,6 +4,7 @@
 #include "src/epp/error.h"
 #include "src/epp/param.h"
 #include "src/epp/contact/contact_create.h"
+#include "src/epp/nsset/nsset_dns_host_data.h"
 
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
@@ -619,6 +620,42 @@ namespace Corba {
         throw std::runtime_error("unknown_nsset_state");
     }
 
+    std::vector<std::string> unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact & in)
+    {
+        std::vector<std::string> ret;
+        ret.reserve(in.length());
+        for(unsigned long long i = 0 ; i < in.length();++i)
+        {
+            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            ret.push_back(std::string(in[i]));
+        }
+        return ret;
+    }
+
+    std::vector<boost::asio::ip::address> unwrap_inet_addr_to_vector_asio_addr(const ccReg::InetAddress& in)
+    {
+        std::vector<boost::asio::ip::address> ret;
+        ret.reserve(in.length());
+        for(unsigned long long i = 0 ; i < in.length();++i)
+        {
+            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            ret.push_back(boost::asio::ip::address::from_string(in[i]));
+        }
+        return ret;
+    }
+
+    std::vector<Epp::DNShostData> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in)
+    {
+        std::vector<Epp::DNShostData> ret;
+        ret.reserve(in.length());
+        for(unsigned long long i = 0 ; i < in.length();++i)
+        {
+            if(in[i].fqdn == 0) throw std::runtime_error("null char ptr");
+            ret.push_back(Epp::DNShostData(std::string(in[i].fqdn),
+                unwrap_inet_addr_to_vector_asio_addr(in[i].inet)));
+        }
+        return ret;
+    }
 
     /**
      * @returns check results in the same order as input handles
