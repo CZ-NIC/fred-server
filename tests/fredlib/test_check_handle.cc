@@ -227,10 +227,10 @@ BOOST_FIXTURE_TEST_CASE(check_nsset_handle_false, check_handle_fixture)
 BOOST_FIXTURE_TEST_CASE(check_keyset_handle_true, check_handle_fixture)
 {
     Fred::OperationContextCreator ctx;
-    BOOST_CHECK(Fred::Keyset::get_handle_registrability(ctx, test_keyset_handle) == Fred::Keyset::HandleState::registered);
-    BOOST_CHECK(Fred::Keyset::get_handle_syntax_validity(test_keyset_handle+"@") == Fred::Keyset::HandleState::invalid);
-    BOOST_CHECK(Fred::Keyset::get_handle_registrability(ctx, test_keyset_handle_rem) == Fred::Keyset::HandleState::in_protection_period);
-    BOOST_CHECK(Fred::Keyset::get_handle_registrability(ctx, test_keyset_handle + xmark) == Fred::Keyset::HandleState::available);
+    BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle) == Fred::KeySet::HandleState::registered);
+    BOOST_CHECK(Fred::KeySet::get_handle_syntax_validity(test_keyset_handle+"@") == Fred::KeySet::HandleState::invalid);
+    BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle_rem) == Fred::KeySet::HandleState::in_protection_period);
+    BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle + xmark) == Fred::KeySet::HandleState::available);
 }
 
 /**
@@ -238,11 +238,11 @@ BOOST_FIXTURE_TEST_CASE(check_keyset_handle_true, check_handle_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(check_keyset_handle_false, check_handle_fixture)
 {
-    BOOST_CHECK(Fred::Keyset::get_handle_syntax_validity(test_keyset_handle) == Fred::Keyset::HandleState::valid);
+    BOOST_CHECK(Fred::KeySet::get_handle_syntax_validity(test_keyset_handle) == Fred::KeySet::HandleState::valid);
     Fred::OperationContextCreator ctx;
-    BOOST_CHECK(Fred::Keyset::get_handle_registrability(ctx, test_keyset_handle + xmark) != Fred::Keyset::HandleState::registered);
-    BOOST_CHECK(Fred::Keyset::get_handle_registrability(ctx, test_keyset_handle) != Fred::Keyset::HandleState::in_protection_period);
-    BOOST_CHECK(Fred::Keyset::get_handle_registrability(ctx, test_keyset_handle) != Fred::Keyset::HandleState::available);
+    BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle + xmark) != Fred::KeySet::HandleState::registered);
+    BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle) != Fred::KeySet::HandleState::in_protection_period);
+    BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle) != Fred::KeySet::HandleState::available);
 }
 
 /**

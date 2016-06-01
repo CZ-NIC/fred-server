@@ -21,7 +21,7 @@
 #include "src/fredlib/object/check_handle.h"
 
 namespace Fred {
-namespace Keyset {
+namespace KeySet {
 
 HandleState::SyntaxValidity get_handle_syntax_validity(const std::string &_keyset_handle)
 {
@@ -45,5 +45,5 @@ HandleState::Registrability get_handle_registrability(OperationContext &_ctx,
     return HandleState::available;
 }
 
-}//namespace Fred::Keyset
+}//namespace Fred::KeySet
 }//namespace Fred

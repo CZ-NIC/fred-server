@@ -10,7 +10,7 @@
 #include <set>
 
 namespace Epp {
-namespace Keyset {
+namespace KeySet {
 
 namespace {
 
@@ -87,7 +87,7 @@ std::map< std::string, Nullable< LocalizedHandleCheckResult > > localize_check_r
     return localized_result;
 }
 
-}//namespace Epp::Keyset::{anonymous}
+}//namespace Epp::KeySet::{anonymous}
 
 LocalizedHandleCheckResponse get_localized_check(
     const std::set< std::string > &_keyset_handles,
@@ -112,7 +112,7 @@ LocalizedHandleCheckResponse get_localized_check(
                 _lang);
         }
 
-        const std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check_results =
+        const std::map< std::string, Nullable< KeySet::HandleCheckResult::Enum > > keyset_check_results =
             keyset_check(ctx, _keyset_handles);
 
         return LocalizedHandleCheckResponse(create_localized_success_response(Response::ok, ctx, _lang),
@@ -133,5 +133,5 @@ LocalizedHandleCheckResponse get_localized_check(
     }
 }
 
-}//namespace Epp::Keyset
+}//namespace Epp::KeySet
 }//namespace Epp

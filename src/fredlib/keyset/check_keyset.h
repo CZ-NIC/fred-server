@@ -29,14 +29,14 @@
 #include <string>
 
 namespace Fred {
-namespace Keyset {
+namespace KeySet {
 
 HandleState::SyntaxValidity get_handle_syntax_validity(const std::string &_keyset_handle);
 
 HandleState::Registrability get_handle_registrability(OperationContext &_ctx,
                                                       const std::string &_keyset_handle);
 
-}//namespace Fred::Keyset
+}//namespace Fred::KeySet
 }//namespace Fred
 
 #endif//CHECK_KEYSET_H_741E2B9DDFAC8B4EC8F797F6DD42603C

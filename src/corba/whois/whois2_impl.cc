@@ -677,7 +677,6 @@ DomainSeq* Server_impl::get_domains_by_nsset(
     }
     catch (const Registry::WhoisImpl::InvalidLabel& e)
     {
-<<<<<<< 2dfd74b44de10efe9be2924b4fd0a5eba6546f7e
         throw Registry::Whois::INVALID_LABEL();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
@@ -685,37 +684,6 @@ DomainSeq* Server_impl::get_domains_by_nsset(
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
-=======
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            Fred::OperationContextCreator ctx;
-            DomainSeq_var domain_seq = new DomainSeq;
-
-            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
-
-            if(domain_info.empty())
-            {
-                if (Fred::Keyset::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)) ==
-                    Fred::Keyset::HandleState::invalid)
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(domain_info.size() > limit)
-            {
-                limit_exceeded = true;
-                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
-            }
-
-            set_domains_seq(domain_seq.inout(),domain_info,ctx);
->>>>>>> Ticket #15081 - Simplify fredlib keyset check methods.
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();

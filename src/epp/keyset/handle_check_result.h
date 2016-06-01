@@ -27,7 +27,7 @@
 #include "src/epp/reason.h"
 
 namespace Epp {
-namespace Keyset {
+namespace KeySet {
 
 struct HandleCheckResult
 {
@@ -54,7 +54,7 @@ inline Reason::Enum to_reason(const HandleCheckResult::Enum value)
     throw MissingLocalizedDescription();
 }
 
-}//namespace Epp::Keyset
+}//namespace Epp::KeySet
 }//namespace Epp
 
 #endif//HANDLE_CHECK_RESULT_H_50B9A40CBF46B69CAACE2F8D2D34D68E

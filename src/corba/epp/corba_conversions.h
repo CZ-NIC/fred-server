@@ -67,7 +67,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector< std::string > &handles,
-        const std::map< std::string, Nullable< Epp::Keyset::LocalizedHandleCheckResult > > &check_results);
+        const std::map< std::string, Nullable< Epp::KeySet::LocalizedHandleCheckResult > > &check_results);
 
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst);
 

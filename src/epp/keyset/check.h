@@ -36,8 +36,8 @@ namespace Epp {
 /**
  * @returns check results for given contact handles
  */
-std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check(
-    Fred::OperationContext& _ctx,
+std::map< std::string, Nullable< KeySet::HandleCheckResult::Enum > > keyset_check(
+    Fred::OperationContext &_ctx,
     const std::set< std::string > &_keyset_handles);
 
 }

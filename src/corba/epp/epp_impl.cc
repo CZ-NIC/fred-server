@@ -2648,7 +2648,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::vector< std::string > handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::Keyset::LocalizedHandleCheckResponse localized_response = Epp::Keyset::get_localized_check(
+        const Epp::KeySet::LocalizedHandleCheckResponse localized_response = Epp::KeySet::get_localized_check(
             std::set< std::string >(handles_to_be_checked.begin(), handles_to_be_checked.end()),
             session_data.registrar_id,
             session_data.language,

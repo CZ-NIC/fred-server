@@ -24,7 +24,7 @@
 #define HANDLE_STATE_9878314471
 
 namespace Fred {
-namespace Keyset {
+namespace KeySet {
 
 struct HandleState
 {
@@ -41,7 +41,7 @@ struct HandleState
         invalid,
     };
 };
-}//namespace Fred::Keyset
+}//namespace Fred::KeySet
 }//namespace Fred
 
 #endif

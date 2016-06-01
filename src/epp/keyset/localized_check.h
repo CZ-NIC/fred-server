@@ -29,7 +29,7 @@
 #include "util/db/nullable.h"
 
 namespace Epp {
-namespace Keyset {
+namespace KeySet {
 
 struct LocalizedHandleCheckResult
 {
@@ -55,7 +55,7 @@ LocalizedHandleCheckResponse get_localized_check(
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
-}//namespace Epp::Keyset
+}//namespace Epp::KeySet
 }//namespace Epp
 
 
