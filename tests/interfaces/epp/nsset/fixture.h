@@ -114,8 +114,8 @@ struct has_nsset_input_data_set : has_registrar
                         (boost::asio::ip::address::from_string("127.0.0.4"))
                         (boost::asio::ip::address::from_string("127.1.1.4")))), //add_dns
             Util::vector_of<std::string>
-                ("TEST-ADMIN-CONTACT3")
-                ("TEST-ADMIN-CONTACT2"),
+                ("TEST-ADMIN-CONTACT2")
+                ("TEST-ADMIN-CONTACT3"),
             3
         ))
     {
@@ -164,8 +164,8 @@ struct has_nsset_with_input_data_set : has_registrar {
                         (boost::asio::ip::address::from_string("127.0.0.4"))
                         (boost::asio::ip::address::from_string("127.1.1.4")))), //add_dns
             Util::vector_of<std::string>
-                ("TEST-ADMIN-CONTACT3")
-                ("TEST-ADMIN-CONTACT2"),
+                ("TEST-ADMIN-CONTACT2")
+                ("TEST-ADMIN-CONTACT3"),
             3
         ))
     {
@@ -175,7 +175,7 @@ struct has_nsset_with_input_data_set : has_registrar {
         place.postalcode = "11150";
         place.country = "CZ";
 
-        std::string admin_contact2_handle = nsset_input_data.tech_contacts.at(1);
+        std::string admin_contact2_handle = nsset_input_data.tech_contacts.at(0);
 
         Fred::CreateContact(admin_contact2_handle,registrar.handle)
             .set_name("TEST-ADMIN-CONTACT2 NAME")
@@ -184,7 +184,7 @@ struct has_nsset_with_input_data_set : has_registrar {
             .set_discloseaddress(true)
             .exec(ctx);
 
-        std::string admin_contact3_handle = nsset_input_data.tech_contacts.at(0);
+        std::string admin_contact3_handle = nsset_input_data.tech_contacts.at(1);
 
         Fred::CreateContact(admin_contact3_handle,registrar.handle)
             .set_name("TEST-ADMIN-CONTACT3 NAME")
@@ -199,7 +199,7 @@ struct has_nsset_with_input_data_set : has_registrar {
                 (Fred::DnsHost(nsset_input_data.dns_hosts.at(1).fqdn, nsset_input_data.dns_hosts.at(1).inet_addr )) //add_dns
                 )
             .set_authinfo(nsset_input_data.authinfo)
-            .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle)(admin_contact2_handle))
+            .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))
             .set_tech_check_level(nsset_input_data.tech_check_level)
             .exec(ctx);
         nsset = Fred::InfoNssetByHandle(nsset_input_data.handle).exec(ctx).info_nsset_data;
