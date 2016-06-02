@@ -20,12 +20,13 @@
  *  @file
  */
 
-#ifndef DELETE_H_5C740B7ECE9319D5BBB37EC46383588B//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define DELETE_H_5C740B7ECE9319D5BBB37EC46383588B
+#ifndef TRANSFER_H_0790EF0C53DC1FB4B518D07199911170//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define TRANSFER_H_0790EF0C53DC1FB4B518D07199911170
 
+#include "src/epp/contact/ident_type.h"
 #include "src/fredlib/opcontext.h"
 
-#include <string>
+#include "src/epp/contact/contact_transfer.h"
 
 namespace Epp {
 
@@ -33,18 +34,21 @@ namespace Epp {
  * If successful (no exception thrown) state requests of keyset are performed. In case of exception
  * behaviour is undefined and transaction should be rolled back.
  *
- * @returns last keyset history id before delete
+ * @returns new history id
  *
- * @throws AuthErrorServerClosingConnection
+ * @throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
  * @throws NonexistentHandle
- * @throws AutorError
- * @throws ObjectStatusProhibitingOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
+ * @throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
+ * @throws ObjectStatusProhibitingOperation
+ * @throws AutorError in case invalid _authinfopw is given
  */
-unsigned long long keyset_delete(
+unsigned long long keyset_transfer(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
-    unsigned long long _registrar_id);
+    const std::string &_authinfopw,
+    unsigned long long _registrar_id,
+    const Optional< unsigned long long > &_logd_request_id);
 
 }//namespace Epp
 
-#endif//DELETE_H_5C740B7ECE9319D5BBB37EC46383588B
+#endif//TRANSFER_H_0790EF0C53DC1FB4B518D07199911170

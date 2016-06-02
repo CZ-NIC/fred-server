@@ -87,6 +87,7 @@
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_check.h"
 #include "src/epp/keyset/localized_delete.h"
+#include "src/epp/keyset/localized_transfer.h"
 
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
@@ -3080,19 +3081,41 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
   return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo, params);
 }
 
-ccReg::Response *
+ccReg::Response*
 ccReg_EPP_i::KeySetTransfer(
-        const char *handle,
-        const char *authInfo,
-        const ccReg::EppParams &params)
+        const char *_keyset_handle,
+        const char *_auth_info,
+        const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+    try {
+        const Epp::RegistrarSessionData session_data =
+            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
-    return ObjectTransfer(EPP_KeySetTransfer, "KEYSET", "handle", handle,
-            authInfo, params);
+        const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
+        const std::string auth_info = Corba::unwrap_string_from_const_char_ptr(_auth_info);
+        const Epp::LocalizedSuccessResponse response = Epp::KeySet::get_transfer_localized(
+            keyset_handle,
+            auth_info,
+            session_data.registrar_id,
+            epp_request_params.log_request_id,
+            session_data.language,
+            server_transaction_handle,
+            epp_request_params.client_transaction_id,
+            disable_epp_notifier_cltrid_prefix_);
+
+        ccReg::Response_var return_value = new ccReg::Response;
+        Corba::wrap_Epp_LocalizedSuccessResponse(response,
+                                                 server_transaction_handle,
+                                                 return_value);
+
+        /* No exception shall be thrown from here onwards. */
+        return return_value._retn();
+    }
+    catch (const Epp::LocalizedFailResponse &e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 /***********************************************************************

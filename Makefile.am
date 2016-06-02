@@ -1568,6 +1568,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/delete.h \
 		src/epp/keyset/localized_delete.cc \
 		src/epp/keyset/localized_delete.h \
+		src/epp/keyset/transfer.cc \
+		src/epp/keyset/transfer.h \
+		src/epp/keyset/localized_transfer.cc \
+		src/epp/keyset/localized_transfer.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
 #
