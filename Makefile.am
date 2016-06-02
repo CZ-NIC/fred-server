@@ -1564,6 +1564,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/handle_check_result.h \
 		src/epp/keyset/localized_check.cc \
 		src/epp/keyset/localized_check.h \
+		src/epp/keyset/delete.cc \
+		src/epp/keyset/delete.h \
+		src/epp/keyset/localized_delete.cc \
+		src/epp/keyset/localized_delete.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
 #

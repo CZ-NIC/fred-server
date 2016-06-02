@@ -86,6 +86,7 @@
 
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_check.h"
+#include "src/epp/keyset/localized_delete.h"
 
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
@@ -5327,73 +5328,37 @@ ccReg_EPP_i::KeySetInfo(
  *
  *************************************************************/
 
-ccReg::Response *
+ccReg::Response*
 ccReg_EPP_i::KeySetDelete(
-        const char *handle,
-        const ccReg::EppParams &params)
+        const char *_keyset_handle,
+        const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    int                 id;
-    short int code = 0;
-
-    EPPAction action(this, params.loginID, EPP_KeySetDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    LOGGER(PACKAGE).notice( boost::format("KeySetDelete: clientID -> %1% clTRID [%2%] handle [%3%]") %
-            (int)params.loginID % (const char*)params.clTRID % handle);
-
-    id = getIdOfKeySet(action.getDB(), handle, restricted_handles_
-            , lock_epp_commands_, true);
-    if (id < 0) {
-        LOG(WARNING_LOG, "bad format of keyset [%s]", handle);
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::keyset_handle, 1,
-                REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
-    } else if (id == 0) {
-        LOG(WARNING_LOG, "KeySet handle [%s] NOT_EXISTS", handle);
-        code = COMMAND_OBJECT_NOT_EXIST;
-    }
-    if (!code && !action.getDB()->TestObjectClientID(id, action.getRegistrar())) {
-        LOG(WARNING_LOG, "bad authorisation not client of KeySet [%s]", handle);
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
-    }
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
     try {
-        if (!code && (
-                    testObjectHasState(action, id, FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action, id, FLAG_serverUpdateProhibited) ||
-                    testObjectHasState(action,id,FLAG_deleteCandidate)
-                    )) {
-            LOG(WARNING_LOG, "delete of object %s is prohibited", handle);
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
-        }
-    } catch (...) {
-        code = COMMAND_FAILED;
+        const Epp::RegistrarSessionData session_data =
+            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
+
+        const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
+        const Epp::LocalizedSuccessResponse response = Epp::KeySet::get_delete_localized(
+            keyset_handle,
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle,
+            epp_request_params.client_transaction_id,
+            disable_epp_notifier_cltrid_prefix_);
+
+        ccReg::Response_var return_value = new ccReg::Response;
+        Corba::wrap_Epp_LocalizedSuccessResponse(response,
+                                                 server_transaction_handle,
+                                                 return_value);
+
+        /* No exception shall be thrown from here onwards. */
+        return return_value._retn();
     }
-    if (!code) {
-        if (action.getDB()->TestKeySetRelations(id)) {
-            LOG(WARNING_LOG, "KeySet can't be deleted - relations in db");
-            code = COMMAND_PROHIBITS_OPERATION;
-        } else {
-            if (action.getDB()->SaveObjectDelete(id))
-                if (action.getDB()->DeleteKeySetObject(id))
-                    code = COMMAND_OK;
-        }
-        if (code == COMMAND_OK)
-        {
-            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
-        }
+    catch (const Epp::LocalizedFailResponse &e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-    if (code == 0) {
-        action.failedInternal("KeySetDelete");
-    }
-    return action.getRet()._retn();
 }
 
 /*
