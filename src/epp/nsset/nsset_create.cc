@@ -61,7 +61,7 @@ namespace Epp {
 
         return localized_result;
 
-    } catch(const AuthErrorServerClosingConnection& e) {
+    } catch(const AuthErrorServerClosingConnection& ) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -70,7 +70,7 @@ namespace Epp {
             _lang
         );
 
-    } catch(const ObjectExists& e) {
+    } catch(const ObjectExists&) {
 
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
@@ -90,7 +90,27 @@ namespace Epp {
             _lang
         );
 
-    } catch(const LocalizedFailResponse&) {
+    } catch(const ParametrValuePolicyError& e) {
+
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::parametr_value_policy_error,
+            e.get(),
+            _lang
+        );
+
+    } catch(const RequiredParameterMissing& ) {
+
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::parametr_missing,
+            std::set<Error>(),
+            _lang
+        );
+
+    } catch(const LocalizedFailResponse& ) {
         throw;
 
     } catch(...) {

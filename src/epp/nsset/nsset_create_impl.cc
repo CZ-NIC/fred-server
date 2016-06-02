@@ -6,6 +6,7 @@
 #include "src/epp/reason.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/nsset_dns_host_data.h"
+#include "src/epp/nsset/nsset_constants.h"
 
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/nsset/create_nsset.h"
@@ -13,6 +14,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 
 #include <boost/foreach.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 namespace Epp {
 
@@ -26,6 +28,21 @@ NssetCreateResult nsset_create_impl(
     if( _registrar_id == 0 ) {
         throw AuthErrorServerClosingConnection();
     }
+
+    if(_data.tech_contacts.empty()) throw RequiredParameterMissing();
+
+    if(_data.tech_contacts.size() > MAX_NSSET_TECH_CONTACTS)
+    {
+        ParametrValuePolicyError ex;
+        for(std::size_t i = MAX_NSSET_TECH_CONTACTS; i < _data.tech_contacts.size(); ++i)
+        {
+            ex.add(Error(Param::nsset_tech,
+                boost::numeric_cast<unsigned short>(i+1),//position in list
+                Reason::techadmin_limit));
+        }
+        throw ex;
+    }
+
 
     if( Fred::Nsset::get_handle_syntax_validity(_data.handle) != Fred::NssetHandleState::SyntaxValidity::valid ) {
         AggregatedParamErrors invalid_handle_exception;

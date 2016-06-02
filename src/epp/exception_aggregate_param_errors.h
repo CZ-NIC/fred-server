@@ -44,6 +44,21 @@ namespace Epp {
 
             bool is_empty() const { return param_errors_.empty(); }
     };
+
+    class ParametrValuePolicyError {
+        std::set<Error> param_errors_;
+
+    public:
+        void add(const Error& _new_error) {
+            param_errors_.insert(_new_error);
+        }
+
+        std::set<Error> get() const {
+            return param_errors_;
+        }
+
+        bool is_empty() const { return param_errors_.empty(); }
+    };
 }
 
 #endif
