@@ -34,8 +34,9 @@ namespace Epp {
             std::set<Error> param_errors_;
 
         public:
-            void add(const Error& _new_error) {
+            AggregatedParamErrors& add(const Error& _new_error) {
                 param_errors_.insert(_new_error);
+                return *this;
             }
 
             std::set<Error> get() const {
@@ -49,8 +50,9 @@ namespace Epp {
         std::set<Error> param_errors_;
 
     public:
-        void add(const Error& _new_error) {
+        ParametrValuePolicyError& add(const Error& _new_error) {
             param_errors_.insert(_new_error);
+            return *this;
         }
 
         std::set<Error> get() const {
