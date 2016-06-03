@@ -29,7 +29,9 @@ NssetCreateResult nsset_create_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if(_data.tech_contacts.empty()) throw RequiredParameterMissing();
+    if(_data.tech_contacts.empty()) {
+        throw RequiredParameterMissing();
+    }
 
     if(_data.tech_contacts.size() > MAX_NSSET_TECH_CONTACTS)
     {
@@ -42,6 +44,27 @@ NssetCreateResult nsset_create_impl(
         }
         throw ex;
     }
+
+    if(_data.dns_hosts.empty()) {
+        throw RequiredParameterMissing();
+    }
+
+    if(_data.dns_hosts.size() < MIN_NSSET_DNS_HOSTS) {
+        throw ParametrValuePolicyError();
+    }
+
+    if(_data.dns_hosts.size() > MAX_NSSET_DNS_HOSTS)
+    {
+        ParametrValuePolicyError ex;
+        for(std::size_t i = MAX_NSSET_DNS_HOSTS; i < _data.dns_hosts.size(); ++i)
+        {
+            ex.add(Error(Param::nsset_tech,
+                boost::numeric_cast<unsigned short>(i+1),//position in list
+                Reason::nsset_limit));
+        }
+        throw ex;
+    }
+
 
 
     if( Fred::Nsset::get_handle_syntax_validity(_data.handle) != Fred::NssetHandleState::SyntaxValidity::valid ) {

@@ -26,7 +26,8 @@
 namespace Epp {
 
 const unsigned MAX_NSSET_TECH_CONTACTS = 9;
-
+const unsigned MIN_NSSET_DNS_HOSTS = 2;
+const unsigned MAX_NSSET_DNS_HOSTS = 9;
 }
 
 #endif
