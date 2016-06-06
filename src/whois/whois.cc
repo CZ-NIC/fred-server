@@ -33,7 +33,7 @@
 namespace Registry{
 namespace WhoisImpl{
 
-const std::string Server_impl::output_timezone("UTC");
+static std::string get_output_timezone() { static const std::string timezone("UTC"); return timezone; }
 
 
 
@@ -96,10 +96,10 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
     {
         try
         {
-            const Fred::InfoRegistrarData ird =
-                    Fred::InfoRegistrarByHandle(handle).exec(ctx, output_timezone)
-                        .info_registrar_data;
-            return make_registrar_from_info_data(ird);
+            return make_registrar_from_info_data( 
+                    Fred::InfoRegistrarByHandle(handle)
+                       .exec(ctx, get_output_timezone())
+                       .info_registrar_data);
         }
         catch(const Fred::InfoRegistrarByHandle::Exception& e)
         {
@@ -127,7 +127,7 @@ std::vector<Registrar> Server_impl::get_registrars()
     try
     {
         const std::vector<Fred::InfoRegistrarOutput> v =
-                Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone);
+                Fred::InfoRegistrarAllExceptSystem().exec(ctx, get_output_timezone());
         std::vector<Registrar> result;
         result.reserve(v.size());
         for(std::vector<Fred::InfoRegistrarOutput>::const_iterator it = v.begin();
@@ -220,7 +220,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
         try
         {
             const Fred::InfoContactData icd =
-                Fred::InfoContactByHandle(handle).exec(ctx, output_timezone).info_contact_data;
+                Fred::InfoContactByHandle(handle).exec(ctx, get_output_timezone()).info_contact_data;
             Contact con;
             con.handle                             = icd.handle;
             con.organization                       = icd.organization.get_value_or_default();
@@ -329,10 +329,11 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
     {
         try
         {
-            const Fred::InfoNssetData ind =
-                    Fred::InfoNssetByHandle(handle).exec(ctx, output_timezone)
-                        .info_nsset_data;
-            return make_nsset_from_info_data(ind, ctx);
+            return make_nsset_from_info_data(
+                    Fred::InfoNssetByHandle(handle)
+                        .exec(ctx, get_output_timezone())
+                        .info_nsset_data,
+                    ctx);
         }
         catch(const Fred::InfoNssetByHandle::Exception& e)
         {
@@ -387,7 +388,7 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
         const std::vector<Fred::InfoNssetOutput> nss_info =
                 Fred::InfoNssetByDNSFqdn(handle)
                     .set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
+                    .exec(ctx, get_output_timezone());
         if(nss_info.empty())
         {
             if(Fred::CheckDomain(handle).is_invalid_syntax())
@@ -414,7 +415,7 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
         const std::vector<Fred::InfoNssetOutput> nss_info =
                 Fred::InfoNssetByTechContactHandle(handle)
                     .set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
+                    .exec(ctx, get_output_timezone());
         if(nss_info.empty())
         {
             if(Fred::CheckContact(handle).is_invalid_handle())
@@ -476,7 +477,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
         try
         {
             const Fred::InfoKeysetData ikd =
-                Fred::InfoKeysetByHandle(handle).exec(ctx, output_timezone).info_keyset_data;
+                Fred::InfoKeysetByHandle(handle).exec(ctx, get_output_timezone()).info_keyset_data;
             WhoisImpl::KeySet ks;
             ks.handle             = ikd.handle;
             ks.changed            = ikd.update_time;
@@ -530,9 +531,8 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
         const std::vector<Fred::InfoKeysetOutput> ks_info =
                 Fred::InfoKeysetByTechContactHandle(handle)
                     .set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
+                    .exec(ctx, get_output_timezone());
         KeySetSeq ks_seq;
-        ks_seq.content.reserve(ks_info.size());
         WhoisImpl::KeySet temp;
         std::vector<Fred::InfoKeysetOutput>::const_iterator it = ks_info.begin(), end;
         if(ks_info.empty())
@@ -668,7 +668,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                 return Domain(generate_obfuscate_domain_delete_candidate(handle));
             }
             const Fred::InfoDomainData idd =
-                Fred::InfoDomainByHandle(handle).exec(ctx, output_timezone).info_domain_data;
+                Fred::InfoDomainByHandle(handle).exec(ctx, get_output_timezone()).info_domain_data;
             return make_domain_from_info_data(idd, ctx);
         }
         catch(const Fred::InfoDomainByHandle::Exception& e)
@@ -701,9 +701,8 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByRegistrantHandle(handle)
                     .set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
+                    .exec(ctx, get_output_timezone());
         DomainSeq domain_seq;
-        domain_seq.content.reserve(domain_info.size());
         std::vector<Fred::InfoDomainOutput>::const_iterator it = domain_info.begin(), end;
         if(domain_info.empty())
         {
@@ -779,7 +778,7 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
     {
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByAdminContactHandle(handle).set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
+                    .exec(ctx, get_output_timezone());
         if(domain_info.empty())
         {
             if(Fred::CheckContact(handle).is_invalid_handle())
@@ -805,7 +804,7 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle,
     {
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByNssetHandle(handle).set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
+                    .exec(ctx, get_output_timezone());
         if(domain_info.empty())
         {
             if(Fred::CheckNsset(handle).is_invalid_handle())
@@ -831,7 +830,7 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
     {
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByKeysetHandle(handle).set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
+                    .exec(ctx, get_output_timezone());
         if(domain_info.empty())
         {
             if(Fred::CheckKeyset(handle).is_invalid_handle())
