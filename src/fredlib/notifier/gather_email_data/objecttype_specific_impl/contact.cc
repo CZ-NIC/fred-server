@@ -39,11 +39,11 @@ namespace Convert {
 
         aggregate_nonempty(non_empty_parts, _address.company_name.get_value_or(""));
         aggregate_nonempty(
-                non_empty_parts,
-                to_string(
-                    static_cast<const Fred::Contact::PlaceAddress&>(_address)
-                    )
-                );
+            non_empty_parts,
+            to_string(
+                static_cast<const Fred::Contact::PlaceAddress&>(_address)
+            )
+        );
 
         return boost::join(non_empty_parts, ", ");
     }
@@ -84,7 +84,7 @@ inline void add_contact_data_pair(std::map<std::string, std::string>& _target, s
 {
     if(
         _target.insert(
-            std::make_pair("fresh." + _data, _value) //<-> mail template
+            std::make_pair("fresh." + _data, _value)
         ).second == false /* existing value */
     ) {
         throw ExceptionInvalidNotificationContent();
@@ -97,7 +97,7 @@ static std::map<std::string, std::string> gather_contact_create_data_change(
     std::map<std::string, std::string> result;
 
     add_contact_data_pair(result, "object.authinfo", _fresh.authinfopw);
-    add_contact_data_pair(result, "contact.name",    _fresh.name.get_value_or_default()); //get_value()?
+    add_contact_data_pair(result, "contact.name",    _fresh.name.get_value_or_default()); 
     add_contact_data_pair(result, "contact.org",     _fresh.organization.get_value_or_default());
     add_contact_data_pair(result, "contact.address.permanent", Convert::to_string(_fresh.place.get_value_or_default()));
 
@@ -115,12 +115,11 @@ static std::map<std::string, std::string> gather_contact_create_data_change(
     add_contact_data_pair(result, "contact.email",        _fresh.email.get_value_or_default());
     add_contact_data_pair(result, "contact.notify_email", _fresh.notifyemail.get_value_or_default());
 
-    //DOUBLECHECK
-    const Nullable< Fred::PersonalIdUnion > nullable_personal_id = _fresh.ssntype.isnull() || _fresh.ssn.isnull()
+    const Nullable< Fred::PersonalIdUnion > nullable_personal_id = ( _fresh.ssntype.isnull() || _fresh.ssn.isnull())
         ? Nullable< Fred::PersonalIdUnion >()
         : Nullable< Fred::PersonalIdUnion >(
                 Fred::PersonalIdUnion::get_any_type(_fresh.ssntype.get_value(),
-                                                    _fresh.ssn.get_value())); //Fred::PersonalIdUnion(_type, _value)
+                                                    _fresh.ssn.get_value()));
     add_contact_data_pair(result, "contact.ident_type", translate_ssntypes(nullable_personal_id));
     add_contact_data_pair(result, "contact.ident", nullable_personal_id.get_value_or_default().get());
 
