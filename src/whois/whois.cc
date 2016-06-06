@@ -36,9 +36,7 @@ namespace WhoisImpl{
 static std::string get_output_timezone() { static const std::string timezone("UTC"); return timezone; }
 
 
-
-
-static void log_and_rethrow_exception_handler(Fred::OperationContextCreator& ctx)
+static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
 {
     try
     {
