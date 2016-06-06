@@ -27,6 +27,7 @@
 #include "tests/fredlib/notifier/fixture_data.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_content.h"
+#include "src/fredlib/contact/place_address.h"
 
 
 BOOST_AUTO_TEST_SUITE(TestNotifier2)
@@ -39,10 +40,38 @@ BOOST_FIXTURE_TEST_CASE(test_empty_create, has_empty_contact)
     const std::string input_svtrid = "abc-123";
 
     std::map<std::string, std::string> etalon;
-    etalon["type"] = "1";
-    etalon["handle"] = contact.handle;
-    etalon["ticket"] = input_svtrid;
+    etalon["type"]      = "1";
+    etalon["handle"]    = contact.handle;
+    etalon["ticket"]    = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
+
+    etalon["fresh.object.authinfo"]     = contact.authinfopw;
+    etalon["fresh.contact.name"]        = "";
+    etalon["fresh.contact.org"]         = "";
+    etalon["fresh.contact.address.billing"]    = "";
+    etalon["fresh.contact.address.mailing"]    = "";
+    etalon["fresh.contact.address.permanent"]  = "";
+    etalon["fresh.contact.address.shipping"]   = "";
+    etalon["fresh.contact.address.shipping_2"] = "";
+    etalon["fresh.contact.address.shipping_3"] = "";
+    etalon["fresh.contact.telephone"]    = "";
+    etalon["fresh.contact.fax"]          = "";
+    etalon["fresh.contact.email"]        = "";
+    etalon["fresh.contact.notify_email"] = "";
+    etalon["fresh.contact.ident_type"]   = "EMPTY";
+    etalon["fresh.contact.ident"]        = "";
+    etalon["fresh.contact.vat"]          = "";
+    etalon["fresh.contact.disclose.name"]         = "0";
+    etalon["fresh.contact.disclose.org"]          = "0";
+    etalon["fresh.contact.disclose.email"]        = "0";
+    etalon["fresh.contact.disclose.address"]      = "1";
+    etalon["fresh.contact.disclose.notify_email"] = "0";
+    etalon["fresh.contact.disclose.ident"]        = "0";
+    etalon["fresh.contact.disclose.vat"]          = "0";
+    etalon["fresh.contact.disclose.telephone"]    = "0";
+    etalon["fresh.contact.disclose.fax"]          = "0";
+
+    etalon["changes"] = "1";
 
     check_maps_are_equal(
         etalon,
@@ -67,6 +96,54 @@ BOOST_FIXTURE_TEST_CASE(test_full_create, has_full_contact)
     etalon["handle"] = contact.handle;
     etalon["ticket"] = input_svtrid;
     etalon["registrar"] = registrar.name.get_value() + " (" + registrar.url.get_value() + ")";
+
+    etalon["fresh.object.authinfo"]           = contact.authinfopw;
+    etalon["fresh.contact.name"]              = contact.name.get_value();
+    etalon["fresh.contact.org"]               = contact.organization.get_value();
+    etalon["fresh.contact.address.billing"] = "";
+    etalon["fresh.contact.address.mailing"] = "";
+    const Fred::Contact::PlaceAddress address = contact.place.get_value();
+    etalon["fresh.contact.address.permanent"] =
+        address.street1 + ", " + 
+        address.street2.get_value() + ", " + 
+        address.street3.get_value() + ", " + 
+        address.stateorprovince.get_value() + ", " + 
+        address.postalcode + ", " + 
+        address.city + ", " + 
+        address.country; 
+    const std::map<Fred::ContactAddressType, Fred::ContactAddress>::const_iterator addr_it =
+        contact.addresses.find(Fred::ContactAddressType::SHIPPING);
+    BOOST_CHECK(addr_it != contact.addresses.end());
+
+    etalon["fresh.contact.address.shipping"] =
+        addr_it->second.company_name.get_value() + ", " +
+        addr_it->second.street1 + ", " +
+        addr_it->second.street2.get_value() + ", " +
+        addr_it->second.street3.get_value() + ", " +
+        addr_it->second.stateorprovince.get_value() + ", " +
+        addr_it->second.postalcode + ", " +
+        addr_it->second.city + ", " +
+        addr_it->second.country;
+    etalon["fresh.contact.address.shipping_2"] = "";
+    etalon["fresh.contact.address.shipping_3"] = "";
+    etalon["fresh.contact.telephone"]    = contact.telephone.get_value();
+    etalon["fresh.contact.fax"]          = contact.fax.get_value();
+    etalon["fresh.contact.email"]        = contact.email.get_value();
+    etalon["fresh.contact.notify_email"] = contact.notifyemail.get_value();
+    etalon["fresh.contact.ident_type"]   = contact.ssntype.get_value();
+    etalon["fresh.contact.ident"]        = contact.ssn.get_value();
+    etalon["fresh.contact.vat"]          = contact.vat.get_value();
+    etalon["fresh.contact.disclose.name"]         = "1";
+    etalon["fresh.contact.disclose.org"]          = "1";
+    etalon["fresh.contact.disclose.email"]        = "1";
+    etalon["fresh.contact.disclose.address"]      = "1";
+    etalon["fresh.contact.disclose.notify_email"] = "1";
+    etalon["fresh.contact.disclose.ident"]        = "1";
+    etalon["fresh.contact.disclose.vat"]          = "1";
+    etalon["fresh.contact.disclose.telephone"]    = "1";
+    etalon["fresh.contact.disclose.fax"]          = "1";
+
+    etalon["changes"] = "1";
 
     check_maps_are_equal(
         etalon,
