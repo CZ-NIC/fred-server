@@ -594,6 +594,13 @@ Domain* Server_impl::get_domain_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
+template<>
+Domain set_element_of_corba_seq<Domain, Registry::WhoisImpl::Domain>(
+    const Registry::WhoisImpl::Domain& domain)
+{
+    return wrap_domain(domain);
+}
+
 DomainSeq* Server_impl::get_domains_by_(const Registry::WhoisImpl::DomainSeq& dom_seq,
                                         ::CORBA::Boolean& limit_exceeded)
 {
@@ -645,6 +652,16 @@ DomainSeq* Server_impl::get_domains_by_keyset(
     ::CORBA::Boolean& limit_exceeded)
 {
     return get_domains_by_(pimpl_->get_domains_by_keyset(handle, limit), limit_exceeded);
+}
+
+template<>
+ObjectStatusDesc set_element_of_corba_seq<ObjectStatusDesc, Registry::WhoisImpl::ObjectStatusDesc>(
+    const Registry::WhoisImpl::ObjectStatusDesc& osd)
+{
+    ObjectStatusDesc result;
+    result.handle = Corba::wrap_string_to_corba_string(osd.handle);
+    result.name = Corba::wrap_string_to_corba_string(osd.name);
+    return result;
 }
 
 ObjectStatusDescSeq* Server_impl::get_object_status_descriptions(
