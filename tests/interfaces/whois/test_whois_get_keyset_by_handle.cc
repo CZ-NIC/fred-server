@@ -40,10 +40,10 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
     BOOST_CHECK(ks.last_transfer.isnull());
     BOOST_CHECK(ks.handle == keyset.handle);
     BOOST_CHECK(ks.creating_registrar == keyset.create_registrar_handle);
-    BOOST_FOREACH(Fred::DnsKey it, keyset.dns_keys)
+    BOOST_FOREACH(const Fred::DnsKey& it, keyset.dns_keys)
     {
         bool key_found = false;
-        BOOST_FOREACH(Registry::WhoisImpl::DNSKey dit, ks.dns_keys)
+        BOOST_FOREACH(const Registry::WhoisImpl::DNSKey& dit, ks.dns_keys)
         {
             if(it.get_key() == dit.public_key)
             {
@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
         }
         BOOST_CHECK(key_found);
     }
-    BOOST_FOREACH(Fred::ObjectIdHandlePair it, keyset.tech_contacts)
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& it, keyset.tech_contacts)
     {
         BOOST_CHECK(ks.tech_contacts.end() !=
                 std::find(ks.tech_contacts.begin(), ks.tech_contacts.end(), it.handle));

@@ -59,9 +59,8 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     BOOST_CHECK(domain.admin_contacts.size() == dom.admin_contacts.size());
 
     Fred::OperationContextCreator ctx;
-    const std::vector<Fred::ObjectStateData> v_osd =
-        Fred::GetObjectStates(domain.id).exec(ctx);
-    BOOST_FOREACH(const Fred::ObjectStateData it, v_osd)
+    const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(domain.id).exec(ctx);
+    BOOST_FOREACH(const Fred::ObjectStateData& it, v_osd)
     {
         BOOST_CHECK(std::find(dom.statuses.begin(), dom.statuses.end(), it.state_name) !=
                         dom.statuses.end());
@@ -131,7 +130,7 @@ struct many_labels_fixture
     many_labels_fixture()
     {
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
-        BOOST_FOREACH(std::string it, zone_seq)
+        BOOST_FOREACH(const std::string& it, zone_seq)
         {
             domain_list.push_back(prepare_zone(ctx, it));
         }
@@ -287,7 +286,7 @@ struct invalid_toomany_fixture
         Fred::OperationContextCreator ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         domain_list.reserve(zone_seq.size());
-        BOOST_FOREACH(std::string it, zone_seq)
+        BOOST_FOREACH(const std::string& it, zone_seq)
         {
             domain_list.push_back(prepare_zone(ctx, it));
         }
@@ -296,7 +295,7 @@ struct invalid_toomany_fixture
 
 BOOST_FIXTURE_TEST_CASE(invalid_handle_too_many_labels, invalid_toomany_fixture)
 {
-    BOOST_FOREACH(std::string it, domain_list)
+    BOOST_FOREACH(const std::string& it, domain_list)
     {
         try
         {

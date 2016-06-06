@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    BOOST_FOREACH(Registry::WhoisImpl::Domain it, domain_vec)
+    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
     {
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset      == found->second.nsset.get_value_or_default().handle);
 
-        BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
             BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
         Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd =
             Fred::GetObjectStates(found->second.id).exec(ctx);
-        BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
+        BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                     it.statuses.end());
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == regular_domains - 1);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    BOOST_FOREACH(Registry::WhoisImpl::Domain it, domain_vec)
+    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
     {
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -114,7 +114,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset      == found->second.nsset.get_value_or_default().handle);
 
-        BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
             BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
@@ -124,7 +124,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
         Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd =
             Fred::GetObjectStates(found->second.id).exec(ctx);
-        BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
+        BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                     it.statuses.end());

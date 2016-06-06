@@ -13,8 +13,8 @@ struct get_my_registrar_list_fixture
     {
         const std::vector<Fred::InfoRegistrarOutput> v =
                 Fred::InfoRegistrarAllExceptSystem().exec(ctx, "UTC");
-        for(std::vector<Fred::InfoRegistrarOutput>::const_iterator it = v.begin();
-                it != v.end(); ++it)
+        //initial registrars
+        BOOST_FOREACH(const Fred::InfoRegistrarOutput& it, v)
         {
             registrar_info[it->info_registrar_data.handle] =
                 it->info_registrar_data;
@@ -49,7 +49,7 @@ BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
         impl.get_registrars();
     BOOST_CHECK(registrar_vec.size() == total_registrars);
     std::map<std::string, Fred::InfoRegistrarData>::iterator found;
-    BOOST_FOREACH(Registry::WhoisImpl::Registrar it, registrar_vec)
+    BOOST_FOREACH(const Registry::WhoisImpl::Registrar& it, registrar_vec)
     {
         found = registrar_info.find(it.handle);
         BOOST_CHECK(it.address.city ==

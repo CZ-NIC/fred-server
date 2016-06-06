@@ -62,7 +62,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
-    BOOST_FOREACH(Registry::WhoisImpl::NSSet it, nss_s.content)
+    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         found = nsset_info.find(it.handle);
         BOOST_REQUIRE(it.handle == found->second.handle);
@@ -76,9 +76,8 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
         BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
         Fred::OperationContextCreator ctx;
-        const std::vector<Fred::ObjectStateData> v_osd =
-            Fred::GetObjectStates(nsset.id).exec(ctx);
-        BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
+        const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(nsset.id).exec(ctx);
+        BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                     it.statuses.end());
@@ -94,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
-    BOOST_FOREACH(Registry::WhoisImpl::NSSet it, nss_s.content)
+    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         found = nsset_info.find(it.handle);
         BOOST_REQUIRE(it.handle == found->second.handle);
@@ -108,9 +107,8 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
         BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
         Fred::OperationContextCreator ctx;
-        const std::vector<Fred::ObjectStateData> v_osd =
-            Fred::GetObjectStates(nsset.id).exec(ctx);
-        BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
+        const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(nsset.id).exec(ctx);
+        BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                             it.statuses.end());

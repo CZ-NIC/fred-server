@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
     Fred::OperationContextCreator ctx;
     const std::vector<Fred::ObjectStateData> v_osd =
         Fred::GetObjectStates(id).exec(ctx);
-    BOOST_FOREACH(const Fred::ObjectStateData it, v_osd)
+    BOOST_FOREACH(const Fred::ObjectStateData& it, v_osd)
     {
         BOOST_CHECK(std::find(nss.statuses.begin(), nss.statuses.end(), it.state_name) !=
                 nss.statuses.end());

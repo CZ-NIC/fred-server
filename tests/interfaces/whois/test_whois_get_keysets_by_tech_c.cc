@@ -57,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
     KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit);
     BOOST_CHECK(!ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit);
-    BOOST_FOREACH(KeySet it, ks_s.content)
+    BOOST_FOREACH(const KeySet& it, ks_s.content)
     {
         Fred::InfoKeysetData& found = keyset_info[it.handle];
         BOOST_REQUIRE(it.handle == found.handle);
@@ -66,10 +66,10 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.handle == found.handle);
         BOOST_CHECK(it.creating_registrar == found.create_registrar_handle);
-        BOOST_FOREACH(Fred::DnsKey kit, found.dns_keys)
+        BOOST_FOREACH(const Fred::DnsKey& kit, found.dns_keys)
         {
             bool key_found = false;
-            BOOST_FOREACH(Registry::WhoisImpl::DNSKey dit, it.dns_keys)
+            BOOST_FOREACH(const Registry::WhoisImpl::DNSKey& dit, it.dns_keys)
             {
                 if(kit.get_key() == dit.public_key)
                 {
@@ -81,11 +81,12 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
             }
             BOOST_CHECK(key_found);
         }
-        BOOST_FOREACH(Fred::ObjectIdHandlePair oit, found.tech_contacts)
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found.tech_contacts)
         {
-            BOOST_CHECK(it.tech_contact_handles.end() !=
-                    std::find(it.tech_contact_handles.begin(), it.tech_contact_handles.end(), oit.handle));
+            BOOST_CHECK(it.tech_contacts.end() !=
+                    std::find(it.tech_contacts.begin(), it.tech_contacts.end(), oit.handle));
         }
+        BOOST_CHECK(it.tech_contacts.size() == found.tech_contacts);
     }
 }
 
@@ -94,7 +95,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
     KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit - 1);
     BOOST_CHECK(ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit - 1);
-    BOOST_FOREACH(KeySet it, ks_s.content)
+    BOOST_FOREACH(const KeySet& it, ks_s.content)
     {
         Fred::InfoKeysetData& found = keyset_info[it.handle];
         BOOST_REQUIRE(it.handle == found.handle);
@@ -103,10 +104,10 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.handle == found.handle);
         BOOST_CHECK(it.creating_registrar == found.create_registrar_handle);
-        BOOST_FOREACH(Fred::DnsKey kit, found.dns_keys)
+        BOOST_FOREACH(const Fred::DnsKey& kit, found.dns_keys)
         {
             bool key_found = false;
-            BOOST_FOREACH(Registry::WhoisImpl::DNSKey dit, it.dns_keys)
+            BOOST_FOREACH(const Registry::WhoisImpl::DNSKey& dit, it.dns_keys)
             {
                 if(kit.get_key() == dit.public_key)
                 {
@@ -118,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
             }
             BOOST_CHECK(key_found);
         }
-        BOOST_FOREACH(Fred::ObjectIdHandlePair oit, found.tech_contacts)
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found.tech_contacts)
         {
             BOOST_CHECK(it.tech_contacts.end() !=
                     std::find(it.tech_contacts.begin(), it.tech_contacts.end(), oit.handle));
