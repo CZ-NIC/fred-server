@@ -8,13 +8,22 @@
 #include "src/epp/nsset/nsset_dns_host_data.h"
 #include "src/epp/nsset/nsset_constants.h"
 
+#include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
+#include "util/optional_value.h"
+#include "util/map_at.h"
+#include "util/util.h"
+
+#include <vector>
+#include <map>
+
 #include <boost/foreach.hpp>
 #include <boost/numeric/conversion/cast.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace Epp {
 
@@ -25,10 +34,12 @@ NssetCreateResult nsset_create_impl(
     const Optional<unsigned long long>& _logd_request_id
 ) {
 
+    //check registrar logged in
     if( _registrar_id == 0 ) {
         throw AuthErrorServerClosingConnection();
     }
 
+    //check number of technical contacts
     if(_data.tech_contacts.empty()) {
         throw RequiredParameterMissing();
     }
@@ -45,6 +56,7 @@ NssetCreateResult nsset_create_impl(
         throw ex;
     }
 
+    //check number of nameservers
     if(_data.dns_hosts.empty()) {
         throw RequiredParameterMissing();
     }
@@ -65,6 +77,7 @@ NssetCreateResult nsset_create_impl(
         throw ex;
     }
 
+    //check new nsset handle
     if( Fred::Nsset::get_handle_syntax_validity(_data.handle) != Fred::NssetHandleState::SyntaxValidity::valid ) {
         throw AggregatedParamErrors().add( Error(Param::nsset_handle, 0, Reason::bad_format_nsset_handle));
     }
@@ -79,10 +92,44 @@ NssetCreateResult nsset_create_impl(
         if(in_registry == Fred::NssetHandleState::Registrability::in_protection_period) {
             throw ParametrValuePolicyError().add( Error( Param::nsset_handle, 0, Reason::protected_period ) );
         }
-
-        //TODO error handling
-
     }
+
+    //check technical contacts
+    {
+        std::map<std::string, std::size_t> tech_contact_duplicity_map;
+        ParametrValuePolicyError ex;
+        for(std::size_t i = 0; i < _data.tech_contacts.size(); ++i)
+        {   //check technical contact exists
+            if(Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts.at(i))
+                != Fred::NssetHandleState::Registrability::registered)
+            {
+                ex.add(Error(Param::nsset_tech,
+                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                    Reason::tech_notexist));
+            }
+            else
+            {//check technical contact duplicity
+                const std::string upper_tech_contact_handle = boost::algorithm::to_upper_copy(
+                    _data.tech_contacts.at(i));
+                Optional<std::size_t> duplicity = optional_map_at<Optional>(
+                    tech_contact_duplicity_map, upper_tech_contact_handle);
+
+                if(duplicity.isset())
+                {
+                    ex.add(Error(Param::nsset_tech,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::duplicity_contact));
+                }
+                else
+                {
+                    tech_contact_duplicity_map[upper_tech_contact_handle] = i;
+                }
+            }
+        }
+        if(!ex.is_empty()) throw ex;
+    }
+
+    //TODO error handling
 
     try {
 
