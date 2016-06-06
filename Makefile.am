@@ -1521,6 +1521,9 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/param.h \
 		src/epp/reason.h \
 		src/epp/response.h \
+		src/epp/error.h \
+		src/epp/parameter_errors.h \
+		src/epp/parameter_errors.cc \
 		src/epp/conditionally_enqueue_notification.h \
 		src/epp/conditionally_enqueue_notification.cc \
 		src/epp/contact/contact_create.cc \
