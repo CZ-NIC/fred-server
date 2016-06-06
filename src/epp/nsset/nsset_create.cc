@@ -90,7 +90,7 @@ namespace Epp {
             _lang
         );
 
-    } catch(const ParametrValuePolicyError& e) {
+    } catch(const ParameterValuePolicyError& e) {
 
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(

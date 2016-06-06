@@ -46,11 +46,11 @@ namespace Epp {
             bool is_empty() const { return param_errors_.empty(); }
     };
 
-    class ParametrValuePolicyError {
+    class ParameterValuePolicyError {
         std::set<Error> param_errors_;
 
     public:
-        ParametrValuePolicyError& add(const Error& _new_error) {
+        ParameterValuePolicyError& add(const Error& _new_error) {
             param_errors_.insert(_new_error);
             return *this;
         }

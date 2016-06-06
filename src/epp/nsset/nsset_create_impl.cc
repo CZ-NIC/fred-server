@@ -46,7 +46,7 @@ NssetCreateResult nsset_create_impl(
 
     if(_data.tech_contacts.size() > MAX_NSSET_TECH_CONTACTS)
     {
-        ParametrValuePolicyError ex;
+        ParameterValuePolicyError ex;
         for(std::size_t i = MAX_NSSET_TECH_CONTACTS; i < _data.tech_contacts.size(); ++i)
         {
             ex.add(Error(Param::nsset_tech,
@@ -62,12 +62,12 @@ NssetCreateResult nsset_create_impl(
     }
 
     if(_data.dns_hosts.size() < MIN_NSSET_DNS_HOSTS) {
-        throw ParametrValuePolicyError();
+        throw ParameterValuePolicyError();
     }
 
     if(_data.dns_hosts.size() > MAX_NSSET_DNS_HOSTS)
     {
-        ParametrValuePolicyError ex;
+        ParameterValuePolicyError ex;
         for(std::size_t i = MAX_NSSET_DNS_HOSTS; i < _data.dns_hosts.size(); ++i)
         {
             ex.add(Error(Param::nsset_tech,
@@ -90,14 +90,14 @@ NssetCreateResult nsset_create_impl(
         }
 
         if(in_registry == Fred::NssetHandleState::Registrability::in_protection_period) {
-            throw ParametrValuePolicyError().add( Error( Param::nsset_handle, 0, Reason::protected_period ) );
+            throw ParameterValuePolicyError().add( Error( Param::nsset_handle, 0, Reason::protected_period ) );
         }
     }
 
     //check technical contacts
     {
         std::map<std::string, std::size_t> tech_contact_duplicity_map;
-        ParametrValuePolicyError ex;
+        ParameterValuePolicyError ex;
         for(std::size_t i = 0; i < _data.tech_contacts.size(); ++i)
         {   //check technical contact exists
             if(Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts.at(i))
