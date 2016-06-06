@@ -44,10 +44,10 @@ NssetCreateResult nsset_create_impl(
         throw RequiredParameterMissing();
     }
 
-    if(_data.tech_contacts.size() > MAX_NSSET_TECH_CONTACTS)
+    if(_data.tech_contacts.size() > max_nsset_tech_contacts)
     {
         ParameterValuePolicyError ex;
-        for(std::size_t i = MAX_NSSET_TECH_CONTACTS; i < _data.tech_contacts.size(); ++i)
+        for(std::size_t i = max_nsset_tech_contacts; i < _data.tech_contacts.size(); ++i)
         {
             ex.add(Error(Param::nsset_tech,
                 boost::numeric_cast<unsigned short>(i+1),//position in list
@@ -61,14 +61,14 @@ NssetCreateResult nsset_create_impl(
         throw RequiredParameterMissing();
     }
 
-    if(_data.dns_hosts.size() < MIN_NSSET_DNS_HOSTS) {
+    if(_data.dns_hosts.size() < min_nsset_dns_hosts) {
         throw ParameterValuePolicyError();
     }
 
-    if(_data.dns_hosts.size() > MAX_NSSET_DNS_HOSTS)
+    if(_data.dns_hosts.size() > max_nsset_dns_hosts)
     {
         ParameterValuePolicyError ex;
-        for(std::size_t i = MAX_NSSET_DNS_HOSTS; i < _data.dns_hosts.size(); ++i)
+        for(std::size_t i = max_nsset_dns_hosts; i < _data.dns_hosts.size(); ++i)
         {
             ex.add(Error(Param::nsset_tech,
                 boost::numeric_cast<unsigned short>(i+1),//position in list
