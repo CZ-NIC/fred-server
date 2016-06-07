@@ -240,7 +240,7 @@ struct invalid_toomany_fixture
 
     invalid_toomany_fixture()
     {
-        Fred::OperationContextCreator ctx;
+        Fred::OperationContext ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         domain_list.reserve(zone_seq.size());
         BOOST_FOREACH(const std::string& it, zone_seq)
