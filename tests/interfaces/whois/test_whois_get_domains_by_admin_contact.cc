@@ -49,6 +49,43 @@ struct domains_by_admin_contact_fixture
                         Util::vector_of<std::string>(system_admin.handle)),
                     ctx);
         }
+        //delete candidate
+        const Fred::InfoDomainData& idd = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                .make(registrar.handle, contact.handle, delete_fqdn)
+                .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
+                .set_nsset(Test::nsset::make(ctx).handle) 
+                .set_keyset(Test::keyset::make(ctx).handle) 
+                .set_expiration_date(
+                    boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
+                ctx);
+//        domain_info[idd.fqdn] = idd;
+
+        ctx.get_conn().exec_params(
+                "UPDATE domain_history "
+                "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                "FROM enum_parameters "
+                "WHERE name = 'expiration_registration_protection_period') "
+                "WHERE id = "
+                "(SELECT id "
+                "FROM object_registry "
+                "WHERE name = $1::text)",
+                Database::query_param_list(delete_fqdn));
+        ctx.get_conn().exec_params(
+                "UPDATE domain "
+                "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                "FROM enum_parameters "
+                "WHERE name = 'expiration_registration_protection_period') "
+                "WHERE id = "
+                "(SELECT id "
+                "FROM object_registry "
+                "WHERE name = $1::text)",
+                Database::query_param_list(delete_fqdn));
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, impl.output_timezone);
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+
         ctx.commit_transaction();
     }
 };
