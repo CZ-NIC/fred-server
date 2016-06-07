@@ -139,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm, T, test_types, T)
         std::vector<typename T::StatusDesc> vec_osd = T::get_description("");
         BOOST_ERROR(std::string("this ") +
                     T::object_name +
-                    " must not have a localization");
+                    " state must not have a localization");
     }
     catch(const Registry::WhoisImpl::MissingLocalization& ex)
     {
