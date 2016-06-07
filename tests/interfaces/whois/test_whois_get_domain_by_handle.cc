@@ -94,7 +94,7 @@ struct many_labels_fixture
     std::vector<std::string> domain_list;
     Fred::OperationContext ctx;
 
-    std::string prepare_zone(Fred::OperationContextCreator& ctx, const std::string& zone)
+    std::string prepare_zone(const Fred::OperationContext& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try
@@ -216,7 +216,7 @@ struct invalid_toomany_fixture
 {
     std::vector<std::string> domain_list;
 
-    std::string prepare_zone(Fred::OperationContextCreator& ctx, const std::string& zone)
+    std::string prepare_zone(const Fred::OperationContext& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try

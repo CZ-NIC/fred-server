@@ -135,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
-    std::map<std::string, Fred::InfoDomainData>::iterator found;
+    std::map<std::string, Fred::InfoDomainData>::const_iterator found;
     BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
     {
         found = domain_info.find(it.fqdn);
