@@ -96,6 +96,7 @@ namespace Fred
         * Create contact constructor with mandatory parameters.
         * @param handle sets contact identifier into @ref handle_ attribute
         * @param registrar sets registrar handle into @ref registrar_ attribute
+        * @note use discloseflags default values defined in database
         */
         CreateContact(const std::string& handle
                 , const std::string& registrar);
@@ -126,6 +127,7 @@ namespace Fred
         * @param discloseident sets whether to reveal unambiguous identification number into @ref discloseident_ attribute
         * @param disclosenotifyemail sets whether to reveal e-mail address for notifications into @ref disclosenotifyemail_ attribute
         * @param logd_request_id sets logger request id into @ref logd_request_id_ attribute
+        * @note absent discloseflag uses default values defined in database
         */
         CreateContact(const std::string& handle
                 , const std::string& registrar
