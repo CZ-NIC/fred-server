@@ -361,15 +361,17 @@ static NSSetSeq get_nssets_by_(Fred::OperationContextCreator& ctx,
                                unsigned long limit)
 {
     NSSetSeq nss_seq;
-    nss_seq.content.reserve(nss_info.size());
     std::vector<Fred::InfoNssetOutput>::const_iterator it = nss_info.begin(), end;
     if(nss_info.size() > limit)
     {
         nss_seq.limit_exceeded = true;
+        nss_seq.content.reserve(limit);
         end = nss_info.begin() + limit;
     }
     else
     {
+        nss_seq.limit_exceeded = false;
+        nss_seq.content.reserve(nss_info.size());
         end = nss_info.end();
     }
     for(; it != end; ++it)
@@ -546,10 +548,13 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
         if(ks_info.size() > limit)
         {
             ks_seq.limit_exceeded = true;
+            ks_seq.content.reserve(limit);
             end = ks_info.begin() + limit;
         }
         else
         {
+            ks_seq.limit_exceeded = false;
+            ks_seq.content.reserve(ks_info.size());
             end = ks_info.end();
         }
         for(; it != end; ++it)
@@ -715,10 +720,13 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
         if(domain_info.size() > limit)
         {
             domain_seq.limit_exceeded = true;
+            domain_seq.content.reserve(limit);
             end = domain_info.begin() + limit;
         }
         else
         {
+            domain_seq.limit_exceeded = false;
+            domain_seq.content.reserve(domain_info.size());
             end = domain_info.end();
         }
         for(;it != end; ++it)
@@ -751,15 +759,17 @@ static DomainSeq get_domains_by_(Fred::OperationContextCreator& ctx,
                                  const std::vector<Fred::InfoDomainOutput>& domain_info)
 {
     DomainSeq domain_seq;
-    domain_seq.content.reserve(domain_info.size());
     std::vector<Fred::InfoDomainOutput>::const_iterator it = domain_info.begin(), end;
     if(domain_info.size() > limit)
     {
         domain_seq.limit_exceeded = true;
+        domain_seq.content.reserve(limit);
         end = domain_info.begin() + limit;
     }
     else
     {
+        domain_seq.limit_exceeded = false;
+        domain_seq.content.reserve(domain_info.size());
         end = domain_info.end();
     }
     for(; it != end; ++it)
