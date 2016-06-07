@@ -8,10 +8,8 @@ struct get_my_registrar_list_fixture
 {
     Fred::OperationContextCreator ctx;
     std::map<std::string,Fred::InfoRegistrarData> registrar_info;
-    unsigned int total_registrars;
 
     get_my_registrar_list_fixture()
-    : total_registrars(10)
     {
         const std::vector<Fred::InfoRegistrarOutput> v =
                 Fred::InfoRegistrarAllExceptSystem().exec(ctx, "UTC");
@@ -21,7 +19,8 @@ struct get_my_registrar_list_fixture
             registrar_info[it->info_registrar_data.handle] =
                 it->info_registrar_data;
         }
-        for(unsigned int i=0; i < total_registrars; ++i)
+        //new test registrars
+        for(unsigned int i=0; i < 10; ++i) //XXX
         {
             const Fred::InfoRegistrarData& ird =
                 Test::exec(

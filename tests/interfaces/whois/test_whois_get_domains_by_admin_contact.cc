@@ -11,21 +11,22 @@ struct domains_by_admin_contact_fixture
     std::map<std::string, Fred::InfoDomainData> domain_info;
     Fred::InfoContactData regular_admin;
     boost::posix_time::ptime now_utc;
-    unsigned int regular_domains;
+    const unsigned int regular_domains;
+    const std::string delete_fqdn;
 
     domains_by_admin_contact_fixture()
+    : regular_domains(6),
+      delete_fqdn("test-delete.cz")
     {
         Fred::OperationContextCreator ctx;
-        Fred::InfoRegistrarData registrar;
-        Fred::InfoContactData system_admin, contact;
-        registrar = Test::registrar::make(ctx);
-        system_admin = Test::contact::make(ctx);
-        regular_admin = Test::contact::make(ctx);
-        contact = Test::contact::make(ctx);
+        regular_admin                      = Test::contact::make(ctx);
+        Fred::InfoRegistrarData registrar  = Test::registrar::make(ctx);
+        Fred::InfoContactData system_admin = Test::contact::make(ctx),
+                              contact      = Test::contact::make(ctx);
         now_utc = boost::posix_time::time_from_string(
-                static_cast<std::string>(ctx.get_conn()
-                    .exec("SELECT now()::timestamp")[0][0]));
-        regular_domains = 6;
+                static_cast<std::string>(
+                    ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
+
         std::string tmp_handle;
         for(unsigned int i=0; i < regular_domains; ++i)
         {

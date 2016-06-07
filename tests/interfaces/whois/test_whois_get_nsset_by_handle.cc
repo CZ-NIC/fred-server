@@ -15,14 +15,19 @@ struct get_nsset_by_handle_fixture
     : test_nsset_handle("TEST-NSSET")
     {
         Fred::OperationContextCreator ctx;
-        Fred::InfoContactData contact;
-        contact = Test::contact::make(ctx);
+        Fred::InfoContactData contact = Test::contact::make(ctx);
         nsset = Test::exec(
                     Test::CreateX_factory<Fred::CreateNsset>()
                         .make(Test::registrar::make(ctx).handle, test_nsset_handle)
-                        .set_dns_hosts(Util::vector_of<Fred::DnsHost>(
-                                Fred::DnsHost("some-nameserver", Util::vector_of<boost::asio::ip::address>(boost::asio::ip::address()))))
-                        .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+                        .set_dns_hosts(
+                            Util::vector_of<Fred::DnsHost>(
+                                Fred::DnsHost(
+                                    "some-nameserver",
+                                    Util::vector_of<boost::asio::ip::address>(
+                                        boost::asio::ip::from_string("192.128.0.1")))))
+//TODO                        boost::asio::ip::address())));
+                        .set_tech_contacts(
+                            Util::vector_of<std::string>(contact.handle)),
                         ctx);
         now_utc = boost::posix_time::time_from_string(
                     static_cast<std::string>(ctx.get_conn()
