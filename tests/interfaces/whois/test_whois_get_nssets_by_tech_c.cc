@@ -111,8 +111,9 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
         BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
-                    it.statuses.end());
+                            it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 

@@ -64,8 +64,9 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     BOOST_FOREACH(const Fred::ObjectStateData it, v_osd)
     {
         BOOST_CHECK(std::find(dom.statuses.begin(), dom.statuses.end(), it.state_name) !=
-                dom.statuses.end());
+                        dom.statuses.end());
     }
+    BOOST_CHECK(v_osd.size() == dom.statuses.size());
 }
 
 BOOST_FIXTURE_TEST_CASE(wrong_handle, whois_impl_instance_fixture)

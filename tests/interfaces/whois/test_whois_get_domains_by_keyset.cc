@@ -100,6 +100,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                     it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 
@@ -143,6 +144,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                     it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 

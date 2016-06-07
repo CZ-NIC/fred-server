@@ -55,6 +55,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
         BOOST_CHECK(std::find(nss.statuses.begin(), nss.statuses.end(), it.state_name) !=
                 nss.statuses.end());
     }
+    BOOST_CHECK(it.statuses.size() == v_osd.size());
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_no_nsset, whois_impl_instance_fixture)

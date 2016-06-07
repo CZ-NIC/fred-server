@@ -120,9 +120,10 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
         }
         BOOST_FOREACH(Fred::ObjectIdHandlePair oit, found.tech_contacts)
         {
-            BOOST_CHECK(it.tech_contact_handles.end() !=
-                    std::find(it.tech_contact_handles.begin(), it.tech_contact_handles.end(), oit.handle));
+            BOOST_CHECK(it.tech_contacts.end() !=
+                    std::find(it.tech_contacts.begin(), it.tech_contacts.end(), oit.handle));
         }
+        BOOST_CHECK(it.tech_contacts.size() == found.tech_contacts);
     }
 }
 

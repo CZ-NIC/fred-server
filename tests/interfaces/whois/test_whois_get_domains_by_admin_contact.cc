@@ -76,9 +76,10 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
         {
-            BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
+            BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
         }
+        BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
         Fred::OperationContextCreator ctx;
         typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
@@ -86,8 +87,9 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
-                    it.statuses.end());
+                            it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 
@@ -115,9 +117,10 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
         {
-            BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
+            BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
         }
+        BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
         Fred::OperationContextCreator ctx;
         typedef std::vector<Fred::ObjectStateData> ObjectStateDataList;
@@ -125,8 +128,9 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         BOOST_FOREACH(const Fred::ObjectStateData oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
-                    it.statuses.end());
+                            it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 

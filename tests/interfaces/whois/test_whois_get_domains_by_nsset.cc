@@ -104,6 +104,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                     it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 
@@ -147,6 +148,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fi
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
                     it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 
