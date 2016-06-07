@@ -58,7 +58,6 @@ struct domains_by_admin_contact_fixture
                 .set_expiration_date(
                     boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
                 ctx);
-//        domain_info[idd.fqdn] = idd;
 
         ctx.get_conn().exec_params(
                 "UPDATE domain_history "
@@ -173,31 +172,11 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
 BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_no_contact, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_domains_by_admin_contact("absent-contact", 1), Registry::WhoisImpl::ObjectNotExists);
-//    try
-//    {
-//        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_admin_contact("absent-contact", 1);
-//        BOOST_ERROR("unreported dangling registrant");
-//    }
-//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_wrong_contact, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_domains_by_admin_contact("", 1), Registry::WhoisImpl::InvalidHandle);
-//    try
-//    {
-//        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_admin_contact("", 1);
-//        BOOST_ERROR("registrant handle rule is wrong");
-//    }
-//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();//get_domains_by_admin_contact

@@ -24,7 +24,6 @@ struct get_nsset_by_handle_fixture
                                     "some-nameserver",
                                     Util::vector_of<boost::asio::ip::address>(
                                         boost::asio::ip::from_string("192.128.0.1")))))
-//TODO                        boost::asio::ip::address())));
                         .set_tech_contacts(
                             Util::vector_of<std::string>(contact.handle)),
                         ctx);
@@ -65,31 +64,11 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_no_nsset, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_nsset_by_handle("fine-nsset-handle"), Registry::WhoisImpl::ObjectNotExists);
-//    try
-//    {
-//        Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle("fine-nsset-handle");
-//        BOOST_ERROR("unreported dangling nsset");
-//    }
-//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_wrong_nsset, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_nsset_by_handle(""), Registry::WhoisImpl::InvalidHandle);
-//    try
-//    {
-//        Registry::WhoisImpl::NSSet nss = impl.get_nsset_by_handle("");
-//        BOOST_ERROR("nsset handle rule is wrong");
-//    }
-//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nsset_by_handle

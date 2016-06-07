@@ -38,9 +38,9 @@ struct get_keysets_by_tech_c_fixture
                     Test::CreateX_factory<Fred::CreateKeyset>()
                         .make(registrar.handle)
                         .set_dns_keys(Util::vector_of<Fred::DnsKey>(
-                            Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
+                            Fred::DnsKey(42, 777, 13, "any-key")))
                         .set_tech_contacts(Util::vector_of<std::string>(
-                            Test::contact::make(ctx).handle)),//random contact
+                            Test::contact::make(ctx).handle)),
                     ctx);
         }
         ctx.commit_transaction();
@@ -126,31 +126,11 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_no_contact, get_keysets_by_tech_c_fixture)
 {
     BOOST_CHECK_THROW(impl.get_keysets_by_tech_c("fine-tech-c-handle", Registry::WhoisImpl::ObjectNotExists);
-//    try
-//    {
-//        KeySetSeq ks_s = impl.get_keysets_by_tech_c("fine-tech-c-handle", test_limit);
-//        BOOST_ERROR("unreported dangling KeySets");
-//    }
-//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_wrong_contact, get_keysets_by_tech_c_fixture)
 {
     BOOST_CHECK_THROW(impl.get_keysets_by_tech_c(""), Registry::WhoisImpl::InvalidHandle);
-//    try
-//    {
-//        KeySetSeq ks_s = impl.get_keysets_by_tech_c("", test_limit);
-//        BOOST_ERROR("tech contact handle rule is wrong");
-//    }
-//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_keysets_by_tech_c

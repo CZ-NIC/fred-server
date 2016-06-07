@@ -152,31 +152,11 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_no_keyset, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_domains_by_keyset("absent-nsset", 1), Registry::WhoisImpl::ObjectNotExists);
-//    try
-//    {
-//        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_keyset("absent-nsset", 1);
-//        BOOST_ERROR("unreported dangling nsset");
-//    }
-//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_wrong_keyset, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_domains_by_keyset("", 1), Registry::WhoisImpl::InvalidHandle);
-//    try
-//    {
-//        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_keyset("", 1);
-//        BOOST_ERROR("nsset handle rule is wrong");
-//    }
-//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();//get_domains_by_nsset

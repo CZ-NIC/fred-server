@@ -32,7 +32,7 @@ struct get_nameserver_by_fqdn_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
 {
-    Fred::OperationContext/*TODO Creator*/ ctx;
+    Fred::OperationContext ctx;
     BOOST_REQUIRE(Whois::nameserver_exists(test_nameserver_fqdn, ctx));
 
     Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_nameserver_fqdn);
@@ -45,31 +45,11 @@ BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_nameserver_by_fqdn("fine-fqdn.cz"), Registry::WhoisImpl::ObjectNotExists);
-//    try
-//    {
-//        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn("fine-fqdn.cz");
-//        BOOST_ERROR("unreported dangling nameserver");
-//    }
-//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_wrong_ns, whois_impl_instance_fixture)
 {
     BOOST_CHECK_THROW(impl.get_nameserver_by_fqdn(""), Registry::WhoisImpl::InvalidHandle);
-//    try
-//    {
-//        Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn("");
-//        BOOST_ERROR("domain handle rule is wrong");
-//    }
-//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-//    {
-//        BOOST_CHECK(true);
-//        BOOST_MESSAGE(boost::diagnostic_information(ex));
-//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nameserver_by_fqdn
