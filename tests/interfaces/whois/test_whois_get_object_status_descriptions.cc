@@ -26,7 +26,7 @@ struct object_status_descriptions_fixture
         BOOST_FOREACH(map_type::value_type& p, statuses)
         {
             ctx.get_conn().exec_params(
-                "INSERT INTO enum_object_states_desc "
+                "INSERT INTO enum_object_states_desc (state_id, lang, description) "
                 "VALUES ((SELECT id "
                          "FROM enum_object_states "
                          "WHERE name = $1::text), "
