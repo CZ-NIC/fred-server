@@ -279,7 +279,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
     return Contact();
 }
 
-WhoisImpl::NSSet Server_impl::make_nsset_from_info_data(
+static WhoisImpl::NSSet make_nsset_from_info_data(
         const Fred::InfoNssetData& ind,
         Fred::OperationContextCreator& ctx)
 {
@@ -355,10 +355,10 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
     return WhoisImpl::NSSet();
 }
 
-NSSetSeq Server_impl::get_nssets_by_(Fred::OperationContextCreator& ctx,
-                                     const std::vector<Fred::InfoNssetOutput>& nss_info,
-                                     const std::string& handle,
-                                     unsigned long limit)
+static NSSetSeq get_nssets_by_(Fred::OperationContextCreator& ctx,
+                               const std::vector<Fred::InfoNssetOutput>& nss_info,
+                               const std::string& handle,
+                               unsigned long limit)
 {
     NSSetSeq nss_seq;
     nss_seq.content.reserve(nss_info.size());
@@ -746,9 +746,9 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
     return DomainSeq();
 }
 
-DomainSeq Server_impl::get_domains_by_(Fred::OperationContextCreator& ctx,
-                                       unsigned long limit,
-                                       const std::vector<Fred::InfoDomainOutput>& domain_info)
+static DomainSeq get_domains_by_(Fred::OperationContextCreator& ctx,
+                                 unsigned long limit,
+                                 const std::vector<Fred::InfoDomainOutput>& domain_info)
 {
     DomainSeq domain_seq;
     domain_seq.content.reserve(domain_info.size());
@@ -848,7 +848,7 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
     return DomainSeq();
 }
 
-std::vector<ObjectStatusDesc> Server_impl::get_object_status_descriptions(
+static std::vector<ObjectStatusDesc> get_object_status_descriptions(
         const std::string& lang,
         const std::string& type)
 {

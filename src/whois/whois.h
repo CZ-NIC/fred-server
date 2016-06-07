@@ -540,34 +540,9 @@ struct MissingLocalization
  */
 class Server_impl
 {
-private:
-    std::vector<ObjectStatusDesc> get_object_status_descriptions(
-            const std::string& lang,
-            const std::string& type);
-
-    DomainSeq get_domains_by_(
-            Fred::OperationContextCreator& ctx,
-            unsigned long limit,
-            const std::vector<Fred::InfoDomainOutp>& domain_info);
-
-    NSSetSeq get_nssets_by_(
-            Fred::OperationContextCreator& ctx,
-            const std::vector<Fred::InfoNssetOutpu>& nss_info,
-            const std::string& handle,
-            unsigned long limit);
-
-    WhoisImpl::NSSet make_nsset_from_info_data(
-            const Fred::InfoNssetData& ind,
-            Fred::OperationContextCreator& ctx);
-
-    WhoisImpl::Domain make_domain_from_info_data(
-            const Fred::InfoDomainData& idd,
-            Fred::OperationContextCreator& ctx);
 public:
     
-    static const std::string output_timezone; 
-
-    virtual ~Server_impl() {};
+    virtual ~Server_impl() {}
 
     Registrar get_registrar_by_handle(const std::string& handle);
 
