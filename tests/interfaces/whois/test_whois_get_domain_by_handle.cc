@@ -23,7 +23,8 @@ struct test_domain_fixture
                           Test::contact::make(ctx).handle)
                     .set_nsset(Test::nsset::make(ctx).handle) 
                     .set_keyset(Test::keyset::make(ctx).handle) 
-                    .set_admin_contacts(Util::vector_of<std::string>(
+                    .set_admin_contacts(
+                        Util::vector_of<std::string>(
                             Test::contact::make(ctx).handle))
                     .set_expiration_date(boost::gregorian::day_clock::local_day() +
                                          boost::gregorian::date_duration(2)),
@@ -79,8 +80,7 @@ struct wrong_zone_fixture
     wrong_zone_fixture()
     {
         std::vector<std::string> list = impl.get_managed_zone_list();
-        BOOST_REQUIRE(list.end() ==
-            std::find(list.begin(), list.end(), std::string("aaa")));
+        BOOST_REQUIRE(list.end() == std::find(list.begin(), list.end(), std::string("aaa")));
     }
 };
 
@@ -202,8 +202,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_handle_unmanaged_zone, invalid_unmanaged_fixture
 {
     try
     {
-        Registry::WhoisImpl::Domain dom =
-            impl.get_domain_by_handle(invalid_unmanaged_fqdn);
+        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(invalid_unmanaged_fqdn);
         BOOST_ERROR("domain must have invalid label and unmanaged zone");
     }
     catch(const Registry::WhoisImpl::InvalidLabel& ex)
@@ -239,8 +238,7 @@ BOOST_FIXTURE_TEST_CASE(unmanaged_zone_too_many_labels, unmanaged_toomany_fixtur
 {
     try
     {
-        Registry::WhoisImpl::Domain dom =
-            impl.get_domain_by_handle(unmanaged_toomany_fqdn);
+        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(unmanaged_toomany_fqdn);
         BOOST_ERROR("domain must have unmanaged zone and exceeded number of labels");
     }
     catch(const Registry::WhoisImpl::UnmanagedZone& ex)
@@ -335,8 +333,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_unmanaged_toomany, invalid_unmanaged_toomany_fix
 {
     try
     {
-        Registry::WhoisImpl::Domain dom =
-            impl.get_domain_by_handle(invalid_unmanaged_toomany_fqdn);
+        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(invalid_unmanaged_toomany_fqdn);
         BOOST_ERROR("domain must have invalid handle, "
                     "unmanaged zone and exceeded number of labels");
     }
@@ -365,13 +362,15 @@ struct delete_candidate_fixture
     {
         Fred::OperationContextCreator ctx;
 
-        Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
-                       .make(Test::registrar(ctx).info_data.handle,
-                             Test::contact(ctx).info_data.handle,
-                             delete_fqdn)
-                       .set_admin_contacts(Util::vector_of<std::string>(
-                           Test::contact::make(ctx).handle)),
-                   ctx);
+        Test::exec(
+            Test::CreateX_factory<Fred::CreateDomain>()
+                .make(Test::registrar(ctx).info_data.handle,
+                      Test::contact(ctx).info_data.handle,
+                      delete_fqdn)
+                .set_admin_contacts(
+                    Util::vector_of<std::string>(
+                        Test::contact::make(ctx).handle)),
+            ctx);
         ctx.get_conn().exec_params(
             "UPDATE domain_history "
             "SET exdate = now() - "
@@ -411,8 +410,7 @@ BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
     BOOST_CHECK(dom.fqdn == idd.fqdn);
     BOOST_CHECK(dom.changed.isnull());
     BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.statuses.end() !=
-            std::find(dom.statuses.begin(), dom.statuses.end(), "deleteCandidate"));
+    BOOST_CHECK(dom.statuses.end() != std::find(dom.statuses.begin(), dom.statuses.end(), "deleteCandidate"));
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_domain_by_handle

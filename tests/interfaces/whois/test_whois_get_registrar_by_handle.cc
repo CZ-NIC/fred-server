@@ -10,10 +10,11 @@ struct registrar_fixture
     const Fred::InfoRegistrarData registrar;
 
     registrar_fixture()
-    : registrar(Test::exec(
-                    Test::generate_test_data(
-                        Test::CreateX_factory<Fred::CreateRegistrar>().make()),
-                    ctx))
+    : registrar(
+          Test::exec(
+              Test::generate_test_data(
+                  Test::CreateX_factory<Fred::CreateRegistrar>().make()),
+              ctx))
     {
         ctx.commit_transaction();
     }
@@ -21,8 +22,7 @@ struct registrar_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_fine_registrar, registrar_fixture)
 {
-    Registry::WhoisImpl::Registrar reg =
-        impl.get_registrar_by_handle(registrar.handle);
+    Registry::WhoisImpl::Registrar reg = impl.get_registrar_by_handle(registrar.handle);
 
     BOOST_CHECK(reg.organization            == registrar.organization.get_value_or_default());
     BOOST_CHECK(reg.fax                     == registrar.fax.get_value_or_default());

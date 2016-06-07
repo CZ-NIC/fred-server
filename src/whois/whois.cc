@@ -199,8 +199,7 @@ std::vector<std::string> Server_impl::get_managed_zone_list()
     Fred::OperationContextCreator ctx;
     try
     {
-        std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
-        return zone_seq;
+        return ::Whois::get_managed_zone_list(ctx);
     }
     catch(...)
     {
@@ -238,14 +237,10 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             con.address.city                       = icd.place.get_value_or_default().city;
             con.address.country_code               = icd.place.get_value_or_default().country;
             con.address.postal_code                = icd.place.get_value_or_default().postalcode;
-            con.address.stateorprovince =
-                icd.place.get_value_or_default().stateorprovince.get_value_or_default();
-            con.address.street1 =
-                icd.place.get_value_or_default().street1;
-            con.address.street2 =
-                icd.place.get_value_or_default().street2.get_value_or_default();
-            con.address.street3 =
-                icd.place.get_value_or_default().street3.get_value_or_default();
+            con.address.stateorprovince = icd.place.get_value_or_default().stateorprovince.get_value_or_default();
+            con.address.street1 = icd.place.get_value_or_default().street1;
+            con.address.street2 = icd.place.get_value_or_default().street2.get_value_or_default();
+            con.address.street3 = icd.place.get_value_or_default().street3.get_value_or_default();
 
             const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(icd.id).exec(ctx);
             con.statuses.reserve(v_osd.size());
@@ -663,9 +658,12 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             {
                 return Domain(generate_obfuscate_domain_delete_candidate(handle));
             }
-            const Fred::InfoDomainData idd =
-                Fred::InfoDomainByHandle(handle).exec(ctx, get_output_timezone()).info_domain_data;
-            return make_domain_from_info_data(idd, ctx);
+            return make_domain_from_info_data(
+                       Fred::InfoDomainByHandle(handle)
+                           .exec( ctx, get_output_timezone() )
+                           .info_domain_data,
+                       ctx
+                   );
         }
         catch(const Fred::InfoDomainByHandle::Exception& e)
         {
@@ -722,8 +720,7 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
         }
         for(;it != end; ++it)
         {
-            if(::Whois::is_domain_delete_pending(it->info_domain_data.fqdn, ctx,
-                                                 "Europe/Prague"))
+            if(::Whois::is_domain_delete_pending(it->info_domain_data.fqdn, ctx, "Europe/Prague"))
             {
                 domain_seq.content.push_back(
                         generate_obfuscate_domain_delete_candidate(

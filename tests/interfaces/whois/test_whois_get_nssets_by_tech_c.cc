@@ -21,8 +21,8 @@ struct get_nssets_by_tech_c_fixture
         registrar = Test::registrar::make(ctx);
         contact = Test::contact::make(ctx);
         now_utc = boost::posix_time::time_from_string(
-                    static_cast<std::string>(ctx.get_conn()
-                        .exec("SELECT now()::timestamp")[0][0]));
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         Util::vector_of<Fred::DnsHost> dns_hosts(
             Fred::DnsHost(
                 test_fqdn,
@@ -32,11 +32,11 @@ struct get_nssets_by_tech_c_fixture
         for(unsigned int i = 0; i < test_limit; ++i)
         {
             const Fred::InfoNssetData& ind = Test::exec(
-                Test::CreateX_factory<Fred::CreateNsset>()
-                    .make(registrar.handle)
-                    .set_dns_hosts(dns_hosts)
-                    .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
-                ctx);
+                    Test::CreateX_factory<Fred::CreateNsset>()
+                        .make(registrar.handle)
+                        .set_dns_hosts(dns_hosts)
+                        .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+                    ctx);
             nsset_info[ind.handle] = ind;
         }
         //different contact's nssets
@@ -46,8 +46,9 @@ struct get_nssets_by_tech_c_fixture
                 Test::CreateX_factory<Fred::CreateNsset>()
                     .make(registrar.handle)
                     .set_dns_hosts(dns_hosts)
-                    .set_tech_contacts(Util::vector_of<std::string>(
-                        Test::contact::make(ctx).handle)),
+                    .set_tech_contacts(
+                        Util::vector_of<std::string>(
+                            Test::contact::make(ctx).handle)),
                 ctx);
         }
         ctx.commit_transaction();
@@ -56,8 +57,7 @@ struct get_nssets_by_tech_c_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s =
-        impl.get_nssets_by_tech_c(contact.handle, test_limit);
+    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact.handle, test_limit);
     
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
@@ -80,15 +80,15 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=
-                    it.statuses.end());
+                            it.statuses.end());
         }
+        BOOST_CHECK(it.statuses.size() == v_osd.size());
     }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_c_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s =
-        impl.get_nssets_by_tech_c(contact.handle, test_limit - 1);
+    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact.handle, test_limit - 1);
     
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);

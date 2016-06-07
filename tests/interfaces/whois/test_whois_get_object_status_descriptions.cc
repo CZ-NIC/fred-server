@@ -3,7 +3,7 @@
 #include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
-BOOST_AUTO_TEST_SUITE(gdsd)//get_domain_status_descriptions)
+BOOST_AUTO_TEST_SUITE(gdsd)//get_domain_status_descriptions
 
 struct object_status_descriptions_fixture
 : whois_impl_instance_fixture
@@ -13,7 +13,7 @@ struct object_status_descriptions_fixture
     std::string  test_lang;
     std::string  object_name;
     map_type     statuses;
-    unsigned int status_number;
+    unsigned int type_statuses_number;
 
     object_status_descriptions_fixture()
     : test_lang("EN")
@@ -21,8 +21,7 @@ struct object_status_descriptions_fixture
         Fred::OperationContextCreator ctx;
         statuses["expired"] = "description of expired";
         statuses["unguarded"] = "description of unguarded";
-        statuses["serverTransferProhibited"] =
-            "description of serverTransferProhibited";
+        statuses["serverTransferProhibited"] = "description of serverTransferProhibited";
         BOOST_FOREACH(map_type::value_type& p, statuses)
         {
             ctx.get_conn().exec_params(

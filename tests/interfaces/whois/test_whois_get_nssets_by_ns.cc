@@ -24,36 +24,40 @@ struct get_nssets_by_ns_fixture
         registrar = Test::registrar::make(ctx);
         contact = Test::contact::make(ctx);
         now_utc = boost::posix_time::time_from_string(
-                static_cast<std::string>(ctx.get_conn()
-                    .exec("SELECT now()::timestamp")[0][0]));
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         for(unsigned int i = 0; i < test_limit; ++i)
         {
-            Util::vector_of<Fred::DnsHost> dns_hosts(
-                Fred::DnsHost(test_fqdn,
-                              Util::vector_of<boost::asio::ip::address>(
-                                  boost::asio::ip::address())));
             const Fred::InfoNssetData& ind = Test::exec(
-                Test::CreateX_factory<Fred::CreateNsset>()
+                    Test::CreateX_factory<Fred::CreateNsset>()
                     .make(registrar.handle)
-                    .set_dns_hosts(dns_hosts)
+                    .set_dns_hosts(
+                        Util::vector_of<Fred::DnsHost> dns_hosts(
+                            Fred::DnsHost(
+                                test_fqdn,
+                                Util::vector_of<boost::asio::ip::address>(
+                                    boost::asio::ip::from_string("192.128.0.1")))))
+//TODO                        boost::asio::ip::address())));
                     .set_tech_contacts(
-                        Util::vector_of<std::string>(contact.handle)),
+                            Util::vector_of<std::string>(contact.handle)),
                 ctx);
             nsset_info[ind.handle] = ind;
         }
         //different NS nssets
         for(unsigned int i = 0; i < 3; ++i)
         {
-            Util::vector_of<Fred::DnsHost> other_hosts(
-                Fred::DnsHost("other-fqdn", 
-                              Util::vector_of<boost::asio::ip::address>(
-                                  boost::asio::ip::address())));
             Test::exec(
                 Test::CreateX_factory<Fred::CreateNsset>()
                     .make(registrar.handle)
-                    .set_dns_hosts(other_hosts)
+                    .set_dns_hosts(
+                        Util::vector_of<Fred::DnsHost> other_hosts(
+                            Fred::DnsHost(
+                                "other-fqdn", 
+                                Util::vector_of<boost::asio::ip::address>(
+                                    boost::asio::ip::from_string("192.128.1.1")))))
+//TODO                        boost::asio::ip::address())));
                     .set_tech_contacts(
-                        Util::vector_of<std::string>(contact.handle)),
+                            Util::vector_of<std::string>(contact.handle)),
                 ctx);
         }
         ctx.commit_transaction();
@@ -62,8 +66,7 @@ struct get_nssets_by_ns_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn,
-                                                                test_limit);
+    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit);
     
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
@@ -94,8 +97,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixture)
 {
-    Registry::WhoisImpl::NSSetSeq nss_s =
-        impl.get_nssets_by_ns(test_fqdn, test_limit - 1);
+    Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit - 1);
     
     BOOST_CHECK(nss_s.limit_exceeded); BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, Fred::InfoNssetData>::iterator found;

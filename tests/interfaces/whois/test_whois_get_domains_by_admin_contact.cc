@@ -36,7 +36,8 @@ struct domains_by_admin_contact_fixture
                         .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
                         .set_nsset(Test::nsset::make(ctx).handle) 
                         .set_keyset(Test::keyset::make(ctx).handle) 
-                        .set_expiration_date(boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
+                        .set_expiration_date(
+                            boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
                     ctx);
             
             domain_info[idd.fqdn] = idd;

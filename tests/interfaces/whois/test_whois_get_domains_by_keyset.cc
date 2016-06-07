@@ -7,63 +7,64 @@ BOOST_AUTO_TEST_SUITE(get_domains_by_keyset)
 struct domains_by_keyset_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
-    std::string test_keyset;
-    unsigned int regular_domains;
+    const std::string test_keyset;
+    const unsigned int regular_domains;
     std::map<std::string, Fred::InfoDomainData> domain_info;
-    const Fred::InfoRegistrarData registrar; 
-    const Fred::InfoContactData contact, admin;
-    const Fred::InfoKeysetData keyset, other_keyset;
-    const boost::posix_time::ptime now_utc;
+    boost::posix_time::ptime now_utc;
 
     domains_by_keyset_fixture()
     : test_keyset("test-keyset"),
-      regular_domains(6),
-      registrar(Test::registrar::make(ctx)),
-      contact(Test::contact::make(ctx)),
-      admin(Test::contact::make(ctx)),
-      keyset(Test::keyset::make(ctx, test_keyset)),
-      other_keyset(Test::keyset::make(ctx)),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now()::timestamp")[0][0])))
+      regular_domains(6) //XXX
     {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoContactData contact     = Test::contact::make(ctx),
+                                    admin       = Test::contact::make(ctx);
+        const Fred::InfoKeysetData keyset       = Test::keyset::make(ctx, test_keyset),
+                                   other_keyset = Test::keyset::make(ctx);
+        now_utc = boost::posix_time::time_from_string(
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         for(unsigned int i=0; i < regular_domains; ++i)
         {
-            const Fred::InfoDomainData& idd = Test::exec(
-                Test::CreateX_factory<Fred::CreateDomain>()
-                    .make(registrar.handle, contact.handle)
-                    .set_nsset(Test::nsset::make(ctx).handle) 
-                    .set_keyset(test_keyset)
-                    .set_admin_contacts(Util::vector_of<std::string>(
-                            Test::contact::make(ctx).handle))
-                    .set_admin_contacts(Util::vector_of<std::string>(admin.handle))
-                    .set_expiration_date(boost::gregorian::day_clock::local_day() +
-                                         boost::gregorian::date_duration(2)),
-                ctx);
+            const Fred::InfoDomainData& idd = Test::exec(   //lifetime extension of temporary
+                    Test::CreateX_factory<Fred::CreateDomain>()
+                        .make(registrar.handle, contact.handle)
+                        .set_nsset(Test::nsset::make(ctx).handle) 
+                        .set_keyset(test_keyset)
+                        .set_admin_contacts(
+                            Util::vector_of<std::string>(
+                                Test::contact::make(ctx).handle))
+                        .set_admin_contacts(
+                            Util::vector_of<std::string>(admin.handle))
+                        .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                             boost::gregorian::date_duration(2)),
+                    ctx);
             domain_info[idd.fqdn] = idd;
         }
-        for(unsigned int i=0; i < 3; ++i)//3 different domains for another keyset
+        for(unsigned int i=0; i < 3; ++i) //3 different domains for another keyset
         {
-            Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
-                           .make(registrar.handle, contact.handle)
-                           .set_keyset(other_keyset.handle)
-                           .set_admin_contacts(Util::vector_of<std::string>(admin.handle)),
-                       ctx);
+            Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar.handle, contact.handle)
+                    .set_keyset(other_keyset.handle)
+                    .set_admin_contacts(Util::vector_of<std::string>(admin.handle)),
+                ctx);
         }
         //1 with no keyset
-        Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
-                       .make(registrar.handle, contact.handle)
-                       .set_admin_contacts(Util::vector_of<std::string>(admin.handle)),
-                   ctx);
+        Test::exec(
+            Test::CreateX_factory<Fred::CreateDomain>()
+                .make(registrar.handle, contact.handle)
+                .set_admin_contacts(
+                    Util::vector_of<std::string>(admin.handle)),
+            ctx);
         ctx.commit_transaction();
     }
 };
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq =
-        impl.get_domains_by_keyset(test_keyset, regular_domains);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_keyset(test_keyset, regular_domains);
     BOOST_CHECK(!domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
