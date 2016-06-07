@@ -64,30 +64,32 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle_no_keyset, get_keyset_by_handle_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle("fine-keyset-handle");
-        BOOST_ERROR("unreported dangling keyset");
-    }
-    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_keyset_by_handle("fine-keyset-handle"), Registry::WhoisImpl::ObjectNotExists);
+//    try
+//    {
+//        Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle("fine-keyset-handle");
+//        BOOST_ERROR("unreported dangling keyset");
+//    }
+//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle_wrong_nsset, get_keyset_by_handle_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle("");
-        BOOST_ERROR("keyset handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_keyset_by_handle(""), Registry::WhoisImpl::InvalidHandle);
+//    try
+//    {
+//        Registry::WhoisImpl::KeySet ks = impl.get_keyset_by_handle("");
+//        BOOST_ERROR("keyset handle rule is wrong");
+//    }
+//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_keyset_by_handle

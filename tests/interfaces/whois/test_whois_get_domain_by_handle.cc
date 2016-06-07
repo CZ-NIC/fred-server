@@ -70,16 +70,7 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
 
 BOOST_FIXTURE_TEST_CASE(wrong_handle, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle("");
-        BOOST_ERROR("domain handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidLabel& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_domain_by_handle(""), Registry::WhoisImpl::InvalidLabel);
 }
 
 struct wrong_zone_fixture
@@ -95,16 +86,17 @@ struct wrong_zone_fixture
 
 BOOST_FIXTURE_TEST_CASE(wrong_zone, wrong_zone_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle("aaa");
-        BOOST_ERROR("unreported managed zone");
-    }
-    catch(const Registry::WhoisImpl::UnmanagedZone& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_domain_by_handle("aaa"), Registry::WhoisImpl::UnmanagedZone);
+//    try
+//    {
+//        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle("aaa");
+//        BOOST_ERROR("unreported managed zone");
+//    }
+//    catch(const Registry::WhoisImpl::UnmanagedZone& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 struct many_labels_fixture
@@ -145,47 +137,50 @@ struct many_labels_fixture
 
 BOOST_FIXTURE_TEST_CASE(too_many_labels, many_labels_fixture)
 {
-    BOOST_FOREACH(std::string it, domain_list)
+    BOOST_FOREACH(const std::string& it, domain_list)
     {
-        try
-        {
-            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(it);
-            BOOST_ERROR("permitted label number is wrong");
-        }
-        catch(const Registry::WhoisImpl::TooManyLabels& ex)
-        {
-            BOOST_CHECK(true);
-            BOOST_MESSAGE(boost::diagnostic_information(ex));
-        }
+        BOOST_CHECK_THROW(impl.get_domain_by_handle(it), Registry::WhoisImpl::TooManyLabels);
+//        try
+//        {
+//            Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(it);
+//            BOOST_ERROR("permitted label number is wrong");
+//        }
+//        catch(const Registry::WhoisImpl::TooManyLabels& ex)
+//        {
+//            BOOST_CHECK(true);
+//            BOOST_MESSAGE(boost::diagnostic_information(ex));
+//        }
     }
 }
 
 BOOST_FIXTURE_TEST_CASE(no_handle, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle("fine-handle.cz");
-        BOOST_ERROR("unreported dangling domain");
-    }
-    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_domain_by_handle("fine-handle.cz"), Registry::WhoisImpl::ObjectNotExists);
+//    try
+//    {
+//        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle("fine-handle.cz");
+//        BOOST_ERROR("unreported dangling domain");
+//    }
+//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(invalid_handle, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle("a-.cz");
-        BOOST_ERROR("domain checker rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidLabel& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_domain_by_handle("a-.cz"), Registry::WhoisImpl::InvalidLabel);
+//    try
+//    {
+//        Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle("a-.cz");
+//        BOOST_ERROR("domain checker rule is wrong");
+//    }
+//    catch(const Registry::WhoisImpl::InvalidLabel& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 struct invalid_unmanaged_fixture

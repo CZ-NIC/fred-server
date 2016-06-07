@@ -125,31 +125,32 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::NSSetSeq nss_s =
-            impl.get_nssets_by_ns("fine-fqdn.cz", 0);
-        BOOST_ERROR("unreported dangling NSSets");
-    }
-    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(get_nssets_by_ns("fine-fqdn.cz", 1), Registry::WhoisImpl::ObjectNotExists)
+//    try
+//    {
+//        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns("fine-fqdn.cz", 1);
+//        BOOST_ERROR("unreported dangling NSSets");
+//    }
+//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(".", 0);
-        BOOST_ERROR("domain handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(get_nssets_by_ns(".", 1), Registry::WhoisImpl::InvalidHandle)
+//    try
+//    {
+//        Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(".", 1);
+//        BOOST_ERROR("domain handle rule is wrong");
+//    }
+//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_ns

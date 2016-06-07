@@ -133,30 +133,32 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_no_registrant, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant("absent-registrant", 0);
-        BOOST_ERROR("unreported dangling registrant");
-    }
-    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_domains_by_registrant("absent-registrant", 1), Registry::WhoisImpl::ObjectNotExists);
+//    try
+//    {
+//        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant("absent-registrant", 1);
+//        BOOST_ERROR("unreported dangling registrant");
+//    }
+//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_wrong_registrant, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant("", 0);
-        BOOST_ERROR("registrant handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_domains_by_registrant("", 1), Registry::WhoisImpl::InvalidHandle);
+//    try
+//    {
+//        Registry::WhoisImpl::DomainSeq ds = impl.get_domains_by_registrant("", 1);
+//        BOOST_ERROR("registrant handle rule is wrong");
+//    }
+//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_domains_by_registrant

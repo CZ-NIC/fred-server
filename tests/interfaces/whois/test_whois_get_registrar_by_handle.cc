@@ -42,32 +42,32 @@ BOOST_FIXTURE_TEST_CASE(get_fine_registrar, registrar_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_no_registar, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Registrar reg =
-            impl.get_registrar_by_handle("REG-ABSENT");
-        BOOST_ERROR("unreported dangling registrar");
-    }
-    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(get_registrar_by_handle("REG-ABSENT"), Registry::WhoisImpl::ObjectNotExists)
+//    try
+//    {
+//        Registry::WhoisImpl::Registrar reg = impl.get_registrar_by_handle("REG-ABSENT");
+//        BOOST_ERROR("unreported dangling registrar");
+//    }
+//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_wrong_registrar, whois_impl_instance_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Registrar reg =
-            impl.get_registrar_by_handle("REG@#$");
-        BOOST_ERROR("registrar handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(get_registrar_by_handle("REG@#$"), Registry::WhoisImpl::InvalidHandle)
+//    try
+//    {
+//        Registry::WhoisImpl::Registrar reg = impl.get_registrar_by_handle("REG@#$");
+//        BOOST_ERROR("registrar handle rule is wrong");
+//    }
+//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_registrar_by_handle

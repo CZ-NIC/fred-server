@@ -53,30 +53,32 @@ BOOST_FIXTURE_TEST_CASE(get_contact_by_handle, test_contact_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle_no_contact, test_contact_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Contact con = impl.get_contact_by_handle("fine-handle");
-        BOOST_ERROR("unreported dangling contact");
-    }
-    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_contact_by_handle("fine-handle"), Registry::WhoisImpl::ObjectNotExists);
+//    try
+//    {
+//        Registry::WhoisImpl::Contact con = 
+//        BOOST_ERROR("unreported dangling contact");
+//    }
+//    catch(const Registry::WhoisImpl::ObjectNotExists& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_contact_by_handle_wrong_contact, test_contact_fixture)
 {
-    try
-    {
-        Registry::WhoisImpl::Contact con = impl.get_contact_by_handle("");//[a-zA-Z0-9_:.-]{1,63}
-        BOOST_ERROR("contact handle rule is wrong");
-    }
-    catch(const Registry::WhoisImpl::InvalidHandle& ex)
-    {
-        BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
-    }
+    BOOST_CHECK_THROW(impl.get_contact_by_handle(""), Registry::WhoisImpl::InvalidHandle);
+//    try
+//    {
+//        Registry::WhoisImpl::Contact con = impl.get_contact_by_handle("");
+//        BOOST_ERROR("contact handle rule is wrong");
+//    }
+//    catch(const Registry::WhoisImpl::InvalidHandle& ex)
+//    {
+//        BOOST_CHECK(true);
+//        BOOST_MESSAGE(boost::diagnostic_information(ex));
+//    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();//get_contact_by_handle
