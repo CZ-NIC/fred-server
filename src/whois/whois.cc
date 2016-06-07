@@ -774,7 +774,20 @@ static DomainSeq get_domains_by_(Fred::OperationContextCreator& ctx,
     }
     for(; it != end; ++it)
     {
-        domain_seq.content.push_back(make_domain_from_info_data(it->info_domain_data, ctx));
+        if(::Whois::is_domain_delete_pending(it->info_domain_data.fqdn,
+                                             ctx,
+                                             "Europe/Prague"))
+        {
+            domain_seq.content.push_back(
+                generate_obfuscate_domain_delete_candidate(
+                    it->info_domain_data.fqdn));
+        }
+        else
+        {
+            domain_seq.content.push_back(
+                make_domain_from_info_data(
+                    it->info_domain_data, ctx));
+        }
     }
     return domain_seq;
 }

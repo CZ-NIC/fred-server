@@ -129,6 +129,9 @@ struct ContactIdentification
     {}
 };
 
+/**
+ * Disclose suffix means whether corresponding info is allowed to be seen
+ */
 struct Contact
 {
     std::string handle; 
@@ -280,6 +283,9 @@ struct NSSetSeq
     {}
 };
 
+/**
+ * DNSKEY Resource Record data (rfc4034)
+ */
 struct DNSKey
 {
     short flags; 
@@ -544,46 +550,154 @@ public:
     
     virtual ~Server_impl() {}
 
+    /**
+     * Returns registrar (system/non-system) by a handle.
+     * @param handle contains handle of the registrar.
+     * @return registrar data.
+     */
     Registrar get_registrar_by_handle(const std::string& handle);
 
-    std::vector<Registrar> get_registrars(); /** Returns the vector of non-system registrars.  */
+    /**
+     * Returns the vector of non-system registrars.
+     * @return registrar vector.
+     */
+    std::vector<Registrar> get_registrars();
 
+    /**
+     * Returns the vector of registrar groups.
+     * @return registrar group vector.
+     */
     std::vector<RegistrarGroup> get_registrar_groups();
 
+    /**
+     * Returns the vector of registrar certifications.
+     * @return registrar certification vector.
+     */
     std::vector<RegistrarCertification> get_registrar_certification_list();
 
+    /**
+     * Returns the vector of managed zones.
+     * @return managed zone vector.
+     */
     std::vector<std::string> get_managed_zone_list();
 
+    /**
+     * Returns contact by a handle.
+     * @param handle contains handle of the contact.
+     * @return contact data.
+     */
     Contact get_contact_by_handle(const std::string& handle);
 
+    /**
+     * Returns nsset by a handle.
+     * @param handle contains handle of the nsset.
+     * @return nsset data.
+     */
     NSSet get_nsset_by_handle(const std::string& handle);
 
+    /**
+     * Returns vector of nssets by the name server handle.
+     * @param handle contains handle of the name server.
+     * @param limit flag whether requested limit was reached.
+     * @return vector of nsset data with limit_exceeded flag.
+     */
     NSSetSeq get_nssets_by_ns(const std::string& handle, unsigned long limit);
 
+    /**
+     * Returns vector of nssets by a handle of technical contact.
+     * @param handle contains handle of the technical contact.
+     * @param limit flag whether requested limit was reached.
+     * @return vector of nsset data with limit_exceeded flag.
+     */
     NSSetSeq get_nssets_by_tech_c(const std::string& handle, unsigned long limit);
 
+    /**
+     * Returns name server by a handle.
+     * @param handle contains handle of the name server.
+     * @return name server data.
+     */
     NameServer get_nameserver_by_fqdn(const std::string& handle);
 
+    /**
+     * Returns keyset by a handle.
+     * @param handle contains handle of the keyset.
+     * @return keyset data.
+     */
     KeySet get_keyset_by_handle(const std::string& handle);
 
+    /**
+     * Returns vector of keysets by the handle of technical contact.
+     * @param handle contains handle of the technical contact.
+     * @param limit flag whether requested limit was reached.
+     * @return vector of keyset data with limit_exceeded flag.
+     */
     KeySetSeq get_keysets_by_tech_c(const std::string& handle, unsigned long limit);
 
+    /**
+     * Returns domain by a handle.
+     * @param handle contains handle of the domain.
+     * @return domain data.
+     */
     Domain get_domain_by_handle(const std::string& handle);
 
+    /**
+     * Returns vector of domains by a handle of registrant.
+     * @param handle contains handle of the registrant.
+     * @param limit flag whether requested limit was reached.
+     * @return vector of domain data with limit_exceeded flag
+     */
     DomainSeq get_domains_by_registrant(const std::string& handle, unsigned long limit);
 
+    /**
+     * Returns vector of domains by a handle of admin contact.
+     * @param handle contains handle of the admin contact.
+     * @param limit flag whether requested limit was reached.
+     * @return vector of domain data with limit_exceeded flag
+     */
     DomainSeq get_domains_by_admin_contact(const std::string& handle, unsigned long limit);
 
+    /**
+     * Returns vector of domains by a handle of nsset.
+     * @param handle contains handle of the nsset.
+     * @param limit flag whether requested limit was reached.
+     * @return vector of domain data with limit_exceeded flag
+     */
     DomainSeq get_domains_by_nsset(const std::string& handle, unsigned long limit);
 
+    /**
+     * Returns vector of domains by a handle of keyset.
+     * @param handle contains handle of the keyset.
+     * @param limit flag whether requested limit was reached.
+     * @return vector of domain data with limit_exceeded flag.
+     */
     DomainSeq get_domains_by_keyset(const std::string& handle, unsigned long limit);
 
+    /**
+     * Returns vector of domain status descriptions by language.
+     * @param lang is the language of the descriptions.
+     * @return vector of domain status descriptions.
+     */
     std::vector<ObjectStatusDesc> get_domain_status_descriptions(const std::string& lang);
 
+    /**
+     * Returns vector of contact status descriptions by language.
+     * @param lang is the language of the descriptions.
+     * @return vector of contact status descriptions.
+     */
     std::vector<ObjectStatusDesc> get_contact_status_descriptions(const std::string& lang);
 
+    /**
+     * Returns vector of nsset status descriptions by language.
+     * @param lang is the language of the descriptions.
+     * @return vector of nsset status descriptions.
+     */
     std::vector<ObjectStatusDesc> get_nsset_status_descriptions(const std::string& lang);
 
+    /**
+     * Returns vector of keyset status descriptions by language.
+     * @param lang is the language of the descriptions.
+     * @return vector of keyset status descriptions.
+     */
     std::vector<ObjectStatusDesc> get_keyset_status_descriptions(const std::string& lang);
 
 };//Server_impl
