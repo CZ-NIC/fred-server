@@ -10,20 +10,19 @@ struct test_contact_fixture
     const Fred::InfoRegistrarData registrar;
     const Fred::InfoContactData contact;
     const boost::posix_time::ptime now_utc;
-//    const boost::posix_time::ptime now_prague;
 
     test_contact_fixture()
-    : registrar(Test::registrar::make(ctx)),
-      contact(Test::exec(
-                  Test::generate_test_data(
-                      Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle)),
-                  ctx)),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now()::timestamp")[0][0])))//,
-//      now_prague(boost::posix_time::time_from_string(
-//                  static_cast<std::string>(ctx.get_conn()
-//                      .exec("SELECT now() AT TIME ZONE 'Europe/Prague'")[0][0])))
+    : registrar(
+          Test::registrar::make(ctx)),
+      contact(
+          Test::exec(
+              Test::generate_test_data(
+                  Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle)),
+              ctx)),
+      now_utc(
+          boost::posix_time::time_from_string(
+              static_cast<std::string>(
+                  ctx.get_conn().exec("SELECT now()::timestamp")[0][0])))
     {
         ctx.commit_transaction();
     }
