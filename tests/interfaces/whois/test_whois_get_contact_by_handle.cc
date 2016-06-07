@@ -42,8 +42,8 @@ BOOST_FIXTURE_TEST_CASE(get_contact_by_handle, test_contact_fixture)
     BOOST_CHECK(con.vat_number                  == contact.vat.get_value_or_default());
     BOOST_CHECK(con.notify_email                == contact.notifyemail.get_value_or_default());
     BOOST_CHECK(con.organization                == contact.organization.get_value_or_default());
-    BOOST_CHECK(con.creating_registrar_handle   == contact.create_registrar_handle);
-    BOOST_CHECK(con.sponsoring_registrar_handle == contact.sponsoring_registrar_handle);
+    BOOST_CHECK(con.creating_registrar          == contact.create_registrar_handle);
+    BOOST_CHECK(con.sponsoring_registrar        == contact.sponsoring_registrar_handle);
     BOOST_CHECK(con.changed.get_value_or_default()       == contact.update_time.get_value_or_default());
     BOOST_CHECK(con.last_transfer.get_value_or_default() == contact.transfer_time.get_value_or_default());
     BOOST_CHECK(con.address.city                == contact.place.get_value_or_default().city);

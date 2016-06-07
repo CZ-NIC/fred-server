@@ -68,17 +68,16 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.registered == now_utc);
-        BOOST_CHECK(it.registrant_handle == found->second.registrant.handle);
-        BOOST_CHECK(it.registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it.registrant == found->second.registrant.handle);
+        BOOST_CHECK(it.registrar  == found->second.create_registrar_handle);
         BOOST_CHECK(it.expire == found->second.expiration_date);
-        BOOST_CHECK(it.keyset_handle == found->second.keyset.get_value_or_default().handle);
-        BOOST_CHECK(it.nsset_handle == found->second.nsset.get_value_or_default().handle);
+        BOOST_CHECK(it.keyset == found->second.keyset.get_value_or_default().handle);
+        BOOST_CHECK(it.nsset  == found->second.nsset.get_value_or_default().handle);
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
         {
-            bool found = (it.admin_contact_handles.end() == std::find(it.admin_contact_handles.begin(),
-                        it.admin_contact_handles.end(), oit.handle));
-            BOOST_CHECK(!found);//dirty, wasn't working with BOOST_ERROR ;(
+            BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
+                        it.admin_contacts.end(), oit.handle));
         }
 
         Fred::OperationContextCreator ctx;
@@ -108,17 +107,16 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.registered == now_utc);
-        BOOST_CHECK(it.registrant_handle == found->second.registrant.handle);
-        BOOST_CHECK(it.registrar_handle == found->second.create_registrar_handle);
+        BOOST_CHECK(it.registrant == found->second.registrant.handle);
+        BOOST_CHECK(it.registrar  == found->second.create_registrar_handle);
         BOOST_CHECK(it.expire == found->second.expiration_date);
-        BOOST_CHECK(it.keyset_handle == found->second.keyset.get_value_or_default().handle);
-        BOOST_CHECK(it.nsset_handle == found->second.nsset.get_value_or_default().handle);
+        BOOST_CHECK(it.keyset == found->second.keyset.get_value_or_default().handle);
+        BOOST_CHECK(it.nsset  == found->second.nsset.get_value_or_default().handle);
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair oit, found->second.admin_contacts)
         {
-            bool found = (it.admin_contact_handles.end() == std::find(it.admin_contact_handles.begin(),
-                        it.admin_contact_handles.end(), oit.handle));
-            BOOST_CHECK(!found);//dirty, wasn't working with BOOST_ERROR ;(
+            BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
+                        it.admin_contacts.end(), oit.handle));
         }
 
         Fred::OperationContextCreator ctx;

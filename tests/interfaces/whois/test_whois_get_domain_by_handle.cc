@@ -40,23 +40,23 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(domain.fqdn);
 
     BOOST_CHECK(dom.changed.isnull());
-    BOOST_CHECK(dom.validated_to.isnull());//?
+    BOOST_CHECK(dom.validated_to.isnull());
     BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.registered        == now_utc);
-    BOOST_CHECK(dom.fqdn              == domain.fqdn);
-    BOOST_CHECK(dom.registrant_handle == domain.registrant.handle);
-    BOOST_CHECK(dom.registrar_handle  == domain.create_registrar_handle);
-    BOOST_CHECK(dom.expire            == domain.expiration_date);
-    BOOST_CHECK(dom.fqdn              == domain.fqdn);
-    BOOST_CHECK(dom.keyset_handle     == domain.keyset.get_value_or_default().handle);
-    BOOST_CHECK(dom.nsset_handle      == domain.nsset.get_value_or_default().handle);
+    BOOST_CHECK(dom.registered == now_utc);
+    BOOST_CHECK(dom.fqdn       == domain.fqdn);
+    BOOST_CHECK(dom.registrant == domain.registrant.handle);
+    BOOST_CHECK(dom.registrar  == domain.create_registrar_handle);
+    BOOST_CHECK(dom.expire     == domain.expiration_date);
+    BOOST_CHECK(dom.fqdn       == domain.fqdn);
+    BOOST_CHECK(dom.keyset     == domain.keyset.get_value_or_default().handle);
+    BOOST_CHECK(dom.nsset      == domain.nsset.get_value_or_default().handle);
 
-    BOOST_FOREACH(const Fred::ObjectIdHandlePair it, domain.admin_contacts)
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& it, domain.admin_contacts)
     {
-        bool found = (dom.admin_contact_handles.end() == std::find(dom.admin_contact_handles.begin(),
-                    dom.admin_contact_handles.end(), it.handle));
-        BOOST_CHECK(!found);//dirty, wasn't working with BOOST_ERROR ;(
+        BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
+                        dom.admin_contacts.end());
     }
+    BOOST_CHECK(domain.admin_contacts.size() == dom.admin_contacts.size());
 
     Fred::OperationContextCreator ctx;
     const std::vector<Fred::ObjectStateData> v_osd =

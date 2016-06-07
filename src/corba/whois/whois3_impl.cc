@@ -462,7 +462,7 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
     KeySet result;
 
     result.handle  = Corba::wrap_string_to_corba_string(keyset.handle);
-    result.registrar_handle = Corba::wrap_string_to_corba_string(keyset.registrar_handle);
+    result.registrar_handle = Corba::wrap_string_to_corba_string(keyset.creating_registrar);
     result.created = Corba::wrap_time(keyset.created);
     result.changed = Corba::wrap_nullable_datetime(keyset.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(keyset.last_transfer);

@@ -230,8 +230,8 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             con.email                              = icd.email.get_value_or_default();
             con.notify_email                       = icd.notifyemail.get_value_or_default();
             con.vat_number                         = icd.vat.get_value_or_default();
-            con.creating_registrar_handle          = icd.create_registrar_handle;
-            con.sponsoring_registrar_handle        = icd.sponsoring_registrar_handle;
+            con.creating_registrar                 = icd.create_registrar_handle;
+            con.sponsoring_registrar               = icd.sponsoring_registrar_handle;
             con.created                            = icd.creation_time;
             con.changed                            = icd.update_time;
             con.last_transfer                      = icd.transfer_time;

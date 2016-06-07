@@ -150,8 +150,8 @@ struct Contact
     bool         disclose_identification; 
     std::string   vat_number; 
     bool disclose_vat_number; 
-    std::string creating_registrar_handle; 
-    std::string sponsoring_registrar_handle; 
+    std::string creating_registrar; 
+    std::string sponsoring_registrar; 
     boost::posix_time::ptime created; 
     Nullable<boost::posix_time::ptime> changed; 
     Nullable<boost::posix_time::ptime> last_transfer; 
@@ -170,8 +170,8 @@ struct Contact
         const std::string& _notify_email, 
         const ContactIdentification& _identification, 
         const std::string& _vat_number, 
-        const std::string& _creating_registrar_handle, 
-        const std::string& _sponsoring_registrar_handle, 
+        const std::string& _creating_registrar, 
+        const std::string& _sponsoring_creating_registrar, 
         const boost::posix_time::ptime& _created, 
         const Nullable<boost::posix_time::ptime>& _changed, 
         const Nullable<boost::posix_time::ptime>& _last_transfer, 
@@ -196,8 +196,8 @@ struct Contact
         notify_email(_notify_email), 
         identification(_identification), 
         vat_number(_vat_number), 
-        creating_registrar_handle(_creating_registrar_handle), 
-        sponsoring_registrar_handle(_sponsoring_registrar_handle), 
+        creating_registrar(_creating_registrar), 
+        sponsoring_creating_registrar(_sponsoring_creating_registrar), 
         created(_created), 
         changed(_changed), 
         last_transfer(_last_transfer), 
@@ -234,8 +234,8 @@ struct NSSet
 {
     std::string handle; 
     std::vector<NameServer> nservers; 
-    std::vector<std::string> tech_contact_handles; 
-    std::string registrar_handle; 
+    std::vector<std::string> tech_contacts; 
+    std::string creating_registrar; 
     boost::posix_time::ptime created; 
     Nullable<boost::posix_time::ptime> changed; 
     Nullable<boost::posix_time::ptime> last_transfer; 
@@ -246,8 +246,8 @@ struct NSSet
     NSSet(
         const std::string& _handle, 
         const std::vector<NameServer>& _nservers, 
-        const std::vector<std::string>& _tech_contact_handles, 
-        const std::string& _registrar_handle, 
+        const std::vector<std::string>& _tech_contacts, 
+        const std::string& _creating_registrar, 
         const boost::posix_time::ptime& _created, 
         const Nullable<boost::posix_time::ptime>& _changed, 
         const Nullable<boost::posix_time::ptime>& _last_transfer, 
@@ -255,8 +255,8 @@ struct NSSet
     ) :
         handle(_handle), 
         nservers(_nservers), 
-        tech_contact_handles(_tech_contact_handles), 
-        registrar_handle(_registrar_handle), 
+        tech_contacts(_tech_contacts), 
+        creating_registrar(_creating_registrar), 
         created(_created), 
         changed(_changed), 
         last_transfer(_last_transfer), 
@@ -306,7 +306,7 @@ struct KeySet
 {
     std::string handle; 
     std::vector<DNSKey> dns_keys; 
-    std::vector<std::string> tech_contact_handles; 
+    std::vector<std::string> tech_contacts; 
     std::string creating_registrar; 
     boost::posix_time::ptime created; 
     Nullable<boost::posix_time::ptime> changed; 
@@ -318,7 +318,7 @@ struct KeySet
     KeySet(
         const std::string& _handle, 
         const std::vector<DNSKey>& _dns_keys, 
-        const std::vector<std::string>& _tech_contact_handles, 
+        const std::vector<std::string>& _tech_contacts, 
         const std::string& _creating_registrar, 
         const boost::posix_time::ptime& _created, 
         const Nullable<boost::posix_time::ptime>& _changed, 
@@ -327,7 +327,7 @@ struct KeySet
     ) :
         handle(_handle), 
         dns_keys(_dns_keys), 
-        tech_contact_handles(_tech_contact_handles), 
+        tech_contacts(_tech_contacts), 
         creating_registrar(_creating_registrar), 
         created(_created), 
         changed(_changed), 
@@ -357,11 +357,11 @@ struct KeySetSeq
 struct Domain
 {
     std::string fqdn; 
-    std::string registrant_handle; 
-    std::vector<std::string> admin_contact_handles; 
-    std::string nsset_handle; 
-    std::string keyset_handle; 
-    std::string registrar_handle; 
+    std::string registrant; 
+    std::vector<std::string> admin_contacts; 
+    std::string nsset; 
+    std::string keyset; 
+    std::string creating_registrar; 
     std::vector<std::string> statuses; 
     boost::posix_time::ptime registered; 
     Nullable<boost::posix_time::ptime> changed; 
@@ -373,30 +373,30 @@ struct Domain
 
     Domain(
         const std::string& _fqdn, 
-        const std::string& _registrant_handle, 
-        const std::vector<std::string>& _admin_contact_handles, 
-        const std::string& _nsset_handle, 
-        const std::string& _keyset_handle, 
-        const std::string& _registrar_handle, 
+        const std::string& _registrant, 
+        const std::vector<std::string>& _admin_contacts, 
+        const std::string& _nsset, 
+        const std::string& _keyset, 
+        const std::string& _creating_registrar, 
         const std::vector<std::string>& _statuses, 
         const boost::posix_time::ptime& _registered, 
         const Nullable<boost::posix_time::ptime>& _changed, 
         const Nullable<boost::posix_time::ptime>& _last_transfer, 
         const boost::gregorian::date& _expire, 
-        const Nullable<boost::gregorian::date>& _validated_to, 
+        const Nullable<boost::gregorian::date>& _validated_to
     ) :
         fqdn(_fqdn), 
-        registrant_handle(_registrant_handle), 
-        admin_contact_handles(_admin_contact_handles), 
-        nsset_handle(_nsset_handle), 
-        keyset_handle(_keyset_handle), 
-        registrar_handle(_registrar_handle), 
+        registrant(_registrant), 
+        admin_contacts(_admin_contacts), 
+        nsset(_nsset), 
+        keyset(_keyset), 
+        creating_registrar(_creating_registrar), 
         statuses(_statuses), 
         registered(_registered), 
         changed(_changed), 
         last_transfer(_last_transfer), 
         expire(_expire), 
-        validated_to(validated_to)
+        validated_to(_validated_to)
     {}
 };
 
@@ -436,18 +436,18 @@ struct RegistrarGroup
 
 struct RegistrarCertification
 {
-    std::string registrar_handle; 
+    std::string registrar; 
     short score; 
     unsigned long long evaluation_file_id; 
 
     RegistrarCertification() {}
 
     RegistrarCertification(
-        const std::string& _registrar_handle, 
+        const std::string& _registrar, 
         short _score, 
         unsigned long long _evaluation_file_id 
     ) :
-        handle(_handle), 
+        registrar(_registrar), 
         score(_score), 
         evaluation_file_id(_evaluation_file_id) 
     {}
