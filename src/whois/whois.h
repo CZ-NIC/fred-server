@@ -277,9 +277,9 @@ struct NSSetSeq
     {}
 
     NSSetSeq(const std::vector<NSSet>& _content,
-            bool _limit_exceeded = false)
-    : limit_exceeded(_limit_exceeded),
-      content(_content)
+             bool _limit_exceeded = false)
+    : content(_content),
+      limit_exceeded(_limit_exceeded)
     {}
 };
 
@@ -352,11 +352,11 @@ struct KeySetSeq
     {}
 
     KeySetSeq(
-        const std::vector<KeySet>& _content; 
-        bool _limit_exceeded = false; 
-    )
-    : content(_content),
-      limit_exceeded(_limit_exceeded)
+        const std::vector<KeySet>& _content, 
+        bool _limit_exceeded = false 
+    ) :
+        content(_content),
+        limit_exceeded(_limit_exceeded)
     {}
 };
 
