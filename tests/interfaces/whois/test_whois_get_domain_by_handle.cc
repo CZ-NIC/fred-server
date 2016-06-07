@@ -11,13 +11,12 @@ BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
 struct test_domain_fixture
 : whois_impl_instance_fixture
 {
-    Fred::InfoDomainData domain;
     boost::posix_time::ptime now_utc;
 
     test_domain_fixture()
     {
         Fred::OperationContextCreator ctx;
-        domain = Test::exec(
+        const Fred::InfoDomainData domain = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>()
                     .make(Test::registrar::make(ctx).handle,
                           Test::contact::make(ctx).handle)
@@ -59,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     }
     BOOST_CHECK(domain.admin_contacts.size() == dom.admin_contacts.size());
 
-    Fred::OperationContextCreator ctx;
+    Fred::OperationContext ctx;
     const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(domain.id).exec(ctx);
     BOOST_FOREACH(const Fred::ObjectStateData& it, v_osd)
     {
@@ -103,7 +102,7 @@ struct many_labels_fixture
 : whois_impl_instance_fixture
 {
     std::vector<std::string> domain_list;
-    Fred::OperationContextCreator ctx;
+    Fred::OperationContext ctx;
 
     std::string prepare_zone(Fred::OperationContextCreator& ctx, const std::string& zone)
     {

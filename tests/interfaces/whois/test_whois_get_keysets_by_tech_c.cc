@@ -7,31 +7,26 @@ BOOST_AUTO_TEST_SUITE(get_keysets_by_tech_c)
 struct get_keysets_by_tech_c_fixture
 : whois_impl_instance_fixture
 {
-    typedef Registry::WhoisImpl::KeySetSeq KeySetSeq;
-    typedef Registry::WhoisImpl::KeySet KeySet;
-
-    Fred::OperationContextCreator ctx;
-    const Fred::InfoRegistrarData registrar;
-    const Fred::InfoContactData contact;
-    const boost::posix_time::ptime now_utc;
-    unsigned long test_limit;
+    const unsigned long test_limit;
+    boost::posix_time::ptime now_utc;
     std::map<std::string, Fred::InfoKeysetData> keyset_info;
 
     get_keysets_by_tech_c_fixture()
-    : registrar(Test::registrar::make(ctx)),
-      contact(Test::contact::make(ctx)),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now()::timestamp")[0][0]))),
-      test_limit(10)
+    : test_limit(10)
     {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoContactData contact     = Test::contact::make(ctx);
+        now_utc = boost::posix_time::time_from_string(
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         for(unsigned long i = 0; i < test_limit; ++i)
         {
             const Fred::InfoKeysetData& ikd = Test::exec(
                     Test::CreateX_factory<Fred::CreateKeyset>()
                         .make(registrar.handle)
                         .set_dns_keys(Util::vector_of<Fred::DnsKey>(
-                            Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
+                            Fred::DnsKey(42, 777, 13, "any-key")))
                         .set_tech_contacts(Util::vector_of<std::string>(
                             contact.handle)),
                     ctx);

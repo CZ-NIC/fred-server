@@ -298,7 +298,7 @@ static WhoisImpl::NSSet make_nsset_from_info_data(
 
         nss.nservers.push_back(ns);
     }
-    nss.registrar = ind.sponsoring_registrar_handle;
+    nss.creating_registrar = ind.sponsoring_registrar_handle;
     BOOST_FOREACH(Fred::ObjectIdHandlePair it, ind.tech_contacts)
     {
         nss.tech_contacts.push_back(it.handle);
@@ -611,15 +611,15 @@ static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& 
     {
         result.admin_contacts.push_back(it.handle);
     }
-    result.changed       = idd.update_time;
-    result.expire        = idd.expiration_date;
-    result.fqdn          = idd.fqdn;
-    result.keyset        = idd.keyset.get_value_or_default().handle;
-    result.last_transfer = idd.transfer_time;
-    result.nsset         = idd.nsset.get_value_or_default().handle;
-    result.registered    = idd.creation_time;
-    result.registrant    = idd.registrant.handle;
-    result.registrar     = idd.create_registrar_handle;
+    result.changed            = idd.update_time;
+    result.expire             = idd.expiration_date;
+    result.fqdn               = idd.fqdn;
+    result.keyset             = idd.keyset.get_value_or_default().handle;
+    result.last_transfer      = idd.transfer_time;
+    result.nsset              = idd.nsset.get_value_or_default().handle;
+    result.registered         = idd.creation_time;
+    result.registrant         = idd.registrant.handle;
+    result.creating_registrar = idd.create_registrar_handle;
     const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
     result.statuses.reserve(v_osd.size());
     BOOST_FOREACH(Fred::ObjectStateData it, v_osd)

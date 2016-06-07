@@ -7,38 +7,33 @@ BOOST_AUTO_TEST_SUITE(get_domains_by_nsset)
 struct domains_by_nsset_fixture
 : whois_impl_instance_fixture
 {
-    typedef Registry::WhoisImpl::Domain Domain;
-    typedef Registry::WhoisImpl::DomainSeq DomainSeq;
-
-    Fred::OperationContextCreator ctx;
-    std::string test_nsset;
-    unsigned int regular_domains;
+    const std::string test_nsset;
+    const unsigned int regular_domains;
     std::map<std::string, Fred::InfoDomainData> domain_info;
-    const Fred::InfoRegistrarData registrar; 
-    const Fred::InfoContactData contact, admin;
-    const Fred::InfoNssetData nsset, other_nsset;
-    const boost::posix_time::ptime now_utc;
+    boost::posix_time::ptime now_utc;
 
     domains_by_nsset_fixture()
     : test_nsset("test-nsset"),
-      regular_domains(6),
-      registrar(Test::registrar::make(ctx)),
-      contact(Test::contact::make(ctx)),
-      admin(Test::contact::make(ctx)),
-      nsset(Test::nsset::make(ctx, test_nsset)),
-      other_nsset(Test::nsset::make(ctx)),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                     .exec("SELECT now()::timestamp")[0][0])))
+      regular_domains(6) //XXX
     {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoContactData contact     = Test::contact::make(ctx),
+                                    admin       = Test::contact::make(ctx);
+        const Fred::InfoNssetData nsset         = Test::nsset::make(ctx, test_nsset),
+                                  other_nsset   = Test::nsset::make(ctx);
+        now_utc = boost::posix_time::time_from_string(
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         for(unsigned int i=0; i < regular_domains; ++i)
         {
-            const Fred::InfoDomainData& idd = Test::exec(
+            const Fred::InfoDomainData& idd = Test::exec(   //lifetime extension of temporary
                     Test::CreateX_factory<Fred::CreateDomain>()
                         .make(registrar.handle, contact.handle)
                         .set_nsset(test_nsset)
                         .set_keyset(Test::keyset::make(ctx).handle) 
-                        .set_admin_contacts(Util::vector_of<std::string>(
+                        .set_admin_contacts(
+                            Util::vector_of<std::string>(
                                 Test::contact::make(ctx).handle))
                         .set_expiration_date(boost::gregorian::day_clock::local_day() +
                                              boost::gregorian::date_duration(2)),

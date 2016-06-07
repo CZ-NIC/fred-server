@@ -6,16 +6,14 @@ BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 struct registrar_fixture 
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
-    const Fred::InfoRegistrarData registrar;
 
     registrar_fixture()
-    : registrar(
-          Test::exec(
-              Test::generate_test_data(
-                  Test::CreateX_factory<Fred::CreateRegistrar>().make()),
-              ctx))
     {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::exec(
+                Test::generate_test_data(
+                    Test::CreateX_factory<Fred::CreateRegistrar>().make()),
+                ctx);
         ctx.commit_transaction();
     }
 };

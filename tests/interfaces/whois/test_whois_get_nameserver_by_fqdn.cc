@@ -7,29 +7,24 @@ BOOST_AUTO_TEST_SUITE(get_nameserver_by_fqdn)
 struct get_nameserver_by_fqdn_fixture
 : whois_impl_instance_fixture
 {
-    std::string test_nameserver_fqdn;
+    const std::string test_nameserver_fqdn;
 
     get_nameserver_by_fqdn_fixture()
     : test_nameserver_fqdn("test_nameserver")
     {
         Fred::OperationContextCreator ctx;
-        Fred::InfoRegistrarData registrar;
-        Fred::InfoContactData contact;
-        Fred::InfoNssetData nsset;
-
-        registrar = Test::registrar::make(ctx);     
-        contact = Test::contact::make(ctx);
-        nsset = Test::exec(
-                    Test::CreateX_factory<Fred::CreateNsset>().make(registrar.handle)
-                    //making nameserver
-                    .set_dns_hosts(
-                        Util::vector_of<Fred::DnsHost>(
-                            Fred::DnsHost(
-                                test_nameserver_fqdn,
-                                Util::vector_of<boost::asio::ip::address>(
-                                    boost::asio::ip::from_string("192.128.0.1")))))
-                    //TODO                        boost::asio::ip::address())));
-                    .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);     
+        const Fred::InfoContactData contact     = Test::contact::make(ctx);
+        Test::exec(
+            Test::CreateX_factory<Fred::CreateNsset>()
+                .make(registrar.handle)
+                .set_dns_hosts(  //making nameserver
+                    Util::vector_of<Fred::DnsHost>(
+                        Fred::DnsHost(
+                            test_nameserver_fqdn,
+                            Util::vector_of<boost::asio::ip::address>(
+                                boost::asio::ip::from_string("192.128.0.1")))))
+                .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
             ctx);
         ctx.commit_transaction();
     }

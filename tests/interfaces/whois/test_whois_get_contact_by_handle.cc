@@ -6,24 +6,19 @@ BOOST_AUTO_TEST_SUITE(get_contact_by_handle);
 struct test_contact_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
-    const Fred::InfoRegistrarData registrar;
-    const Fred::InfoContactData contact;
-    const boost::posix_time::ptime now_utc;
+    boost::posix_time::ptime now_utc;
 
     test_contact_fixture()
-    : registrar(
-          Test::registrar::make(ctx)),
-      contact(
-          Test::exec(
-              Test::generate_test_data(
-                  Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle)),
-              ctx)),
-      now_utc(
-          boost::posix_time::time_from_string(
-              static_cast<std::string>(
-                  ctx.get_conn().exec("SELECT now()::timestamp")[0][0])))
     {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoContactData contact = Test::exec(
+                    Test::generate_test_data(
+                        Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle)),
+                    ctx);
+        now_utc = boost::posix_time::time_from_string(
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         ctx.commit_transaction();
     }
 };

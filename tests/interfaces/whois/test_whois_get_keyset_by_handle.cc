@@ -8,26 +8,25 @@ BOOST_AUTO_TEST_SUITE(get_keyset_by_handle)
 struct get_keyset_by_handle_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
-    const Fred::InfoRegistrarData registrar;
-    const Fred::InfoKeysetData keyset;
-    const boost::posix_time::ptime now_utc;
+    boost::posix_time::ptime now_utc;
 
     get_keyset_by_handle_fixture()
-    : registrar(Test::registrar::make(ctx)),
-      keyset(
-          Test::exec(
-              Test::CreateX_factory<Fred::CreateKeyset>().make(registrar.handle)
-                  .set_dns_keys(Util::vector_of<Fred::DnsKey>(
-                      Fred::DnsKey(42, 777, 13, "any-key")))//what key has to be here?
-                  .set_tech_contacts(Util::vector_of<std::string>(
-                      Test::contact::make(ctx).handle)),
-              ctx)),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now()::timestamp")[0][0])))
     {
-        ctx.commit_transaction();
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoKeysetData keyset = Test::exec(
+                Test::CreateX_factory<Fred::CreateKeyset>().make(registrar.handle)
+                    .set_dns_keys(
+                        Util::vector_of<Fred::DnsKey>(
+                            Fred::DnsKey(42, 777, 13, "any-key")))
+                    .set_tech_contacts(
+                        Util::vector_of<std::string>(
+                            Test::contact::make(ctx).handle)),
+                ctx);
+        now_utc = boost::posix_time::time_from_string(
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
+                ctx.commit_transaction();
     }
 };
 

@@ -10,9 +10,9 @@ struct object_status_descriptions_fixture
 {
     typedef std::map<std::string, std::string> map_type;
     typedef Registry::WhoisImpl::ObjectStatusDesc StatusDesc;
-    std::string  test_lang;
-    std::string  object_name;
-    map_type     statuses;
+    const std::string test_lang;
+    std::string object_name;
+    map_type statuses;
     unsigned int type_statuses_number;
 
     object_status_descriptions_fixture()
@@ -44,8 +44,8 @@ struct domain_type
     domain_type()
     : object_status_descriptions_fixture()
     {
-      status_number = 2;
-      object_name = ("domain");
+      type_statuses_number = 2;
+      object_name = "domain";
     }
 
     std::vector<StatusDesc> get_description(const std::string& lang)
@@ -60,7 +60,7 @@ struct contact_type
     contact_type()
     : object_status_descriptions_fixture()
     {
-      status_number = 1;
+      type_statuses_number = 1;
       object_name = ("contact");
     }
 
@@ -76,7 +76,7 @@ struct nsset_type
     nsset_type()
     : object_status_descriptions_fixture()
     {
-      status_number = 1;
+      type_statuses_number = 1;
       object_name = ("nsset");
     }
 
@@ -92,7 +92,7 @@ struct keyset_type
     keyset_type()
     : object_status_descriptions_fixture()
     {
-      status_number = 1;
+      type_statuses_number = 1;
       object_name = ("keyset");
     }
 
@@ -151,7 +151,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm, T, test_types, T)
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdol, T, test_types, T)
 {
     std::vector<typename T::StatusDesc> vec_osd = T::get_description("XX");
-    BOOST_CHECK(T::status_number == vec_osd.size());
+    BOOST_CHECK(T::type_statuses_number == vec_osd.size());
     for(typename std::vector<typename T::StatusDesc>::iterator it = vec_osd.begin();
             it != vec_osd.end(); ++it)
     {

@@ -7,22 +7,20 @@ BOOST_AUTO_TEST_SUITE(get_domains_by_registrant)
 struct domains_by_registrant_fixture
 : whois_impl_instance_fixture
 {
-    Fred::OperationContextCreator ctx;
     std::map<std::string, Fred::InfoDomainData> domain_info;
-    const Fred::InfoRegistrarData registrar;
-    const Fred::InfoContactData contact, other_contact;
-    unsigned int regular_domains;
-    const boost::posix_time::ptime now_utc;
+    const unsigned int regular_domains;
+    boost::posix_time::ptime now_utc;
 
     domains_by_registrant_fixture()
-    : registrar(Test::registrar::make(ctx)),
-      contact(Test::contact::make(ctx)),
-      other_contact(Test::contact::make(ctx)),
-      regular_domains(6),
-      now_utc(boost::posix_time::time_from_string(
-                  static_cast<std::string>(ctx.get_conn()
-                      .exec("SELECT now()::timestamp")[0][0])))
+    : regular_domains(6),
     {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoContactData contact = Test::contact::make(ctx),
+                              other_contact = Test::contact::make(ctx);
+        now_utc = boost::posix_time::time_from_string(
+                      static_cast<std::string>(
+                          ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         for(unsigned int i=0; i < regular_domains; ++i)
         {
             const Fred::InfoDomainData& idd = Test::exec(

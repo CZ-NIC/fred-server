@@ -6,26 +6,23 @@ BOOST_AUTO_TEST_SUITE(get_nssets_by_ns)
 struct get_nssets_by_ns_fixture
 : whois_impl_instance_fixture
 {
-    typedef Registry::WhoisImpl::NSSet NSSet;
-
-    std::string test_fqdn;
-    unsigned int test_limit;
-    Fred::InfoRegistrarData registrar;
-    Fred::InfoContactData contact;
-    Fred::InfoNssetData nsset;
-    boost::posix_time::ptime now_utc;
+    const std::string test_fqdn;
+    const unsigned int test_limit, nsset_id;
     std::map<std::string, Fred::InfoNssetData> nsset_info;
+    boost::posix_time::ptime now_utc;
 
     get_nssets_by_ns_fixture()
     : test_fqdn("test-fqdn"),
       test_limit(10)
     {
         Fred::OperationContextCreator ctx;
-        registrar = Test::registrar::make(ctx);
-        contact = Test::contact::make(ctx);
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoContactData contact     = Test::contact::make(ctx);
+        const Fred::InfoNssetData nsset         = Test::nsset::make(ctx);
         now_utc = boost::posix_time::time_from_string(
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
+        nsset_id = nsset.id;
         for(unsigned int i = 0; i < test_limit; ++i)
         {
             const Fred::InfoNssetData& ind = Test::exec(

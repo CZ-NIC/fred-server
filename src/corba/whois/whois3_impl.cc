@@ -142,7 +142,7 @@ RegistrarCertification wrap_registrar_certification(
     const Registry::WhoisImpl::RegistrarCertification& cert)
 {
     RegistrarCertification result;
-    result.registrar_handle = Corba::wrap_string_to_corba_string(cert.registrar_handle);
+    result.registrar_handle = Corba::wrap_string_to_corba_string(cert.registrar);
     result.score = cert.score;
     result.evaluation_file_id = cert.evaluation_file_id;
     return result;
@@ -244,9 +244,9 @@ Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
     result.identification.disclose = con.disclose_identification;
 
     result.creating_registrar_handle =
-            Corba::wrap_string_to_corba_string(con.creating_registrar_handle);
+            Corba::wrap_string_to_corba_string(con.creating_registrar);
     result.sponsoring_registrar_handle =
-            Corba::wrap_string_to_corba_string(con.sponsoring_registrar_handle);
+            Corba::wrap_string_to_corba_string(con.sponsoring_registrar);
     result.created = Corba::wrap_time(con.created);
     result.changed = Corba::wrap_nullable_datetime(con.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(con.last_transfer);
@@ -330,7 +330,7 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
     NSSet result;
 
     result.handle = Corba::wrap_string_to_corba_string(nsset.handle);
-    result.registrar_handle = Corba::wrap_string_to_corba_string(nsset.registrar_handle);
+    result.registrar_handle = Corba::wrap_string_to_corba_string(nsset.creating_registrar);
     result.created = Corba::wrap_time(nsset.created);
     result.changed = Corba::wrap_nullable_datetime(nsset.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(nsset.last_transfer);
@@ -339,7 +339,7 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
 
     set_corba_seq<StringSeq, CORBA::String_var>(
             result.tech_contact_handles, 
-            nsset.tech_contact_handles);
+            nsset.tech_contacts);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, nsset.statuses);
     return result;
@@ -468,7 +468,7 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
     result.last_transfer = Corba::wrap_nullable_datetime(keyset.last_transfer);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, 
-                                                keyset.tech_contact_handles);
+                                                keyset.tech_contacts);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, keyset.statuses);
 
@@ -528,31 +528,31 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
 {
     Domain result;
     result.handle = Corba::wrap_string_to_corba_string(domain.fqdn);
-    result.registrant_handle = Corba::wrap_string_to_corba_string(domain.registrant_handle);
-    if(domain.nsset_handle.size() == 0)
+    result.registrant_handle = Corba::wrap_string_to_corba_string(domain.registrant);
+    if(domain.nsset.size() == 0)
     {
         result.nsset_handle = NULL;
     }
     else 
     {
         result.nsset_handle = new NullableString(
-                Corba::wrap_string_to_corba_string(domain.nsset_handle));
+                Corba::wrap_string_to_corba_string(domain.nsset));
     }
-    if(domain.keyset_handle.size() == 0)
+    if(domain.keyset.size() == 0)
     {
         result.keyset_handle = NULL;
     }
     else 
     {
         result.keyset_handle = new NullableString(
-                Corba::wrap_string_to_corba_string(domain.keyset_handle));
+                Corba::wrap_string_to_corba_string(domain.keyset));
     }
-    result.registrar_handle = Corba::wrap_string_to_corba_string(domain.registrar_handle);
+    result.registrar_handle = Corba::wrap_string_to_corba_string(domain.creating_registrar);
     result.registered = Corba::wrap_time(domain.registered);
     result.changed = Corba::wrap_nullable_datetime(domain.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(domain.last_transfer);
     result.expire = Corba::wrap_date(domain.expire);
-    //??
+    //TODO
 //    result.expire_time_estimate = Corba::wrap_time(_expire_time_estimate);
 //    result.expire_time_actual = Corba::wrap_optional_datetime(_expire_time_actual);
     if(domain.validated_to.isnull()) 
@@ -565,12 +565,12 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     {
         result.validated_to = new Registry::NullableDate(
                 Corba::wrap_date(domain.validated_to.get_value()));
-        //       ?
+        //TODO
 //        result.validated_to_time_estimate = Corba::wrap_optional_datetime(_val_expire_time_estimate);
 //        result.validated_to_time_actual = Corba::wrap_optional_datetime(_val_expire_time_actual);
     } 
     set_corba_seq<StringSeq, CORBA::String_var>(result.admin_contact_handles, 
-                                                domain.admin_contact_handles);
+                                                domain.admin_contacts);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, domain.statuses);
     return result;

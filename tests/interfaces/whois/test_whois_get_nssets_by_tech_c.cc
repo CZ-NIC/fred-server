@@ -6,11 +6,7 @@ BOOST_AUTO_TEST_SUITE(get_nssets_by_tech_c)
 struct get_nssets_by_tech_c_fixture
 : whois_impl_instance_fixture
 {
-    std::string test_fqdn;
-    unsigned int test_limit;
-    Fred::InfoRegistrarData registrar;
-    Fred::InfoContactData contact;
-    Fred::InfoNssetData nsset;
+    const unsigned int test_limit, nsset_id;
     boost::posix_time::ptime now_utc;
     std::map<std::string, Fred::InfoNssetData> nsset_info;
 
@@ -18,17 +14,18 @@ struct get_nssets_by_tech_c_fixture
     : test_limit(10)
     {
         Fred::OperationContextCreator ctx;
-        registrar = Test::registrar::make(ctx);
-        contact = Test::contact::make(ctx);
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
+        const Fred::InfoContactData contact     = Test::contact::make(ctx);
+        const Fred::InfoNssetData nsset         = Test::nsset::make(ctx);
         now_utc = boost::posix_time::time_from_string(
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
+        nsset_id = nsset.id;
         Util::vector_of<Fred::DnsHost> dns_hosts(
             Fred::DnsHost(
-                test_fqdn,
+                "some-fqdn",
                 Util::vector_of<boost::asio::ip::address>(
                         boost::asio::ip::from_string("192.128.0.1"))));
-//TODO                        boost::asio::ip::address())));
         for(unsigned int i = 0; i < test_limit; ++i)
         {
             const Fred::InfoNssetData& ind = Test::exec(

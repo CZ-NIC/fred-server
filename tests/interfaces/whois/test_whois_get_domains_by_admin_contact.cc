@@ -9,7 +9,6 @@ struct domains_by_admin_contact_fixture
 : whois_impl_instance_fixture
 {
     std::map<std::string, Fred::InfoDomainData> domain_info;
-    Fred::InfoContactData regular_admin;
     boost::posix_time::ptime now_utc;
     const unsigned int regular_domains;
     const std::string delete_fqdn;
@@ -19,15 +18,14 @@ struct domains_by_admin_contact_fixture
       delete_fqdn("test-delete.cz")
     {
         Fred::OperationContextCreator ctx;
-        regular_admin                      = Test::contact::make(ctx);
-        Fred::InfoRegistrarData registrar  = Test::registrar::make(ctx);
-        Fred::InfoContactData system_admin = Test::contact::make(ctx),
-                              contact      = Test::contact::make(ctx);
+        const Fred::InfoRegistrarData registrar  = Test::registrar::make(ctx);
+        const Fred::InfoContactData regular_admin = Test::contact::make(ctx),
+                                    system_admin = Test::contact::make(ctx),
+                                    contact      = Test::contact::make(ctx);
         now_utc = boost::posix_time::time_from_string(
                 static_cast<std::string>(
                     ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
 
-        std::string tmp_handle;
         for(unsigned int i=0; i < regular_domains; ++i)
         {
             const Fred::InfoDomainData& idd = Test::exec(

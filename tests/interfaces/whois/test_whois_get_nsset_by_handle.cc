@@ -6,17 +6,16 @@ BOOST_AUTO_TEST_SUITE(get_nsset_by_handle)
 struct get_nsset_by_handle_fixture
 : whois_impl_instance_fixture
 {
-    std::string test_nsset_handle;
-    unsigned long long id;
-    Fred::InfoNssetData nsset;
+    const std::string test_nsset_handle;
+    const unsigned long long id;
     boost::posix_time::ptime now_utc;
 
     get_nsset_by_handle_fixture()
     : test_nsset_handle("TEST-NSSET")
     {
         Fred::OperationContextCreator ctx;
-        Fred::InfoContactData contact = Test::contact::make(ctx);
-        nsset = Test::exec(
+        const Fred::InfoContactData contact = Test::contact::make(ctx);
+        const Fred::InfoNssetData nsset = Test::exec(
                     Test::CreateX_factory<Fred::CreateNsset>()
                         .make(Test::registrar::make(ctx).handle, test_nsset_handle)
                         .set_dns_hosts(
