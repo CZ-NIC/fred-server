@@ -117,13 +117,15 @@ struct many_labels_fixture
         {
             BOOST_ERROR("test zone was not created properly");
         }
-        std::ostringstream labeled_zone;
-        for(unsigned int i=0; i < zone_data.dots_max + 2; ++i) // !!!
+        std::string labeled_zone;
+        unsigned int dots_exceeded = zone_data.dots_max + 2;
+        labeled_zone.reserve(dots_exceeded * 2 + zone_data.name.size());
+        for(unsigned int i=0; i < dots_exceeded; ++i) // XXX
         {
-            labeled_zone << "1.";
+            labeled_zone += "1.";
         }
-        labeled_zone << zone_data.name;
-        return labeled_zone.str();
+        labeled_zone += zone_data.name;
+        return labeled_zone;
     }
 
     many_labels_fixture()
@@ -191,13 +193,9 @@ struct invalid_unmanaged_fixture
 
     invalid_unmanaged_fixture()
     {
-        std::ostringstream prefix;
-        for(unsigned int i=0; i < 256; ++i)//exceed the size of valid label
-        {
-            prefix << "1";//invalid part
-        }
-        prefix << '.' << "aaa";//unmanaged part / !!!
-        invalid_unmanaged_fqdn = prefix.str();
+        std::string invalid_unmanaged_fqdn;
+        invalid_unmanaged_fqdn = std::string(256, '1'); //invalid part XXX
+        invalid_unmanaged_fqdn += ".aaa"; //unmanaged part XXX
     }
 };
 
@@ -227,13 +225,14 @@ struct unmanaged_toomany_fixture
 
     unmanaged_toomany_fixture()
     {
-        std::ostringstream prefix;
-        for(unsigned int i=0; i < 20; ++i) // !!!
+        unsigned int labels_exceeded = 20;// XXX
+        unmanaged_toomany_fqdn.reserve(labels_exceeded * 2 + 3); //XXX
+        
+        for(unsigned int i=0; i < labels_exceeded; ++i) 
         {
-            prefix << "1.";//toomany part
+            unmanaged_toomany_fqdn += "1."; //toomany part
         }
-        prefix << "aaa"; //unmanaged zone part / !!!
-        unmanaged_toomany_fqdn = prefix.str();
+        unmanaged_toomany_fqdn += "aaa";  //unmanaged zone part / XXX
     }
 };
 
@@ -272,13 +271,15 @@ struct invalid_toomany_fixture
         {
             BOOST_ERROR("test zone was not created properly");
         }
-        std::ostringstream labeled_zone, invalid_offset;
-        for(unsigned int i=0; i < 256; ++i) // !!!
+        std::string labeled_zone;
+        const unsigned int labels_dots_exceeded = 256;
+        labeled_zone.reserve(labels_dots_exceeded * 2 + zone_data.name.size());
+        for(unsigned int i=0; i < labels_dots_exceeded; ++i) // XXX
         {
-            labeled_zone << "1.";// invalid + toomany part
+            labeled_zone += "1."; // invalid + toomany part
         }
-        labeled_zone << zone_data.name;
-        return labeled_zone.str();
+        labeled_zone += zone_data.name;
+        return labeled_zone;
     }
 
     invalid_toomany_fixture()
@@ -321,13 +322,13 @@ struct invalid_unmanaged_toomany_fixture
 
     invalid_unmanaged_toomany_fixture()
     {
-        std::ostringstream prefix;
-        for(unsigned int i=0; i < 256; ++i)
+        const unsigned int labels_dots_exceeded = 256;
+        invalid_unmanaged_toomany_fqdn.reserve(labels_dots_exceeded * 2 + 3);
+        for(unsigned int i=0; i < labels_dots_exceeded; ++i)
         {
-            prefix << "1."; // invalid + toomany part
+            invalid_unmanaged_toomany_fqdn += "1."; // invalid + toomany part
         }
-        prefix << "aaa"; //unmanaged zone part / !!!
-        invalid_unmanaged_toomany_fqdn = prefix.str();
+        invalid_unmanaged_toomany_fqdn += "aaa"; //unmanaged zone part / XXX
     }
 };
 
