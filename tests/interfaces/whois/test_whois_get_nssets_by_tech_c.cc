@@ -24,9 +24,11 @@ struct get_nssets_by_tech_c_fixture
                     static_cast<std::string>(ctx.get_conn()
                         .exec("SELECT now()::timestamp")[0][0]));
         Util::vector_of<Fred::DnsHost> dns_hosts(
-            Fred::DnsHost(test_fqdn,
-                          Util::vector_of<boost::asio::ip::address>(
-                              boost::asio::ip::address())));
+            Fred::DnsHost(
+                test_fqdn,
+                Util::vector_of<boost::asio::ip::address>(
+                        boost::asio::ip::from_string("192.128.0.1"))));
+//TODO                        boost::asio::ip::address())));
         for(unsigned int i = 0; i < test_limit; ++i)
         {
             const Fred::InfoNssetData& ind = Test::exec(
