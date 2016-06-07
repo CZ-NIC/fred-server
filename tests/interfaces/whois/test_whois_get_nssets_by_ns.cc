@@ -68,7 +68,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
-    BOOST_FOREACH(const NSSet& it, nss_s.content)
+    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         found = nsset_info.find(it.handle);
         BOOST_REQUIRE(it.handle == found->second.handle);
@@ -99,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
     
     BOOST_CHECK(nss_s.limit_exceeded); BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, Fred::InfoNssetData>::iterator found;
-    BOOST_FOREACH(const NSSet& it, nss_s.content)
+    BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         found = nsset_info.find(it.handle);
         BOOST_REQUIRE(it.handle == found->second.handle);

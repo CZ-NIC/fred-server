@@ -54,10 +54,10 @@ struct get_keysets_by_tech_c_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
 {
-    KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit);
+    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit);
     BOOST_CHECK(!ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit);
-    BOOST_FOREACH(const KeySet& it, ks_s.content)
+    BOOST_FOREACH(const Registry::WhoisImpl::KeySet& it, ks_s.content)
     {
         Fred::InfoKeysetData& found = keyset_info[it.handle];
         BOOST_REQUIRE(it.handle == found.handle);
@@ -92,10 +92,10 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tech_c_fixture)
 {
-    KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit - 1);
+    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit - 1);
     BOOST_CHECK(ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit - 1);
-    BOOST_FOREACH(const KeySet& it, ks_s.content)
+    BOOST_FOREACH(const Registry::WhoisImpl::KeySet& it, ks_s.content)
     {
         Fred::InfoKeysetData& found = keyset_info[it.handle];
         BOOST_REQUIRE(it.handle == found.handle);
