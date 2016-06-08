@@ -41,6 +41,7 @@ struct HandleState
         invalid,
     };
 };
+
 }//namespace Fred::KeySet
 }//namespace Fred
 
