@@ -8,6 +8,7 @@
 #include "src/epp/nsset/nsset_dns_host_data.h"
 #include "src/epp/nsset/nsset_constants.h"
 
+#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/nsset/create_nsset.h"
@@ -24,8 +25,10 @@
 #include <boost/foreach.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/asio/ip/address.hpp>
 
 namespace Epp {
+
 
 NssetCreateResult nsset_create_impl(
     Fred::OperationContext& _ctx,
@@ -129,6 +132,76 @@ NssetCreateResult nsset_create_impl(
         if(!ex.is_empty()) throw ex;
     }
 
+
+    //check dns hosts wip TODO: specify required checks
+    {
+        std::map<std::string, std::size_t> dns_host_fqdn_duplicity_map;
+        ParameterValuePolicyError ex;
+        std::size_t nsset_ipaddr_position = 1;
+        for(std::size_t i = 0; i < _data.dns_hosts.size(); ++i)
+        {
+            if(!Fred::Domain::general_domain_name_syntax_check(_data.dns_hosts.at(i).fqdn))
+            {
+                ex.add(Error(Param::nsset_dns_name,
+                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                    Reason::bad_dns_name));
+            }
+            else
+            {//check nameserver fqdn duplicity
+
+                const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
+                        _data.dns_hosts.at(i).fqdn);
+                Optional<std::size_t> duplicity = optional_map_at<Optional>(
+                        dns_host_fqdn_duplicity_map, lower_dnshost_fqdn);
+
+                if(duplicity.isset())
+                {
+                    ex.add(Error(Param::nsset_dns_name,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::dns_name_exist));
+                }
+                else
+                {
+                    dns_host_fqdn_duplicity_map[lower_dnshost_fqdn] = i;
+                }
+            }
+
+            //check nameserver IP addresses
+            {
+                std::map<boost::asio::ip::address, std::size_t> dns_host_ip_duplicity_map;
+                for(std::size_t j = 0; j < _data.dns_hosts.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_position)
+                {
+                    boost::asio::ip::address dnshostipaddr = _data.dns_hosts.at(i).inet_addr.at(j);
+                    if(dnshostipaddr.is_unspecified() ||
+                        dnshostipaddr.is_loopback()
+                    )
+                    {
+                        ex.add(Error(Param::nsset_dns_addr,
+                            boost::numeric_cast<unsigned short>(nsset_ipaddr_position),//position in list
+                            Reason::bad_ip_address));
+                    }
+                    else
+                    {
+                        //IP address duplicity check
+                        Optional<std::size_t> duplicity = optional_map_at<Optional>(
+                                dns_host_ip_duplicity_map, dnshostipaddr);
+
+                        if(duplicity.isset())
+                        {
+                            ex.add(Error(Param::nsset_dns_addr,
+                                boost::numeric_cast<unsigned short>(nsset_ipaddr_position),//position in list
+                                Reason::duplicity_dns_address));
+                        }
+                        else
+                        {
+                            dns_host_ip_duplicity_map[dnshostipaddr] = nsset_ipaddr_position;
+                        }
+                    }
+                }
+            }
+        }
+        if(!ex.is_empty()) throw ex;
+    }
     //TODO error handling
 
     try {

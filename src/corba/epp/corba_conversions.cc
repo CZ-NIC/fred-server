@@ -639,7 +639,8 @@ namespace Corba {
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
             if(in[i] == 0) throw std::runtime_error("null char ptr");
-            ret.push_back(boost::asio::ip::address::from_string(in[i]));
+            boost::system::error_code boost_error_code;
+            ret.push_back(boost::asio::ip::address::from_string(in[i],boost_error_code));
         }
         return ret;
     }
