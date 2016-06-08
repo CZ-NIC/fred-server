@@ -979,8 +979,8 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags, set_contact_disclose_flags_f
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 42);
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
-    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseorganization);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress);
     BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone);
@@ -1023,8 +1023,8 @@ BOOST_FIXTURE_TEST_CASE(set_validated_contact_disclose_flags, set_validated_cont
     impl.setContactDiscloseFlags(user_contact_info.info_contact_data.id,set_flags, 0);
 
     Fred::InfoContactOutput my_contact_info = Fred::InfoContactByHandle(user_contact_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
-    BOOST_CHECK(!my_contact_info.info_contact_data.disclosename);
-    BOOST_CHECK(!my_contact_info.info_contact_data.discloseorganization);
+    BOOST_CHECK(my_contact_info.info_contact_data.disclosename);
+    BOOST_CHECK(my_contact_info.info_contact_data.discloseorganization);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseemail);
     BOOST_CHECK(my_contact_info.info_contact_data.discloseaddress);
     BOOST_CHECK(my_contact_info.info_contact_data.disclosetelephone);
