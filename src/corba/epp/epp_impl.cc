@@ -85,6 +85,7 @@
 #include "src/epp/contact/post_contact_update_hooks.h"
 
 #include "src/epp/keyset/localized_info.h"
+#include "src/epp/keyset/localized_create.h"
 #include "src/epp/keyset/localized_check.h"
 #include "src/epp/keyset/localized_delete.h"
 #include "src/epp/keyset/localized_transfer.h"
