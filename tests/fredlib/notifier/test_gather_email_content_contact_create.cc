@@ -71,8 +71,6 @@ BOOST_FIXTURE_TEST_CASE(test_empty_create, has_empty_contact)
     etalon["fresh.contact.disclose.telephone"]    = "0";
     etalon["fresh.contact.disclose.fax"]          = "0";
 
-    etalon["changes"] = "1";
-
     check_maps_are_equal(
         etalon,
         Notification::gather_email_content(
@@ -143,8 +141,6 @@ BOOST_FIXTURE_TEST_CASE(test_full_create, has_full_contact)
     etalon["fresh.contact.disclose.telephone"]    = "1";
     etalon["fresh.contact.disclose.fax"]          = "1";
 
-    etalon["changes"] = "1";
-
     check_maps_are_equal(
         etalon,
         Notification::gather_email_content(
@@ -158,7 +154,6 @@ BOOST_FIXTURE_TEST_CASE(test_full_create, has_full_contact)
         )
     );
 }
-
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

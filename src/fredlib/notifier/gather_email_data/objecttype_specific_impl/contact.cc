@@ -134,7 +134,6 @@ static std::map<std::string, std::string> gather_contact_create_data_change(
     add_contact_data_pair(result, "contact.disclose.telephone",    to_string(_fresh.disclosetelephone));
     add_contact_data_pair(result, "contact.disclose.fax",          to_string(_fresh.disclosefax));
 
-    result["changes"] = result.empty() ? "0" : "1";
     return result;
 }
 
