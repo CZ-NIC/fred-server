@@ -186,6 +186,16 @@ void set_create_contact_arguments(
             _arguments.set_ssn(_contact.ssn_id_num.get_value());
         }
     }
+    //default mojeID disclose policy
+    _arguments.set_disclosename(true);
+    _arguments.set_discloseorganization(true);
+    _arguments.set_discloseaddress(true);
+    _arguments.set_disclosetelephone(false);
+    _arguments.set_disclosefax(false);
+    _arguments.set_discloseemail(false);
+    _arguments.set_disclosevat(false);
+    _arguments.set_discloseident(false);
+    _arguments.set_disclosenotifyemail(false);
 }
 
 void check_sent_letters_limit(Fred::OperationContext &_ctx,
