@@ -20,130 +20,47 @@
  *  @file
  */
 
-#ifndef EPP_CONTACT_CREATE_H_548537357434
-#define EPP_CONTACT_CREATE_H_548537357434
+#ifndef LOCALIZED_CREATE_H_EEDF9037B0165261D8B46CD964387EE6//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define LOCALIZED_CREATE_H_EEDF9037B0165261D8B46CD964387EE6
 
-#include "src/epp/contact/ident_type.h"
+#include "src/epp/keyset/ds_record.h"
+#include "src/epp/keyset/dns_key.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
-#include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace KeySet {
+namespace Localized {
 
-struct ContactCreateInputData {
-    std::string handle;
-    std::string name;
-    std::string organization;
-    std::string street1;
-    std::string street2;
-    std::string street3;
-    std::string city;
-    std::string state_or_province;
-    std::string postal_code;
-    std::string country_code;
-    std::string telephone;
-    std::string fax;
-    std::string email;
-    std::string notify_email;
-    std::string VAT;
-    std::string ident;
-    Nullable<IdentType::Enum> identtype;
-    std::string authinfo;
-    bool disclose_name;
-    bool disclose_organization;
-    bool disclose_address;
-    bool disclose_telephone;
-    bool disclose_fax;
-    bool disclose_email;
-    bool disclose_VAT;
-    bool disclose_ident;
-    bool disclose_notify_email;
-
-    ContactCreateInputData(
-        const std::string&  _handle,
-        const std::string&  _name,
-        const std::string&  _organization,
-        const std::string&  _street1,
-        const std::string&  _street2,
-        const std::string&  _street3,
-        const std::string&  _city,
-        const std::string&  _state_or_province,
-        const std::string&  _postal_code,
-        const std::string&  _country_code,
-        const std::string&  _telephone,
-        const std::string&  _fax,
-        const std::string&  _email,
-        const std::string&  _notify_email,
-        const std::string&  _VAT,
-        const std::string&  _ident,
-        const Nullable<IdentType::Enum>&   _identtype,
-        const std::string&  _authinfo,
-        bool                _disclose_name,
-        bool                _disclose_organization,
-        bool                _disclose_address,
-        bool                _disclose_telephone,
-        bool                _disclose_fax,
-        bool                _disclose_email,
-        bool                _disclose_VAT,
-        bool                _disclose_ident,
-        bool                _disclose_notify_email
-    ) :
-        handle(_handle),
-        name(_name),
-        organization(_organization),
-        street1(_street1),
-        street2(_street2),
-        street3(_street3),
-        city(_city),
-        state_or_province(_state_or_province),
-        postal_code(_postal_code),
-        country_code(_country_code),
-        telephone(_telephone),
-        fax(_fax),
-        email(_email),
-        notify_email(_notify_email),
-        VAT(_VAT),
-        ident(_ident),
-        identtype(_identtype),
-        authinfo(_authinfo),
-        disclose_name(_disclose_name),
-        disclose_organization(_disclose_organization),
-        disclose_address(_disclose_address),
-        disclose_telephone(_disclose_telephone),
-        disclose_fax(_disclose_fax),
-        disclose_email(_disclose_email),
-        disclose_VAT(_disclose_VAT),
-        disclose_ident(_disclose_ident),
-        disclose_notify_email(_disclose_notify_email)
-    { }
-};
-
-struct LocalizedCreateContactResponse {
-    const LocalizedSuccessResponse ok_response;
-    const boost::posix_time::ptime crdate;
-
-    LocalizedCreateContactResponse(
-        const LocalizedSuccessResponse& _ok_response,
-        const boost::posix_time::ptime& _crdate
-    ) :
-        ok_response(_ok_response),
+struct ResponseOfCreate
+{
+    ResponseOfCreate(const LocalizedSuccessResponse &_response,
+                     const boost::posix_time::ptime &_crdate)
+    :   ok_response(_response),
         crdate(_crdate)
     { }
+    LocalizedSuccessResponse ok_response;
+    boost::posix_time::ptime crdate;
 };
 
-LocalizedCreateContactResponse contact_create(
-    const ContactCreateInputData& _data,
+ResponseOfCreate create(
+    const std::string &_keyset_handle,
+    const Optional< std::string > &_auth_info_pw,
+    const std::vector< std::string > &_tech_contacts,
+    const std::vector< KeySet::DsRecord > &_ds_records,
+    const std::vector< KeySet::DnsKey > &_dns_keys,
     unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
+    const Optional<unsigned long long> &_logd_request_id,
     SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const std::string& _dont_notify_client_transaction_handles_with_this_prefix
-);
+    const std::string &_server_transaction_handle,
+    const std::string &_client_transaction_handle,
+    const std::string &_dont_notify_client_transaction_handles_with_this_prefix);
 
-}
+}//namespace Epp::KeySet::Localized
+}//namespace Epp::KeySet
+}//namespace Epp
 
-#endif
+#endif//LOCALIZED_CREATE_H_EEDF9037B0165261D8B46CD964387EE6
