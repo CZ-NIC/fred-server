@@ -639,7 +639,7 @@ namespace Corba {
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
             if(in[i] == 0) throw std::runtime_error("null char ptr");
-            boost::system::error_code boost_error_code;
+            boost::system::error_code boost_error_code;//ignored purposefully, invalid ip address is transformed to unspecified
             ret.push_back(boost::asio::ip::address::from_string(in[i],boost_error_code));
         }
         return ret;
