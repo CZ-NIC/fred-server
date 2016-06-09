@@ -52,6 +52,18 @@ bool ParameterErrors::has_vector_parameter_error(Param::Enum _param, Reason::Enu
     return param_reasons_ptr->second.has_vector_parameter_reason(_reason);
 }
 
+bool ParameterErrors::has_vector_parameter_error_at(
+    Param::Enum _param,
+    unsigned short _index,
+    Reason::Enum _reason)const
+{
+    const ParamReasons::const_iterator param_reasons_ptr = param_reasons_.find(_param);
+    if (param_reasons_ptr == param_reasons_.end()) {
+        return false;
+    }
+    return param_reasons_ptr->second.has_vector_parameter_reason_at(_reason, _index);
+}
+
 const ParameterErrors::Indexes& ParameterErrors::get_vector_parameter_error(
     Param::Enum _param,
     Reason::Enum _reason)const
@@ -66,25 +78,20 @@ const ParameterErrors::Indexes& ParameterErrors::get_vector_parameter_error(
 bool ParameterErrors::Reasons::has_scalar_parameter_reason(Reason::Enum _reason)const
 {
     const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
-    if (positions_ptr == reason_at_positions_.end()) {
-        return false;
-    }
-    if (positions_ptr->second.empty()) {
-        return true;
-    }
-    throw std::runtime_error("vector parameter error found");
+    return (positions_ptr != reason_at_positions_.end()) && positions_ptr->second.empty();
 }
 
 bool ParameterErrors::Reasons::has_vector_parameter_reason(Reason::Enum _reason)const
 {
     const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
-    if (positions_ptr == reason_at_positions_.end()) {
-        return false;
-    }
-    if (!positions_ptr->second.empty()) {
-        return true;
-    }
-    throw std::runtime_error("scalar parameter error found");
+    return (positions_ptr != reason_at_positions_.end()) && !positions_ptr->second.empty();
+}
+
+bool ParameterErrors::Reasons::has_vector_parameter_reason_at(Reason::Enum _reason, unsigned short _index)const
+{
+    const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
+    return (positions_ptr != reason_at_positions_.end()) &&
+           (0 < positions_ptr->second.count(_index));
 }
 
 const ParameterErrors::Indexes& ParameterErrors::Reasons::get_vector_parameter_reason(Reason::Enum _reason)const

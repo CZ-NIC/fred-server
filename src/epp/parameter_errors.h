@@ -44,6 +44,7 @@ public:
 
     ParameterErrors& add_vector_parameter_error(Param::Enum _param, unsigned short _index, Reason::Enum _reason);
     bool has_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
+    bool has_vector_parameter_error_at(Param::Enum _param, unsigned short _index, Reason::Enum _reason)const;
     const Indexes& get_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
 private:
     class Reasons
@@ -54,6 +55,7 @@ private:
 
         Reasons& add_vector_parameter_reason(Reason::Enum _reason, short unsigned _index);
         bool has_vector_parameter_reason(Reason::Enum _reason)const;
+        bool has_vector_parameter_reason_at(Reason::Enum _reason, unsigned short _index)const;
         const Indexes& get_vector_parameter_reason(Reason::Enum _reason)const;
     private:
         typedef std::map< Reason::Enum, Indexes > ReasonAtPositions;

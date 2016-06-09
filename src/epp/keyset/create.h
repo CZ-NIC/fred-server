@@ -25,6 +25,7 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/epp/keyset/info_data.h"
+#include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -39,16 +40,15 @@ struct KeysetCreateResult
 
 /**
  * @throws AuthErrorServerClosingConnection
- * @throws ObjectExists
- * @throws AggregatedParamErrors
+ * @throws ParameterErrors
  */
-ContactCreateResult keyset_create(
+KeysetCreateResult keyset_create(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
-    const std::string &_auth_info_pw,
-    const KeysetInfoData::TechContacts &_tech_contacts,
-    const KeysetInfoData::DsRecords &_ds_records,
-    const KeysetInfoData::DnsKeys &_dns_keys,
+    const Optional< std::string > &_auth_info_pw,
+    const std::vector< std::string > &_tech_contacts,
+    const std::vector< KeySet::DsRecord > &_ds_records,
+    const std::vector< KeySet::DnsKey > &_dns_keys,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
