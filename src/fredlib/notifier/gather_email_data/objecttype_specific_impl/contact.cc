@@ -53,7 +53,7 @@ namespace Convert {
 static std::string translate_ssntypes(const Nullable< Fred::PersonalIdUnion > &_nullable_personal_id)
 {
     if (_nullable_personal_id.isnull() ||
-        _nullable_personal_id.get_value().get_type().empty()) { return "EMPTY"; }
+        _nullable_personal_id.get_value().get_type().empty()) { return ""; }
 
     const std::string type = _nullable_personal_id.get_value().get_type();
 

@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(test_empty_create, has_empty_contact)
     etalon["fresh.contact.fax"]          = "";
     etalon["fresh.contact.email"]        = "";
     etalon["fresh.contact.notify_email"] = "";
-    etalon["fresh.contact.ident_type"]   = "EMPTY";
+    etalon["fresh.contact.ident_type"]   = "";
     etalon["fresh.contact.ident"]        = "";
     etalon["fresh.contact.vat"]          = "";
     etalon["fresh.contact.disclose.name"]         = "0";
