@@ -8,8 +8,10 @@
 #include <boost/format.hpp>
 
 namespace Epp {
+namespace KeySet {
+namespace Localized {
 
-LocalizedKeysetInfoResult localized_keyset_info(
+InfoResult info(
     const std::string &_keyset_handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
@@ -23,7 +25,7 @@ LocalizedKeysetInfoResult localized_keyset_info(
     try {
         Fred::OperationContextCreator ctx;
         const KeysetInfoData keyset_info_data = keyset_info(ctx, _keyset_handle, _registrar_id);
-        LocalizedKeysetInfoData data;
+        InfoData data;
         data.handle = keyset_info_data.handle;
         data.roid = keyset_info_data.roid;
         data.sponsoring_registrar_handle = keyset_info_data.sponsoring_registrar_handle;
@@ -37,7 +39,7 @@ LocalizedKeysetInfoResult localized_keyset_info(
         data.ds_records = keyset_info_data.ds_records;
         data.dns_keys = keyset_info_data.dns_keys;
         data.tech_contacts = keyset_info_data.tech_contacts;
-        const LocalizedKeysetInfoResult result(data, create_localized_success_response(Response::ok, ctx, _lang));
+        const InfoResult result(data, create_localized_success_response(Response::ok, ctx, _lang));
         ctx.commit_transaction();
         return result;
     }
@@ -56,4 +58,6 @@ LocalizedKeysetInfoResult localized_keyset_info(
     }
 }
 
+}//namespace Epp::KeySet::Localized
+}//namespace Epp::KeySet
 }//namespace Epp

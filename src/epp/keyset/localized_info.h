@@ -30,8 +30,10 @@
 #include "src/fredlib/object/object_state.h"
 
 namespace Epp {
+namespace KeySet {
+namespace Localized {
 
-struct LocalizedKeysetInfoData
+struct InfoData
 {
     std::string handle; ///< KeySet handle
     std::string roid; ///< KeySet identifier - repository ID
@@ -48,23 +50,24 @@ struct LocalizedKeysetInfoData
     KeysetInfoData::TechContacts tech_contacts; ///< List of technical contacts identifier
 };
 
-struct LocalizedKeysetInfoResult
+struct InfoResult
 {
-    LocalizedKeysetInfoResult(const LocalizedKeysetInfoData &_data,
-                              const LocalizedSuccessResponse &_response)
+    InfoResult(const InfoData &_data, const LocalizedSuccessResponse &_response)
     :   data(_data),
         response(_response)
     { }
-    LocalizedKeysetInfoData data;
+    InfoData data;
     LocalizedSuccessResponse response;
 };
 
-LocalizedKeysetInfoResult localized_keyset_info(
+InfoResult info(
     const std::string &_keyset_handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
-}
+}//namespace Epp::KeySet::Localized
+}//namespace Epp::KeySet
+}//namespace Epp
 
 #endif//LOCALIZED_INFO_H_30CFD670609F21298BB96EE14BB345B0

@@ -65,15 +65,16 @@ namespace Corba {
     /**
      * @returns data ordered the same way as input contact_handles
      */
-    ccReg::CheckResp wrap_localized_check_info(
+    void wrap_Epp_KeySet_Localized_HandlesCheck_Results(
         const std::vector< std::string > &handles,
-        const std::map< std::string, Nullable< Epp::KeySet::LocalizedHandleCheckResult > > &check_results);
+        const Epp::KeySet::Localized::HandlesCheck::Results &check_results,
+        ccReg::CheckResp &dst);
 
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst);
 
     void wrap_Epp_KeysetInfoData_TechContacts(const Epp::KeysetInfoData::TechContacts &_src, ccReg::TechContact &_dst);
 
-    void wrap_Epp_LocalizedKeysetInfoData(const Epp::LocalizedKeysetInfoData &_src, ccReg::KeySet &_dst);
+    void wrap_Epp_KeySet_Localized_InfoData(const Epp::KeySet::Localized::InfoData &_src, ccReg::KeySet &_dst);
 }
 
 #endif

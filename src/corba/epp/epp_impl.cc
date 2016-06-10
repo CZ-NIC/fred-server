@@ -2651,14 +2651,14 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::vector< std::string > handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::KeySet::LocalizedHandleCheckResponse localized_response = Epp::KeySet::get_localized_check(
+        const Epp::KeySet::Localized::HandlesCheck localized_response = Epp::KeySet::Localized::check(
             std::set< std::string >(handles_to_be_checked.begin(), handles_to_be_checked.end()),
             session_data.registrar_id,
             session_data.language,
             server_transaction_handle);
 
-        ccReg::CheckResp_var check_results = new ccReg::CheckResp(
-            Corba::wrap_localized_check_info(handles_to_be_checked, localized_response.results));
+        ccReg::CheckResp_var check_results = new ccReg::CheckResp;
+        Corba::wrap_Epp_KeySet_Localized_HandlesCheck_Results(handles_to_be_checked, localized_response.results, check_results);
 
         ccReg::Response_var return_value =
             new ccReg::Response(Corba::wrap_response(localized_response.ok_response, server_transaction_handle));
@@ -3096,7 +3096,7 @@ ccReg_EPP_i::KeySetTransfer(
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const std::string auth_info = Corba::unwrap_string_from_const_char_ptr(_auth_info);
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::get_transfer_localized(
+        const Epp::LocalizedSuccessResponse response = Epp::KeySet::Localized::transfer(
             keyset_handle,
             auth_info,
             session_data.registrar_id,
@@ -5323,14 +5323,14 @@ ccReg_EPP_i::KeySetInfo(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::LocalizedKeysetInfoResult info_result =
-            Epp::localized_keyset_info(keyset_handle,
-                                       session_data.registrar_id,
-                                       session_data.language,
-                                       server_transaction_handle);
+        const Epp::KeySet::Localized::InfoResult info_result =
+            Epp::KeySet::Localized::info(keyset_handle,
+                                         session_data.registrar_id,
+                                         session_data.language,
+                                         server_transaction_handle);
 
         ccReg::KeySet_var keyset = new ccReg::KeySet;
-        Corba::wrap_Epp_LocalizedKeysetInfoData(info_result.data, keyset);
+        Corba::wrap_Epp_KeySet_Localized_InfoData(info_result.data, keyset);
 
         ccReg::Response_var return_value = new ccReg::Response;
         Corba::wrap_response(info_result.response,
@@ -5364,7 +5364,7 @@ ccReg_EPP_i::KeySetDelete(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::get_delete_localized(
+        const Epp::LocalizedSuccessResponse response = Epp::KeySet::localized_delete(
             keyset_handle,
             session_data.registrar_id,
             session_data.language,

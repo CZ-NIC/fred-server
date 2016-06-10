@@ -11,10 +11,13 @@
 
 namespace Epp {
 namespace KeySet {
+namespace Localized {
 
 namespace {
 
-std::map< std::string, Nullable< LocalizedHandleCheckResult > > localize_check_results(
+typedef std::map< std::string, Nullable< HandleCheckResult::Enum > > RawResults;
+
+HandlesCheck::Results localize_check_results(
     Fred::OperationContext &_ctx,
     const std::map< std::string, Nullable< HandleCheckResult::Enum > > &_keyset_check_results,
     SessionLang::Enum _lang)
@@ -69,14 +72,13 @@ std::map< std::string, Nullable< LocalizedHandleCheckResult > > localize_check_r
             }
         }
     }
-    typedef std::map< std::string, Nullable< LocalizedHandleCheckResult > > LocalizedResult;
-    LocalizedResult localized_result;
-    for (RawResult::const_iterator result_ptr = _keyset_check_results.begin();
+    HandlesCheck::Results localized_result;
+    for (RawResults::const_iterator result_ptr = _keyset_check_results.begin();
          result_ptr != _keyset_check_results.end(); ++result_ptr)
     {
-        Nullable< LocalizedHandleCheckResult > result;
+        Nullable< HandlesCheck::Result > result;
         if (!result_ptr->second.isnull()) {
-            LocalizedHandleCheckResult data;
+            HandlesCheck::Result data;
             data.state = result_ptr->second.get_value();
             const Reason::Enum reason = to_reason(data.state);
             data.description = reason_description[reason];
@@ -89,7 +91,7 @@ std::map< std::string, Nullable< LocalizedHandleCheckResult > > localize_check_r
 
 }//namespace Epp::KeySet::{anonymous}
 
-LocalizedHandleCheckResponse get_localized_check(
+HandlesCheck check(
     const std::set< std::string > &_keyset_handles,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
@@ -115,8 +117,8 @@ LocalizedHandleCheckResponse get_localized_check(
         const std::map< std::string, Nullable< KeySet::HandleCheckResult::Enum > > keyset_check_results =
             keyset_check(ctx, _keyset_handles);
 
-        return LocalizedHandleCheckResponse(create_localized_success_response(Response::ok, ctx, _lang),
-                                            localize_check_results(ctx, keyset_check_results, _lang));
+        return HandlesCheck(create_localized_success_response(Response::ok, ctx, _lang),
+                            localize_check_results(ctx, keyset_check_results, _lang));
     }
     catch (const LocalizedFailResponse&) {
         throw;
@@ -133,5 +135,6 @@ LocalizedHandleCheckResponse get_localized_check(
     }
 }
 
+}//namespace Epp::KeySet::Localized
 }//namespace Epp::KeySet
 }//namespace Epp

@@ -31,7 +31,7 @@
 namespace Epp {
 namespace KeySet {
 
-LocalizedSuccessResponse get_delete_localized(
+LocalizedSuccessResponse localized_delete(
     const std::string &_keyset_handle,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,

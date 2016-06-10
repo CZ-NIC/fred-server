@@ -30,18 +30,19 @@
 
 namespace Epp {
 namespace KeySet {
+namespace Localized {
 
-struct LocalizedHandleCheckResult
+struct HandlesCheck
 {
-    HandleCheckResult::Enum state;
-    std::string description;
-};
+    struct Result
+    {
+        HandleCheckResult::Enum state;
+        std::string description;
+    };
 
-struct LocalizedHandleCheckResponse
-{
-    LocalizedHandleCheckResponse(
-        const LocalizedSuccessResponse &_response,
-        const std::map< std::string, Nullable< LocalizedHandleCheckResult > > &_results)
+    typedef std::map< std::string, Nullable< Result > > Results;
+
+    HandlesCheck(const LocalizedSuccessResponse &_response, const Results &_results)
     :   ok_response(_response),
         results(_results) { }
 
@@ -49,12 +50,13 @@ struct LocalizedHandleCheckResponse
     std::map< std::string, Nullable< LocalizedHandleCheckResult > > results;
 };
 
-LocalizedHandleCheckResponse get_localized_check(
+HandlesCheck check(
     const std::set< std::string > &_keyset_handles,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
+}//namespace Epp::KeySet::Localized
 }//namespace Epp::KeySet
 }//namespace Epp
 
