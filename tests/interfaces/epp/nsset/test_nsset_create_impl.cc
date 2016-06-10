@@ -32,6 +32,12 @@
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetCreateImpl)
 
+BOOST_AUTO_TEST_CASE( test_case_invalid_ip_unspecified )
+{
+    boost::system::error_code boost_error_code;//ignored purposefully, invalid ip address is transformed to unspecified
+    BOOST_REQUIRE( boost::asio::ip::address::from_string("invalid_ip", boost_error_code).is_unspecified() );
+}
+
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_nsset_input_data_set)
 {
     BOOST_CHECK_THROW(
