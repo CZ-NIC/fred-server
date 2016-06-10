@@ -3257,7 +3257,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                 Corba::unwrap_string_from_const_char_ptr(authInfoPw),
                 Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns),
                 Corba::unwrap_ccreg_techcontacts_to_vector_string(tech),
-                boost::numeric_cast<short>(level)),//TODO CORBA unwrapper
+                (level < 0 ? (this->nsset_level_ < 0 ? 0 : this->nsset_level_) : boost::numeric_cast<short>(level))), //TODO CORBA unwrapper
             session_data.registrar_id,
             request_params.log_request_id,
             session_data.language,
