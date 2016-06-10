@@ -36,9 +36,9 @@ Presents insert_vector_parameter_error_if_presents(const ParameterErrors &_src,
                                                    std::set< Error > &_dst)
 {
     if (_src.has_vector_parameter_error(_param, _reason)) {
-        const ParameterErrors::Indexes indexes = _src.get_vector_parameter_error(_param, _reason);
-        for (ParameterErrors::Indexes::const_iterator idx_ptr = indexes.begin();
-             idx_ptr != indexes.end(); ++idx_ptr)
+        const ParameterErrors::Where where = _src.get_vector_parameter_error(_param, _reason);
+        for (ParameterErrors::Where::Indexes::const_iterator idx_ptr = where.indexes.begin();
+             idx_ptr != where.indexes.end(); ++idx_ptr)
         {
             _dst.insert(vector_parameter_failure(_param, *idx_ptr, _reason));
         }

@@ -4,14 +4,27 @@
 
 namespace Epp {
 
+namespace {
+
+ParameterErrors::Where scalar() { return ParameterErrors::Where(); }
+ParameterErrors::Where vector(unsigned short _index)
+{
+    ParameterErrors::Where where;
+    where.indexes.insert(_index);
+    return where;
+}
+
+}//namespace Epp::{anonymous}
+
 ParameterErrors& ParameterErrors::add_scalar_parameter_error(Param::Enum _param, Reason::Enum _reason)
 {
-    ParamReasons::iterator param_reasons_ptr = param_reasons_.find(_param);
-    Reasons &reasons = param_reasons_ptr == param_reasons_.end()
-        ? param_reasons_[_param]
-        : param_reasons_ptr->second;
-
-    reasons.add_scalar_parameter_reason(_reason);
+    const What what(_param, _reason);
+    const WhatWhere::const_iterator what_where_ptr = what_where_.find(what);
+    if (what_where_ptr != what_where_.end()) {
+        throw std::runtime_error(what_where_ptr->second.is_scalar() ? "scalar parameter error already exists"
+                                                                    : "vector parameter error already exists");
+    }
+    what_where_.insert(std::make_pair(what, scalar()));
     return *this;
 }
 
@@ -20,36 +33,42 @@ ParameterErrors& ParameterErrors::add_vector_parameter_error(
     unsigned short _index,
     Reason::Enum _reason)
 {
-    ParamReasons::iterator param_reasons_ptr = param_reasons_.find(_param);
-    Reasons &reasons = param_reasons_ptr == param_reasons_.end()
-        ? param_reasons_[_param]
-        : param_reasons_ptr->second;
-
-    reasons.add_vector_parameter_reason(_reason, _index);
+    const What what(_param, _reason);
+    const WhatWhere::iterator what_where_ptr = what_where_.find(what);
+    if (what_where_ptr != what_where_.end()) {
+        if (what_where_ptr->second.is_scalar()) {
+            throw std::runtime_error("scalar parameter error already exists");
+        }
+        what_where_ptr->second.add_element(_index);
+        return *this;
+    }
+    what_where_.insert(std::make_pair(what, vector(_index)));
     return *this;
 }
 
 bool ParameterErrors::is_empty()const
 {
-    return param_reasons_.empty();
+    return what_where_.empty();
 }
 
 bool ParameterErrors::has_scalar_parameter_error(Param::Enum _param, Reason::Enum _reason)const
 {
-    const ParamReasons::const_iterator param_reasons_ptr = param_reasons_.find(_param);
-    if (param_reasons_ptr == param_reasons_.end()) {
+    const What what(_param, _reason);
+    const WhatWhere::const_iterator what_where_ptr = what_where_.find(what);
+    if (what_where_ptr == what_where_.end()) {
         return false;
     }
-    return param_reasons_ptr->second.has_scalar_parameter_reason(_reason);
+    return what_where_ptr->second.is_scalar();
 }
 
 bool ParameterErrors::has_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const
 {
-    const ParamReasons::const_iterator param_reasons_ptr = param_reasons_.find(_param);
-    if (param_reasons_ptr == param_reasons_.end()) {
+    const What what(_param, _reason);
+    const WhatWhere::const_iterator what_where_ptr = what_where_.find(what);
+    if (what_where_ptr == what_where_.end()) {
         return false;
     }
-    return param_reasons_ptr->second.has_vector_parameter_reason(_reason);
+    return what_where_ptr->second.is_vector();
 }
 
 bool ParameterErrors::has_vector_parameter_error_at(
@@ -57,84 +76,46 @@ bool ParameterErrors::has_vector_parameter_error_at(
     unsigned short _index,
     Reason::Enum _reason)const
 {
-    const ParamReasons::const_iterator param_reasons_ptr = param_reasons_.find(_param);
-    if (param_reasons_ptr == param_reasons_.end()) {
+    const What what(_param, _reason);
+    const WhatWhere::const_iterator what_where_ptr = what_where_.find(what);
+    if (what_where_ptr == what_where_.end()) {
         return false;
     }
-    return param_reasons_ptr->second.has_vector_parameter_reason_at(_reason, _index);
+    return what_where_ptr->second.has_element(_index);
 }
 
-const ParameterErrors::Indexes& ParameterErrors::get_vector_parameter_error(
+const ParameterErrors::Where& ParameterErrors::get_vector_parameter_error(
     Param::Enum _param,
     Reason::Enum _reason)const
 {
-    const ParamReasons::const_iterator param_reasons_ptr = param_reasons_.find(_param);
-    if (param_reasons_ptr != param_reasons_.end()) {
-        return param_reasons_ptr->second.get_vector_parameter_reason(_reason);
+    const What what(_param, _reason);
+    const WhatWhere::const_iterator what_where_ptr = what_where_.find(what);
+    if ((what_where_ptr != what_where_.end()) &&
+        what_where_ptr->second.is_vector())
+    {
+        return what_where_ptr->second;
     }
     throw std::runtime_error("vector parameter error not found");
 }
 
-bool ParameterErrors::Reasons::has_scalar_parameter_reason(Reason::Enum _reason)const
+ParameterErrors::What::What(Param::Enum _param, Reason::Enum _reason)
+:   param(_param),
+    reason(_reason)
+{ }
+
+bool ParameterErrors::What::operator<(const What &_b)const
 {
-    const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
-    return (positions_ptr != reason_at_positions_.end()) && positions_ptr->second.empty();
+    const What &_a = *this;
+    return  (_a.param <  _b.param) ||
+           ((_a.param == _b.param) && (_a.reason < _b.reason));
 }
 
-bool ParameterErrors::Reasons::has_vector_parameter_reason(Reason::Enum _reason)const
+ParameterErrors::Where& ParameterErrors::Where::add_element(unsigned short _index)
 {
-    const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
-    return (positions_ptr != reason_at_positions_.end()) && !positions_ptr->second.empty();
-}
-
-bool ParameterErrors::Reasons::has_vector_parameter_reason_at(Reason::Enum _reason, unsigned short _index)const
-{
-    const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
-    return (positions_ptr != reason_at_positions_.end()) &&
-           (0 < positions_ptr->second.count(_index));
-}
-
-const ParameterErrors::Indexes& ParameterErrors::Reasons::get_vector_parameter_reason(Reason::Enum _reason)const
-{
-    const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
-    if (positions_ptr == reason_at_positions_.end()) {
-        throw std::runtime_error("vector parameter error not found");
-    }
-    if (!positions_ptr->second.empty()) {
-        return positions_ptr->second;
-    }
-    throw std::runtime_error("scalar parameter error found");
-}
-
-ParameterErrors::Reasons& ParameterErrors::Reasons::add_scalar_parameter_reason(Reason::Enum _reason)
-{
-    const ReasonAtPositions::const_iterator positions_ptr = reason_at_positions_.find(_reason);
-    if (positions_ptr == reason_at_positions_.end()) {
-        reason_at_positions_.insert(std::make_pair(_reason, Indexes()));
+    if (indexes.insert(_index).second) {
         return *this;
     }
-    throw std::runtime_error(positions_ptr->second.empty() ? "scalar parameter error already exists"
-                                                           : "vector parameter error already exists");
-}
-
-ParameterErrors::Reasons& ParameterErrors::Reasons::add_vector_parameter_reason(
-    Reason::Enum _reason,
-    short unsigned _index)
-{
-    ReasonAtPositions::iterator positions_ptr = reason_at_positions_.find(_reason);
-    if (positions_ptr == reason_at_positions_.end()) {
-        Indexes indexes;
-        indexes.insert(_index);
-        reason_at_positions_.insert(std::make_pair(_reason, indexes));
-        return *this;
-    }
-    if (positions_ptr->second.empty()) {
-        throw std::runtime_error("scalar parameter error already exists");
-    }
-    if (positions_ptr->second.insert(_index).second) {
-        return *this;
-    }
-    throw std::runtime_error("vector parameter error already exists at the same position");
+    throw std::runtime_error("element of vector parameter error already exists at the same position");
 }
 
 }//namespace Epp

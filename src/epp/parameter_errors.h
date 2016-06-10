@@ -36,7 +36,15 @@ class ParameterErrors
 public:
     bool is_empty()const;
 
-    typedef std::set< unsigned short > Indexes;
+    struct Where
+    {
+        typedef std::set< unsigned short > Indexes;
+        bool is_scalar()const { return indexes.empty(); }
+        bool is_vector()const { return !indexes.empty(); }
+        bool has_element(unsigned short _index)const { return 0 < indexes.count(_index); }
+        Where& add_element(unsigned short _index);
+        Indexes indexes;
+    };
 
     ParameterErrors& add_scalar_parameter_error(Param::Enum _param, Reason::Enum _reason);
     bool has_scalar_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
@@ -44,24 +52,19 @@ public:
     ParameterErrors& add_vector_parameter_error(Param::Enum _param, unsigned short _index, Reason::Enum _reason);
     bool has_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
     bool has_vector_parameter_error_at(Param::Enum _param, unsigned short _index, Reason::Enum _reason)const;
-    const Indexes& get_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
+    const Where& get_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
 private:
-    class Reasons
+    class What
     {
     public:
-        Reasons& add_scalar_parameter_reason(Reason::Enum _reason);
-        bool has_scalar_parameter_reason(Reason::Enum _reason)const;
-
-        Reasons& add_vector_parameter_reason(Reason::Enum _reason, short unsigned _index);
-        bool has_vector_parameter_reason(Reason::Enum _reason)const;
-        bool has_vector_parameter_reason_at(Reason::Enum _reason, unsigned short _index)const;
-        const Indexes& get_vector_parameter_reason(Reason::Enum _reason)const;
+        What(Param::Enum, Reason::Enum);
+        bool operator<(const What&)const;
     private:
-        typedef std::map< Reason::Enum, Indexes > ReasonAtPositions;
-        ReasonAtPositions reason_at_positions_;
+        const Param::Enum param;
+        const Reason::Enum reason;
     };
-    typedef std::map< Param::Enum, Reasons > ParamReasons;
-    ParamReasons param_reasons_;
+    typedef std::map< What, Where > WhatWhere;
+    WhatWhere what_where_;
 };
 
 }
