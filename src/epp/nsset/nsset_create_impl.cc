@@ -134,7 +134,7 @@ NssetCreateResult nsset_create_impl(
         for(std::size_t i = 0; i < _data.tech_contacts.size(); ++i)
         {   //check technical contact exists
             if(Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts.at(i))
-                != Fred::NssetHandleState::Registrability::registered)
+                != Fred::ContactHandleState::Registrability::registered)
             {
                 ex.add(Error(Param::nsset_tech,
                     boost::numeric_cast<unsigned short>(i+1),//position in list
