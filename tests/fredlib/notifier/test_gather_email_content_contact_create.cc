@@ -102,13 +102,13 @@ BOOST_FIXTURE_TEST_CASE(test_full_create, has_full_contact)
     etalon["fresh.contact.address.mailing"] = "";
     const Fred::Contact::PlaceAddress address = contact.place.get_value();
     etalon["fresh.contact.address.permanent"] =
-        address.street1 + ", " + 
-        address.street2.get_value() + ", " + 
-        address.street3.get_value() + ", " + 
-        address.stateorprovince.get_value() + ", " + 
-        address.postalcode + ", " + 
-        address.city + ", " + 
-        address.country; 
+        address.street1 + ", " +
+        address.street2.get_value() + ", " +
+        address.street3.get_value() + ", " +
+        address.stateorprovince.get_value() + ", " +
+        address.postalcode + ", " +
+        address.city + ", " +
+        address.country;
     const std::map<Fred::ContactAddressType, Fred::ContactAddress>::const_iterator addr_it =
         contact.addresses.find(Fred::ContactAddressType::SHIPPING);
     BOOST_CHECK(addr_it != contact.addresses.end());
