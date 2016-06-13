@@ -45,21 +45,6 @@ namespace Epp {
         return false;
     }
 
-    bool is_loopback_ip_addr(const boost::asio::ip::address& ipaddr)
-    {
-        if(ipaddr.is_v6()
-            && ipaddr.to_v6().is_loopback())
-        {
-            return true;
-        }
-        else if(ipaddr.is_v4()
-            && ((ipaddr.to_v4().to_ulong() & 0xFF000000) == 0x7F000000))
-        {
-            return true;
-        }
-        return false;
-    }
-
 NssetCreateResult nsset_create_impl(
     Fred::OperationContext& _ctx,
     const NssetCreateInputData& _data,
@@ -203,7 +188,6 @@ NssetCreateResult nsset_create_impl(
                 {
                     boost::asio::ip::address dnshostipaddr = _data.dns_hosts.at(i).inet_addr.at(j);
                     if(is_unspecified_ip_addr(dnshostipaddr) //.is_unspecified()
-                    || is_loopback_ip_addr(dnshostipaddr)//.is_loopback()
                     )
                     {
                         ex.add(Error(Param::nsset_dns_addr,
