@@ -1,6 +1,14 @@
-2016-05-31 (2.24.1)
+2016-06-13 (2.25.0)
+
+  * contact create notification - full data to e-mail
+
+  * fix - contact disclose[name|organization|address]
 
   * fix - mojeid backend log severity
+
+  * fredlib
+    * refactored history data save in new operations
+    * transfer operations
 
 2016-04-10 (2.24.0)
 
