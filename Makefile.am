@@ -1566,6 +1566,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/create.h \
 		src/epp/keyset/localized_create.cc \
 		src/epp/keyset/localized_create.h \
+		src/epp/keyset/update.cc \
+		src/epp/keyset/update.h \
+		src/epp/keyset/localized_update.cc \
+		src/epp/keyset/localized_update.h \
 		src/epp/keyset/limits.h \
 		src/epp/keyset/check.cc \
 		src/epp/keyset/check.h \
