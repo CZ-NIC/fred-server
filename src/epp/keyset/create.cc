@@ -96,17 +96,18 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts,
     return existing_tech_contacts;
 }
 
-Success check_ds_records(const std::vector< KeySet::DsRecord > &_ds_records, ParameterErrors &_param_errors)
+template < unsigned MIN_NUMBER_OF_DS_RECORDS, unsigned MAX_NUMBER_OF_DS_RECORDS >
+Success check_ds_records(const std::vector< KeySet::DsRecord >&, ParameterErrors&);
+
+//specialization for requirement of no ds_record
+template < >
+Success check_ds_records< 0, 0 >(const std::vector< KeySet::DsRecord > &_ds_records, ParameterErrors &_param_errors)
 {
-    if (_ds_records.size() < KeySet::min_number_of_ds_records) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_dsrecord, Reason::no_dsrecord);
-        return false;
+    if (_ds_records.empty()) {
+        return true;
     }
-    if (KeySet::max_number_of_ds_records < _ds_records.size()) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit);
-        return false;
-    }
-    return true;
+    _param_errors.add_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit);
+    return false;
 }
 
 class Base64
@@ -118,7 +119,7 @@ public:
         bad_char,
         bad_length
     };
-    Result static check_validity_of_encoded_string(const std::string &encoded)
+    static Result check_validity_of_encoded_string(const std::string &encoded)
     {
         unsigned len = 0;
         unsigned pads = 0;
@@ -287,7 +288,8 @@ KeysetCreateResult keyset_create(
         if (!check_tech_contacts(_tech_contacts, _ctx, param_errors)) {
             _ctx.get_log().info("check_tech_contacts failure");
         }
-        if (!check_ds_records(_ds_records, param_errors)) {
+        if (!check_ds_records< KeySet::min_number_of_ds_records,
+                               KeySet::max_number_of_ds_records >(_ds_records, param_errors)) {
             _ctx.get_log().info("check_ds_records failure");
         }
         if (!check_dns_keys(_dns_keys, _ctx, param_errors)) {
