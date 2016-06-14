@@ -1,6 +1,7 @@
 #include "tests/interfaces/whois/fixture_common.h"
 #include "util/util.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_domains_by_admin_contact)

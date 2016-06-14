@@ -1,6 +1,8 @@
-#include "tests/interfaces/whois/fixture_common.h"
-#include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include <boost/foreach.hpp>
+#include <boost/mpl/list.hpp>
+
+#include "src/fredlib/object_state/get_object_state_descriptions.h"
+#include "tests/interfaces/whois/fixture_common.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(gdsd)//get_domain_status_descriptions
