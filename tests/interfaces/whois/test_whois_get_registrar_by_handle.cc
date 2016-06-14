@@ -41,12 +41,12 @@ BOOST_FIXTURE_TEST_CASE(get_fine_registrar, registrar_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_no_registar, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(get_registrar_by_handle("REG-ABSENT"), Registry::WhoisImpl::ObjectNotExists)
+    BOOST_CHECK_THROW(impl.get_registrar_by_handle("REG-ABSENT"), Registry::WhoisImpl::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_wrong_registrar, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(get_registrar_by_handle("REG@#$"), Registry::WhoisImpl::InvalidHandle)
+    BOOST_CHECK_THROW(impl.get_registrar_by_handle("REG@#$"), Registry::WhoisImpl::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_registrar_by_handle

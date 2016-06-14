@@ -51,7 +51,7 @@ struct get_keysets_by_tech_c_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
 {
-    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit);
+    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact_handle, test_limit);
     BOOST_CHECK(!ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit);
     BOOST_FOREACH(const Registry::WhoisImpl::KeySet& it, ks_s.content)
@@ -83,13 +83,13 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
             BOOST_CHECK(it.tech_contacts.end() !=
                     std::find(it.tech_contacts.begin(), it.tech_contacts.end(), oit.handle));
         }
-        BOOST_CHECK(it.tech_contacts.size() == found.tech_contacts);
+        BOOST_CHECK(it.tech_contacts.size() == found.tech_contacts.size());
     }
 }
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tech_c_fixture)
 {
-    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact.handle, test_limit - 1);
+    Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact_handle, test_limit - 1);
     BOOST_CHECK(ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit - 1);
     BOOST_FOREACH(const Registry::WhoisImpl::KeySet& it, ks_s.content)
@@ -121,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
             BOOST_CHECK(it.tech_contacts.end() !=
                     std::find(it.tech_contacts.begin(), it.tech_contacts.end(), oit.handle));
         }
-        BOOST_CHECK(it.tech_contacts.size() == found.tech_contacts);
+        BOOST_CHECK(it.tech_contacts.size() == found.tech_contacts.size());
     }
 }
 

@@ -46,7 +46,7 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     BOOST_CHECK(dom.registered == now_utc);
     BOOST_CHECK(dom.fqdn       == domain.fqdn);
     BOOST_CHECK(dom.registrant == domain.registrant.handle);
-    BOOST_CHECK(dom.registrar  == domain.create_registrar_handle);
+    BOOST_CHECK(dom.creating_registrar  == domain.create_registrar_handle);
     BOOST_CHECK(dom.expire     == domain.expiration_date);
     BOOST_CHECK(dom.fqdn       == domain.fqdn);
     BOOST_CHECK(dom.keyset     == domain.keyset.get_value_or_default().handle);

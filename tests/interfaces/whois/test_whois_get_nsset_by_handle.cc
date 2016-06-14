@@ -24,7 +24,7 @@ struct get_nsset_by_handle_fixture
                                 Fred::DnsHost(
                                     "some-nameserver",
                                     Util::vector_of<boost::asio::ip::address>(
-                                        boost::asio::ip::from_string("192.128.0.1")))))
+                                        boost::asio::ip::address::from_string("192.128.0.1")))))
                         .set_tech_contacts(
                             Util::vector_of<std::string>(contact.handle)),
                         ctx);
@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
     BOOST_CHECK(nss.nservers.at(0).fqdn == nsset.dns_hosts.at(0).get_fqdn());
     BOOST_CHECK(nss.nservers.at(0).ip_addresses.at(0) ==
             nsset.dns_hosts.at(0).get_inet_addr().at(0));
-    BOOST_CHECK(nss.registrar == nsset.create_registrar_handle);
+    BOOST_CHECK(nss.creating_registrar == nsset.create_registrar_handle);
     BOOST_CHECK(nss.tech_contacts.at(0) ==
             nsset.tech_contacts.at(0).handle);
     
@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle, get_nsset_by_handle_fixture)
         BOOST_CHECK(std::find(nss.statuses.begin(), nss.statuses.end(), it.state_name) !=
                 nss.statuses.end());
     }
-    BOOST_CHECK(it.statuses.size() == v_osd.size());
+    BOOST_CHECK(nss.statuses.size() == v_osd.size());
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nsset_by_handle_no_nsset, whois_impl_instance_fixture)

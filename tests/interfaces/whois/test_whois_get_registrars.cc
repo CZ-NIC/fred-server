@@ -16,8 +16,8 @@ struct get_my_registrar_list_fixture
         //initial registrars
         BOOST_FOREACH(const Fred::InfoRegistrarOutput& it, v)
         {
-            registrar_info[it->info_registrar_data.handle] =
-                it->info_registrar_data;
+            registrar_info[it.info_registrar_data.handle] =
+                it.info_registrar_data;
         }
         //new test registrars
         for(unsigned int i=0; i < 10; ++i) //XXX

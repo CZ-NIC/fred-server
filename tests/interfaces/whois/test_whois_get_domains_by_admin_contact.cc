@@ -84,7 +84,7 @@ struct domains_by_admin_contact_fixture
                 "FROM object_registry "
                 "WHERE name = $1::text)",
                 Database::query_param_list(delete_fqdn));
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, impl.output_timezone);
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, "UTC");
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
 
         ctx.commit_transaction();
@@ -93,13 +93,12 @@ struct domains_by_admin_contact_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_admin_contact(regular_admin.handle, regular_domains);
-    BOOST_CHECK(!domain_seq.limit_exceeded);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_admin_contact(regular_handle, regular_domains);
+    BOOST_CHECK(! domain_seq.limit_exceeded);
+    BOOST_CHECK(domain_seq.content.size() == regular_domains);
 
-    std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, Fred::InfoDomainData>::const_iterator found;
-    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
+    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_seq.content)
     {
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -108,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.registrar  == found->second.create_registrar_handle);
+        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
         BOOST_CHECK(it.expire == found->second.expiration_date);
         BOOST_CHECK(it.keyset == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset  == found->second.nsset.get_value_or_default().handle);
@@ -133,13 +132,12 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_admin_contact_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_admin_contact(regular_admin.handle, regular_domains - 1);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_admin_contact(regular_handle, regular_domains - 1);
     BOOST_CHECK(domain_seq.limit_exceeded);
+    BOOST_CHECK(domain_seq.content.size() == regular_domains - 1);
 
-    std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == static_cast<unsigned>(regular_domains - 1));
     std::map<std::string, Fred::InfoDomainData>::const_iterator found;
-    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
+    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_seq.content)
     {
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
@@ -148,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.registrar  == found->second.create_registrar_handle);
+        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
         BOOST_CHECK(it.expire == found->second.expiration_date);
         BOOST_CHECK(it.keyset == found->second.keyset.get_value_or_default().handle);
         BOOST_CHECK(it.nsset  == found->second.nsset.get_value_or_default().handle);

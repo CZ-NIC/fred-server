@@ -23,7 +23,7 @@ struct get_nameserver_by_fqdn_fixture
                         Fred::DnsHost(
                             test_nameserver_fqdn,
                             Util::vector_of<boost::asio::ip::address>(
-                                boost::asio::ip::from_string("192.128.0.1")))))
+                                boost::asio::ip::address::from_string("192.128.0.1")))))
                 .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
             ctx);
         ctx.commit_transaction();

@@ -30,11 +30,11 @@ struct get_nssets_by_ns_fixture
                     Test::CreateX_factory<Fred::CreateNsset>()
                     .make(registrar.handle)
                     .set_dns_hosts(
-                        Util::vector_of<Fred::DnsHost> dns_hosts(
+                        Util::vector_of<Fred::DnsHost>(
                             Fred::DnsHost(
                                 test_fqdn,
                                 Util::vector_of<boost::asio::ip::address>(
-                                    boost::asio::ip::from_string("192.128.0.1")))))
+                                    boost::asio::ip::address::from_string("192.128.0.1")))))
                     .set_tech_contacts(
                             Util::vector_of<std::string>(contact.handle)),
                 ctx);
@@ -47,11 +47,11 @@ struct get_nssets_by_ns_fixture
                 Test::CreateX_factory<Fred::CreateNsset>()
                     .make(registrar.handle)
                     .set_dns_hosts(
-                        Util::vector_of<Fred::DnsHost> other_hosts(
+                        Util::vector_of<Fred::DnsHost>(
                             Fred::DnsHost(
                                 "other-fqdn", 
                                 Util::vector_of<boost::asio::ip::address>(
-                                    boost::asio::ip::from_string("192.128.1.1")))))
+                                    boost::asio::ip::address::from_string("192.128.1.1")))))
                     .set_tech_contacts(
                             Util::vector_of<std::string>(contact.handle)),
                 ctx);
@@ -77,7 +77,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
         BOOST_CHECK(it.handle == found->second.handle);
         BOOST_CHECK(it.nservers.at(0).fqdn == found->second.dns_hosts.at(0).get_fqdn());
         BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.registrar == found->second.create_registrar_handle);
+        BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
         BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
         Fred::OperationContext ctx;
@@ -107,7 +107,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
         BOOST_CHECK(it.handle == found->second.handle);
         BOOST_CHECK(it.nservers.at(0).fqdn == found->second.dns_hosts.at(0).get_fqdn());
         BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.registrar == found->second.create_registrar_handle);
+        BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
         BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
         Fred::OperationContext ctx;
@@ -123,12 +123,12 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(get_nssets_by_ns("fine-fqdn.cz", 1), Registry::WhoisImpl::ObjectNotExists)
+    BOOST_CHECK_THROW(impl.get_nssets_by_ns("fine-fqdn.cz", 1), Registry::WhoisImpl::ObjectNotExists)
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(get_nssets_by_ns(".", 1), Registry::WhoisImpl::InvalidHandle)
+    BOOST_CHECK_THROW(impl.get_nssets_by_ns(".", 1), Registry::WhoisImpl::InvalidHandle)
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_ns

@@ -60,7 +60,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
         BOOST_CHECK(ks.tech_contacts.end() !=
                 std::find(ks.tech_contacts.begin(), ks.tech_contacts.end(), it.handle));
     }
-    BOOST_CHECK(it.tech_contacts.size() == keyset.tech_contacts.size());
+    BOOST_CHECK(ks.tech_contacts.size() == keyset.tech_contacts.size());
 }
 
 BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle_no_keyset, get_keyset_by_handle_fixture)

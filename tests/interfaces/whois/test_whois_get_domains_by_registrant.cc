@@ -49,7 +49,7 @@ struct domains_by_registrant_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_registrant(contact.handle, regular_domains);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_registrant(contact_handle, regular_domains);
     BOOST_CHECK(!domain_seq.limit_exceeded);
     
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.registrar  == found->second.create_registrar_handle);
+        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
         BOOST_CHECK(it.expire     == found->second.expiration_date);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
@@ -92,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_registrant_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_registrant(contact.handle, regular_domains - 1);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_registrant(contact_handle, regular_domains - 1);
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.registrar  == found->second.create_registrar_handle);
+        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
         BOOST_CHECK(it.expire     == found->second.expiration_date);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
