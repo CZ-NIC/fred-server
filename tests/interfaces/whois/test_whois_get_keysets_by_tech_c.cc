@@ -127,12 +127,12 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_no_contact, get_keysets_by_tech_c_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_keysets_by_tech_c("fine-tech-c-handle", Registry::WhoisImpl::ObjectNotExists);
+    BOOST_CHECK_THROW(impl.get_keysets_by_tech_c("fine-tech-c-handle", 1), Registry::WhoisImpl::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_wrong_contact, get_keysets_by_tech_c_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_keysets_by_tech_c(""), Registry::WhoisImpl::InvalidHandle);
+    BOOST_CHECK_THROW(impl.get_keysets_by_tech_c("", 1), Registry::WhoisImpl::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_keysets_by_tech_c
