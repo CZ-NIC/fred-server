@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd =
             Fred::GetObjectStates(found->second.id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
@@ -137,7 +137,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd =
             Fred::GetObjectStates(found->second.id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)

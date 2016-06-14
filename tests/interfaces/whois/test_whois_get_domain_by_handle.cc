@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     }
     BOOST_CHECK(domain.admin_contacts.size() == dom.admin_contacts.size());
 
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(domain.id).exec(ctx);
     BOOST_FOREACH(const Fred::ObjectStateData& it, v_osd)
     {
@@ -93,9 +93,9 @@ struct many_labels_fixture
 : whois_impl_instance_fixture
 {
     std::vector<std::string> domain_list;
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
 
-    std::string prepare_zone(const Fred::OperationContext& ctx, const std::string& zone)
+    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try
@@ -217,7 +217,7 @@ struct invalid_toomany_fixture
 {
     std::vector<std::string> domain_list;
 
-    std::string prepare_zone(const Fred::OperationContext& ctx, const std::string& zone)
+    std::string prepare_zone(Fred::OperationContext& ctx, const std::string& zone)
     {
         Fred::Zone::Data zone_data;
         try
@@ -241,7 +241,7 @@ struct invalid_toomany_fixture
 
     invalid_toomany_fixture()
     {
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         std::vector<std::string> zone_seq = ::Whois::get_managed_zone_list(ctx);
         domain_list.reserve(zone_seq.size());
         BOOST_FOREACH(const std::string& it, zone_seq)
@@ -363,7 +363,7 @@ struct delete_candidate_fixture
 
 BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn)
             .exec(ctx, "UTC").info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(delete_fqdn);

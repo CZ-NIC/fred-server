@@ -115,7 +115,7 @@ typedef boost::mpl::list<domain_type, contact_type, nsset_type, keyset_type> tes
 /*get_domain_status_descriptions*/
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsd, T, test_types, T)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     std::vector<Fred::ObjectStateDescription> states =
                         Fred::GetObjectStateDescriptions(T::test_lang)
                             .set_object_type(T::object_name)

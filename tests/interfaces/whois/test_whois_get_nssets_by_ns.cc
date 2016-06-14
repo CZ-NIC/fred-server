@@ -80,7 +80,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
         BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
         BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(nsset_id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
@@ -110,8 +110,8 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
         BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
         BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
-        Fred::OperationContext ctx;
-        const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(nsset.id).exec(ctx);
+        Fred::OperationContextCreator ctx;
+        const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(nsset_id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=

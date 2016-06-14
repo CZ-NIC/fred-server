@@ -119,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(found->second.id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
-        Fred::OperationContext ctx;
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(found->second.id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {

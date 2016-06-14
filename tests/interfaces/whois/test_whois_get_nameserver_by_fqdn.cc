@@ -32,7 +32,7 @@ struct get_nameserver_by_fqdn_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
 {
-    Fred::OperationContext ctx;
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE(Whois::nameserver_exists(test_nameserver_fqdn, ctx));
 
     Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_nameserver_fqdn);
