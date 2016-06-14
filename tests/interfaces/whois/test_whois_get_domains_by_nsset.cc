@@ -61,14 +61,12 @@ struct domains_by_nsset_fixture
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_nsset(test_nsset,
-                                                     regular_domains);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_nsset(test_nsset, regular_domains);
     BOOST_CHECK(!domain_seq.limit_exceeded);
+    BOOST_CHECK(domain_seq.content.size() == regular_domains);
 
-    std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
-    BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, Fred::InfoDomainData>::iterator found;
-    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_vec)
+    BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_seq.content)
     {
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
