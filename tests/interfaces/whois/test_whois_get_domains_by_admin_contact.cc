@@ -29,7 +29,7 @@ struct domains_by_admin_contact_fixture
                 static_cast<std::string>(
                     ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
 
-        for(unsigned int i=0; i < regular_domains; ++i)
+        for(unsigned int i=0; i < regular_domains - 1; ++i) //-1 for delete candidate
         {
             const Fred::InfoDomainData& idd = Test::exec(
                     Test::CreateX_factory<Fred::CreateDomain>()
