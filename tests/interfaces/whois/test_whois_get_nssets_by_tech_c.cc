@@ -6,9 +6,11 @@ BOOST_AUTO_TEST_SUITE(get_nssets_by_tech_c)
 struct get_nssets_by_tech_c_fixture
 : whois_impl_instance_fixture
 {
-    const unsigned int test_limit, nsset_id;
+    const unsigned int test_limit;
+    unsigned int nsset_id;
     boost::posix_time::ptime now_utc;
     std::map<std::string, Fred::InfoNssetData> nsset_info;
+    std::string contact_handle;
 
     get_nssets_by_tech_c_fixture()
     : test_limit(10)

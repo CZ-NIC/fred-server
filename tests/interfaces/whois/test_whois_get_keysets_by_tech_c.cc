@@ -10,13 +10,15 @@ struct get_keysets_by_tech_c_fixture
     const unsigned long test_limit;
     boost::posix_time::ptime now_utc;
     std::map<std::string, Fred::InfoKeysetData> keyset_info;
+    std::string contact_handle;
 
     get_keysets_by_tech_c_fixture()
     : test_limit(10)
     {
         Fred::OperationContextCreator ctx;
         const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
-        const Fred::InfoContactData contact     = Test::contact::make(ctx);
+        const Fred::InfoContactData contact = Test::contact::make(ctx);
+        contact_handle = contact.handle;
         now_utc = boost::posix_time::time_from_string(
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));

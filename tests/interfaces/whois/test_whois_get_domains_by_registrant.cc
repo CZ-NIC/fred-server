@@ -10,14 +10,16 @@ struct domains_by_registrant_fixture
     std::map<std::string, Fred::InfoDomainData> domain_info;
     const unsigned int regular_domains;
     boost::posix_time::ptime now_utc;
+    std::string contact_handle;
 
     domains_by_registrant_fixture()
-    : regular_domains(6),
+    : regular_domains(6)
     {
         Fred::OperationContextCreator ctx;
         const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
         const Fred::InfoContactData contact = Test::contact::make(ctx),
                               other_contact = Test::contact::make(ctx);
+        contact_handle = contact.handle;
         now_utc = boost::posix_time::time_from_string(
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));

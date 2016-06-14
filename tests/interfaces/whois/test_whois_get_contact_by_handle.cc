@@ -7,12 +7,13 @@ struct test_contact_fixture
 : whois_impl_instance_fixture
 {
     boost::posix_time::ptime now_utc;
+    Fred::InfoContactData contact;
 
     test_contact_fixture()
     {
         Fred::OperationContextCreator ctx;
         const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
-        const Fred::InfoContactData contact = Test::exec(
+        contact = Test::exec(
                     Test::generate_test_data(
                         Test::CreateX_factory<Fred::CreateContact>().make(registrar.handle)),
                     ctx);

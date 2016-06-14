@@ -9,12 +9,13 @@ struct get_keyset_by_handle_fixture
 : whois_impl_instance_fixture
 {
     boost::posix_time::ptime now_utc;
+    Fred::InfoKeysetData keyset;
 
     get_keyset_by_handle_fixture()
     {
         Fred::OperationContextCreator ctx;
         const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
-        const Fred::InfoKeysetData keyset = Test::exec(
+        keyset = Test::exec(
                 Test::CreateX_factory<Fred::CreateKeyset>().make(registrar.handle)
                     .set_dns_keys(
                         Util::vector_of<Fred::DnsKey>(

@@ -13,6 +13,7 @@ struct domains_by_admin_contact_fixture
     boost::posix_time::ptime now_utc;
     const unsigned int regular_domains;
     const std::string delete_fqdn;
+    std::string regular_handle;
 
     domains_by_admin_contact_fixture()
     : regular_domains(6),
@@ -23,6 +24,7 @@ struct domains_by_admin_contact_fixture
         const Fred::InfoContactData regular_admin = Test::contact::make(ctx),
                                     system_admin = Test::contact::make(ctx),
                                     contact      = Test::contact::make(ctx);
+        regular_handle = regular_admin.handle;
         now_utc = boost::posix_time::time_from_string(
                 static_cast<std::string>(
                     ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));

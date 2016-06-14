@@ -7,15 +7,16 @@ struct get_nsset_by_handle_fixture
 : whois_impl_instance_fixture
 {
     const std::string test_nsset_handle;
-    const unsigned long long id;
+    unsigned long long id;
     boost::posix_time::ptime now_utc;
+    Fred::InfoNssetData nsset;
 
     get_nsset_by_handle_fixture()
     : test_nsset_handle("TEST-NSSET")
     {
         Fred::OperationContextCreator ctx;
         const Fred::InfoContactData contact = Test::contact::make(ctx);
-        const Fred::InfoNssetData nsset = Test::exec(
+        nsset = Test::exec(
                     Test::CreateX_factory<Fred::CreateNsset>()
                         .make(Test::registrar::make(ctx).handle, test_nsset_handle)
                         .set_dns_hosts(

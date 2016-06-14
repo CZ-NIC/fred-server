@@ -7,7 +7,8 @@ struct get_nssets_by_ns_fixture
 : whois_impl_instance_fixture
 {
     const std::string test_fqdn;
-    const unsigned int test_limit, nsset_id;
+    const unsigned int test_limit;
+    unsigned int nsset_id;
     std::map<std::string, Fred::InfoNssetData> nsset_info;
     boost::posix_time::ptime now_utc;
 

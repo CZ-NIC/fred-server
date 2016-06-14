@@ -12,11 +12,12 @@ struct test_domain_fixture
 : whois_impl_instance_fixture
 {
     boost::posix_time::ptime now_utc;
+    Fred::InfoDomainData domain;
 
     test_domain_fixture()
     {
         Fred::OperationContextCreator ctx;
-        const Fred::InfoDomainData domain = Test::exec(
+        domain = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>()
                     .make(Test::registrar::make(ctx).handle,
                           Test::contact::make(ctx).handle)
