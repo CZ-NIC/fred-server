@@ -35,7 +35,6 @@ struct KeysetUpdateResult
 {
     unsigned long long id;
     unsigned long long update_history_id;
-    boost::posix_time::ptime update;
 };
 
 /**
@@ -46,9 +45,12 @@ KeysetUpdateResult keyset_update(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
-    const std::vector< std::string > &_tech_contacts,
-    const std::vector< KeySet::DsRecord > &_ds_records,
-    const std::vector< KeySet::DnsKey > &_dns_keys,
+    const std::vector< std::string > &_tech_contacts_add,
+    const std::vector< std::string > &_tech_contacts_rem,
+    const std::vector< KeySet::DsRecord > &_ds_records_add,
+    const std::vector< KeySet::DsRecord > &_ds_records_rem,
+    const std::vector< KeySet::DnsKey > &_dns_keys_add,
+    const std::vector< KeySet::DnsKey > &_dns_keys_rem,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 

@@ -14,7 +14,6 @@
 #include "src/fredlib/contact/check_contact.h"
 
 #include <map>
-#include <ctype.h>
 
 namespace Epp {
 
@@ -110,67 +109,6 @@ Success check_ds_records< 0, 0 >(const std::vector< KeySet::DsRecord > &_ds_reco
     return false;
 }
 
-class Base64
-{
-public:
-    enum Result
-    {
-        ok,
-        bad_char,
-        bad_length
-    };
-    static Result check_validity_of_encoded_string(const std::string &encoded)
-    {
-        unsigned len = 0;
-        unsigned pads = 0;
-        for (std::string::const_iterator c_ptr = encoded.begin(); c_ptr != encoded.end(); ++c_ptr) {
-            if (is_space(*c_ptr)) {
-                continue;
-            }
-            if ((pads == 0) && (is_data_character(*c_ptr))) {
-                ++len;
-                continue;
-            }
-            if (is_pad(*c_ptr)) {
-                static const unsigned max_number_of_pads = 2;
-                if (max_number_of_pads <= pads) {
-                    return bad_char;
-                }
-                ++len;
-                ++pads;
-                continue;
-            }
-            //neither data character nor pad nor space
-            return bad_char;
-        }
-        return (len % 4) == 0 ? ok : bad_length;
-    }
-private:
-    static bool is_data_character(char c)
-    {
-        switch (c)
-        {
-            case '0' ... '9':
-            case 'A' ... 'Z':
-            case 'a' ... 'z':
-            case '+':
-            case '/':
-                return true;
-        }
-        return false;
-    }
-
-    static bool is_pad(char c)
-    {
-        return c == '=';
-    }
-
-    static bool is_space(char c)
-    {
-        return ::isspace(c);
-    }
-};
-
 Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys,
                        Fred::OperationContext &_ctx,
                        ParameterErrors &_param_errors)
@@ -221,39 +159,33 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys,
         //unique DNS key
         unique_dns_keys.insert(std::make_pair(*dns_key_ptr, idx));
 
-        //DNS key item flags has only 3 allowed values: 0, 256, 257
-        if ((dns_key_ptr->get_flags() !=   0u) &&
-            (dns_key_ptr->get_flags() != 256u) &&
-            (dns_key_ptr->get_flags() != 257u))
+        if (!dns_key_ptr->is_flags_correct())
         {
             _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::dnskey_bad_flags);
             correct = false;
         }
 
-        //DNS key item protocol has only 1 allowed value: 3
-        if (dns_key_ptr->get_protocol() != 3u)
+        if (!dns_key_ptr->is_protocol_correct())
         {
             _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::dnskey_bad_protocol);
             correct = false;
         }
 
-        //DNS key item alg occupies 8 bits => range <0, 255>
-        if ((dns_key_ptr->get_alg() < 0u) || (255u < dns_key_ptr->get_alg()))
+        if (!dns_key_ptr->is_alg_correct())
         {
             _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::dnskey_bad_alg);
             correct = false;
         }
 
-        //DNS key item key has to be valid base64 encoded string
-        switch (Base64::check_validity_of_encoded_string(dns_key_ptr->get_key()))
+        switch (dns_key_ptr->check_key())
         {
-            case Base64::ok:
+            case KeySet::DnsKey::CheckKey::ok:
                 break;
-            case Base64::bad_char:
+            case KeySet::DnsKey::CheckKey::bad_char:
                 _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::dnskey_bad_key_char);
                 correct = false;
                 break;
-            case Base64::bad_length:
+            case KeySet::DnsKey::CheckKey::bad_length:
                 _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::dnskey_bad_key_len);
                 correct = false;
                 break;

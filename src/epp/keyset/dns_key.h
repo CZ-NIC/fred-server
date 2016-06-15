@@ -73,6 +73,8 @@ public:
         return flags_;
     }
 
+    bool is_flags_correct()const;
+
     /**
      * Protocol field getter.
      * @return protocol field @see protocol_
@@ -81,6 +83,9 @@ public:
     {
         return protocol_;
     }
+
+    bool is_protocol_correct()const;
+
     /**
      * Algorithm field getter.
      * @return algorithm field @see alg_
@@ -89,6 +94,8 @@ public:
     {
         return alg_;
     }
+
+    bool is_alg_correct()const;
 
     /**
      * Key field getter.
@@ -148,6 +155,17 @@ public:
         key_ = _src.key_;
         return *this;
     }
+
+    struct CheckKey
+    {
+        enum Result
+        {
+            ok,
+            bad_char,
+            bad_length
+        };
+    };
+    CheckKey::Result check_key()const;
 private:
     static inline std::string remove_spaces(const std::string &_str)
     {
@@ -160,7 +178,6 @@ private:
     unsigned short alg_;     ///< the algorithm field identifies the public key's cryptographic algorithm, values can be found in RFC 4034 Apendix A.1.
     std::string key_;        ///< the public key field in base64 encoding
 }; //class DnsKey
-
 
 }//namespace Epp::KeySet
 }//namespace Epp

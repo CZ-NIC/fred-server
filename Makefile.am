@@ -1555,6 +1555,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/disclose.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
+		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \
 		src/epp/keyset/info_data.h \
