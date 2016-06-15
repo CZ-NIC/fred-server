@@ -527,7 +527,6 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
                     .set_limit(limit + 1)
                     .exec(ctx, get_output_timezone());
         KeySetSeq ks_seq;
-        WhoisImpl::KeySet temp;
         std::vector<Fred::InfoKeysetOutput>::const_iterator it = ks_info.begin(), end;
         if(ks_info.empty())
         {
@@ -551,6 +550,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
         }
         for(; it != end; ++it)
         {
+            WhoisImpl::KeySet temp;
             temp.changed = it->info_keyset_data.update_time;
             temp.created = it->info_keyset_data.creation_time;
 
