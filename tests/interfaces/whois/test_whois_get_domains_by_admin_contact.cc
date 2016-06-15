@@ -43,19 +43,7 @@ struct domains_by_admin_contact_fixture
             
             domain_info[idd.fqdn] = idd;
         }
-        //delete candidate
-        const Fred::InfoDomainData& idd = Test::exec(
-                Test::CreateX_factory<Fred::CreateDomain>()
-                    .make(registrar.handle, contact.handle, delete_fqdn)
-                    .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
-                    .set_nsset(Test::nsset::make(ctx).handle) 
-                    .set_keyset(Test::keyset::make(ctx).handle) 
-                    .set_expiration_date(
-                        boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
-                ctx);
-        domain_info[idd.fqdn] = idd;
-        //3 different domains for another contact
-        for(int i=0; i < 3; ++i)
+        for(int i=0; i < 3; ++i)//3 different domains for another contact
         {
             Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
                     .make(registrar.handle, contact.handle)
@@ -63,6 +51,16 @@ struct domains_by_admin_contact_fixture
                         Util::vector_of<std::string>(system_admin.handle)),
                     ctx);
         }
+        //delete candidate
+        const Fred::InfoDomainData& idd = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                .make(registrar.handle, contact.handle, delete_fqdn)
+                .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
+                .set_nsset(Test::nsset::make(ctx).handle) 
+                .set_keyset(Test::keyset::make(ctx).handle) 
+                .set_expiration_date(
+                    boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
+                ctx);
 
         ctx.get_conn().exec_params(
                 "UPDATE domain_history "
@@ -100,7 +98,6 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
     BOOST_CHECK(domain_seq.content.size() == regular_domains);
 
     std::map<std::string, Fred::InfoDomainData>::const_iterator found;
-    Fred::OperationContextCreator ctx;
     BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_seq.content)
     {
         found = domain_info.find(it.fqdn);
@@ -108,19 +105,6 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
-        if (it.fqdn == delete_fqdn)
-        {
-            BOOST_CHECK(it.statuses.size() == 1);
-            BOOST_CHECK(it.statuses.at(0) == "deleteCandidate");
-            BOOST_CHECK(it.registered == boost::posix_time::ptime(not_a_date_time));
-            BOOST_CHECK(it.registrant == "");
-            BOOST_CHECK(it.creating_registrar  == "");
-            BOOST_CHECK(it.expire == boost::gregorian::date(not_a_date_time));
-            BOOST_CHECK(it.keyset == "");
-            BOOST_CHECK(it.nsset  == "");
-            BOOST_CHECK(it.admin_contacts.empty());
-            continue;
-        }
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
         BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
@@ -135,6 +119,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(found->second.id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
@@ -159,19 +144,6 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
-        if (it.fqdn == delete_fqdn)
-        {
-            BOOST_CHECK(it.statuses.size() == 1);
-            BOOST_CHECK(it.statuses.at(0) == "deleteCandidate");
-            BOOST_CHECK(it.registered == boost::posix_time::ptime(not_a_date_time));
-            BOOST_CHECK(it.registrant == "");
-            BOOST_CHECK(it.creating_registrar  == "");
-            BOOST_CHECK(it.expire == boost::gregorian::date(not_a_date_time));
-            BOOST_CHECK(it.keyset == "");
-            BOOST_CHECK(it.nsset  == "");
-            BOOST_CHECK(it.admin_contacts.empty());
-            continue;
-        }
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
         BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
@@ -181,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
-            BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
+            BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
