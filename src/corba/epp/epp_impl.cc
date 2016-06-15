@@ -79,6 +79,7 @@
 #include "src/epp/nsset/nsset_info.h"
 #include "src/epp/nsset/nsset_delete.h"
 #include "src/epp/nsset/nsset_create.h"
+#include "src/epp/nsset/nsset_update.h"
 
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_create.h"
@@ -3299,440 +3300,48 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
  ***********************************************************************/
 
 ccReg::Response *
-ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
+ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
         const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
         const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
-        CORBA::Short level, const ccReg::EppParams &params)
+        CORBA::Short level, const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    char NAME[256], REM_NAME[256];
-    int nssetID, techid, hostID;
-    unsigned int i, j, k, l;
-    short inetNum;
-    int hostNum, techNum;
-    bool findRem; // test for change DNS hosts
-    short int code = 0;
-
-    int *tch_add = new int[ tech_add.length() ];
-    if (tech_add.length() > 0) {
-        for (unsigned int i = 0; i < tech_add.length(); ++i)
-            tch_add[i] = 0;
-    }
-
-    int *tch_rem = new int[ tech_rem.length() ];
-    if (tech_rem.length() > 0) {
-        for (unsigned int i = 0; i < tech_rem.length(); ++i)
-            tch_rem[i] = 0;
-    }
-
-    EPPAction action(this, params.loginID, EPP_NSsetUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-
-    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: clientID -> %1% clTRID [%2%] handle [%3%] authInfo_chg  [%4%] ") % (int ) params.loginID % (const char*)params.clTRID % handle % authInfo_chg);
-    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: tech check level %1%") % (int) level );
-
-    std::auto_ptr<Fred::Zone::Manager> zman(
-            Fred::Zone::Manager::create());
-    std::auto_ptr<Fred::NSSet::Manager> nman(
-            Fred::NSSet::Manager::create(action.getDB(),zman.get(),restricted_handles_));
-
-    if ( (nssetID = getIdOfNSSet(action.getDB(), handle, restricted_handles_
-            , lock_epp_commands_, true) ) < 0) {
-        LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
-    } else if (nssetID == 0) {
-        LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-        code = COMMAND_OBJECT_NOT_EXIST;
-    }
-    // registrar of the object
-    if (!code && !action.getDB()->TestObjectClientID(nssetID, action.getRegistrar()) ) {
-        LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0,
-                REASON_MSG_REGISTRAR_AUTOR);
-    }
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        if (!code && (testObjectHasState(action,nssetID,FLAG_serverUpdateProhibited) ||
-                testObjectHasState(action,nssetID,FLAG_deleteCandidate)))
-        {
-            LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
-        }
-    } catch (...) {
-        code = COMMAND_FAILED;
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        std::string authinfo_data = Corba::unwrap_string_from_const_char_ptr(authInfo_chg);
+
+        const Epp::LocalizedSuccessResponse response = Epp::nsset_update(
+                Epp::NssetUpdateInputData(
+                    Corba::unwrap_string_from_const_char_ptr(_handle),
+                    authinfo_data.empty()
+                        ? Optional<std::string>()
+                        : Optional<std::string>(authinfo_data),
+                    Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_add),
+                    Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_rem),
+                    Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),
+                    Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_rem),
+                    (level < 0
+                        ? (this->nsset_level_ < 0
+                            ? 0
+                            : this->nsset_level_)
+                        : boost::numeric_cast<short>(level))
+                ),
+            session_data.registrar_id,
+            request_params.log_request_id,
+            epp_update_contact_enqueue_check_,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_cltrid_prefix_
+        );
+
+        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-
-    if (!code) {
-
-        // test  ADD tech-c
-        for (i = 0; i < tech_add.length(); i++) {
-            if ( (techid = getIdOfContact(action.getDB(), tech_add[i], restricted_handles_
-                    , lock_epp_commands_) ) <= 0) {
-                if (techid < 0) {
-                    LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_add[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_tech_add, i + 1,
-                            REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-                } else if (techid == 0) {
-                    LOG(WARNING_LOG, "Contact %s not exist", (const char *)tech_add[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_tech_add, i + 1,
-                            REASON_MSG_TECH_NOTEXIST);
-                }
-            } else if (action.getDB()->CheckContactMap("nsset", nssetID, techid, 0) ) {
-                LOG(WARNING_LOG, "Tech Contact [%s] exist in contact map table",
-                        (const char *)tech_add[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_tech_add, i + 1,
-                        REASON_MSG_TECH_EXIST);
-            } else {
-                tch_add[i] = techid;
-                for (j = 0; j < i; j ++)
-                    // duplicity test
-                    if (tch_add[j] == techid && tch_add[j] > 0) {
-                        tch_add[j] = 0;
-                        LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)tech_add[i]);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_tech_add, i,
-                                REASON_MSG_DUPLICITY_CONTACT);
-                    }
-            }
-
-            LOG( NOTICE_LOG , "ADD  tech  techid ->%d [%s]" , techid , (const char *) tech_add[i] );
-        }
-
-        // test REM tech-c
-        for (i = 0; i < tech_rem.length(); i++) {
-
-            if ( (techid = getIdOfContact(action.getDB(), tech_rem[i], restricted_handles_
-                    , lock_epp_commands_) ) <= 0) {
-                LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_tech_rem, i + 1,
-                        REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-            } else if ( !action.getDB()->CheckContactMap("nsset", nssetID, techid, 0) ) {
-                LOG(WARNING_LOG, "Contact %s not exist", (const char *)tech_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_tech_rem, i + 1,
-                        REASON_MSG_TECH_NOTEXIST);
-            } else {
-                tch_rem[i] = techid;
-                for (j = 0; j < i; j ++)
-                    // test  duplicity
-                    if (tch_rem[j] == techid && tch_rem[j] > 0) {
-                        tch_rem[j] = 0;
-                        LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)tech_rem[i]);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_tech_rem, i,
-                                REASON_MSG_DUPLICITY_CONTACT);
-                    }
-            }
-            LOG( NOTICE_LOG , "REM  tech  techid ->%d [%s]" , techid , (const char *) tech_rem[i] );
-
-        }
-
-        // ADD DNS HOSTS  and TEST IP address and name of the  DNS HOST
-        for (i = 0, inetNum =0; i < dns_add.length(); i++) {
-
-            /// test DNS host
-            if (nman->checkHostname((const char *)dns_add[i].fqdn, false, true)) {
-                LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *) dns_add[i].fqdn );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_dns_name_add, i + 1,
-                        REASON_MSG_BAD_DNS_NAME);
-            } else {
-                LOG( NOTICE_LOG , "NSSetUpdate: add dns [%s]" , (const char * ) dns_add[i].fqdn );
-
-                convert_hostname(NAME, dns_add[i].fqdn); // convert to lower case
-                // HOST is not in defined zone and contain ip address
-                if (getZone(action.getDB(), dns_add[i].fqdn) == 0
-                        && (int ) dns_add[i].inet.length() > 0) {
-                    for (j = 0; j < dns_add[i].inet.length() ; j ++) {
-                        LOG( WARNING_LOG, "NSSetUpdate:  ipaddr  glue not allowed %s " , (const char *) dns_add[i].inet[j] );
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_dns_addr, inetNum + j + 1,
-                                REASON_MSG_IP_GLUE_NOT_ALLOWED);
-                    }
-                } else {
-
-                    if (action.getDB()->GetHostID(NAME, nssetID) ) // already exist can not add
-                    {
-                        // TEST if the add DNS host is in REM   dns_rem[i].fqdn
-                        findRem=false;
-                        for (k = 0; k < dns_rem.length(); k++) {
-                            convert_hostname(REM_NAME, dns_rem[k].fqdn);
-                            if (strcmp(NAME, REM_NAME) == 0) {
-                                LOG( NOTICE_LOG ,"NSSetUpdate: add HOST %s find remove host %s" , NAME , REM_NAME );
-                                findRem=true;
-                                break;
-                            }
-                        }
-
-                        if ( !findRem) // if is not in the REM DNS hosts
-                        {
-                            LOG( WARNING_LOG, "NSSetUpdate:  host name %s exist" , (const char *) dns_add[i].fqdn );
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::nsset_dns_name_add, i + 1,
-                                    REASON_MSG_DNS_NAME_EXIST);
-                        }
-
-                    }
-
-                }
-
-            }
-
-            // TEST IP addresses
-            for (j = 0; j < dns_add[i].inet.length(); j++) {
-
-                if (TestInetAddress(dns_add[i].inet[j]) ) {
-                    for (l = 0; l < j; l ++) // duplicity test
-                    {
-                        if (strcmp(dns_add[i].inet[l], dns_add[i].inet[j]) == 0) {
-                            LOG( WARNING_LOG, "NSSetUpdate: duplicity host address %s " , (const char *) dns_add[i].inet[j] );
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::nsset_dns_addr, inetNum + j + 1,
-                                    REASON_MSG_DUPLICITY_DNS_ADDRESS);
-                        }
-                    }
-
-                } else // not valid IP address
-                {
-                    LOG( WARNING_LOG, "NSSetUpdate: bad add host address %s " , (const char *) dns_add[i].inet[j] );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_addr, inetNum + j + 1,
-                            REASON_MSG_BAD_IP_ADDRESS);
-                }
-            }
-
-            inetNum+= dns_add[i].inet.length(); //  count  InetNum for errors
-
-            // test to duplicity of added nameservers
-            for (l = 0; l < i; l ++) {
-                char PREV_NAME[256]; // to upper case of name of DNS hosts
-                convert_hostname(PREV_NAME, dns_add[l].fqdn);
-                if (strcmp(NAME, PREV_NAME) == 0) {
-                    LOG( WARNING_LOG, "NSSetUpdate:  host name %s duplicate" , (const char *) dns_add[i].fqdn );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_name_add, i + 1,
-                            REASON_MSG_DNS_NAME_EXIST);
-                }
-            }
-
-        } // end of cycle
-
-
-        // test for DNS HOSTS to REMOVE if is valid format and if is exist in the table
-        for (i = 0; i < dns_rem.length(); i++) {
-            LOG( NOTICE_LOG , "NSSetUpdate:  delete  host  [%s] " , (const char *) dns_rem[i].fqdn );
-
-            if (nman->checkHostname((const char *)dns_rem[i].fqdn, false, true)) {
-                LOG( WARNING_LOG, "NSSetUpdate: bad rem host name %s " , (const char *) dns_rem[i].fqdn );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_dns_name_rem, i + 1,
-                        REASON_MSG_BAD_DNS_NAME);
-            } else {
-                convert_hostname(NAME, dns_rem[i].fqdn);
-                if ( (hostID = action.getDB()->GetHostID(NAME, nssetID) ) == 0) {
-                    LOG( WARNING_LOG, "NSSetUpdate:  host  [%s] not in table" , (const char *) dns_rem[i].fqdn );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_name_rem, i + 1,
-                            REASON_MSG_DNS_NAME_NOTEXIST);
-                }
-            }
-
-            // test to duplicity of removing nameservers
-            for (l = 0; l < i; l ++) {
-                char PREV_NAME[256]; // to upper case of name of DNS hosts
-                convert_hostname(PREV_NAME, dns_rem[l].fqdn);
-                if (strcmp(NAME, PREV_NAME) == 0) {
-                    LOG( WARNING_LOG, "NSSetUpdate:  host name %s duplicate" , (const char *) dns_rem[i].fqdn );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_name_rem, i + 1,
-                            REASON_MSG_DNS_NAME_NOTEXIST);
-                }
-            }
-
-        }
-
-        // if not any errors in the parametrs run update
-        if (code == 0)
-            if (action.getDB()->ObjectUpdate(nssetID, action.getRegistrar(), authInfo_chg) ) {
-
-                // update tech level
-                if (level >= 0) {
-                    LOG( NOTICE_LOG, "update nsset check level %d ", (int ) level );
-                    action.getDB()->UPDATE("nsset");
-                    action.getDB()->SET("checklevel", level);
-                    action.getDB()->WHERE("id", nssetID);
-                    if (action.getDB()->EXEC() == false)
-                        code = COMMAND_FAILED;
-                }
-
-                //-------- TECH contacts
-
-                // add tech contacts
-                for (i = 0; i < tech_add.length(); i++) {
-
-                    LOG( NOTICE_LOG , "INSERT add techid ->%d [%s]" , tch_add[i] , (const char *) tech_add[i] );
-                    if ( !action.getDB()->AddContactMap("nsset", nssetID, tch_add[i]) ) {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-
-                }
-
-                // delete  tech contacts
-                for (i = 0; i < tech_rem.length(); i++) {
-
-                    LOG( NOTICE_LOG , "DELETE rem techid ->%d [%s]" , tch_rem[i] , (const char *) tech_rem[i] );
-                    if ( !action.getDB()->DeleteFromTableMap("nsset", nssetID, tch_rem[i]) ) {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-
-                }
-
-                //--------- TEST for numer of tech-c after  ADD & REM
-                // only if the tech-c remove
-                if (tech_rem.length() > 0) {
-                    techNum = action.getDB()->GetNSSetContacts(nssetID);
-                    LOG(NOTICE_LOG, "NSSetUpdate: tech Contact  %d" , techNum );
-
-                    if (techNum == 0) // can not be nsset without tech-c
-                    {
-
-                        // marked all  REM tech-c as param  errors
-                        for (i = 0; i < tech_rem.length(); i++) {
-                            code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                    ccReg::nsset_tech_rem, i + 1,
-                                    REASON_MSG_CAN_NOT_REMOVE_TECH);
-                        }
-                    }
-                }
-
-                // delete DNS HOSTY  first step
-                for (i = 0; i < dns_rem.length(); i++) {
-                    LOG( NOTICE_LOG , "NSSetUpdate:  delete  host  [%s] " , (const char *) dns_rem[i].fqdn );
-
-                    convert_hostname(NAME, dns_rem[i].fqdn);
-                    hostID = action.getDB()->GetHostID(NAME, nssetID);
-                    LOG( NOTICE_LOG , "DELETE  hostID %d" , hostID );
-                    if ( !action.getDB()->DeleteFromTable("HOST", "id", hostID) )
-                        code = COMMAND_FAILED;
-                    else if ( !action.getDB()->DeleteFromTable("HOST_IPADDR_map", "hostID",
-                                hostID) )
-                        code = COMMAND_FAILED;
-                }
-
-                //-------- add  DNS HOSTs second step
-
-                for (i = 0; i < dns_add.length(); i++) {
-                    // to lowe case
-                    convert_hostname(NAME, dns_add[i].fqdn);
-
-                    // hostID from sequence
-                    hostID = action.getDB()->GetSequenceID("host");
-
-                    // HOST information
-                    action.getDB()->INSERT("HOST");
-                    action.getDB()->INTO("ID");
-                    action.getDB()->INTO("nssetid");
-                    action.getDB()->INTO("fqdn");
-                    action.getDB()->VALUE(hostID);
-                    action.getDB()->VALUE(nssetID); // add nssetID
-                    action.getDB()->VALUE(NAME);
-                    if (action.getDB()->EXEC()) // add all IP address
-                    {
-
-                        for (j = 0; j < dns_add[i].inet.length(); j++) {
-                            LOG( NOTICE_LOG , "insert  IP address hostID  %d [%s] ", hostID , (const char *) dns_add[i].inet[j] );
-
-                            // insert ipaddr with hostID and nssetID
-                            action.getDB()->INSERT("HOST_IPADDR_map");
-                            action.getDB()->INTO("HOSTID");
-                            action.getDB()->INTO("NSSETID");
-                            action.getDB()->INTO("ipaddr");
-                            action.getDB()->VALUE(hostID);
-                            action.getDB()->VALUE(nssetID);
-                            action.getDB()->VVALUE(dns_add[i].inet[j]);
-
-                            // if failed
-                            if (action.getDB()->EXEC() == false) {
-                                code = COMMAND_FAILED;
-                                break;
-                            }
-
-                        }
-
-                    } else {
-                        code = COMMAND_FAILED;
-                        break;
-                    } // if add host failed
-
-
-                }
-
-                //------- TEST number DNS host after REM & ADD
-                //  only if the add or rem
-                if (dns_rem.length() > 0 || dns_add.length() > 0) {
-                    hostNum = action.getDB()->GetNSSetHosts(nssetID);
-                    LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
-
-                    if (hostNum < 2) //  minimal two DNS
-                    {
-                        for (i = 0; i < dns_rem.length(); i++) {
-                            // marked all  REM DNS hots as param error
-                            code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                    ccReg::nsset_dns_name_rem, i + 1,
-                                    REASON_MSG_CAN_NOT_REM_DNS);
-                        }
-                    }
-
-                    if (hostNum > 9) // maximal number
-                    {
-                        for (i = 0; i < dns_add.length(); i++) {
-                            // marked all ADD dns host  as param error
-                            code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                    ccReg::nsset_dns_name_add, i + 1,
-                                    REASON_MSG_CAN_NOT_ADD_DNS);
-                        }
-                    }
-
-                }
-
-                // save to history if not errors
-                if (code == 0)
-                    if (action.getDB()->SaveNSSetHistory(nssetID, params.requestID) )
-                        code = COMMAND_OK; // set up successfully as default
-
-
-                if (code == COMMAND_OK)
-                {
-                    action.set_notification_params(nssetID,Notification::updated, disable_epp_notifier_);
-                }
-
-
-            }
-
-    }
-    // free mem
-    delete[] tch_add;
-    delete[] tch_rem;
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("NSSetUpdate");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************
