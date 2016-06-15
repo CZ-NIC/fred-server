@@ -19,6 +19,7 @@ struct get_nssets_by_tech_c_fixture
         const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
         const Fred::InfoContactData contact     = Test::contact::make(ctx);
         const Fred::InfoNssetData nsset         = Test::nsset::make(ctx);
+        contact_handle = contact.handle;
         now_utc = boost::posix_time::time_from_string(
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
