@@ -596,8 +596,6 @@ WhoisImpl::Domain generate_obfuscate_domain_delete_candidate(const std::string& 
 {
     WhoisImpl::Domain temp;
     temp.fqdn = _handle;
-    temp.changed = Nullable<boost::posix_time::ptime>();
-    temp.last_transfer = Nullable<boost::posix_time::ptime>();
     temp.statuses.push_back("deleteCandidate");
     //all the rest is default constructed
     return temp;
