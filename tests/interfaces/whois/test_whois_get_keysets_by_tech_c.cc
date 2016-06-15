@@ -29,21 +29,20 @@ struct get_keysets_by_tech_c_fixture
                         .make(registrar.handle)
                         .set_dns_keys(Util::vector_of<Fred::DnsKey>(
                             Fred::DnsKey(42, 777, 13, "any-key")))
-                        .set_tech_contacts(Util::vector_of<std::string>(
-                            contact.handle)),
+                        .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
                     ctx);
             keyset_info[ikd.handle] = ikd;
         }
         for(unsigned long i = 0; i < 3; ++i)
         {
             Test::exec(
-                    Test::CreateX_factory<Fred::CreateKeyset>()
-                        .make(registrar.handle)
-                        .set_dns_keys(Util::vector_of<Fred::DnsKey>(
-                            Fred::DnsKey(42, 777, 13, "any-key")))
-                        .set_tech_contacts(Util::vector_of<std::string>(
-                            Test::contact::make(ctx).handle)),
-                    ctx);
+                Test::CreateX_factory<Fred::CreateKeyset>()
+                    .make(registrar.handle)
+                    .set_dns_keys(Util::vector_of<Fred::DnsKey>(
+                        Fred::DnsKey(42, 777, 13, "any-key")))
+                    .set_tech_contacts(Util::vector_of<std::string>(
+                        Test::contact::make(ctx).handle)),
+                ctx);
         }
         ctx.commit_transaction();
     }

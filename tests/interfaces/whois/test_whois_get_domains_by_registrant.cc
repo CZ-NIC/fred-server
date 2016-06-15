@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
-            BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
+            BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
@@ -116,7 +116,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
-            BOOST_CHECK(it.admin_contacts.end() == std::find(it.admin_contacts.begin(),
+            BOOST_CHECK(it.admin_contacts.end() != std::find(it.admin_contacts.begin(),
                         it.admin_contacts.end(), oit.handle));
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
