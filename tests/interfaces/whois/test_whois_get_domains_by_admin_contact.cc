@@ -100,6 +100,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
     BOOST_CHECK(domain_seq.content.size() == regular_domains);
 
     std::map<std::string, Fred::InfoDomainData>::const_iterator found;
+    Fred::OperationContextCreator ctx;
     BOOST_FOREACH(const Registry::WhoisImpl::Domain& it, domain_seq.content)
     {
         found = domain_info.find(it.fqdn);
@@ -121,7 +122,6 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
-        Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(found->second.id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
