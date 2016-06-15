@@ -35,15 +35,27 @@ struct domains_by_admin_contact_fixture
                     Test::CreateX_factory<Fred::CreateDomain>()
                         .make(registrar.handle, contact.handle)
                         .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
-                        .set_nsset(Test::nsset::make(ctx).handle) 
-                        .set_keyset(Test::keyset::make(ctx).handle) 
+                        .set_nsset(Test::nsset::make(ctx).handle)
+                        .set_keyset(Test::keyset::make(ctx).handle)
                         .set_expiration_date(
                             boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
                     ctx);
             
             domain_info[idd.fqdn] = idd;
         }
-        for(int i=0; i < 3; ++i)//3 different domains for another contact
+        //delete candidate
+        const Fred::InfoDomainData& idd = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar.handle, contact.handle, delete_fqdn)
+                    .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(Test::keyset::make(ctx).handle)
+                    .set_expiration_date(
+                        boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
+                ctx);
+        domain_info[idd.fqdn] = idd;
+        //3 different domains for another contact
+        for(int i=0; i < 3; ++i)
         {
             Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
                     .make(registrar.handle, contact.handle)
@@ -51,16 +63,6 @@ struct domains_by_admin_contact_fixture
                         Util::vector_of<std::string>(system_admin.handle)),
                     ctx);
         }
-        //delete candidate
-        const Fred::InfoDomainData& idd = Test::exec(
-                Test::CreateX_factory<Fred::CreateDomain>()
-                .make(registrar.handle, contact.handle, delete_fqdn)
-                .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
-                .set_nsset(Test::nsset::make(ctx).handle) 
-                .set_keyset(Test::keyset::make(ctx).handle) 
-                .set_expiration_date(
-                    boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
-                ctx);
 
         ctx.get_conn().exec_params(
                 "UPDATE domain_history "
