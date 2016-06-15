@@ -3309,15 +3309,10 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
     try {
         const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
-
-        std::string authinfo_data = Corba::unwrap_string_from_const_char_ptr(authInfo_chg);
-
         const Epp::LocalizedSuccessResponse response = Epp::nsset_update(
                 Epp::NssetUpdateInputData(
                     Corba::unwrap_string_from_const_char_ptr(_handle),
-                    authinfo_data.empty()
-                        ? Optional<std::string>()
-                        : Optional<std::string>(authinfo_data),
+                    Corba::convert_corba_string_change(authInfo_chg),
                     Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_add),
                     Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_rem),
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),

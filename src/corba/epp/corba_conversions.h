@@ -51,6 +51,8 @@ namespace Corba {
 
     Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
 
+    Optional<std::string> convert_corba_string_change(const char* input);
+
     Epp::ContactUpdateInputData unwrap_contact_update_input_data(const char* const handle, const ccReg::ContactChange& c);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);

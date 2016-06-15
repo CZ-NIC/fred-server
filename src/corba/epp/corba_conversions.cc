@@ -241,35 +241,8 @@ namespace Corba {
         return value[0] == '\0';
     }
 
-    boost::optional< Nullable< std::string > > convert_contact_update_or_delete_string(const char *src)
-    {
-        const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(src);
-        if (src_has_special_meaning_to_delete) {
-            return Nullable< std::string >();
-        }
-        const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
-        if (src_has_special_meaning_not_to_touch) {
-            return boost::optional< Nullable< std::string > >();
-        }
-        const std::string value_to_set = boost::trim_copy(Corba::unwrap_string(src));
-        const bool value_to_set_means_not_to_touch = value_to_set.empty();
-        if (value_to_set_means_not_to_touch) {
-            return boost::optional< Nullable< std::string > >();
-        }
-        return Nullable< std::string >(value_to_set);
-    }
-
-    boost::optional< std::string > convert_contact_update_string(const char *src)
-    {
-        const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
-        if (src_has_special_meaning_not_to_touch) {
-            return boost::optional< std::string >();
-        }
-        const std::string value_to_set = boost::trim_copy(Corba::unwrap_string(src));
-        const bool value_to_set_means_not_to_touch = value_to_set.empty();
-        return value_to_set_means_not_to_touch ? boost::optional< std::string >()
-                                               : value_to_set;
-    }
+    Optional<std::string> convert_corba_string_change(const char* input) {
+        const std::string safer_input = Corba::unwrap_string(input);
 
     template < class TARGET_INTEGRAL_TYPE, class SOURCE_INTEGRAL_TYPE >
     TARGET_INTEGRAL_TYPE wrap_int(SOURCE_INTEGRAL_TYPE src)
