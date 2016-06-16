@@ -275,7 +275,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
 
 static WhoisImpl::NSSet make_nsset_from_info_data(
         const Fred::InfoNssetData& ind,
-        Fred::OperationContextCreator& ctx)
+        Fred::OperationContext& ctx)
 {
     WhoisImpl::NSSet nss;
     nss.changed       = ind.update_time;
@@ -348,7 +348,7 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
     return WhoisImpl::NSSet();
 }
 
-static NSSetSeq get_nssets_by_(Fred::OperationContextCreator& ctx,
+static NSSetSeq get_nssets_by_(Fred::OperationContext& ctx,
                                const std::vector<Fred::InfoNssetOutput>& nss_info,
                                const std::string& handle,
                                unsigned long limit)
@@ -601,7 +601,7 @@ WhoisImpl::Domain generate_obfuscate_domain_delete_candidate(const std::string& 
     return temp;
 }
 
-static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& idd, Fred::OperationContextCreator& ctx)
+static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& idd, Fred::OperationContext& ctx)
 {
     WhoisImpl::Domain result;
     result.admin_contacts.reserve(idd.admin_contacts.size());
@@ -740,7 +740,7 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
     return DomainSeq();
 }
 
-static DomainSeq get_domains_by_(Fred::OperationContextCreator& ctx,
+static DomainSeq get_domains_by_(Fred::OperationContext& ctx,
                                  unsigned long limit,
                                  const std::vector<Fred::InfoDomainOutput>& domain_info)
 {
