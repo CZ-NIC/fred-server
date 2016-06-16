@@ -369,7 +369,17 @@ BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
     BOOST_CHECK(dom.fqdn == idd.fqdn);
     BOOST_CHECK(dom.changed.isnull());
     BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.statuses.end() != std::find(dom.statuses.begin(), dom.statuses.end(), "deleteCandidate"));
+    BOOST_CHECK(dom.validated_to.isnull());
+    BOOST_CHECK(dom.statuses.size()    == 1);
+    BOOST_CHECK(dom.statuses.at(0)     == "deleteCandidate");
+    BOOST_CHECK(dom.registered         == boost::posix_time::ptime(not_a_date_time));
+    BOOST_CHECK(dom.registrant         == "");
+    BOOST_CHECK(dom.creating_registrar == "");
+    BOOST_CHECK(dom.expire             == boost::gregorian::date(not_a_date_time));
+    BOOST_CHECK(dom.keyset             == "");
+    BOOST_CHECK(dom.nsset              == "");
+    BOOST_CHECK(dom.admin_contacts.empty());
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_domain_by_handle

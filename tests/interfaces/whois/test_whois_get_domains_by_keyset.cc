@@ -11,10 +11,12 @@ struct domains_by_keyset_fixture
     const unsigned int regular_domains;
     std::map<std::string, Fred::InfoDomainData> domain_info;
     boost::posix_time::ptime now_utc;
+    const std::string delete_fqdn;
 
     domains_by_keyset_fixture()
     : test_keyset("test-keyset"),
-      regular_domains(6) //XXX
+      regular_domains(6), //XXX
+      delete_fqdn("test-delete.cz")
     {
         Fred::OperationContextCreator ctx;
         const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
@@ -58,6 +60,43 @@ struct domains_by_keyset_fixture
                 .set_admin_contacts(
                     Util::vector_of<std::string>(admin.handle)),
             ctx);
+        
+        //delete candidate
+        const Fred::InfoDomainData& idd = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar.handle, contact.handle, delete_fqdn)
+                    .set_admin_contacts(Util::vector_of<std::string>(Util::vector_of<std::string>(admin.handle)))
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(test_keyset)
+                    .set_expiration_date(
+                        boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
+                ctx);
+        domain_info[idd.fqdn] = idd;
+        ctx.get_conn().exec_params(
+                "UPDATE domain_history "
+                "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                "FROM enum_parameters "
+                "WHERE name = 'expiration_registration_protection_period') "
+                "WHERE id = "
+                "(SELECT id "
+                "FROM object_registry "
+                "WHERE name = $1::text)",
+                Database::query_param_list(delete_fqdn));
+        ctx.get_conn().exec_params(
+                "UPDATE domain "
+                "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                "FROM enum_parameters "
+                "WHERE name = 'expiration_registration_protection_period') "
+                "WHERE id = "
+                "(SELECT id "
+                "FROM object_registry "
+                "WHERE name = $1::text)",
+                Database::query_param_list(delete_fqdn));
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, "UTC");
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+
         ctx.commit_transaction();
     }
 };
@@ -77,6 +116,19 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
+        if (it.fqdn == delete_fqdn)
+        {
+            BOOST_CHECK(it.statuses.size()    == 1);
+            BOOST_CHECK(it.statuses.at(0)     == "deleteCandidate");
+            BOOST_CHECK(it.registered         == boost::posix_time::ptime(not_a_date_time));
+            BOOST_CHECK(it.registrant         == "");
+            BOOST_CHECK(it.creating_registrar == "");
+            BOOST_CHECK(it.expire             == boost::gregorian::date(not_a_date_time));
+            BOOST_CHECK(it.keyset             == "");
+            BOOST_CHECK(it.nsset              == "");
+            BOOST_CHECK(it.admin_contacts.empty());
+            continue;
+        }
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
@@ -121,6 +173,19 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
+        if (it.fqdn == delete_fqdn)
+        {
+            BOOST_CHECK(it.statuses.size()    == 1);
+            BOOST_CHECK(it.statuses.at(0)     == "deleteCandidate");
+            BOOST_CHECK(it.registered         == boost::posix_time::ptime(not_a_date_time));
+            BOOST_CHECK(it.registrant         == "");
+            BOOST_CHECK(it.creating_registrar == "");
+            BOOST_CHECK(it.expire             == boost::gregorian::date(not_a_date_time));
+            BOOST_CHECK(it.keyset             == "");
+            BOOST_CHECK(it.nsset              == "");
+            BOOST_CHECK(it.admin_contacts.empty());
+            continue;
+        }
         BOOST_CHECK(it.registered == now_utc);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
