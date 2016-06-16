@@ -55,7 +55,9 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
     BOOST_CHECK(ks_s.content.size() == test_limit);
     BOOST_FOREACH(const Registry::WhoisImpl::KeySet& it, ks_s.content)
     {
-        Fred::InfoKeysetData& found = keyset_info[it.handle];
+        std::map<std::string, Fred::InfoKeysetData>::const_iterator cit = keyset_info.find(it.handle);
+        BOOST_REQUIRE(cit != keyset_info.end());
+        const Fred::InfoKeysetData& found = cit->second;
         BOOST_REQUIRE(it.handle == found.handle);
         BOOST_CHECK(it.created == now_utc);
         BOOST_CHECK(it.changed.isnull());
@@ -91,9 +93,12 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
     Registry::WhoisImpl::KeySetSeq ks_s = impl.get_keysets_by_tech_c(contact_handle, test_limit - 1);
     BOOST_CHECK(ks_s.limit_exceeded);
     BOOST_CHECK(ks_s.content.size() == test_limit - 1);
+    std::map<std::string, Fred::InfoKeysetData>::const_iterator cit;
     BOOST_FOREACH(const Registry::WhoisImpl::KeySet& it, ks_s.content)
     {
-        Fred::InfoKeysetData& found = keyset_info[it.handle];
+        cit = keyset_info.find(it.handle);
+        BOOST_REQUIRE(cit != keyset_info.end());
+        const Fred::InfoKeysetData& found = cit->second;
         BOOST_REQUIRE(it.handle == found.handle);
         BOOST_CHECK(it.created == now_utc);
         BOOST_CHECK(it.changed.isnull());
