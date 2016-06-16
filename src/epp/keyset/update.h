@@ -38,7 +38,7 @@ struct KeysetUpdateResult
 };
 
 /**
- * @throws AuthErrorServerClosingConnection
+ * @throws ObjectStatusProhibitingOperation
  * @throws ParameterErrors
  */
 KeysetUpdateResult keyset_update(

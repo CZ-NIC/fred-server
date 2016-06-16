@@ -11,6 +11,8 @@
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/keyset/info_keyset.h"
 
+#include "src/fredlib/object/states_info.h"
+
 #include "src/fredlib/contact/check_contact.h"
 
 #include <map>
@@ -31,16 +33,25 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
         const Fred::InfoKeysetData result =
             Fred::InfoKeysetByHandle(_keyset_handle).set_lock().exec(_ctx).info_keyset_data;
-        if (callers_registrar.system.get_value_or(false) ||
-            (result.sponsoring_registrar_handle == callers_registrar.handle))
-        {
-            _callers_registrar_handle = callers_registrar.handle;
-            return result;
+        const bool is_sponsoring_registrar = (result.sponsoring_registrar_handle == callers_registrar.handle);
+        const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+        const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
+        if (!is_operation_permitted) {
+            ParameterErrors param_errors;
+            param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::registrar_autor);
+            _ctx.get_log().info("check_keyset_handle failure: registrar not authorized for this operation");
+            throw param_errors;
         }
-        ParameterErrors param_errors;
-        param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::registrar_autor);
-        _ctx.get_log().info("check_keyset_handle failure: registrar not authorized for this operation");
-        throw param_errors;
+        if (!is_system_registrar) {
+            const Fred::ObjectStatesInfo keyset_states(Fred::GetObjectStates(result.id).exec(_ctx));
+            if (keyset_states.presents(Fred::Object_State::server_update_prohibited) ||
+                keyset_states.presents(Fred::Object_State::delete_candidate))
+            {
+                throw ObjectStatusProhibitingOperation();
+            }
+        }
+        _callers_registrar_handle = callers_registrar.handle;
+        return result;
     }
     catch (const Fred::InfoKeysetByHandle::Exception &e) {
         if (e.is_set_unknown_handle()) {
@@ -59,6 +70,10 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
         }
         _ctx.get_log().error("check_keyset_handle failure: unexpected error has occurred in "
                                                           "InfoRegistrarById operation");
+        throw;
+    }
+    catch (const ObjectStatusProhibitingOperation&) {
+        _ctx.get_log().error("check_keyset_handle failure: object update prohibited");
         throw;
     }
     catch (...) {
@@ -457,8 +472,15 @@ KeysetUpdateResult keyset_update(
             _tech_contacts_add,
             _tech_contacts_rem,
             dns_keys_add,
-            dns_keys_rem,
-            _logd_request_id).exec(_ctx);
+            dns_keys_rem).exec(_ctx, _logd_request_id);
+        if (!_tech_contacts_rem.empty()) {
+            const Fred::InfoKeysetData keyset_data =
+                Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx).info_keyset_data;
+            if (keyset_data.tech_contacts.size() < KeySet::min_number_of_tech_contacts) {
+                throw ParameterErrors().add_scalar_parameter_error(Param::keyset_tech_rem,
+                                                                   Reason::can_not_remove_tech);
+            }
+        }
         return result;
     }
     catch (const Fred::UpdateKeyset::Exception &e) {
