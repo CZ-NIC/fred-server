@@ -47,24 +47,26 @@ BOOST_FIXTURE_TEST_CASE(get_nonsystem_registrars, get_my_registrar_list_fixture)
 {
     std::vector<Registry::WhoisImpl::Registrar> registrar_vec = impl.get_registrars();
     BOOST_CHECK(registrar_vec.size() == registrar_info.size());
-    std::map<std::string, Fred::InfoRegistrarData>::iterator found;
+    std::map<std::string, Fred::InfoRegistrarData>::const_iterator cit;
     BOOST_FOREACH(const Registry::WhoisImpl::Registrar& it, registrar_vec)
     {
-        found = registrar_info.find(it.handle);
-        BOOST_CHECK(it.address.city            == found->second.city.get_value_or_default());
-        BOOST_CHECK(it.address.country_code    == found->second.country.get_value_or_default());
-        BOOST_CHECK(it.address.postal_code     == found->second.postalcode.get_value_or_default());
-        BOOST_CHECK(it.address.stateorprovince == found->second.stateorprovince.get_value_or_default());
-        BOOST_CHECK(it.address.street1         == found->second.street1.get_value_or_default());
-        BOOST_CHECK(it.address.street2         == found->second.street2.get_value_or_default());
-        BOOST_CHECK(it.address.street3         == found->second.street3.get_value_or_default());
-        BOOST_CHECK(it.organization            == found->second.organization.get_value_or_default());
-        BOOST_CHECK(it.phone                   == found->second.telephone.get_value_or_default());
-        BOOST_CHECK(it.fax                     == found->second.fax.get_value_or_default());
-        BOOST_CHECK(it.name                    == found->second.name.get_value_or_default());
-        BOOST_CHECK(it.handle                  == found->second.handle);
-        BOOST_CHECK(it.id                      == found->second.id);
-        BOOST_CHECK(it.url                     == found->second.url.get_value_or_default());
+        cit = registrar_info.find(it.handle);
+        BOOST_REQUIRE(cit != registrar_info.end());
+        const Fred::InfoRegistrarData& found = cit->second;
+        BOOST_CHECK(it.address.city            == found.city.get_value_or_default());
+        BOOST_CHECK(it.address.country_code    == found.country.get_value_or_default());
+        BOOST_CHECK(it.address.postal_code     == found.postalcode.get_value_or_default());
+        BOOST_CHECK(it.address.stateorprovince == found.stateorprovince.get_value_or_default());
+        BOOST_CHECK(it.address.street1         == found.street1.get_value_or_default());
+        BOOST_CHECK(it.address.street2         == found.street2.get_value_or_default());
+        BOOST_CHECK(it.address.street3         == found.street3.get_value_or_default());
+        BOOST_CHECK(it.organization            == found.organization.get_value_or_default());
+        BOOST_CHECK(it.phone                   == found.telephone.get_value_or_default());
+        BOOST_CHECK(it.fax                     == found.fax.get_value_or_default());
+        BOOST_CHECK(it.name                    == found.name.get_value_or_default());
+        BOOST_CHECK(it.handle                  == found.handle);
+        BOOST_CHECK(it.id                      == found.id);
+        BOOST_CHECK(it.url                     == found.url.get_value_or_default());
     }
 }
 

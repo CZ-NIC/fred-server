@@ -63,17 +63,19 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
     
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
-    std::map<std::string, Fred::InfoNssetData>::iterator found;
+    std::map<std::string, Fred::InfoKeysetData>::const_iterator cit;
     BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
-        found = nsset_info.find(it.handle);
-        BOOST_REQUIRE(it.handle                          == found->second.handle);
+        cit = nsset_info.find(it.handle);
+        BOOST_REQUIRE(cit != nsset_info.end());
+        const Fred::InfoNssetData& found = cit->second;
+        BOOST_REQUIRE(it.handle                          == found.handle);
         BOOST_CHECK(it.created                           == now_utc);
-        BOOST_CHECK(it.handle                            == found->second.handle);
-        BOOST_CHECK(it.nservers.at(0).fqdn               == found->second.dns_hosts.at(0).get_fqdn());
-        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.creating_registrar                == found->second.create_registrar_handle);
-        BOOST_CHECK(it.tech_contacts.at(0)               == found->second.tech_contacts.at(0).handle);
+        BOOST_CHECK(it.handle                            == found.handle);
+        BOOST_CHECK(it.nservers.at(0).fqdn               == found.dns_hosts.at(0).get_fqdn());
+        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0));
+        BOOST_CHECK(it.creating_registrar                == found.create_registrar_handle);
+        BOOST_CHECK(it.tech_contacts.at(0)               == found.tech_contacts.at(0).handle);
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
 
@@ -92,18 +94,21 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
 {
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit - 1);
     
-    BOOST_CHECK(nss_s.limit_exceeded); BOOST_CHECK(nss_s.content.size() == test_limit - 1);
-    std::map<std::string, Fred::InfoNssetData>::iterator found;
+    BOOST_CHECK(nss_s.limit_exceeded);
+    BOOST_CHECK(nss_s.content.size() == test_limit - 1);
+    std::map<std::string, Fred::InfoKeysetData>::const_iterator cit;
     BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
-        found = nsset_info.find(it.handle);
-        BOOST_REQUIRE(it.handle                          == found->second.handle);
+        cit = nsset_info.find(it.handle);
+        BOOST_REQUIRE(cit != nsset_info.end());
+        const Fred::InfoNssetData& found = cit->second;
+        BOOST_REQUIRE(it.handle                          == found.handle);
         BOOST_CHECK(it.created                           == now_utc);
-        BOOST_CHECK(it.handle                            == found->second.handle);
-        BOOST_CHECK(it.nservers.at(0).fqdn               == found->second.dns_hosts.at(0).get_fqdn());
-        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.creating_registrar                == found->second.create_registrar_handle);
-        BOOST_CHECK(it.tech_contacts.at(0)               == found->second.tech_contacts.at(0).handle);
+        BOOST_CHECK(it.handle                            == found.handle);
+        BOOST_CHECK(it.nservers.at(0).fqdn               == found.dns_hosts.at(0).get_fqdn());
+        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0));
+        BOOST_CHECK(it.creating_registrar                == found.create_registrar_handle);
+        BOOST_CHECK(it.tech_contacts.at(0)               == found.tech_contacts.at(0).handle);
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
 
