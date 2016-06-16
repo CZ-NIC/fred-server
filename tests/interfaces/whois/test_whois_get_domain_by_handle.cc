@@ -43,14 +43,14 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     BOOST_CHECK(dom.changed.isnull());
     BOOST_CHECK(dom.validated_to.isnull());
     BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.registered == now_utc);
-    BOOST_CHECK(dom.fqdn       == domain.fqdn);
-    BOOST_CHECK(dom.registrant == domain.registrant.handle);
+    BOOST_CHECK(dom.registered          == now_utc);
+    BOOST_CHECK(dom.fqdn                == domain.fqdn);
+    BOOST_CHECK(dom.registrant          == domain.registrant.handle);
     BOOST_CHECK(dom.creating_registrar  == domain.create_registrar_handle);
-    BOOST_CHECK(dom.expire     == domain.expiration_date);
-    BOOST_CHECK(dom.fqdn       == domain.fqdn);
-    BOOST_CHECK(dom.keyset     == domain.keyset.get_value_or_default().handle);
-    BOOST_CHECK(dom.nsset      == domain.nsset.get_value_or_default().handle);
+    BOOST_CHECK(dom.expire              == domain.expiration_date);
+    BOOST_CHECK(dom.fqdn                == domain.fqdn);
+    BOOST_CHECK(dom.keyset              == domain.keyset.get_value_or_default().handle);
+    BOOST_CHECK(dom.nsset               == domain.nsset.get_value_or_default().handle);
 
     BOOST_FOREACH(const Fred::ObjectIdHandlePair& it, domain.admin_contacts)
     {
@@ -364,8 +364,7 @@ struct delete_candidate_fixture
 BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn)
-            .exec(ctx, "UTC").info_domain_data;
+    Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, "UTC").info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(delete_fqdn);
     BOOST_CHECK(dom.fqdn == idd.fqdn);
     BOOST_CHECK(dom.changed.isnull());

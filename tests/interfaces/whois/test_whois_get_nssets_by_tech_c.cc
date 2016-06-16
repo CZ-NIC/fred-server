@@ -24,11 +24,10 @@ struct get_nssets_by_tech_c_fixture
                       static_cast<std::string>(
                           ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
         nsset_id = nsset.id;
-        Util::vector_of<Fred::DnsHost> dns_hosts(
-            Fred::DnsHost(
-                "some-fqdn",
-                Util::vector_of<boost::asio::ip::address>(
-                        boost::asio::ip::address::from_string("192.128.0.1"))));
+        Util::vector_of<Fred::DnsHost> dns_hosts(Fred::DnsHost(
+            "some-fqdn",
+            Util::vector_of<boost::asio::ip::address>(
+                boost::asio::ip::address::from_string("192.128.0.1"))));
         for(unsigned int i = 0; i < test_limit; ++i)
         {
             const Fred::InfoNssetData& ind = Test::exec(
@@ -65,15 +64,15 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
     BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         found = nsset_info.find(it.handle);
-        BOOST_REQUIRE(it.handle == found->second.handle);
+        BOOST_REQUIRE(it.handle                          == found->second.handle);
+        BOOST_CHECK(it.created                           == now_utc);
+        BOOST_CHECK(it.handle                            == found->second.handle);
+        BOOST_CHECK(it.nservers.at(0).fqdn               == found->second.dns_hosts.at(0).get_fqdn());
+        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
+        BOOST_CHECK(it.creating_registrar                == found->second.create_registrar_handle);
+        BOOST_CHECK(it.tech_contacts.at(0)               == found->second.tech_contacts.at(0).handle);
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
-        BOOST_CHECK(it.created == now_utc);
-        BOOST_CHECK(it.handle == found->second.handle);
-        BOOST_CHECK(it.nservers.at(0).fqdn == found->second.dns_hosts.at(0).get_fqdn());
-        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
-        BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
         Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(nsset_id).exec(ctx);
@@ -96,15 +95,15 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
     BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         found = nsset_info.find(it.handle);
-        BOOST_REQUIRE(it.handle == found->second.handle);
+        BOOST_REQUIRE(it.handle                          == found->second.handle);
+        BOOST_CHECK(it.created                           == now_utc);
+        BOOST_CHECK(it.handle                            == found->second.handle);
+        BOOST_CHECK(it.nservers.at(0).fqdn               == found->second.dns_hosts.at(0).get_fqdn());
+        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
+        BOOST_CHECK(it.creating_registrar                == found->second.create_registrar_handle);
+        BOOST_CHECK(it.tech_contacts.at(0)               == found->second.tech_contacts.at(0).handle);
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
-        BOOST_CHECK(it.created == now_utc);
-        BOOST_CHECK(it.handle == found->second.handle);
-        BOOST_CHECK(it.nservers.at(0).fqdn == found->second.dns_hosts.at(0).get_fqdn());
-        BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found->second.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
-        BOOST_CHECK(it.tech_contacts.at(0) == found->second.tech_contacts.at(0).handle);
 
         Fred::OperationContextCreator ctx;
         const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(nsset_id).exec(ctx);

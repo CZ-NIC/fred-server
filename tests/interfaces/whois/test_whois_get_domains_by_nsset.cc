@@ -42,11 +42,12 @@ struct domains_by_nsset_fixture
         }
         for(int i=0; i < 3; ++i)//3 different domains for another nsset
         {
-            Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
-                           .make(registrar.handle, contact.handle)
-                           .set_nsset(other_nsset.handle)
-                           .set_admin_contacts(
-                               Util::vector_of<std::string>(admin.handle)),
+            Test::exec(
+                    Test::CreateX_factory<Fred::CreateDomain>()
+                        .make(registrar.handle, contact.handle)
+                        .set_nsset(other_nsset.handle)
+                        .set_admin_contacts(
+                            Util::vector_of<std::string>(admin.handle)),
                        ctx);
         }
         //1 with no nsset
@@ -103,8 +104,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fixture)
 {
-    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_nsset(test_nsset,
-                                                     regular_domains - 1);
+    Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_nsset(test_nsset, regular_domains - 1);
     BOOST_CHECK(domain_seq.limit_exceeded);
 
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;

@@ -122,8 +122,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant_limit_exceeded, domains_by_reg
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
 
         Fred::OperationContextCreator ctx;
-        const std::vector<Fred::ObjectStateData> v_osd =
-            Fred::GetObjectStates(found->second.id).exec(ctx);
+        const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(found->second.id).exec(ctx);
         BOOST_FOREACH(const Fred::ObjectStateData& oit, v_osd)
         {
             BOOST_CHECK(std::find(it.statuses.begin(), it.statuses.end(), oit.state_name) !=

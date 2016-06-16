@@ -37,12 +37,22 @@ struct domains_by_admin_contact_fixture
                         .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
                         .set_nsset(Test::nsset::make(ctx).handle)
                         .set_keyset(Test::keyset::make(ctx).handle)
-                        .set_expiration_date(
-                            boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
+                        .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                             boost::gregorian::date_duration(2)),
                     ctx);
             
             domain_info[idd.fqdn] = idd;
         }
+        //3 different domains for another contact
+        for(int i=0; i < 3; ++i)
+        {
+            Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar.handle, contact.handle)
+                    .set_admin_contacts(
+                        Util::vector_of<std::string>(system_admin.handle)),
+                    ctx);
+        }
+
         //delete candidate
         const Fred::InfoDomainData& idd = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>()
@@ -54,16 +64,6 @@ struct domains_by_admin_contact_fixture
                         boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
                 ctx);
         domain_info[idd.fqdn] = idd;
-        //3 different domains for another contact
-        for(int i=0; i < 3; ++i)
-        {
-            Test::exec(Test::CreateX_factory<Fred::CreateDomain>()
-                    .make(registrar.handle, contact.handle)
-                    .set_admin_contacts(
-                        Util::vector_of<std::string>(system_admin.handle)),
-                    ctx);
-        }
-
         ctx.get_conn().exec_params(
                 "UPDATE domain_history "
                 "SET exdate = now() - "
@@ -110,23 +110,23 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         BOOST_CHECK(it.last_transfer.isnull());
         if (it.fqdn == delete_fqdn)
         {
-            BOOST_CHECK(it.statuses.size() == 1);
-            BOOST_CHECK(it.statuses.at(0) == "deleteCandidate");
-            BOOST_CHECK(it.registered == boost::posix_time::ptime(not_a_date_time));
-            BOOST_CHECK(it.registrant == "");
-            BOOST_CHECK(it.creating_registrar  == "");
-            BOOST_CHECK(it.expire == boost::gregorian::date(not_a_date_time));
-            BOOST_CHECK(it.keyset == "");
-            BOOST_CHECK(it.nsset  == "");
+            BOOST_CHECK(it.statuses.size()    == 1);
+            BOOST_CHECK(it.statuses.at(0)     == "deleteCandidate");
+            BOOST_CHECK(it.registered         == boost::posix_time::ptime(not_a_date_time));
+            BOOST_CHECK(it.registrant         == "");
+            BOOST_CHECK(it.creating_registrar == "");
+            BOOST_CHECK(it.expire             == boost::gregorian::date(not_a_date_time));
+            BOOST_CHECK(it.keyset             == "");
+            BOOST_CHECK(it.nsset              == "");
             BOOST_CHECK(it.admin_contacts.empty());
             continue;
         }
-        BOOST_CHECK(it.registered == now_utc);
-        BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
-        BOOST_CHECK(it.expire == found->second.expiration_date);
-        BOOST_CHECK(it.keyset == found->second.keyset.get_value_or_default().handle);
-        BOOST_CHECK(it.nsset  == found->second.nsset.get_value_or_default().handle);
+        BOOST_CHECK(it.registered         == now_utc);
+        BOOST_CHECK(it.registrant         == found->second.registrant.handle);
+        BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
+        BOOST_CHECK(it.expire             == found->second.expiration_date);
+        BOOST_CHECK(it.keyset             == found->second.keyset.get_value_or_default().handle);
+        BOOST_CHECK(it.nsset              == found->second.nsset.get_value_or_default().handle);
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
@@ -161,23 +161,23 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         BOOST_CHECK(it.last_transfer.isnull());
         if (it.fqdn == delete_fqdn)
         {
-            BOOST_CHECK(it.statuses.size() == 1);
-            BOOST_CHECK(it.statuses.at(0) == "deleteCandidate");
-            BOOST_CHECK(it.registered == boost::posix_time::ptime(not_a_date_time));
-            BOOST_CHECK(it.registrant == "");
-            BOOST_CHECK(it.creating_registrar  == "");
-            BOOST_CHECK(it.expire == boost::gregorian::date(not_a_date_time));
-            BOOST_CHECK(it.keyset == "");
-            BOOST_CHECK(it.nsset  == "");
+            BOOST_CHECK(it.statuses.size()    == 1);
+            BOOST_CHECK(it.statuses.at(0)     == "deleteCandidate");
+            BOOST_CHECK(it.registered         == boost::posix_time::ptime(not_a_date_time));
+            BOOST_CHECK(it.registrant         == "");
+            BOOST_CHECK(it.creating_registrar == "");
+            BOOST_CHECK(it.expire             == boost::gregorian::date(not_a_date_time));
+            BOOST_CHECK(it.keyset             == "");
+            BOOST_CHECK(it.nsset              == "");
             BOOST_CHECK(it.admin_contacts.empty());
             continue;
         }
-        BOOST_CHECK(it.registered == now_utc);
-        BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
-        BOOST_CHECK(it.expire == found->second.expiration_date);
-        BOOST_CHECK(it.keyset == found->second.keyset.get_value_or_default().handle);
-        BOOST_CHECK(it.nsset  == found->second.nsset.get_value_or_default().handle);
+        BOOST_CHECK(it.registered         == now_utc);
+        BOOST_CHECK(it.registrant         == found->second.registrant.handle);
+        BOOST_CHECK(it.creating_registrar == found->second.create_registrar_handle);
+        BOOST_CHECK(it.expire             == found->second.expiration_date);
+        BOOST_CHECK(it.keyset             == found->second.keyset.get_value_or_default().handle);
+        BOOST_CHECK(it.nsset              == found->second.nsset.get_value_or_default().handle);
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
