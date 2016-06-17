@@ -153,7 +153,7 @@ ResponseOfCreate create(
             throw create_localized_fail_response(ctx, Response::parameter_error, errors, _lang);
         }
 
-        throw;
+        throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
     }
     catch (const LocalizedFailResponse&) {
         throw;

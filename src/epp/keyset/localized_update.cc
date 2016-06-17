@@ -119,10 +119,6 @@ LocalizedSuccessResponse update(
         Fred::OperationContextCreator ctx;
         std::set< Error > errors;
 
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dsrecord, Reason::dsrecord_limit, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_range_error, errors, _lang);
-        }
-
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::keyset_notexist, errors)) {
             throw create_localized_fail_response(ctx, Response::object_not_exist, errors, _lang);
         }
@@ -131,25 +127,11 @@ LocalizedSuccessResponse update(
             throw create_localized_fail_response(ctx, Response::authorization_error, errors, _lang);
         }
 
-//        insert_vector_parameter_error_if_presents(e, Param::keyset_dsrecord_rem, Reason::duplicity_dsrecord, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add,   Reason::duplicity_dnskey, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_rem,   Reason::duplicity_dnskey, errors);
-//        insert_vector_parameter_error_if_presents(e, Param::keyset_dsrecord_rem, Reason::dsrecord_notexist, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add,   Reason::dnskey_exist, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_rem,   Reason::dnskey_notexist, errors);
-        if (!errors.empty()) {
-            throw create_localized_fail_response(ctx, Response::parameter_error, errors, _lang);
-        }
-
-        insert_scalar_parameter_error_if_presents(e, Param::keyset_tech,     Reason::techadmin_limit, errors);
         insert_scalar_parameter_error_if_presents(e, Param::keyset_dsrecord, Reason::dsrecord_limit, errors);
+        insert_scalar_parameter_error_if_presents(e, Param::keyset_tech,     Reason::techadmin_limit, errors);
         insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey,   Reason::dnskey_limit, errors);
         if (!errors.empty()) {
             throw create_localized_fail_response(ctx, Response::parameter_range_error, errors, _lang);
-        }
-
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::no_dnskey_dsrecord, errors)) {
-            throw create_localized_fail_response(ctx, Response::failed, errors, _lang);
         }
 
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::tech_notexist, errors);
@@ -157,20 +139,26 @@ LocalizedSuccessResponse update(
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::tech_exist, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech_rem,   Reason::tech_notexist, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech_rem,   Reason::duplicity_contact, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::duplicity_dnskey, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_flags, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_protocol, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_alg, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_key_char, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_key_len, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_exist, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_rem, Reason::duplicity_dnskey, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_rem, Reason::dnskey_notexist, errors);
         if (!errors.empty()) {
             throw create_localized_fail_response(ctx, Response::parameter_error, errors, _lang);
         }
 
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_tech_rem, Reason::can_not_remove_tech, errors)) {
+        insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey,   Reason::no_dnskey_dsrecord, errors);
+        insert_scalar_parameter_error_if_presents(e, Param::keyset_tech_rem, Reason::can_not_remove_tech, errors);
+        if (!errors.empty()) {
             throw create_localized_fail_response(ctx, Response::failed, errors, _lang);
         }
 
-        throw;
+        throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
     }
     catch (const LocalizedFailResponse&) {
         throw;

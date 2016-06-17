@@ -23,8 +23,7 @@
 #ifndef PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767
 
-#include "src/epp/param.h"
-#include "src/epp/reason.h"
+#include "src/epp/error.h"
 
 #include <map>
 #include <set>
@@ -53,15 +52,18 @@ public:
     bool has_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
     bool has_vector_parameter_error_at(Param::Enum _param, unsigned short _index, Reason::Enum _reason)const;
     const Where& get_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
+    std::set< Error > get_set_of_error()const;
 private:
     class What
     {
     public:
         What(Param::Enum, Reason::Enum);
         bool operator<(const What&)const;
+        Param::Enum get_param()const;
+        Reason::Enum get_reason()const;
     private:
-        const Param::Enum param;
-        const Reason::Enum reason;
+        Param::Enum param_;
+        Reason::Enum reason_;
     };
     typedef std::map< What, Where > WhatWhere;
     WhatWhere what_where_;

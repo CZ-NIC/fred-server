@@ -98,16 +98,48 @@ const ParameterErrors::Where& ParameterErrors::get_vector_parameter_error(
     throw std::runtime_error("vector parameter error not found");
 }
 
+std::set< Error > ParameterErrors::get_set_of_error()const
+{
+    std::set< Error > result;
+    for (WhatWhere::const_iterator what_where_ptr = what_where_.begin();
+         what_where_ptr != what_where_.end(); ++what_where_ptr)
+    {
+        if (what_where_ptr->second.is_scalar()) {
+            result.insert(scalar_parameter_failure(what_where_ptr->first.get_param(),
+                                                   what_where_ptr->first.get_reason()));
+        }
+        else if (what_where_ptr->second.is_vector()) {
+            for (Where::Indexes::const_iterator idx_ptr = what_where_ptr->second.indexes.begin();
+                 idx_ptr != what_where_ptr->second.indexes.end(); ++idx_ptr)
+            {
+                result.insert(vector_parameter_failure(what_where_ptr->first.get_param(), *idx_ptr,
+                                                       what_where_ptr->first.get_reason()));
+            }
+        }
+    }
+    return result;
+}
+
 ParameterErrors::What::What(Param::Enum _param, Reason::Enum _reason)
-:   param(_param),
-    reason(_reason)
+:   param_(_param),
+    reason_(_reason)
 { }
 
 bool ParameterErrors::What::operator<(const What &_b)const
 {
     const What &_a = *this;
-    return  (_a.param <  _b.param) ||
-           ((_a.param == _b.param) && (_a.reason < _b.reason));
+    return  (_a.param_ <  _b.param_) ||
+           ((_a.param_ == _b.param_) && (_a.reason_ < _b.reason_));
+}
+
+Param::Enum ParameterErrors::What::get_param()const
+{
+    return param_;
+}
+
+Reason::Enum ParameterErrors::What::get_reason()const
+{
+    return reason_;
 }
 
 ParameterErrors::Where& ParameterErrors::Where::add_element(unsigned short _index)
