@@ -4302,7 +4302,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         for (i = 0, inetNum =0; i < dns_add.length(); i++) {
 
             /// test DNS host
-            if (nman->checkHostname((const char *)dns_add[i].fqdn, true)) {
+            if (nman->checkHostname((const char *)dns_add[i].fqdn, false, true)) {
                 LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *) dns_add[i].fqdn );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::nsset_dns_name_add, i + 1,
@@ -4393,7 +4393,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         for (i = 0; i < dns_rem.length(); i++) {
             LOG( NOTICE_LOG , "NSSetUpdate:  delete  host  [%s] " , (const char *) dns_rem[i].fqdn );
 
-            if (nman->checkHostname((const char *)dns_rem[i].fqdn, true)) {
+            if (nman->checkHostname((const char *)dns_rem[i].fqdn, false, true)) {
                 LOG( WARNING_LOG, "NSSetUpdate: bad rem host name %s " , (const char *) dns_rem[i].fqdn );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::nsset_dns_name_rem, i + 1,
