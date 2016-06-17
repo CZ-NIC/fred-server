@@ -841,7 +841,7 @@ namespace Fred
           //                                    |          | |      |
           static const boost::regex fqdn_regex("([^\\.]+\\.)*[^\\.]*");
           static const boost::regex label_regex("[a-z0-9]|[a-z0-9][-a-z0-9]{0,61}[a-z0-9]", boost::regex::icase);
-          static const boost::regex punycode_label_regex("xn--[-a-z0-9]{0,58}[a-z0-9]", boost::regex::icase);
+          static const boost::regex punycode_label_regex("xn--[a-z0-9]+(-[a-z0-9]+)*", boost::regex::icase);
 
           const unsigned fqdn_without_root_dot_lenght = 253;
           const unsigned label_without_dot_lenght = 63;
