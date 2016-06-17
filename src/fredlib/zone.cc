@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 
 #include "model_zone.h"
@@ -1452,43 +1453,34 @@ namespace Fred
           return true;
       }
 
-
       virtual std::string utf8_to_punycode(const std::string& fqdn) const
       {
-          char *p;
+          char *p = 0;
+          boost::shared_ptr<char> release_p;
 
-          if(idna_to_ascii_8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS) {
+          bool convert_result = (idna_to_ascii_8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS);
+          release_p = boost::shared_ptr<char>(p, free);
+
+          if(convert_result) {
               std::string result( p );
-              if (p != NULL) {
-                  free(p);
-              }
               return result;
-
           } else {
-
-              if (p != NULL) {
-                  free(p);
-              }
               throw idn_conversion_fail();
           }
       }
 
       virtual std::string punycode_to_utf8(const std::string& fqdn) const
       {
-          char *p;
+          char *p = 0;
+          boost::shared_ptr<char> release_p;
 
-          if(idna_to_unicode_8z8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS) {
+          bool convert_result = (idna_to_unicode_8z8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS);
+          release_p = boost::shared_ptr<char>(p, free);
+
+          if(convert_result) {
               std::string result( p );
-              if (p != NULL) {
-                  free(p);
-              }
               return result;
-
           } else {
-
-              if (p != NULL) {
-                  free(p);
-              }
               throw idn_conversion_fail();
           }
       }
