@@ -375,18 +375,8 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
     Epp::NssetUpdateInputData data(
             nsset.handle,
             "authInfo1234",
-            Util::vector_of<Epp::DNShostData>
-                (Epp::DNShostData("a.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
-                        (boost::asio::ip::address::from_string("10.0.0.3"))
-                        (boost::asio::ip::address::from_string("10.1.1.3")))) //add_dns
-                (Epp::DNShostData("b.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
-                        (boost::asio::ip::address::from_string("10.2.0.4"))
-                        (boost::asio::ip::address::from_string("10.3.1.4")))), //add_dns
-            Util::vector_of<Epp::DNShostData>
-                (Epp::DNShostData("a.ns.nic.cz",
-                    std::vector<boost::asio::ip::address>())), //rem_dns
+            std::vector<Epp::DNShostData>(), //add_dns
+            std::vector<Epp::DNShostData>(), //rem_dns
             std::vector<std::string>(),//0
             std::vector<std::string>(),
             3
