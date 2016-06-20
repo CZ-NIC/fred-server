@@ -78,7 +78,7 @@ LocalizedSuccessResponse nsset_update(
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::autor_error,
-            std::set<Error>(),
+            Util::set_of<Error>(Error(Param::registrar_autor, 0, Reason::registrar_autor)),
             _lang
         );
 
