@@ -63,7 +63,13 @@ unsigned long long nsset_update_impl(
             .exec(_ctx)
             .info_registrar_data;
 
-    if( sponsoring_registrar_before_update.id != _registrar_id ) {
+    const Fred::InfoRegistrarData logged_in_registrar = Fred::InfoRegistrarById(_registrar_id)
+            .set_lock(/* TODO lock registrar for share */ )
+            .exec(_ctx)
+            .info_registrar_data;
+
+    if( sponsoring_registrar_before_update.id != _registrar_id
+        && !logged_in_registrar.system.get_value_or_default() ) {
         throw AutorError();
     }
 
