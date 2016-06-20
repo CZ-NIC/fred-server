@@ -77,9 +77,10 @@ unsigned long long nsset_update_impl(
     Fred::LockObjectStateRequestLock(nsset_data_before_update.id).exec(_ctx);
     Fred::PerformObjectStateRequest(nsset_data_before_update.id).exec(_ctx);
 
-    if( Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
-        ||
-        Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
+    if( !logged_in_registrar.system.get_value_or_default()
+            && (Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
+                ||
+                Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
     ) {
         throw ObjectStatusProhibitingOperation();
     }
