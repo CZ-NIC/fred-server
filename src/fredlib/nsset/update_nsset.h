@@ -39,6 +39,8 @@ namespace Fred
 
     /**
     * Update of nsset.
+    * Technical contacts to be added are added before technical contacts to be removed are removed.
+    * DNS hosts to be removed are removed before DNS hosts to be added are added.
     * Created instance is modifiable by chainable methods i.e. methods returning instance reference.
     * Data set into instance by constructor and methods serve as input data of the update.
     * Update is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.

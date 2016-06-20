@@ -31,6 +31,7 @@
 #include "src/fredlib/object_state/get_object_states.h"
 
 #include "src/epp/nsset/nsset_create.h"
+#include "src/epp/nsset/nsset_update.h"
 
 struct has_registrar : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData registrar;
@@ -54,6 +55,9 @@ struct has_nsset : has_registrar {
 
 struct has_nsset_with_all_data_set : has_registrar {
     Fred::InfoNssetData nsset;
+    std::string admin_contact4_handle;
+    std::string admin_contact5_handle;
+
 
     has_nsset_with_all_data_set() {
         namespace ip = boost::asio::ip;
@@ -77,6 +81,24 @@ struct has_nsset_with_all_data_set : has_registrar {
 
         Fred::CreateContact(admin_contact3_handle,registrar.handle)
             .set_name("TEST-ADMIN-CONTACT3 NAME")
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        admin_contact4_handle = "TEST-ADMIN-CONTACT4";
+
+        Fred::CreateContact(admin_contact4_handle,registrar.handle)
+            .set_name("TEST-ADMIN-CONTACT4 NAME")
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+
+        admin_contact5_handle = "TEST-ADMIN-CONTACT5";
+
+        Fred::CreateContact(admin_contact5_handle,registrar.handle)
+            .set_name("TEST-ADMIN-CONTACT5 NAME")
             .set_disclosename(true)
             .set_place(place)
             .set_discloseaddress(true)

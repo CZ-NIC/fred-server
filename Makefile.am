@@ -2412,6 +2412,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/nsset/test_nsset_info_impl.cc \
 		tests/interfaces/epp/nsset/test_nsset_delete_impl.cc \
 		tests/interfaces/epp/nsset/test_nsset_create_impl.cc \
+		tests/interfaces/epp/nsset/test_nsset_update_impl.cc \
 		util/corba_conversion.h \
 		util/corba_conversion.cc \
 		tests/setup/fixtures_utils.h \
