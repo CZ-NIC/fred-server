@@ -1,4 +1,4 @@
-2016-06-13 (2.25.0)
+2016-06-20 (2.25.0)
 
   * contact create notification - full data to e-mail
 
@@ -10,6 +10,12 @@
     * refactored history data save in new operations
     * transfer operations
 
+2016-06-20 (2.24.1)
+
+  * fix - epp - allow idn in nameserver (nsset create and update)
+
+  * fix - mojeid backend log severity
+
 2016-04-10 (2.24.0)
 
   * mojeid backend rewrite
@@ -18,6 +24,10 @@
 
   * fredlib
     * operation context creator / two phase commit support
+
+2016-06-20 (2.23.1)
+
+  * fix - epp - allow idn in nameserver (nsset create and update)
 
 2016-01-20 (2.23.0)
 
