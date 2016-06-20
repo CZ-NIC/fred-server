@@ -26,9 +26,10 @@
 #include <boost/foreach.hpp>
 
 #include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/nsset/fixture.h"
 
 #include "src/epp/nsset/nsset_update_impl.h"
+#include "util/map_at.h"
 
 #include <map>
 #include <vector>
@@ -38,15 +39,9 @@
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetUpdateImpl)
 
-
-BOOST_AUTO_TEST_CASE(test)
+BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 {
-    BOOST_CHECK(true);
-}
 
-#ifdef FALSE
-BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_nsset)
-{
     const Epp::NssetUpdateInputData data(
         nsset.handle + "*?!",
         Optional<std::string>(),
@@ -61,12 +56,15 @@ BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_nsset)
         Epp::nsset_update_impl(
             ctx,
             data,
-            0,  /* <== !!! */
-            42 /* TODO */
+            0,  // <== !!!
+            42 // TODO
         ),
         Epp::AuthErrorServerClosingConnection
     );
+
 }
+
+
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
 {
@@ -199,10 +197,12 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
     }
 }
 
+
 void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
         const Fred::InfoNssetData& info_data //info after update
         )
 {
+
     BOOST_CHECK_EQUAL( boost::to_upper_copy( update_data.handle ), info_data.handle );
 
     if(update_data.authinfo.isset())
@@ -242,7 +242,8 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
                 std::back_inserter(tech_contacts_ax));
 
         //intersection of tech contacts info with positive change == positive change
-        BOOST_CHECK_EQUAL(tech_contacts_ax, tech_contacts_add_diff_rem);
+        BOOST_CHECK(tech_contacts_ax.size() == tech_contacts_add_diff_rem.size());
+        BOOST_CHECK(std::equal(tech_contacts_ax.begin(), tech_contacts_ax.end(), tech_contacts_add_diff_rem.begin()));
 
         //tech contacts intersection of info with negative change
         std::vector<std::string> tech_contacts_rx;
@@ -252,6 +253,7 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
 
         //intersection of tech contacts info with negative change have to be empty
         BOOST_CHECK(tech_contacts_rx.empty());
+
     }
 
     //DNS hosts to remove are removed before addition of DNS hosts to add
@@ -288,7 +290,8 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
                 std::back_inserter(dns_host_names_ax));
 
         //intersection of DNS host names info with positive change == positive change
-        BOOST_CHECK_EQUAL(dns_host_names_ax, update_dns_host_names_add);
+        BOOST_CHECK_EQUAL(dns_host_names_ax.size(), update_dns_host_names_add.size());
+        BOOST_CHECK(std::equal(dns_host_names_ax.begin(), dns_host_names_ax.end(), update_dns_host_names_add.begin()));
 
         //update_dns_host_names_rem - update_dns_host_names_add
         std::vector<std::string> update_dns_host_names_rem_diff_add;
@@ -327,7 +330,9 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
     {
         BOOST_CHECK_EQUAL( update_data.tech_check_level.get_value() , info_data.tech_check_level.get_value_or_default());
     }
+
 }
+
 
 BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_nsset_with_all_data_set)
 {
@@ -362,7 +367,7 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_nsset_with_all_data_set)
         42 /* TODO */
     );
 
-    check_after_update_data(data, Fred::InfoNsset(nsset.handle).exec(ctx).at(0).info_nsset_data);
+    check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
 }
 
 BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_transfer_prohibited_request)
@@ -398,13 +403,13 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
         42 /* TODO */
     );
 
-    check_after_update_data(data, Fred::InfoNsset(nsset.handle).exec(ctx).at(0).info_nsset_data);
+    check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
 
     /* now object has the state server_transfer_prohibited itself */
     {
         std::vector<std::string> object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(contact.id).exec(ctx) ) {
+            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(nsset.id).exec(ctx) ) {
                 object_states_after.push_back(state.state_name);
             }
         }
@@ -415,7 +420,9 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
             object_states_after.end()
         );
     }
+
 }
-#endif
+
+
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
