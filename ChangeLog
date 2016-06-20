@@ -1,3 +1,7 @@
+2016-06-20 (2.23.1)
+
+  * fix - epp - allow idn in nameserver (nsset create and update)
+
 2016-01-20 (2.23.0)
 
   * whois backend refactoring (new methods for webwhois client)
