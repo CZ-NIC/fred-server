@@ -352,8 +352,8 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_nsset_with_all_data_set)
                 (Epp::DNShostData("a.ns.nic.cz",
                     std::vector<boost::asio::ip::address>())), //rem_dns
             Util::vector_of<std::string>
-                ("TEST-ADMIN-CONTACT2")
-                ("TEST-ADMIN-CONTACT3"),//0
+                ("TEST-ADMIN-CONTACT4")
+                ("TEST-ADMIN-CONTACT5"),//0
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
@@ -387,12 +387,8 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
             Util::vector_of<Epp::DNShostData>
                 (Epp::DNShostData("a.ns.nic.cz",
                     std::vector<boost::asio::ip::address>())), //rem_dns
-            Util::vector_of<std::string>
-                ("TEST-ADMIN-CONTACT2")
-                ("TEST-ADMIN-CONTACT3"),//0
-            Util::vector_of<std::string>
-                ("TEST-ADMIN-CONTACT2")
-                ("TEST-ADMIN-CONTACT3"),
+            std::vector<std::string>(),//0
+            std::vector<std::string>(),
             3
         );
 
