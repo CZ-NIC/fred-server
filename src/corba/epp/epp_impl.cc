@@ -4025,7 +4025,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 
             // test DNS hosts
             unsigned hostnameTest = nman->checkHostname(
-                    (const char *)dns[i].fqdn, dns[i].inet.length() > 0);
+                    (const char *)dns[i].fqdn, dns[i].inet.length() > 0, true);
             if (hostnameTest == 1) {
 
                 LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *) dns[i].fqdn );
@@ -4351,7 +4351,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         for (i = 0, inetNum =0; i < dns_add.length(); i++) {
 
             /// test DNS host
-            if (nman->checkHostname((const char *)dns_add[i].fqdn, false)) {
+            if (nman->checkHostname((const char *)dns_add[i].fqdn, false, true)) {
                 LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *) dns_add[i].fqdn );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::nsset_dns_name_add, i + 1,
@@ -4442,7 +4442,7 @@ ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
         for (i = 0; i < dns_rem.length(); i++) {
             LOG( NOTICE_LOG , "NSSetUpdate:  delete  host  [%s] " , (const char *) dns_rem[i].fqdn );
 
-            if (nman->checkHostname((const char *)dns_rem[i].fqdn, false)) {
+            if (nman->checkHostname((const char *)dns_rem[i].fqdn, false, true)) {
                 LOG( WARNING_LOG, "NSSetUpdate: bad rem host name %s " , (const char *) dns_rem[i].fqdn );
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
                         ccReg::nsset_dns_name_rem, i + 1,
