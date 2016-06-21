@@ -698,6 +698,32 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
     return Domain();
 }
 
+static DomainSeq get_domains_by_(Fred::OperationContext& ctx,
+        unsigned long limit,
+        const std::vector<Fred::InfoDomainOutput>& domain_info)
+{
+    DomainSeq domain_seq;
+    unsigned int non_del_pending_domains = 0;
+    domain_seq.content.reserve(domain_info.size() > limit ?
+            limit :
+            domain_info.size());
+    BOOST_FOREACH(const Fred::InfoDomainOutput& it, domain_info)
+    {
+        if(! ::Whois::is_domain_delete_pending(it.info_domain_data.fqdn, ctx, "Europe/Prague"))
+        {
+            if(++non_del_pending_domains > limit)
+            {
+                domain_seq.limit_exceeded = true;
+                break;
+            }
+            domain_seq.content.push_back(
+                make_domain_from_info_data(
+                    it.info_domain_data, ctx));
+        }
+    }
+    return domain_seq;
+}
+
 DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
                                                  unsigned long limit)
 {
@@ -708,8 +734,6 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
                 Fred::InfoDomainByRegistrantHandle(handle)
                     .set_limit(limit + 1)
                     .exec(ctx, get_output_timezone());
-        DomainSeq domain_seq;
-        std::vector<Fred::InfoDomainOutput>::const_iterator it = domain_info.begin(), end;
         if(domain_info.empty())
         {
             if(Fred::CheckContact(handle).is_invalid_handle())
@@ -718,34 +742,7 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
             }
             throw ObjectNotExists();
         }
-        if(domain_info.size() > limit)
-        {
-            domain_seq.limit_exceeded = true;
-            domain_seq.content.reserve(limit);
-            end = domain_info.begin() + limit;
-        }
-        else
-        {
-            domain_seq.limit_exceeded = false;
-            domain_seq.content.reserve(domain_info.size());
-            end = domain_info.end();
-        }
-        for(;it != end; ++it)
-        {
-            if(::Whois::is_domain_delete_pending(it->info_domain_data.fqdn, ctx, "Europe/Prague"))
-            {
-                domain_seq.content.push_back(
-                        generate_obfuscate_domain_delete_candidate(
-                                it->info_domain_data.fqdn));
-            }
-            else
-            {
-                domain_seq.content.push_back(
-                        make_domain_from_info_data(
-                                it->info_domain_data, ctx));
-            }
-        }
-        return domain_seq;
+        return get_domains_by_(ctx, limit, domain_info);
     }
     catch(...)
     {
@@ -753,45 +750,6 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
     }
     return DomainSeq();
 }
-
-static DomainSeq get_domains_by_(Fred::OperationContext& ctx,
-                                 unsigned long limit,
-                                 const std::vector<Fred::InfoDomainOutput>& domain_info)
-{
-    DomainSeq domain_seq;
-    std::vector<Fred::InfoDomainOutput>::const_iterator it = domain_info.begin(), end;
-    if(domain_info.size() > limit)
-    {
-        domain_seq.limit_exceeded = true;
-        domain_seq.content.reserve(limit);
-        end = domain_info.begin() + limit;
-    }
-    else
-    {
-        domain_seq.limit_exceeded = false;
-        domain_seq.content.reserve(domain_info.size());
-        end = domain_info.end();
-    }
-    for(; it != end; ++it)
-    {
-        if(::Whois::is_domain_delete_pending(it->info_domain_data.fqdn,
-                                             ctx,
-                                             "Europe/Prague"))
-        {
-            domain_seq.content.push_back(
-                generate_obfuscate_domain_delete_candidate(
-                    it->info_domain_data.fqdn));
-        }
-        else
-        {
-            domain_seq.content.push_back(
-                make_domain_from_info_data(
-                    it->info_domain_data, ctx));
-        }
-    }
-    return domain_seq;
-}
-
 
 DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
                                                     unsigned long limit)
