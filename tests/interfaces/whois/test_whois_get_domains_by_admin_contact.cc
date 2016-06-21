@@ -14,7 +14,7 @@ struct domains_by_admin_contact_fixture
 {
     std::map<std::string, Fred::InfoDomainData> domain_info;
     boost::posix_time::ptime now_utc;
-    const unsigned int regular_domains;
+    unsigned int regular_domains;
     const std::string delete_fqdn;
     std::string regular_handle;
 
@@ -32,7 +32,7 @@ struct domains_by_admin_contact_fixture
                 static_cast<std::string>(
                     ctx.get_conn().exec("SELECT now()::timestamp")[0][0]));
 
-        for(unsigned int i=0; i < regular_domains - 1; ++i) //-1 for delete candidate
+        for(unsigned int i=0; i < regular_domains; ++i)
         {
             const Fred::InfoDomainData& idd = Test::exec(
                     Test::CreateX_factory<Fred::CreateDomain>()
@@ -46,6 +46,20 @@ struct domains_by_admin_contact_fixture
             
             domain_info[idd.fqdn] = idd;
         }
+        //enum domain
+        regular_domains++;
+        const Fred::InfoDomainData& enum_domain = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar.handle, contact.handle, "7.3.5.7.0.2.4.e164.arpa")
+                    .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(Test::keyset::make(ctx).handle)
+                    .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                         boost::gregorian::date_duration(2))
+                    .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
+                                                    boost::gregorian::date_duration(2)),
+                ctx);
+        domain_info[enum_domain.fqdn] = enum_domain;
         //3 different domains for another contact
         for(int i=0; i < 3; ++i)
         {
@@ -55,9 +69,8 @@ struct domains_by_admin_contact_fixture
                         Util::vector_of<std::string>(system_admin.handle)),
                     ctx);
         }
-
         //delete candidate
-        const Fred::InfoDomainData& idd = Test::exec(
+        const Fred::InfoDomainData& delete_candidate = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>()
                     .make(registrar.handle, contact.handle, delete_fqdn)
                     .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
@@ -66,7 +79,7 @@ struct domains_by_admin_contact_fixture
                     .set_expiration_date(
                         boost::gregorian::day_clock::local_day() + boost::gregorian::date_duration(2)),
                 ctx);
-        domain_info[idd.fqdn] = idd;
+        domain_info[delete_candidate.fqdn] = delete_candidate;
         ctx.get_conn().exec_params(
                 "UPDATE domain_history "
                 "SET exdate = now() - "
@@ -109,7 +122,6 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
         BOOST_CHECK(it.changed.isnull());
-        BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.registered           == now_utc);
         BOOST_CHECK(it.registrant           == found->second.registrant.handle);
@@ -132,6 +144,21 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
                             it.statuses.end());
         }
         BOOST_CHECK(it.statuses.size() == v_osd.size());
+        BOOST_CHECK(it.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, found->second.expiration_date));
+        BOOST_CHECK(it.expire_time_actual.isnull());
+        BOOST_CHECK(it.validated_to_time_actual.isnull());
+        if(! found->second.enum_domain_validation.isnull())//enum
+        {
+            BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
+            BOOST_CHECK(it.validated_to_time_estimate ==
+                    ::Whois::domain_validation_expiration_datetime_estimate(
+                        ctx, found->second.enum_domain_validation.get_value_or_default().validation_expiration));
+        }
+        else
+        {
+            BOOST_CHECK(it.validated_to.isnull());
+            BOOST_CHECK(it.validated_to_time_estimate.isnull());
+        }
     }
 }
 
@@ -147,21 +174,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         found = domain_info.find(it.fqdn);
         BOOST_REQUIRE(found != domain_info.end());
         BOOST_CHECK(it.changed.isnull());
-        BOOST_CHECK(it.validated_to.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
-        if (it.fqdn == delete_fqdn)
-        {
-            BOOST_CHECK(it.statuses.size()    == 1);
-            BOOST_CHECK(it.statuses.at(0)     == "deleteCandidate");
-            BOOST_CHECK(it.registered         == boost::posix_time::ptime(not_a_date_time));
-            BOOST_CHECK(it.registrant         == "");
-            BOOST_CHECK(it.creating_registrar == "");
-            BOOST_CHECK(it.expire             == boost::gregorian::date(not_a_date_time));
-            BOOST_CHECK(it.keyset             == "");
-            BOOST_CHECK(it.nsset              == "");
-            BOOST_CHECK(it.admin_contacts.empty());
-            continue;
-        }
         BOOST_CHECK(it.registered         == now_utc);
         BOOST_CHECK(it.registrant         == found->second.registrant.handle);
         BOOST_CHECK(it.sponsoring_registrar == found->second.sponsoring_registrar_handle);
@@ -184,7 +197,89 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
                             it.statuses.end());
         }
         BOOST_CHECK(it.statuses.size() == v_osd.size());
+        BOOST_CHECK(it.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, found->second.expiration_date));
+        BOOST_CHECK(it.expire_time_actual.isnull());
+        BOOST_CHECK(it.validated_to_time_actual.isnull());
+        if(! found->second.enum_domain_validation.isnull())//enum
+        {
+            BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
+            BOOST_CHECK(it.validated_to_time_estimate ==
+                    ::Whois::domain_validation_expiration_datetime_estimate(
+                        ctx, found->second.enum_domain_validation.get_value_or_default().validation_expiration));
+        }
+        else
+        {
+            BOOST_CHECK(it.validated_to.isnull());
+            BOOST_CHECK(it.validated_to_time_estimate.isnull());
+        }
     }
+}
+
+struct update_domains_by_adm_con_fixture
+: whois_impl_instance_fixture
+{
+    boost::posix_time::ptime now_utc;
+    Fred::InfoDomainData domain;
+    const std::string test_fqdn;
+    std::string transfer_handle;
+    std::string regular_handle;
+
+    update_domains_by_adm_con_fixture()
+    : test_fqdn("7.3.5.7.0.2.4.e164.arpa"), //ENUM domain covers both enum and usual cases
+      transfer_handle("TR REG HANDLE")
+    {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx),
+                             transfer_registrar = Test::registrar::make(ctx, transfer_handle);
+        const Fred::InfoContactData regular_admin = Test::contact::make(ctx),
+              contact      = Test::contact::make(ctx);
+        domain = Test::exec(
+            Test::CreateX_factory<Fred::CreateDomain>()
+                .make(registrar.handle,
+                    contact.handle,
+                    test_fqdn)
+                .set_admin_contacts(Util::vector_of<std::string>(regular_admin.handle))
+                .set_nsset(Test::nsset::make(ctx).handle)
+                .set_expiration_date(boost::gregorian::day_clock::local_day() -
+                    boost::gregorian::date_duration(2))
+                .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() -
+                    boost::gregorian::date_duration(2)),
+            ctx);
+        regular_handle = regular_admin.handle;
+        Fred::UpdateDomain(test_fqdn, registrar.handle)
+            .unset_nsset()
+            .exec(ctx);
+        Fred::TransferDomain(
+            Fred::InfoDomainByHandle(test_fqdn)
+                .exec( ctx, "UTC" )
+                .info_domain_data
+                .id,
+            transfer_handle,
+            domain.authinfopw,
+            0)
+            .exec(ctx);
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "UTC");
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+        now_utc = boost::posix_time::time_from_string(
+                static_cast<std::string>(ctx.get_conn()
+                    .exec("SELECT now()::timestamp")[0][0]));
+        ctx.commit_transaction();
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(update_domains_by_admin_contact, update_domains_by_adm_con_fixture)
+{
+    Registry::WhoisImpl::Domain dom = impl.get_domains_by_admin_contact(regular_handle, 1).content.at(0);
+    BOOST_CHECK(dom.changed == now_utc);
+    BOOST_CHECK(dom.last_transfer == now_utc);
+    BOOST_CHECK(dom.sponsoring_registrar == transfer_handle);
+
+    Fred::OperationContextCreator ctx;
+    BOOST_CHECK(dom.validated_to_time_actual.get_value() ==
+            ::Whois::domain_validation_expiration_datetime_actual(ctx, domain.id).get_value());
+
+    Optional<boost::posix_time::ptime> eta = ::Whois::domain_expiration_datetime_actual(ctx, domain.id);
+    BOOST_CHECK(dom.expire_time_actual.get_value() == eta.get_value());
 }
 
 BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_no_contact, whois_impl_instance_fixture)

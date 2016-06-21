@@ -13,27 +13,34 @@
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_domain_by_handle)
 
-struct test_domain_fixture
+struct plain_domain_fixture
 : whois_impl_instance_fixture
 {
     boost::posix_time::ptime now_utc;
     Fred::InfoDomainData domain;
+    const std::string test_fqdn;
 
-    test_domain_fixture()
+    plain_domain_fixture()
+    : test_fqdn("7.3.5.7.0.2.4.e164.arpa") //ENUM domain covers both enum and usual cases
     {
         Fred::OperationContextCreator ctx;
         domain = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>()
                     .make(Test::registrar::make(ctx).handle,
-                          Test::contact::make(ctx).handle)
+                          Test::contact::make(ctx).handle,
+                          test_fqdn)
                     .set_nsset(Test::nsset::make(ctx).handle) 
                     .set_keyset(Test::keyset::make(ctx).handle) 
                     .set_admin_contacts(
                         Util::vector_of<std::string>(
                             Test::contact::make(ctx).handle))
                     .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                         boost::gregorian::date_duration(2))
+                    .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
                                          boost::gregorian::date_duration(2)),
                 ctx);
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "UTC");
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
         now_utc = boost::posix_time::time_from_string(
                 static_cast<std::string>(ctx.get_conn()
                     .exec("SELECT now()::timestamp")[0][0]));
@@ -41,12 +48,11 @@ struct test_domain_fixture
     }
 };
 
-BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
+BOOST_FIXTURE_TEST_CASE(regular_case, plain_domain_fixture)
 {
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(domain.fqdn);
 
     BOOST_CHECK(dom.changed.isnull());
-    BOOST_CHECK(dom.validated_to.isnull());
     BOOST_CHECK(dom.last_transfer.isnull());
     BOOST_CHECK(dom.validated_to.get_value() == domain.enum_domain_validation.get_value().validation_expiration);
     BOOST_CHECK(dom.fqdn                     == domain.fqdn);
@@ -73,6 +79,78 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
                         dom.statuses.end());
     }
     BOOST_CHECK(v_osd.size() == dom.statuses.size());
+
+    BOOST_CHECK(dom.validated_to_time_estimate ==
+            ::Whois::domain_validation_expiration_datetime_estimate(
+                ctx, domain.enum_domain_validation.get_value_or_default().validation_expiration));
+    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+
+    BOOST_CHECK(dom.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, domain.expiration_date));
+    BOOST_CHECK(dom.expire_time_actual.isnull());
+}
+
+struct update_domain_fixture
+: whois_impl_instance_fixture
+{
+    boost::posix_time::ptime now_utc;
+    Fred::InfoDomainData domain;
+    const std::string test_fqdn;
+    std::string transfer_handle;
+
+    update_domain_fixture()
+    : test_fqdn("7.3.5.7.0.2.4.e164.arpa"), //ENUM domain covers both enum and usual cases
+      transfer_handle("TR REG HANDLE")
+    {
+        Fred::OperationContextCreator ctx;
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx),
+                             transfer_registrar = Test::registrar::make(ctx, transfer_handle);
+        domain = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar.handle,
+                          Test::contact::make(ctx).handle,
+                          test_fqdn)
+                    .set_nsset(Test::nsset::make(ctx).handle) 
+                    .set_expiration_date(boost::gregorian::day_clock::local_day() -
+                                         boost::gregorian::date_duration(2))
+                    .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() -
+                                         boost::gregorian::date_duration(2)),
+                ctx);
+        Fred::UpdateDomain(test_fqdn, registrar.handle)
+            .unset_nsset()
+            .exec(ctx);
+        Fred::TransferDomain(
+            Fred::InfoDomainByHandle(test_fqdn)
+                .exec( ctx, "UTC" )
+                .info_domain_data
+                .id,
+            transfer_handle,
+            domain.authinfopw,
+            0)
+            .exec(ctx);
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "UTC");
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+        now_utc = boost::posix_time::time_from_string(
+                static_cast<std::string>(ctx.get_conn()
+                    .exec("SELECT now()::timestamp")[0][0]));
+
+        ctx.commit_transaction();
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(update_case, update_domain_fixture)
+{
+    Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(domain.fqdn);
+
+    BOOST_CHECK(dom.changed == now_utc);
+    BOOST_CHECK(dom.last_transfer == now_utc);
+    BOOST_CHECK(dom.sponsoring_registrar == transfer_handle);
+
+    Fred::OperationContextCreator ctx;
+    BOOST_CHECK(dom.validated_to_time_actual.get_value() ==
+            ::Whois::domain_validation_expiration_datetime_actual(ctx, domain.id).get_value());
+
+    Optional<boost::posix_time::ptime> eta = ::Whois::domain_expiration_datetime_actual(ctx, domain.id);
+    BOOST_CHECK(dom.expire_time_actual.get_value() == eta.get_value());
 }
 
 BOOST_FIXTURE_TEST_CASE(wrong_handle, whois_impl_instance_fixture)
