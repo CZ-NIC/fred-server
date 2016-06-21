@@ -627,8 +627,22 @@ static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& 
     }
     if(! idd.enum_domain_validation.isnull())
     {
-        result.validated_to =
-            idd.enum_domain_validation.get_value().validation_expiration;
+        result.validated_to = idd.enum_domain_validation.get_value().validation_expiration;
+        result.validated_to_time_estimate = 
+            ::Whois::domain_validation_expiration_datetime_estimate(
+                ctx, idd.enum_domain_validation.get_value().validation_expiration);
+        Optional<boost::posix_time::ptime> vtta = ::Whois::domain_validation_expiration_datetime_actual(ctx, idd.id);
+        if(vtta.isset())
+        {
+            result.validated_to_time_actual = vtta.get_value();
+        }
+    }
+    result.expire_time_estimate = ::Whois::domain_expiration_datetime_estimate(ctx, idd.expiration_date);
+    
+    Optional<boost::posix_time::ptime> eta = ::Whois::domain_expiration_datetime_actual(ctx, idd.id);
+    if(eta.isset())
+    {
+        result.expire_time_actual = eta.get_value();
     }
     return result;
 }
