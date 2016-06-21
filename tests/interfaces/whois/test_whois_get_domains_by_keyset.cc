@@ -1,5 +1,8 @@
 #include "tests/interfaces/whois/fixture_common.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/whois/domain_expiration_datetime.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/transfer_domain.h"
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_domains_by_keyset)

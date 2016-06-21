@@ -1,8 +1,13 @@
 #include "tests/interfaces/whois/fixture_common.h"
 #include "src/fredlib/domain/create_domain.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/transfer_domain.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 #include "src/whois/zone_list.h"
+#include "src/whois/domain_expiration_datetime.h"
+#include "util/optional_value.h"
 #include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
