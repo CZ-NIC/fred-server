@@ -3,7 +3,6 @@
 
 #include "src/corba/Whois2.hh"
 #include <fredlib/fredlib.h>
-#include "src/fredlib/registrar/info_registrar_data.h"//?
 #include "src/whois/whois.h"
 
 #include <string>
@@ -16,17 +15,13 @@ class Server_impl :
 {
 private:
     static const std::string output_timezone;
-    const std::auto_ptr<Registry::WhoisImpl::Server_impl> pimpl_; //name ambiguity
+    const std::auto_ptr<Registry::WhoisImpl::Server_impl> pimpl_;
 
-//            Server_i(const Server_i&);//no body
-//            Server_i& operator= (const Server_i&);//no body
 public:
 
     Server_impl()
     : pimpl_(new Registry::WhoisImpl::Server_impl())
-    {
-//        output_timezone = "UTC";
-    }
+    {}
 
     virtual ~Server_impl() {};
 
