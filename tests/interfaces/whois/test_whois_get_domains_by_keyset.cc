@@ -302,5 +302,5 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_wrong_keyset, whois_impl_instance_
     BOOST_CHECK_THROW(impl.get_domains_by_keyset("", 1), Registry::WhoisImpl::InvalidHandle);
 }
 
-BOOST_AUTO_TEST_SUITE_END();//get_domains_by_nsset
+BOOST_AUTO_TEST_SUITE_END();//get_domains_by_keyset
 BOOST_AUTO_TEST_SUITE_END();//TestWhois
