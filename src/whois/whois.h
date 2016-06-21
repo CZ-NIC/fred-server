@@ -362,47 +362,59 @@ struct KeySetSeq
 
 struct Domain
 {
-    std::string fqdn; 
-    std::string registrant; 
-    std::vector<std::string> admin_contacts; 
-    std::string nsset; 
-    std::string keyset; 
-    std::string sponsoring_registrar; 
-    std::vector<std::string> statuses; 
-    boost::posix_time::ptime registered; 
-    Nullable<boost::posix_time::ptime> changed; 
-    Nullable<boost::posix_time::ptime> last_transfer; 
-    boost::gregorian::date expire; 
-    Nullable<boost::gregorian::date> validated_to; 
+    std::string fqdn;
+    std::string registrant;
+    std::vector<std::string> admin_contacts;
+    std::string nsset;
+    std::string keyset;
+    std::string sponsoring_registrar;
+    std::vector<std::string> statuses;
+    boost::posix_time::ptime registered;
+    Nullable<boost::posix_time::ptime> changed;
+    Nullable<boost::posix_time::ptime> last_transfer;
+    boost::gregorian::date expire;
+    Nullable<boost::gregorian::date> validated_to;
+    boost::posix_time::ptime expire_time_estimate;
+    Nullable<boost::posix_time::ptime> expire_time_actual;
+    Nullable<boost::posix_time::ptime> validated_to_time_estimate;
+    Nullable<boost::posix_time::ptime> validated_to_time_actual;
 
     Domain() {}
 
     Domain(
-        const std::string& _fqdn, 
-        const std::string& _registrant, 
-        const std::vector<std::string>& _admin_contacts, 
-        const std::string& _nsset, 
-        const std::string& _keyset, 
-        const std::string& _sponsoring_registrar, 
-        const std::vector<std::string>& _statuses, 
-        const boost::posix_time::ptime& _registered, 
-        const Nullable<boost::posix_time::ptime>& _changed, 
-        const Nullable<boost::posix_time::ptime>& _last_transfer, 
-        const boost::gregorian::date& _expire, 
-        const Nullable<boost::gregorian::date>& _validated_to
+        const std::string& _fqdn,
+        const std::string& _registrant,
+        const std::vector<std::string>& _admin_contacts,
+        const std::string& _nsset,
+        const std::string& _keyset,
+        const std::string& _sponsoring_registrar,
+        const std::vector<std::string>& _statuses,
+        const boost::posix_time::ptime& _registered,
+        const Nullable<boost::posix_time::ptime>& _changed,
+        const Nullable<boost::posix_time::ptime>& _last_transfer,
+        const boost::gregorian::date& _expire,
+        const Nullable<boost::gregorian::date>& _validated_to,
+        const boost::posix_time::ptime _expire_time_estimate,
+        const Nullable<boost::posix_time::ptime> _expire_time_actual,
+        const Nullable<boost::posix_time::ptime> _validated_to_time_estimate,
+        const Nullable<boost::posix_time::ptime> _validated_to_time_actual
     ) :
-        fqdn(_fqdn), 
-        registrant(_registrant), 
-        admin_contacts(_admin_contacts), 
-        nsset(_nsset), 
-        keyset(_keyset), 
-        sponsoring_registrar(_sponsoring_registrar), 
-        statuses(_statuses), 
-        registered(_registered), 
-        changed(_changed), 
-        last_transfer(_last_transfer), 
-        expire(_expire), 
-        validated_to(_validated_to)
+        fqdn(_fqdn),
+        registrant(_registrant),
+        admin_contacts(_admin_contacts),
+        nsset(_nsset),
+        keyset(_keyset),
+        sponsoring_registrar(_sponsoring_registrar),
+        statuses(_statuses),
+        registered(_registered),
+        changed(_changed),
+        last_transfer(_last_transfer),
+        expire(_expire),
+        validated_to(_validated_to),
+        expire_time_estimate(_expire_time_estimate),
+        validated_to_time_estimate(_validated_to_time_estimate),
+        expire_time_actual(_expire_time_actual),
+        validated_to_time_actual(_validated_to_time_actual)
     {}
 };
 
