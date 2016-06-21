@@ -43,14 +43,15 @@ BOOST_FIXTURE_TEST_CASE(regular_case, test_domain_fixture)
     BOOST_CHECK(dom.changed.isnull());
     BOOST_CHECK(dom.validated_to.isnull());
     BOOST_CHECK(dom.last_transfer.isnull());
-    BOOST_CHECK(dom.registered          == now_utc);
-    BOOST_CHECK(dom.fqdn                == domain.fqdn);
-    BOOST_CHECK(dom.registrant          == domain.registrant.handle);
-    BOOST_CHECK(dom.creating_registrar  == domain.create_registrar_handle);
-    BOOST_CHECK(dom.expire              == domain.expiration_date);
-    BOOST_CHECK(dom.fqdn                == domain.fqdn);
-    BOOST_CHECK(dom.keyset              == domain.keyset.get_value_or_default().handle);
-    BOOST_CHECK(dom.nsset               == domain.nsset.get_value_or_default().handle);
+    BOOST_CHECK(dom.validated_to.get_value() == domain.enum_domain_validation.get_value().validation_expiration);
+    BOOST_CHECK(dom.fqdn                     == domain.fqdn);
+    BOOST_CHECK(dom.registered               == now_utc);
+    BOOST_CHECK(dom.registrant               == domain.registrant.handle);
+    BOOST_CHECK(dom.sponsoring_registrar     == domain.sponsoring_registrar_handle);
+    BOOST_CHECK(dom.expire                   == domain.expiration_date);
+    BOOST_CHECK(dom.fqdn                     == domain.fqdn);
+    BOOST_CHECK(dom.keyset                   == domain.keyset.get_value().handle);
+    BOOST_CHECK(dom.nsset                    == domain.nsset.get_value().handle);
 
     BOOST_FOREACH(const Fred::ObjectIdHandlePair& it, domain.admin_contacts)
     {
@@ -370,14 +371,14 @@ BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
     BOOST_CHECK(dom.changed.isnull());
     BOOST_CHECK(dom.last_transfer.isnull());
     BOOST_CHECK(dom.validated_to.isnull());
-    BOOST_CHECK(dom.statuses.size()    == 1);
-    BOOST_CHECK(dom.statuses.at(0)     == "deleteCandidate");
-    BOOST_CHECK(dom.registered         == boost::posix_time::ptime(not_a_date_time));
-    BOOST_CHECK(dom.registrant         == "");
-    BOOST_CHECK(dom.creating_registrar == "");
-    BOOST_CHECK(dom.expire             == boost::gregorian::date(not_a_date_time));
-    BOOST_CHECK(dom.keyset             == "");
-    BOOST_CHECK(dom.nsset              == "");
+    BOOST_CHECK(dom.statuses.size()      == 1);
+    BOOST_CHECK(dom.statuses.at(0)       == "deleteCandidate");
+    BOOST_CHECK(dom.registered           == boost::posix_time::ptime(not_a_date_time));
+    BOOST_CHECK(dom.registrant           == "");
+    BOOST_CHECK(dom.sponsoring_registrar == "");
+    BOOST_CHECK(dom.expire               == boost::gregorian::date(not_a_date_time));
+    BOOST_CHECK(dom.keyset               == "");
+    BOOST_CHECK(dom.nsset                == "");
     BOOST_CHECK(dom.admin_contacts.empty());
 
 }

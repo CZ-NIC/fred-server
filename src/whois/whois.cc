@@ -299,7 +299,7 @@ static WhoisImpl::NSSet make_nsset_from_info_data(
 
         nss.nservers.push_back(ns);
     }
-    nss.creating_registrar = ind.sponsoring_registrar_handle;
+    nss.sponsoring_registrar = ind.sponsoring_registrar_handle;
     BOOST_FOREACH(Fred::ObjectIdHandlePair it, ind.tech_contacts)
     {
         nss.tech_contacts.push_back(it.handle);
@@ -478,7 +478,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
             ks.handle             = ikd.handle;
             ks.changed            = ikd.update_time;
             ks.created            = ikd.creation_time;
-            ks.creating_registrar = ikd.create_registrar_handle;
+            ks.sponsoring_registrar = ikd.sponsoring_registrar_handle;
             ks.dns_keys.reserve(ikd.dns_keys.size());
             ks.last_transfer      = ikd.transfer_time;
             DNSKey dns_k;
@@ -568,7 +568,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
 
             temp.handle = it->info_keyset_data.handle;
             temp.last_transfer = it->info_keyset_data.transfer_time;
-            temp.creating_registrar = it->info_keyset_data.create_registrar_handle;
+            temp.sponsoring_registrar = it->info_keyset_data.sponsoring_registrar_handle;
 
             const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(it->info_keyset_data.id).exec(ctx);
             temp.statuses.reserve(v_osd.size());
@@ -618,7 +618,7 @@ static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& 
     result.nsset              = idd.nsset.get_value_or_default().handle;
     result.registered         = idd.creation_time;
     result.registrant         = idd.registrant.handle;
-    result.creating_registrar = idd.create_registrar_handle;
+    result.sponsoring_registrar = idd.sponsoring_registrar_handle;
     const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
     result.statuses.reserve(v_osd.size());
     BOOST_FOREACH(Fred::ObjectStateData it, v_osd)

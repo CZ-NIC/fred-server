@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset, domains_by_nsset_fixture)
         BOOST_CHECK(it.registered == now_utc);
         BOOST_REQUIRE(it.fqdn     == found->second.fqdn);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
+        BOOST_CHECK(it.sponsoring_registrar  == found->second.sponsoring_registrar_handle);
         BOOST_CHECK(it.expire     == found->second.expiration_date);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
@@ -184,7 +184,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_nsset_limit_exceeded, domains_by_nsset_fi
         BOOST_CHECK(it.registered == now_utc);
         BOOST_REQUIRE(it.fqdn     == found->second.fqdn);
         BOOST_CHECK(it.registrant == found->second.registrant.handle);
-        BOOST_CHECK(it.creating_registrar  == found->second.create_registrar_handle);
+        BOOST_CHECK(it.sponsoring_registrar  == found->second.sponsoring_registrar_handle);
         BOOST_CHECK(it.expire     == found->second.expiration_date);
         BOOST_CHECK(it.fqdn       == found->second.fqdn);
         BOOST_CHECK(it.keyset     == found->second.keyset.get_value_or_default().handle);
