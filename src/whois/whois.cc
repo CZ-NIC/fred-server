@@ -4,6 +4,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/whois/zone_list.h"
 #include "src/whois/is_domain_delete_pending.h"
+#include <src/whois/domain_expiration_datetime.h>
 
 #include "src/whois/nameserver_exists.h"
 #include "src/whois/registrar_group.h"
