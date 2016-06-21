@@ -39,7 +39,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_by_handle, get_keyset_by_handle_fixture)
     BOOST_CHECK(ks.changed.isnull());
     BOOST_CHECK(ks.last_transfer.isnull());
     BOOST_CHECK(ks.handle == keyset.handle);
-    BOOST_CHECK(ks.creating_registrar == keyset.create_registrar_handle);
+    BOOST_CHECK(ks.sponsoring_registrar == keyset.sponsoring_registrar_handle);
     BOOST_FOREACH(const Fred::DnsKey& it, keyset.dns_keys)
     {
         bool key_found = false;

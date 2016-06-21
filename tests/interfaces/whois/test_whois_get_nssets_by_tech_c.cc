@@ -60,7 +60,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
     
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
-    std::map<std::string, Fred::InfoKeysetData>::const_iterator cit;
+    std::map<std::string, Fred::InfoNssetData>::const_iterator cit;
     BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         cit = nsset_info.find(it.handle);
@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
         BOOST_CHECK(it.handle                            == found.handle);
         BOOST_CHECK(it.nservers.at(0).fqdn               == found.dns_hosts.at(0).get_fqdn());
         BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.creating_registrar                == found.create_registrar_handle);
+        BOOST_CHECK(it.sponsoring_registrar              == found.sponsoring_registrar_handle);
         BOOST_CHECK(it.tech_contacts.at(0)               == found.tech_contacts.at(0).handle);
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
     
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
-    std::map<std::string, Fred::InfoKeysetData>::const_iterator cit;
+    std::map<std::string, Fred::InfoNssetData>::const_iterator cit;
     BOOST_FOREACH(const Registry::WhoisImpl::NSSet& it, nss_s.content)
     {
         cit = nsset_info.find(it.handle);
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
         BOOST_CHECK(it.handle                            == found.handle);
         BOOST_CHECK(it.nservers.at(0).fqdn               == found.dns_hosts.at(0).get_fqdn());
         BOOST_CHECK(it.nservers.at(0).ip_addresses.at(0) == found.dns_hosts.at(0).get_inet_addr().at(0));
-        BOOST_CHECK(it.creating_registrar                == found.create_registrar_handle);
+        BOOST_CHECK(it.sponsoring_registrar              == found.sponsoring_registrar_handle);
         BOOST_CHECK(it.tech_contacts.at(0)               == found.tech_contacts.at(0).handle);
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());

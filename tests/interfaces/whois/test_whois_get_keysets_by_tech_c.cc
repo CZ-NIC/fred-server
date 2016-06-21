@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c, get_keysets_by_tech_c_fixture)
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.handle == found.handle);
-        BOOST_CHECK(it.creating_registrar == found.create_registrar_handle);
+        BOOST_CHECK(it.sponsoring_registrar == found.sponsoring_registrar_handle);
         BOOST_FOREACH(const Fred::DnsKey& kit, found.dns_keys)
         {
             bool key_found = false;
@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(get_keysets_by_tech_c_limit_exceeded, get_keysets_by_tec
         BOOST_CHECK(it.changed.isnull());
         BOOST_CHECK(it.last_transfer.isnull());
         BOOST_CHECK(it.handle == found.handle);
-        BOOST_CHECK(it.creating_registrar == found.create_registrar_handle);
+        BOOST_CHECK(it.sponsoring_registrar == found.sponsoring_registrar_handle);
         BOOST_FOREACH(const Fred::DnsKey& kit, found.dns_keys)
         {
             bool key_found = false;
