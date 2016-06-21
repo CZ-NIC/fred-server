@@ -324,10 +324,10 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
         try
         {
             return make_nsset_from_info_data(
-                    Fred::InfoNssetByHandle(handle)
-                        .exec(ctx, get_output_timezone())
-                        .info_nsset_data,
-                    ctx);
+                       Fred::InfoNssetByHandle(handle)
+                           .exec(ctx, get_output_timezone())
+                           .info_nsset_data,
+                       ctx);
         }
         catch(const Fred::InfoNssetByHandle::Exception& e)
         {
@@ -625,7 +625,7 @@ static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& 
     {
         result.statuses.push_back(it.state_name);
     }
-    if(!idd.enum_domain_validation.isnull())
+    if(! idd.enum_domain_validation.isnull())
     {
         result.validated_to =
             idd.enum_domain_validation.get_value().validation_expiration;
@@ -661,8 +661,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                        Fred::InfoDomainByHandle(handle)
                            .exec( ctx, get_output_timezone() )
                            .info_domain_data,
-                       ctx
-                   );
+                       ctx);
         }
         catch(const Fred::InfoDomainByHandle::Exception& e)
         {
