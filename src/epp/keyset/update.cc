@@ -72,7 +72,7 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
         throw;
     }
     catch (const ObjectStatusProhibitingOperation&) {
-        _ctx.get_log().error("check_keyset_handle failure: object update prohibited");
+        _ctx.get_log().info("check_keyset_handle failure: object update prohibited");
         throw;
     }
     catch (...) {
