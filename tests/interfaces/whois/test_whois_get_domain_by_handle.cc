@@ -39,8 +39,6 @@ struct plain_domain_fixture
                     .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
                                          boost::gregorian::date_duration(2)),
                 ctx);
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "UTC");
-        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
         now_utc = boost::posix_time::time_from_string(
                 static_cast<std::string>(ctx.get_conn()
                     .exec("SELECT now()::timestamp")[0][0]));
