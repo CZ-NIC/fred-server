@@ -12,7 +12,7 @@ namespace Whois {
 
 const std::string Server_impl::output_timezone("UTC");
 
-PlaceAddress wrap_address(Registry::WhoisImpl::PlaceAddress& address)
+PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
 {
     PlaceAddress result;
     result.street1    = Corba::wrap_string_to_corba_string(address.street1);
@@ -25,7 +25,7 @@ PlaceAddress wrap_address(Registry::WhoisImpl::PlaceAddress& address)
     return result;
 }
 
-Registrar wrap_registrar(Registry::WhoisImpl::Registrar& registrar)
+Registrar wrap_registrar(const Registry::WhoisImpl::Registrar& registrar)
 {
     Registrar result;
     result.handle  = Corba::wrap_string_to_corba_string(registrar.handle);
