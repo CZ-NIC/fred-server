@@ -19,7 +19,7 @@ PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
     result.street2    = Corba::wrap_string_to_corba_string(address.street2);
     result.street3    = Corba::wrap_string_to_corba_string(address.street3);
     result.city       = Corba::wrap_string_to_corba_string(address.city);
-    result.postalcode = Corba::wrap_string_to_corba_string(address.postal_code); //fix consistency?
+    result.postalcode = Corba::wrap_string_to_corba_string(address.postal_code);
     result.stateorprovince = Corba::wrap_string_to_corba_string(address.stateorprovince);
     result.country_code    = Corba::wrap_string_to_corba_string(address.country_code);
     return result;
@@ -201,10 +201,6 @@ DisclosableString wrap_disclosable_string(const std::string& str, bool disclose)
 
 void wrap_object_states(StringSeq& states_seq, std::vector<std::string>& statuses)
 {
-//    BOOST_FOREACH(std::string status, statuses) 
-//    {
-//        statuses.push_back(state.state_name);
-//    }
     set_corba_seq<StringSeq, CORBA::String_var>(states_seq, statuses);
 }
 
@@ -218,7 +214,7 @@ DisclosablePlaceAddress wrap_disclosable_address(
     temp.value.street3 = Corba::wrap_string_to_corba_string(addr.street3);
     temp.value.city    = Corba::wrap_string_to_corba_string(addr.city);
     temp.value.stateorprovince = Corba::wrap_string_to_corba_string(addr.stateorprovince);
-    temp.value.postalcode      = Corba::wrap_string_to_corba_string(addr.postal_code); //fix consistency?
+    temp.value.postalcode      = Corba::wrap_string_to_corba_string(addr.postal_code);
     temp.value.country_code    = Corba::wrap_string_to_corba_string(addr.country_code);
     temp.disclose = disclose;
     return temp;
@@ -472,7 +468,7 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, keyset.statuses);
 
-    set_corba_seq<DNSKeySeq, DNSKey>(result.dns_keys, keyset.dns_keys);//?
+    set_corba_seq<DNSKeySeq, DNSKey>(result.dns_keys, keyset.dns_keys);
 
     return result;
 }
@@ -552,7 +548,6 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     result.changed = Corba::wrap_nullable_datetime(domain.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(domain.last_transfer);
     result.expire = Corba::wrap_date(domain.expire);
-    //TODO
     result.expire_time_estimate = Corba::wrap_time(domain.expire_time_estimate);
     result.expire_time_actual = Corba::wrap_nullable_datetime(domain.expire_time_actual);
     if(domain.validated_to.isnull()) 
@@ -565,7 +560,6 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     {
         result.validated_to = new Registry::NullableDate(
                 Corba::wrap_date(domain.validated_to.get_value()));
-        //TODO
         result.validated_to_time_estimate = Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
         result.validated_to_time_actual = Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
     } 
