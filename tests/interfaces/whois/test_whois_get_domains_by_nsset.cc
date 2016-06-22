@@ -36,7 +36,7 @@ struct domains_by_nsset_fixture
                     Test::CreateX_factory<Fred::CreateDomain>()
                         .make(registrar.handle, contact.handle)
                         .set_nsset(test_nsset)
-                        .set_keyset(Test::keyset::make(ctx).handle) 
+                        .set_keyset(Test::keyset::make(ctx).handle)
                         .set_admin_contacts(
                             Util::vector_of<std::string>(
                                 Test::contact::make(ctx).handle))
@@ -52,7 +52,7 @@ struct domains_by_nsset_fixture
                     .make(registrar.handle, contact.handle, "7.3.5.7.0.2.4.e164.arpa")
                     .set_admin_contacts(Util::vector_of<std::string>(admin.handle))
                     .set_nsset(test_nsset)
-                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_keyset(Test::keyset::make(ctx).handle)
                     .set_expiration_date(boost::gregorian::day_clock::local_day() +
                                          boost::gregorian::date_duration(2))
                     .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
@@ -248,7 +248,7 @@ struct update_domains_by_nsset_fixture
                       contact.handle,
                       test_fqdn)
                 .set_nsset(test_nsset)
-                .set_keyset(Test::keyset::make(ctx).handle) 
+                .set_keyset(Test::keyset::make(ctx).handle)
                 .set_expiration_date(boost::gregorian::day_clock::local_day() -
                     boost::gregorian::date_duration(2))
                 .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() -

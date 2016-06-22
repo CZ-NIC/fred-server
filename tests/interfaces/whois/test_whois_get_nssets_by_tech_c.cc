@@ -57,7 +57,7 @@ struct get_nssets_by_tech_c_fixture
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
 {
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact_handle, test_limit);
-    
+
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
     std::map<std::string, Fred::InfoNssetData>::const_iterator cit;
@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c, get_nssets_by_tech_c_fixture)
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_c_fixture)
 {
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_tech_c(contact_handle, test_limit - 1);
-    
+
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, Fred::InfoNssetData>::const_iterator cit;

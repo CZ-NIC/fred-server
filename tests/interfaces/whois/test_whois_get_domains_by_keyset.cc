@@ -35,7 +35,7 @@ struct domains_by_keyset_fixture
             const Fred::InfoDomainData& idd = Test::exec(   //lifetime extension of temporary
                     Test::CreateX_factory<Fred::CreateDomain>()
                         .make(registrar.handle, contact.handle)
-                        .set_nsset(Test::nsset::make(ctx).handle) 
+                        .set_nsset(Test::nsset::make(ctx).handle)
                         .set_keyset(test_keyset)
                         .set_admin_contacts(
                             Util::vector_of<std::string>(admin.handle))
@@ -75,7 +75,7 @@ struct domains_by_keyset_fixture
                 .set_admin_contacts(
                     Util::vector_of<std::string>(admin.handle)),
             ctx);
-        
+
         //delete candidate
         const Fred::InfoDomainData& idd = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>()
@@ -196,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
 
         BOOST_FOREACH(const Fred::ObjectIdHandlePair& oit, found->second.admin_contacts)
         {
-            BOOST_CHECK(std::find(it.admin_contacts.begin(), it.admin_contacts.end(), oit.handle) != 
+            BOOST_CHECK(std::find(it.admin_contacts.begin(), it.admin_contacts.end(), oit.handle) !=
                     it.admin_contacts.end());
         }
         BOOST_CHECK(it.admin_contacts.size() == found->second.admin_contacts.size());
@@ -250,7 +250,7 @@ struct update_domains_by_keyset_fixture
                       contact.handle,
                       test_fqdn)
                 .set_keyset(test_keyset)
-                .set_nsset(Test::nsset::make(ctx).handle) 
+                .set_nsset(Test::nsset::make(ctx).handle)
                 .set_expiration_date(boost::gregorian::day_clock::local_day() -
                     boost::gregorian::date_duration(2))
                 .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() -

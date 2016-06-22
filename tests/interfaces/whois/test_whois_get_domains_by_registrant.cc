@@ -33,8 +33,8 @@ struct domains_by_registrant_fixture
             const Fred::InfoDomainData& idd = Test::exec(
                 Test::CreateX_factory<Fred::CreateDomain>()
                     .make(registrar.handle, contact.handle)
-                    .set_nsset(Test::nsset::make(ctx).handle) 
-                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(Test::keyset::make(ctx).handle)
                     .set_admin_contacts(Util::vector_of<std::string>(
                             Test::contact::make(ctx).handle))
                     .set_admin_contacts(Util::vector_of<std::string>(contact.handle))
@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_registrant, domains_by_registrant_fixture
 {
     Registry::WhoisImpl::DomainSeq domain_seq = impl.get_domains_by_registrant(contact_handle, regular_domains);
     BOOST_CHECK(!domain_seq.limit_exceeded);
-    
+
     std::vector<Registry::WhoisImpl::Domain> domain_vec = domain_seq.content;
     BOOST_CHECK(domain_vec.size() == regular_domains);
     std::map<std::string, Fred::InfoDomainData>::iterator found;

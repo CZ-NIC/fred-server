@@ -3,7 +3,7 @@
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_registrar_by_handle)
 
-struct registrar_fixture 
+struct registrar_fixture
 : whois_impl_instance_fixture
 {
     Fred::InfoRegistrarData registrar;

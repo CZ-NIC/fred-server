@@ -47,7 +47,7 @@ struct get_nssets_by_ns_fixture
                     .set_dns_hosts(
                         Util::vector_of<Fred::DnsHost>(
                             Fred::DnsHost(
-                                "other-fqdn", 
+                                "other-fqdn",
                                 Util::vector_of<boost::asio::ip::address>(
                                     boost::asio::ip::address::from_string("192.128.1.1")))))
                     .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
@@ -60,7 +60,7 @@ struct get_nssets_by_ns_fixture
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 {
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit);
-    
+
     BOOST_CHECK(!nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit);
     std::map<std::string, Fred::InfoNssetData>::const_iterator cit;
@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns, get_nssets_by_ns_fixture)
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixture)
 {
     Registry::WhoisImpl::NSSetSeq nss_s = impl.get_nssets_by_ns(test_fqdn, test_limit - 1);
-    
+
     BOOST_CHECK(nss_s.limit_exceeded);
     BOOST_CHECK(nss_s.content.size() == test_limit - 1);
     std::map<std::string, Fred::InfoNssetData>::const_iterator cit;

@@ -43,7 +43,6 @@ struct domains_by_admin_contact_fixture
                         .set_expiration_date(boost::gregorian::day_clock::local_day() +
                                              boost::gregorian::date_duration(2)),
                     ctx);
-            
             domain_info[idd.fqdn] = idd;
         }
         //enum domain

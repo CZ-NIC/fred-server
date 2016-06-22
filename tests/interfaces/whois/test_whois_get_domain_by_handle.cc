@@ -29,8 +29,8 @@ struct plain_domain_fixture
                     .make(Test::registrar::make(ctx).handle,
                           Test::contact::make(ctx).handle,
                           test_fqdn)
-                    .set_nsset(Test::nsset::make(ctx).handle) 
-                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(Test::keyset::make(ctx).handle)
                     .set_admin_contacts(
                         Util::vector_of<std::string>(
                             Test::contact::make(ctx).handle))
@@ -107,7 +107,7 @@ struct update_domain_fixture
                     .make(registrar.handle,
                           Test::contact::make(ctx).handle,
                           test_fqdn)
-                    .set_nsset(Test::nsset::make(ctx).handle) 
+                    .set_nsset(Test::nsset::make(ctx).handle)
                     .set_expiration_date(boost::gregorian::day_clock::local_day() -
                                          boost::gregorian::date_duration(2))
                     .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() -
@@ -267,8 +267,8 @@ struct unmanaged_toomany_fixture
     {
         unsigned int labels_exceeded = 20;// XXX
         unmanaged_toomany_fqdn.reserve(labels_exceeded * 2 + 3); //XXX
-        
-        for(unsigned int i=0; i < labels_exceeded; ++i) 
+
+        for(unsigned int i=0; i < labels_exceeded; ++i)
         {
             unmanaged_toomany_fqdn += "1."; //toomany part
         }
@@ -394,7 +394,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_unmanaged_toomany, invalid_unmanaged_toomany_fix
     }
 }
 
-struct delete_candidate_fixture 
+struct delete_candidate_fixture
 : whois_impl_instance_fixture
 {
     std::string delete_fqdn;
@@ -409,6 +409,8 @@ struct delete_candidate_fixture
                 .make(Test::registrar(ctx).info_data.handle,
                       Test::contact(ctx).info_data.handle,
                       delete_fqdn)
+                .set_nsset(Test::nsset::make(ctx).handle)
+                .set_keyset(Test::keyset::make(ctx).handle)
                 .set_admin_contacts(
                     Util::vector_of<std::string>(
                         Test::contact::make(ctx).handle)),
@@ -481,8 +483,8 @@ struct child_parent_fixture
                     .make(Test::registrar::make(ctx).handle,
                           Test::contact::make(ctx).handle,
                           parent)
-                    .set_nsset(Test::nsset::make(ctx).handle) 
-                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(Test::keyset::make(ctx).handle)
                     .set_admin_contacts(
                         Util::vector_of<std::string>(
                             Test::contact::make(ctx).handle))
@@ -556,8 +558,8 @@ struct parent_child_fixture
                     .make(Test::registrar::make(ctx).handle,
                           Test::contact::make(ctx).handle,
                           child)
-                    .set_nsset(Test::nsset::make(ctx).handle) 
-                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(Test::keyset::make(ctx).handle)
                     .set_admin_contacts(
                         Util::vector_of<std::string>(
                             Test::contact::make(ctx).handle))
@@ -614,7 +616,7 @@ BOOST_FIXTURE_TEST_CASE(parent_child, parent_child_fixture)
     BOOST_CHECK(dom.expire_time_actual.isnull());
 }
 
-struct del_can_child_parent_fixture 
+struct del_can_child_parent_fixture
 : whois_impl_instance_fixture
 {
     std::string child, parent;
@@ -630,8 +632,8 @@ struct del_can_child_parent_fixture
                 .make(Test::registrar(ctx).info_data.handle,
                       Test::contact(ctx).info_data.handle,
                       parent)
-                .set_nsset(Test::nsset::make(ctx).handle) 
-                .set_keyset(Test::keyset::make(ctx).handle) 
+                .set_nsset(Test::nsset::make(ctx).handle)
+                .set_keyset(Test::keyset::make(ctx).handle)
                 .set_admin_contacts(
                     Util::vector_of<std::string>(
                         Test::contact::make(ctx).handle))
@@ -692,8 +694,8 @@ BOOST_FIXTURE_TEST_CASE(del_can_child_parent, del_can_child_parent_fixture)
     BOOST_CHECK(dom.validated_to_time_estimate.isnull());
     BOOST_CHECK(dom.validated_to_time_actual.isnull());
 }
-    
-struct del_can_parent_child_fixture 
+
+struct del_can_parent_child_fixture
 : whois_impl_instance_fixture
 {
     std::string child, parent;
@@ -709,8 +711,8 @@ struct del_can_parent_child_fixture
                 .make(Test::registrar(ctx).info_data.handle,
                       Test::contact(ctx).info_data.handle,
                       child)
-                .set_nsset(Test::nsset::make(ctx).handle) 
-                .set_keyset(Test::keyset::make(ctx).handle) 
+                .set_nsset(Test::nsset::make(ctx).handle)
+                .set_keyset(Test::keyset::make(ctx).handle)
                 .set_admin_contacts(
                     Util::vector_of<std::string>(
                         Test::contact::make(ctx).handle))
@@ -771,6 +773,6 @@ BOOST_FIXTURE_TEST_CASE(del_can_parent_child, del_can_parent_child_fixture)
     BOOST_CHECK(dom.validated_to_time_estimate.isnull());
     BOOST_CHECK(dom.validated_to_time_actual.isnull());
 }
-    
+
 BOOST_AUTO_TEST_SUITE_END()//get_domain_by_handle
 BOOST_AUTO_TEST_SUITE_END()//TestWhois

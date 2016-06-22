@@ -13,7 +13,7 @@ struct get_nameserver_by_fqdn_fixture
     : test_nameserver_fqdn("test_nameserver")
     {
         Fred::OperationContextCreator ctx;
-        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);     
+        const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
         const Fred::InfoContactData contact     = Test::contact::make(ctx);
         Test::exec(
             Test::CreateX_factory<Fred::CreateNsset>()
