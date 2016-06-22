@@ -1,6 +1,5 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE TestEpp
-#include <boost/test/unit_test.hpp>
 
 #include "config.h"
 
@@ -20,41 +19,68 @@
 #include "util/cfg/handle_mojeid_args.h"
 
 #include <boost/assign/list_of.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace Test {
 
-    struct handle_command_line_args {
-        HandlerPtrVector config_handlers;
+class handle_command_line_args
+{
+public:
+    handle_command_line_args()
+    :   config_handlers(
+            static_cast< const HandlerPtrVector& >(
+                boost::assign::list_of(HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
+                                      (HandleArgsPtr(new HandleServerArgs))
+                                      (HandleArgsPtr(new HandleLoggingArgs))
+                                      (HandleArgsPtr(new HandleDatabaseArgs))
+                                      (HandleArgsPtr(new HandleCorbaNameServiceArgs))
+                                      (HandleArgsPtr(new HandleThreadGroupArgs))
+                                      (HandleArgsPtr(new HandleRegistryArgs))
+                                      (HandleArgsPtr(new HandleRifdArgs))
+                                      (HandleArgsPtr(new HandleContactVerificationArgs))
+                                      (HandleArgsPtr(new HandleMojeIDArgs))
+                                      (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>()))
+    {
+        CfgArgs::init< HandleTestsArgs >(config_handlers)->handle(
+            boost::unit_test::framework::master_test_suite().argc,
+            boost::unit_test::framework::master_test_suite().argv);
+        setup_logging(CfgArgs::instance());
+    }
+private:
+    static void setup_logging(CfgArgs *cfg_instance_ptr);
+    const HandlerPtrVector config_handlers;
+};
 
-        handle_command_line_args() {
+void handle_command_line_args::setup_logging(CfgArgs *cfg_instance_ptr)
+{
+    const HandleLoggingArgs* const handler_ptr = cfg_instance_ptr->get_handler_ptr_by_type< HandleLoggingArgs >();
 
-            config_handlers =
-                boost::assign::list_of
-                    (HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
-                    (HandleArgsPtr(new HandleServerArgs))
-                    (HandleArgsPtr(new HandleLoggingArgs))
-                    (HandleArgsPtr(new HandleDatabaseArgs))
-                    (HandleArgsPtr(new HandleCorbaNameServiceArgs))
-                    (HandleArgsPtr(new HandleThreadGroupArgs))
-                    (HandleArgsPtr(new HandleRegistryArgs))
-                    (HandleArgsPtr(new HandleRifdArgs))
-                    (HandleArgsPtr(new HandleContactVerificationArgs))
-                    (HandleArgsPtr(new HandleMojeIDArgs))
-                    (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>();
+    const Logging::Log::Type log_type = static_cast< Logging::Log::Type >(handler_ptr->log_type);
+    const Logging::Log::Level log_level = static_cast< Logging::Log::Level >(handler_ptr->log_level);
 
-            namespace boost_args_ns = boost::unit_test::framework;
+    boost::any param;
+    switch (log_type)
+    {
+        case Logging::Log::LT_FILE:
+            param = handler_ptr->log_file;
+            break;
+        case Logging::Log::LT_SYSLOG:
+            param = handler_ptr->log_syslog_facility;
+            break;
+        case Logging::Log::LT_CONSOLE:
+            break;
+    }
 
-            CfgArgs::init<HandleTestsArgs>(config_handlers)->handle(
-                boost_args_ns::master_test_suite().argc,
-                boost_args_ns::master_test_suite().argv
-            ).copy_onlynospaces_args();
-        }
-    };
+    Logging::Manager::instance_ref().get(PACKAGE).addHandler(log_type, param);
+    Logging::Manager::instance_ref().get(PACKAGE).setLevel(log_level);
 }
 
-struct global_fixture {
+}//namespace Test
+
+class global_fixture
+{
     Test::handle_command_line_args handle_admin_db_cmd_line_args;
     Test::Fixture::create_db_template crete_db_template;
 };
 
-BOOST_GLOBAL_FIXTURE( global_fixture );
+BOOST_GLOBAL_FIXTURE(global_fixture);
