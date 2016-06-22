@@ -466,5 +466,313 @@ BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
 
 }
 
+struct child_parent_fixture
+: whois_impl_instance_fixture
+{
+    const std::string child, parent;
+    Fred::InfoDomainData parent_obj;
+    boost::posix_time::ptime now_utc;
+
+    child_parent_fixture()
+    : child("1.1.1.1.1.7.0.2.4.e164.arpa"),
+      parent("7.0.2.4.e164.arpa")
+    {
+        Fred::OperationContextCreator ctx;
+        parent_obj = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(Test::registrar::make(ctx).handle,
+                          Test::contact::make(ctx).handle,
+                          parent)
+                    .set_nsset(Test::nsset::make(ctx).handle) 
+                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_admin_contacts(
+                        Util::vector_of<std::string>(
+                            Test::contact::make(ctx).handle))
+                    .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                         boost::gregorian::date_duration(2))
+                    .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
+                                         boost::gregorian::date_duration(2)),
+                ctx);
+        now_utc = boost::posix_time::time_from_string(
+                static_cast<std::string>(ctx.get_conn()
+                    .exec("SELECT now()::timestamp")[0][0]));
+        ctx.commit_transaction();
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(child_parent, child_parent_fixture)
+{
+    Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(child);
+
+    BOOST_CHECK(dom.changed.isnull());
+    BOOST_CHECK(dom.last_transfer.isnull());
+    BOOST_CHECK(dom.validated_to.get_value() == parent_obj.enum_domain_validation.get_value().validation_expiration);
+    BOOST_CHECK(dom.fqdn                     == parent_obj.fqdn);
+    BOOST_CHECK(dom.registered               == now_utc);
+    BOOST_CHECK(dom.registrant               == parent_obj.registrant.handle);
+    BOOST_CHECK(dom.sponsoring_registrar     == parent_obj.sponsoring_registrar_handle);
+    BOOST_CHECK(dom.expire                   == parent_obj.expiration_date);
+    BOOST_CHECK(dom.fqdn                     == parent_obj.fqdn);
+    BOOST_CHECK(dom.keyset                   == parent_obj.keyset.get_value().handle);
+    BOOST_CHECK(dom.nsset                    == parent_obj.nsset.get_value().handle);
+
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& it, parent_obj.admin_contacts)
+    {
+        BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
+                        dom.admin_contacts.end());
+    }
+    BOOST_CHECK(parent_obj.admin_contacts.size() == dom.admin_contacts.size());
+
+    Fred::OperationContextCreator ctx;
+    const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(parent_obj.id).exec(ctx);
+    BOOST_FOREACH(const Fred::ObjectStateData& it, v_osd)
+    {
+        BOOST_CHECK(std::find(dom.statuses.begin(), dom.statuses.end(), it.state_name) !=
+                        dom.statuses.end());
+    }
+    BOOST_CHECK(v_osd.size() == dom.statuses.size());
+
+    BOOST_CHECK(dom.validated_to_time_estimate ==
+            ::Whois::domain_validation_expiration_datetime_estimate(
+                ctx, parent_obj.enum_domain_validation.get_value_or_default().validation_expiration));
+    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+
+    BOOST_CHECK(dom.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, parent_obj.expiration_date));
+    BOOST_CHECK(dom.expire_time_actual.isnull());
+}
+
+struct parent_child_fixture
+: whois_impl_instance_fixture
+{
+    const std::string child, parent;
+    Fred::InfoDomainData child_obj;
+    boost::posix_time::ptime now_utc;
+
+    parent_child_fixture()
+    : child("1.1.1.1.1.7.0.2.4.e164.arpa"),
+      parent("7.0.2.4.e164.arpa")
+    {
+        Fred::OperationContextCreator ctx;
+        child_obj = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(Test::registrar::make(ctx).handle,
+                          Test::contact::make(ctx).handle,
+                          child)
+                    .set_nsset(Test::nsset::make(ctx).handle) 
+                    .set_keyset(Test::keyset::make(ctx).handle) 
+                    .set_admin_contacts(
+                        Util::vector_of<std::string>(
+                            Test::contact::make(ctx).handle))
+                    .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                         boost::gregorian::date_duration(2))
+                    .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
+                                         boost::gregorian::date_duration(2)),
+                ctx);
+        now_utc = boost::posix_time::time_from_string(
+                static_cast<std::string>(ctx.get_conn()
+                    .exec("SELECT now()::timestamp")[0][0]));
+        ctx.commit_transaction();
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(parent_child, parent_child_fixture)
+{
+    Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(parent);
+
+    BOOST_CHECK(dom.changed.isnull());
+    BOOST_CHECK(dom.last_transfer.isnull());
+    BOOST_CHECK(dom.validated_to.get_value() == child_obj.enum_domain_validation.get_value().validation_expiration);
+    BOOST_CHECK(dom.fqdn                     == child_obj.fqdn);
+    BOOST_CHECK(dom.registered               == now_utc);
+    BOOST_CHECK(dom.registrant               == child_obj.registrant.handle);
+    BOOST_CHECK(dom.sponsoring_registrar     == child_obj.sponsoring_registrar_handle);
+    BOOST_CHECK(dom.expire                   == child_obj.expiration_date);
+    BOOST_CHECK(dom.fqdn                     == child_obj.fqdn);
+    BOOST_CHECK(dom.keyset                   == child_obj.keyset.get_value().handle);
+    BOOST_CHECK(dom.nsset                    == child_obj.nsset.get_value().handle);
+
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& it, child_obj.admin_contacts)
+    {
+        BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
+                        dom.admin_contacts.end());
+    }
+    BOOST_CHECK(child_obj.admin_contacts.size() == dom.admin_contacts.size());
+
+    Fred::OperationContextCreator ctx;
+    const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(child_obj.id).exec(ctx);
+    BOOST_FOREACH(const Fred::ObjectStateData& it, v_osd)
+    {
+        BOOST_CHECK(std::find(dom.statuses.begin(), dom.statuses.end(), it.state_name) !=
+                        dom.statuses.end());
+    }
+    BOOST_CHECK(v_osd.size() == dom.statuses.size());
+
+    BOOST_CHECK(dom.validated_to_time_estimate ==
+            ::Whois::domain_validation_expiration_datetime_estimate(
+                ctx, child_obj.enum_domain_validation.get_value_or_default().validation_expiration));
+    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+
+    BOOST_CHECK(dom.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, child_obj.expiration_date));
+    BOOST_CHECK(dom.expire_time_actual.isnull());
+}
+
+struct del_can_child_parent_fixture 
+: whois_impl_instance_fixture
+{
+    std::string child, parent;
+
+    del_can_child_parent_fixture()
+    : child("1.1.1.1.1.7.0.2.4.e164.arpa"),
+      parent("7.0.2.4.e164.arpa")
+    {
+        Fred::OperationContextCreator ctx;
+
+        Test::exec(
+            Test::CreateX_factory<Fred::CreateDomain>()
+                .make(Test::registrar(ctx).info_data.handle,
+                      Test::contact(ctx).info_data.handle,
+                      parent)
+                .set_nsset(Test::nsset::make(ctx).handle) 
+                .set_keyset(Test::keyset::make(ctx).handle) 
+                .set_admin_contacts(
+                    Util::vector_of<std::string>(
+                        Test::contact::make(ctx).handle))
+                .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                     boost::gregorian::date_duration(2))
+                .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
+                                     boost::gregorian::date_duration(2)),
+            ctx);
+        ctx.get_conn().exec_params(
+            "UPDATE domain_history "
+            "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                 "FROM enum_parameters "
+                 "WHERE name = 'expiration_registration_protection_period') "
+            "WHERE id = "
+                "(SELECT id "
+                 "FROM object_registry "
+                 "WHERE name = $1::text)",
+            Database::query_param_list(parent));
+        ctx.get_conn().exec_params(
+            "UPDATE domain "
+            "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                 "FROM enum_parameters "
+                 "WHERE name = 'expiration_registration_protection_period') "
+            "WHERE id = "
+                "(SELECT id "
+                 "FROM object_registry "
+                 "WHERE name = $1::text)",
+            Database::query_param_list(parent));
+
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(parent).exec(ctx, "UTC");
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+
+        ctx.commit_transaction();
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(del_can_child_parent, del_can_child_parent_fixture)
+{
+    Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(child);
+
+    BOOST_CHECK(dom.fqdn == parent);
+    BOOST_CHECK(dom.changed.isnull());
+    BOOST_CHECK(dom.last_transfer.isnull());
+    BOOST_CHECK(dom.validated_to.isnull());
+    BOOST_CHECK(dom.admin_contacts.empty());
+    BOOST_CHECK(dom.statuses.size() == 1);
+    BOOST_CHECK(dom.statuses.at(0)  == "deleteCandidate");
+    BOOST_CHECK(dom.registered      == boost::posix_time::ptime(not_a_date_time));
+    BOOST_CHECK(dom.registrant      == "");
+    BOOST_CHECK(dom.expire          == boost::gregorian::date(not_a_date_time));
+    BOOST_CHECK(dom.keyset          == "");
+    BOOST_CHECK(dom.nsset           == "");
+    BOOST_CHECK(dom.sponsoring_registrar == "");
+    BOOST_CHECK(dom.expire_time_estimate == boost::posix_time::ptime(not_a_date_time));
+    BOOST_CHECK(dom.expire_time_actual.isnull());
+    BOOST_CHECK(dom.validated_to_time_estimate.isnull());
+    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+}
+    
+struct del_can_parent_child_fixture 
+: whois_impl_instance_fixture
+{
+    std::string child, parent;
+
+    del_can_parent_child_fixture()
+    : child("1.1.1.1.1.7.0.2.4.e164.arpa"),
+      parent("7.0.2.4.e164.arpa")
+    {
+        Fred::OperationContextCreator ctx;
+
+        Test::exec(
+            Test::CreateX_factory<Fred::CreateDomain>()
+                .make(Test::registrar(ctx).info_data.handle,
+                      Test::contact(ctx).info_data.handle,
+                      child)
+                .set_nsset(Test::nsset::make(ctx).handle) 
+                .set_keyset(Test::keyset::make(ctx).handle) 
+                .set_admin_contacts(
+                    Util::vector_of<std::string>(
+                        Test::contact::make(ctx).handle))
+                .set_expiration_date(boost::gregorian::day_clock::local_day() +
+                                     boost::gregorian::date_duration(2))
+                .set_enum_validation_expiration(boost::gregorian::day_clock::local_day() +
+                                     boost::gregorian::date_duration(2)),
+            ctx);
+        ctx.get_conn().exec_params(
+            "UPDATE domain_history "
+            "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                 "FROM enum_parameters "
+                 "WHERE name = 'expiration_registration_protection_period') "
+            "WHERE id = "
+                "(SELECT id "
+                 "FROM object_registry "
+                 "WHERE name = $1::text)",
+            Database::query_param_list(child));
+        ctx.get_conn().exec_params(
+            "UPDATE domain "
+            "SET exdate = now() - "
+                "(SELECT val::int * '1 day'::interval "
+                 "FROM enum_parameters "
+                 "WHERE name = 'expiration_registration_protection_period') "
+            "WHERE id = "
+                "(SELECT id "
+                 "FROM object_registry "
+                 "WHERE name = $1::text)",
+            Database::query_param_list(child));
+
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(child).exec(ctx, "UTC");
+        Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
+
+        ctx.commit_transaction();
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(del_can_parent_child, del_can_parent_child_fixture)
+{
+    Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(parent);
+
+    BOOST_CHECK(dom.fqdn == child);
+    BOOST_CHECK(dom.changed.isnull());
+    BOOST_CHECK(dom.last_transfer.isnull());
+    BOOST_CHECK(dom.validated_to.isnull());
+    BOOST_CHECK(dom.admin_contacts.empty());
+    BOOST_CHECK(dom.statuses.size() == 1);
+    BOOST_CHECK(dom.statuses.at(0)  == "deleteCandidate");
+    BOOST_CHECK(dom.registered      == boost::posix_time::ptime(not_a_date_time));
+    BOOST_CHECK(dom.registrant      == "");
+    BOOST_CHECK(dom.expire          == boost::gregorian::date(not_a_date_time));
+    BOOST_CHECK(dom.keyset          == "");
+    BOOST_CHECK(dom.nsset           == "");
+    BOOST_CHECK(dom.sponsoring_registrar == "");
+    BOOST_CHECK(dom.expire_time_estimate == boost::posix_time::ptime(not_a_date_time));
+    BOOST_CHECK(dom.expire_time_actual.isnull());
+    BOOST_CHECK(dom.validated_to_time_estimate.isnull());
+    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+}
+    
 BOOST_AUTO_TEST_SUITE_END()//get_domain_by_handle
 BOOST_AUTO_TEST_SUITE_END()//TestWhois

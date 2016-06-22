@@ -650,20 +650,21 @@ static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& 
 WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
 {
     Fred::OperationContextCreator ctx;
+    const Fred::CheckDomain check_domain(handle);
     try
     {
         try
         {
             //check general name rules
-            if(Fred::CheckDomain(handle).is_invalid_syntax())
+            if(check_domain.is_invalid_syntax())
             {
                 throw InvalidLabel();
             }
-            if(Fred::CheckDomain(handle).is_bad_zone(ctx))
+            if(check_domain.is_bad_zone(ctx))
             {
                 throw UnmanagedZone();
             }
-            if(Fred::CheckDomain(handle).is_bad_length(ctx))
+            if(check_domain.is_bad_length(ctx))
             {
                 throw TooManyLabels();
             }
@@ -681,6 +682,21 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
         {
             if(e.is_set_unknown_fqdn())
             {
+                std::string conflicting_enum_domain;
+                if (check_domain.is_registered(ctx, conflicting_enum_domain))
+                {
+                    //returns info of conflicting domain instead of requested domain
+                    if(::Whois::is_domain_delete_pending(conflicting_enum_domain, ctx, "Europe/Prague"))
+                    {
+                        return Domain(generate_obfuscate_domain_delete_candidate(conflicting_enum_domain));
+                    }
+                    return make_domain_from_info_data(
+                               Fred::InfoDomainByHandle(conflicting_enum_domain)
+                                   .exec( ctx, get_output_timezone() )
+                                   .info_domain_data,
+                               ctx);
+                    //                    return get_domain_info(ctx, conflicting_enum_domain, false);
+                }
                 //check current registry name rules (that might change over time)
                 if(Fred::CheckDomain(handle).is_invalid_handle(ctx))
                 {
