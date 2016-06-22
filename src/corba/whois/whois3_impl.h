@@ -14,7 +14,6 @@ class Server_impl :
     public POA_Registry::Whois::WhoisIntf
 {
 private:
-    static const std::string output_timezone;
     const std::auto_ptr<Registry::WhoisImpl::Server_impl> pimpl_;
 
 public:

@@ -10,8 +10,6 @@
 namespace Registry {
 namespace Whois {
 
-const std::string Server_impl::output_timezone("UTC");
-
 PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
 {
     PlaceAddress result;
