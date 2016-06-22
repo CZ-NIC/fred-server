@@ -42,9 +42,9 @@ Registrar* Server_impl::get_registrar_by_handle(const char* handle)
 {
     try
     {
-        Registry::WhoisImpl::Registrar whois_reg =
-                pimpl_->get_registrar_by_handle(std::string(handle));
-        return new Registrar(wrap_registrar(whois_reg));//?
+        return new Registrar(
+                wrap_registrar(
+                    pimpl_->get_registrar_by_handle(std::string(handle))));
     }
     catch (...)
     {}
