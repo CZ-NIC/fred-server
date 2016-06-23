@@ -6,6 +6,8 @@
 
   * fix - mojeid backend log severity
 
+  * fix - mojeid transfer error handling
+
   * fredlib
     * refactored history data save in new operations
     * transfer operations
