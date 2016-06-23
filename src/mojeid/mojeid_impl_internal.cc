@@ -40,21 +40,17 @@ void set_optional_address_validation_result(
         return;
     }
 
-    if (result.street1_absent) {
-        e.street1 = MojeIDImplData::ValidationResult::REQUIRED;
-    }
+    e.street1 = result.street1_absent ? MojeIDImplData::ValidationResult::REQUIRED
+                                      : MojeIDImplData::ValidationResult::OK;
 
-    if (result.city_absent) {
-        e.city = MojeIDImplData::ValidationResult::REQUIRED;
-    }
+    e.city = result.city_absent ? MojeIDImplData::ValidationResult::REQUIRED
+                                : MojeIDImplData::ValidationResult::OK;
 
-    if (result.postalcode_absent) {
-        e.postal_code = MojeIDImplData::ValidationResult::REQUIRED;
-    }
+    e.postal_code = result.postalcode_absent ? MojeIDImplData::ValidationResult::REQUIRED
+                                             : MojeIDImplData::ValidationResult::OK;
 
-    if (result.country_absent) {
-        e.country = MojeIDImplData::ValidationResult::REQUIRED;
-    }
+    e.country = result.country_absent ? MojeIDImplData::ValidationResult::REQUIRED
+                                      : MojeIDImplData::ValidationResult::OK;
 }
 
 template < class EXCEPTION_CLASS >
