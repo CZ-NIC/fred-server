@@ -23,12 +23,6 @@
 #ifndef TEST_INTERFACE_EPP_UTIL_3563545411254
 #define TEST_INTERFACE_EPP_UTIL_3563545411254
 
-#include <vector>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
-
-#include <boost/test/unit_test.hpp>
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 
@@ -68,6 +62,23 @@ namespace Test {
 
         BOOST_CHECK(correct_exception_type_thrown);
     }
-}
+
+    class RegistrarProvider
+    {
+    public:
+        static const Fred::InfoRegistrarData& get_registrar_a();
+        static const Fred::InfoRegistrarData& get_registrar_b();
+        static const Fred::InfoRegistrarData& get_sys_registrar();
+    private:
+        RegistrarProvider();
+        explicit RegistrarProvider(Fred::OperationContext &ctx);
+        static Fred::InfoRegistrarData create_registrar(Fred::OperationContext&, const std::string&, bool);
+        static const RegistrarProvider& get_const_instance();
+        const Fred::InfoRegistrarData registrar_a_;
+        const Fred::InfoRegistrarData registrar_b_;
+        const Fred::InfoRegistrarData sys_registrar_;
+    };
+
+}//namespace Test
 
 #endif

@@ -2371,6 +2371,8 @@ tests_interfaces_test_admin_notification_LDADD = \
 # tests/interfaces/test-epp
 #
 tests_interfaces_test_epp_SOURCES = \
+		tests/interfaces/epp/util.h \
+		tests/interfaces/epp/util.cc \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
 		tests/interfaces/epp/contact/test_contact_create_impl.cc \
