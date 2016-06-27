@@ -71,12 +71,24 @@ namespace Test {
         static const Fred::InfoRegistrarData& get_sys_registrar();
     private:
         RegistrarProvider();
-        explicit RegistrarProvider(Fred::OperationContext &ctx);
+        explicit RegistrarProvider(Fred::OperationContext&);
         static Fred::InfoRegistrarData create_registrar(Fred::OperationContext&, const std::string&, bool);
         static const RegistrarProvider& get_const_instance();
         const Fred::InfoRegistrarData registrar_a_;
         const Fred::InfoRegistrarData registrar_b_;
         const Fred::InfoRegistrarData sys_registrar_;
+    };
+
+    class ContactProvider
+    {
+    public:
+        static const Fred::InfoContactData& get_contact(unsigned idx);
+    private:
+        ContactProvider();
+        explicit ContactProvider(Fred::OperationContext&, unsigned);
+        static Fred::InfoContactData create_contact(Fred::OperationContext&, const std::string&, const std::string&);
+        static const ContactProvider& get_const_instance();
+        std::vector< Fred::InfoContactData > contact_;
     };
 
 }//namespace Test

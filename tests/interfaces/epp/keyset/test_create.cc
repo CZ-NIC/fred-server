@@ -20,22 +20,20 @@
  *  @file
  */
 
-#include "tests/interfaces/epp/util.h"
-
+#include "tests/interfaces/epp/keyset/fixture.h"
 #include "src/epp/keyset/create.h"
+#include "src/fredlib/registrar/create_registrar.h"
+
+#include <sstream>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/assign/list_of.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(KeysetCreate)
+BOOST_AUTO_TEST_SUITE(Keyset)
 
-BOOST_AUTO_TEST_CASE(test_create_ok)
+BOOST_FIXTURE_TEST_CASE(create, Test::ObjectsProvider)
 {
+    const std::string registrar_handle = this->get_registrar_a().handle;
     BOOST_CHECK(true);
-    BOOST_CHECK(false);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

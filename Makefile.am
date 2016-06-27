@@ -2372,9 +2372,9 @@ tests_interfaces_test_admin_notification_LDADD = \
 #
 tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/util.h \
-		tests/interfaces/epp/util.cc \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
+		tests/interfaces/epp/contact/fixture.h \
 		tests/interfaces/epp/contact/test_contact_create_impl.cc \
 		tests/interfaces/epp/contact/test_contact_delete_impl.cc \
 		tests/interfaces/epp/contact/test_contact_info_impl.cc \
@@ -2382,6 +2382,8 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_check_impl.cc \
 		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/keyset/fixture.h \
+		tests/interfaces/epp/keyset/fixture.cc \
 		tests/interfaces/epp/keyset/test_create.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
