@@ -7,6 +7,7 @@
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/nsset/check_nsset.h"
+#include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
@@ -83,6 +84,81 @@ unsigned long long nsset_update_impl(
                 Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
     ) {
         throw ObjectStatusProhibitingOperation();
+    }
+
+    //check technical contacts to add and remove
+    //check dns hosts to add and remove
+    {
+        ParameterValuePolicyError ex;
+        std::map<std::string, std::size_t> tech_contact_to_add_duplicity_map;
+        for(std::size_t i = 0; i < _data.tech_contacts_add.size(); ++i)
+        {   //check technical contact exists
+            if(Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts_add.at(i))
+                != Fred::ContactHandleState::Registrability::registered)
+            {
+                ex.add(Error(Param::nsset_tech_add,
+                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                    Reason::tech_notexist));
+            }
+            else
+            {//check technical contact duplicity
+                const std::string upper_tech_contact_handle = boost::algorithm::to_upper_copy(
+                    _data.tech_contacts_add.at(i));
+                Optional<std::size_t> duplicity = optional_map_at<Optional>(
+                    tech_contact_to_add_duplicity_map, upper_tech_contact_handle);
+
+                if(duplicity.isset())
+                {
+                    ex.add(Error(Param::nsset_tech_add,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::duplicity_contact));
+                }
+                else
+                {
+                    tech_contact_to_add_duplicity_map[upper_tech_contact_handle] = i;
+                }
+            }
+        }
+
+        std::map<std::string, std::size_t> tech_contact_to_remove_duplicity_map;
+
+
+        std::set<std::string> nsset_tech_c_handles;
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_c_element, nsset_data_before_update.tech_contacts)
+        {
+            nsset_tech_c_handles.insert(tech_c_element.handle);
+        }
+
+        for(std::size_t i = 0; i < _data.tech_contacts_rem.size(); ++i)
+        {
+            //check if given tech contact to remove is NOT admin of nsset
+            if(nsset_tech_c_handles.find(_data.tech_contacts_rem.at(i)) == nsset_tech_c_handles.end())
+            {
+                ex.add(Error(Param::nsset_tech_rem,
+                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                    Reason::can_not_remove_tech));
+            }
+            else
+            {//check technical contact duplicity
+                const std::string upper_tech_contact_handle = boost::algorithm::to_upper_copy(
+                    _data.tech_contacts_rem.at(i));
+                Optional<std::size_t> duplicity = optional_map_at<Optional>(
+                    tech_contact_to_remove_duplicity_map, upper_tech_contact_handle);
+
+                if(duplicity.isset())
+                {
+                    ex.add(Error(Param::nsset_tech_rem,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::duplicity_contact));
+                }
+                else
+                {
+                    tech_contact_to_remove_duplicity_map[upper_tech_contact_handle] = i;
+                }
+            }
+        }
+
+        if(!ex.is_empty()) throw ex;
     }
 
 
