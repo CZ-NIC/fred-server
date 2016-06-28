@@ -4,6 +4,7 @@
 #include "src/epp/conditionally_enqueue_notification.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
+#include "src/epp/parameter_errors.h"
 #include "src/epp/localization.h"
 #include "src/epp/action.h"
 
@@ -60,13 +61,19 @@ LocalizedSuccessResponse localized_delete(
             std::set< Error >(),
             _lang);
     }
-    catch (const AutorError &e) {
+    catch (const ParameterErrors &e) {
         Fred::OperationContextCreator ctx;
-        throw create_localized_fail_response(
-            ctx,
-            Response::autor_error,
-            std::set< Error >(),
-            _lang);
+        std::set< Error > errors;
+
+        if (e.has_scalar_parameter_error(Param::registrar_autor, Reason::registrar_autor)) {
+            errors.insert(scalar_parameter_failure(Param::registrar_autor, Reason::registrar_autor));
+            throw create_localized_fail_response(
+                ctx,
+                Response::authorization_error,
+                std::set< Error >(),
+                _lang);
+        }
+        throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
     }
     catch (const ObjectStatusProhibitingOperation &e) {
         Fred::OperationContextCreator ctx;
