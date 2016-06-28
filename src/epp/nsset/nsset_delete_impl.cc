@@ -35,7 +35,13 @@ unsigned long long nsset_delete_impl(
             .exec(_ctx)
             .info_registrar_data;
 
-    if( sponsoring_registrar_before_update.id != _registrar_id ) {
+    const Fred::InfoRegistrarData logged_in_registrar = Fred::InfoRegistrarById(_registrar_id)
+                .set_lock(/* TODO lock registrar for share */ )
+                .exec(_ctx)
+                .info_registrar_data;
+
+    if( sponsoring_registrar_before_update.id != _registrar_id
+        && !logged_in_registrar.system.get_value_or_default() ) {
         throw AutorError();
     }
 
@@ -43,15 +49,19 @@ unsigned long long nsset_delete_impl(
     Fred::LockObjectStateRequestLock(nsset_data_before_delete.id).exec(_ctx);
     Fred::PerformObjectStateRequest(nsset_data_before_delete.id).exec(_ctx);
 
-    if( Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
+    if(!logged_in_registrar.system.get_value_or_default()
+            && ( Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
         ||
         Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(_ctx)
         ||
         Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
-        ||
-        Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::LINKED).exec(_ctx)
-    ) {
+    )) {
         throw ObjectStatusProhibitingOperation();
+    }
+
+    if(Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::LINKED).exec(_ctx))
+    {
+        throw ObjectAssotiationProhibitsOperation();
     }
 
     try {
