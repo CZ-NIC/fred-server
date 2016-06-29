@@ -32,6 +32,8 @@
 #include "src/epp/contact/contact_check.h"
 #include "src/epp/localized_response.h"
 
+#include <boost/optional.hpp>
+
 namespace Corba {
 
     Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
@@ -55,7 +57,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string, LazyNullable<Epp::LocalizedContactHandleRegistrationObstruction> >& contact_handle_check_results
+        const std::map< std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > >& contact_handle_check_results
     );
 }
 

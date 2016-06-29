@@ -27,10 +27,10 @@
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "src/epp/contact/contact_handle_registration_obstruction.h"
-#include "util/lazy_nullable_type.h"
 #include "util/db/nullable.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 namespace Epp {
 
@@ -49,11 +49,11 @@ struct LocalizedContactHandleRegistrationObstruction {
 
 struct LocalizedCheckContactResponse {
     const LocalizedSuccessResponse ok_response;
-    const std::map<std::string, LazyNullable<LocalizedContactHandleRegistrationObstruction> > contact_statuses;
+    const std::map< std::string, boost::optional< LocalizedContactHandleRegistrationObstruction > > contact_statuses;
 
     LocalizedCheckContactResponse(
         const LocalizedSuccessResponse& _ok_response,
-        const std::map<std::string, LazyNullable<LocalizedContactHandleRegistrationObstruction> >& _contact_statuses
+        const std::map< std::string, boost::optional< LocalizedContactHandleRegistrationObstruction > >& _contact_statuses
     ) :
         ok_response(_ok_response),
         contact_statuses(_contact_statuses)

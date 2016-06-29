@@ -381,13 +381,13 @@ namespace Corba {
         return result;
     }
 
-    static ccReg::CheckAvail wrap_contact_handle_check_result(const LazyNullable<Epp::LocalizedContactHandleRegistrationObstruction>& _obstruction) {
+    static ccReg::CheckAvail wrap_contact_handle_check_result(const boost::optional< Epp::LocalizedContactHandleRegistrationObstruction >& _obstruction) {
 
-        if( _obstruction.isnull() ) {
+        if (!_obstruction.is_initialized()) {
             return ccReg::NotExist;
         }
 
-        switch( _obstruction.get_value().state ) {
+        switch (_obstruction.get().state) {
             case Epp::ContactHandleRegistrationObstruction::invalid_handle      : return ccReg::BadFormat;
             case Epp::ContactHandleRegistrationObstruction::protected_handle    : return ccReg::DelPeriod; // XXX oh my
             case Epp::ContactHandleRegistrationObstruction::registered_handle   : return ccReg::Exist;
@@ -401,7 +401,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string, LazyNullable<Epp::LocalizedContactHandleRegistrationObstruction> >& contact_handle_check_results
+        const std::map< std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > >& contact_handle_check_results
     ) {
         ccReg::CheckResp result;
         result.length( contact_handles.size() );
@@ -412,10 +412,10 @@ namespace Corba {
             it != contact_handles.end();
             ++it, ++i
         ) {
-            const LazyNullable<Epp::LocalizedContactHandleRegistrationObstruction> check_result = map_at(contact_handle_check_results, *it);
+            const boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > check_result = map_at(contact_handle_check_results, *it);
 
             result[i].avail = wrap_contact_handle_check_result( check_result );
-            result[i].reason = Corba::wrap_string_to_corba_string( check_result.isnull() ? "" : check_result.get_value().description );
+            result[i].reason = Corba::wrap_string_to_corba_string(check_result.is_initialized() ? check_result.get().description : "");
         }
 
         return result;

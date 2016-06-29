@@ -88,7 +88,7 @@ static std::map<ContactHandleRegistrationObstruction::Enum, std::string> get_loc
     return result;
 }
 
-static std::map<std::string, LazyNullable<LocalizedContactHandleRegistrationObstruction> > create_localized_check_response(
+static std::map< std::string, boost::optional< LocalizedContactHandleRegistrationObstruction > > create_localized_check_response(
     Fred::OperationContext& _ctx,
     const std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> >& _check_results,
     const SessionLang::Enum _lang
@@ -99,7 +99,7 @@ static std::map<std::string, LazyNullable<LocalizedContactHandleRegistrationObst
         _lang
     );
 
-    std::map<std::string, LazyNullable<LocalizedContactHandleRegistrationObstruction> > result;
+    std::map< std::string, boost::optional< LocalizedContactHandleRegistrationObstruction > > result;
 
     for(std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> >::const_iterator contact_it = _check_results.begin();
         contact_it != _check_results.end();
@@ -110,8 +110,8 @@ static std::map<std::string, LazyNullable<LocalizedContactHandleRegistrationObst
                 std::make_pair(
                     contact_it->first,
                     contact_it->second.isnull()
-                    ?   LazyNullable<LocalizedContactHandleRegistrationObstruction>()
-                    :   LazyNullable<LocalizedContactHandleRegistrationObstruction>(
+                    ?   boost::optional< LocalizedContactHandleRegistrationObstruction >()
+                    :   boost::optional< LocalizedContactHandleRegistrationObstruction >(
                             LocalizedContactHandleRegistrationObstruction(
                                 contact_it->second.get_value(),
                                 map_at(localized_description_of_obstructions, contact_it->second.get_value())
