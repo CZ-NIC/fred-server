@@ -40,6 +40,7 @@ namespace Epp {
     struct SsnWithoutSsnType               :Exception { const char* what() const throw() { return "ssn without ssntype"; } };
 
     struct InvalidIdentTypeDbHandle        :Exception { const char* what() const throw() { return "invalid IdentType db handle"; } };
+    struct InvalidResponseValue            :Exception { const char* what() const throw() { return "invalid Response::Enum value"; } };
 
     /* localized descriptions */
     struct LocalizedDescriptionException:Exception { };

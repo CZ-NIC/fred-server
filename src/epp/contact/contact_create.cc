@@ -85,7 +85,7 @@ LocalizedCreateContactResponse contact_create(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_error,
+            Response::parameter_error,
             e.get(),
             _lang
         );

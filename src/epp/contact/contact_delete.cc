@@ -71,7 +71,7 @@ LocalizedSuccessResponse contact_delete(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::autor_error,
+            Response::authorization_error,
             std::set<Error>(),
             _lang
         );

@@ -87,7 +87,7 @@ LocalizedSuccessResponse contact_update(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::autor_error,
+            Response::authorization_error,
             std::set<Error>(),
             _lang
         );
@@ -105,7 +105,7 @@ LocalizedSuccessResponse contact_update(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_missing,
+            Response::parameter_missing,
             std::set<Error>(),
             _lang
         );
@@ -114,7 +114,7 @@ LocalizedSuccessResponse contact_update(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_missing,
+            Response::parameter_missing,
             std::set<Error>(),
             _lang
         );
@@ -123,7 +123,7 @@ LocalizedSuccessResponse contact_update(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_error,
+            Response::parameter_error,
             e.get(),
             _lang
         );

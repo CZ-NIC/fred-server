@@ -27,71 +27,83 @@
 
 namespace Epp {
 
-struct Response {
-    enum Enum {
-        ok                          = 1000,
-        no_mesg                     = 1300,
-        ack_mesg                    = 1301,
-        logout                      = 1500,
-
-        failed                      = 2400,
-        exception                   = 2000,
-        object_not_exist            = 2303,
-        object_exist                = 2302,
-        authentication_error_server_closing_connection = 2501,
-        authentication_error        = 2200,
-        autor_error                 = 2201,
-        parametr_value_policy_error = 2306,
-        status_prohibits_operation  = 2304,
-        prohibits_operation         = 2305,
-        not_eligible_for_renew      = 2105,
-        not_eligible_for_transfer   = 2106,
-        parametr_error              = 2005,
-        parametr_range_error        = 2004,
-        parametr_missing            = 2003,
-        billing_failure             = 2104,
-        max_session_limit           = 2502
+struct Response
+{
+    enum Enum
+    {
+        ok,
+        no_mesg,
+        ack_mesg,
+        logout,
+        failed,
+        exception,
+        object_not_exist,
+        object_exist,
+        authentication_error_server_closing_connection,
+        authentication_error,
+        authorization_error,
+        parameter_value_policy_error,
+        status_prohibits_operation,
+        prohibits_operation,
+        not_eligible_for_renew,
+        not_eligible_for_transfer,
+        parameter_error,
+        parameter_range_error,
+        parameter_missing,
+        billing_failure,
+        max_session_limit,
     };
 };
 
-inline unsigned to_description_db_id(const Response::Enum state) {
-    return static_cast<unsigned>(state);
-}
-
-template<typename T> inline typename T::Enum from_description_db_id(const unsigned id);
-
-/**
- * @throws UnknownLocalizedDescriptionId
- */
-template<> inline Response::Enum from_description_db_id<Response>(const unsigned id) {
-
-    /* Not using simple static_cast because id value validation would look similar to switch below. */
-    switch(id) {
-        case 1000: return Response::ok;
-        case 1300: return Response::no_mesg;
-        case 1301: return Response::ack_mesg;
-        case 1500: return Response::logout;
-
-        case 2400: return Response::failed;
-        case 2000: return Response::exception;
-        case 2303: return Response::object_not_exist;
-        case 2302: return Response::object_exist;
-        case 2501: return Response::authentication_error_server_closing_connection;
-        case 2200: return Response::authentication_error;
-        case 2201: return Response::autor_error;
-        case 2306: return Response::parametr_value_policy_error;
-        case 2304: return Response::status_prohibits_operation;
-        case 2305: return Response::prohibits_operation;
-        case 2105: return Response::not_eligible_for_renew;
-        case 2106: return Response::not_eligible_for_transfer;
-        case 2005: return Response::parametr_error;
-        case 2004: return Response::parametr_range_error;
-        case 2003: return Response::parametr_missing;
-        case 2104: return Response::billing_failure;
-        case 2502: return Response::max_session_limit;
+//db table enum_error
+inline unsigned to_description_db_id(Response::Enum state)
+{
+    switch (state)
+    {
+        //Command completed successfully
+        case Response::ok:                           return 1000;
+        //Command completed successfully; no messages
+        case Response::no_mesg:                      return 1300;
+        //Command completed successfully; ack to dequeue
+        case Response::ack_mesg:                     return 1301;
+        //Command completed successfully; ending session
+        case Response::logout:                       return 1500;
+        //Unknown command
+        case Response::exception:                    return 2000;
+        //Required parameter missing
+        case Response::parameter_missing:            return 2003;
+        //Parameter value range error
+        case Response::parameter_range_error:        return 2004;
+        //Parameter value syntax error
+        case Response::parameter_error:              return 2005;
+        //Billing failure
+        case Response::billing_failure:              return 2104;
+        //Object is not eligible for renewal
+        case Response::not_eligible_for_renew:       return 2105;
+        //Object is not eligible for transfer
+        case Response::not_eligible_for_transfer:    return 2106;
+        //Authentication error
+        case Response::authentication_error:         return 2200;
+        //Authorization error
+        case Response::authorization_error:          return 2201;
+        //Object exists
+        case Response::object_exist:                 return 2302;
+        //Object does not exist
+        case Response::object_not_exist:             return 2303;
+        //Object status prohibits operation
+        case Response::status_prohibits_operation:   return 2304;
+        //Object association prohibits operation
+        case Response::prohibits_operation:          return 2305;
+        //Parameter value policy error
+        case Response::parameter_value_policy_error: return 2306;
+        //Command failed
+        case Response::failed:                       return 2400;
+        //Authentication error; server closing connection
+        case Response::authentication_error_server_closing_connection: return 2501;
+        //Session limit exceeded; server closing connection
+        case Response::max_session_limit:            return 2502;
     }
-
-    throw UnknownLocalizedDescriptionId();
+    throw InvalidResponseValue();
 }
 
 }
