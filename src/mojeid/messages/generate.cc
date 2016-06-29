@@ -634,7 +634,7 @@ struct generate_message< CommChannel::letter, Fred::MojeID::PublicRequest::Conta
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
-        typedef Fred::Object::State FOS;
+        typedef Fred::Object_State FOS;
         const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::validated_contact);
         const std::string message_type_mojeid_pin3 = "mojeid_pin3";
         Database::query_param_list params;
@@ -715,7 +715,7 @@ struct generate_message< CommChannel::letter, Fred::MojeID::PublicRequest::Conta
         const std::string &_link_hostname_part,
         const Optional< GeneralId > &_contact_history_id)
     {
-        typedef Fred::Object::State FOS;
+        typedef Fred::Object_State FOS;
         const std::string state_validated_contact = Conversion::Enums::to_db_handle(FOS::validated_contact);
         Database::query_param_list params;
         params(_locked_request.get_id())

@@ -304,13 +304,13 @@ void check_object_state_desc_data(std::vector<Fred::ObjectStateDescription> test
 
 
 /**
- * test Fred::Object::State conversion functions
+ * test Fred::Object_State conversion functions
  */
 BOOST_AUTO_TEST_CASE(fred_object_state_conversions)
 {
     Fred::OperationContextCreator ctx;
     static const char *const sql = "SELECT name FROM enum_object_states";
-    enum_to_db_handle_conversion_test< Fred::Object::State, 27 >(ctx, sql);
+    enum_to_db_handle_conversion_test< Fred::Object_State, 27 >(ctx, sql);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_object_state_descriptions, object_state_description_fixture)

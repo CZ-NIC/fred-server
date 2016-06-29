@@ -30,33 +30,30 @@
 
 /// Fred matters
 namespace Fred {
-/// Fred objects matters
-namespace Object {
 
-class StatesInfo
+class ObjectStatesInfo
 {
 public:
     typedef std::vector< ObjectStateData > ObjectStates;
-    explicit StatesInfo(const ObjectStates &_data)
+    explicit ObjectStatesInfo(const ObjectStates &_data)
     {
         for (ObjectStates::const_iterator ptr = _data.begin(); ptr != _data.end(); ++ptr) {
-            presents_.insert(Conversion::Enums::from_db_handle< State >(ptr->state_name));
+            presents_.insert(Conversion::Enums::from_db_handle< Object_State >(ptr->state_name));
         }
     }
-    bool presents(State::Enum _state)const
+    bool presents(Object_State::Enum _state)const
     {
         return presents_.find(_state) != presents_.end();
     }
-    bool absents(State::Enum _state)const
+    bool absents(Object_State::Enum _state)const
     {
         return !this->presents(_state);
     }
 private:
-    typedef std::set< State::Enum > SetOfStates;
+    typedef std::set< Object_State::Enum > SetOfStates;
     SetOfStates presents_;
 };
 
-}//Fred::Object
 }//Fred
 
 #endif//STATES_INFO_H_8E754FC03E96F93ACCE180D1B5BA0C82

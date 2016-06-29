@@ -741,7 +741,7 @@ void MojeIDImpl::transfer_contact_prepare(
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::InfoContactData contact = Fred::InfoContactByHandle(_handle).exec(ctx).info_contact_data;
         const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact.id);
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(contact.id).exec(ctx));
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(contact.id).exec(ctx));
         {
             const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);
             if (!check_result.success()) {
@@ -757,25 +757,25 @@ void MojeIDImpl::transfer_contact_prepare(
         }
 
         Fred::CreatePublicRequestAuth::Result pub_req_result;
-        if (states.absents(Fred::Object::State::conditionally_identified_contact) &&
-            states.absents(Fred::Object::State::identified_contact) &&
-            states.absents(Fred::Object::State::validated_contact))
+        if (states.absents(Fred::Object_State::conditionally_identified_contact) &&
+            states.absents(Fred::Object_State::identified_contact) &&
+            states.absents(Fred::Object_State::validated_contact))
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ContactConditionalIdentification(),
                 _trans_id, contact, locked_contact, mojeid_registrar_id_, _log_request_id);
         }
-        else if (states.presents(Fred::Object::State::conditionally_identified_contact) &&
-                 states.absents(Fred::Object::State::identified_contact) &&
-                 states.absents(Fred::Object::State::validated_contact))
+        else if (states.presents(Fred::Object_State::conditionally_identified_contact) &&
+                 states.absents(Fred::Object_State::identified_contact) &&
+                 states.absents(Fred::Object_State::validated_contact))
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::ConditionallyIdentifiedContactTransfer(),
                 _trans_id, contact, locked_contact, mojeid_registrar_id_, _log_request_id);
         }
-        else if (states.presents(Fred::Object::State::conditionally_identified_contact) &&
-                 states.presents(Fred::Object::State::identified_contact) &&
-                 states.absents(Fred::Object::State::validated_contact))
+        else if (states.presents(Fred::Object_State::conditionally_identified_contact) &&
+                 states.presents(Fred::Object_State::identified_contact) &&
+                 states.absents(Fred::Object_State::validated_contact))
         {
             pub_req_result = action_transfer_contact_prepare(
                 Fred::MojeID::PublicRequest::IdentifiedContactTransfer(),
@@ -907,8 +907,8 @@ void MojeIDImpl::update_contact_prepare(
         from_into(_new_data, new_data);
         new_data.id = _contact_id;
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
-        if (states.absents(Fred::Object::State::mojeid_contact)) {
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
+        if (states.absents(Fred::Object_State::mojeid_contact)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
         const Fred::InfoContactData current_data = Fred::InfoContactById(new_data.id).exec(ctx).info_contact_data;
@@ -929,10 +929,10 @@ void MojeIDImpl::update_contact_prepare(
         const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, new_data.id);
         Fred::StatusList to_cancel;
         bool drop_validation = false;
-        if (states.presents(Fred::Object::State::validated_contact)) {
+        if (states.presents(Fred::Object_State::validated_contact)) {
             drop_validation = validated_data_changed(current_data, new_data);
             if (drop_validation) {
-                to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::validated_contact));
+                to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));
             }
         }
         const bool drop_identification = identified_data_changed(current_data, new_data);
@@ -941,9 +941,9 @@ void MojeIDImpl::update_contact_prepare(
             cancel_message_sending< MessageType::mojeid_pin3, CommType::letter >(ctx, new_data.id);
         }
         if (drop_identification) {
-            bool reidentification_needed = states.presents(Fred::Object::State::identified_contact);
+            bool reidentification_needed = states.presents(Fred::Object_State::identified_contact);
             if (reidentification_needed) {
-                to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact));
+                to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::identified_contact));
             }
             else {
                 const Database::Result dbres = ctx.get_conn().exec_params(
@@ -960,8 +960,8 @@ void MojeIDImpl::update_contact_prepare(
                                        " os.valid_from<valid_to))",
                     Database::query_param_list
                         (new_data.id)                                                               //$1::BIGINT
-                        (Conversion::Enums::to_db_handle(Fred::Object::State::mojeid_contact))      //$2::TEXT
-                        (Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact)));//$3::TEXT
+                        (Conversion::Enums::to_db_handle(Fred::Object_State::mojeid_contact))      //$2::TEXT
+                        (Conversion::Enums::to_db_handle(Fred::Object_State::identified_contact)));//$3::TEXT
                 const bool contact_was_identified_in_the_past = 0 < dbres.size();
                 if (contact_was_identified_in_the_past) {
                     reidentification_needed = true;
@@ -988,8 +988,8 @@ void MojeIDImpl::update_contact_prepare(
                 throw check_contact_data;
             }
         }
-        const bool manual_verification_done = states.presents(Fred::Object::State::contact_failed_manual_verification) ||
-                                              states.presents(Fred::Object::State::contact_passed_manual_verification);
+        const bool manual_verification_done = states.presents(Fred::Object_State::contact_failed_manual_verification) ||
+                                              states.presents(Fred::Object_State::contact_passed_manual_verification);
         if (manual_verification_done) {
             const bool cancel_manual_verification = data_changes.name.isset()         ||
                                                     data_changes.organization.isset() ||
@@ -1000,11 +1000,11 @@ void MojeIDImpl::update_contact_prepare(
                                                     data_changes.telephone.isset()    ||
                                                     data_changes.fax.isset();
             if (cancel_manual_verification) {
-                if (states.presents(Fred::Object::State::contact_failed_manual_verification)) {
-                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::contact_failed_manual_verification));
+                if (states.presents(Fred::Object_State::contact_failed_manual_verification)) {
+                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::contact_failed_manual_verification));
                 }
-                if (states.presents(Fred::Object::State::contact_passed_manual_verification)) {
-                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::contact_passed_manual_verification));
+                if (states.presents(Fred::Object_State::contact_passed_manual_verification)) {
+                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::contact_passed_manual_verification));
                 }
             }
         }
@@ -1014,8 +1014,8 @@ void MojeIDImpl::update_contact_prepare(
         }
         Fred::UpdateContactById update_contact_op(new_data.id, mojeid_registrar_handle_);
         set_update_contact_op(data_changes, update_contact_op);
-        const bool is_identified = states.presents(Fred::Object::State::identified_contact) && !drop_identification;
-        const bool is_validated  = states.presents(Fred::Object::State::validated_contact) && !drop_validation;
+        const bool is_identified = states.presents(Fred::Object_State::identified_contact) && !drop_identification;
+        const bool is_validated  = states.presents(Fred::Object_State::validated_contact) && !drop_validation;
         const bool addr_can_be_hidden = (is_identified || is_validated) &&
                                         new_data.organization.get_value_or_default().empty();
         if (!addr_can_be_hidden) {
@@ -1082,7 +1082,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         const Fred::InfoContactData current_data = Fred::InfoContactByHandle(_username).exec(ctx).info_contact_data;
         new_data.id     = current_data.id;
         new_data.handle = current_data.handle;
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(new_data.id).exec(ctx));
         {
             const MojeIDImplInternal::CheckTransferContactPrepareStates check_result(states);
             if (!check_result.success()) {
@@ -1095,7 +1095,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
         bool drop_cond_identification = false;
         unsigned long long history_id;
         {
-            if (states.presents(Fred::Object::State::identified_contact)) {
+            if (states.presents(Fred::Object_State::identified_contact)) {
                 const Fred::InfoContactData &c1 = current_data;
                 const Fred::InfoContactData &c2 = new_data;
                 drop_identification = c1.name.get_value_or_default() != c2.name.get_value_or_default();
@@ -1115,8 +1115,8 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                         (a1.country                                != a2.country);
                 }
             }
-            if (states.presents(Fred::Object::State::conditionally_identified_contact) ||
-                (!drop_identification && states.presents(Fred::Object::State::identified_contact)))
+            if (states.presents(Fred::Object_State::conditionally_identified_contact) ||
+                (!drop_identification && states.presents(Fred::Object_State::identified_contact)))
             {
                 const Fred::InfoContactData &c1 = current_data;
                 const Fred::InfoContactData &c2 = new_data;
@@ -1129,15 +1129,15 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
                 Fred::StatusList to_cancel;
                 //drop conditionally identified flag if e-mail or mobile changed
                 if (drop_cond_identification &&
-                    states.presents(Fred::Object::State::conditionally_identified_contact))
+                    states.presents(Fred::Object_State::conditionally_identified_contact))
                 {
-                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact));
+                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::conditionally_identified_contact));
                 }
                 //drop identified flag if name, mailing address, e-mail or mobile changed
                 if (drop_identification &&
-                    states.presents(Fred::Object::State::identified_contact))
+                    states.presents(Fred::Object_State::identified_contact))
                 {
-                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact));
+                    to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::identified_contact));
                 }
                 if (!to_cancel.empty()) {
                     try {
@@ -1184,7 +1184,7 @@ MojeIDImplData::InfoContact MojeIDImpl::update_transfer_contact_prepare(
             }
             history_id = update_contact_op.exec(ctx);
         }
-        const bool is_cond_identified = states.presents(Fred::Object::State::conditionally_identified_contact) &&
+        const bool is_cond_identified = states.presents(Fred::Object_State::conditionally_identified_contact) &&
                                         !drop_cond_identification;
         Fred::CreatePublicRequestAuth op_create_pub_req;
         if (!current_data.notifyemail.get_value_or_default().empty()) {
@@ -1342,9 +1342,9 @@ void MojeIDImpl::get_contact_info_publish_flags(
     try {
         Fred::OperationContextCreator ctx;
         const Fred::InfoContactData data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
 
-        if (states.presents(Fred::Object::State::linked)) {
+        if (states.presents(Fred::Object_State::linked)) {
             _flags.first_name   = data.disclosename;
             _flags.last_name    = data.disclosename;
             _flags.organization = data.discloseorganization;
@@ -1426,7 +1426,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
         const Fred::ObjectId contact_id = pub_req_info.get_object_id().get_value();
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(contact_id).exec(ctx));
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(contact_id).exec(ctx));
         const PubReqType::Enum pub_req_type(Conversion::Enums::from_db_handle< PubReqType >(pub_req_info.get_type()));
         try {
             switch (pub_req_info.get_status()) {
@@ -1441,20 +1441,20 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
             Fred::StatusList to_set;
             switch (pub_req_type) {
             case PubReqType::contact_conditional_identification:
-                to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact));
+                to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::conditionally_identified_contact));
                 break;
             case PubReqType::prevalidated_unidentified_contact_transfer:
-                to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact));
-                if (states.absents(Fred::Object::State::validated_contact)) {
-                    to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::validated_contact));
+                to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::conditionally_identified_contact));
+                if (states.absents(Fred::Object_State::validated_contact)) {
+                    to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));
                 }
                 break;
             case PubReqType::conditionally_identified_contact_transfer:
             case PubReqType::identified_contact_transfer:
                 break;
             case PubReqType::prevalidated_contact_transfer:
-                if (states.absents(Fred::Object::State::validated_contact)) {
-                    to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::validated_contact));
+                if (states.absents(Fred::Object_State::validated_contact)) {
+                    to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));
                 }
                 break;
             default:
@@ -1488,10 +1488,10 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 throw MojeIDImplData::IdentificationFailed();
             }
 
-            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::server_delete_prohibited));
-            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::server_transfer_prohibited));
-            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::server_update_prohibited));
-            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::mojeid_contact));
+            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::server_delete_prohibited));
+            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::server_transfer_prohibited));
+            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::server_update_prohibited));
+            to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::mojeid_contact));
             Fred::CreateObjectStateRequestId(contact_id, to_set).exec(ctx);
             Fred::PerformObjectStateRequest(contact_id).exec(ctx);
 
@@ -1527,8 +1527,8 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                    "successfully processed",
                    _log_request_id);
 
-            if (Fred::Object::StatesInfo(Fred::GetObjectStates(contact_id).exec(ctx))
-                    .absents(Fred::Object::State::identified_contact)) {
+            if (Fred::ObjectStatesInfo(Fred::GetObjectStates(contact_id).exec(ctx))
+                    .absents(Fred::Object_State::identified_contact)) {
                 Fred::CreatePublicRequestAuth op_create_pub_req;
                 op_create_pub_req.set_registrar_id(mojeid_registrar_id_);
                 Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, contact_id);
@@ -1627,22 +1627,22 @@ void MojeIDImpl::process_identification_request(
                 throw;
             }
         }
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
-        if (states.absents(Fred::Object::State::mojeid_contact)) {
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.absents(Fred::Object_State::mojeid_contact)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
-        if (states.absents(Fred::Object::State::conditionally_identified_contact)) {
+        if (states.absents(Fred::Object_State::conditionally_identified_contact)) {
             throw std::runtime_error("state conditionallyIdentifiedContact missing");
         }
-        if (states.presents(Fred::Object::State::identified_contact)) {
+        if (states.presents(Fred::Object_State::identified_contact)) {
             throw MojeIDImplData::IdentificationAlreadyProcessed();
         }
-        if (states.presents(Fred::Object::State::server_blocked)) {
+        if (states.presents(Fred::Object_State::server_blocked)) {
             throw MojeIDImplData::ObjectAdminBlocked();
         }
-        if (states.absents(Fred::Object::State::server_transfer_prohibited) ||
-            states.absents(Fred::Object::State::server_update_prohibited)   ||
-            states.absents(Fred::Object::State::server_delete_prohibited))
+        if (states.absents(Fred::Object_State::server_transfer_prohibited) ||
+            states.absents(Fred::Object_State::server_update_prohibited)   ||
+            states.absents(Fred::Object_State::server_delete_prohibited))
         {
             throw std::runtime_error("contact not protected against changes");
         }
@@ -1652,7 +1652,7 @@ void MojeIDImpl::process_identification_request(
             throw MojeIDImplData::IdentificationFailed();
         }
         Fred::StatusList to_set;
-        to_set.insert(Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact));
+        to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::identified_contact));
         Fred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
         Fred::PerformObjectStateRequest(_contact_id).exec(ctx);
         answer(locked_request,
@@ -1913,11 +1913,11 @@ void MojeIDImpl::create_validation_request(
                 throw;
             }
         }
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
-        if (states.presents(Fred::Object::State::validated_contact)) {
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.presents(Fred::Object_State::validated_contact)) {
             throw MojeIDImplData::ValidationAlreadyProcessed();
         }
-        if (states.absents(Fred::Object::State::mojeid_contact)) {
+        if (states.absents(Fred::Object_State::mojeid_contact)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
         const Fred::InfoContactData contact_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
@@ -1972,7 +1972,7 @@ namespace {
 
 typedef bool IsNotNull;
 
-IsNotNull add_state(const Database::Value &_valid_from, Fred::Object::State::Enum _state,
+IsNotNull add_state(const Database::Value &_valid_from, Fred::Object_State::Enum _state,
                     Registry::MojeIDImplData::ContactStateInfo &_data)
 {
     if (_valid_from.isnull()) {
@@ -1981,16 +1981,16 @@ IsNotNull add_state(const Database::Value &_valid_from, Fred::Object::State::Enu
     const std::string db_timestamp = static_cast< std::string >(_valid_from);//2014-12-11 09:28:45.741828
     boost::posix_time::ptime valid_from = boost::posix_time::time_from_string(db_timestamp);
     switch (_state) {
-        case Fred::Object::State::identified_contact:
+        case Fred::Object_State::identified_contact:
             _data.identification_date = boost::gregorian::date_from_tm(boost::posix_time::to_tm(valid_from));
             break;
-        case Fred::Object::State::validated_contact:
+        case Fred::Object_State::validated_contact:
             _data.validation_date = boost::gregorian::date_from_tm(boost::posix_time::to_tm(valid_from));
             break;
-        case Fred::Object::State::mojeid_contact:
+        case Fred::Object_State::mojeid_contact:
             _data.mojeid_activation_datetime = valid_from;
             break;
-        case Fred::Object::State::linked:
+        case Fred::Object_State::linked:
             _data.linked_date = boost::gregorian::date_from_tm(boost::posix_time::to_tm(valid_from));
             break;
         default:
@@ -2011,11 +2011,11 @@ void MojeIDImpl::get_contacts_state_changes(
         Fred::OperationContextCreator ctx;
         Database::query_param_list params(mojeid_registrar_handle_);                                   //$1::TEXT
         params(_last_hours);                                                                           //$2::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact));//$3::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact));              //$4::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::validated_contact));               //$5::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::mojeid_contact));                  //$6::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::linked));                          //$7::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::conditionally_identified_contact));//$3::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::identified_contact));              //$4::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));               //$5::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::mojeid_contact));                  //$6::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::linked));                          //$7::TEXT
         const Database::Result rcontacts = ctx.get_conn().exec_params(// observe interval <now - last_hours, now)
             "WITH cic AS (SELECT id FROM enum_object_states WHERE name=$3::TEXT),"
                   "ic AS (SELECT id FROM enum_object_states WHERE name=$4::TEXT),"
@@ -2052,22 +2052,22 @@ void MojeIDImpl::get_contacts_state_changes(
         for (::size_t idx = 0; idx < rcontacts.size(); ++idx) {
             Registry::MojeIDImplData::ContactStateInfo data;
             data.contact_id = static_cast< ContactId >(rcontacts[idx][0]);
-            if (!add_state(rcontacts[idx][1], Fred::Object::State::conditionally_identified_contact, data)) {
+            if (!add_state(rcontacts[idx][1], Fred::Object_State::conditionally_identified_contact, data)) {
                 std::ostringstream msg;
                 msg << "contact " << data.contact_id << " hasn't "
-                    << Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact) << " state";
+                    << Conversion::Enums::to_db_handle(Fred::Object_State::conditionally_identified_contact) << " state";
                 LOGGER(PACKAGE).error(msg.str());
                 continue;
             }
-            add_state(rcontacts[idx][2], Fred::Object::State::identified_contact, data);
-            add_state(rcontacts[idx][3], Fred::Object::State::validated_contact, data);
-            if (!add_state(rcontacts[idx][4], Fred::Object::State::mojeid_contact, data)) {
+            add_state(rcontacts[idx][2], Fred::Object_State::identified_contact, data);
+            add_state(rcontacts[idx][3], Fred::Object_State::validated_contact, data);
+            if (!add_state(rcontacts[idx][4], Fred::Object_State::mojeid_contact, data)) {
                 std::ostringstream msg;
                 msg << "contact " << data.contact_id << " doesn't have "
-                    << Conversion::Enums::to_db_handle(Fred::Object::State::mojeid_contact) << " state";
+                    << Conversion::Enums::to_db_handle(Fred::Object_State::mojeid_contact) << " state";
                 throw std::runtime_error(msg.str());
             }
-            add_state(rcontacts[idx][5], Fred::Object::State::linked, data);
+            add_state(rcontacts[idx][5], Fred::Object_State::linked, data);
             _result.push_back(data);
         }
     }
@@ -2091,11 +2091,11 @@ void MojeIDImpl::get_contact_state(
         Fred::OperationContextCreator ctx;
         Database::query_param_list params(mojeid_registrar_handle_);                                   //$1::TEXT
         params(_contact_id);                                                                           //$2::BIGINT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::mojeid_contact));                  //$3::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact));//$4::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::identified_contact));              //$5::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::validated_contact));               //$6::TEXT
-        params(Conversion::Enums::to_db_handle(Fred::Object::State::linked));                          //$7::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::mojeid_contact));                  //$3::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::conditionally_identified_contact));//$4::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::identified_contact));              //$5::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));               //$6::TEXT
+        params(Conversion::Enums::to_db_handle(Fred::Object_State::linked));                          //$7::TEXT
         const Database::Result rcontact = ctx.get_conn().exec_params(
             "SELECT r.id IS NULL,"                         // 0
                    "(SELECT valid_from FROM object_state " // 1
@@ -2133,18 +2133,18 @@ void MojeIDImpl::get_contact_state(
         }
 
         _result.contact_id = _contact_id;
-        if (!add_state(rcontact[0][1], Fred::Object::State::mojeid_contact, _result)) {
+        if (!add_state(rcontact[0][1], Fred::Object_State::mojeid_contact, _result)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
-        if (!add_state(rcontact[0][2], Fred::Object::State::conditionally_identified_contact, _result)) {
+        if (!add_state(rcontact[0][2], Fred::Object_State::conditionally_identified_contact, _result)) {
             std::ostringstream msg;
             msg << "contact " << _contact_id << " doesn't have "
-                << Conversion::Enums::to_db_handle(Fred::Object::State::conditionally_identified_contact) << " state";
+                << Conversion::Enums::to_db_handle(Fred::Object_State::conditionally_identified_contact) << " state";
             throw std::runtime_error(msg.str());
         }
-        add_state(rcontact[0][3], Fred::Object::State::identified_contact, _result);
-        add_state(rcontact[0][4], Fred::Object::State::validated_contact, _result);
-        add_state(rcontact[0][5], Fred::Object::State::linked, _result);
+        add_state(rcontact[0][3], Fred::Object_State::identified_contact, _result);
+        add_state(rcontact[0][4], Fred::Object_State::validated_contact, _result);
+        add_state(rcontact[0][5], Fred::Object_State::linked, _result);
     }//try
     catch (const MojeIDImplData::ObjectDoesntExist&) {
         LOGGER(PACKAGE).info("ObjectDoesntExist");
@@ -2170,38 +2170,38 @@ void MojeIDImpl::cancel_account_prepare(
     try {
         Fred::OperationContextTwoPhaseCommitCreator ctx(_trans_id);
         const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
 
-        if (states.absents(Fred::Object::State::mojeid_contact)) {
+        if (states.absents(Fred::Object_State::mojeid_contact)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
 
-        if (!(states.presents(Fred::Object::State::validated_contact)  ||
-              states.presents(Fred::Object::State::identified_contact) ||
-              states.presents(Fred::Object::State::conditionally_identified_contact))
+        if (!(states.presents(Fred::Object_State::validated_contact)  ||
+              states.presents(Fred::Object_State::identified_contact) ||
+              states.presents(Fred::Object_State::conditionally_identified_contact))
            ) {
             throw std::runtime_error("bad mojeID contact");
         }
 
-        if (states.absents(Fred::Object::State::linked)) {
+        if (states.absents(Fred::Object_State::linked)) {
             Fred::DeleteContactById(_contact_id).exec(ctx);
             ctx.commit_transaction();
             return;
         }
 
         Fred::StatusList to_cancel;
-        to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::mojeid_contact));
-        if (states.presents(Fred::Object::State::server_update_prohibited)) {
-            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::server_update_prohibited));
+        to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::mojeid_contact));
+        if (states.presents(Fred::Object_State::server_update_prohibited)) {
+            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::server_update_prohibited));
         }
-        if (states.presents(Fred::Object::State::server_transfer_prohibited)) {
-            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::server_transfer_prohibited));
+        if (states.presents(Fred::Object_State::server_transfer_prohibited)) {
+            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::server_transfer_prohibited));
         }
-        if (states.presents(Fred::Object::State::server_delete_prohibited)) {
-            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::server_delete_prohibited));
+        if (states.presents(Fred::Object_State::server_delete_prohibited)) {
+            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::server_delete_prohibited));
         }
-        if (states.presents(Fred::Object::State::validated_contact)) {
-            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object::State::validated_contact));
+        if (states.presents(Fred::Object_State::validated_contact)) {
+            to_cancel.insert(Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));
         }
         Fred::CancelObjectStateRequestId(_contact_id, to_cancel).exec(ctx);
 
@@ -2260,13 +2260,13 @@ void MojeIDImpl::send_new_pin3(
     try {
         Fred::OperationContextCreator ctx;
         const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, _contact_id);
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
-        if (states.presents(Fred::Object::State::identified_contact)) {
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.presents(Fred::Object_State::identified_contact)) {
             // nothing to send if contact is identified
             // IdentificationRequestDoesntExist isn't error in frontend
             throw MojeIDImplData::IdentificationRequestDoesntExist();
         }
-        if (states.absents(Fred::Object::State::mojeid_contact)) {
+        if (states.absents(Fred::Object_State::mojeid_contact)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
         bool has_identification_request = false;
@@ -2372,8 +2372,8 @@ void MojeIDImpl::send_mojeid_card(
 
     try {
         Fred::OperationContextCreator ctx;
-        const Fred::Object::StatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
-        if (states.absents(Fred::Object::State::mojeid_contact)) {
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.absents(Fred::Object_State::mojeid_contact)) {
             throw MojeIDImplData::ObjectDoesntExist();
         }
         const HandleMojeIDArgs *const server_conf_ptr = CfgArgs::instance()->
@@ -2388,7 +2388,7 @@ void MojeIDImpl::send_mojeid_card(
             server_conf_ptr->letter_limit_interval,
             _log_request_id,
             Optional< boost::posix_time::ptime >(),
-            states.presents(Fred::Object::State::validated_contact));
+            states.presents(Fred::Object_State::validated_contact));
         ctx.commit_transaction();
     }
     catch (const MojeIDImplData::ObjectDoesntExist&) {
@@ -2586,7 +2586,7 @@ MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
                              "(SELECT country FROM enum_country WHERE id=$1::TEXT)";
     if (!_validated_contact.isset()) {
         params(_data.id)
-              (Conversion::Enums::to_db_handle(Fred::Object::State::validated_contact));
+              (Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));
         sql.append(",EXISTS(SELECT * FROM object_state "
                            "WHERE object_id=$2::BIGINT AND "
                                  "state_id=(SELECT id FROM enum_object_states WHERE name=$3::TEXT) AND "
