@@ -29,8 +29,8 @@ namespace Epp {
 
     struct Exception:std::exception { };
 
-    struct AuthErrorServerClosingConnection:Exception { const char* what() const throw() { return "authorization error: server is closing connection"; } };
-    struct AutorError                      :Exception { const char* what() const throw() { return "autor error"; } }; /* TODO some better name, what() */
+    struct AuthErrorServerClosingConnection:Exception { const char* what() const throw() { return "authentication error: server is closing connection"; } };
+    struct AuthorizationError              :Exception { const char* what() const throw() { return "authorization error"; } };
     struct InvalidSessionLang              :Exception { const char* what() const throw() { return "invalid session language"; } };
     struct NonexistentHandle               :Exception { const char* what() const throw() { return "nonexistent handle"; } };
     struct ObjectExists                    :Exception { const char* what() const throw() { return "object exists"; } };

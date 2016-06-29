@@ -35,7 +35,7 @@ namespace Epp {
  *
  * @throws AuthErrorServerClosingConnection
  * @throws NonexistentHandle
- * @throws AutorError
+ * @throws AuthorizationError
  * @throws ObjectStatusProhibitingOperation in case conatct has serverUpdateProhibited or deleteCandidate status (or request)
  * @throws AggregatedParamErrors
  */

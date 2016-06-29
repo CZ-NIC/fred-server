@@ -39,7 +39,7 @@ namespace Epp {
  * @throws NonexistentHandle
  * @throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
  * @throws ObjectStatusProhibitingOperation
- * @throws AutorError in case invalid _authinfopw is given
+ * @throws AuthorizationError in case invalid _authinfopw is given
  */
 unsigned long long contact_transfer_impl(
     Fred::OperationContext& _ctx,

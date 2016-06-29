@@ -64,7 +64,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_contact_and_a_different
             contact.handle,
             the_different_registrar.id
         ),
-        Epp::AutorError
+        Epp::AuthorizationError
     );
 }
 

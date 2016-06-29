@@ -157,7 +157,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different
             the_different_registrar.id,
             42 /* TODO */
         ),
-        Epp::AutorError
+        Epp::AuthorizationError
     );
 }
 

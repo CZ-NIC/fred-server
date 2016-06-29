@@ -189,7 +189,7 @@ unsigned long long contact_update_impl(
             .info_registrar_data;
 
     if( sponsoring_registrar_before_update.id != _registrar_id ) {
-        throw AutorError();
+        throw AuthorizationError();
     }
 
     // do it before any object state related checks

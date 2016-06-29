@@ -56,7 +56,7 @@ unsigned long long contact_transfer_impl(
     }
 
     if(contact_data.authinfopw != _authinfopw) {
-        throw AutorError();
+        throw AuthorizationError();
     }
 
     try {
@@ -72,7 +72,7 @@ unsigned long long contact_transfer_impl(
         throw NonexistentHandle();
 
     } catch (const Fred::IncorrectAuthInfoPw&) {
-        throw AutorError();
+        throw AuthorizationError();
 
     } catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
         throw ObjectNotEligibleForTransfer();

@@ -36,7 +36,7 @@ namespace Epp {
  *
  * @throws AuthErrorServerClosingConnection
  * @throws NonexistentHandle
- * @throws AutorError
+ * @throws AuthorizationError
  * @throws ObjectStatusProhibitingOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long contact_delete_impl(
