@@ -8,10 +8,9 @@
 #include "src/fredlib/contact/update_contact.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
 
 namespace Epp {
 
@@ -104,13 +103,10 @@ static bool should_address_be_disclosed(
              return true;
          }
 
-         if(
-             !(
-                 Fred::ObjectHasState(_contact_id, Fred::ObjectState::IDENTIFIED_CONTACT).exec(_ctx)
-                 ||
-                 Fred::ObjectHasState(_contact_id, Fred::ObjectState::VALIDATED_CONTACT).exec(_ctx)
-             )
-         ) {
+         const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(_contact_id).exec(_ctx));
+         if (!(contact_states.presents(Fred::Object_State::identified_contact) ||
+               contact_states.presents(Fred::Object_State::validated_contact)))
+         {
              return true;
          }
      }
@@ -180,15 +176,16 @@ unsigned long long contact_update_impl(
         }
     };
 
+    const Fred::InfoRegistrarData callers_registrar =
+        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
     const Fred::InfoContactData contact_data_before_update = translate_info_contact_exception::exec(_ctx, _data.handle);
 
-    const Fred::InfoRegistrarData sponsoring_registrar_before_update =
-        Fred::InfoRegistrarByHandle(contact_data_before_update.sponsoring_registrar_handle)
-            .set_lock(/* TODO az to bude mozne, staci lock registrar for share */ )
-            .exec(_ctx)
-            .info_registrar_data;
+    const bool is_sponsoring_registrar = (contact_data_before_update.sponsoring_registrar_handle ==
+                                          callers_registrar.handle);
+    const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+    const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
 
-    if( sponsoring_registrar_before_update.id != _registrar_id ) {
+    if (!is_operation_permitted) {
         throw AuthorizationError();
     }
 
@@ -196,11 +193,13 @@ unsigned long long contact_update_impl(
     Fred::LockObjectStateRequestLock(contact_data_before_update.id).exec(_ctx);
     Fred::PerformObjectStateRequest(contact_data_before_update.id).exec(_ctx);
 
-    if( Fred::ObjectHasState(contact_data_before_update.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
-        ||
-        Fred::ObjectHasState(contact_data_before_update.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
-    ) {
-        throw ObjectStatusProhibitingOperation();
+    if (!is_system_registrar) {
+        const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_update.id).exec(_ctx));
+        if (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
+            contact_states.presents(Fred::Object_State::delete_candidate))
+        {
+            throw ObjectStatusProhibitingOperation();
+        }
     }
 
     // when deleting or not-changing, no check of data is needed
@@ -214,7 +213,7 @@ unsigned long long contact_update_impl(
 
     // update itself
     {
-        Fred::UpdateContactByHandle update(_data.handle, sponsoring_registrar_before_update.handle);
+        Fred::UpdateContactByHandle update(_data.handle, callers_registrar.handle);
 
         conditionall_set_ContactUpdate_member(_data.name,          update, &Fred::UpdateContactByHandle::set_name);
         conditionall_set_ContactUpdate_member(_data.organization,  update, &Fred::UpdateContactByHandle::set_organization);
@@ -288,10 +287,10 @@ unsigned long long contact_update_impl(
             //check disclose address
             {
                 //discloseaddress conditions #7493
+                const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_update.id).exec(_ctx));
                 const bool hidden_address_allowed_by_contact_state =
-                    Fred::ObjectHasState(contact_data_before_update.id, Fred::ObjectState::IDENTIFIED_CONTACT).exec(_ctx)
-                    ||
-                    Fred::ObjectHasState(contact_data_before_update.id, Fred::ObjectState::VALIDATED_CONTACT).exec(_ctx);
+                    contact_states.presents(Fred::Object_State::identified_contact) ||
+                    contact_states.presents(Fred::Object_State::validated_contact);
 
                 const Fred::InfoContactData contact_data_after_update = Fred::InfoContactByHandle(_data.handle).exec(_ctx).info_contact_data;
 
