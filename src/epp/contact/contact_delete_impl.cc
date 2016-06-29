@@ -2,11 +2,11 @@
 
 #include "src/epp/exception.h"
 
-#include <fredlib/contact.h>
-#include <fredlib/registrar.h>
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/check_contact.h"
-#include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/epp/impl/util.h"
@@ -27,15 +27,16 @@ unsigned long long contact_delete_impl(
         throw NonexistentHandle();
     }
 
+    const Fred::InfoRegistrarData callers_registrar =
+        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
     const Fred::InfoContactData contact_data_before_delete = Fred::InfoContactByHandle(_handle).set_lock().exec(_ctx).info_contact_data;
 
-    const Fred::InfoRegistrarData sponsoring_registrar_before_update =
-        Fred::InfoRegistrarByHandle(contact_data_before_delete.sponsoring_registrar_handle)
-            .set_lock(/* TODO az to bude mozne, staci lock registrar for share */ )
-            .exec(_ctx)
-            .info_registrar_data;
+    const bool is_sponsoring_registrar = (contact_data_before_delete.sponsoring_registrar_handle ==
+                                          callers_registrar.handle);
+    const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+    const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
 
-    if( sponsoring_registrar_before_update.id != _registrar_id ) {
+    if (!is_operation_permitted) {
         throw AuthorizationError();
     }
 
@@ -43,14 +44,12 @@ unsigned long long contact_delete_impl(
     Fred::LockObjectStateRequestLock(contact_data_before_delete.id).exec(_ctx);
     Fred::PerformObjectStateRequest(contact_data_before_delete.id).exec(_ctx);
 
-    if( Fred::ObjectHasState(contact_data_before_delete.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
-        ||
-        Fred::ObjectHasState(contact_data_before_delete.id, Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(_ctx)
-        ||
-        Fred::ObjectHasState(contact_data_before_delete.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
-        ||
-        Fred::ObjectHasState(contact_data_before_delete.id, Fred::ObjectState::LINKED).exec(_ctx)
-    ) {
+    const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_delete.id).exec(_ctx));
+    if ((!is_system_registrar && (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
+                                  contact_states.presents(Fred::Object_State::server_delete_prohibited) ||
+                                  contact_states.presents(Fred::Object_State::delete_candidate))) ||
+        contact_states.presents(Fred::Object_State::linked))
+    {
         throw ObjectStatusProhibitingOperation();
     }
 
