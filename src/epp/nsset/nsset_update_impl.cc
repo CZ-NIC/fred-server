@@ -1,4 +1,6 @@
 #include "src/epp/nsset/nsset_update_impl.h"
+#include "src/epp/nsset/nsset_impl.h"
+#include "src/epp/nsset/nsset_dns_host_data.h"
 
 #include "src/epp/exception.h"
 #include "src/epp/exception_aggregate_param_errors.h"
@@ -8,6 +10,7 @@
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/contact/check_contact.h"
+#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
@@ -58,6 +61,7 @@ unsigned long long nsset_update_impl(
 
     const Fred::InfoNssetData nsset_data_before_update = translate_info_nsset_exception::exec(_ctx, _data.handle);
 
+    //TODO: remove info with lock, compare handle
     const Fred::InfoRegistrarData sponsoring_registrar_before_update =
         Fred::InfoRegistrarByHandle(nsset_data_before_update.sponsoring_registrar_handle)
             .set_lock(/* TODO lock registrar for share */ )
@@ -90,6 +94,13 @@ unsigned long long nsset_update_impl(
     //check dns hosts to add and remove
     {
         ParameterValuePolicyError ex;
+
+        std::set<std::string> nsset_dns_host_fqdn;
+        BOOST_FOREACH(const Fred::DnsHost& dns_hosts, nsset_data_before_update.dns_hosts)
+        {
+            nsset_dns_host_fqdn.insert(boost::algorithm::to_lower_copy(dns_hosts.get_fqdn()));
+        }
+
         std::map<std::string, std::size_t> tech_contact_to_add_duplicity_map;
         for(std::size_t i = 0; i < _data.tech_contacts_add.size(); ++i)
         {   //check technical contact exists
@@ -97,7 +108,7 @@ unsigned long long nsset_update_impl(
                 != Fred::ContactHandleState::Registrability::registered)
             {
                 ex.add(Error(Param::nsset_tech_add,
-                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                    boost::numeric_cast<unsigned short>(i+1),
                     Reason::tech_notexist));
             }
             else
@@ -110,7 +121,7 @@ unsigned long long nsset_update_impl(
                 if(duplicity.isset())
                 {
                     ex.add(Error(Param::nsset_tech_add,
-                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        boost::numeric_cast<unsigned short>(i+1),
                         Reason::duplicity_contact));
                 }
                 else
@@ -126,16 +137,22 @@ unsigned long long nsset_update_impl(
         std::set<std::string> nsset_tech_c_handles;
         BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_c_element, nsset_data_before_update.tech_contacts)
         {
-            nsset_tech_c_handles.insert(tech_c_element.handle);
+            nsset_tech_c_handles.insert(boost::algorithm::to_upper_copy(tech_c_element.handle));
+        }
+
+        std::set<std::string> nsset_dns_host_fqdn_to_remove;
+        BOOST_FOREACH(const Epp::DNShostData& dns_host_data_to_remove, _data.dns_hosts_rem)
+        {
+            nsset_dns_host_fqdn_to_remove.insert(boost::algorithm::to_lower_copy(dns_host_data_to_remove.fqdn));
         }
 
         for(std::size_t i = 0; i < _data.tech_contacts_rem.size(); ++i)
         {
             //check if given tech contact to remove is NOT admin of nsset
-            if(nsset_tech_c_handles.find(_data.tech_contacts_rem.at(i)) == nsset_tech_c_handles.end())
+            if(nsset_tech_c_handles.find(boost::algorithm::to_upper_copy(_data.tech_contacts_rem.at(i))) == nsset_tech_c_handles.end())
             {
                 ex.add(Error(Param::nsset_tech_rem,
-                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                    boost::numeric_cast<unsigned short>(i+1),
                     Reason::can_not_remove_tech));
             }
             else
@@ -148,7 +165,7 @@ unsigned long long nsset_update_impl(
                 if(duplicity.isset())
                 {
                     ex.add(Error(Param::nsset_tech_rem,
-                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        boost::numeric_cast<unsigned short>(i+1),
                         Reason::duplicity_contact));
                 }
                 else
@@ -156,6 +173,119 @@ unsigned long long nsset_update_impl(
                     tech_contact_to_remove_duplicity_map[upper_tech_contact_handle] = i;
                 }
             }
+        }
+
+        //check dns hosts to add wip TODO: specify required checks
+        {
+            std::map<std::string, std::size_t> dns_host_to_add_fqdn_duplicity_map;
+            std::size_t nsset_ipaddr_to_add_position = 1;
+            for(std::size_t i = 0; i < _data.dns_hosts_add.size(); ++i)
+            {
+                if(!Fred::Domain::general_domain_name_syntax_check(_data.dns_hosts_add.at(i).fqdn))
+                {
+                    ex.add(Error(Param::nsset_dns_name_add,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::bad_dns_name));
+                }
+
+                const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
+                        _data.dns_hosts_add.at(i).fqdn);
+
+                if( (nsset_dns_host_fqdn.find(lower_dnshost_fqdn) != nsset_dns_host_fqdn.end())//dns host fqdn to be added is alredy assigned to nsset
+                    && (nsset_dns_host_fqdn_to_remove.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn_to_remove.end())//dns host fqdn to be added is not in list of fqdn to be removed (dns hosts are removed first)
+                )
+                {
+                    ex.add(Error(Param::nsset_dns_name_add,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::dns_name_exist));
+                }
+
+                //check nameserver IP addresses
+                {
+                    std::map<boost::asio::ip::address, std::size_t> dns_host_to_add_ip_duplicity_map;
+                    for(std::size_t j = 0; j < _data.dns_hosts_add.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_to_add_position)
+                    {
+                        boost::asio::ip::address dnshostipaddr = _data.dns_hosts_add.at(i).inet_addr.at(j);
+                        if(is_unspecified_ip_addr(dnshostipaddr) //.is_unspecified()
+                        )
+                        {
+                            ex.add(Error(Param::nsset_dns_addr,
+                                boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),//position in list
+                                Reason::bad_ip_address));
+                        }
+                        else
+                        {
+                            //IP address duplicity check
+                            Optional<std::size_t> duplicity = optional_map_at<Optional>(
+                                    dns_host_to_add_ip_duplicity_map, dnshostipaddr);
+
+                            if(duplicity.isset())
+                            {
+                                ex.add(Error(Param::nsset_dns_addr,
+                                    boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),//position in list
+                                    Reason::duplicity_dns_address));
+                            }
+                            else
+                            {
+                                dns_host_to_add_ip_duplicity_map[dnshostipaddr] = nsset_ipaddr_to_add_position;
+                            }
+                        }
+                    }
+                }
+
+                //check nameserver fqdn duplicity
+                if(optional_map_at<Optional>(dns_host_to_add_fqdn_duplicity_map, lower_dnshost_fqdn).isset())
+                {
+                    ex.add(Error(Param::nsset_dns_name_add,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::duplicated_dns_name));
+                }
+                else
+                {
+                    dns_host_to_add_fqdn_duplicity_map[lower_dnshost_fqdn] = i;
+                }
+
+            }
+        }
+
+        //check dns hosts to remove
+        {
+            std::map<std::string, std::size_t> dns_host_to_remove_fqdn_duplicity_map;
+            for(std::size_t i = 0; i < _data.dns_hosts_rem.size(); ++i)
+            {
+                if(!Fred::Domain::general_domain_name_syntax_check(_data.dns_hosts_rem.at(i).fqdn))
+                {
+                    ex.add(Error(Param::nsset_dns_name_rem,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::bad_dns_name));
+                }
+
+                const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
+                        _data.dns_hosts_rem.at(i).fqdn);
+
+
+                if(nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())//dns host fqdn to be removed is NOT assigned to nsset
+                {
+                    ex.add(Error(Param::nsset_dns_name_add,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::dns_name_exist));
+                }
+
+
+
+                //check nameserver fqdn duplicity
+                if(optional_map_at<Optional>(dns_host_to_remove_fqdn_duplicity_map, lower_dnshost_fqdn).isset())
+                {
+                    ex.add(Error(Param::nsset_dns_name_rem,
+                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        Reason::duplicated_dns_name));
+                }
+                else
+                {
+                    dns_host_to_remove_fqdn_duplicity_map[lower_dnshost_fqdn] = i;
+                }
+            }
+
         }
 
         if(!ex.is_empty()) throw ex;

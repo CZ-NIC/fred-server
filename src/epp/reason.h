@@ -92,7 +92,10 @@ struct Reason
         dnskey_exist                = 59,
         dnskey_notexist             = 60,
         duplicated_dnskey           = 61,
-        no_dnskey_dsrecord          = 62
+        no_dnskey_dsrecord          = 62,
+        duplicated_dnskey           = 61,
+        no_dnskey_dsrecord          = 62,
+        duplicated_dns_name         = 63
     };
     static bool is_valid(Enum value)
     {

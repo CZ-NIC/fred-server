@@ -51,7 +51,6 @@ namespace Epp {
         , inet_addr(_inet_addr)
         {}
     };
-
 }
 
 #endif

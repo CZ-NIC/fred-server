@@ -1,5 +1,5 @@
 #include "src/epp/nsset/nsset_create_impl.h"
-
+#include "src/epp/nsset/nsset_impl.h"
 #include "src/epp/error.h"
 #include "src/epp/exception.h"
 #include "src/epp/exception_aggregate_param_errors.h"
@@ -28,22 +28,6 @@
 #include <boost/asio/ip/address.hpp>
 
 namespace Epp {
-
-
-    bool is_unspecified_ip_addr(const boost::asio::ip::address& ipaddr)
-    {
-        if(ipaddr.is_v6()
-            && ipaddr.to_v6().is_unspecified())
-        {
-             return true;
-        }
-        else if(ipaddr.is_v4()
-            && (ipaddr.to_v4().to_ulong() == 0ul))
-        {
-             return true;
-        }
-        return false;
-    }
 
 NssetCreateResult nsset_create_impl(
     Fred::OperationContext& _ctx,
