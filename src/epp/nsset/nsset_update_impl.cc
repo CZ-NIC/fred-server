@@ -263,15 +263,12 @@ unsigned long long nsset_update_impl(
                 const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
                         _data.dns_hosts_rem.at(i).fqdn);
 
-
                 if(nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())//dns host fqdn to be removed is NOT assigned to nsset
                 {
-                    ex.add(Error(Param::nsset_dns_name_add,
+                    ex.add(Error(Param::nsset_dns_name_rem,
                         boost::numeric_cast<unsigned short>(i+1),//position in list
-                        Reason::dns_name_exist));
+                        Reason::dns_name_notexist));
                 }
-
-
 
                 //check nameserver fqdn duplicity
                 if(optional_map_at<Optional>(dns_host_to_remove_fqdn_duplicity_map, lower_dnshost_fqdn).isset())
