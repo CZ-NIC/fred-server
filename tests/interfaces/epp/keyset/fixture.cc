@@ -80,31 +80,23 @@ Fred::InfoRegistrarData RegistrarProvider::create_registrar(
 }
 
 ContactProvider::ContactProvider(unsigned number_of_contacts,
-                                 const std::string &registrar_a,
-                                 const std::string &registrar_b,
-                                 const std::string &sys_registrar)
-{
-    Fred::OperationContextCreator ctx;
-    contact_.reserve(number_of_contacts);
-    for (unsigned idx = 0; idx < number_of_contacts; ++idx) {
-        const std::string registrar = (idx % 3) == 0 ? registrar_a
-                                                     : (idx % 3) == 1 ? registrar_b
-                                                                      : sys_registrar;
-        contact_.push_back(create_contact(ctx, "CONTACT", registrar));
-    }
-    ctx.commit_transaction();
-}
+                                 const RegistrarProvider &registrar_provider)
+:   contact_(create_contacts(number_of_contacts, "CONTACT", registrar_provider))
+{ }
 
 const Fred::InfoContactData& ContactProvider::get_contact(unsigned idx)const
 {
     return contact_[idx];
 }
 
-Fred::InfoContactData ContactProvider::create_contact(Fred::OperationContext &ctx,
-                                                      const std::string &handle,
-                                                      const std::string &registrar)
+std::vector< Fred::InfoContactData > ContactProvider::create_contacts(unsigned number_of_contacts,
+                                                                      const std::string &handle,
+                                                                      const RegistrarProvider &registrar_provider)
 {
-    for (int cnt = 0; true; ++cnt) {
+    Fred::OperationContextCreator ctx;
+    std::vector< Fred::InfoContactData > result;
+    result.reserve(number_of_contacts);
+    for (int cnt = 0; result.size() < number_of_contacts; ++cnt) {
         std::string contact_handle;
         try {
             contact_handle = handle;
@@ -113,25 +105,45 @@ Fred::InfoContactData ContactProvider::create_contact(Fred::OperationContext &ct
                 out << cnt;
                 contact_handle += out.str();
             }
-            return Fred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data;
+            result.push_back(Fred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data);
         }
         catch (const Fred::InfoContactByHandle::Exception &e) {
             if (!e.is_set_unknown_contact_handle()) {
                 throw;
             }
+            const int registrar_idx = result.size() % 3;
+            const std::string registrar = registrar_idx == 0 ? registrar_provider.get_registrar_a().handle :
+                                          registrar_idx == 1 ? registrar_provider.get_registrar_b().handle :
+                                                               registrar_provider.get_sys_registrar().handle;
             Fred::CreateContact(contact_handle, registrar).exec(ctx);
-            return Fred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data;
+            result.push_back(Fred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data);
         }
     }
+    ctx.commit_transaction();
+    return result;
 }
 
 ObjectsProvider::ObjectsProvider()
 :   RegistrarProvider(),
     ContactProvider(Epp::KeySet::max_number_of_tech_contacts,
-                    this->RegistrarProvider::get_registrar_a().handle,
-                    this->RegistrarProvider::get_registrar_b().handle,
-                    this->RegistrarProvider::get_sys_registrar().handle)
+                    static_cast< const RegistrarProvider& >(*this))
 {
+}
+
+template < >
+std::string ObjectsProvider::get_keyset_handle< Fred::KeySet::HandleState::available >(Fred::OperationContext &ctx)
+{
+    for (unsigned cnt = 0; true; ++cnt) {
+        std::string handle = "KEYSET";
+        if (0 < cnt) {
+            std::ostringstream out;
+            out << "-" << cnt;
+            handle += out.str();
+        }
+        if (Fred::KeySet::get_handle_registrability(ctx, handle) == Fred::KeySet::HandleState::available) {
+            return handle;
+        }
+    }
 }
 
 }//namespace Test

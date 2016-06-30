@@ -25,6 +25,7 @@
 
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
+#include "src/fredlib/keyset/handle_state.h"
 
 #include <vector>
 
@@ -32,11 +33,12 @@ namespace Test {
 
 class RegistrarProvider
 {
-protected:
-    RegistrarProvider();
+public:
     const Fred::InfoRegistrarData& get_registrar_a()const;
     const Fred::InfoRegistrarData& get_registrar_b()const;
     const Fred::InfoRegistrarData& get_sys_registrar()const;
+protected:
+    RegistrarProvider();
 private:
     static Fred::InfoRegistrarData create_registrar(Fred::OperationContext&, const std::string&, bool);
     Fred::InfoRegistrarData registrar_a_;
@@ -46,26 +48,28 @@ private:
 
 class ContactProvider
 {
+public:
+    const Fred::InfoContactData& get_contact(unsigned idx)const;
 protected:
     ContactProvider(unsigned number_of_contacts,
-                    const std::string &registrar_a,
-                    const std::string &registrar_b,
-                    const std::string &sys_registrar);
-    const Fred::InfoContactData& get_contact(unsigned idx)const;
+                    const RegistrarProvider &registrar_provider);
 private:
     ContactProvider();
-    static Fred::InfoContactData create_contact(Fred::OperationContext&, const std::string&, const std::string&);
-    std::vector< Fred::InfoContactData > contact_;
+    static std::vector< Fred::InfoContactData > create_contacts(unsigned,
+                                                                const std::string&,
+                                                                const RegistrarProvider&);
+    const std::vector< Fred::InfoContactData > contact_;
 };
 
 class ObjectsProvider:private Fixture::instantiate_db_template,
-                      protected Fred::OperationContextCreator,
-                      protected RegistrarProvider,
-                      protected ContactProvider
+                      public RegistrarProvider,
+                      public ContactProvider
 {
 public:
     ObjectsProvider();
     ~ObjectsProvider() { }
+    template < Fred::KeySet::HandleState::Registrability REGISTRABILITY >
+    static std::string get_keyset_handle(Fred::OperationContext&);
 };
 
 
