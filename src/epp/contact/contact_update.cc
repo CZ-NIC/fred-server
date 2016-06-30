@@ -123,7 +123,7 @@ LocalizedSuccessResponse contact_update(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parameter_error,
+            Response::parameter_value_syntax_error,
             e.get(),
             _lang
         );

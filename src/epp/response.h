@@ -44,11 +44,11 @@ struct Response
         authorization_error,
         parameter_value_policy_error,
         status_prohibits_operation,
-        prohibits_operation,
+        object_association_prohibits_operation,
         not_eligible_for_renew,
         not_eligible_for_transfer,
-        parameter_error,
-        parameter_range_error,
+        parameter_value_syntax_error,
+        parameter_value_range_error,
         parameter_missing,
         billing_failure,
         max_session_limit,
@@ -73,9 +73,9 @@ inline unsigned to_description_db_id(Response::Enum state)
         //Required parameter missing
         case Response::parameter_missing:            return 2003;
         //Parameter value range error
-        case Response::parameter_range_error:        return 2004;
+        case Response::parameter_value_range_error:  return 2004;
         //Parameter value syntax error
-        case Response::parameter_error:              return 2005;
+        case Response::parameter_value_syntax_error: return 2005;
         //Billing failure
         case Response::billing_failure:              return 2104;
         //Object is not eligible for renewal
@@ -93,7 +93,7 @@ inline unsigned to_description_db_id(Response::Enum state)
         //Object status prohibits operation
         case Response::status_prohibits_operation:   return 2304;
         //Object association prohibits operation
-        case Response::prohibits_operation:          return 2305;
+        case Response::object_association_prohibits_operation:         return 2305;
         //Parameter value policy error
         case Response::parameter_value_policy_error: return 2306;
         //Command failed
