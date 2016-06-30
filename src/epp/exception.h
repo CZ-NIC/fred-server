@@ -33,6 +33,7 @@ namespace Epp {
     struct AuthorizationError                 :Exception { const char* what() const throw() { return "authorization error"; } };
     struct InvalidSessionLang                 :Exception { const char* what() const throw() { return "invalid session language"; } };
     struct NonexistentHandle                  :Exception { const char* what() const throw() { return "nonexistent handle"; } };
+    struct InvalidHandle                      :Exception { const char* what() const throw() { return "invalid handle"; } };
     struct ObjectExists                       :Exception { const char* what() const throw() { return "object exists"; } };
     struct ObjectNotEligibleForTransfer       :Exception { const char* what() const throw() { return "object not eligible for transfer"; } };
     struct ObjectStatusProhibitsOperation     :Exception { const char* what() const throw() { return "object status prohibits operation"; } };

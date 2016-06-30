@@ -80,12 +80,22 @@ LocalizedCreateContactResponse contact_create(
             _lang
         );
 
-    } catch(const AggregatedParamErrors& e) {
+    } catch(const InvalidHandle&) {
 
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::parameter_value_syntax_error,
+            Error::of_scalar_parameter(Param::contact_handle, Reason::bad_format_contact_handle),
+            _lang
+        );
+
+    } catch(const AggregatedParamErrors& e) {
+
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::parameter_value_policy_error,
             e.get(),
             _lang
         );

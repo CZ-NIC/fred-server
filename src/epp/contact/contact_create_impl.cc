@@ -25,9 +25,7 @@ ContactCreateResult contact_create_impl(
     }
 
     if( Fred::Contact::get_handle_syntax_validity(_data.handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
-        AggregatedParamErrors invalid_handle_exception;
-        invalid_handle_exception.add(Error::of_scalar_parameter(Param::contact_handle, Reason::bad_format_contact_handle));
-        throw invalid_handle_exception;
+        throw InvalidHandle();
     }
 
     {
