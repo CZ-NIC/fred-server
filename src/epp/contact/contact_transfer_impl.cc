@@ -52,7 +52,7 @@ unsigned long long contact_transfer_impl(
         ||
         Fred::ObjectHasState(contact_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
     ) {
-        throw ObjectStatusProhibitingOperation();
+        throw ObjectStatusProhibitsOperation();
     }
 
     if(contact_data.authinfopw != _authinfopw) {

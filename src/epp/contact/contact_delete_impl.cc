@@ -50,7 +50,7 @@ unsigned long long contact_delete_impl(
                                   contact_states.presents(Fred::Object_State::delete_candidate))) ||
         contact_states.presents(Fred::Object_State::linked))
     {
-        throw ObjectStatusProhibitingOperation();
+        throw ObjectStatusProhibitsOperation();
     }
 
     try {
@@ -67,7 +67,7 @@ unsigned long long contact_delete_impl(
         }
 
         if( e.is_set_object_linked_to_contact_handle() ) {
-            throw ObjectStatusProhibitingOperation();
+            throw ObjectStatusProhibitsOperation();
         }
 
         /* in the improbable case that exception is incorrectly set */

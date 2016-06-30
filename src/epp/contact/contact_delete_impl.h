@@ -37,7 +37,7 @@ namespace Epp {
  * @throws AuthErrorServerClosingConnection
  * @throws NonexistentHandle
  * @throws AuthorizationError
- * @throws ObjectStatusProhibitingOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
+ * @throws ObjectStatusProhibitsOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long contact_delete_impl(
     Fred::OperationContext& _ctx,

@@ -76,7 +76,7 @@ LocalizedSuccessResponse contact_delete(
             _lang
         );
 
-    } catch(const ObjectStatusProhibitingOperation& e) {
+    } catch(const ObjectStatusProhibitsOperation& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,

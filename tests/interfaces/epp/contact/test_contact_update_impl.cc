@@ -201,7 +201,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server
             42 /* TODO */
 
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -245,7 +245,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete
             42 /* TODO */
 
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -289,7 +289,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_contact_with
             42 /* TODO */
 
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 
     /* now object has the state deleteCandidate itself */
@@ -396,7 +396,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 

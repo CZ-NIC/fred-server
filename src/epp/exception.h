@@ -35,7 +35,7 @@ namespace Epp {
     struct NonexistentHandle               :Exception { const char* what() const throw() { return "nonexistent handle"; } };
     struct ObjectExists                    :Exception { const char* what() const throw() { return "object exists"; } };
     struct ObjectNotEligibleForTransfer    :Exception { const char* what() const throw() { return "object not eligible for transfer"; } };
-    struct ObjectStatusProhibitingOperation:Exception { const char* what() const throw() { return "object status prohibiting operation"; } };
+    struct ObjectStatusProhibitsOperation  :Exception { const char* what() const throw() { return "object status prohibits operation"; } };
     struct SsnTypeWithoutSsn               :Exception { const char* what() const throw() { return "ssntype without ssn"; } };
     struct SsnWithoutSsnType               :Exception { const char* what() const throw() { return "ssn without ssntype"; } };
 

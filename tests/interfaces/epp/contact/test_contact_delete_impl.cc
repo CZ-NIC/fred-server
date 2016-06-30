@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, has_contact_with_server
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -94,7 +94,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, has_contact_with_delete
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -112,7 +112,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_owning_domain, has_contact_owning_domain)
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -135,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_administrating_domain, has_contact_owning_do
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_linked_nsset, has_contact_administrating_nss
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -175,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, has_contact_administrating_ke
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 

@@ -198,7 +198,7 @@ unsigned long long contact_update_impl(
         if (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
             contact_states.presents(Fred::Object_State::delete_candidate))
         {
-            throw ObjectStatusProhibitingOperation();
+            throw ObjectStatusProhibitsOperation();
         }
     }
 
@@ -302,7 +302,7 @@ unsigned long long contact_update_impl(
                         ! hidden_address_allowed_by_contact_state
                     )
                 ) {
-                    throw ObjectStatusProhibitingOperation();
+                    throw ObjectStatusProhibitsOperation();
                 }
             }
 

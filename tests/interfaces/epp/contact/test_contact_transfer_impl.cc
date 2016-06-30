@@ -96,7 +96,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_contact_with_serv
             another_registrar.id,
             42
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -112,7 +112,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_contact_with_serv
             another_registrar.id,
             42
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
