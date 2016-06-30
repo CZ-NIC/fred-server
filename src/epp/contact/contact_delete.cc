@@ -85,6 +85,15 @@ LocalizedSuccessResponse contact_delete(
             _lang
         );
 
+    } catch (const ObjectAssociationProhibitsOperation&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::object_association_prohibits_operation,
+            std::set<Error>(),
+            _lang
+        );
+
     } catch(const LocalizedFailResponse&) {
         throw;
 

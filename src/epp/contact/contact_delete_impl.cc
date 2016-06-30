@@ -45,12 +45,17 @@ unsigned long long contact_delete_impl(
     Fred::PerformObjectStateRequest(contact_data_before_delete.id).exec(_ctx);
 
     const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_delete.id).exec(_ctx));
-    if ((!is_system_registrar && (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
-                                  contact_states.presents(Fred::Object_State::server_delete_prohibited) ||
-                                  contact_states.presents(Fred::Object_State::delete_candidate))) ||
-        contact_states.presents(Fred::Object_State::linked))
+    if (contact_states.presents(Fred::Object_State::linked))
     {
-        throw ObjectStatusProhibitsOperation();
+        throw ObjectAssociationProhibitsOperation();
+    }
+    if (!is_system_registrar) {
+        if (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
+            contact_states.presents(Fred::Object_State::server_delete_prohibited) ||
+            contact_states.presents(Fred::Object_State::delete_candidate))
+        {
+            throw ObjectStatusProhibitsOperation();
+        }
     }
 
     try {

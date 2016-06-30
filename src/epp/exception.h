@@ -29,25 +29,26 @@ namespace Epp {
 
     struct Exception:std::exception { };
 
-    struct AuthErrorServerClosingConnection:Exception { const char* what() const throw() { return "authentication error: server is closing connection"; } };
-    struct AuthorizationError              :Exception { const char* what() const throw() { return "authorization error"; } };
-    struct InvalidSessionLang              :Exception { const char* what() const throw() { return "invalid session language"; } };
-    struct NonexistentHandle               :Exception { const char* what() const throw() { return "nonexistent handle"; } };
-    struct ObjectExists                    :Exception { const char* what() const throw() { return "object exists"; } };
-    struct ObjectNotEligibleForTransfer    :Exception { const char* what() const throw() { return "object not eligible for transfer"; } };
-    struct ObjectStatusProhibitsOperation  :Exception { const char* what() const throw() { return "object status prohibits operation"; } };
-    struct SsnTypeWithoutSsn               :Exception { const char* what() const throw() { return "ssntype without ssn"; } };
-    struct SsnWithoutSsnType               :Exception { const char* what() const throw() { return "ssn without ssntype"; } };
+    struct AuthErrorServerClosingConnection   :Exception { const char* what() const throw() { return "authentication error: server is closing connection"; } };
+    struct AuthorizationError                 :Exception { const char* what() const throw() { return "authorization error"; } };
+    struct InvalidSessionLang                 :Exception { const char* what() const throw() { return "invalid session language"; } };
+    struct NonexistentHandle                  :Exception { const char* what() const throw() { return "nonexistent handle"; } };
+    struct ObjectExists                       :Exception { const char* what() const throw() { return "object exists"; } };
+    struct ObjectNotEligibleForTransfer       :Exception { const char* what() const throw() { return "object not eligible for transfer"; } };
+    struct ObjectStatusProhibitsOperation     :Exception { const char* what() const throw() { return "object status prohibits operation"; } };
+    struct ObjectAssociationProhibitsOperation:Exception { const char* what() const throw() { return "object association prohibits operation"; } };
+    struct SsnTypeWithoutSsn                  :Exception { const char* what() const throw() { return "ssntype without ssn"; } };
+    struct SsnWithoutSsnType                  :Exception { const char* what() const throw() { return "ssn without ssntype"; } };
 
-    struct InvalidIdentTypeDbHandle        :Exception { const char* what() const throw() { return "invalid IdentType db handle"; } };
-    struct InvalidResponseValue            :Exception { const char* what() const throw() { return "invalid Response::Enum value"; } };
+    struct InvalidIdentTypeDbHandle           :Exception { const char* what() const throw() { return "invalid IdentType db handle"; } };
+    struct InvalidResponseValue               :Exception { const char* what() const throw() { return "invalid Response::Enum value"; } };
 
     /* localized descriptions */
     struct LocalizedDescriptionException:Exception { };
 
-    struct UnknownLocalizationLanguage     :LocalizedDescriptionException { const char* what() const throw() { return "unknown localization language"; } };
-    struct MissingLocalizedDescription     :LocalizedDescriptionException { const char* what() const throw() { return "missing localized description"; } };
-    struct UnknownLocalizedDescriptionId   :LocalizedDescriptionException { const char* what() const throw() { return "unknown localized description id"; } };
+    struct UnknownLocalizationLanguage        :LocalizedDescriptionException { const char* what() const throw() { return "unknown localization language"; } };
+    struct MissingLocalizedDescription        :LocalizedDescriptionException { const char* what() const throw() { return "missing localized description"; } };
+    struct UnknownLocalizedDescriptionId      :LocalizedDescriptionException { const char* what() const throw() { return "unknown localized description id"; } };
 }
 
 #endif
