@@ -26,7 +26,7 @@ ContactCreateResult contact_create_impl(
 
     if( Fred::Contact::get_handle_syntax_validity(_data.handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
         AggregatedParamErrors invalid_handle_exception;
-        invalid_handle_exception.add( Error(Param::contact_handle, 0, Reason::bad_format_contact_handle) );
+        invalid_handle_exception.add(Error::of_scalar_parameter(Param::contact_handle, Reason::bad_format_contact_handle));
         throw invalid_handle_exception;
     }
 
@@ -40,11 +40,11 @@ ContactCreateResult contact_create_impl(
         AggregatedParamErrors exception;
 
         if(in_registry == Fred::ContactHandleState::Registrability::in_protection_period) {
-            exception.add( Error( Param::contact_handle, 0, Reason::protected_period ) );
+            exception.add(Error::of_scalar_parameter(Param::contact_handle, Reason::protected_period));
         }
 
         if ( !is_country_code_valid(_ctx, _data.country_code) ) {
-            exception.add( Error( Param::contact_cc, 0, Reason::country_notexist ) );
+            exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
         }
 
         if ( !exception.is_empty() ) {
@@ -115,7 +115,7 @@ ContactCreateResult contact_create_impl(
 
         if( e.is_set_unknown_country() ) {
             AggregatedParamErrors exception;
-            exception.add( Error( Param::contact_cc, 0, Reason::country_notexist ) );
+            exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
             throw exception;
         }
 
