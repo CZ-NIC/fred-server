@@ -12,6 +12,7 @@
 
 #include <set>
 #include <string>
+#include <stdexcept>
 
 #include <boost/foreach.hpp>
 
@@ -34,6 +35,10 @@ std::string get_reason(
 
     if (res.size() < 1) {
         throw MissingLocalizedDescription();
+    }
+
+    if (1 < res.size()) {
+        throw std::runtime_error("0 or 1 row expected");
     }
 
     switch (_lang)
@@ -61,6 +66,10 @@ std::string get_response_msg(
 
     if (res.size() < 1) {
         throw MissingLocalizedDescription();
+    }
+
+    if (1 < res.size()) {
+        throw std::runtime_error("0 or 1 row expected");
     }
 
     switch (_lang)
