@@ -107,16 +107,15 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
         true
     );
 
-    try {
+    BOOST_CHECK_THROW(
         Epp::contact_create_impl(
             ctx,
             contact_data,
             registrar.id,
             42 /* TODO */
-        );
-    } catch(...) {
-        Test::check_correct_aggregated_exception_was_thrown(Epp::Error::of_scalar_parameter(Epp::Param::contact_handle, Epp::Reason::bad_format_contact_handle));
-    }
+        ),
+        Epp::InvalidHandle
+    );
 }
 
 BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
