@@ -23,65 +23,81 @@
 #ifndef EPP_CONTACT_HANDLE_REGISTRATION_OBSTRUCTION_H_03971013458
 #define EPP_CONTACT_HANDLE_REGISTRATION_OBSTRUCTION_H_03971013458
 
-#include <boost/assign/list_of.hpp>
-#include <set>
-#include <stdexcept>
-
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
 
-namespace Epp
-{
+#include <set>
 
-struct ContactHandleRegistrationObstruction {
-    enum Enum {
-        invalid_handle, protected_handle, registered_handle
+namespace Epp {
+
+struct ContactHandleRegistrationObstruction
+{
+    enum Enum
+    {
+        invalid_handle,
+        protected_handle,
+        registered_handle
     };
 
-    static std::set<ContactHandleRegistrationObstruction::Enum> get_all_values() {
-        const std::set<ContactHandleRegistrationObstruction::Enum> all_values = boost::assign::list_of(invalid_handle)(protected_handle)(registered_handle);
-        return all_values;
+    static std::set< Enum > get_all_values()
+    {
+        static const Enum values[] =
+        {
+            invalid_handle,
+            protected_handle,
+            registered_handle
+        };
+        static const std::size_t number_of_values = sizeof(values) / sizeof(*values);
+        static const Enum *const begin = values;
+        static const Enum *const end = begin + number_of_values;
+        return std::set< Enum >(begin, end);
+    }
+
+    static Reason::Enum to_reason(Enum value)
+    {
+        switch (value)
+        {
+            case invalid_handle:    return Reason::invalid_handle;
+            case registered_handle: return Reason::existing;
+            case protected_handle:  return Reason::protected_period;
+        }
+        throw MissingLocalizedDescription();
+    }
+
+    static Enum from_reason(Reason::Enum value)
+    {
+        switch (value)
+        {
+            case Reason::invalid_handle:   return invalid_handle;
+            case Reason::existing:         return registered_handle;
+            case Reason::protected_period: return protected_handle;
+            default:
+                throw UnknownLocalizedDescriptionId();
+        }
     }
 };
 
 /**
  * @throws MissingLocalizedDescription
  */
-inline unsigned to_description_db_id(const ContactHandleRegistrationObstruction::Enum state) {
-
+inline unsigned to_description_db_id(const ContactHandleRegistrationObstruction::Enum value)
+{
     /**
      * XXX This is wrong - we are "reusing" descriptions of other objects. It is temporary (I've been promised) conscious hack.
      */
-    switch(state) {
-        case ContactHandleRegistrationObstruction::invalid_handle     : return to_description_db_id(Reason::invalid_handle);
-        case ContactHandleRegistrationObstruction::registered_handle  : return to_description_db_id(Reason::existing);
-        case ContactHandleRegistrationObstruction::protected_handle   : return to_description_db_id(Reason::protected_period);
-    }
-
-    throw MissingLocalizedDescription();
+    return to_description_db_id(ContactHandleRegistrationObstruction::to_reason(value));
 }
-
-/**
- * @throws UnknownLocalizedDescriptionId
- */
-template<typename T> inline typename T::Enum from_description_db_id(const unsigned id);
 
 /**
  * @throws ExceptionMissingLocalizedDescription
  */
-template<> inline ContactHandleRegistrationObstruction::Enum from_description_db_id<ContactHandleRegistrationObstruction>(const unsigned id) {
-
+template < >
+inline ContactHandleRegistrationObstruction::Enum from_description_db_id< ContactHandleRegistrationObstruction >(const unsigned id)
+{
     /**
      * XXX This is wrong - we are "reusing" descriptions of other objects. It is temporary (I've been promised) conscious hack.
      */
-    switch( from_description_db_id<Reason>(id) ) {
-        case Reason::invalid_handle     : return ContactHandleRegistrationObstruction::invalid_handle;
-        case Reason::existing           : return ContactHandleRegistrationObstruction::registered_handle;
-        case Reason::protected_period   : return ContactHandleRegistrationObstruction::protected_handle;
-        default                         : throw UnknownLocalizedDescriptionId();
-    }
-
-    throw std::runtime_error("error in from_description_db_id<ContactHandleRegistrationObstruction>()");
+    return ContactHandleRegistrationObstruction::from_reason(from_description_db_id< Reason >(id));
 }
 
 }
