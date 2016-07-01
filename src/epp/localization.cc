@@ -38,7 +38,7 @@ static std::string get_reason(
     if(_lang == SessionLang::en) {
         return static_cast<std::string>(res[0]["reason_en_"]);
     }
-    if(_lang == SessionLang::cz) {
+    if(_lang == SessionLang::cs) {
         return static_cast<std::string>(res[0]["reason_cz_"]);
     }
 
@@ -66,7 +66,7 @@ static std::string get_response_msg(
     if(_lang == SessionLang::en) {
         return static_cast<std::string>(res[0]["status_en_"]);
     }
-    if(_lang == SessionLang::cz) {
+    if(_lang == SessionLang::cs) {
         return static_cast<std::string>(res[0]["status_cz_"]);
     }
 
@@ -154,7 +154,7 @@ std::map<std::string, std::string> get_object_state_descriptions(
             result["ok"] =
                 _lang == SessionLang::en
                     ? "Object is without restrictions"
-                    : _lang == SessionLang::cz
+                    : _lang == SessionLang::cs
                         ? "Objekt je bez omezení"
                         : "";
 

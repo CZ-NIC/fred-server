@@ -33,7 +33,7 @@ inline Epp::SessionLang::Enum get_lang(EppSessionContainer& epp_sessions, unsign
     // TODO kvuli kompatibilite s epp_session.h musi byt cz = 1
     const int result = epp_sessions.get_registrar_lang(session_id);
     return result == 1
-        ?   Epp::SessionLang::cz
+        ?   Epp::SessionLang::cs
         :   Epp::SessionLang::en;
 }
 

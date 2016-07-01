@@ -23,25 +23,31 @@
 #ifndef SRC_EPP_SESSION_LANG_505343440
 #define SRC_EPP_SESSION_LANG_505343440
 
-#include <string>
-
 #include "src/epp/exception.h"
+
+#include <string>
 
 namespace Epp {
 
-struct SessionLang {
-    enum Enum { en, cz };
+struct SessionLang
+{
+    enum Enum
+    {
+        en,
+        cs
+    };
 };
 
 /**
  * @throws InvalidSessionLang
  */
-inline std::string to_db_handle(const SessionLang::Enum lang) {
-    switch(lang) {
+inline std::string to_db_handle(const SessionLang::Enum lang)
+{
+    switch(lang)
+    {
         case SessionLang::en : return "en";
-        case SessionLang::cz : return "cs";
+        case SessionLang::cs : return "cs";
     }
-
     throw InvalidSessionLang();
 }
 

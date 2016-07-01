@@ -39,20 +39,9 @@ struct ContactHandleRegistrationObstruction
         registered_handle
     };
 
-    static std::set< Enum > get_all_values()
-    {
-        static const Enum values[] =
-        {
-            invalid_handle,
-            protected_handle,
-            registered_handle
-        };
-        static const std::size_t number_of_values = sizeof(values) / sizeof(*values);
-        static const Enum *const begin = values;
-        static const Enum *const end = begin + number_of_values;
-        return std::set< Enum >(begin, end);
-    }
-
+    /**
+     * @throws MissingLocalizedDescription
+     */
     static Reason::Enum to_reason(Enum value)
     {
         switch (value)
@@ -63,42 +52,7 @@ struct ContactHandleRegistrationObstruction
         }
         throw MissingLocalizedDescription();
     }
-
-    static Enum from_reason(Reason::Enum value)
-    {
-        switch (value)
-        {
-            case Reason::invalid_handle:   return invalid_handle;
-            case Reason::existing:         return registered_handle;
-            case Reason::protected_period: return protected_handle;
-            default:
-                throw UnknownLocalizedDescriptionId();
-        }
-    }
 };
-
-/**
- * @throws MissingLocalizedDescription
- */
-inline unsigned to_description_db_id(const ContactHandleRegistrationObstruction::Enum value)
-{
-    /**
-     * XXX This is wrong - we are "reusing" descriptions of other objects. It is temporary (I've been promised) conscious hack.
-     */
-    return to_description_db_id(ContactHandleRegistrationObstruction::to_reason(value));
-}
-
-/**
- * @throws ExceptionMissingLocalizedDescription
- */
-template < >
-inline ContactHandleRegistrationObstruction::Enum from_description_db_id< ContactHandleRegistrationObstruction >(const unsigned id)
-{
-    /**
-     * XXX This is wrong - we are "reusing" descriptions of other objects. It is temporary (I've been promised) conscious hack.
-     */
-    return ContactHandleRegistrationObstruction::from_reason(from_description_db_id< Reason >(id));
-}
 
 }
 
