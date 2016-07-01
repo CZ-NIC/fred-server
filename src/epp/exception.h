@@ -43,6 +43,7 @@ namespace Epp {
 
     struct InvalidIdentTypeDbHandle           :Exception { const char* what() const throw() { return "invalid IdentType db handle"; } };
     struct InvalidResponseValue               :Exception { const char* what() const throw() { return "invalid Response::Enum value"; } };
+    struct InvalidReasonValue                 :Exception { const char* what() const throw() { return "invalid Reason::Enum value"; } };
 
     /* localized descriptions */
     struct LocalizedDescriptionException:Exception { };
