@@ -24,6 +24,9 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 
+#include <set>
+#include <algorithm>
+
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
@@ -93,8 +96,19 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_
             registrar.id,
             42 /* TODO */
         );
-    } catch (...) {
-        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::nsset_handle, 0, Epp::Reason::protected_period ) );
+    } catch (const Epp::ParameterValuePolicyError& _error) {
+        const Epp::Error epp_error = Epp::Error( Epp::Param::nsset_handle, 0, Epp::Reason::protected_period );
+        const std::set<Epp::Error> errors = _error.get();
+
+                    BOOST_CHECK(
+                            errors.find(epp_error)
+                        !=
+                        errors.end()
+                    );
+    }
+    catch(...)
+    {
+        BOOST_ERROR("wrong_exception caught");
     }
 }
 
