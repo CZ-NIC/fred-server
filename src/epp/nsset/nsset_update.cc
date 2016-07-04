@@ -91,24 +91,6 @@ LocalizedSuccessResponse nsset_update(
             _lang
         );
 
-    } catch(const SsnWithoutSsnType& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::parametr_missing,
-            std::set<Error>(),
-            _lang
-        );
-
-    } catch(const SsnTypeWithoutSsn& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::parametr_missing,
-            std::set<Error>(),
-            _lang
-        );
-
     } catch(const AggregatedParamErrors& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(

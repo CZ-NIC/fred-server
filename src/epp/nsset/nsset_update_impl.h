@@ -29,7 +29,7 @@
 namespace Epp {
 
 /**
- * If successful, no exception thrown. In case of exception behaviour is undefined and transaction should bo rolled back.
+ * If successful, no exception thrown. In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns new nsset history id
  *
