@@ -369,13 +369,19 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
     Epp::ContactChange data;
     set_correct_data_2(data);
 
-    Epp::contact_update_impl(
-        ctx,
-        contact.handle,
-        data,
-        registrar.id,
-        42 /* TODO */
-    );
+    try
+    {
+        Epp::contact_update_impl(
+            ctx,
+            data,
+            registrar.id,
+            42 /* TODO */
+        );
+    }
+    catch(const Epp::Exception& e)
+    {
+        BOOST_ERROR(e.what());
+    }
 
     check_equal(contact, data, Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data);
 }
