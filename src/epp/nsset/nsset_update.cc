@@ -91,11 +91,11 @@ LocalizedSuccessResponse nsset_update(
             _lang
         );
 
-    } catch(const AggregatedParamErrors& e) {
+    } catch(const ParameterValuePolicyError& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_error,
+            Response::parametr_value_policy_error,
             e.get(),
             _lang
         );
