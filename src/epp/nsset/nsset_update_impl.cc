@@ -182,7 +182,6 @@ unsigned long long nsset_update_impl(
                         Reason::duplicated_dns_name));
                 }
 
-
                 if( (nsset_dns_host_fqdn.find(lower_dnshost_fqdn) != nsset_dns_host_fqdn.end())//dns host fqdn to be added is alredy assigned to nsset
                     && (nsset_dns_host_fqdn_to_remove.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn_to_remove.end())//dns host fqdn to be added is not in list of fqdn to be removed (dns hosts are removed first)
                 )
@@ -194,7 +193,7 @@ unsigned long long nsset_update_impl(
 
                 //check nameserver IP addresses
                 {
-                    std::map<boost::asio::ip::address, std::size_t> dns_host_to_add_ip_duplicity_map;
+                    std::set<boost::asio::ip::address> dns_host_to_add_ip_duplicity;
                     for(std::size_t j = 0; j < _data.dns_hosts_add.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_to_add_position)
                     {
                         boost::asio::ip::address dnshostipaddr = _data.dns_hosts_add.at(i).inet_addr.at(j);
@@ -206,21 +205,11 @@ unsigned long long nsset_update_impl(
                                 Reason::bad_ip_address));
                         }
                         else
+                        if(dns_host_to_add_ip_duplicity.insert(dnshostipaddr).second == false)
                         {
-                            //IP address duplicity check
-                            Optional<std::size_t> duplicity = optional_map_at<Optional>(
-                                    dns_host_to_add_ip_duplicity_map, dnshostipaddr);
-
-                            if(duplicity.isset())
-                            {
-                                ex.add(Error(Param::nsset_dns_addr,
-                                    boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),//position in list
-                                    Reason::duplicity_dns_address));
-                            }
-                            else
-                            {
-                                dns_host_to_add_ip_duplicity_map[dnshostipaddr] = nsset_ipaddr_to_add_position;
-                            }
+                            ex.add(Error(Param::nsset_dns_addr,
+                                boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
+                                Reason::duplicity_dns_address));
                         }
                     }
                 }
