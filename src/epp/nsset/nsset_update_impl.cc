@@ -218,39 +218,33 @@ unsigned long long nsset_update_impl(
 
         //check dns hosts to remove
         {
-            std::map<std::string, std::size_t> dns_host_to_remove_fqdn_duplicity_map;
+            std::set<std::string> dns_host_to_remove_fqdn_duplicity;
             for(std::size_t i = 0; i < _data.dns_hosts_rem.size(); ++i)
             {
+                const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
+                        _data.dns_hosts_rem.at(i).fqdn);
+
                 if(!Fred::Domain::general_domain_name_syntax_check(_data.dns_hosts_rem.at(i).fqdn))
                 {
                     ex.add(Error(Param::nsset_dns_name_rem,
                         boost::numeric_cast<unsigned short>(i+1),//position in list
                         Reason::bad_dns_name));
                 }
-
-                const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
-                        _data.dns_hosts_rem.at(i).fqdn);
-
-                if(nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())//dns host fqdn to be removed is NOT assigned to nsset
+                else //dns host fqdn to be removed is NOT assigned to nsset
+                if(nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())
                 {
                     ex.add(Error(Param::nsset_dns_name_rem,
                         boost::numeric_cast<unsigned short>(i+1),//position in list
                         Reason::dns_name_notexist));
                 }
-
-                //check nameserver fqdn duplicity
-                if(optional_map_at<Optional>(dns_host_to_remove_fqdn_duplicity_map, lower_dnshost_fqdn).isset())
+                else //check dns host duplicity
+                if(dns_host_to_remove_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
                 {
                     ex.add(Error(Param::nsset_dns_name_rem,
-                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                        boost::numeric_cast<unsigned short>(i+1),
                         Reason::duplicated_dns_name));
                 }
-                else
-                {
-                    dns_host_to_remove_fqdn_duplicity_map[lower_dnshost_fqdn] = i;
-                }
             }
-
         }
 
         if(!ex.is_empty()) throw ex;
