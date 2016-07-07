@@ -42,7 +42,7 @@ namespace Admin {
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
         ) {
 
-            unsigned long long index = 0;
+            unsigned long index = 0;
             try {
                 // TODO partial import?
                 //ctx.get_conn().exec("RELEASE SAVEPOINT outzoneunguarded_domain_email_savepoint");
@@ -53,17 +53,18 @@ namespace Admin {
                 ) {
                     ctx.get_conn().exec_params(
                         "INSERT INTO notify_outzoneunguarded_domain_additional_email "
-                           "(id, crdate, state_id, email) "
-                           "VALUES( "
-                               "0, "          // id
+                           "(crdate, state_id, email) "
+                           "VALUES ( "
                                "NOW(), "      // crdate
-                               "(SELECT id FROM object_state WHERE object_id=$1::bigint and state_id = 15 and valid_to IS NULL), " // domain_id -> state_id; 15: outzone
+                               // use domain_id to lookup and insert 'expired (9)' state_id, becouse none of
+                               // 'outzone' / 'outzoneUnguardedWarning' / 'outzoneUnguarded' is set at this moment
+                               "(SELECT id FROM object_state WHERE object_id=$1::bigint and state_id = 9 and valid_to IS NULL), "
                                "$2::varchar " // email
                            ")",
                         Database::query_param_list
                         (it->first)
                         (it->second)
-                        );
+                    );
                 }
             } catch(...) {
                 //try {

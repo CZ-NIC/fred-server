@@ -142,13 +142,13 @@ namespace Fred
       std::string getDomainAdditionalEmails(TID state_id)
       {
         std::stringstream sql;
-        // hop from state expired to state outzoneUnguardedWarning
+        // hop from state expired (9) to state outzoneUnguardedWarning
         sql << "SELECT n.email "
             << "FROM notify_outzoneunguarded_domain_additional_email n "
             << "JOIN object_state os "
             << "ON n.object_state_id = os.id "
             << "JOIN object_state os2 "
-            << "ON (os.object_id = os2.object_id AND os2.state_id = 21) "
+            << "ON (os.object_id = os2.object_id AND os2.state_id = 9) "
             << "WHERE os.id = " << state_id << " AND n.crdate BETWEEN(os2.valid_from, os2.valid_to)";
         return getEmailList(sql);
       }
