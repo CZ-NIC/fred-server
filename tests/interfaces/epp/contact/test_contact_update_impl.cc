@@ -364,7 +364,7 @@ static void check_equal(
                       updated< Epp::ContactDisclose::Item::notify_email >(update, info_before.disclosenotifyemail));
 }
 
-BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
+BOOST_FIXTURE_TEST_CASE(contact_update_ok_full_data, has_contact)
 {
     Epp::ContactChange data;
     set_correct_data_2(data);

@@ -334,7 +334,7 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
 }
 
 
-BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_nsset_with_all_data_set)
+BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 {
     Epp::NssetUpdateInputData data(
             nsset.handle,
