@@ -360,6 +360,8 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
             3
         );
 
+    try
+    {
     Epp::nsset_update_impl(
         ctx,
         data,
@@ -368,6 +370,13 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
     );
 
     check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
+
+    }
+    catch(const std::exception& e)
+    {
+        BOOST_ERROR(e.what());
+    }
+
 }
 
 BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_transfer_prohibited_request)
