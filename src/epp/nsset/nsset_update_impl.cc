@@ -115,7 +115,7 @@ unsigned long long nsset_update_impl(
                     Reason::tech_notexist));//TODO: rename as technical_contact_not_registered
             }
             else //check if given tech contact to be added is already admin of the nsset
-            if(nsset_tech_c_handles.find(upper_tech_contact_handle) == nsset_tech_c_handles.end())
+            if(nsset_tech_c_handles.find(upper_tech_contact_handle) != nsset_tech_c_handles.end())
             {
                 ex.add(Error::of_vector_parameter(Param::nsset_tech_add,
                     boost::numeric_cast<unsigned short>(i),

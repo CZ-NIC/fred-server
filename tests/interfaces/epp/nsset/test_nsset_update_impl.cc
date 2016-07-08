@@ -353,10 +353,10 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
                     std::vector<boost::asio::ip::address>())), //rem_dns
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT4")
-                ("TEST-ADMIN-CONTACT5"),//0
+                ("TEST-ADMIN-CONTACT5"),//tech_contacts_add
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
-                ("TEST-ADMIN-CONTACT3"),
+                ("TEST-ADMIN-CONTACT3"),//tech_contacts_rem
             3
         );
 
