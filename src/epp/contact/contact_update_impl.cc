@@ -314,7 +314,6 @@ unsigned long long contact_update_impl(
             if(
                 e.is_set_forbidden_company_name_setting()
                 || e.is_set_unknown_registrar_handle()
-                || e.is_set_unknown_sponsoring_registrar_handle()
                 || e.is_set_unknown_ssntype()
             ) {
                 throw;
