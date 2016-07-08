@@ -107,7 +107,7 @@ NssetCreateResult nsset_create_impl(
             {
                 ex.add(Error::of_vector_parameter(Param::nsset_tech,
                     boost::numeric_cast<unsigned short>(i),
-                    Reason::tech_notexist));
+                    Reason::technical_contact_not_registered));
             }
             else
             {//check technical contact duplicity
