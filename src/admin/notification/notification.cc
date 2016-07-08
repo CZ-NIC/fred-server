@@ -22,6 +22,7 @@
  */
 
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/contact_verification/django_email_format.h"
 
 #include "src/admin/notification/notification.h"
 
@@ -35,45 +36,67 @@ namespace Admin {
          * @param list of pairs <domain_id, email>
          *
          * @throw INTERNAL_ERROR
-         * @throw INVALID_VALUE
          */
-        void notify_outzoneunguarded_domain_email_list(
-            Fred::OperationContext &ctx,
+        std::vector<std::pair<unsigned long long, std::string> >
+        notify_outzoneunguarded_domain_email_list(
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
         ) {
 
+            Fred::OperationContextCreator ctx;
+
             unsigned long index = 0;
+            std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
+
+            for(std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
+                it != domain_email_list.end();
+                ++it, ++index
+            ) {
+                // TODO email length check in MOUJEID:
+                //enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
+                //((Util::get_utf8_char_len(email) <= MAX_MOJEID_EMAIL_LENGTH)
+
+                if(it->second.empty() || !DjangoEmailFormat().check(it->second)) {
+                    invalid_domain_email_list.push_back(*it);
+                }
+
+                const Database::Result r = ctx.get_conn().exec_params(
+                    "SELECT from domain_history WHERE id=$1::bigint",
+                    Database::query_param_list
+                    (it->first)
+                );
+                if (r.size() == 0) {
+                    invalid_domain_email_list.push_back(*it);
+                }
+            }
+
+            if(invalid_domain_email_list.size()) {
+                return invalid_domain_email_list;
+            }
+
             try {
-                // TODO partial import?
-                //ctx.get_conn().exec("RELEASE SAVEPOINT outzoneunguarded_domain_email_savepoint");
-                //ctx.get_conn().exec("SAVEPOINT outzoneunguarded_domain_email_savepoint");
                 for(std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
                     it != domain_email_list.end();
                     ++it, ++index
                 ) {
                     ctx.get_conn().exec_params(
                         "INSERT INTO notify_outzoneunguarded_domain_additional_email "
-                           "(crdate, state_id, email) "
+                           "(crdate, state_id, domain_id, email) "
                            "VALUES ( "
                                "NOW(), "      // crdate
-                               // use domain_id to lookup and insert 'expired (9)' state_id, becouse none of
-                               // 'outzone' / 'outzoneUnguardedWarning' / 'outzoneUnguarded' is set at this moment
-                               "(SELECT id FROM object_state WHERE object_id=$1::bigint and state_id = 9 and valid_to IS NULL), "
+                               "NULL, "       // state_id
+                               "$1::bigint, " // domain_id
                                "$2::varchar " // email
                            ")",
                         Database::query_param_list
-                        (it->first)
-                        (it->second)
+                        (it->first)  // domain_id
+                        (it->second) // email
                     );
                 }
             } catch(...) {
-                //try {
-                //    //ctx.get_conn().exec("ROLLBACK TO outzoneunguarded_domain_email_savepoint");
-                //} catch(...) {
-                //    // exception consumed
-                //}
-                throw VALUE_ERROR(index);
+                throw INTERNAL_ERROR();
             }
+
+            ctx.commit_transaction();
         };
 
     }

@@ -28,7 +28,6 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
-#include "src/fredlib/exception.h"
 
 // CORBA stub for Notification.idl
 #include "src/corba/Notification.hh"
@@ -38,27 +37,29 @@ namespace Admin {
     namespace Notification {
 
         /// Exception for internal error
-        struct INTERNAL_ERROR : virtual Fred::InternalError {
-            INTERNAL_ERROR() : Fred::InternalError("INTERNAL ERROR") {};
-        };
-
-        /// Exception for invalid input
-        struct VALUE_ERROR : virtual Fred::Exception {
-        private:
-            long int lineno;
-        public:
-            VALUE_ERROR(long int lineno) : lineno(lineno) {};
+        struct INTERNAL_ERROR : std::exception {
             const char* what() const throw() {
-                boost::format retval("Error: Importing record #%1% failed.");
-                retval % lineno;
-                return retval.str().c_str();
+                return "INTERNAL ERROR";
             }
         };
 
+        /// Exception for invalid input OBSOLETE
+        //struct VALUE_ERROR : std::exception {
+        //private:
+        //    long int lineno;
+        //public:
+        //    VALUE_ERROR(long int lineno) : lineno(lineno) {};
+        //    const char* what() const {
+        //        boost::format retval("Error: Importing record #%1% failed.");
+        //        retval % lineno;
+        //        return retval.str().c_str();
+        //    }
+        //};
+
         //typedef std::vector<std::pair<unsigned long long, std::string> > DomainEmailList;
 
-        void notify_outzoneunguarded_domain_email_list(
-            Fred::OperationContext &ctx,
+        std::vector<std::pair<unsigned long long, std::string> >
+        notify_outzoneunguarded_domain_email_list(
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
         );
 

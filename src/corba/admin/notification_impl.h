@@ -41,8 +41,11 @@ namespace Registry {
 
                 virtual ~Notification_i() {};
 
-                void notify_outzoneunguarded_domain_email_list(const DomainEmailSeq &domain_email_seq)
-                    throw (INTERNAL_SERVER_ERROR, INVALID_VALUE);
+
+                /**
+                 * Wrapper for IDL NotificationIface method of the same name
+                 */
+                DomainEmailSeq *notify_outzoneunguarded_domain_email_list(const DomainEmailSeq &domain_email_seq);
 
         };
 

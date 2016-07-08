@@ -1,6 +1,7 @@
 #include <stdexcept>
 
 #include "src/corba/util/corba_conversions_string.cc"
+#include "src/corba/util/corba_conversions_nullable_types.h"
 
 #include "src/fredlib/notify.h"
 
@@ -12,11 +13,9 @@ namespace Registry {
 
     namespace Notification {
 
-        void Notification_i::notify_outzoneunguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) throw (INTERNAL_SERVER_ERROR, INVALID_VALUE) {
+        DomainEmailSeq *Notification_i::notify_outzoneunguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) {
 
             try {
-
-                Fred::OperationContextCreator ctx;
 
                 std::vector<std::pair<unsigned long long, std::string> > domain_email_list;
 
@@ -30,12 +29,26 @@ namespace Registry {
                     );
                 }
 
-								Admin::Notification::notify_outzoneunguarded_domain_email_list(ctx, domain_email_list);
+                std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
 
-                ctx.commit_transaction();
+								invalid_domain_email_list = Admin::Notification::notify_outzoneunguarded_domain_email_list(domain_email_list);
 
-            } catch(const Admin::Notification::VALUE_ERROR &e) {
-                throw INVALID_VALUE(CORBA::string_dup(e.what()));
+                DomainEmailSeq_var invalid_domain_email_seq = new DomainEmailSeq();
+
+								if(!invalid_domain_email_list.empty()) {
+                    unsigned long index = 0;
+                    invalid_domain_email_seq->length(domain_email_list.size());
+                    for(std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
+                        it != domain_email_list.end();
+                        ++it, ++index
+                    ) {
+                        invalid_domain_email_seq[index].domain_id = CORBA::ULongLong(it->first);
+                        invalid_domain_email_seq[index].email = Corba::wrap_string(it->second);
+                    }
+                }
+
+                return invalid_domain_email_seq._retn();
+
             } catch(Admin::Notification::INTERNAL_ERROR &e) {
                 throw INTERNAL_SERVER_ERROR();
             } catch (...) {
