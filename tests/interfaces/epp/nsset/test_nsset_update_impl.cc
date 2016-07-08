@@ -372,6 +372,15 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
     check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
 
     }
+    catch(const Epp::ParameterValuePolicyError& pe)
+    {
+        BOOST_FOREACH(Epp::Error e, pe.get())
+        {
+            BOOST_ERROR(std::string("Epp::ParameterValuePolicyError e.param: ") << e.param
+                << std::string(" e.position: ") << e.position
+                << std::string(" e.reason: ") << e.reason);
+        }
+    }
     catch(const std::exception& e)
     {
         BOOST_ERROR(e.what());
