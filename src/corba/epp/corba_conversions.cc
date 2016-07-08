@@ -130,7 +130,7 @@ namespace Corba {
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle) {
         ccReg::Response result;
 
-        CorbaConversion::int_to_int( static_cast<short>(_input.response), result.code );
+        CorbaConversion::int_to_int( to_description_db_id(_input.response), result.code );
         result.svTRID = Corba::wrap_string_to_corba_string(_server_transaction_handle);
         result.msg = Corba::wrap_string_to_corba_string(_input.localized_msg);
 
@@ -140,7 +140,7 @@ namespace Corba {
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle) {
         ccReg::EPP::EppError result;
 
-        CorbaConversion::int_to_int( static_cast<short>(_input.response), result.errCode );
+        CorbaConversion::int_to_int( to_description_db_id(_input.response), result.errCode );
         result.svTRID = Corba::wrap_string_to_corba_string(_server_transaction_handle);
         result.errMsg = Corba::wrap_string_to_corba_string(_input.localized_msg);
 
