@@ -181,15 +181,15 @@ public:
      */
     T get_value_or_default() const
     {
-        return value_;
+        return isnull_ ? T() : value_;
     }
 
     /**
      * @returns either not-null value of object or falls back to provided value in case of null
      */
-    T get_value_or(const T& _default) const
+    T get_value_or(const T &_null_replacement) const
     {
-        return isnull_ ? _default : value_;
+        return isnull_ ? _null_replacement : value_;
     }
 
     /**
