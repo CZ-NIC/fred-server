@@ -1440,6 +1440,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
 		src/corba/epp/epp_impl.h \
+		src/corba/epp/corba_conversions.h \
+		src/corba/epp/corba_conversions.cc \
 		src/corba/epp/messages.cc \
 		src/corba/epp/messages.h \
 		src/corba/epp/tech_check.cc \
@@ -1448,7 +1450,47 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/countrycode.h \
 		src/corba/epp/action.h \
 		src/corba/epp/reason.h \
-		src/corba/epp/response.h
+		src/corba/epp/response.h \
+		src/corba/util/corba_conversions_string.h \
+		src/corba/util/corba_conversions_string.cc \
+		src/epp/command_result.h \
+		src/epp/localization.h \
+		src/epp/localization.cc \
+		src/epp/util.h \
+		src/epp/param.h \
+		src/epp/reason.h \
+		src/epp/response.h \
+		src/epp/conditionally_enqueue_notification.h \
+		src/epp/conditionally_enqueue_notification.cc \
+		src/epp/contact/contact_create.cc \
+		src/epp/contact/contact_create.h \
+		src/epp/contact/contact_create_impl.cc \
+		src/epp/contact/contact_create_impl.h \
+		src/epp/contact/contact_update.cc \
+		src/epp/contact/contact_update.h \
+		src/epp/contact/contact_update_impl.cc \
+		src/epp/contact/contact_update_impl.h \
+		src/epp/contact/contact_info.cc \
+		src/epp/contact/contact_info.h \
+		src/epp/contact/contact_info_impl.cc \
+		src/epp/contact/contact_info_impl.h \
+		src/epp/contact/contact_delete.cc \
+		src/epp/contact/contact_delete.h \
+		src/epp/contact/contact_delete_impl.cc \
+		src/epp/contact/contact_delete_impl.h \
+		src/epp/contact/contact_check.cc \
+		src/epp/contact/contact_check.h \
+		src/epp/contact/contact_check_impl.cc \
+		src/epp/contact/contact_check_impl.h \
+		src/epp/contact/contact_transfer.cc \
+		src/epp/contact/contact_transfer.h \
+		src/epp/contact/contact_transfer_impl.cc \
+		src/epp/contact/contact_transfer_impl.h \
+		src/epp/contact/contact_handle_registration_obstruction.h \
+		src/epp/contact/post_contact_update_hooks.cc \
+		src/epp/contact/post_contact_update_hooks.h \
+		util/corba_conversion.h \
+		util/corba_conversion.cc
 #
 # src/corba/epp/libepp_impl.a
 
@@ -2082,6 +2124,7 @@ SERVER_TESTS = \
 		tests/test-server \
 		tests/interfaces/test-admin-contact-verification \
 		tests/interfaces/test-admin-contact-automerge \
+		tests/interfaces/test-epp \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
@@ -2181,6 +2224,45 @@ tests_interfaces_test_admin_contact_automerge_LDADD = \
 #
 # tests/interfaces/test-admin-contact-automerge
 
+# tests/interfaces/test-epp
+#
+tests_interfaces_test_epp_SOURCES = \
+		tests/interfaces/epp/main.cc \
+		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
+		tests/interfaces/epp/contact/test_contact_create_impl.cc \
+		tests/interfaces/epp/contact/test_contact_delete_impl.cc \
+		tests/interfaces/epp/contact/test_contact_info_impl.cc \
+		tests/interfaces/epp/contact/test_contact_update_impl.cc \
+		tests/interfaces/epp/contact/test_contact_check_impl.cc \
+		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
+		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_epp_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_epp_LDADD = \
+		src/corba/epp/libepp_impl.a \
+		src/fredlib/libfred.a \
+		util/types/libtypes.a \
+		util/db/libdb.a \
+		util/log/liblog.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/interfaces/test-epp
 
 # tests/test_server
 #

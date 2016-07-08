@@ -18,7 +18,7 @@
 
 /**
 *  @file
-*  header of Fred::Object::Type class
+*  header of Fred::Object_Type class
 */
 
 #ifndef OBJECT_TYPE_H_22A124B8D173FCF75E30657FA4D8D922//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
@@ -28,15 +28,13 @@
 
 /// Fred matters
 namespace Fred {
-/// Fred objects matters
-namespace Object {
 
 typedef unsigned long long Id;
 
 /**
  * Bidirectional conversions between string and enum representation of object types.
  */
-struct Type
+struct Object_Type
 {
     /**
      * Names of particular object types.
@@ -50,32 +48,31 @@ struct Type
     };
 };
 
-}//Fred::Object
 }//Fred
 
 namespace Conversion {
 namespace Enums {
 
-inline std::string to_db_handle(Fred::Object::Type::Enum value)
+inline std::string to_db_handle(Fred::Object_Type::Enum value)
 {
     switch (value)
     {
-        case Fred::Object::Type::contact: return "contact";
-        case Fred::Object::Type::nsset:   return "nsset";
-        case Fred::Object::Type::domain:  return "domain";
-        case Fred::Object::Type::keyset:  return "keyset";
+        case Fred::Object_Type::contact: return "contact";
+        case Fred::Object_Type::nsset:   return "nsset";
+        case Fred::Object_Type::domain:  return "domain";
+        case Fred::Object_Type::keyset:  return "keyset";
     }
-    throw std::invalid_argument("value doesn't exist in Fred::Object::Type::Enum");
+    throw std::invalid_argument("value doesn't exist in Fred::Object_Type::Enum");
 };
 
 template < >
-inline Fred::Object::Type::Enum from_db_handle< Fred::Object::Type >(const std::string &db_handle)
+inline Fred::Object_Type::Enum from_db_handle< Fred::Object_Type >(const std::string &db_handle)
 {
-    if (to_db_handle(Fred::Object::Type::contact) == db_handle) { return Fred::Object::Type::contact; }
-    if (to_db_handle(Fred::Object::Type::nsset)   == db_handle) { return Fred::Object::Type::nsset; }
-    if (to_db_handle(Fred::Object::Type::domain)  == db_handle) { return Fred::Object::Type::domain; }
-    if (to_db_handle(Fred::Object::Type::keyset)  == db_handle) { return Fred::Object::Type::keyset; }
-    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Object::Type::Enum");
+    if (to_db_handle(Fred::Object_Type::contact) == db_handle) { return Fred::Object_Type::contact; }
+    if (to_db_handle(Fred::Object_Type::nsset)   == db_handle) { return Fred::Object_Type::nsset; }
+    if (to_db_handle(Fred::Object_Type::domain)  == db_handle) { return Fred::Object_Type::domain; }
+    if (to_db_handle(Fred::Object_Type::keyset)  == db_handle) { return Fred::Object_Type::keyset; }
+    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Object_Type::Enum");
 }
 
 }//namespace Conversion::Enums

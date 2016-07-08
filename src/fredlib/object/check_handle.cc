@@ -54,13 +54,26 @@ namespace Fred
     bool TestHandle::is_protected(OperationContext& ctx, const std::string& object_type_name) const
     {
         Database::Result protection_res = ctx.get_conn().exec_params(
-        "SELECT COALESCE(MAX(oreg.erdate) + ((SELECT val FROM enum_parameters "
-            " WHERE name = 'handle_registration_protection_period') || ' month')::interval > CURRENT_TIMESTAMP, false) "
-        " FROM object_registry oreg "
-        " JOIN enum_object_type eot ON oreg.type = eot.id "
-        " WHERE oreg.erdate IS NOT NULL "
-        " AND eot.name=$1::text "
-        " AND oreg.name=UPPER($2::text)"
+        "SELECT "
+            "COALESCE( "
+                "MAX(oreg.erdate) "
+                "+ "
+                "( "
+                    "( "
+                        "SELECT val "
+                            "FROM enum_parameters "
+                            "WHERE name = 'handle_registration_protection_period' "
+                    ") || ' month'"
+                ")::interval "
+                "> "
+                "CURRENT_TIMESTAMP"
+                ", false "
+            ") "
+        "FROM object_registry oreg "
+        "WHERE "
+            "oreg.erdate IS NOT NULL "
+            "AND oreg.type = get_object_type_id($1::text) "
+            "AND oreg.name=UPPER($2::text) "
         , Database::query_param_list(object_type_name)(handle_));
 
         if(static_cast<bool>(protection_res[0][0]) == true) return true;
@@ -84,6 +97,13 @@ namespace Fred
             return true;
         }
         return false;
+    }
+
+    //check if handle is already registered, if true then set conflicting handle
+    bool TestHandle::is_registered(OperationContext& ctx, const std::string& object_type_name) const {
+        std::string dummy;
+
+        return is_registered(ctx, object_type_name, dummy);
     }
 
 }//namespace Fred

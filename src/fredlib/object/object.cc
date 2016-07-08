@@ -28,13 +28,12 @@
 #include "object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 #include "src/fredlib/object_state/object_state_name.h"
-
+#include "src/fredlib/object/generate_authinfo_password.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/optional_value.h"
 #include "util/log/log.h"
-#include "util/random_data_generator.h"
 #include "object.h"
 
 namespace Fred
@@ -105,7 +104,7 @@ namespace Fred
 
             if (authinfo_.get_value_or_default().empty())
             {
-                authinfo_ = RandomDataGenerator().xnstring(8);//former PASS_LEN
+                authinfo_ = generate_authinfo_pw().password_;
             }
 
             ctx.get_conn().exec_params("INSERT INTO object(id, clid, authinfopw) VALUES ($1::bigint "//object id from create_object

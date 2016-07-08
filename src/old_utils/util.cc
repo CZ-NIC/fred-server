@@ -504,7 +504,7 @@ void convert_rfc3339_date(
     get_rfc3339_timestamp(t, dateStr, len, true); // return  local date
 }
 
-// convert timestamp from database  ( int UTC ) to local date time
+// convert timestamp from database  ( in UTC ) to local date time
 void convert_rfc3339_timestamp(
   char *dateStr, size_t len, const char *string)
 {
@@ -512,7 +512,7 @@ void convert_rfc3339_timestamp(
 
   t = get_time_t(string);
   if (t <= 0)
-    dateStr[0] = (char)NULL; //  ERROR
+    dateStr[0] = (char)0; //  ERROR
     // return string in rfc3339  like a date time with time zone
   else
     get_rfc3339_timestamp(t, dateStr, len, false);

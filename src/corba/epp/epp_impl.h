@@ -13,6 +13,8 @@
 
 #include "epp_session.h"
 
+#include "src/corba/EPP.hh"
+
 //value class to fix return of local char*
 class EppString
 {

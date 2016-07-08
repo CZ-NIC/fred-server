@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016 CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,101 +16,35 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  contact check
- */
-
-#include <string>
-
-#include <boost/regex.hpp>
-
 #include "src/fredlib/contact/check_contact.h"
-#include "src/fredlib/object/check_handle.h"
 
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
+#include "src/fredlib/object/check_handle.h"
 
 namespace Fred
 {
-    CheckContact::CheckContact(const std::string& handle)
-    : handle_(handle)
-    {}
-    bool CheckContact::is_invalid_handle() const
-    {
-        try
-        {
-            if(TestHandle(handle_) .is_invalid_handle()) return true;
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
+
+namespace Contact
+{
+    ContactHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _contact_handle) {
+
+        if( TestHandle(_contact_handle).is_invalid_handle() ) {
+            return ContactHandleState::SyntaxValidity::invalid;
         }
-        return false;//meaning handle syntax is ok
+        return ContactHandleState::SyntaxValidity::valid;
     }
 
-    bool CheckContact::is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const
-    {
-        try
-        {
-            if(TestHandle(handle_).is_registered(ctx,"contact",conflicting_handle_out)) return true;
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
+    ContactHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _contact_handle) {
+        if( TestHandle(_contact_handle).is_registered(ctx, "contact") ) {
+            return ContactHandleState::Registrability::registered;
         }
-        return false;//meaning not protected
-    }
 
-    bool CheckContact::is_registered(OperationContext& ctx) const
-    {
-        std::string conflicting_handle_out;
-        return is_registered(ctx, conflicting_handle_out);
-    }
-
-    bool CheckContact::is_protected(OperationContext& ctx) const
-    {
-        try
-        {
-            if(TestHandle(handle_).is_protected(ctx,"contact")) return true;
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
+        if( TestHandle(_contact_handle).is_protected(ctx, "contact") ) {
+            return ContactHandleState::Registrability::in_protection_period;
         }
-        return false;//meaning not protected
+
+        return ContactHandleState::Registrability::available;
     }
+}
 
-    bool CheckContact::is_free(OperationContext& ctx) const
-    {
-        try
-        {
-            if(is_invalid_handle()
-            || is_registered(ctx)
-            || is_protected(ctx))
-            {
-                return false;
-            }
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
-        }
-        return true;//meaning ok
-    }
-
-    std::string CheckContact::to_string() const
-    {
-        return Util::format_operation_state("CheckContact",
-        Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("handle",handle_))
-        );
-    }
-
-
-}//namespace Fred
+}
 

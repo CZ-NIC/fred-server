@@ -40,10 +40,18 @@ namespace Fred
         bool is_invalid_handle() const;
         //check if handle is in protected period
         bool is_protected(OperationContext& ctx, const std::string& object_type_name) const;
+
         //check if handle is already registered, if true then set conflicting handle
+        // TODO XXX Remove conflicting_handle_out. It is nonsense, same as handle_.
         bool is_registered(OperationContext& ctx,
             const std::string& object_type_name,//from db enum_object_type.name
             std::string& conflicting_handle_out) const;
+
+        //check if handle is already registered, if true then set conflicting handle
+        bool is_registered(
+            OperationContext& ctx,
+            const std::string& object_type_name    //from db enum_object_type.name
+        ) const;
     };
 
 }//namespace Fred

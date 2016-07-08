@@ -25,6 +25,8 @@
 #include <fredlib/nsset.h>
 #include <fredlib/registrar.h>
 
+#include "src/fredlib/contact/check_contact.h"
+
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
@@ -117,28 +119,31 @@ struct check_handle_fixture : public Test::Fixture::instantiate_db_template
  */
 BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
 {
-    Fred::OperationContextCreator ctx;
-    std::string conflicting_handle;
-    BOOST_CHECK(Fred::CheckContact(admin_contact_handle).is_registered(ctx, conflicting_handle));
-    BOOST_CHECK(admin_contact_handle.compare(conflicting_handle) == 0);
-    BOOST_CHECK(Fred::CheckContact(admin_contact_handle).is_registered(ctx));
-    BOOST_CHECK(Fred::CheckContact(admin_contact_handle+"@").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact(admin_contact_handle_rem).is_protected(ctx));
-    BOOST_CHECK(Fred::CheckContact(admin_contact_handle+xmark).is_free(ctx));
-}
+    BOOST_CHECK(
+        Fred::Contact::get_handle_syntax_validity(admin_contact_handle + "@")
+        ==
+        Fred::ContactHandleState::SyntaxValidity::invalid
+    );
 
-/**
- * test CheckContact false returning cases
- */
-BOOST_FIXTURE_TEST_CASE(check_contact_handle_false, check_handle_fixture)
-{
-    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_invalid_handle());
     Fred::OperationContextCreator ctx;
-    std::string conflicting_handle;
-    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle+xmark).is_registered(ctx, conflicting_handle));
-    BOOST_CHECK(conflicting_handle.empty());
-    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_protected(ctx));
-    BOOST_CHECK(!Fred::CheckContact(admin_contact_handle).is_free(ctx));
+
+    BOOST_CHECK(
+        Fred::Contact::get_handle_registrability(ctx, admin_contact_handle)
+        ==
+        Fred::ContactHandleState::Registrability::registered
+    );
+
+    BOOST_CHECK(
+        Fred::Contact::get_handle_registrability(ctx, admin_contact_handle_rem)
+        ==
+        Fred::ContactHandleState::Registrability::in_protection_period
+    );
+
+    BOOST_CHECK(
+        Fred::Contact::get_handle_registrability(ctx, admin_contact_handle + xmark)
+        ==
+        Fred::ContactHandleState::Registrability::available
+    );
 }
 
 /**
@@ -146,36 +151,36 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_false, check_handle_fixture)
  */
 BOOST_AUTO_TEST_CASE(check_contact_handle_validity_invalid)
 {
-    BOOST_CHECK(Fred::CheckContact("").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("!").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("@").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("#").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("$").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("%").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("^").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("&").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("*").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("(").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact(")").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("[").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("]").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("/").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact(".").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact(",").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact(":").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("{").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("}").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("~").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("'").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("+").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("-").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("\"").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("\\").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("FOO--BAR").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("-FOOBAR").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("FOOBAR-").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("FOOBAR-").is_invalid_handle());
-    BOOST_CHECK(Fred::CheckContact("1234567890123456789012345678901").is_invalid_handle());
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("!") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("@") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("#") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("$") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("%") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("^") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("&") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("*") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("(") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(")") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("[") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("]") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("/") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(".") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(",") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(":") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("{") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("}") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("~") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("'") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("+") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("-") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("\"") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("\\") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOO--BAR") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("-FOOBAR") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOOBAR-") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOOBAR-") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("1234567890123456789012345678901") == Fred::ContactHandleState::SyntaxValidity::invalid);
 }
 
 /**
@@ -183,12 +188,12 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_validity_invalid)
  */
 BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
 {
-    BOOST_CHECK(!Fred::CheckContact("F").is_invalid_handle());
-    BOOST_CHECK(!Fred::CheckContact("FOOBAR").is_invalid_handle());
-    BOOST_CHECK(!Fred::CheckContact("FOO-BAR").is_invalid_handle());
-    BOOST_CHECK(!Fred::CheckContact("123-BAR").is_invalid_handle());
-    BOOST_CHECK(!Fred::CheckContact("FOO-BAR-BAZ").is_invalid_handle());
-    BOOST_CHECK(!Fred::CheckContact("123456789012345678901234567890").is_invalid_handle());
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("F") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOOBAR") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOO-BAR") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("123-BAR") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOO-BAR-BAZ") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("123456789012345678901234567890") == Fred::ContactHandleState::SyntaxValidity::valid);
 }
 
 /**

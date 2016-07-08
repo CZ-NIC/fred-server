@@ -227,7 +227,7 @@ contact_username_availability::contact_username_availability(
         "ORDER BY erdate IS NULL DESC,"//prefer erdate=NULL
                  "erdate DESC "        //otherwise the newest erdate
         "LIMIT 1",
-        Database::query_param_list(_handle)(Conversion::Enums::to_db_handle(Fred::Object::Type::contact)));
+        Database::query_param_list(_handle)(Conversion::Enums::to_db_handle(Fred::Object_Type::contact)));
     taken         = (0 < dbres.size()) && static_cast< bool >(dbres[0][0]);
     used_recently = (0 < dbres.size()) && static_cast< bool >(dbres[0][1]);
 }

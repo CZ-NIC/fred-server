@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -18,78 +18,25 @@
 
 /**
  *  @file
- *  contact check
  */
 
 #ifndef CHECK_CONTACT_H
 #define CHECK_CONTACT_H
 
+#include "src/fredlib/contact/handle_state.h"
+
 #include <string>
 
-#include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
-#include "util/printable.h"
 
 namespace Fred
 {
+namespace Contact
+{
+    ContactHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _contact_handle);
 
-    /**
-    * Checking of contact properties.
-    */
-    class CheckContact : public Util::Printable
-    {
-        const std::string handle_;/**< contact identifier */
-    public:
+    ContactHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _contact_handle);
+}
+}
 
-        /**
-        * Check contact constructor.
-        * @param handle a contact identifier.
-        */
-        CheckContact(const std::string& handle);
-
-        /**
-        * Checks contact handle syntax.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if invalid, false if ok
-        */
-        bool is_invalid_handle() const;
-
-        /**
-        * Checks if contact handle is registered.
-        * @param ctx an operation context with database and logging interface.
-        * @param conflicting_handle_out an conflicting contact identifier reference used for output if true is returned.
-        * @return true if registered, false if not
-        */
-        bool is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const;
-
-        /**
-        * Checks if contact handle is registered.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if registered, false if not
-        */
-        bool is_registered(OperationContext& ctx) const;
-
-        /**
-        * Checks if contact handle is in protection period.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if protected, false if not
-        */
-        bool is_protected(OperationContext& ctx)  const;
-
-        /**
-        * Checks if contact handle is free for registration.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if protected, false if not
-        */
-        bool is_free(OperationContext& ctx)  const;
-
-        /**
-        * Dumps state of the instance into the string
-        * @return string with description of the instance state
-        */
-        std::string to_string() const;
-    };//class CheckContact
-
-}//namespace Fred
-
-#endif//CHECK_CONTACT_H
+#endif
