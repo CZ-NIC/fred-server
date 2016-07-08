@@ -26,11 +26,13 @@
 #include "tests/fredlib/notifier/util.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_addresses.h"
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/domain/transfer_domain.h"
 
 #include <boost/foreach.hpp>
 
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailAddresses)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(Transfer)
@@ -227,16 +229,16 @@ struct has_domain : has_autocomitting_ctx {
     }
 };
 
-struct has_updated_domain_followed_by_future_changes {
+template<typename Tdomainoperation = Fred::UpdateDomain> struct has_domain_operation_followed_by_future_changes {
     Fred::InfoDomainData dom_data_to_be_notified;
 
-    has_updated_domain_followed_by_future_changes(
+    has_domain_operation_followed_by_future_changes(
         const std::string _fqdn,
         const std::string _registrar_handle,
-        Fred::UpdateDomain& _update,
+        Tdomainoperation& _operation,
         Fred::OperationContext& _ctx
     ) {
-        const unsigned long long to_be_notified_hid = _update.exec(_ctx);
+        const unsigned long long to_be_notified_hid = _operation.exec(_ctx);
 
         /* future */
         const std::string different_registrant_handle = "DIFFREGISTRANT";
@@ -300,10 +302,13 @@ struct has_transferred_domain : has_domain {
         has_domain(),
         new_registrar(Test::registrar(ctx).info_data)
     {
-        dom_data_to_be_notified = has_updated_domain_followed_by_future_changes(
+        const Fred::InfoDomainData domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+        Fred::TransferDomain transfer(domain_data.id, new_registrar.handle, domain_data.authinfopw, Nullable<unsigned long long>());
+
+        dom_data_to_be_notified = has_domain_operation_followed_by_future_changes<Fred::TransferDomain>(
             fqdn,
             registrar.handle,
-            Fred::UpdateDomain(fqdn, new_registrar.handle).set_sponsoring_registrar(new_registrar.handle),
+            transfer,
             ctx
         ).dom_data_to_be_notified;
     }

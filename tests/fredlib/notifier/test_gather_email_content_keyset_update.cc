@@ -33,7 +33,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailContent)
 BOOST_AUTO_TEST_SUITE(Keyset)
 BOOST_AUTO_TEST_SUITE(Update)
@@ -61,14 +61,6 @@ template<typename Thas_keyset>  struct has_keyset_big_update : Thas_keyset {
         new_keyset_data(
             Fred::InfoKeysetHistoryByHistoryid(
                 Fred::UpdateKeyset(Thas_keyset::keyset.handle, Thas_keyset::keyset.create_registrar_handle)
-                    .set_sponsoring_registrar(
-                        Test::exec(
-                            Fred::CreateRegistrar("NEW_REGISTRAR1")
-                                .set_name("Re Gistra R Jr.")
-                                .set_url("registrar2.cz"),
-                            Thas_keyset::ctx
-                        ).handle
-                    )
                     .set_authinfo(Thas_keyset::keyset.authinfopw + "X")
                     .add_dns_key( Fred::DnsKey(3, 3, 3, "key_no_3") )
                     .add_tech_contact(

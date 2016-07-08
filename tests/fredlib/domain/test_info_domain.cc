@@ -382,7 +382,6 @@ struct test_info_domain_order_fixture : public test_domain_fixture
         Fred::OperationContextCreator ctx;
         Fred::UpdateDomain(test_fqdn//fqdn
             , registrar_handle//registrar
-            , Optional<std::string>()//sponsoring registrar
             , registrant_contact_handle //registrant - owner
             , std::string("testauthinfo1") //authinfo
             , Optional<Nullable<std::string> >()//dont change nsset

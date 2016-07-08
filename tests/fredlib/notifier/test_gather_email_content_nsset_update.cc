@@ -33,7 +33,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailContent)
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(Update)
@@ -61,14 +61,6 @@ template<typename Thas_nsset>  struct has_nsset_big_update : Thas_nsset {
         new_nsset_data(
             Fred::InfoNssetHistoryByHistoryid(
                 Fred::UpdateNsset(Thas_nsset::nsset.handle, Thas_nsset::nsset.create_registrar_handle)
-                    .set_sponsoring_registrar(
-                        Test::exec(
-                            Fred::CreateRegistrar("NEW_REGISTRAR1")
-                                .set_name("Re Gistra R Jr.")
-                                .set_url("registrar2.cz"),
-                            Thas_nsset::ctx
-                        ).handle
-                    )
                     .set_authinfo(Thas_nsset::nsset.authinfopw + "X")
                     .add_dns(
                         Fred::DnsHost(

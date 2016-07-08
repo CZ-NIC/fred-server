@@ -27,8 +27,9 @@
 #include "tests/fredlib/notifier/fixture_data.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_content.h"
+#include "src/fredlib/keyset/transfer_keyset.h"
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailContent)
 BOOST_AUTO_TEST_SUITE(Keyset)
 BOOST_AUTO_TEST_SUITE(Transfer)
@@ -43,10 +44,12 @@ template<typename T_has_keyset>struct has_keyset_transferred : T_has_keyset {
     :   logd_request_id(12345),
         new_registrar( Test::registrar(T_has_keyset::ctx).info_data ),
         new_historyid(
-            Fred::UpdateKeyset(T_has_keyset::keyset.handle, T_has_keyset::registrar.handle)
-                .set_sponsoring_registrar(new_registrar.handle)
-                .set_logd_request_id(logd_request_id)
-                .exec(T_has_keyset::ctx)
+            Fred::TransferKeyset(
+                T_has_keyset::keyset.id,
+                new_registrar.handle,
+                T_has_keyset::keyset.authinfopw,
+                logd_request_id
+            ).exec(T_has_keyset::ctx)
         )
     { }
 };

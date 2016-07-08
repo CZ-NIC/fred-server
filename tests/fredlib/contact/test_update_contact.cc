@@ -140,7 +140,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
 
     Fred::UpdateContactByHandle(test_contact_handle//handle
             , registrar_handle//registrar
-            , Optional<std::string>()//sponsoring registrar
             , Optional< std::string >()//authinfo
             , Optional< Nullable< std::string > >()//name
             , Optional< Nullable< std::string > >()//organization
@@ -212,7 +211,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     addresses_to_update.update< Fred::ContactAddressType::MAILING >(new_address);
     Fred::UpdateContactByHandle(test_contact_handle//handle
             , registrar_handle//registrar
-                , Optional<std::string>(registrar_handle)//sponsoring registrar
                 , Optional<std::string>("passwd")//authinfo
                 , Optional< Nullable< std::string > >("Test Name")//name
                 , Optional< Nullable< std::string > >("Test o.r.g.")//organization
@@ -312,7 +310,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     place.street3 = Optional<std::string>("");
     new_address.street1 = "Vrácená 1";
     Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
-    .set_sponsoring_registrar(registrar_handle)
     .set_authinfo("passw")
     .set_name("Test Name")
     .set_organization("Test o.r.g.")
@@ -480,41 +477,6 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_registrar)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
-    }
-
-    Fred::InfoContactOutput info_data_2;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
-    }
-    BOOST_CHECK(info_data_1 == info_data_2);
-    BOOST_CHECK(info_data_2.info_contact_data.delete_time.isnull());
-}
-
-/**
- * test UpdateContactByHandle with wrong sponsoring registrar
- */
-BOOST_AUTO_TEST_CASE(update_contact_by_handle_wrong_sponsoring_registrar)
-{
-    std::string bad_registrar_handle = registrar_handle+xmark;
-    Fred::InfoContactOutput info_data_1;
-    {
-        Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoContactByHandle(test_contact_handle).exec(ctx);
-    }
-
-    try
-    {
-        Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::UpdateContactByHandle(test_contact_handle, registrar_handle)
-            .set_sponsoring_registrar(bad_registrar_handle).exec(ctx);
-        ctx.commit_transaction();
-        BOOST_ERROR("no exception thrown");
-    }
-    catch(const Fred::UpdateContactByHandle::ExceptionType& ex)
-    {
-        BOOST_CHECK(ex.is_set_unknown_sponsoring_registrar_handle());
-        BOOST_CHECK(ex.get_unknown_sponsoring_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 
     Fred::InfoContactOutput info_data_2;

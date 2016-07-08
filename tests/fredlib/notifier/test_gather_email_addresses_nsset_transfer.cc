@@ -26,11 +26,12 @@
 #include "tests/fredlib/notifier/util.h"
 
 #include "src/fredlib/notifier/gather_email_data/gather_email_addresses.h"
+#include "src/fredlib/nsset/transfer_nsset.h"
 
 #include <boost/foreach.hpp>
 
 
-BOOST_AUTO_TEST_SUITE(TestNotifier2)
+BOOST_AUTO_TEST_SUITE(TestNotifier)
 BOOST_AUTO_TEST_SUITE(GatherEmailAddresses)
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(Transfer)
@@ -126,13 +127,13 @@ struct has_nsset : has_autocomitting_ctx {
     }
 };
 
-struct has_updated_nsset_followed_by_future_changes {
+template<typename Tnssetoperation = Fred::UpdateNsset> struct has_updated_nsset_followed_by_future_changes {
     Fred::InfoNssetData nsset_data_to_be_notified;
 
     has_updated_nsset_followed_by_future_changes(
         const std::string _handle,
         const std::string _registrar_handle,
-        Fred::UpdateNsset& _update,
+        Tnssetoperation& _update,
         Fred::OperationContext& _ctx
     ) {
         const unsigned long long to_be_notified_hid = _update.exec(_ctx);
@@ -182,10 +183,13 @@ struct has_transferred_nsset : has_nsset {
         has_nsset(),
         new_registrar(Test::registrar(ctx).info_data)
     {
-        nsset_data_to_be_notified = has_updated_nsset_followed_by_future_changes(
+        const Fred::InfoNssetData nsset_data = Fred::InfoNssetByHandle(nsset_handle).exec(ctx).info_nsset_data;
+        Fred::TransferNsset transfer(nsset_data.id, new_registrar.handle, nsset_data.authinfopw, Nullable<unsigned long long>());
+
+        nsset_data_to_be_notified = has_updated_nsset_followed_by_future_changes<Fred::TransferNsset>(
             nsset_handle,
             registrar.handle,
-            Fred::UpdateNsset(nsset_handle, new_registrar.handle).set_sponsoring_registrar(new_registrar.handle),
+            transfer,
             ctx
         ).nsset_data_to_be_notified;
     }

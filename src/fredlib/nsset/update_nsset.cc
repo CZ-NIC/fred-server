@@ -45,7 +45,6 @@ namespace Fred
 
     UpdateNsset::UpdateNsset(const std::string& handle
             , const std::string& registrar
-            , const Optional<std::string>& sponsoring_registrar
             , const Optional<std::string>& authinfo
             , const std::vector<DnsHost>& add_dns
             , const std::vector<std::string>& rem_dns
@@ -56,7 +55,6 @@ namespace Fred
             )
     : handle_(handle)
     , registrar_(registrar)
-    , sponsoring_registrar_(sponsoring_registrar)
     , authinfo_(authinfo)
     , add_dns_(add_dns)
     , rem_dns_(rem_dns)
@@ -67,12 +65,6 @@ namespace Fred
         ? Nullable<unsigned long long>(logd_request_id.get_value())
         : Nullable<unsigned long long>())//is NULL if not set
     {}
-
-    UpdateNsset& UpdateNsset::set_sponsoring_registrar(const std::string& sponsoring_registrar)
-    {
-        sponsoring_registrar_ = sponsoring_registrar;
-        return *this;
-    }
 
     UpdateNsset& UpdateNsset::set_authinfo(const std::string& authinfo)
     {
@@ -140,7 +132,7 @@ namespace Fred
         {
             //update object
             history_id = Fred::UpdateObject(handle_,"nsset", registrar_
-                , sponsoring_registrar_, authinfo_, logd_request_id_
+                , authinfo_, logd_request_id_
             ).exec(ctx);
         }
         catch(const Fred::UpdateObject::Exception& ex)
@@ -155,12 +147,6 @@ namespace Fred
             {
                 update_nsset_exception.set_unknown_registrar_handle(
                         ex.get_unknown_registrar_handle());
-            }
-
-            if(ex.is_set_unknown_sponsoring_registrar_handle())
-            {
-                update_nsset_exception.set_unknown_sponsoring_registrar_handle(
-                        ex.get_unknown_sponsoring_registrar_handle());
             }
         }
         //update nsset tech check level
@@ -367,7 +353,6 @@ namespace Fred
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("handle",handle_))
         (std::make_pair("registrar",registrar_))
-        (std::make_pair("sponsoring_registrar",sponsoring_registrar_.print_quoted()))
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("add_tech_contact",Util::format_container(add_tech_contact_)))
         (std::make_pair("rem_tech_contact",Util::format_container(rem_tech_contact_)))
