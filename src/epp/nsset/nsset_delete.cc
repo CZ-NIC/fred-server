@@ -67,16 +67,16 @@ LocalizedSuccessResponse nsset_delete(
             _lang
         );
 
-    } catch(const AutorError& e) {
+    } catch(const AuthorizationError& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::autor_error,
+            Response::authorization_error,
             std::set<Error>(),
             _lang
         );
 
-    } catch(const ObjectStatusProhibitingOperation& e) {
+    } catch(const ObjectStatusProhibitsOperation& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -89,7 +89,7 @@ LocalizedSuccessResponse nsset_delete(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::prohibits_operation,
+            Response::object_association_prohibits_operation,
             std::set<Error>(),
             _lang
         );

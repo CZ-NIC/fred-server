@@ -51,8 +51,8 @@ NssetCreateResult nsset_create_impl(
         ParameterValuePolicyError ex;
         for(std::size_t i = max_nsset_tech_contacts; i < _data.tech_contacts.size(); ++i)
         {
-            ex.add(Error(Param::nsset_tech,
-                boost::numeric_cast<unsigned short>(i+1),//position in list
+            ex.add(Error::of_vector_parameter(Param::nsset_tech,
+                boost::numeric_cast<unsigned short>(i),
                 Reason::techadmin_limit));
         }
         throw ex;
@@ -72,8 +72,8 @@ NssetCreateResult nsset_create_impl(
         ParameterValuePolicyError ex;
         for(std::size_t i = max_nsset_dns_hosts; i < _data.dns_hosts.size(); ++i)
         {
-            ex.add(Error(Param::nsset_tech,
-                boost::numeric_cast<unsigned short>(i+1),//position in list
+            ex.add(Error::of_vector_parameter(Param::nsset_tech,
+                boost::numeric_cast<unsigned short>(i),
                 Reason::nsset_limit));
         }
         throw ex;
@@ -81,7 +81,7 @@ NssetCreateResult nsset_create_impl(
 
     //check new nsset handle
     if( Fred::Nsset::get_handle_syntax_validity(_data.handle) != Fred::NssetHandleState::SyntaxValidity::valid ) {
-        throw AggregatedParamErrors().add( Error(Param::nsset_handle, 0, Reason::bad_format_nsset_handle));
+        throw AggregatedParamErrors().add( Error::of_scalar_parameter(Param::nsset_handle, Reason::bad_format_nsset_handle));
     }
 
     {
@@ -92,39 +92,31 @@ NssetCreateResult nsset_create_impl(
         }
 
         if(in_registry == Fred::NssetHandleState::Registrability::in_protection_period) {
-            throw ParameterValuePolicyError().add( Error( Param::nsset_handle, 0, Reason::protected_period ) );
+            throw ParameterValuePolicyError().add( Error::of_scalar_parameter( Param::nsset_handle, Reason::protected_period ) );
         }
     }
 
     //check technical contacts
     {
-        std::map<std::string, std::size_t> tech_contact_duplicity_map;
+        std::set<std::string> tech_contact_duplicity;
         ParameterValuePolicyError ex;
         for(std::size_t i = 0; i < _data.tech_contacts.size(); ++i)
         {   //check technical contact exists
             if(Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts.at(i))
                 != Fred::ContactHandleState::Registrability::registered)
             {
-                ex.add(Error(Param::nsset_tech,
-                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                ex.add(Error::of_vector_parameter(Param::nsset_tech,
+                    boost::numeric_cast<unsigned short>(i),
                     Reason::tech_notexist));
             }
             else
             {//check technical contact duplicity
-                const std::string upper_tech_contact_handle = boost::algorithm::to_upper_copy(
-                    _data.tech_contacts.at(i));
-                Optional<std::size_t> duplicity = optional_map_at<Optional>(
-                    tech_contact_duplicity_map, upper_tech_contact_handle);
-
-                if(duplicity.isset())
+                if(tech_contact_duplicity.insert(boost::algorithm::to_upper_copy(
+                        _data.tech_contacts.at(i))).second == false)
                 {
-                    ex.add(Error(Param::nsset_tech,
-                        boost::numeric_cast<unsigned short>(i+1),//position in list
-                        Reason::duplicity_contact));
-                }
-                else
-                {
-                    tech_contact_duplicity_map[upper_tech_contact_handle] = i;
+                    ex.add(Error::of_vector_parameter(Param::nsset_tech,
+                        boost::numeric_cast<unsigned short>(i),
+                        Reason::duplicated_contact));
                 }
             }
         }
@@ -134,65 +126,49 @@ NssetCreateResult nsset_create_impl(
 
     //check dns hosts wip TODO: specify required checks
     {
-        std::map<std::string, std::size_t> dns_host_fqdn_duplicity_map;
+        std::set<std::string> dns_host_fqdn_duplicity;
         ParameterValuePolicyError ex;
-        std::size_t nsset_ipaddr_position = 1;
+        std::size_t nsset_ipaddr_position = 0;
         for(std::size_t i = 0; i < _data.dns_hosts.size(); ++i)
         {
             if(!Fred::Domain::general_domain_name_syntax_check(_data.dns_hosts.at(i).fqdn))
             {
-                ex.add(Error(Param::nsset_dns_name,
-                    boost::numeric_cast<unsigned short>(i+1),//position in list
+                ex.add(Error::of_vector_parameter(Param::nsset_dns_name,
+                    boost::numeric_cast<unsigned short>(i),
                     Reason::bad_dns_name));
             }
             else
             {//check nameserver fqdn duplicity
-
-                const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
-                        _data.dns_hosts.at(i).fqdn);
-                Optional<std::size_t> duplicity = optional_map_at<Optional>(
-                        dns_host_fqdn_duplicity_map, lower_dnshost_fqdn);
-
-                if(duplicity.isset())
+                if(dns_host_fqdn_duplicity.insert(boost::algorithm::to_lower_copy(
+                        _data.dns_hosts.at(i).fqdn)).second == false)
                 {
-                    ex.add(Error(Param::nsset_dns_name,
-                        boost::numeric_cast<unsigned short>(i+1),//position in list
+                    ex.add(Error::of_vector_parameter(Param::nsset_dns_name,
+                        boost::numeric_cast<unsigned short>(i),
                         Reason::dns_name_exist));
-                }
-                else
-                {
-                    dns_host_fqdn_duplicity_map[lower_dnshost_fqdn] = i;
                 }
             }
 
             //check nameserver IP addresses
             {
-                std::map<boost::asio::ip::address, std::size_t> dns_host_ip_duplicity_map;
+                std::set<boost::asio::ip::address> dns_host_ip_duplicity;
                 for(std::size_t j = 0; j < _data.dns_hosts.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_position)
                 {
                     boost::asio::ip::address dnshostipaddr = _data.dns_hosts.at(i).inet_addr.at(j);
                     if(is_unspecified_ip_addr(dnshostipaddr) //.is_unspecified()
                     )
                     {
-                        ex.add(Error(Param::nsset_dns_addr,
-                            boost::numeric_cast<unsigned short>(nsset_ipaddr_position),//position in list
+                        ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
+                            boost::numeric_cast<unsigned short>(nsset_ipaddr_position),
                             Reason::bad_ip_address));
                     }
                     else
                     {
                         //IP address duplicity check
-                        Optional<std::size_t> duplicity = optional_map_at<Optional>(
-                                dns_host_ip_duplicity_map, dnshostipaddr);
-
-                        if(duplicity.isset())
+                        if(dns_host_ip_duplicity.insert(dnshostipaddr).second == false)
                         {
-                            ex.add(Error(Param::nsset_dns_addr,
-                                boost::numeric_cast<unsigned short>(nsset_ipaddr_position),//position in list
-                                Reason::duplicity_dns_address));
-                        }
-                        else
-                        {
-                            dns_host_ip_duplicity_map[dnshostipaddr] = nsset_ipaddr_position;
+                            ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
+                                boost::numeric_cast<unsigned short>(nsset_ipaddr_position),
+                                Reason::duplicated_dns_address));
                         }
                     }
                 }
@@ -200,7 +176,7 @@ NssetCreateResult nsset_create_impl(
         }
         if(!ex.is_empty()) throw ex;
     }
-    //TODO error handling
+    //TODO error handling #16022
 
     try {
 

@@ -33,56 +33,29 @@
 namespace Epp
 {
 
-struct NssetHandleRegistrationObstruction {
-    enum Enum {
-        invalid_handle, protected_handle, registered_handle
+    struct NssetHandleRegistrationObstruction
+    {
+        enum Enum
+        {
+            invalid_handle,
+            protected_handle,
+            registered_handle
+        };
+
+        /**
+         * @throws MissingLocalizedDescription
+         */
+        static Reason::Enum to_reason(Enum value)
+        {
+            switch (value)
+            {
+                case invalid_handle:    return Reason::invalid_handle;
+                case registered_handle: return Reason::existing;
+                case protected_handle:  return Reason::protected_period;
+            }
+            throw MissingLocalizedDescription();
+        }
     };
-
-    static std::set<NssetHandleRegistrationObstruction::Enum> get_all_values() {
-        const std::set<NssetHandleRegistrationObstruction::Enum> all_values = boost::assign::list_of(invalid_handle)(protected_handle)(registered_handle);
-        return all_values;
-    }
-};
-
-/**
- * @throws MissingLocalizedDescription
- */
-inline unsigned to_description_db_id(const NssetHandleRegistrationObstruction::Enum state) {
-
-    /**
-     * XXX This is wrong - we are "reusing" descriptions of other objects. It is temporary (I've been promised) conscious hack.
-     */
-    switch(state) {
-        case NssetHandleRegistrationObstruction::invalid_handle     : return to_description_db_id(Reason::invalid_handle);
-        case NssetHandleRegistrationObstruction::registered_handle  : return to_description_db_id(Reason::existing);
-        case NssetHandleRegistrationObstruction::protected_handle   : return to_description_db_id(Reason::protected_period);
-    }
-
-    throw MissingLocalizedDescription();
-}
-
-/**
- * @throws UnknownLocalizedDescriptionId
- */
-template<typename T> inline typename T::Enum from_description_db_id(const unsigned id);
-
-/**
- * @throws ExceptionMissingLocalizedDescription
- */
-template<> inline NssetHandleRegistrationObstruction::Enum from_description_db_id<NssetHandleRegistrationObstruction>(const unsigned id) {
-
-    /**
-     * XXX This is wrong - we are "reusing" descriptions of other objects. It is temporary (I've been promised) conscious hack.
-     */
-    switch( from_description_db_id<Reason>(id) ) {
-        case Reason::invalid_handle     : return NssetHandleRegistrationObstruction::invalid_handle;
-        case Reason::existing           : return NssetHandleRegistrationObstruction::registered_handle;
-        case Reason::protected_period   : return NssetHandleRegistrationObstruction::protected_handle;
-        default                         : throw UnknownLocalizedDescriptionId();
-    }
-
-    throw std::runtime_error("error in from_description_db_id<NssetHandleRegistrationObstruction>()");
-}
 
 }
 

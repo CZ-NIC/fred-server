@@ -85,7 +85,7 @@ namespace Epp {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_error,
+            Response::parameter_value_syntax_error,
             e.get(),
             _lang
         );
@@ -95,7 +95,7 @@ namespace Epp {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_value_policy_error,
+            Response::parameter_value_policy_error,
             e.get(),
             _lang
         );
@@ -105,7 +105,7 @@ namespace Epp {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_missing,
+            Response::parameter_missing,
             std::set<Error>(),
             _lang
         );

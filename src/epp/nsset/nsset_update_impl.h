@@ -35,8 +35,8 @@ namespace Epp {
  *
  * @throws AuthErrorServerClosingConnection
  * @throws NonexistentHandle
- * @throws AutorError
- * @throws ObjectStatusProhibitingOperation in case nsset has serverUpdateProhibited or deleteCandidate status (or request)
+ * @throws AuthorizationError
+ * @throws ObjectStatusProhibitsOperation in case nsset has serverUpdateProhibited or deleteCandidate status (or request)
  * @throws AggregatedParamErrors
  */
 unsigned long long nsset_update_impl(

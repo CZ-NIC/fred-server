@@ -36,8 +36,8 @@ namespace Epp {
  *
  * @throws AuthErrorServerClosingConnection
  * @throws NonexistentHandle
- * @throws AutorError
- * @throws ObjectStatusProhibitingOperation in case nsset has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
+ * @throws AuthorizationError
+ * @throws ObjectStatusProhibitsOperation in case nsset has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long nsset_delete_impl(
     Fred::OperationContext& _ctx,

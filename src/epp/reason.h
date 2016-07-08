@@ -93,8 +93,6 @@ struct Reason
         dnskey_notexist             = 60,
         duplicated_dnskey           = 61,
         no_dnskey_dsrecord          = 62,
-        duplicated_dnskey           = 61,
-        no_dnskey_dsrecord          = 62,
         duplicated_dns_name         = 63
     };
     static bool is_valid(Enum value)
@@ -163,6 +161,7 @@ struct Reason
             case dnskey_notexist:
             case duplicated_dnskey:
             case no_dnskey_dsrecord:
+            case duplicated_dns_name:
                 return true;
         }
         return false;

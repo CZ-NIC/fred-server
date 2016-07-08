@@ -64,7 +64,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_nsset_and_a_different_r
             nsset.handle,
             the_different_registrar.id
         ),
-        Epp::AutorError
+        Epp::AuthorizationError
     );
 }
 
@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, has_nsset_with_server_u
             nsset.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -94,7 +94,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, has_nsset_with_delete_c
             nsset.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 struct has_nsset_linked_to_domain : has_nsset_with_all_data_set {

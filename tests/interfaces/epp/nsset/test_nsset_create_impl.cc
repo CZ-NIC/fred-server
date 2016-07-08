@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_nsset_input_data_set)
             42 /* TODO */
         );
     } catch(...) {
-        Test::check_correct_aggregated_exception_was_thrown( Epp::Error( Epp::Param::nsset_handle, 0, Epp::Reason::bad_format_nsset_handle ) );
+        Test::check_correct_aggregated_exception_was_thrown( Epp::Error::of_scalar_parameter( Epp::Param::nsset_handle, Epp::Reason::bad_format_nsset_handle ) );
     }
 }
 
@@ -97,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_
             42 /* TODO */
         );
     } catch (const Epp::ParameterValuePolicyError& _error) {
-        const Epp::Error epp_error = Epp::Error( Epp::Param::nsset_handle, 0, Epp::Reason::protected_period );
+        const Epp::Error epp_error = Epp::Error::of_scalar_parameter( Epp::Param::nsset_handle, Epp::Reason::protected_period );
         const std::set<Epp::Error> errors = _error.get();
 
                     BOOST_CHECK(

@@ -42,7 +42,7 @@ unsigned long long nsset_delete_impl(
 
     if( sponsoring_registrar_before_update.id != _registrar_id
         && !logged_in_registrar.system.get_value_or_default() ) {
-        throw AutorError();
+        throw AuthorizationError();
     }
 
     // do it before any object state related checks
@@ -56,7 +56,7 @@ unsigned long long nsset_delete_impl(
         ||
         Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
     )) {
-        throw ObjectStatusProhibitingOperation();
+        throw ObjectStatusProhibitsOperation();
     }
 
     if(Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::LINKED).exec(_ctx))
@@ -78,7 +78,7 @@ unsigned long long nsset_delete_impl(
         }
 
         if( e.is_set_object_linked_to_nsset_handle() ) {
-            throw ObjectStatusProhibitingOperation();
+            throw ObjectStatusProhibitsOperation();
         }
 
         /* in the improbable case that exception is incorrectly set */

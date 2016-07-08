@@ -23,10 +23,11 @@
 #ifndef EPP_NSSET_CHECK_H_abaeee5023964a5a953d02d288c1ec33
 #define EPP_NSSET_CHECK_H_abaeee5023964a5a953d02d288c1ec33
 
+
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "src/epp/nsset/nsset_handle_registration_obstruction.h"
-#include "util/lazy_nullable_type.h"
+#include <boost/optional.hpp>
 #include "util/db/nullable.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -48,11 +49,11 @@ struct LocalizedNssetHandleRegistrationObstruction {
 
 struct LocalizedCheckNssetResponse {
     const LocalizedSuccessResponse ok_response;
-    const std::map<std::string, LazyNullable<LocalizedNssetHandleRegistrationObstruction> > nsset_statuses;
+    const std::map<std::string, boost::optional<LocalizedNssetHandleRegistrationObstruction> > nsset_statuses;
 
     LocalizedCheckNssetResponse(
         const LocalizedSuccessResponse& _ok_response,
-        const std::map<std::string, LazyNullable<LocalizedNssetHandleRegistrationObstruction> >& _nsset_statuses
+        const std::map<std::string, boost::optional<LocalizedNssetHandleRegistrationObstruction> >& _nsset_statuses
     ) :
         ok_response(_ok_response),
         nsset_statuses(_nsset_statuses)

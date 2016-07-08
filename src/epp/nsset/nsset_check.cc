@@ -30,6 +30,7 @@
 #include "src/epp/response.h"
 #include "util/log/context.h"
 #include "util/map_at.h"
+#include "util/util.h"
 
 #include <set>
 #include <utility>
@@ -63,7 +64,7 @@ static std::set<unsigned> convert_to_description_db_ids(const std::set<NssetHand
         it != _obstructions.end();
         ++it
     ) {
-        states_ids.insert( to_description_db_id(*it) );
+        states_ids.insert( to_description_db_id(NssetHandleRegistrationObstruction::to_reason(*it) ));
     }
 
     return states_ids;
@@ -74,12 +75,21 @@ static std::map<NssetHandleRegistrationObstruction::Enum, std::string> get_local
     const std::set<NssetHandleRegistrationObstruction::Enum>& _obstructions,
     const SessionLang::Enum _lang
 ) {
+    std::map<unsigned, NssetHandleRegistrationObstruction::Enum> reason_id_obstruction_map;
+    for(std::set<NssetHandleRegistrationObstruction::Enum>::const_iterator it = _obstructions.begin();
+        it != _obstructions.end();
+        ++it
+    ) {
+        reason_id_obstruction_map.insert(
+            std::make_pair(to_description_db_id(
+                NssetHandleRegistrationObstruction::to_reason(*it)), *it));
+    }
 
     const std::string column_name =
         _lang == SessionLang::en
         ?   "reason"
-        :   _lang == SessionLang::cz
-            ?   "reason_cz"
+        :   _lang == SessionLang::cs
+            ?   "reason_cs"
             :   throw UnknownLocalizationLanguage();
 
     const Database::Result db_res = _ctx.get_conn().exec_params(
@@ -93,7 +103,7 @@ static std::map<NssetHandleRegistrationObstruction::Enum, std::string> get_local
         )
     );
 
-    if(db_res.size() < 1) {
+    if(db_res.size() < _obstructions.size()) {
         throw MissingLocalizedDescription();
     }
 
@@ -102,51 +112,44 @@ static std::map<NssetHandleRegistrationObstruction::Enum, std::string> get_local
     for(unsigned long i = 0; i < db_res.size(); ++i) {
         result.insert(
             std::make_pair(
-                from_description_db_id<NssetHandleRegistrationObstruction>( static_cast<unsigned>(db_res[i]["id_"]) ),
-                static_cast<std::string>(db_res[i]["reason_txt_"])
-            )
+                map_at(reason_id_obstruction_map, static_cast<unsigned>(db_res[i]["id_"])),
+                static_cast<std::string>(db_res[i]["reason_txt_"]))
         );
     }
 
     return result;
 }
 
-static std::map<std::string, LazyNullable<LocalizedNssetHandleRegistrationObstruction> > create_localized_check_response(
+static std::map<std::string, boost::optional<LocalizedNssetHandleRegistrationObstruction> > create_localized_check_response(
     Fred::OperationContext& _ctx,
     const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> >& _check_results,
     const SessionLang::Enum _lang
 ) {
     const std::map<NssetHandleRegistrationObstruction::Enum, std::string> localized_description_of_obstructions = get_localized_description_of_obstructions(
-        _ctx,
-        NssetHandleRegistrationObstruction::get_all_values(),
-        _lang
-    );
+            _ctx, static_cast< const std::set<NssetHandleRegistrationObstruction::Enum>& >(
+                Util::set_of<NssetHandleRegistrationObstruction::Enum>
+                    (NssetHandleRegistrationObstruction::invalid_handle)
+                    (NssetHandleRegistrationObstruction::protected_handle)
+                    (NssetHandleRegistrationObstruction::registered_handle)),
+            _lang
+        );
 
-    std::map<std::string, LazyNullable<LocalizedNssetHandleRegistrationObstruction> > result;
-
+    std::map<std::string, boost::optional<LocalizedNssetHandleRegistrationObstruction> > result;
     for(std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> >::const_iterator nsset_it = _check_results.begin();
-        nsset_it != _check_results.end();
-        ++nsset_it
-    ) {
-        try {
-            result.insert(
-                std::make_pair(
-                    nsset_it->first,
-                    nsset_it->second.isnull()
-                    ?   LazyNullable<LocalizedNssetHandleRegistrationObstruction>()
-                    :   LazyNullable<LocalizedNssetHandleRegistrationObstruction>(
-                            LocalizedNssetHandleRegistrationObstruction(
-                                nsset_it->second.get_value(),
-                                map_at(localized_description_of_obstructions, nsset_it->second.get_value())
-                            )
+        nsset_it != _check_results.end(); ++nsset_it)
+    {
+        result.insert(std::make_pair(nsset_it->first,
+            nsset_it->second.isnull()
+                ?   boost::optional<LocalizedNssetHandleRegistrationObstruction>()
+                :   boost::optional<LocalizedNssetHandleRegistrationObstruction>(
+                        LocalizedNssetHandleRegistrationObstruction(
+                            nsset_it->second.get_value(),
+                            map_at(localized_description_of_obstructions, nsset_it->second.get_value())
                         )
-                )
-            );
-        } catch(const std::out_of_range&) {
-            throw MissingLocalizedDescription();
-        }
+                    )
+            )
+        );
     }
-
     return result;
 }
 

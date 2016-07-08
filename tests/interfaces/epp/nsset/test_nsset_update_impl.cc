@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
             the_different_registrar.id,
             42 /* TODO */
         ),
-        Epp::AutorError
+        Epp::AuthorizationError
     );
 }
 
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 }
 
@@ -177,7 +177,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectStatusProhibitingOperation
+        Epp::ObjectStatusProhibitsOperation
     );
 
     /* now object has the state deleteCandidate itself */

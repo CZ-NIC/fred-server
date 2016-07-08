@@ -73,16 +73,16 @@ LocalizedSuccessResponse nsset_update(
             _lang
         );
 
-    } catch(const AutorError& e) {
+    } catch(const AuthorizationError& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::autor_error,
-            Util::set_of<Error>(Error(Param::registrar_autor, 0, Reason::registrar_autor)),
+            Response::authorization_error,
+            Util::set_of<Error>(Error::of_scalar_parameter(Param::registrar_autor, Reason::unauthorized_registrar)),
             _lang
         );
 
-    } catch(const ObjectStatusProhibitingOperation& e) {
+    } catch(const ObjectStatusProhibitsOperation& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -95,7 +95,7 @@ LocalizedSuccessResponse nsset_update(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parametr_value_policy_error,
+            Response::parameter_value_policy_error,
             e.get(),
             _lang
         );
