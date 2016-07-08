@@ -54,8 +54,8 @@ struct Reason
         can_not_rem_dns             = 21,
         can_not_add_dns             = 22,
         can_not_remove_tech         = 23,
-        tech_exist                  = 24,
-        tech_notexist               = 25,
+        technical_contact_already_assigned = 24,
+        technical_contact_not_registered = 25,
         admin_exist                 = 26,
         admin_notexist              = 27,
         nsset_notexist              = 28,
@@ -121,8 +121,8 @@ struct Reason
             case can_not_rem_dns:
             case can_not_add_dns:
             case can_not_remove_tech:
-            case tech_exist:
-            case tech_notexist:
+            case technical_contact_already_assigned:
+            case technical_contact_not_registered:
             case admin_exist:
             case admin_notexist:
             case nsset_notexist:
