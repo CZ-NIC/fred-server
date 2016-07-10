@@ -1,3 +1,12 @@
+2016-07-10 (2.26.0)
+
+  * epp backend rewrite - contact methods
+
+  * fredlib - removed change of sponsoring registrar from update operations
+            - (separate operation for transfer)
+
+  * fix Nullable get_value_or_default() method
+
 2016-07-07 (2.25.1)
 
   * fix - admin. domain unblocking - unwanted delete (status update order)
