@@ -80,6 +80,7 @@
 #include "src/epp/nsset/nsset_delete.h"
 #include "src/epp/nsset/nsset_create.h"
 #include "src/epp/nsset/nsset_update.h"
+#include "src/epp/nsset/nsset_transfer.h"
 
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_create.h"
@@ -3078,14 +3079,33 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetTransfer(
-  const char* handle, const char* authInfo, const ccReg::EppParams &params)
+  const char* _handle, const char* _auth_info, const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
 
-  return ObjectTransfer( EPP_NSsetTransfer , "NSSET" , "handle" , handle, authInfo, params);
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        return new ccReg::Response(
+            Corba::wrap_response(
+                nsset_transfer(
+                    Corba::unwrap_string(_handle),
+                    Corba::unwrap_string(_auth_info),
+                    session_data.registrar_id,
+                    request_params.log_request_id,
+                    session_data.language,
+                    server_transaction_handle,
+                    request_params.client_transaction_id,
+                    disable_epp_notifier_cltrid_prefix_
+                ),
+                server_transaction_handle
+            )
+        );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainTransfer(

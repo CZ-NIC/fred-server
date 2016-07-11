@@ -897,6 +897,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_delete_domain_poll_message.cc \
 		src/fredlib/poll/create_transfer_contact_poll_message.h \
 		src/fredlib/poll/create_transfer_contact_poll_message.cc \
+		src/fredlib/poll/create_transfer_nsset_poll_message.h \
+		src/fredlib/poll/create_transfer_nsset_poll_message.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/copy_history_impl.h \
 		src/fredlib/contact/copy_history_impl.cc \
@@ -1606,6 +1608,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/nsset_update.h \
 		src/epp/nsset/nsset_update_impl.cc \
 		src/epp/nsset/nsset_update_impl.h \
+		src/epp/nsset/nsset_transfer.cc \
+		src/epp/nsset/nsset_transfer.h \
+		src/epp/nsset/nsset_transfer_impl.cc \
+		src/epp/nsset/nsset_transfer_impl.h \
 		src/epp/nsset/nsset_impl.cc \
 		src/epp/nsset/nsset_impl.h \
 		util/corba_conversion.h \
