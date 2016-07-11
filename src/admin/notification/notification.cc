@@ -23,6 +23,7 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/contact_verification/django_email_format.h"
+#include "util/log/logger.h"
 
 #include "src/admin/notification/notification.h"
 
@@ -70,6 +71,7 @@ namespace Admin {
             }
 
             if(invalid_domain_email_list.size()) {
+                LOGGER(PACKAGE).warning("Invalid emails or domain ids.");
                 return invalid_domain_email_list;
             }
 
@@ -83,7 +85,7 @@ namespace Admin {
                            "(crdate, state_id, domain_id, email) "
                            "VALUES ( "
                                "NOW(), "      // crdate
-                               "NULL, "       // state_id
+                               "NULL, "       // state_id, N/A yet
                                "$1::bigint, " // domain_id
                                "$2::varchar " // email
                            ")",
@@ -92,11 +94,20 @@ namespace Admin {
                         (it->second) // email
                     );
                 }
+            } catch(const std::runtime_error &e) {
+                LOGGER(PACKAGE).error(e.what());
+                throw INTERNAL_ERROR();
+            } catch (const std::exception &e) {
+                LOGGER(PACKAGE).error(e.what());
+                throw INTERNAL_ERROR();
             } catch(...) {
+                LOGGER(PACKAGE).error("Unknown exception.");
                 throw INTERNAL_ERROR();
             }
 
             ctx.commit_transaction();
+
+            return invalid_domain_email_list; // empty
         };
 
     }
