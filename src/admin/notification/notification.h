@@ -39,27 +39,22 @@ namespace Admin {
         /// Exception for internal error
         struct INTERNAL_ERROR : std::exception {
             const char* what() const throw() {
-                return "INTERNAL ERROR";
+                return "internal error";
             }
         };
 
-        /// Exception for invalid input OBSOLETE
-        //struct VALUE_ERROR : std::exception {
-        //private:
-        //    long int lineno;
-        //public:
-        //    VALUE_ERROR(long int lineno) : lineno(lineno) {};
-        //    const char* what() const {
-        //        boost::format retval("Error: Importing record #%1% failed.");
-        //        retval % lineno;
-        //        return retval.str().c_str();
-        //    }
-        //};
+        struct DOMAIN_EMAIL_VALIDATION_ERROR : std::exception {
+            std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
+            DOMAIN_EMAIL_VALIDATION_ERROR(std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list) : invalid_domain_email_list(invalid_domain_email_list) {};
+            ~DOMAIN_EMAIL_VALIDATION_ERROR() throw() {};
+            const char* what() const throw() {
+                return "some data are invalid";
+            }
+        };
 
         //typedef std::vector<std::pair<unsigned long long, std::string> > DomainEmailList;
 
-        std::vector<std::pair<unsigned long long, std::string> >
-        notify_outzone_unguarded_domain_email_list(
+        void notify_outzone_unguarded_domain_email_list(
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
         );
 

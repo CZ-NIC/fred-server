@@ -36,9 +36,9 @@ namespace Admin {
          * @param list of pairs <domain_id, email>
          *
          * @throw INTERNAL_ERROR
+         * @throw DOMAIN_EMAIL_VALIDATION_ERROR
          */
-        std::vector<std::pair<unsigned long long, std::string> >
-        notify_outzone_unguarded_domain_email_list(
+        void notify_outzone_unguarded_domain_email_list(
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
         ) {
 
@@ -71,7 +71,7 @@ namespace Admin {
 
             if(invalid_domain_email_list.size()) {
                 ctx.get_log().warning("invalid emails or domain ids");
-                return invalid_domain_email_list;
+                throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_list);
             }
 
             try {
@@ -106,7 +106,7 @@ namespace Admin {
 
             ctx.commit_transaction();
 
-            return invalid_domain_email_list; // empty
+            return;
         };
 
     }

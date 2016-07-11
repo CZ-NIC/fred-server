@@ -13,7 +13,7 @@ namespace Registry {
 
     namespace Notification {
 
-        DomainEmailSeq *Notification_i::notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) {
+        void Notification_i::notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) {
 
             try {
 
@@ -29,25 +29,23 @@ namespace Registry {
                     );
                 }
 
-                std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
+								Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_email_list);
 
-								invalid_domain_email_list = Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_email_list);
+            } catch(Admin::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &e) {
 
                 DomainEmailSeq_var invalid_domain_email_seq = new DomainEmailSeq();
 
-								if(!invalid_domain_email_list.empty()) {
-                    unsigned long index = 0;
-                    invalid_domain_email_seq->length(domain_email_list.size());
-                    for(std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
-                        it != domain_email_list.end();
-                        ++it, ++index
-                    ) {
-                        invalid_domain_email_seq[index].domain_id = CORBA::ULongLong(it->first);
-                        invalid_domain_email_seq[index].email = Corba::wrap_string(it->second);
-                    }
+                unsigned long index = 0;
+                invalid_domain_email_seq->length(e.invalid_domain_email_list.size());
+                for(std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = e.invalid_domain_email_list.begin();
+                    it != e.invalid_domain_email_list.end();
+                    ++it, ++index
+                ) {
+                    invalid_domain_email_seq[index].domain_id = CORBA::ULongLong(it->first);
+                    invalid_domain_email_seq[index].email = Corba::wrap_string(it->second);
                 }
 
-                return invalid_domain_email_seq._retn();
+                throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_seq);
 
             } catch(Admin::Notification::INTERNAL_ERROR &e) {
                 throw INTERNAL_SERVER_ERROR();

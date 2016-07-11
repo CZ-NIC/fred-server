@@ -45,7 +45,7 @@ namespace Registry {
                 /**
                  * Wrapper for IDL NotificationIface method of the same name
                  */
-                DomainEmailSeq *notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq);
+                void notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq);
 
         };
 
