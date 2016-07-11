@@ -13,7 +13,7 @@ namespace Registry {
 
     namespace Notification {
 
-        DomainEmailSeq *Notification_i::notify_outzoneunguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) {
+        DomainEmailSeq *Notification_i::notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) {
 
             try {
 
@@ -31,7 +31,7 @@ namespace Registry {
 
                 std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
 
-								invalid_domain_email_list = Admin::Notification::notify_outzoneunguarded_domain_email_list(domain_email_list);
+								invalid_domain_email_list = Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_email_list);
 
                 DomainEmailSeq_var invalid_domain_email_seq = new DomainEmailSeq();
 

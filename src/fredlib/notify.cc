@@ -148,7 +148,10 @@ namespace Fred
             << "ON n.state_id = os.id "
             << "WHERE os.id = " << state_id
             << "AND n.domain_id = " << obj_id
-            << "AND n.crdate BETWEEN os.valid_from - (SELECT (val || ' day')::interval FROM enum_parameters WHERE name='outzoneunguarded_email_warning_period') AND os.valid_from";
+            << "AND n.crdate BETWEEN "
+            <<   "os.valid_from - (SELECT (val || ' day')::interval FROM enum_parameters WHERE name='outzoneunguarded_email_warning_period') "
+            <<   "AND "
+            <<   "os.valid_from";
         return getEmailList(sql);
       }
       std::string getNSSetTechEmailsHistory(TID nsset)

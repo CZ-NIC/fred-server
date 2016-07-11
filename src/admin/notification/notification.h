@@ -59,7 +59,7 @@ namespace Admin {
         //typedef std::vector<std::pair<unsigned long long, std::string> > DomainEmailList;
 
         std::vector<std::pair<unsigned long long, std::string> >
-        notify_outzoneunguarded_domain_email_list(
+        notify_outzone_unguarded_domain_email_list(
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
         );
 
