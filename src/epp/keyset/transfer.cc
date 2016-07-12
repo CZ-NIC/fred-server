@@ -55,11 +55,11 @@ unsigned long long keyset_transfer(
         if ((keyset_states.find(Fred::Object_State::server_transfer_prohibited) != keyset_states.end()) ||
             (keyset_states.find(Fred::Object_State::delete_candidate) != keyset_states.end()))
         {
-            throw ObjectStatusProhibitingOperation();
+            throw ObjectStatusProhibitsOperation();
         }
 
         if (keyset_data.authinfopw != _authinfopw) {
-            throw AutorError();
+            throw AuthorizationError();
         }
 
         return Fred::TransferKeyset(
@@ -79,7 +79,7 @@ unsigned long long keyset_transfer(
         throw NonexistentHandle();
     }
     catch (const Fred::IncorrectAuthInfoPw&) {
-        throw AutorError();
+        throw AuthorizationError();
     }
     catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
         throw ObjectNotEligibleForTransfer();

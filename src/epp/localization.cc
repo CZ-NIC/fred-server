@@ -144,7 +144,7 @@ std::string get_ok_state_description(SessionLang::Enum _lang)
     {
         case SessionLang::en:
             return "Object is without restrictions";
-        case SessionLang::cz:
+        case SessionLang::cs:
             return "Objekt je bez omezení";
     }
     return std::string();

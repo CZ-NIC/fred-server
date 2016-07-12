@@ -26,16 +26,83 @@ namespace Corba {
         result.reserve(handles.length());
 
         for(CORBA::ULong i = 0; i < handles.length(); ++i) {
-            result.push_back(Corba::unwrap_string_from_const_char_ptr(handles[i]));
+            result.push_back(unwrap_string_from_const_char_ptr(handles[i]) );
         }
 
         return result;
     }
 
-    Epp::RequestParams unwrap_EppParams(const ccReg::EppParams &_epp_request_params) {
+    std::vector< std::string > unwrap_TechContact_to_vector_string(const ccReg::TechContact &_tech_contacts)
+    {
+        std::vector< std::string > result;
+        result.reserve(_tech_contacts.length());
+
+        for(CORBA::ULong idx = 0; idx < _tech_contacts.length(); ++idx) {
+            result.push_back(unwrap_string_from_const_char_ptr(_tech_contacts[idx]));
+        }
+
+        return result;
+    }
+
+    std::vector< Epp::KeySet::DsRecord > unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(
+        const ccReg::DSRecord &_ds_records)
+    {
+        std::vector< Epp::KeySet::DsRecord > result;
+        result.reserve(_ds_records.length());
+
+        for(CORBA::ULong idx = 0; idx < _ds_records.length(); ++idx) {
+            Epp::KeySet::DsRecord ds_record;
+            unwrap_ccReg_DSRecord_str(_ds_records[idx], ds_record);
+            result.push_back(ds_record);
+        }
+        return result;
+    }
+
+    void unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str &_src, Epp::KeySet::DsRecord &_dst)
+    {
+        long key_tag;
+        CorbaConversion::unwrap_int(_src.keyTag, key_tag);
+        long alg;
+        CorbaConversion::unwrap_int(_src.alg, alg);
+        long digest_type;
+        CorbaConversion::unwrap_int(_src.digestType, digest_type);
+        const std::string digest = unwrap_string(_src.digest);
+        long max_sig_life;
+        CorbaConversion::unwrap_int(_src.maxSigLife, max_sig_life);
+        _dst = Epp::KeySet::DsRecord(key_tag, alg, digest_type, digest, max_sig_life);
+    }
+
+    std::vector< Epp::KeySet::DnsKey > unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(
+        const ccReg::DNSKey &_dns_keys)
+    {
+        std::vector< Epp::KeySet::DnsKey > result;
+        result.reserve(_dns_keys.length());
+
+        for(CORBA::ULong idx = 0; idx < _dns_keys.length(); ++idx) {
+            Epp::KeySet::DnsKey dns_key;
+            unwrap_ccReg_DNSKey_str(_dns_keys[idx], dns_key);
+            result.push_back(dns_key);
+        }
+        return result;
+    }
+
+    void unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str &_src, Epp::KeySet::DnsKey &_dst)
+    {
+        unsigned short flags;
+        CorbaConversion::unwrap_int(_src.flags, flags);
+        unsigned short protocol;
+        CorbaConversion::unwrap_int(_src.protocol, protocol);
+        unsigned short alg;
+        CorbaConversion::unwrap_int(_src.alg, alg);
+        const std::string key = unwrap_string(_src.key);
+        _dst = Epp::KeySet::DnsKey(flags, protocol, alg, key);
+    }
+
+    Epp::RequestParams unwrap_EppParams(const ccReg::EppParams &_epp_request_params)
+    {
         Epp::RequestParams result;
         CorbaConversion::unwrap_int(_epp_request_params.loginID, result.session_id);
-        result.client_transaction_id = Corba::unwrap_string(_epp_request_params.clTRID);
+        result.client_transaction_id = unwrap_string(_epp_request_params.clTRID);
         unsigned long long log_request_id;
         CorbaConversion::unwrap_int(_epp_request_params.requestID, log_request_id);
         if (log_request_id != 0) {
@@ -91,22 +158,28 @@ namespace Corba {
         throw ExceptionInvalidParam();
     }
 
-    ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle) {
+    ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle)
+    {
         ccReg::Response result;
-
-        CorbaConversion::int_to_int(to_description_db_id(_input.response), result.code);
-        result.svTRID = Corba::wrap_string_to_corba_string(_server_transaction_handle);
-        result.msg = Corba::wrap_string_to_corba_string(_input.localized_msg);
-
+        wrap_Epp_LocalizedSuccessResponse(_input, _server_transaction_handle, result);
         return result;
+    }
+
+    void wrap_Epp_LocalizedSuccessResponse(const Epp::LocalizedSuccessResponse &_src,
+                                           const std::string &_server_transaction_handle,
+                                           ccReg::Response &_dst)
+    {
+        CorbaConversion::wrap_int(Epp::to_description_db_id(_src.response), _dst.code);
+        _dst.svTRID = _server_transaction_handle.c_str();
+        _dst.msg = _src.localized_msg.c_str();
     }
 
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle) {
         ccReg::EPP::EppError result;
 
-        CorbaConversion::int_to_int(to_description_db_id(_input.response), result.errCode);
-        result.svTRID = Corba::wrap_string_to_corba_string(_server_transaction_handle);
-        result.errMsg = Corba::wrap_string_to_corba_string(_input.localized_msg);
+        CorbaConversion::wrap_int(Epp::to_description_db_id(_input.response), result.errCode);
+        result.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
+        result.errMsg = wrap_string_to_corba_string(_input.localized_msg);
 
         const std::set<Epp::Error>::size_type size = _input.errors.size();
         result.errorList.length(size);
@@ -116,9 +189,9 @@ namespace Corba {
             it != _input.errors.end();
             ++it, ++i
         ) {
-            result.errorList[i].code = Corba::wrap_param_error(it->param);
+            result.errorList[i].code = wrap_param_error(it->param);
             CorbaConversion::int_to_int(it->position, result.errorList[i].position);
-            result.errorList[i].reason = Corba::wrap_string_to_corba_string(it->localized_reason_description);
+            result.errorList[i].reason = wrap_string_to_corba_string(it->localized_reason_description);
         }
 
         return result;
@@ -259,7 +332,6 @@ namespace Corba {
         return buffer;
     }
 
-    
     namespace {
 
     template < Epp::ContactDisclose::Item::Enum ITEM >
@@ -375,13 +447,14 @@ namespace Corba {
         }
     }
 
-    static ccReg::CheckAvail wrap_contact_handle_check_result(const boost::optional< Epp::LocalizedContactHandleRegistrationObstruction >& _obstruction) {
+    static ccReg::CheckAvail wrap_contact_handle_check_result(const boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > &_obstruction) {
 
         if (!_obstruction.is_initialized()) {
             return ccReg::NotExist;
         }
 
-        switch (_obstruction.get().state) {
+        switch (_obstruction.get().state)
+        {
             case Epp::ContactHandleRegistrationObstruction::invalid_handle      : return ccReg::BadFormat;
             case Epp::ContactHandleRegistrationObstruction::protected_handle    : return ccReg::DelPeriod; // XXX oh my
             case Epp::ContactHandleRegistrationObstruction::registered_handle   : return ccReg::Exist;
@@ -395,7 +468,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map< std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > >& contact_handle_check_results
+        const std::map<std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > > &contact_handle_check_results
     ) {
         ccReg::CheckResp result;
         result.length(contact_handles.size());
@@ -409,7 +482,7 @@ namespace Corba {
             const boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > check_result = map_at(contact_handle_check_results, *it);
 
             result[i].avail = wrap_contact_handle_check_result(check_result);
-            result[i].reason = Corba::wrap_string_to_corba_string(check_result.is_initialized() ? check_result.get().description : "");
+            result[i].reason = wrap_string_to_corba_string(check_result.is_initialized() ? check_result.get().description : "");
         }
 
         return result;
@@ -437,8 +510,7 @@ namespace Corba {
         const Epp::KeySet::Localized::HandlesCheck::Results &check_results,
         ccReg::CheckResp &dst)
     {
-        ccReg::CheckResp result;
-        result.length(handles.size());
+        dst.length(handles.size());
 
         typedef std::vector< std::string > Handles;
         ::size_t idx = 0;
@@ -449,12 +521,10 @@ namespace Corba {
             if (result_ptr == check_results.end()) {
                 throw std::out_of_range("handle " + (*handle_ptr) + " not found");
             }
-            result[idx].avail = wrap_keyset_handle_check_result(result_ptr->second);
-            result[idx].reason = result_ptr->second.isnull() ? ""
-                                                             : result_ptr->second.get_value().description.c_str();
+            dst[idx].avail = wrap_keyset_handle_check_result(result_ptr->second);
+            dst[idx].reason = result_ptr->second.isnull() ? ""
+                                                          : result_ptr->second.get_value().description.c_str();
         }
-
-        return result;
     }
 
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst)
@@ -516,4 +586,5 @@ namespace Corba {
         wrap_Epp_KeysetInfoData_DnsKeys(_src.dns_keys, _dst.dnsk);
         wrap_Epp_KeysetInfoData_TechContacts(_src.tech_contacts, _dst.tech);
     }
+
 }//namespace Corba

@@ -51,7 +51,7 @@ HandlesCheck::Results localize_check_results(
                 case SessionLang::en:
                     column_name = "reason";
                     break;
-                case SessionLang::cz:
+                case SessionLang::cs:
                     column_name = "reason_cs";
                     break;
             }

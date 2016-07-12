@@ -42,7 +42,7 @@ unsigned long long keyset_delete(
         const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
         if (!is_operation_permitted) {
             ParameterErrors param_errors;
-            param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::registrar_autor);
+            param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::unauthorized_registrar);
             _ctx.get_log().info("keyset_delete failure: registrar not authorized for this operation");
             throw param_errors;
         }
@@ -62,7 +62,7 @@ unsigned long long keyset_delete(
                                       presents(keyset_states, Fred::Object_State::delete_candidate))) ||
             presents(keyset_states, Fred::Object_State::linked))
         {
-            throw ObjectStatusProhibitingOperation();
+            throw ObjectStatusProhibitsOperation();
         }
 
         Fred::DeleteKeysetByHandle(_keyset_handle).exec(_ctx);
@@ -83,7 +83,7 @@ unsigned long long keyset_delete(
         }
 
         if (e.is_set_object_linked_to_keyset_handle()) {
-            throw ObjectStatusProhibitingOperation();
+            throw ObjectStatusProhibitsOperation();
         }
 
         // in the improbable case that exception is incorrectly set

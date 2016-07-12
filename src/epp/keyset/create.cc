@@ -69,7 +69,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts,
     {
         const HandleIndex::const_iterator handle_index_ptr = unique_handles.find(*handle_ptr);
         if (handle_index_ptr != unique_handles.end()) {//duplicate handle
-            _param_errors.add_vector_parameter_error(Param::keyset_tech, idx, Reason::duplicity_contact);
+            _param_errors.add_vector_parameter_error(Param::keyset_tech, idx, Reason::duplicated_contact);
             if (_param_errors.has_vector_parameter_error_at(Param::keyset_tech,
                                                             handle_index_ptr->second,
                                                             Reason::tech_notexist))
@@ -132,7 +132,7 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys,
         //check DNS key uniqueness
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(*dns_key_ptr);
         if (dns_key_index_ptr != unique_dns_keys.end()) {//duplicate DNS key
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::duplicity_dnskey);
+            _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::duplicated_dnskey);
             static const Param::Enum param = Param::keyset_dnskey;
             static const Reason::Enum reasons[] =
             {

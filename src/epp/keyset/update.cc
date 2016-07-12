@@ -37,7 +37,7 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
         const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
         if (!is_operation_permitted) {
             ParameterErrors param_errors;
-            param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::registrar_autor);
+            param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::unauthorized_registrar);
             _ctx.get_log().info("check_keyset_handle failure: registrar not authorized for this operation");
             throw param_errors;
         }
@@ -46,7 +46,7 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
             if (keyset_states.presents(Fred::Object_State::server_update_prohibited) ||
                 keyset_states.presents(Fred::Object_State::delete_candidate))
             {
-                throw ObjectStatusProhibitingOperation();
+                throw ObjectStatusProhibitsOperation();
             }
         }
         _callers_registrar_handle = callers_registrar.handle;
@@ -71,7 +71,7 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
                                                           "InfoRegistrarById operation");
         throw;
     }
-    catch (const ObjectStatusProhibitingOperation&) {
+    catch (const ObjectStatusProhibitsOperation&) {
         _ctx.get_log().info("check_keyset_handle failure: object update prohibited");
         throw;
     }
@@ -145,7 +145,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
     {
         const HandleIndex::const_iterator handle_index_ptr = unique_handles.find(*handle_ptr);
         if (handle_index_ptr != unique_handles.end()) {//a duplicate handle
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::duplicity_contact);
+            _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::duplicated_contact);
             copy_error(Param::keyset_tech_add, Reason::tech_notexist,
                        handle_index_ptr->second, idx, _param_errors);
             copy_error(Param::keyset_tech_add, Reason::tech_exist,
@@ -179,7 +179,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
     {
         const HandleIndex::const_iterator handle_index_ptr = unique_handles.find(*handle_ptr);
         if (handle_index_ptr != unique_handles.end()) {//a duplicate handle
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_rem, idx, Reason::duplicity_contact);
+            _param_errors.add_vector_parameter_error(Param::keyset_tech_rem, idx, Reason::duplicated_contact);
             copy_error(Param::keyset_tech_rem, Reason::tech_notexist,
                        handle_index_ptr->second, idx, _param_errors);
             check_result = false;
@@ -288,7 +288,7 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
     {
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(*dns_key_ptr);
         if (dns_key_index_ptr != unique_dns_keys.end()) {//a duplicate dns_key
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::duplicity_dnskey);
+            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::duplicated_dnskey);
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_exist,
                        dns_key_index_ptr->second, idx, _param_errors);
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_bad_flags,
@@ -353,7 +353,7 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
     {
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(*dns_key_ptr);
         if (dns_key_index_ptr != unique_dns_keys.end()) {//a duplicate DNS key
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_rem, idx, Reason::duplicity_dnskey);
+            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_rem, idx, Reason::duplicated_dnskey);
             copy_error(Param::keyset_dnskey_rem, Reason::dnskey_notexist,
                        dns_key_index_ptr->second, idx, _param_errors);
             check_result = false;
@@ -460,12 +460,12 @@ KeysetUpdateResult keyset_update(
         result.update_history_id = Fred::UpdateKeyset(
             _keyset_handle,
             callers_registrar_handle,
-            Optional< std::string >(),//do not change sponsoring registrar
             _auth_info_pw,
             _tech_contacts_add,
             _tech_contacts_rem,
             dns_keys_add,
-            dns_keys_rem).exec(_ctx, _logd_request_id);
+            dns_keys_rem,
+            _logd_request_id).exec(_ctx);
         if (!_tech_contacts_rem.empty()) {
             const Fred::InfoKeysetData keyset_data =
                 Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx).info_keyset_data;

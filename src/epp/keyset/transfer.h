@@ -39,7 +39,7 @@ namespace Epp {
  * @throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
  * @throws NonexistentHandle
  * @throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
- * @throws ObjectStatusProhibitingOperation
+ * @throws ObjectStatusProhibitsOperation
  * @throws AutorError in case invalid _authinfopw is given
  */
 unsigned long long keyset_transfer(

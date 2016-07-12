@@ -65,8 +65,8 @@ LocalizedSuccessResponse localized_delete(
         Fred::OperationContextCreator ctx;
         std::set< Error > errors;
 
-        if (e.has_scalar_parameter_error(Param::registrar_autor, Reason::registrar_autor)) {
-            errors.insert(scalar_parameter_failure(Param::registrar_autor, Reason::registrar_autor));
+        if (e.has_scalar_parameter_error(Param::registrar_autor, Reason::unauthorized_registrar)) {
+            errors.insert(Error::of_scalar_parameter(Param::registrar_autor, Reason::unauthorized_registrar));
             throw create_localized_fail_response(
                 ctx,
                 Response::authorization_error,
@@ -75,7 +75,7 @@ LocalizedSuccessResponse localized_delete(
         }
         throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
     }
-    catch (const ObjectStatusProhibitingOperation &e) {
+    catch (const ObjectStatusProhibitsOperation &e) {
         Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
             ctx,

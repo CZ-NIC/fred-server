@@ -5320,9 +5320,9 @@ ccReg_EPP_i::KeySetInfo(
         Corba::wrap_Epp_KeySet_Localized_InfoData(info_result.data, keyset);
 
         ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_response(info_result.response,
-                             server_transaction_handle,
-                             return_value);
+        Corba::wrap_Epp_LocalizedSuccessResponse(info_result.response,
+                                                 server_transaction_handle,
+                                                 return_value);
 
         /* No exception shall be thrown from here onwards. */
         _keyset_info = keyset._retn();
@@ -5416,392 +5416,59 @@ testDNSKeyDuplicity(ccReg::DNSKey_str first, ccReg::DNSKey_str second)
  *************************************************************/
 ccReg::Response *
 ccReg_EPP_i::KeySetCreate(
-        const char *handle,
-        const char *authInfoPw,
-        const ccReg::TechContact &tech,
-        const ccReg::DSRecord &dsrec,
-        const ccReg::DNSKey &dnsk,
-        ccReg::timestamp_out crDate,
-        const ccReg::EppParams &params)
+        const char *_keyset_handle,
+        const char *_auth_info_pw,
+        const ccReg::TechContact &_tech_contacts,
+        const ccReg::DSRecord &_ds_records,
+        const ccReg::DNSKey &_dns_keys,
+        ccReg::timestamp_out _crdate,
+        const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-    int                         id, techid, dsrecID;
-    unsigned int                i, j;
-    int                         *tch = NULL;
-    short int                   code = 0;
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+    try {
+        const Epp::RegistrarSessionData session_data =
+            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
-    LOGGER(PACKAGE).notice( boost::format("KeySetCreate: clientID -> %1% clTRID [%2%] handle [%3%] authInfoPw [%4%]") %
-            (int)params.loginID % (const char*)params.clTRID % handle % authInfoPw);
+        const std::string keyset_handle =
+            Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
+        const std::string auth_info_pw_value =
+            Corba::unwrap_string_from_const_char_ptr(_auth_info_pw);
+        const Optional< std::string > auth_info_pw = auth_info_pw_value.empty() ? Optional< std::string >()
+                                                                                : auth_info_pw_value;
+        const std::vector< std::string > tech_contacts =
+            Corba::unwrap_TechContact_to_vector_string(_tech_contacts);
+        const std::vector< Epp::KeySet::DsRecord > ds_records =
+            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(_ds_records);
+        const std::vector< Epp::KeySet::DnsKey > dns_keys =
+            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(_dns_keys);
 
-    crDate = CORBA::string_dup("");
+        const Epp::KeySet::Localized::ResponseOfCreate response = Epp::KeySet::Localized::create(
+            keyset_handle,
+            auth_info_pw,
+            tech_contacts,
+            ds_records,
+            dns_keys,
+            session_data.registrar_id,
+            epp_request_params.log_request_id,
+            session_data.language,
+            server_transaction_handle,
+            epp_request_params.client_transaction_id,
+            disable_epp_notifier_cltrid_prefix_);
 
-    EPPAction action(this, params.loginID, EPP_KeySetCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::timestamp_var create_time = formatTime(response.crdate).c_str();
+        ccReg::Response_var return_value = new ccReg::Response;
+        Corba::wrap_Epp_LocalizedSuccessResponse(response.ok_response,
+                                                 server_transaction_handle,
+                                                 return_value);
 
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
-                action.getDB(),
-                restricted_handles_)
-            );
-    if (tech.length() < 1) {
-        LOG(WARNING_LOG, "KeySetCreate: not any tech contact ");
-        code = action.setErrorReason(
-                COMMAND_PARAMETR_MISSING,
-                ccReg::keyset_tech,
-                0,
-                REASON_MSG_TECH_NOTEXIST);
-    } else if (tech.length() > 10) {
-        LOG(WARNING_LOG, "KeySetCreate: too many tech contacts (maximum is 10)");
-        code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                ccReg::keyset_tech, 0, REASON_MSG_TECHADMIN_LIMIT);
-    } else if (dnsk.length() < 1) {
-            LOG(WARNING_LOG, "KeySetCreate: not any DNSKey record");
-            code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
-                    ccReg::keyset_dnskey, 0, REASON_MSG_NO_DNSKEY);
-    } else if (dsrec.length() > 0) {
-        LOG(WARNING_LOG, "KeySetCreate: too many ds-records (maximum is 0)");
-        code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                ccReg::keyset_dsrecord, 0, REASON_MSG_DSRECORD_LIMIT);
-    } else if (dnsk.length() > 10) {
-        LOG(WARNING_LOG, "KeySetCreate: too many dnskeys (maximum is 10)");
-        code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                ccReg::keyset_dnskey, 0, REASON_MSG_DNSKEY_LIMIT);
+        /* No exception shall be thrown from here onwards. */
+        _crdate = create_time._retn();
+        return return_value._retn();
     }
-    if (code == 0) {
-        Fred::KeySet::Manager::CheckAvailType caType;
-
-        tch = new int[tech.length()];
-
-        try {
-            Fred::NameIdPair nameId;
-            caType = keyMan->checkAvail(handle, nameId);
-            id = nameId.id;
-        } catch (...) {
-            caType = Fred::KeySet::Manager::CA_INVALID_HANDLE;
-            id = -1;
-        }
-
-        if (id < 0 || caType == Fred::KeySet::Manager::CA_INVALID_HANDLE) {
-            LOG(WARNING_LOG, "Bad format of keyset handle [%s]", handle);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::keyset_handle, 1, REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
-        } else if (caType == Fred::KeySet::Manager::CA_REGISTRED) {
-            LOG(WARNING_LOG, "KeySet handle [%s] EXISTS", handle);
-            code = COMMAND_OBJECT_EXIST;
-        } else if (caType == Fred::KeySet::Manager::CA_PROTECTED) {
-            LOG(WARNING_LOG, "object [%s] in history period", handle);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::keyset_handle, 1, REASON_MSG_PROTECTED_PERIOD);
-        }
+    catch (const Epp::LocalizedFailResponse &e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-
-    if (code == 0) {
-        // test technical contact
-        std::auto_ptr<Fred::Contact::Manager> cman(
-                Fred::Contact::Manager::create(
-                    action.getDB(),
-                    restricted_handles_)
-                );
-        for (i = 0; i < tech.length(); i++) {
-            Fred::Contact::Manager::CheckAvailType caType;
-            try {
-                Fred::NameIdPair nameId;
-                caType = cman->checkAvail((const char *)tech[i], nameId);
-                techid = nameId.id;
-            } catch (...) {
-                caType = Fred::Contact::Manager::CA_INVALID_HANDLE;
-                techid = 0;
-            }
-
-            if (caType != Fred::Contact::Manager::CA_REGISTRED) {
-                LOG(DEBUG_LOG, "Tech contact doesn't exist: %s",
-                        (const char *)tech[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::keyset_tech, i + 1, REASON_MSG_TECH_NOTEXIST);
-            }
-            else {
-                tch[i] = techid;
-                //duplicity test
-                for (j = 0; j < i; j++) {
-                    LOG(DEBUG_LOG, "tech compare j %d techid %d and %d",
-                            j, techid, tch[j]);
-                    if (tch[j] == techid && tch[j] > 0) {
-                        tch[j] = 0;
-                        LOG(WARNING_LOG, "Contact [%s] duplicity",
-                                (const char *)tech[i]);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::keyset_tech, i, REASON_MSG_DUPLICITY_CONTACT);
-                    }
-                }
-            }
-        }
-    }
-
-    // dsrecord digest type test
-    if (code == 0) {
-        // digest type must be 1 (sha-1) - see RFC 4034 for details:
-        // http://rfc-ref.org/RFC-TEXTS/4034/kw-dnssec_digest_type.html
-        for (int ii = 0; ii < (int)dsrec.length(); ii++) {
-            if (dsrec[ii].digestType != 1) {
-                LOG(WARNING_LOG,
-                        "Digest is %d (must be 1)",
-                        dsrec[ii].digestType);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::keyset_dsrecord, ii,
-                        REASON_MSG_DSRECORD_BAD_DIGEST_TYPE);
-                break;
-            }
-        }
-    }
-    // dsrecord digest length test
-    if (code == 0) {
-        // digest must be 40 characters length (because SHA-1 is used)
-        for (int ii = 0; ii < (int)dsrec.length(); ii++) {
-            if (strlen(dsrec[ii].digest) != 40) {
-                LOG(WARNING_LOG,
-                        "Digest length is %d char (must be 40)",
-                        strlen(dsrec[ii].digest));
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::keyset_dsrecord, ii,
-                        REASON_MSG_DSRECORD_BAD_DIGEST_LENGTH);
-                break;
-            }
-        }
-    }
-    // dsrecord duplicity test
-    if (code == 0) {
-        if (dsrec.length() >= 2) {
-            for (int ii = 0; ii < (int)dsrec.length(); ii++) {
-                for (int jj = ii + 1; jj < (int)dsrec.length(); jj++) {
-                    if (testDSRecordDuplicity(dsrec[ii], dsrec[jj])) {
-                        LOG(WARNING_LOG,
-                                "Found DSRecord duplicity: %d x %d (%d %d %d '%s' %d)",
-                                ii, jj, dsrec[ii].keyTag, dsrec[ii].alg, dsrec[ii].digestType,
-                                (const char *)dsrec[ii].digest, dsrec[ii].maxSigLife);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::keyset_dsrecord, jj, REASON_MSG_DUPLICITY_DSRECORD);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    // dnskey flag field (must be 0, 256 or 267)
-    // http://rfc-ref.org/RFC-TEXTS/4034/kw-flags_field.html
-    if (code == 0) {
-        for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-            if (!(dnsk[ii].flags == 0 || dnsk[ii].flags == 256 || dnsk[ii].flags == 257)) {
-                LOG(WARNING_LOG,
-                        "dnskey flag is %d (must be 0, 256 or 257)",
-                        dnsk[ii].flags);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_FLAGS);
-                break;
-            }
-        }
-    }
-    // dnskey protocol field (must be 3)
-    // http://rfc-ref.org/RFC-TEXTS/4034/kw-protocol_field.html
-    if (code == 0) {
-        for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-            if (dnsk[ii].protocol != 3) {
-                LOG(WARNING_LOG,
-                        "dnskey protocol is %d (must be 3)",
-                        dnsk[ii].protocol);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_PROTOCOL);
-                break;
-            }
-        }
-    }
-    // Ticket #4432 - algorithm validity removed
-    //
-    // dnskey algorithm type (must be 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 252, 253, 254 or 255)
-    // http://www.bind9.net/dns-sec-algorithm-numbers
-    // http://rfc-ref.org/RFC-TEXTS/4034/kw-dnssec_algorithm_type.html
-    // http://rfc-ref.org/RFC-TEXTS/4034/chapter7.html#d4e446172
-    // if (code == 0) {
-    //     for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-    //         if (!((dnsk[ii].alg >= 1 && dnsk[ii].alg <= 8) ||
-    //                     (dnsk[ii].alg == 10) || (dnsk[ii].alg == 12) ||
-    //                     (dnsk[ii].alg >= 252 && dnsk[ii].alg <=255))) {
-    //             LOG(WARNING_LOG,
-    //                     "dnskey algorithm is %d (must be 1,2,3,4,5,6,7,8,10,12,252,253,254 or 255)",
-    //                     dnsk[ii].alg);
-    //             code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-    //                     ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_ALG);
-    //             break;
-    //         }
-    //     }
-    // }
-    // test if key is valid base64 encoded string
-    if (code == 0) {
-        int ret1, ret2;
-        for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-            if ((ret1 = isValidBase64((const char *)dnsk[ii].key, &ret2)) != BASE64_OK) {
-                if (ret1 == BASE64_BAD_LENGTH) {
-                    LOG(WARNING_LOG, "dnskey key length is wrong (must be dividable by 4)");
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_KEY_LEN);
-                } else if (ret1 == BASE64_BAD_CHAR) {
-                    LOG(WARNING_LOG, "dnskey key contain invalid character '%c' at position %d",
-                            ((const char *)dnsk[ii].key)[ret2], ret2);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::keyset_dnskey, ii, REASON_MSG_DNSKEY_BAD_KEY_CHAR);
-                } else {
-                    LOG(WARNING_LOG, "isValidBase64() return unknown value (%d)",
-                            ret1);
-                    code = COMMAND_FAILED;
-                }
-            }
-        }
-    }
-    // dnskey duplicity test
-    if (code == 0) {
-        if (dnsk.length() >= 2) {
-            for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-                for (int jj = ii + 1; jj < (int)dnsk.length(); jj++) {
-                    if (testDNSKeyDuplicity(dnsk[ii], dnsk[jj])) {
-                        LOG(WARNING_LOG,
-                                "Found DSNKey duplicity: %d x %d (%d %d %d %s)",
-                                ii, jj, dnsk[ii].flags, dnsk[ii].protocol,
-                                dnsk[ii].alg, (const char *)dnsk[ii].key);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::keyset_dnskey, jj, REASON_MSG_DUPLICITY_DNSKEY);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    // keyset creating
-    if (code == 0) {
-        // id = DBsql.CreateObject("K", regID, handle, authInfoPw);
-        id = action.getDB()->CreateObject("K", action.getRegistrar(),
-                handle, authInfoPw);
-        if (id <= 0) {
-            if (id == 0) {
-                LOG(WARNING_LOG, "KeySet handle [%s] EXISTS", handle);
-                code = COMMAND_OBJECT_EXIST;
-            } else {
-                LOG(WARNING_LOG, "Cannot insert [%s] into object_registry", handle);
-                code = COMMAND_FAILED;
-            }
-        } else {
-            action.getDB()->INSERT("keyset");
-            action.getDB()->INTO("id");
-            action.getDB()->VALUE(id);
-
-            if (!action.getDB()->EXEC())
-                code = COMMAND_FAILED;
-            else {
-                CORBA::string_free(crDate);
-                crDate = CORBA::string_dup(action.getDB()->GetObjectCrDateTime(id));
-
-                //insert all technical contact
-                for (i = 0; i < tech.length(); i++) {
-                    LOG(DEBUG_LOG, "KeySetCreate: add tech contact %s id %d",
-                            (const char *)tech[i], tch[i]);
-                    if (!action.getDB()->AddContactMap("keyset", id, tch[i])) {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-                }
-                // insert dnskey(s)
-                for (int ii = 0; ii < (int)dnsk.length(); ii++) {
-                    char *key;
-                    if ((key = removeWhitespaces((const char *)dnsk[ii].key)) == NULL) {
-                        LOG(WARNING_LOG, "removeWhitespaces fails (memory problem)");
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-                    LOG(NOTICE_LOG, "KeySetCreate: dnskey");
-
-                    int dnskeyId = action.getDB()->GetSequenceID("dnskey");
-
-                    action.getDB()->INSERT("dnskey");
-                    action.getDB()->INTO("id");
-                    action.getDB()->INTO("keysetid");
-                    action.getDB()->INTO("flags");
-                    action.getDB()->INTO("protocol");
-                    action.getDB()->INTO("alg");
-                    action.getDB()->INTO("key");
-
-                    action.getDB()->VALUE(dnskeyId);
-                    action.getDB()->VALUE(id);
-                    action.getDB()->VALUE(dnsk[ii].flags);
-                    action.getDB()->VALUE(dnsk[ii].protocol);
-                    action.getDB()->VALUE(dnsk[ii].alg);
-                    action.getDB()->VALUE(key);
-                    if (!action.getDB()->EXEC()) {
-                        code = COMMAND_FAILED;
-                        free(key);
-                        break;
-                    }
-                    free(key);
-                }
-
-                // insert DSRecord(s)
-                for (i = 0; i < dsrec.length(); i++) {
-                    LOG(NOTICE_LOG, "KeySetCreate: DSRecord");
-
-                    dsrecID = action.getDB()->GetSequenceID("dsrecord");
-
-                    //DSRecord information
-                    action.getDB()->INSERT("DSRECORD");
-                    action.getDB()->INTO("ID");
-                    action.getDB()->INTO("KEYSETID");
-                    action.getDB()->INTO("KEYTAG");
-                    action.getDB()->INTO("ALG");
-                    action.getDB()->INTO("DIGESTTYPE");
-                    action.getDB()->INTO("DIGEST");
-                    action.getDB()->INTO("MAXSIGLIFE");
-
-                    action.getDB()->VALUE(dsrecID);
-                    action.getDB()->VALUE(id);
-                    action.getDB()->VALUE(dsrec[i].keyTag);
-                    action.getDB()->VALUE(dsrec[i].alg);
-                    action.getDB()->VALUE(dsrec[i].digestType);
-                    action.getDB()->VVALUE(dsrec[i].digest);
-                    if (dsrec[i].maxSigLife == -1)
-                        action.getDB()->VALUENULL();
-                    else
-                        action.getDB()->VALUE(dsrec[i].maxSigLife);
-
-                    if (!action.getDB()->EXEC()) {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-                }
-
-                // save it to histrory if it's ok
-                if (code != COMMAND_FAILED)
-                    if (action.getDB()->SaveKeySetHistory(id, params.requestID))
-                        if (action.getDB()->SaveObjectCreate(id))
-                            code = COMMAND_OK;
-            }
-
-            if (code == COMMAND_OK) {
-                action.set_notification_params(id,Notification::created, disable_epp_notifier_);
-            }
-        }
-    }
-
-    delete []tch;
-
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("KeySetCreate");
-    }
-
-    return action.getRet()._retn();
 }
 
 /*************************************************************

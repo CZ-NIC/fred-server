@@ -105,15 +105,15 @@ std::set< Error > ParameterErrors::get_set_of_error()const
          what_where_ptr != what_where_.end(); ++what_where_ptr)
     {
         if (what_where_ptr->second.is_scalar()) {
-            result.insert(scalar_parameter_failure(what_where_ptr->first.get_param(),
-                                                   what_where_ptr->first.get_reason()));
+            result.insert(Error::of_scalar_parameter(what_where_ptr->first.get_param(),
+                                                     what_where_ptr->first.get_reason()));
         }
         else if (what_where_ptr->second.is_vector()) {
             for (Where::Indexes::const_iterator idx_ptr = what_where_ptr->second.indexes.begin();
                  idx_ptr != what_where_ptr->second.indexes.end(); ++idx_ptr)
             {
-                result.insert(vector_parameter_failure(what_where_ptr->first.get_param(), *idx_ptr,
-                                                       what_where_ptr->first.get_reason()));
+                result.insert(Error::of_vector_parameter(what_where_ptr->first.get_param(), *idx_ptr,
+                                                         what_where_ptr->first.get_reason()));
             }
         }
     }

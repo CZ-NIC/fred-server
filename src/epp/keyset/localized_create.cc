@@ -24,7 +24,7 @@ Presents insert_scalar_parameter_error_if_presents(const ParameterErrors &_src,
                                                    std::set< Error > &_dst)
 {
     if (_src.has_scalar_parameter_error(_param, _reason)) {
-        _dst.insert(scalar_parameter_failure(_param, _reason));
+        _dst.insert(Error::of_scalar_parameter(_param, _reason));
         return true;
     }
     return false;
@@ -40,7 +40,7 @@ Presents insert_vector_parameter_error_if_presents(const ParameterErrors &_src,
         for (ParameterErrors::Where::Indexes::const_iterator idx_ptr = where.indexes.begin();
              idx_ptr != where.indexes.end(); ++idx_ptr)
         {
-            _dst.insert(vector_parameter_failure(_param, *idx_ptr, _reason));
+            _dst.insert(Error::of_vector_parameter(_param, *idx_ptr, _reason));
         }
         return true;
     }
@@ -114,7 +114,7 @@ ResponseOfCreate create(
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_tech, Reason::techadmin_limit, errors)) {
             insert_scalar_parameter_error_if_presents(e, Param::keyset_dsrecord, Reason::dsrecord_limit, errors);
             insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_limit, errors);
-            throw create_localized_fail_response(ctx, Response::parameter_range_error, errors, _lang);
+            throw create_localized_fail_response(ctx, Response::parameter_value_range_error, errors, _lang);
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::no_dnskey, errors)) {
@@ -124,12 +124,11 @@ ResponseOfCreate create(
         insert_scalar_parameter_error_if_presents(e, Param::keyset_dsrecord, Reason::dsrecord_limit, errors);
         insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_limit, errors);
         if (!errors.empty()) {
-            throw create_localized_fail_response(ctx, Response::parameter_range_error, errors, _lang);
+            throw create_localized_fail_response(ctx, Response::parameter_value_range_error, errors, _lang);
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::bad_format_keyset_handle, errors)) {
-            insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::protected_period, errors);
-            throw create_localized_fail_response(ctx, Response::parameter_error, errors, _lang);
+            throw create_localized_fail_response(ctx, Response::parameter_value_syntax_error, errors, _lang);
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::existing, errors)) {
@@ -138,19 +137,19 @@ ResponseOfCreate create(
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::protected_period, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_error, errors, _lang);
+            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
         }
 
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech, Reason::tech_notexist, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech, Reason::duplicity_contact, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::duplicity_dnskey, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_tech, Reason::duplicated_contact, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::duplicated_dnskey, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_bad_flags, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_bad_protocol, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_bad_alg, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_bad_key_char, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_bad_key_len, errors);
         if (!errors.empty()) {
-            throw create_localized_fail_response(ctx, Response::parameter_error, errors, _lang);
+            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
         }
 
         throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);

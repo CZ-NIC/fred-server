@@ -38,7 +38,7 @@ struct KeysetUpdateResult
 };
 
 /**
- * @throws ObjectStatusProhibitingOperation
+ * @throws ObjectStatusProhibitsOperation
  * @throws ParameterErrors
  */
 KeysetUpdateResult keyset_update(

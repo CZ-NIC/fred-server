@@ -47,7 +47,7 @@ struct HandlesCheck
         results(_results) { }
 
     LocalizedSuccessResponse ok_response;
-    std::map< std::string, Nullable< LocalizedHandleCheckResult > > results;
+    Results results;
 };
 
 HandlesCheck check(

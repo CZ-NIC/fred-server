@@ -79,7 +79,7 @@ LocalizedSuccessResponse transfer(
             std::set< Error >(),
             _lang);
     }
-    catch (const ObjectStatusProhibitingOperation&) {
+    catch (const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
             ctx,
@@ -87,11 +87,11 @@ LocalizedSuccessResponse transfer(
             std::set< Error >(),
             _lang);
     }
-    catch (const AutorError&) {
+    catch (const AuthorizationError&) {
         Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
             ctx,
-            Response::autor_error,
+            Response::authorization_error,
             std::set< Error >(),
             _lang);
     }
