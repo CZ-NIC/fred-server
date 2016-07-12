@@ -67,6 +67,7 @@ namespace Admin {
                 if (r.size() == 0) {
                     invalid_domain_email_list.push_back(*it);
                 }
+                // FIXME push_back(*it) just once
             }
 
             if(invalid_domain_email_list.size()) {

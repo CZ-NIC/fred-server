@@ -143,13 +143,13 @@ namespace Fred
       {
         std::stringstream sql;
         sql << "SELECT n.email "
-            << "FROM notify_outzoneunguarded_domain_additional_email n "
+            << "FROM notify_outzone_unguarded_domain_additional_email n "
             << "JOIN object_state os "
             << "ON n.state_id = os.id "
             << "WHERE os.id = " << state_id
             << "AND n.domain_id = " << obj_id
             << "AND n.crdate BETWEEN "
-            <<   "os.valid_from - (SELECT (val || ' day')::interval FROM enum_parameters WHERE name='outzoneunguarded_email_warning_period') "
+            <<   "os.valid_from - (SELECT (val || ' day')::interval FROM enum_parameters WHERE name='outzone_unguarded_email_warning_period') "
             <<   "AND "
             <<   "os.valid_from";
         return getEmailList(sql);
@@ -338,6 +338,13 @@ namespace Fred
         sql << ")";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
+      void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, std::string email) {
+        std::stringstream sql;
+        sql << "UPDATE notify_outzone_unguarded_domain_additional_email "
+        		<< "SET state_id = " << state_id
+            << "WHERE domain_id = " << obj_id << " AND email = " << email << " AND state_id IS NULL";
+        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+			}
       struct NotifyRequest {
         TID state_id; ///< id of state change (not id of status)
         unsigned type; ///< notification id
@@ -486,6 +493,8 @@ namespace Fred
                 mail = mm->sendEmail("", emails, "", i->mtype, params, handles, attach);
               }
               saveNotification(i->state_id, i->type, mail);
+              if(i->obj_type == 3 && i->emails == 4) // domain and additional email
+              	saveDomainAdditionalEmailsState(i->state_id, i->obj_id, emails);
             }
           }
           catch (...) {

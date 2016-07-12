@@ -31,7 +31,7 @@ namespace Registry {
 
 								Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_email_list);
 
-            } catch(Admin::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &e) {
+            } catch(const Admin::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &e) {
 
                 DomainEmailSeq_var invalid_domain_email_seq = new DomainEmailSeq();
 
@@ -47,7 +47,7 @@ namespace Registry {
 
                 throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_seq);
 
-            } catch(Admin::Notification::INTERNAL_ERROR &e) {
+            } catch(const Admin::Notification::INTERNAL_ERROR &e) {
                 throw INTERNAL_SERVER_ERROR();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();
