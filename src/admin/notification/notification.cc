@@ -30,14 +30,6 @@ namespace Admin {
 
     namespace Notification {
 
-        /**
-         * Import list of additional emails used to notify \c outboundUnguardedWarning domain state
-         *
-         * @param list of pairs <domain_id, email>
-         *
-         * @throw INTERNAL_ERROR
-         * @throw DOMAIN_EMAIL_VALIDATION_ERROR
-         */
         void notify_outzone_unguarded_domain_email_list(
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
         ) {
@@ -47,7 +39,7 @@ namespace Admin {
             unsigned long index = 0;
             std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
 
-            for(std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
+            for (std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
                 it != domain_email_list.end();
                 ++it, ++index
             ) {
@@ -55,7 +47,7 @@ namespace Admin {
                 //enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
                 //((Util::get_utf8_char_len(email) <= MAX_MOJEID_EMAIL_LENGTH)
 
-                if(it->second.empty() || !DjangoEmailFormat().check(it->second)) {
+                if (it->second.empty() || !DjangoEmailFormat().check(it->second)) {
                     invalid_domain_email_list.push_back(*it);
                 }
 
@@ -70,13 +62,13 @@ namespace Admin {
                 // FIXME push_back(*it) just once
             }
 
-            if(invalid_domain_email_list.size()) {
+            if (invalid_domain_email_list.size()) {
                 ctx.get_log().warning("invalid emails or domain ids");
                 throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_list);
             }
 
             try {
-                for(std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
+                for (std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
                     it != domain_email_list.end();
                     ++it, ++index
                 ) {
@@ -94,13 +86,13 @@ namespace Admin {
                         (it->second) // email
                     );
                 }
-            } catch(const std::runtime_error &e) {
+            } catch (const std::runtime_error &e) {
                 ctx.get_log().error(e.what());
                 throw INTERNAL_ERROR();
             } catch (const std::exception &e) {
                 ctx.get_log().error(e.what());
                 throw INTERNAL_ERROR();
-            } catch(...) {
+            } catch (...) {
                 ctx.get_log().error("unknown exception");
                 throw INTERNAL_ERROR();
             }
