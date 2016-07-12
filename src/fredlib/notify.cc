@@ -493,7 +493,7 @@ namespace Fred
                 mail = mm->sendEmail("", emails, "", i->mtype, params, handles, attach);
               }
               saveNotification(i->state_id, i->type, mail);
-              if(i->obj_type == 3 && i->emails == 4) // domain and additional email
+              if(i->obj_type == 3 && i->emails == 4) // 3: domain, 4: additional email
               	saveDomainAdditionalEmailsState(i->state_id, i->obj_id, emails);
             }
           }
