@@ -36,9 +36,8 @@
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetCreateImpl)
 
-BOOST_AUTO_TEST_CASE( test_case_uninitialized_ip_prohibited )
+BOOST_FIXTURE_TEST_CASE( test_case_uninitialized_ip_prohibited, has_registrar )
 {
-    Fred::OperationContextCreator ctx;
     boost::optional<boost::asio::ip::address> ip;
     BOOST_REQUIRE(Epp::is_prohibited_ip_addr(ip,ctx));
 }
