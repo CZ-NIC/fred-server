@@ -319,9 +319,9 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
         BOOST_FOREACH(const Epp::DNShostData& added_dnshost, update_data.dns_hosts_add)
         {
             std::set<boost::asio::ip::address> info_ipaddrs = map_at(info_dns_host_ip_set_by_fqdn, added_dnshost.fqdn);
-            BOOST_FOREACH(const boost::asio::ip::address& ipaddr, added_dnshost.inet_addr)
+            BOOST_FOREACH(const boost::optional<boost::asio::ip::address>& ipaddr, added_dnshost.inet_addr)
             {
-                BOOST_CHECK(info_ipaddrs.find(ipaddr) != info_ipaddrs.end());
+                BOOST_CHECK(ipaddr.is_initialized() && info_ipaddrs.find(ipaddr.get()) != info_ipaddrs.end());
             }
         }
     }
@@ -341,16 +341,16 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
             "authInfo1234",
             Util::vector_of<Epp::DNShostData>
                 (Epp::DNShostData("a.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
+                    Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("10.0.0.3"))
                         (boost::asio::ip::address::from_string("10.1.1.3")))) //add_dns
                 (Epp::DNShostData("b.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
+                    Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("10.2.0.4"))
                         (boost::asio::ip::address::from_string("10.3.1.4")))), //add_dns
             Util::vector_of<Epp::DNShostData>
                 (Epp::DNShostData("a.ns.nic.cz",
-                    std::vector<boost::asio::ip::address>())), //rem_dns
+                    std::vector<boost::optional<boost::asio::ip::address> >())), //rem_dns
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT4")
                 ("TEST-ADMIN-CONTACT5"),//tech_contacts_add

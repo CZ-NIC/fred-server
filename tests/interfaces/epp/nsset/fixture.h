@@ -32,6 +32,7 @@
 
 #include "src/epp/nsset/nsset_create.h"
 #include "src/epp/nsset/nsset_update.h"
+#include "src/epp/nsset/nsset_impl.h"
 
 struct has_registrar : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData registrar;
@@ -128,11 +129,11 @@ struct has_nsset_input_data_set : has_registrar
             "authInfo123",
             Util::vector_of<Epp::DNShostData>
                 (Epp::DNShostData("a.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
+                    Util::vector_of< boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("10.0.0.3"))
                         (boost::asio::ip::address::from_string("10.1.1.3")))) //add_dns
                 (Epp::DNShostData("c.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
+                    Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("10.0.0.4"))
                         (boost::asio::ip::address::from_string("10.1.1.4")))), //add_dns
             Util::vector_of<std::string>
@@ -178,11 +179,11 @@ struct has_nsset_with_input_data_set : has_registrar {
             "authInfo123",
             Util::vector_of<Epp::DNShostData>
                 (Epp::DNShostData("a.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
+                    Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("10.0.0.3"))
                         (boost::asio::ip::address::from_string("10.1.1.3")))) //add_dns
                 (Epp::DNShostData("c.ns.nic.cz",
-                    Util::vector_of<boost::asio::ip::address>
+                    Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("10.0.0.4"))
                         (boost::asio::ip::address::from_string("10.1.1.4")))), //add_dns
             Util::vector_of<std::string>
@@ -217,8 +218,8 @@ struct has_nsset_with_input_data_set : has_registrar {
 
         Fred::CreateNsset(nsset_input_data.handle, registrar.handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost(nsset_input_data.dns_hosts.at(0).fqdn, nsset_input_data.dns_hosts.at(0).inet_addr )) //add_dns
-                (Fred::DnsHost(nsset_input_data.dns_hosts.at(1).fqdn, nsset_input_data.dns_hosts.at(1).inet_addr )) //add_dns
+                (Fred::DnsHost(nsset_input_data.dns_hosts.at(0).fqdn, Epp::make_ipaddrs(nsset_input_data.dns_hosts.at(0).inet_addr) )) //add_dns
+                (Fred::DnsHost(nsset_input_data.dns_hosts.at(1).fqdn, Epp::make_ipaddrs(nsset_input_data.dns_hosts.at(1).inet_addr) )) //add_dns
                 )
             .set_authinfo(nsset_input_data.authinfo)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))

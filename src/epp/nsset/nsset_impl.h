@@ -23,11 +23,20 @@
 #ifndef EPP_NSSET_IMPL_H_9e6a8e492e314c5993aec42a9eb4af7d
 #define EPP_NSSET_IMPL_H_9e6a8e492e314c5993aec42a9eb4af7d
 
+#include <vector>
 #include <boost/asio/ip/address.hpp>
+#include "src/epp/nsset/nsset_dns_host_data.h"
+#include "src/fredlib/nsset/nsset_dns_host.h"
+#include "src/epp/nsset/nsset_dns_host.h"
+#include "src/fredlib/opexception.h"
 
 namespace Epp {
 
-    bool is_unspecified_ip_addr(const boost::asio::ip::address& ipaddr);
+    bool is_prohibited_ip_addr(const boost::optional<boost::asio::ip::address>& ipaddr, Fred::OperationContext& ctx);
+    std::vector<boost::asio::ip::address> make_ipaddrs(const std::vector<boost::optional<boost::asio::ip::address> >& inet_addr);
+    std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<Epp::DNShostData>& data);
+    std::vector<Epp::DNShost> make_epp_dns_hosts(const std::vector<Epp::DNShostData>& data);
+    std::vector<Epp::DNShostData> make_epp_dnshosts_data(const std::vector<Fred::DnsHost>& data);
 
 }
 

@@ -31,14 +31,16 @@
 #include "tests/interfaces/epp/nsset/fixture.h"
 
 #include "src/epp/nsset/nsset_create_impl.h"
+#include "src/epp/nsset/nsset_impl.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetCreateImpl)
 
-BOOST_AUTO_TEST_CASE( test_case_invalid_ip_unspecified )
+BOOST_AUTO_TEST_CASE( test_case_uninitialized_ip_prohibited )
 {
-    boost::system::error_code boost_error_code;//ignored purposefully, invalid ip address is transformed to unspecified
-    BOOST_REQUIRE( Epp::is_unspecified_ip_addr(boost::asio::ip::address::from_string("invalid_ip", boost_error_code)) );
+    Fred::OperationContextCreator ctx;
+    boost::optional<boost::asio::ip::address> ip;
+    BOOST_REQUIRE(Epp::is_prohibited_ip_addr(ip,ctx));
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_nsset_input_data_set)
@@ -113,9 +115,9 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_
 }
 
 
-bool boost_asio_ip_address_predicate (const boost::asio::ip::address& ip1, const boost::asio::ip::address& ip2)
+bool boost_asio_ip_address_predicate (const boost::optional<boost::asio::ip::address>& ip1, const boost::asio::ip::address& ip2)
 {
-    return (ip1 == ip2);
+    return (ip1.is_initialized() && ip1.get() == ip2);
 }
 
 bool dnshostdata_dnshost_predicate (const Epp::DNShostData& dnshostdata, const Fred::DnsHost& dnshost)

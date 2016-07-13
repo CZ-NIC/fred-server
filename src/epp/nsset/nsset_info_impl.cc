@@ -27,6 +27,7 @@
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
+#include "src/epp/nsset/nsset_impl.h"
 
 #include <boost/foreach.hpp>
 
@@ -59,13 +60,6 @@ NssetInfoOutputData nsset_info_impl(
     try {
         const Fred::InfoNssetData nsset_info_data = Fred::InfoNssetByHandle(_handle).exec(_ctx, "UTC").info_nsset_data;
 
-        //DNShost list
-        std::vector<DNShostData> dns_hosts;
-        dns_hosts.reserve(nsset_info_data.dns_hosts.size());
-        BOOST_FOREACH(const Fred::DnsHost& host, nsset_info_data.dns_hosts) {
-            dns_hosts.push_back(DNShostData(host.get_fqdn(), host.get_inet_addr()));
-        }
-
         //tech contact handle list
         std::vector<std::string> tech_contacts;
         tech_contacts.reserve(nsset_info_data.tech_contacts.size());
@@ -84,11 +78,10 @@ NssetInfoOutputData nsset_info_impl(
             nsset_info_data.update_time,
             nsset_info_data.transfer_time,
             nsset_info_data.authinfopw,
-            dns_hosts,
+            make_epp_dnshosts_data(nsset_info_data.dns_hosts),
             tech_contacts,
             nsset_info_data.tech_check_level.get_value_or(0)
         );
-
 
     } catch (const Fred::InfoNssetByHandle::Exception& e) {
 

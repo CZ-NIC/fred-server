@@ -196,16 +196,15 @@ unsigned long long nsset_update_impl(
                     std::set<boost::asio::ip::address> dns_host_to_add_ip_duplicity;
                     for(std::size_t j = 0; j < _data.dns_hosts_add.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_to_add_position)
                     {
-                        boost::asio::ip::address dnshostipaddr = _data.dns_hosts_add.at(i).inet_addr.at(j);
-                        if(is_unspecified_ip_addr(dnshostipaddr) //.is_unspecified()
-                        )
+                        boost::optional<boost::asio::ip::address> dnshostipaddr = _data.dns_hosts_add.at(i).inet_addr.at(j);
+                        if(is_prohibited_ip_addr(dnshostipaddr, _ctx))
                         {
                             ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
-                                boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),//position in list
+                                boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
                                 Reason::bad_ip_address));
                         }
                         else
-                        if(dns_host_to_add_ip_duplicity.insert(dnshostipaddr).second == false)
+                        if(dnshostipaddr.is_initialized() && dns_host_to_add_ip_duplicity.insert(dnshostipaddr.get()).second == false)
                         {
                             ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
                                 boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
@@ -250,16 +249,8 @@ unsigned long long nsset_update_impl(
         if(!ex.is_empty()) throw ex;
     }
 
-
     // update itself
     {
-        std::vector<Fred::DnsHost> dns_hosts_add;
-        dns_hosts_add.reserve(_data.dns_hosts_add.size());
-        BOOST_FOREACH(const Epp::DNShostData& host, _data.dns_hosts_add)
-        {
-            dns_hosts_add.push_back(Fred::DnsHost(host.fqdn, host.inet_addr));
-        }
-
         std::vector<std::string> dns_hosts_rem;
         dns_hosts_rem.reserve(_data.dns_hosts_rem.size());
         BOOST_FOREACH(const Epp::DNShostData& host, _data.dns_hosts_rem)
@@ -271,7 +262,7 @@ unsigned long long nsset_update_impl(
             logged_in_registrar.handle,
             Optional<std::string>(),
             _data.authinfo,
-            dns_hosts_add,
+            make_fred_dns_hosts(_data.dns_hosts_add),
             dns_hosts_rem,
             _data.tech_contacts_add,
             _data.tech_contacts_rem,

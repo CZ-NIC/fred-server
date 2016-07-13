@@ -23,10 +23,12 @@
 #include "src/epp/nsset/nsset_info.h"
 
 #include "src/epp/nsset/nsset_info_impl.h"
+#include "src/epp/nsset/nsset_impl.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/localization.h"
 #include "src/epp/action.h"
+
 
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/get_object_states.h"
@@ -92,12 +94,6 @@ LocalizedInfoNssetResponse nsset_info(
             payload.states.insert("ok");
         }
 
-        std::vector<DNShost> dns_hosts;
-        dns_hosts.reserve(payload.dns_hosts.size());
-        BOOST_FOREACH(const DNShostData& host, payload.dns_hosts) {
-            dns_hosts.push_back(DNShost(host.fqdn, host.inet_addr));
-        }
-
         return LocalizedInfoNssetResponse(
             create_localized_success_response(Response::ok, ctx, _lang),
             LocalizedNssetInfoOutputData(
@@ -111,7 +107,7 @@ LocalizedInfoNssetResponse nsset_info(
                 payload.last_update,
                 payload.last_transfer,
                 payload.auth_info_pw,
-                dns_hosts,
+                make_epp_dns_hosts(payload.dns_hosts),
                 payload.tech_contacts,
                 payload.tech_check_level
             )

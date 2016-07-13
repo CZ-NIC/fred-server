@@ -21,6 +21,7 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/integer_traits.hpp>
+#include <boost/optional.hpp>
 
 namespace Corba {
 
@@ -605,15 +606,21 @@ namespace Corba {
         return ret;
     }
 
-    std::vector<boost::asio::ip::address> unwrap_inet_addr_to_vector_asio_addr(const ccReg::InetAddress& in)
+    std::vector<boost::optional<boost::asio::ip::address> > unwrap_inet_addr_to_vector_asio_addr(const ccReg::InetAddress& in)
     {
-        std::vector<boost::asio::ip::address> ret;
+        std::vector<boost::optional<boost::asio::ip::address> > ret;
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
             if(in[i] == 0) throw std::runtime_error("null char ptr");
-            boost::system::error_code boost_error_code;//ignored purposefully, invalid ip address is transformed to unspecified
-            ret.push_back(boost::asio::ip::address::from_string(in[i],boost_error_code));
+            boost::system::error_code boost_error_code;//invalid ip address is transformed to non-initialized optional
+            boost::asio::ip::address ipaddr = boost::asio::ip::address::from_string(in[i],boost_error_code);
+            boost::optional<boost::asio::ip::address> optional_ipaddr;
+            if (!boost_error_code)
+            {
+                optional_ipaddr = ipaddr;
+            }
+            ret.push_back(optional_ipaddr);
         }
         return ret;
     }

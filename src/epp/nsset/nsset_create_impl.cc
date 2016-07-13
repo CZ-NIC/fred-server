@@ -153,9 +153,8 @@ NssetCreateResult nsset_create_impl(
                 std::set<boost::asio::ip::address> dns_host_ip_duplicity;
                 for(std::size_t j = 0; j < _data.dns_hosts.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_position)
                 {
-                    boost::asio::ip::address dnshostipaddr = _data.dns_hosts.at(i).inet_addr.at(j);
-                    if(is_unspecified_ip_addr(dnshostipaddr) //.is_unspecified()
-                    )
+                    const boost::optional<boost::asio::ip::address> dnshostipaddr = _data.dns_hosts.at(i).inet_addr.at(j);
+                    if(is_prohibited_ip_addr(dnshostipaddr, _ctx))
                     {
                         ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
                             boost::numeric_cast<unsigned short>(nsset_ipaddr_position),
@@ -164,7 +163,8 @@ NssetCreateResult nsset_create_impl(
                     else
                     {
                         //IP address duplicity check
-                        if(dns_host_ip_duplicity.insert(dnshostipaddr).second == false)
+                        if(dnshostipaddr.is_initialized() &&
+                            dns_host_ip_duplicity.insert(dnshostipaddr.get()).second == false)
                         {
                             ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
                                 boost::numeric_cast<unsigned short>(nsset_ipaddr_position),
@@ -179,20 +179,12 @@ NssetCreateResult nsset_create_impl(
     //TODO error handling #16022
 
     try {
-
-        std::vector<Fred::DnsHost> dns_hosts;
-        dns_hosts.reserve(_data.dns_hosts.size());
-        BOOST_FOREACH(const Epp::DNShostData& host, _data.dns_hosts)
-        {
-            dns_hosts.push_back(Fred::DnsHost(host.fqdn, host.inet_addr));
-        }
-
         const Fred::CreateNsset::Result create_data = Fred::CreateNsset(
             _data.handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
             _data.authinfo,
             _data.tech_check_level,
-            dns_hosts,
+            make_fred_dns_hosts(_data.dns_hosts),
             _data.tech_contacts,
             _logd_request_id
         ).exec(

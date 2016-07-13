@@ -31,8 +31,6 @@
 
 namespace Epp {
 
-bool is_unspecified_ip_addr(const boost::asio::ip::address& ipaddr);
-
 struct NssetCreateResult {
     const unsigned long long id;
     const unsigned long long create_history_id;

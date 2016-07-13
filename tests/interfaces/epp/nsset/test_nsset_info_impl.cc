@@ -24,11 +24,13 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/optional.hpp>
 
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
 #include "src/epp/nsset/nsset_info_impl.h"
+#include "src/epp/nsset/nsset_dns_host.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetInfoImpl)
@@ -72,7 +74,11 @@ static void check_equal(const Epp::NssetInfoOutputData& nsset_data, const Fred::
         BOOST_CHECK_EQUAL( nsset_data.dns_hosts.at(i).inet_addr.size(), info_data.dns_hosts.at(i).get_inet_addr().size() );
         for(std::size_t j = 0; j < nsset_data.dns_hosts.size(); ++j)
         {
-            BOOST_CHECK_EQUAL( nsset_data.dns_hosts.at(i).inet_addr.at(j), info_data.dns_hosts.at(i).get_inet_addr().at(j) );
+            BOOST_CHECK(nsset_data.dns_hosts.at(i).inet_addr.at(j).is_initialized());
+            if((nsset_data.dns_hosts.at(i).inet_addr.at(j).is_initialized()))
+            {
+                BOOST_CHECK_EQUAL( nsset_data.dns_hosts.at(i).inet_addr.at(j).get(),info_data.dns_hosts.at(i).get_inet_addr().at(j));
+            }
         }
     }
 
