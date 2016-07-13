@@ -102,21 +102,22 @@ int EppSessionContainer::get_registrar_id(unsigned long long loginId)
 {
     boost::mutex::scoped_lock lock(session_mutex);
 
-    std::map<unsigned long long, Session>::iterator found = sessions.find(loginId);
+    const std::map< unsigned long long, Session >::const_iterator session_ptr = sessions.find(loginId);
 
-    unsigned long long regId = found->second.registrarID;
-
-    if(found == sessions.end()) {
-        LOGGER(PACKAGE).debug( boost::format("get_registrar_id: Invalid loginId %1%") % loginId );
+    const bool found = (session_ptr != sessions.end());
+    if (!found) {
+        LOGGER(PACKAGE).debug(boost::format("get_registrar_id: Session with loginId %1% doesn't exist") % loginId );
         // throw std::runtime_error("Invalid loginId");
         return 0;
     }
 
-    LOGGER(PACKAGE).debug( boost::format("get_registrar_id: loginID %1% has regID %2%") % loginId % found->second.registrarID );
+    const unsigned long long registrar_id = session_ptr->second.registrarID;
+
+    LOGGER(PACKAGE).debug(boost::format("get_registrar_id: loginID %1% has regID %2%") % loginId % registrar_id);
 
     update_timestamp(loginId);
 
-    return regId;
+    return registrar_id;
 }
 
 int EppSessionContainer::get_registrar_lang(unsigned long long loginId)
