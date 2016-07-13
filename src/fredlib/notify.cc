@@ -21,6 +21,9 @@
 #include "src/old_utils/log.h"
 #include "sql.h"
 
+#include "util/db/result.h"
+#include "util/db/query_param.h"
+
 #include <sstream>
 #include <boost/assign/list_of.hpp>
 
@@ -341,8 +344,8 @@ namespace Fred
       void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, std::string email) {
         std::stringstream sql;
         sql << "UPDATE notify_outzone_unguarded_domain_additional_email "
-        		<< "SET state_id = " << state_id
-            << "WHERE domain_id = " << obj_id << " AND email = " << email << " AND state_id IS NULL";
+            << "SET state_id = " << state_id
+            << "WHERE domain_id = " << obj_id << " AND email = '" << db->Escape2(email) << "' AND state_id IS NULL";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
 			}
       struct NotifyRequest {

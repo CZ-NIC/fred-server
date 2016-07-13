@@ -284,7 +284,6 @@ noinst_LIBRARIES = \
 		src/corba/libfilemanager.a \
 		src/corba/libmailer.a \
 		src/corba/admin/libadmin_impl.a \
-		src/corba/admin/libnotification_impl.a \
 		src/corba/whois/libwhois_impl.a \
 		src/corba/whois/libwhois2_impl.a \
 		src/corba/epp/libepp_impl.a \
@@ -1190,14 +1189,6 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 #
 # src/admin/contact/verification/libadmin_contact_verification.a
 
-# src/admin/notification/libadmin_notification_notification.a
-#
-src_admin_notification_libadmin_notification_notification_a_SOURCES = \
-		src/admin/notification/notification.h \
-		src/admin/notification/notification.cc
-#
-# src/admin/notification/libadmin_notification_notification.a
-
 BUILT_SOURCES = \
 		src/corba/MessagesSK.cc \
 		src/corba/MojeIDSK.cc \
@@ -1456,15 +1447,6 @@ src_corba_admin_libadmin_impl_a_SOURCES = \
 #
 # src/corba/admin/libadmin_impl.a
 
-# src/corba/admin/libnotification_impl.a
-#
-src_corba_admin_libnotification_impl_a_SOURCES = \
-		src/corba/admin/notification_impl.h \
-		src/corba/admin/notification_impl.cc
-#
-# src/corba/admin/libnotification_impl.a
-
-
 # src/corba/whois/libwhois_impl.a
 #
 src_corba_whois_libwhois_impl_a_SOURCES = \
@@ -1689,15 +1671,14 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/test_impl/test_send_letter.cc \
 		src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.h \
 		src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.cc \
-		src/corba/admin/notification_impl.h \
-		src/corba/admin/notification_impl.cc \
+		src/corba/notification/server_i.h \
+		src/corba/notification/server_i.cc \
 		src/admin/notification/notification.h \
 		src/admin/notification/notification.cc
 
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/libcorbaadmin.a \
-		src/corba/admin/libnotification_impl.a \
 		src/corba/libcorbanotification.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbafilters.a \

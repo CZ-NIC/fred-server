@@ -20,8 +20,8 @@
 *  @file
 *  header of notification wrapper over corba
 */
-#ifndef NOTIFICATION_IMPL_H_
-#define NOTIFICATION_IMPL_H_
+#ifndef CORBA_NOTIFICATION_SERVER_I_H_
+#define CORBA_NOTIFICATION_SERVER_I_H_
 
 #include "src/corba/Notification.hh"
 
@@ -35,11 +35,11 @@ namespace Registry {
          * Wrapper class for CORBA \c NotificationIface methods implementation
          * Implements all virtual methods of POA_Registry::Notification::NotificationIface
          */
-        class Notification_i : public POA_Registry::Notification::NotificationIface {
+        class Server_i : public POA_Registry::Notification::Server {
 
             public:
 
-                virtual ~Notification_i() {};
+                virtual ~Server_i() {};
 
 
                 /**

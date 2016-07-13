@@ -24,6 +24,8 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/contact_verification/django_email_format.h"
 
+#include "util/db/query_param.h"
+
 #include "src/admin/notification/notification.h"
 
 namespace Admin {
@@ -64,7 +66,7 @@ namespace Admin {
 
             if (invalid_domain_email_list.size()) {
                 ctx.get_log().warning("invalid emails or domain ids");
-                throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_list);
+                throw DomainEmailValidationError(invalid_domain_email_list);
             }
 
             try {
@@ -88,13 +90,13 @@ namespace Admin {
                 }
             } catch (const std::runtime_error &e) {
                 ctx.get_log().error(e.what());
-                throw INTERNAL_ERROR();
+                throw InternalError();
             } catch (const std::exception &e) {
                 ctx.get_log().error(e.what());
-                throw INTERNAL_ERROR();
+                throw InternalError();
             } catch (...) {
                 ctx.get_log().error("unknown exception");
-                throw INTERNAL_ERROR();
+                throw InternalError();
             }
 
             ctx.commit_transaction();

@@ -25,13 +25,13 @@
 
 #include "src/admin/notification/notification.h"
 
-#include "src/corba/admin/notification_impl.h"
+#include "src/corba/notification/server_i.h"
 
 namespace Registry {
 
     namespace Notification {
 
-        void Notification_i::notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) {
+        void Server_i::notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq) {
 
             try {
 
@@ -47,9 +47,9 @@ namespace Registry {
                     );
                 }
 
-								Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_email_list);
+                Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_email_list);
 
-            } catch (const Admin::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &e) {
+            } catch (const Admin::Notification::DomainEmailValidationError &e) {
 
                 DomainEmailSeq_var invalid_domain_email_seq = new DomainEmailSeq();
 
@@ -65,7 +65,7 @@ namespace Registry {
 
                 throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_seq);
 
-            } catch (const Admin::Notification::INTERNAL_ERROR &e) {
+            } catch (const Admin::Notification::InternalError &e) {
                 throw INTERNAL_SERVER_ERROR();
             } catch (...) {
                 throw INTERNAL_SERVER_ERROR();

@@ -26,7 +26,7 @@
 #include "admin/admin_impl.h"
 #include "admin_block/server_i.h"
 #include "src/corba/Notification.hh"
-#include "src/corba/admin/notification_impl.h"
+#include "src/corba/notification/server_i.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -112,8 +112,8 @@ int main(int argc, char *argv[])
         std::auto_ptr<Registry::AdminContactVerification::Server_i>
             admin_contact_verification_server(new(Registry::AdminContactVerification::Server_i));
 
-        std::auto_ptr<Registry::Notification::Notification_i>
-            notification_i(new(Registry::Notification::Notification_i));
+        std::auto_ptr<Registry::Notification::Server_i>
+            notification_i(new(Registry::Notification::Server_i));
 
             // create session use values from config
             LOGGER(PACKAGE).info(boost::format(

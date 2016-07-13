@@ -21,8 +21,8 @@
  *  corba server implementation of registry notification
  */
 
-#ifndef NOTIFICATION_H_
-#define NOTIFICATION_H_
+#ifndef ADMIN_NOTIFICATION_NOTIFICATION_H_
+#define ADMIN_NOTIFICATION_NOTIFICATION_H_
 
 #include <boost/format.hpp>
 
@@ -37,17 +37,17 @@ namespace Admin {
     namespace Notification {
 
         /// Exception for internal error
-        struct INTERNAL_ERROR : std::exception {
+        struct InternalError : std::exception {
             const char* what() const throw () {
                 return "internal error";
             }
         };
 
         /// Exception for case when some data are not valid
-        struct DOMAIN_EMAIL_VALIDATION_ERROR : std::exception {
+        struct DomainEmailValidationError : std::exception {
             std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
-            DOMAIN_EMAIL_VALIDATION_ERROR(std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list) : invalid_domain_email_list(invalid_domain_email_list) {};
-            ~DOMAIN_EMAIL_VALIDATION_ERROR() throw () {};
+            DomainEmailValidationError(std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list) : invalid_domain_email_list(invalid_domain_email_list) {};
+            ~DomainEmailValidationError() throw () {};
             const char* what() const throw () {
                 return "some data are invalid";
             }
@@ -58,8 +58,8 @@ namespace Admin {
          *
          * \param domain_email_list  list of pairs <domain_id, email>
          *
-         * \throw INTERNAL_SERVER_ERROR          in case of unexpected failure
-         * \throw DOMAIN_EMAIL_VALIDATION_ERROR  in case of invalid input
+         * \throw InternalError               in case of unexpected failure
+         * \throw DomainEmailValidationError  in case of invalid input
          */
         void notify_outzone_unguarded_domain_email_list(
             const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
