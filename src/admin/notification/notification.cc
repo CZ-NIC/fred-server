@@ -74,6 +74,20 @@ namespace Admin {
                     it != domain_email_list.end();
                     ++it, ++index
                 ) {
+                    // clear unnotified email records for the specified domain_id
+                    ctx.get_conn().exec_params(
+                        "DELETE FROM notify_outzone_unguarded_domain_additional_email "
+                        "WHERE domain_id = $1::bigint "
+                          "AND state_id IS NULL",
+                        Database::query_param_list
+                        (it->first)  // domain_id
+                    );
+                }
+                for (std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
+                    it != domain_email_list.end();
+                    ++it, ++index
+                ) {
+                    // set specified email records for the specified domain_id
                     ctx.get_conn().exec_params(
                         "INSERT INTO notify_outzone_unguarded_domain_additional_email "
                            "(crdate, state_id, domain_id, email) "
