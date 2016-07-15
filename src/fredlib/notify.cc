@@ -145,18 +145,17 @@ namespace Fred
       std::string getDomainAdditionalEmails(TID state_id, TID obj_id)
       {
         std::stringstream sql;
-        // select emails inserted into notify_outzone_unguarded_domain_additional_email
-        // between domain expiration date (exdate) and current object state (.valid_from)
-        sql << "SELECT n.email "
-            << "FROM notify_outzone_unguarded_domain_additional_email n "
-            << "JOIN object_state os "
-            << "ON n.state_id = os.id "
-            << "WHERE os.id = " << state_id
-            << "AND n.domain_id = " << obj_id
-            << "AND n.crdate BETWEEN "
-            <<   "(SELECT exdate from domain where id = " << obj_id << ") " // date is cast to timestamp
-            <<   "AND "
-            <<   "os.valid_from";
+        // select unnotified (state_id IS NULL) emails inserted
+        // into notify_outzone_unguarded_domain_additional_email
+        // between domain expiration date (exdate) and current object state (valid_from)
+				sql << "SELECT n.email "
+							 "FROM notify_outzone_unguarded_domain_additional_email n "
+							 "JOIN object_state os ON os.object_id = n.domain_id "
+							 "JOIN domain d ON d.id = n.domain_id "
+							 "WHERE os.id = " << state_id << " "
+								 "AND n.domain_id = " << obj_id << " "
+								 "AND n.state_id IS NULL "
+								 "AND n.crdate BETWEEN d.exdate AND os.valid_from";
         return getEmailList(sql);
       }
       std::string getNSSetTechEmailsHistory(TID nsset)
