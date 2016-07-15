@@ -45,8 +45,8 @@ namespace Admin {
 
         /// Exception for case when some data are not valid
         struct DomainEmailValidationError : std::exception {
-            std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
-            DomainEmailValidationError(std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list) : invalid_domain_email_list(invalid_domain_email_list) {};
+            std::map<unsigned long long, std::set<std::string> > invalid_domain_emails_map;
+            DomainEmailValidationError(std::map<unsigned long long, std::set<std::string> > invalid_domain_emails_map) : invalid_domain_emails_map(invalid_domain_emails_map) {};
             ~DomainEmailValidationError() throw () {};
             const char* what() const throw () {
                 return "some data are invalid";
@@ -56,13 +56,13 @@ namespace Admin {
         /**
          * Import list of additional emails used to notify \c outboundUnguardedWarning domain state
          *
-         * \param domain_email_list  list of pairs <domain_id, email>
+         * \param domain_emails_map  map of sets of emails
          *
          * \throw InternalError               in case of unexpected failure
          * \throw DomainEmailValidationError  in case of invalid input
          */
         void notify_outzone_unguarded_domain_email_list(
-            const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
+            const std::map<unsigned long long, std::set<std::string> > &domain_emails_map
         );
 
     }

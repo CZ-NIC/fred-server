@@ -33,78 +33,76 @@ namespace Admin {
     namespace Notification {
 
         void notify_outzone_unguarded_domain_email_list(
-            const std::vector<std::pair<unsigned long long, std::string> > &domain_email_list
+            const std::map<unsigned long long, std::set<std::string> > &domain_emails_map
         ) {
 
             Fred::OperationContextCreator ctx;
 
-            unsigned long index = 0;
-            std::vector<std::pair<unsigned long long, std::string> > invalid_domain_email_list;
+            std::map<unsigned long long, std::set<std::string> > invalid_domain_emails_map;
 
-            for (std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
-                it != domain_email_list.end();
-                ++it, ++index
-            ) {
-                // TODO email length check in MOUJEID:
-                //enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
-                //((Util::get_utf8_char_len(email) <= MAX_MOJEID_EMAIL_LENGTH)
+            for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = domain_emails_map.begin(); i != domain_emails_map.end(); ++i) {
+                for(std::set<std::string>::const_iterator j = i->second.begin(); j != i->second.end(); ++j) {
 
-                if (it->second.empty() || !DjangoEmailFormat().check(it->second)) {
-                    invalid_domain_email_list.push_back(*it);
+                    bool invalid_email = false;
+                    // TODO email length check in MOUJEID:
+                    //enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
+                    //((Util::get_utf8_char_len(email) <= MAX_MOJEID_EMAIL_LENGTH)
+
+                    if (j->empty() || !DjangoEmailFormat().check(*j)) {
+                        invalid_email = true;
+                    }
+
+                    bool invalid_id = false;
+                    const Database::Result r = ctx.get_conn().exec_params(
+                        "SELECT from domain_history WHERE id=$1::bigint",
+                        Database::query_param_list
+                        (i->first) // domain_id
+                    );
+                    if (r.size() == 0) {
+                        invalid_id = true;
+                    }
+
+                    if(invalid_email || invalid_id) {
+                        invalid_domain_emails_map[i->first].insert(*j);
+                    }
                 }
-
-                const Database::Result r = ctx.get_conn().exec_params(
-                    "SELECT from domain_history WHERE id=$1::bigint",
-                    Database::query_param_list
-                    (it->first)
-                );
-                if (r.size() == 0) {
-                    invalid_domain_email_list.push_back(*it);
-                }
-                // FIXME push_back(*it) just once
             }
 
-            if (invalid_domain_email_list.size()) {
+            if (!invalid_domain_emails_map.empty()) {
                 ctx.get_log().warning("invalid emails or domain ids");
-                throw DomainEmailValidationError(invalid_domain_email_list);
+                throw DomainEmailValidationError(invalid_domain_emails_map);
             }
 
             try {
-                for (std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
-                    it != domain_email_list.end();
-                    ++it, ++index
-                ) {
+                for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = domain_emails_map.begin(); i != domain_emails_map.end(); ++i) {
                     // clear unnotified email records for the specified domain_id
                     ctx.get_conn().exec_params(
                         "DELETE FROM notify_outzone_unguarded_domain_additional_email "
                         "WHERE domain_id = $1::bigint "
                           "AND state_id IS NULL",
                         Database::query_param_list
-                        (it->first)  // domain_id
+                        (i->first)  // domain_id
                     );
                 }
-                for (std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = domain_email_list.begin();
-                    it != domain_email_list.end();
-                    ++it, ++index
-                ) {
-                    // set specified email records for the specified domain_id
-                    ctx.get_conn().exec_params(
-                        "INSERT INTO notify_outzone_unguarded_domain_additional_email "
-                           "(crdate, state_id, domain_id, email) "
-                           "VALUES ( "
-                               "NOW(), "      // crdate
-                               "NULL, "       // state_id, N/A yet
-                               "$1::bigint, " // domain_id
-                               "$2::varchar " // email
-                           ")",
-                        Database::query_param_list
-                        (it->first)  // domain_id
-                        (it->second) // email
-                    );
+                for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = domain_emails_map.begin(); i != domain_emails_map.end(); ++i) {
+                    for(std::set<std::string>::const_iterator j = i->second.begin(); j != i->second.end(); ++j) {
+
+                        // set specified email records for the specified domain_id
+                        ctx.get_conn().exec_params(
+                            "INSERT INTO notify_outzone_unguarded_domain_additional_email "
+                               "(crdate, state_id, domain_id, email) "
+                               "VALUES ( "
+                                   "NOW(), "      // crdate
+                                   "NULL, "       // state_id, N/A yet
+                                   "$1::bigint, " // domain_id
+                                   "$2::varchar " // email
+                               ")",
+                            Database::query_param_list
+                            (i->first)  // domain_id
+                            (*j)         // email
+                        );
+                    }
                 }
-            } catch (const std::runtime_error &e) {
-                ctx.get_log().error(e.what());
-                throw InternalError();
             } catch (const std::exception &e) {
                 ctx.get_log().error(e.what());
                 throw InternalError();

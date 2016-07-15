@@ -35,32 +35,38 @@ namespace Registry {
 
             try {
 
-                std::vector<std::pair<unsigned long long, std::string> > domain_email_list;
+                std::map<unsigned long long, std::set<std::string> > domain_emails_map;
 
-                // convert Corba DomainEmailSeq to C++ vector of pairs (domain_email_list)
+                // convert Corba DomainEmailSeq to C++ map of sets of emails (domain_emails_map)
+
                 for (unsigned long long i = 0; i < domain_email_seq.length(); ++i) {
-                    domain_email_list.push_back(
-                        std::make_pair(
-                            static_cast<unsigned long long>(domain_email_seq[i].domain_id),
-                            Corba::unwrap_string(domain_email_seq[i].email)
-                        )
-                    );
+                    //std::pair<std::map<unsigned long long, std::set<std::string> >::iterator, bool> ret = domain_emails_map[domain_id].insert(Corba::unwrap_string(domain_email_seq[i].email));
+                    //if(ret.second == false) {
+                    //    // TODO duplicate email
+                    //}
+                    domain_emails_map[static_cast<unsigned long long>(domain_email_seq[i].domain_id)].insert(Corba::unwrap_string(domain_email_seq[i].email));
                 }
 
-                Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_email_list);
+                Admin::Notification::notify_outzone_unguarded_domain_email_list(domain_emails_map);
 
             } catch (const Admin::Notification::DomainEmailValidationError &e) {
 
                 DomainEmailSeq_var invalid_domain_email_seq = new DomainEmailSeq();
 
+                unsigned long long size = 0;
+                for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = e.invalid_domain_emails_map.begin(); i != e.invalid_domain_emails_map.end(); ++i) {
+                    size += i->second.size();
+                }
+
+                invalid_domain_email_seq->length(size);
+
                 unsigned long index = 0;
-                invalid_domain_email_seq->length(e.invalid_domain_email_list.size());
-                for (std::vector<std::pair<unsigned long long, std::string> >::const_iterator it = e.invalid_domain_email_list.begin();
-                    it != e.invalid_domain_email_list.end();
-                    ++it, ++index
-                ) {
-                    invalid_domain_email_seq[index].domain_id = CORBA::ULongLong(it->first);
-                    invalid_domain_email_seq[index].email = Corba::wrap_string(it->second);
+                for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = e.invalid_domain_emails_map.begin(); i != e.invalid_domain_emails_map.end(); ++i) {
+                    for(std::set<std::string>::const_iterator j = i->second.begin(); j != i->second.end(); ++j) {
+                        invalid_domain_email_seq[index].domain_id = CORBA::ULongLong(i->first);
+                        invalid_domain_email_seq[index].email = Corba::wrap_string(*j);
+                        ++index;
+                    }
                 }
 
                 throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_seq);

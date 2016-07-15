@@ -145,6 +145,8 @@ namespace Fred
       std::string getDomainAdditionalEmails(TID state_id, TID obj_id)
       {
         std::stringstream sql;
+        // select emails inserted into notify_outzone_unguarded_domain_additional_email
+        // between domain expiration date (exdate) and current object state (.valid_from)
         sql << "SELECT n.email "
             << "FROM notify_outzone_unguarded_domain_additional_email n "
             << "JOIN object_state os "
@@ -152,7 +154,7 @@ namespace Fred
             << "WHERE os.id = " << state_id
             << "AND n.domain_id = " << obj_id
             << "AND n.crdate BETWEEN "
-            <<   "os.valid_from - (SELECT (val || ' day')::interval FROM enum_parameters WHERE name='outzone_unguarded_email_warning_period') "
+            <<   "(SELECT exdate from domain where id = " << obj_id << ") " // date is cast to timestamp
             <<   "AND "
             <<   "os.valid_from";
         return getEmailList(sql);
