@@ -6,6 +6,7 @@
 #include "src/epp/exception_aggregate_param_errors.h"
 #include "src/epp/impl/util.h"
 
+#include "src/fredlib/zone/zone.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/nsset/check_nsset.h"
@@ -182,6 +183,34 @@ unsigned long long nsset_update_impl(
                         Reason::duplicated_dns_name));
                 }
 
+                //check that nameserver fqdn is in zone managed by registry to allow presence of nameserver IP addresses
+                if(_data.dns_hosts_add.at(i).inet_addr.size() > 0)
+                {
+                    try
+                    {
+                        Fred::Zone::find_zone_in_fqdn(_ctx,
+                            Fred::Zone::rem_trailing_dot(lower_dnshost_fqdn));
+                    }
+                    catch(const Fred::Zone::Exception& e)
+                    {
+                        if(e.is_set_unknown_zone_in_fqdn()
+                            && (e.get_unknown_zone_in_fqdn() == (Fred::Zone::rem_trailing_dot(lower_dnshost_fqdn)) ))
+                        {
+                            //zone not found
+                            std::size_t nsset_glue_ipaddr_to_add_position = nsset_ipaddr_to_add_position;
+                            for(std::size_t j = 0; j < _data.dns_hosts_add.at(i).inet_addr.size(); ++j, ++nsset_glue_ipaddr_to_add_position)
+                            {
+                                ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
+                                    boost::numeric_cast<unsigned short>(nsset_glue_ipaddr_to_add_position),
+                                    Reason::ip_glue_not_allowed));
+                            }
+                        }
+                        else
+                            throw;
+                    }
+                }
+
+                //nameserver fqdn alredy assigned to nsset and not in list of fqdn to be removed
                 if( (nsset_dns_host_fqdn.find(lower_dnshost_fqdn) != nsset_dns_host_fqdn.end())//dns host fqdn to be added is alredy assigned to nsset
                     && (nsset_dns_host_fqdn_to_remove.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn_to_remove.end())//dns host fqdn to be added is not in list of fqdn to be removed (dns hosts are removed first)
                 )
