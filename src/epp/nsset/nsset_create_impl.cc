@@ -124,13 +124,15 @@ NssetCreateResult nsset_create_impl(
     }
 
 
-    //check dns hosts wip TODO: specify required checks
+    //check dns hosts
     {
         std::set<std::string> dns_host_fqdn_duplicity;
         ParameterValuePolicyError ex;
         std::size_t nsset_ipaddr_position = 0;
         for(std::size_t i = 0; i < _data.dns_hosts.size(); ++i)
         {
+            const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(_data.dns_hosts.at(i).fqdn);
+
             if(!Fred::Domain::general_domain_name_syntax_check(_data.dns_hosts.at(i).fqdn))
             {
                 ex.add(Error::of_vector_parameter(Param::nsset_dns_name,
@@ -139,14 +141,15 @@ NssetCreateResult nsset_create_impl(
             }
             else
             {//check nameserver fqdn duplicity
-                if(dns_host_fqdn_duplicity.insert(boost::algorithm::to_lower_copy(
-                        _data.dns_hosts.at(i).fqdn)).second == false)
+                if(dns_host_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
                 {
                     ex.add(Error::of_vector_parameter(Param::nsset_dns_name,
                         boost::numeric_cast<unsigned short>(i),
                         Reason::dns_name_exist));
                 }
             }
+
+            check_disallowed_glue_ipaddrs(_data.dns_hosts.at(i), nsset_ipaddr_position, ex, _ctx);
 
             //check nameserver IP addresses
             {
@@ -176,7 +179,6 @@ NssetCreateResult nsset_create_impl(
         }
         if(!ex.is_empty()) throw ex;
     }
-    //TODO error handling #16022
 
     try {
         const Fred::CreateNsset::Result create_data = Fred::CreateNsset(
