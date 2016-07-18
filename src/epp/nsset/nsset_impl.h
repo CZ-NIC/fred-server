@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <boost/asio/ip/address.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include "src/epp/nsset/nsset_dns_host_data.h"
 #include "src/fredlib/nsset/nsset_dns_host.h"
 #include "src/epp/nsset/nsset_dns_host.h"

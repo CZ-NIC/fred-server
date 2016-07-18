@@ -264,7 +264,6 @@ unsigned long long nsset_update_impl(
 
         Fred::UpdateNsset update(_data.handle,
             logged_in_registrar.handle,
-            Optional<std::string>(),
             _data.authinfo,
             make_fred_dns_hosts(_data.dns_hosts_add),
             dns_hosts_rem,
@@ -284,7 +283,6 @@ unsigned long long nsset_update_impl(
             /* general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority */
             if(
                 e.is_set_unknown_registrar_handle()
-                || e.is_set_unknown_sponsoring_registrar_handle()
             ) {
                 throw;
             }
