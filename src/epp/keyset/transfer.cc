@@ -35,7 +35,7 @@ unsigned long long keyset_transfer(
             .exec(_ctx).info_keyset_data;
         const std::string session_registrar_handle =
             Fred::InfoRegistrarById(_registrar_id)
-                .set_lock()//TODO az to bude mozne, staci lock registrar for share
+                .set_lock()
                 .exec(_ctx)
                 .info_registrar_data.handle;
         if (keyset_data.sponsoring_registrar_handle == session_registrar_handle) {
