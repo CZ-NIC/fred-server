@@ -29,7 +29,6 @@
 #include <omniORB4/CORBA.h>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/mpl/assert.hpp>
-#include <boost/mpl/set.hpp>
 #include <boost/integer_traits.hpp>
 
 /**
@@ -68,20 +67,12 @@ void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
     }
 }
 
-typedef boost::mpl::set< CORBA::Boolean, CORBA::Char, CORBA::Octet,
-                         CORBA::Short, CORBA::UShort,
-                         CORBA::Long, CORBA::ULong,
-                         CORBA::LongLong, CORBA::ULongLong,
-                         CORBA::WChar > CorbaIntTypes;
-
 /**
  * Basic integral types conversion with under/overflow detection
  */
 template < class SOURCE_INTEGRAL_TYPE, class TARGET_INTEGRAL_TYPE >
 void wrap_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
 {
-    typedef typename boost::mpl::has_key< CorbaIntTypes, TARGET_INTEGRAL_TYPE >::type target_is_corba_integral_type;
-    BOOST_MPL_ASSERT_MSG(target_is_corba_integral_type::value, target_type_have_to_be_corba_integral, (TARGET_INTEGRAL_TYPE));
     int_to_int(src, dst);
 }
 
@@ -91,8 +82,6 @@ void wrap_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
 template < class SOURCE_INTEGRAL_TYPE, class TARGET_INTEGRAL_TYPE >
 void unwrap_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE &dst)
 {
-    typedef typename boost::mpl::has_key< CorbaIntTypes, SOURCE_INTEGRAL_TYPE >::type source_is_corba_integral_type;
-    BOOST_MPL_ASSERT_MSG(source_is_corba_integral_type::value, source_type_have_to_be_corba_integral, (SOURCE_INTEGRAL_TYPE));
     int_to_int(src, dst);
 }
 
