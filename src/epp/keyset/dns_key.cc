@@ -11,11 +11,77 @@ bool is_base64_data_character(char c)
 {
     switch (c)
     {
-        case '0' ... '9':
-        case 'A' ... 'Z':
-        case 'a' ... 'z':
-        case '+':
-        case '/':
+        //'0' ... '9'
+        case '0':// 1.
+        case '1':// 2.
+        case '2':// 3.
+        case '3':// 4.
+        case '4':// 5.
+        case '5':// 6.
+        case '6':// 7.
+        case '7':// 8.
+        case '8':// 9.
+        case '9'://10.
+
+        //'A' ... 'Z'
+        case 'A'://11.
+        case 'B'://12.
+        case 'C'://13.
+        case 'D'://14.
+        case 'E'://15.
+        case 'F'://16.
+        case 'G'://17.
+        case 'H'://18.
+        case 'I'://19.
+        case 'J'://20.
+        case 'K'://21.
+        case 'L'://22.
+        case 'M'://23.
+        case 'N'://24.
+        case 'O'://25.
+        case 'P'://26.
+        case 'Q'://27.
+        case 'R'://28.
+        case 'S'://29.
+        case 'T'://30.
+        case 'U'://31.
+        case 'V'://32.
+        case 'W'://33.
+        case 'X'://34.
+        case 'Y'://35.
+        case 'Z'://36.
+
+        //'a' ... 'z'
+        case 'a'://37.
+        case 'b'://38.
+        case 'c'://39.
+        case 'd'://40.
+        case 'e'://41.
+        case 'f'://42.
+        case 'g'://43.
+        case 'h'://44.
+        case 'i'://45.
+        case 'j'://46.
+        case 'k'://47.
+        case 'l'://48.
+        case 'm'://49.
+        case 'n'://50.
+        case 'o'://51.
+        case 'p'://52.
+        case 'q'://53.
+        case 'r'://54.
+        case 's'://55.
+        case 't'://56.
+        case 'u'://57.
+        case 'v'://58.
+        case 'w'://59.
+        case 'x'://60.
+        case 'y'://61.
+        case 'z'://62.
+
+        //'+', '/'
+        case '+'://63.
+        case '/'://64.
             return true;
     }
     return false;
