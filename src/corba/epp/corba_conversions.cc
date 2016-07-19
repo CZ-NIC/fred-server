@@ -326,6 +326,20 @@ namespace Corba {
         dst.disclose          = unwrap_ContactChange_to_ContactDisclose(src);
     }
 
+    Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src)
+    {
+        /* XXX Defined by convention. Could probably be substituted by more explicit means in IDL interface. */
+        static const char char_for_value_deleting = '\b';
+        switch (_src[0])
+        {
+            case '\0'://empty string => don't change
+                return Optional< std::string >();
+            case char_for_value_deleting://string starts with '\b' => has to be deleted
+                return std::string();
+        }
+        return boost::trim_copy(unwrap_string(_src));
+    }
+
     static std::string formatTime(const boost::posix_time::ptime& tm) {
         char buffer[100];
         convert_rfc3339_timestamp(buffer, sizeof(buffer), boost::posix_time::to_iso_extended_string(tm).c_str());

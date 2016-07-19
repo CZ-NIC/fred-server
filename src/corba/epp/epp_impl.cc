@@ -5496,13 +5496,8 @@ ccReg_EPP_i::KeySetUpdate(
 
         const std::string keyset_handle =
             Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const std::string auth_info_pw_value =
-            Corba::unwrap_string_from_const_char_ptr(_auth_info_pw);
-        const Optional< std::string > auth_info_pw = auth_info_pw_value.empty()
-                                                     ? Optional< std::string >()//empty => don't change
-                                                     : auth_info_pw_value[0] == 0x8
-                                                       ? ""                     //starts with '\b' => set to empty
-                                                       : auth_info_pw_value;    //anything else => set to new value
+        const Optional< std::string > auth_info_pw =
+            Corba::unwrap_string_for_change_to_Optional_string(_auth_info_pw);
         const std::vector< std::string > tech_contacts_add =
             Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add);
         const std::vector< std::string > tech_contacts_rem =

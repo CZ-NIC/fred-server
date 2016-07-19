@@ -55,6 +55,7 @@ namespace Corba {
 
     Epp::RequestParams unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
 
+    Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src);
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
