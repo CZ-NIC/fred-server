@@ -178,7 +178,8 @@ unsigned long long nsset_update_impl(
                         boost::numeric_cast<unsigned short>(i),//position in list
                         Reason::bad_dns_name));
                 }
-                else //check dns host duplicity
+
+                //check dns host duplicity
                 if(dns_host_to_add_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
                 {
                     ex.add(Error::of_vector_parameter(Param::nsset_dns_name_add,
@@ -210,7 +211,7 @@ unsigned long long nsset_update_impl(
                                 boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
                                 Reason::bad_ip_address));
                         }
-                        else
+
                         if(dnshostipaddr.is_initialized() && dns_host_to_add_ip_duplicity.insert(dnshostipaddr.get()).second == false)
                         {
                             ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
@@ -236,14 +237,16 @@ unsigned long long nsset_update_impl(
                         boost::numeric_cast<unsigned short>(i),
                         Reason::bad_dns_name));
                 }
-                else //dns host fqdn to be removed is NOT assigned to nsset
+
+                //dns host fqdn to be removed is NOT assigned to nsset
                 if(nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())
                 {
                     ex.add(Error::of_vector_parameter(Param::nsset_dns_name_rem,
                         boost::numeric_cast<unsigned short>(i),
                         Reason::dns_name_notexist));
                 }
-                else //check dns host duplicity
+
+                //check dns host duplicity
                 if(dns_host_to_remove_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
                 {
                     ex.add(Error::of_vector_parameter(Param::nsset_dns_name_rem,
