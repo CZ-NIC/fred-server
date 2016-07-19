@@ -148,14 +148,14 @@ namespace Fred
         // select unnotified (state_id IS NULL) emails inserted
         // into notify_outzone_unguarded_domain_additional_email
         // between domain expiration date (exdate) and current object state (valid_from)
-				sql << "SELECT n.email "
-							 "FROM notify_outzone_unguarded_domain_additional_email n "
-							 "JOIN object_state os ON os.object_id = n.domain_id "
-							 "JOIN domain d ON d.id = n.domain_id "
-							 "WHERE os.id = " << state_id << " "
-								 "AND n.domain_id = " << obj_id << " "
-								 "AND n.state_id IS NULL "
-								 "AND n.crdate BETWEEN d.exdate AND os.valid_from";
+        sql << "SELECT n.email "
+            "FROM notify_outzone_unguarded_domain_additional_email n "
+            "JOIN object_state os ON os.object_id = n.domain_id "
+            "JOIN domain d ON d.id = n.domain_id "
+            "WHERE os.id = " << state_id << " "
+            "AND n.domain_id = " << obj_id << " "
+            "AND n.state_id IS NULL "
+            "AND n.crdate BETWEEN d.exdate AND os.valid_from";
         return getEmailList(sql);
       }
       std::string getNSSetTechEmailsHistory(TID nsset)
@@ -389,10 +389,10 @@ namespace Fred
             << "nt.state_id=ns.state_id AND nt.type=ns.type) "
             << "WHERE ns.state_id ISNULL ";
         if (!exceptList.empty())
-        	sql << "AND nt.type NOT IN (" << exceptList << ") ";
+            sql << "AND nt.type NOT IN (" << exceptList << ") ";
         sql << "ORDER BY nt.state_id ASC ";
         if (limit)
-        	sql << "LIMIT " << limit;
+            sql << "LIMIT " << limit;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         std::vector<NotifyRequest> nlist;
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
@@ -664,11 +664,11 @@ public:
       virtual void generateLetters(unsigned item_count_limit)
       {
         TRACE("[CALL] Fred::Notify::generateLetters()");
-    	// transaction is needed for 'ON COMMIT DROP' functionality
-        
+        // transaction is needed for 'ON COMMIT DROP' functionality
+
         Connection conn = Database::Manager::acquire();
         Database::Transaction trans(conn);
-    	// because every expiration date is
+        // because every expiration date is
         // generated into separate PDF, there are two SQL queries.
         // first for getting expiration dates and second for real data
         // to fixate set of states between these two queries temporary

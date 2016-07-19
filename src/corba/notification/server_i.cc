@@ -40,10 +40,6 @@ namespace Registry {
                 // convert Corba DomainEmailSeq to C++ map of sets of emails (domain_emails_map)
 
                 for (unsigned long long i = 0; i < domain_email_seq.length(); ++i) {
-                    //std::pair<std::map<unsigned long long, std::set<std::string> >::iterator, bool> ret = domain_emails_map[domain_id].insert(Corba::unwrap_string(domain_email_seq[i].email));
-                    //if(ret.second == false) {
-                    //    // TODO duplicate email
-                    //}
                     domain_emails_map[static_cast<unsigned long long>(domain_email_seq[i].domain_id)].insert(Corba::unwrap_string(domain_email_seq[i].email));
                 }
 

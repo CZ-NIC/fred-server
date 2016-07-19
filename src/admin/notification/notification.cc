@@ -25,12 +25,101 @@
 #include "src/fredlib/contact_verification/django_email_format.h"
 
 #include "util/db/query_param.h"
+#include "util/idn_utils.h"
 
 #include "src/admin/notification/notification.h"
 
 namespace Admin {
 
     namespace Notification {
+
+        namespace {
+            bool DomainIdExists(const Fred::OperationContext &ctx, const unsigned long long id) {
+                const Database::Result r = ctx.get_conn().exec_params(
+                        "SELECT 1 from domain WHERE id=$1::bigint FOR SHARE",
+                        Database::query_param_list
+                        (id)
+                );
+                return r.size() ? true : false;
+            }
+
+            bool DomainIsExpired(const Fred::OperationContext &ctx, const unsigned long long id) {
+                return true;
+                const Database::Result r = ctx.get_conn().exec_params(
+                        "SELECT 1 FROM domain d "
+                        "JOIN object_state os ON d.id = os.object_id "
+                        "JOIN enum_object_states eos ON (os.state_id = eos.id AND eos.name = 'expired') "
+                        "WHERE d.id = $1::bigint FOR SHARE",
+                        Database::query_param_list
+                        (id)
+                );
+                return r.size() ? true : false;
+            }
+
+            enum {
+                MAX_NOTIFICATION_EMAIL_LENGTH = 1024
+            };
+
+            bool EmailValid(std::string email) {
+                return (Util::get_utf8_char_len(email) <= MAX_NOTIFICATION_EMAIL_LENGTH && DjangoEmailFormat().check(email)) ? true : false;
+            }
+
+            void CleanupDomainEmails(const Fred::OperationContext &ctx, const unsigned long long id) {
+                // clear all unnotified email records for the specified domain_id
+                ctx.get_conn().exec_params(
+                    "DELETE FROM notify_outzone_unguarded_domain_additional_email "
+                    "WHERE domain_id = $1::bigint "
+                      "AND state_id IS NULL",
+                    Database::query_param_list
+                    (id)
+                );
+            }
+
+            void AddDomainEmail(const Fred::OperationContext &ctx, const unsigned long long id, const std::string &email) {
+                if(!email.empty()) { // if email not empty
+                    // set specified email records for the specified domain_id
+                    ctx.get_conn().exec_params(
+                        "INSERT INTO notify_outzone_unguarded_domain_additional_email "
+                        "(crdate, state_id, domain_id, email) "
+                        "VALUES ( "
+                        "NOW(), "      // crdate
+                        "NULL, "       // state_id (not yet available)
+                        "$1::bigint, " // domain_id
+                        "$2::varchar " // email
+                        ")",
+                        Database::query_param_list
+                        (id)
+                        (email)
+                     );
+                }
+            }
+
+            void SetDomainEmails(
+                    Fred::OperationContext &ctx,
+                    const unsigned long long id,
+                    const std::set<std::string> &emails,
+                    std::map<unsigned long long, std::set<std::string> > &invalid_domain_emails_map
+                ) {
+                CleanupDomainEmails(ctx, id);
+
+                // iterate through emails associated with the domain
+                for(std::set<std::string>::const_iterator i = emails.begin(); i != emails.end(); ++i) {
+                    if(!i->empty()) {
+                        if(EmailValid(*i)) {
+                            AddDomainEmail(ctx, id, *i);
+                        }
+                        else {
+                            // log invalid emails? and store them in a map of invalid records
+                            ctx.get_log().warning(boost::format("invalid email address %1% for domain id %1%") % (*i) % id); // ?
+                            invalid_domain_emails_map[id].insert(*i);
+                        }
+                    }
+                    // else: empty emails are ignored
+
+                }
+            }
+        }
+
 
         void notify_outzone_unguarded_domain_email_list(
             const std::map<unsigned long long, std::set<std::string> > &domain_emails_map
@@ -40,67 +129,18 @@ namespace Admin {
 
             std::map<unsigned long long, std::set<std::string> > invalid_domain_emails_map;
 
-            for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = domain_emails_map.begin(); i != domain_emails_map.end(); ++i) {
-                for(std::set<std::string>::const_iterator j = i->second.begin(); j != i->second.end(); ++j) {
-
-                    bool invalid_email = false;
-                    // TODO email length check in MOUJEID:
-                    //enum { MAX_MOJEID_EMAIL_LENGTH = 200 };
-                    //((Util::get_utf8_char_len(email) <= MAX_MOJEID_EMAIL_LENGTH)
-
-                    if (j->empty() || !DjangoEmailFormat().check(*j)) {
-                        invalid_email = true;
-                    }
-
-                    bool invalid_id = false;
-                    const Database::Result r = ctx.get_conn().exec_params(
-                        "SELECT from domain_history WHERE id=$1::bigint",
-                        Database::query_param_list
-                        (i->first) // domain_id
-                    );
-                    if (r.size() == 0) {
-                        invalid_id = true;
-                    }
-
-                    if(invalid_email || invalid_id) {
-                        invalid_domain_emails_map[i->first].insert(*j);
-                    }
-                }
-            }
-
-            if (!invalid_domain_emails_map.empty()) {
-                ctx.get_log().warning("invalid emails or domain ids");
-                throw DomainEmailValidationError(invalid_domain_emails_map);
-            }
-
             try {
                 for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = domain_emails_map.begin(); i != domain_emails_map.end(); ++i) {
-                    // clear unnotified email records for the specified domain_id
-                    ctx.get_conn().exec_params(
-                        "DELETE FROM notify_outzone_unguarded_domain_additional_email "
-                        "WHERE domain_id = $1::bigint "
-                          "AND state_id IS NULL",
-                        Database::query_param_list
-                        (i->first)  // domain_id
-                    );
-                }
-                for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = domain_emails_map.begin(); i != domain_emails_map.end(); ++i) {
-                    for(std::set<std::string>::const_iterator j = i->second.begin(); j != i->second.end(); ++j) {
-
-                        // set specified email records for the specified domain_id
-                        ctx.get_conn().exec_params(
-                            "INSERT INTO notify_outzone_unguarded_domain_additional_email "
-                               "(crdate, state_id, domain_id, email) "
-                               "VALUES ( "
-                                   "NOW(), "      // crdate
-                                   "NULL, "       // state_id, N/A yet
-                                   "$1::bigint, " // domain_id
-                                   "$2::varchar " // email
-                               ")",
-                            Database::query_param_list
-                            (i->first)  // domain_id
-                            (*j)         // email
-                        );
+                    if(DomainIdExists(ctx, i->first)) {
+                        if(DomainIsExpired(ctx, i->first)) {
+                            SetDomainEmails(ctx, i->first, i->second, invalid_domain_emails_map);
+                        }
+                        else {
+                            ctx.get_log().warning(boost::format("active expired domain with id %1% not found, either it is no more active or expired or the id is incorrect") % i->first);
+                        }
+                    }
+                    else {
+                        ctx.get_log().warning(boost::format("domain with id %1% not found") % i->first);
                     }
                 }
             } catch (const std::exception &e) {
@@ -109,6 +149,12 @@ namespace Admin {
             } catch (...) {
                 ctx.get_log().error("unknown exception");
                 throw InternalError();
+            }
+
+            if (!invalid_domain_emails_map.empty()) {
+                // if some email invalid, log warning and rollback
+                ctx.get_log().warning("invalid emails or domain ids");
+                throw DomainEmailValidationError(invalid_domain_emails_map);
             }
 
             ctx.commit_transaction();
