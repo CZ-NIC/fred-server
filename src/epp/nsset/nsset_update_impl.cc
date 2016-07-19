@@ -115,14 +115,16 @@ unsigned long long nsset_update_impl(
                     boost::numeric_cast<unsigned short>(i),
                     Reason::technical_contact_not_registered));
             }
-            else //check if given tech contact to be added is already admin of the nsset
+
+            //check if given tech contact to be added is already admin of the nsset
             if(nsset_tech_c_handles.find(upper_tech_contact_handle) != nsset_tech_c_handles.end())
             {
                 ex.add(Error::of_vector_parameter(Param::nsset_tech_add,
                     boost::numeric_cast<unsigned short>(i),
                     Reason::technical_contact_already_assigned));
             }
-            else //check technical contact duplicity
+
+            //check technical contact duplicity
             if(tech_contact_to_add_duplicity.insert(upper_tech_contact_handle).second == false)
             {
                 ex.add(Error::of_vector_parameter(Param::nsset_tech_add,
