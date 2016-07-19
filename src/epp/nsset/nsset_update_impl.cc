@@ -153,7 +153,8 @@ unsigned long long nsset_update_impl(
                     boost::numeric_cast<unsigned short>(i),
                     Reason::can_not_remove_tech));
             }
-            else //check technical contact duplicity
+
+            //check technical contact duplicity
             if(tech_contact_to_remove_duplicity.insert(upper_tech_contact_handle).second == false)
             {
                 ex.add(Error::of_vector_parameter(Param::nsset_tech_rem,
