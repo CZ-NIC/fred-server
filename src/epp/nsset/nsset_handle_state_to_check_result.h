@@ -41,14 +41,14 @@ inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_
         return NssetHandleRegistrationObstruction::registered_handle;
     }
 
-    if(_handle_validity == Fred::NssetHandleState::SyntaxValidity::invalid)
-    {
-        return NssetHandleRegistrationObstruction::invalid_handle;
-    }
-
     if(_handle_in_registry == Fred::NssetHandleState::Registrability::in_protection_period)
     {
         return NssetHandleRegistrationObstruction::protected_handle;
+    }
+
+    if(_handle_validity == Fred::NssetHandleState::SyntaxValidity::invalid)
+    {
+        return NssetHandleRegistrationObstruction::invalid_handle;
     }
 
     if(_handle_in_registry == Fred::NssetHandleState::Registrability::unregistered)
