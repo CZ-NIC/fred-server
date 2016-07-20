@@ -9,6 +9,7 @@
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/nsset/transfer_nsset.h"
 #include "src/fredlib/exception.h"
 #include "src/fredlib/object/transfer_object_exception.h"
@@ -17,6 +18,8 @@
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/registrar/info_registrar.h"
+
+#include <boost/foreach.hpp>
 
 namespace Epp {
 
@@ -36,8 +39,16 @@ unsigned long long nsset_transfer_impl(
         throw NonexistentHandle();
     }
 
-    // TODO optimize out
     const Fred::InfoNssetData nsset_data = Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
+
+    //set of authinfopw
+    std::set<std::string> nsset_tech_c_authinfo;
+    nsset_tech_c_authinfo.insert(nsset_data.authinfopw);
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_c,nsset_data.tech_contacts)
+    {
+        nsset_tech_c_authinfo.insert(Fred::InfoContactById(tech_c.id).exec(_ctx).info_contact_data.authinfopw);
+    }
+
     const std::string session_registrar_handle = Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data.handle;
 
     if(nsset_data.sponsoring_registrar_handle == session_registrar_handle) {
@@ -55,8 +66,8 @@ unsigned long long nsset_transfer_impl(
         throw ObjectStatusProhibitsOperation();
     }
 
-    if(nsset_data.authinfopw != _authinfopw) {
-        throw AuthorizationError();
+    if(nsset_tech_c_authinfo.find(_authinfopw) == nsset_tech_c_authinfo.end()) {
+        throw AuthorizationInformationError();
     }
 
     try {
