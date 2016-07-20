@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
             Fred::ContactHandleState::Registrability::registered
         )
         ==
-        Epp::ContactHandleRegistrationObstruction::invalid_handle
+        Epp::ContactHandleRegistrationObstruction::registered_handle
     );
 
     BOOST_CHECK(
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(test_conversion)
             Fred::ContactHandleState::Registrability::in_protection_period
         )
         ==
-        Epp::ContactHandleRegistrationObstruction::invalid_handle
+        Epp::ContactHandleRegistrationObstruction::protected_handle
     );
 
     BOOST_CHECK(
