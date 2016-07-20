@@ -211,14 +211,6 @@ NssetCreateResult nsset_create_impl(
             throw ObjectExists();
         }
 
-        /*TODO agg errors
-        if( e.is_set_unknown_country() ) {
-            AggregatedParamErrors exception;
-            exception.add( Error( Param::contact_cc, 0, Reason::country_notexist ) );
-            throw exception;
-        }
-        */
-
         /* in the improbable case that exception is incorrectly set */
         throw;
     }
