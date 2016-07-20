@@ -1,6 +1,13 @@
 #include "epp_session.h"
 #include "src/fredlib/db_settings.h"
 
+// logger
+#include "log/logger.h"
+#include "log/context.h"
+#include "src/old_utils/log.h"
+
+#include <boost/thread/thread.hpp>
+
 /// throws NumberSessionLimit when session number limit is exceeded
 /// returns loginID, begins with garbage procedure
 unsigned long long EppSessionContainer::login_session(int regId, int lang)
