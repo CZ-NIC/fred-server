@@ -3338,10 +3338,8 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_rem),
                     (level < 0
-                        ? (this->nsset_level_ < 0
-                            ? 0
-                            : this->nsset_level_)
-                        : boost::numeric_cast<short>(level))
+                        ? Optional<short>()
+                        : Optional<short>(boost::numeric_cast<short>(level)))
                 ),
             session_data.registrar_id,
             request_params.log_request_id,
