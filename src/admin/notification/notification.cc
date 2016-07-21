@@ -34,24 +34,24 @@ namespace Admin {
     namespace Notification {
 
         namespace {
-            bool DomainIdExists(const Fred::OperationContext &ctx, const unsigned long long id) {
+            bool domain_id_exists(const Fred::OperationContext &ctx, const unsigned long long id) {
                 const Database::Result r = ctx.get_conn().exec_params(
-                        "SELECT 1 from domain WHERE id=$1::bigint FOR SHARE",
-                        Database::query_param_list
-                        (id)
+                    "SELECT 1 from domain WHERE id=$1::bigint FOR SHARE",
+                    Database::query_param_list
+                    (id)
                 );
                 return r.size() ? true : false;
             }
 
-            bool DomainIsExpired(const Fred::OperationContext &ctx, const unsigned long long id) {
+            bool domain_is_expired(const Fred::OperationContext &ctx, const unsigned long long id) {
                 return true;
                 const Database::Result r = ctx.get_conn().exec_params(
-                        "SELECT 1 FROM domain d "
-                        "JOIN object_state os ON d.id = os.object_id "
-                        "JOIN enum_object_states eos ON (os.state_id = eos.id AND eos.name = 'expired') "
-                        "WHERE d.id = $1::bigint FOR SHARE",
-                        Database::query_param_list
-                        (id)
+                    "SELECT 1 FROM domain d "
+                    "JOIN object_state os ON d.id = os.object_id "
+                    "JOIN enum_object_states eos ON (os.state_id = eos.id AND eos.name = 'expired') "
+                    "WHERE d.id = $1::bigint FOR SHARE",
+                    Database::query_param_list
+                    (id)
                 );
                 return r.size() ? true : false;
             }
@@ -60,11 +60,11 @@ namespace Admin {
                 MAX_NOTIFICATION_EMAIL_LENGTH = 1024
             };
 
-            bool EmailValid(std::string email) {
+            bool email_valid(std::string email) {
                 return (Util::get_utf8_char_len(email) <= MAX_NOTIFICATION_EMAIL_LENGTH && DjangoEmailFormat().check(email)) ? true : false;
             }
 
-            void CleanupDomainEmails(const Fred::OperationContext &ctx, const unsigned long long id) {
+            void cleanup_domain_emails(const Fred::OperationContext &ctx, const unsigned long long id) {
                 // clear all unnotified email records for the specified domain_id
                 ctx.get_conn().exec_params(
                     "DELETE FROM notify_outzone_unguarded_domain_additional_email "
@@ -75,7 +75,7 @@ namespace Admin {
                 );
             }
 
-            void AddDomainEmail(const Fred::OperationContext &ctx, const unsigned long long id, const std::string &email) {
+            void add_domain_email(const Fred::OperationContext &ctx, const unsigned long long id, const std::string &email) {
                 if(!email.empty()) { // if email not empty
                     // set specified email records for the specified domain_id
                     ctx.get_conn().exec_params(
@@ -94,19 +94,19 @@ namespace Admin {
                 }
             }
 
-            void SetDomainEmails(
+            void set_domain_emails(
                     Fred::OperationContext &ctx,
                     const unsigned long long id,
                     const std::set<std::string> &emails,
                     std::map<unsigned long long, std::set<std::string> > &invalid_domain_emails_map
                 ) {
-                CleanupDomainEmails(ctx, id);
+                cleanup_domain_emails(ctx, id);
 
                 // iterate through emails associated with the domain
                 for(std::set<std::string>::const_iterator i = emails.begin(); i != emails.end(); ++i) {
                     if(!i->empty()) {
-                        if(EmailValid(*i)) {
-                            AddDomainEmail(ctx, id, *i);
+                        if(email_valid(*i)) {
+                            add_domain_email(ctx, id, *i);
                         }
                         else {
                             // log invalid emails? and store them in a map of invalid records
@@ -131,9 +131,9 @@ namespace Admin {
 
             try {
                 for(std::map<unsigned long long, std::set<std::string> >::const_iterator i = domain_emails_map.begin(); i != domain_emails_map.end(); ++i) {
-                    if(DomainIdExists(ctx, i->first)) {
-                        if(DomainIsExpired(ctx, i->first)) {
-                            SetDomainEmails(ctx, i->first, i->second, invalid_domain_emails_map);
+                    if(domain_id_exists(ctx, i->first)) {
+                        if(domain_is_expired(ctx, i->first)) {
+                            set_domain_emails(ctx, i->first, i->second, invalid_domain_emails_map);
                         }
                         else {
                             ctx.get_log().warning(boost::format("active expired domain with id %1% not found, either it is no more active or expired or the id is incorrect") % i->first);
