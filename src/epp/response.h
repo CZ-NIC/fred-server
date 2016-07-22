@@ -42,6 +42,7 @@ struct Response
         authentication_error_server_closing_connection,
         authentication_error,
         authorization_error,
+        authorization_information_error,
         parameter_value_policy_error,
         status_prohibits_operation,
         object_association_prohibits_operation,
@@ -86,6 +87,8 @@ inline unsigned to_description_db_id(Response::Enum state)
         case Response::authentication_error:         return 2200;
         //Authorization error
         case Response::authorization_error:          return 2201;
+        //Authorization information error
+        case Response::authorization_information_error: return 2202;
         //Object exists
         case Response::object_exist:                 return 2302;
         //Object does not exist

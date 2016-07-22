@@ -95,7 +95,7 @@ LocalizedSuccessResponse contact_transfer(
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::authorization_error,
+            Response::authorization_information_error,
             std::set<Error>(),
             _lang
         );
