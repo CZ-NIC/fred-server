@@ -47,7 +47,6 @@ namespace Epp {
     struct InvalidReasonValue                 :Exception { const char* what() const throw() { return "invalid Reason::Enum value"; } };
 
     struct RequiredParameterMissing : Exception { const char* what() const throw() { return "Required parameter missing"; } };
-    struct ObjectAssotiationProhibitsOperation : Exception { const char* what() const throw() { return "object association prohibits operation"; } };
 
     /* localized descriptions */
     struct LocalizedDescriptionException:Exception { };

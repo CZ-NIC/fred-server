@@ -111,7 +111,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_linked_domain, has_nsset_linked_to_domain)
             nsset.handle,
             registrar.id
         ),
-        Epp::ObjectAssotiationProhibitsOperation
+        Epp::ObjectAssociationProhibitsOperation
     );
 }
 

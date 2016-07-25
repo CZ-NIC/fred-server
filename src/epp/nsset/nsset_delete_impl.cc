@@ -61,7 +61,7 @@ unsigned long long nsset_delete_impl(
 
     if(Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::LINKED).exec(_ctx))
     {
-        throw ObjectAssotiationProhibitsOperation();
+        throw ObjectAssociationProhibitsOperation();
     }
 
     try {
