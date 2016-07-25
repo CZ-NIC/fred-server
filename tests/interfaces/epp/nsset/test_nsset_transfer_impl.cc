@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, has_nsset_and_another_registr
             another_registrar.id,
             42
         ),
-        Epp::AuthorizationError
+        Epp::AuthorizationInformationError
     );
 }
 
