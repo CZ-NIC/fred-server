@@ -1673,6 +1673,8 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.cc \
 		src/corba/notification/server_i.h \
 		src/corba/notification/server_i.cc \
+		src/corba/notification/notification_corba_conversion.h \
+		src/corba/notification/notification_corba_conversion.cc \
 		src/admin/notification/notification.h \
 		src/admin/notification/notification.cc
 

@@ -23,9 +23,9 @@
 #ifndef CORBA_NOTIFICATION_SERVER_I_H_
 #define CORBA_NOTIFICATION_SERVER_I_H_
 
-#include "src/corba/Notification.hh"
-
 #include <string>
+
+#include "src/corba/Notification.hh"
 
 namespace Registry {
 
@@ -45,7 +45,7 @@ namespace Registry {
                 /**
                  * Wrapper for IDL NotificationIface method of the same name
                  */
-                void notify_outzone_unguarded_domain_email_list(const DomainEmailSeq &domain_email_seq);
+                void set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq);
 
         };
 

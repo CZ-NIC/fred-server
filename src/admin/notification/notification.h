@@ -56,12 +56,12 @@ namespace Admin {
         /**
          * Import list of additional emails used to notify \c outboundUnguardedWarning domain state
          *
-         * \param domain_emails_map  map of sets of emails
+         * \param domain_emails_map  emails by domain_id
          *
          * \throw InternalError               in case of unexpected failure
          * \throw DomainEmailValidationError  in case of invalid input
          */
-        void notify_outzone_unguarded_domain_email_list(
+        void set_domain_outzone_unguarded_warning_emails(
             const std::map<unsigned long long, std::set<std::string> > &domain_emails_map
         );
 

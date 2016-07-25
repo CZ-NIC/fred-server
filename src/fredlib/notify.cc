@@ -343,12 +343,12 @@ namespace Fred
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
       void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, std::string email) {
-        std::stringstream sql;
+        std::ostringstream sql;
         sql << "UPDATE notify_outzone_unguarded_domain_additional_email "
-            << "SET state_id = " << state_id
-            << "WHERE domain_id = " << obj_id << " AND email = '" << db->Escape2(email) << "' AND state_id IS NULL";
+               "SET state_id = " << state_id << " "
+               "WHERE domain_id = " << obj_id << " AND email = '" << db->Escape2(email) << "' AND state_id IS NULL";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
-			}
+      }
       struct NotifyRequest {
         TID state_id; ///< id of state change (not id of status)
         unsigned type; ///< notification id
@@ -497,8 +497,8 @@ namespace Fred
                 mail = mm->sendEmail("", emails, "", i->mtype, params, handles, attach);
               }
               saveNotification(i->state_id, i->type, mail);
-              if(i->obj_type == 3 && i->emails == 4) // 3: domain, 4: additional email
-              	saveDomainAdditionalEmailsState(i->state_id, i->obj_id, emails);
+              if((i->obj_type == 3) && (i->emails == 4)) // 3: domain, 4: additional email
+                saveDomainAdditionalEmailsState(i->state_id, i->obj_id, emails);
             }
           }
           catch (...) {

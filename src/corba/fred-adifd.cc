@@ -112,9 +112,6 @@ int main(int argc, char *argv[])
         std::auto_ptr<Registry::AdminContactVerification::Server_i>
             admin_contact_verification_server(new(Registry::AdminContactVerification::Server_i));
 
-        std::auto_ptr<Registry::Notification::Server_i>
-            notification_i(new(Registry::Notification::Server_i));
-
             // create session use values from config
             LOGGER(PACKAGE).info(boost::format(
                     "sessions max: %1%; timeout: %2%")
@@ -131,7 +128,7 @@ int main(int argc, char *argv[])
             ->register_server(new Registry::Administrative::Server_i(server_name), "AdminBlocking");
 
         CorbaContainer::get_instance()
-            ->register_server(notification_i.release(), "Notification");
+            ->register_server(new Registry::Notification::Server_i(), "Notification");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
