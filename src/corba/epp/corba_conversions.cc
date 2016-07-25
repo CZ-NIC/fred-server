@@ -144,6 +144,45 @@ namespace Corba {
         return result;
     }
 
+    Optional<short> unwrap_tech_check_level_update(CORBA::Short level)
+    {
+        return level < 0
+            ? Optional<short>()
+            : Optional<short>(boost::numeric_cast<short>(level));
+    }
+
+    short unwrap_tech_check_level_create(CORBA::Short level, unsigned int config_nsset_level)
+    {
+        return level < 0
+                ? (config_nsset_level < 0
+                    ? 0
+                    : config_nsset_level)
+                : boost::numeric_cast<short>(level);
+    }
+
+    struct ExceptionInvalidIdentType {};
+
+    /**
+     * @throws ExceptionInvalidIdentType
+     */
+
+    static ccReg::identtyp wrap_ident_type(Nullable<Epp::IdentType::Enum> ident) {
+        if(ident.isnull()) {
+            return ccReg::EMPTY;
+        }
+
+        switch(ident.get_value()) {
+            case Epp::IdentType::identity_card:                 return ccReg::OP;
+            case Epp::IdentType::passport:                      return ccReg::PASS;
+            case Epp::IdentType::organization_identification:   return ccReg::ICO;
+            case Epp::IdentType::social_security_number:        return ccReg::MPSV;
+            case Epp::IdentType::birthday:                      return ccReg::BIRTHDAY;
+            default:                                            throw ExceptionInvalidIdentType();
+        };
+
+        throw ExceptionInvalidIdentType();
+    }
+
     struct ExceptionInvalidParam {};
 
     /**
