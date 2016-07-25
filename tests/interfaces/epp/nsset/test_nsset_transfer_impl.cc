@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_nsset_with_server
 
 struct has_nsset_and_another_registrar : has_nsset, has_another_registrar { };
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, has_nsset_and_another_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfo_error, has_nsset_and_another_registrar)
 {
     BOOST_CHECK_THROW(
         Epp::nsset_transfer_impl(
