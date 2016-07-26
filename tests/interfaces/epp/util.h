@@ -36,27 +36,6 @@
 #include "src/epp/exception_aggregate_param_errors.h"
 #include "src/epp/error.h"
 
-namespace boost { namespace test_tools {
-    template<> inline void print_log_value<std::vector<Epp::Error> >::operator()(std::ostream& _stream, const std::vector<Epp::Error>& _errors) {
-        _stream << "{";
-        BOOST_FOREACH(const Epp::Error& elem, _errors) {
-            _stream <<
-                "{"
-                    "param: "       + boost::lexical_cast<std::string>( static_cast<int>(elem.param) )  + ", "
-                    "position: "    + boost::lexical_cast<std::string>( elem.position )                 + ", "
-                    "reason: "      + boost::lexical_cast<std::string>( static_cast<int>(elem.reason) ) +
-                "}";
-        }
-        _stream << "}";
-    }
-} }
-
-namespace boost { namespace test_tools {
-    template<> inline void print_log_value<std::set<std::string> >::operator()(std::ostream& _stream, const std::set<std::string>& _values) {
-        _stream << "{" + boost::algorithm::join(_values, ", ") + "}";
-    }
-} }
-
 namespace Test {
 
     struct autocommitting_context : virtual Fixture::instantiate_db_template {
