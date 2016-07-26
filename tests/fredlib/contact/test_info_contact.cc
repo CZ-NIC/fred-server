@@ -25,20 +25,6 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-namespace boost { namespace test_tools {
-    template<> void print_log_value<Fred::Contact::PlaceAddress>::operator()(std::ostream& _stream, const Fred::Contact::PlaceAddress& _address) {
-        _stream << "{"
-                << _address.street1 << ", "
-                << _address.street2 << ", "
-                << _address.street3 << ", "
-                << _address.city    << ", "
-                << _address.stateorprovince << ", "
-                << _address.postalcode << ", "
-                << _address.country << " "
-                << "}";
-    }
-}}
-
 BOOST_AUTO_TEST_SUITE(TestInfoContact)
 
 const std::string server_name = "test-info-contact";

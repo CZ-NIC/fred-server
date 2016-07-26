@@ -25,6 +25,7 @@
 #define PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5
 
 #include "util/optional_value.h"
+#include "util/printable.h"
 #include <iosfwd>
 #include <string>
 
@@ -36,7 +37,7 @@ namespace Contact {
  *
  * Common type for postal addresses of contacts.
  */
-struct PlaceAddress
+struct PlaceAddress : public Util::Printable
 {
     std::string street1;/**< address part 1 (required) */
     Optional< std::string > street2;/**< address part 2 (optional) */
@@ -79,12 +80,5 @@ struct PlaceAddress
 }//namespace Contact
 }//namespace Fred
 
-/**
- * Inserts string representation that conforms value of @a src into stream @a out.
- * @param out object where characters are inserted
- * @param src object with the content to insert
- * @return the same as parameter @a out
- */
-std::ostream& operator<<(std::ostream &out, const Fred::Contact::PlaceAddress &src);
 
 #endif//PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5

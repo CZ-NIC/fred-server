@@ -73,8 +73,3 @@ PlaceAddress::PlaceAddress(const std::string& _street1,
 
 }//namespace Contact
 }//namespace Fred
-
-std::ostream& operator<<(std::ostream &_out, const Fred::Contact::PlaceAddress &_place)
-{
-    return _out << _place.to_string();
-}
