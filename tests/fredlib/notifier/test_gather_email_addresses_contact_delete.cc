@@ -79,13 +79,12 @@ BOOST_FIXTURE_TEST_CASE(test_deleted_contact, has_deleted_contact)
 
     email_addresses.insert( cont.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::deleted),
             cont.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 

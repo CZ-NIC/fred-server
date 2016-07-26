@@ -33,42 +33,6 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
-namespace boost { namespace test_tools {
-    template<> inline void print_log_value<std::set<std::string> >::operator()(std::ostream& _stream, const std::set<std::string>& _set_of_strings) {
-        _stream << "{"
-                << boost::algorithm::join(_set_of_strings, ", ") << " "
-                << "}";
-    }
-
-    template<> inline void print_log_value<std::vector<std::string> >::operator()(std::ostream& _stream, const std::vector<std::string>& _vec_of_strings) {
-        _stream << "{"
-                << boost::algorithm::join(_vec_of_strings, ", ") << " "
-                << "}";
-    }
-
-    template<> inline void print_log_value<std::map<std::string, std::string> >::operator()(std::ostream& _stream, const std::map<std::string, std::string>& _map) {
-        _stream << "{";
-
-        for(std::map<std::string, std::string>::const_iterator it = _map.begin();
-            it != _map.end();
-            ++it
-        ) {
-            _stream << "{"<< it->first << ": " << it->second << "}";
-        }
-
-        _stream << "}";
-    }
-
-    template<> inline void print_log_value<std::vector<unsigned long long> >::operator()(std::ostream& _stream, const std::vector<unsigned long long>& _ull_vec) {
-        _stream << "{";
-        BOOST_FOREACH(unsigned long long elem, _ull_vec) {
-            _stream << boost::lexical_cast<std::string>(elem);
-        }
-        _stream << "}";
-    }
-
-}}
-
 struct has_autocomitting_ctx : Test::Fixture::instantiate_db_template {
     Fred::OperationContextCreator ctx;
 
@@ -86,10 +50,7 @@ struct has_autocomitting_ctx : Test::Fixture::instantiate_db_template {
  */
 inline void check_maps_are_equal(const std::map<std::string, std::string>& _lhs, const std::map<std::string, std::string>& _rhs) {
     // proper comparison
-    BOOST_CHECK_EQUAL(
-        _lhs,
-        _rhs
-    );
+    BOOST_CHECK(_lhs ==  _rhs);
 
     std::set<std::string> key_values;
 

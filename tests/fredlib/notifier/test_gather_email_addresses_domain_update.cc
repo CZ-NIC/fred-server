@@ -312,13 +312,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_domain_authinfo, has_domain_changed_authinf
     email_addresses.insert( old_admin_c1_history_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( old_admin_c2_history_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::updated),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -343,13 +342,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_domain_removed_admin_contact, has_domain_re
     email_addresses.insert( old_admin_c1_history_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( old_admin_c2_history_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::updated),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -390,13 +388,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_domain_added_admin_contact, has_domain_adde
     email_addresses.insert( old_admin_c2_history_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( added_admin_c.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::updated),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -441,13 +438,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_domain_changed_admin_contact, has_domain_ch
     email_addresses.insert( old_admin_c2_history_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( added_admin_c.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::updated),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -490,13 +486,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_domain_changed_registrant, has_domain_chang
     email_addresses.insert( old_admin_c1_history_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( old_admin_c2_history_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::updated),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -561,13 +556,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_domain_changed_keyset, has_domain_changed_k
     email_addresses.insert( new_keyset_tech_c1.notifyemail.get_value() );
     email_addresses.insert( new_keyset_tech_c2.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::updated),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -632,13 +626,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_domain_changed_nsset, has_domain_changed_ns
     email_addresses.insert( new_nsset_tech_c1.notifyemail.get_value() );
     email_addresses.insert( new_nsset_tech_c2.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::updated),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 

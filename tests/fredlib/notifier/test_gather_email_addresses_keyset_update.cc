@@ -204,13 +204,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_keyset_authinfo, has_keyset_changed_authinf
     email_addresses.insert( keyset_tech_c1_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( keyset_tech_c2_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::keyset, Notification::updated),
             keyset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -241,13 +240,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_keyset_removed_admin_contact, has_keyset_re
     email_addresses.insert( keyset_tech_c1_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( keyset_tech_c2_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::keyset, Notification::updated),
             keyset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -290,13 +288,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_keyset_added_tech_contact, has_keyset_added
     email_addresses.insert( keyset_tech_c2_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( added_tech_c.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::keyset, Notification::updated),
             keyset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -341,13 +338,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_keyset_changed_admin_contact, has_keyset_ch
     email_addresses.insert( keyset_tech_c2_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( added_tech_c.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::keyset, Notification::updated),
             keyset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 

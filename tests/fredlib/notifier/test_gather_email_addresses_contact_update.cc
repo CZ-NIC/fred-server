@@ -163,25 +163,23 @@ BOOST_FIXTURE_TEST_CASE(test_updated_contact0, has_future_with_notifymail<has_up
 
     email_addresses.insert( post_update_contact_data.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::updated),
             post_update_contact_data.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
 BOOST_FIXTURE_TEST_CASE(test_updated_contact1, has_future_with_notifymail<has_updated_contact_name<has_contact_without_notify_mail> >)
 {
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::updated),
             post_update_contact_data.historyid
-        ),
-        std::set<std::string>()
+        ).empty()
     );
 }
 
@@ -191,13 +189,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_contact10, has_future_with_notifymail<has_s
     email_addresses.insert( pre_update_contact_data.notifyemail.get_value() );
     email_addresses.insert( post_update_contact_data.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::updated),
             post_update_contact_data.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -206,13 +203,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_contact11, has_future_with_notifymail<has_s
     std::set<std::string> email_addresses;
     email_addresses.insert( post_update_contact_data.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::updated),
             post_update_contact_data.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -221,26 +217,24 @@ BOOST_FIXTURE_TEST_CASE(test_updated_contact20, has_future_with_notifymail<has_s
     std::set<std::string> email_addresses;
     email_addresses.insert( pre_update_contact_data.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::updated),
             post_update_contact_data.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
 BOOST_FIXTURE_TEST_CASE(test_updated_contact21, has_future_with_notifymail<has_set_contact_empty_notifymail<has_contact_without_notify_mail> >)
 {
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::updated),
             post_update_contact_data.historyid
-        ),
-        std::set<std::string>()
+        ).empty()
     );
 }
 
