@@ -234,21 +234,21 @@ BOOST_AUTO_TEST_CASE(test_ContactAddressType) {
     {
         // ctor
         const Fred::ContactAddressType type_ctor(mailing);
-        BOOST_CHECK_EQUAL(type_ctor.value, mailing);
+        BOOST_CHECK(type_ctor.value == mailing);
 
         // copy ctor
         const Fred::ContactAddressType type_copy(type_ctor);
-        BOOST_CHECK_EQUAL(type_copy.value, mailing);
+        BOOST_CHECK(type_copy.value == mailing);
 
         // copy assignment
         Fred::ContactAddressType type_copy_assign(mailing);
         type_copy_assign = shipping;
-        BOOST_CHECK_EQUAL(type_copy_assign.value, shipping);
+        BOOST_CHECK(type_copy_assign.value == shipping);
 
         // assignment
         Fred::ContactAddressType type_assign(shipping);
         type_assign = type_ctor;
-        BOOST_CHECK_EQUAL(type_assign.value, mailing);
+        BOOST_CHECK(type_assign.value == mailing);
 
         // to_string
         BOOST_CHECK_EQUAL(type_ctor.to_string(), Fred::ContactAddressType::to_string(mailing) );
@@ -257,8 +257,8 @@ BOOST_AUTO_TEST_CASE(test_ContactAddressType) {
         // from_string
         Fred::ContactAddressType set_value(mailing);
         set_value.set_value("MAILING");
-        BOOST_CHECK_EQUAL(set_value.value, Fred::ContactAddressType::from_string("MAILING"));
-        BOOST_CHECK_EQUAL(set_value.value, Fred::ContactAddressType::MAILING);
+        BOOST_CHECK(set_value.value == Fred::ContactAddressType::from_string("MAILING"));
+        BOOST_CHECK(set_value.value == Fred::ContactAddressType::MAILING);
     }
 
     // custom comparison operators
@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(test_PlaceAddress) {
     BOOST_CHECK_EQUAL(assign.postalcode,        postalcode);
     BOOST_CHECK_EQUAL(assign.country,           country);
 
-    BOOST_CHECK_EQUAL(ctor, assign);
+    BOOST_CHECK(ctor == assign);
 }
 
 BOOST_AUTO_TEST_CASE(test_ContactAddress) {
@@ -399,12 +399,12 @@ BOOST_AUTO_TEST_CASE(test_ContactAddress) {
     BOOST_CHECK_EQUAL(assign.postalcode,        postalcode);
     BOOST_CHECK_EQUAL(assign.country,           country);
 
-    BOOST_CHECK_EQUAL(ctor_atomics, assign);
-    BOOST_CHECK_EQUAL(assign, ctor_atomics);
-    BOOST_CHECK_EQUAL(ctor_delegated, assign);
-    BOOST_CHECK_EQUAL(assign, ctor_delegated);
-    BOOST_CHECK_EQUAL(ctor_atomics, ctor_delegated);
-    BOOST_CHECK_EQUAL(ctor_delegated, ctor_atomics);
+    BOOST_CHECK(ctor_atomics == assign);
+    BOOST_CHECK(assign == ctor_atomics);
+    BOOST_CHECK(ctor_delegated == assign);
+    BOOST_CHECK(assign == ctor_delegated);
+    BOOST_CHECK(ctor_atomics == ctor_delegated);
+    BOOST_CHECK(ctor_delegated == ctor_atomics);
 }
 
 BOOST_AUTO_TEST_CASE(test_Address) {
@@ -495,12 +495,12 @@ BOOST_AUTO_TEST_CASE(test_Address) {
     BOOST_CHECK_EQUAL(assign.postalcode,        postalcode);
     BOOST_CHECK_EQUAL(assign.country,           country);
 
-    BOOST_CHECK_EQUAL(ctor_atomics, assign);
-    BOOST_CHECK_EQUAL(assign, ctor_atomics);
-    BOOST_CHECK_EQUAL(ctor_delegated, assign);
-    BOOST_CHECK_EQUAL(assign, ctor_delegated);
-    BOOST_CHECK_EQUAL(ctor_atomics, ctor_delegated);
-    BOOST_CHECK_EQUAL(ctor_delegated, ctor_atomics);
+    BOOST_CHECK(ctor_atomics == assign);
+    BOOST_CHECK(assign == ctor_atomics);
+    BOOST_CHECK(ctor_delegated == assign);
+    BOOST_CHECK(assign == ctor_delegated);
+    BOOST_CHECK(ctor_atomics == ctor_delegated);
+    BOOST_CHECK(ctor_delegated == ctor_atomics);
 }
 
 BOOST_AUTO_TEST_SUITE_END();//TestInfoContact
