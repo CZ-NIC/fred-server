@@ -153,15 +153,34 @@
             int state = ssh_is_server_known(session);
 
             boost::shared_ptr<unsigned char> hash_ptr;
-            int hlen = 0;
+            size_t hlen = 0;
             {
                 unsigned char *hash = NULL;
-                hlen = ssh_get_pubkey_hash(session, &hash);
-
-                if ((hash == NULL) || (hlen <= 0))
-                {
+#if (LIBSSH_VERSION_MINOR < 6)
+                if(ssh_get_pubkey_hash(session, &hash) < 0) {
                     ssh_clean_pubkey_hash(&hash);
                     throw std::runtime_error("ssh_get_pubkey_hash failed, unable to get buffer with the hash of the public key");
+                }
+#else
+                ssh_key srv_pubkey = 0;
+                if(ssh_get_publickey(session, &srv_pubkey) < 0){
+                    ssh_key_free(srv_pubkey);
+                    throw std::runtime_error("get the server public key from a session failed");
+                }
+
+                if(ssh_get_publickey_hash(
+                    srv_pubkey,SSH_PUBLICKEY_HASH_SHA1,&hash,&hlen) < 0) {
+                    ssh_key_free(srv_pubkey);
+                    ssh_clean_pubkey_hash(&hash);
+                    throw std::runtime_error("get the server public key hash failed");
+                }
+
+                ssh_key_free(srv_pubkey);
+#endif
+                if ((hash == NULL) || (hlen == 0))
+                {
+                    ssh_clean_pubkey_hash(&hash);
+                    throw std::runtime_error("unable to get buffer with the hash of the public key");
                 }
 
                 hash_ptr = boost::shared_ptr<unsigned char>(hash,SshPubKeyHashDeleter());
