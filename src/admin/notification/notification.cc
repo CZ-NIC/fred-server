@@ -40,7 +40,7 @@ bool domain_id_exists(const Fred::OperationContext &ctx, const unsigned long lon
         Database::query_param_list
         (domain_id)
     );
-    return (result.size() > 0);
+    return result.size() > 0;
 }
 
 bool domain_is_expired(const Fred::OperationContext &ctx, const unsigned long long domain_id) {
@@ -52,13 +52,13 @@ bool domain_is_expired(const Fred::OperationContext &ctx, const unsigned long lo
         Database::query_param_list
         (domain_id)
     );
-    return (result.size() > 0);
+    return result.size() > 0;
 }
 
 static const int max_notification_email_length = 1024;
 
 bool email_valid(const std::string &email) {
-    return ((Util::get_utf8_char_len(email) <= max_notification_email_length) && DjangoEmailFormat().check(email));
+    return (Util::get_utf8_char_len(email) <= max_notification_email_length) && DjangoEmailFormat().check(email);
 }
 
 void cleanup_domain_emails(const Fred::OperationContext &ctx, const unsigned long long domain_id) {
@@ -96,7 +96,6 @@ void set_domain_emails(
     ) {
     cleanup_domain_emails(ctx, domain_id);
 
-    // iterate through emails associated with the domain
     for(std::set<std::string>::const_iterator email_ptr = emails.begin(); email_ptr != emails.end(); ++email_ptr) {
         add_domain_email(ctx, domain_id, *email_ptr);
     }
@@ -163,11 +162,7 @@ void set_domain_outzone_unguarded_warning_emails(
     }
 
     ctx.commit_transaction();
-
-    return;
-};
+}
 
 } // namespace Notification
 } // namespace Admin
-
-/* vim: set et sw=4 : */

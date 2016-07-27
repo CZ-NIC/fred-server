@@ -52,5 +52,3 @@ void Server_i::set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq 
 
 } // namespace Notification
 } // namespace Registry
-
-/* vim: set et sw=4 : */

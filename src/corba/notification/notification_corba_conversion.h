@@ -35,27 +35,26 @@ namespace CorbaConversion {
 /**
  * \brief convert Corba DomainEmailSeq to C++ map of sets of emails (domain_emails_map)
  *
- * \param domain_email_seq   sequence of <domin_id, email>
+ * \param domain_email_seq   sequence of {domain_id, email}
  * \param domain_emails_map  emails by domain_id
  */
 void unwrap_notification_emails(const Registry::Notification::DomainEmailSeq &src, std::map<unsigned long long, std::set<std::string> > &dst);
+
 /**
- * \brief  convert C++ map of sets of emails to Corba DomainEmailSeq
+ * \brief  convert implementation type to interface type
  *
  * \param domain_emails_map  emails by domain_id
- * \param domain_email_seq   sequence of <domain_id, email>
+ * \param domain_email_seq   sequence of {domain_id, email}
  */
 void wrap_notification_emails(const std::map<unsigned long long, std::set<std::string> > &domain_emails_map, Registry::Notification::DomainEmailSeq_var &domain_email_seq);
 
 /**
- * \brief convert C++ exception to Corba exception
+ * \brief convert implementation exception to interface exception
  *
- * \param src  exception
+ * \param src  implementation exception
  */
 void raise_DOMAIN_EMAIL_VALIDATION_ERROR(const Admin::Notification::DomainEmailValidationError &src);
 
 } // namespace CorbaConversion
 
 #endif
-
-/* vim: set et sw=4 : */

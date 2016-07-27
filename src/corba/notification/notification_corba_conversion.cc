@@ -35,7 +35,7 @@ void unwrap_notification_emails(const Registry::Notification::DomainEmailSeq &do
     for (unsigned long long index = 0; index < domain_email_seq.length(); ++index) {
         //unsigned long long domain_id;
         //CorbaConversion::int_to_int<CORBA::ULongLong, unsigned long long>(domain_email_seq[index].domain_id, domain_id);
-        const unsigned long long domain_id = CorbaConversion::int_to_int<CORBA::ULongLong, unsigned long long>(domain_email_seq[index].domain_id);
+        const unsigned long long domain_id = CorbaConversion::int_to_int<unsigned long long>(domain_email_seq[index].domain_id);
         const std::string email = Corba::unwrap_string(domain_email_seq[index].email);
         std::set<std::string> &domain_emails = domain_emails_map[domain_id]; // required side-effect: creates the element if it does not exist yet
         if(!email.empty()) {
@@ -54,7 +54,7 @@ void wrap_notification_emails(const std::map<unsigned long long, std::set<std::s
     unsigned long dst_index = 0;
     for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
         for(std::set<std::string>::const_iterator email_ptr = src_item->second.begin(); email_ptr != src_item->second.end(); ++email_ptr) {
-            domain_email_seq[dst_index].domain_id = CorbaConversion::int_to_int<unsigned long long, CORBA::ULongLong>(src_item->first);
+            domain_email_seq[dst_index].domain_id = CorbaConversion::int_to_int<CORBA::ULongLong>(src_item->first);
             //CorbaConversion::int_to_int<unsigned long long, CORBA::ULongLong>(src_item->first, domain_email_seq[dst_index].domain_id);
             domain_email_seq[dst_index].email = CorbaConversion::wrap_string(*email_ptr);
             ++dst_index;
@@ -62,7 +62,7 @@ void wrap_notification_emails(const std::map<unsigned long long, std::set<std::s
     }
 }
 
-void wrap_DomainEmailValidationError(const Admin::Notification::DomainEmailValidationError &src, Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &dst) {
+static void wrap_DomainEmailValidationError(const Admin::Notification::DomainEmailValidationError &src, Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &dst) {
     Registry::Notification::DomainEmailSeq_var domain_invalid_email_seq = new Registry::Notification::DomainEmailSeq();
     CorbaConversion::wrap_notification_emails(src.domain_invalid_emails_map, domain_invalid_email_seq);
     dst = Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR(domain_invalid_email_seq);

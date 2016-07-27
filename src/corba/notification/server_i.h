@@ -51,5 +51,3 @@ class Server_i : public POA_Registry::Notification::Server {
 } // namespace Registry
 
 #endif
-
-/* vim: set et sw=4 : */

@@ -45,8 +45,8 @@ struct InternalError : std::exception {
 /// Exception for case when some emails are not valid
 struct DomainEmailValidationError : std::exception {
     std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map;
-    DomainEmailValidationError(std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map) : domain_invalid_emails_map(domain_invalid_emails_map) {};
-    ~DomainEmailValidationError() throw () {};
+    DomainEmailValidationError(std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map) : domain_invalid_emails_map(domain_invalid_emails_map) {}
+    ~DomainEmailValidationError() throw () {}
     const char* what() const throw () {
         return "invalid notification email or emails";
     }
@@ -68,6 +68,3 @@ void set_domain_outzone_unguarded_warning_emails(
 } // namespace Admin
 
 #endif
-
-/* vim: set et sw=4 : */
-
