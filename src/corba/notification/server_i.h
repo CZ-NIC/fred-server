@@ -28,30 +28,28 @@
 #include "src/corba/Notification.hh"
 
 namespace Registry {
+namespace Notification {
 
-    namespace Notification {
+/**
+ * Wrapper class for CORBA \c Registry::Notification methods implementation
+ * Implements all virtual methods of POA_Registry::Notification::Server
+ */
+class Server_i : public POA_Registry::Notification::Server {
+
+    public:
+
+        virtual ~Server_i() {}
 
         /**
-         * Wrapper class for CORBA \c NotificationIface methods implementation
-         * Implements all virtual methods of POA_Registry::Notification::NotificationIface
+         * Wrapper for IDL Notification::Server interface method of the same name
          */
-        class Server_i : public POA_Registry::Notification::Server {
+        void set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq);
 
-            public:
+};
 
-                virtual ~Server_i() {};
+} // namespace Notification
+} // namespace Registry
 
-
-                /**
-                 * Wrapper for IDL NotificationIface method of the same name
-                 */
-                void set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq);
-
-        };
-
-    }
-
-}
 #endif
 
 /* vim: set et sw=4 : */

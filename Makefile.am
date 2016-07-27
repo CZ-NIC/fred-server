@@ -1676,7 +1676,9 @@ src_corba_fred_adifd_SOURCES = \
 		src/corba/notification/notification_corba_conversion.h \
 		src/corba/notification/notification_corba_conversion.cc \
 		src/admin/notification/notification.h \
-		src/admin/notification/notification.cc
+		src/admin/notification/notification.cc \
+		util/corba_conversion.h \
+		util/corba_conversion.cc
 
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \

@@ -33,41 +33,39 @@
 #include "src/corba/Notification.hh"
 
 namespace Admin {
+namespace Notification {
 
-    namespace Notification {
-
-        /// Exception for internal error
-        struct InternalError : std::exception {
-            const char* what() const throw () {
-                return "internal error";
-            }
-        };
-
-        /// Exception for case when some data are not valid
-        struct DomainEmailValidationError : std::exception {
-            std::map<unsigned long long, std::set<std::string> > invalid_domain_emails_map;
-            DomainEmailValidationError(std::map<unsigned long long, std::set<std::string> > invalid_domain_emails_map) : invalid_domain_emails_map(invalid_domain_emails_map) {};
-            ~DomainEmailValidationError() throw () {};
-            const char* what() const throw () {
-                return "some data are invalid";
-            }
-        };
-
-        /**
-         * Import list of additional emails used to notify \c outboundUnguardedWarning domain state
-         *
-         * \param domain_emails_map  emails by domain_id
-         *
-         * \throw InternalError               in case of unexpected failure
-         * \throw DomainEmailValidationError  in case of invalid input
-         */
-        void set_domain_outzone_unguarded_warning_emails(
-            const std::map<unsigned long long, std::set<std::string> > &domain_emails_map
-        );
-
+/// Exception for internal error
+struct InternalError : std::exception {
+    const char* what() const throw () {
+        return "internal error";
     }
+};
 
-}
+/// Exception for case when some emails are not valid
+struct DomainEmailValidationError : std::exception {
+    std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map;
+    DomainEmailValidationError(std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map) : domain_invalid_emails_map(domain_invalid_emails_map) {};
+    ~DomainEmailValidationError() throw () {};
+    const char* what() const throw () {
+        return "invalid notification email or emails";
+    }
+};
+
+/**
+ * Import list of additional emails used to notify \c outboundUnguardedWarning domain state
+ *
+ * \param domain_emails_map  emails by domain_id
+ *
+ * \throw InternalError               in case of unexpected failure
+ * \throw DomainEmailValidationError  in case of invalid input
+ */
+void set_domain_outzone_unguarded_warning_emails(
+    const std::map<unsigned long long, std::set<std::string> > &domain_emails_map
+);
+
+} // namespace Notification
+} // namespace Admin
 
 #endif
 

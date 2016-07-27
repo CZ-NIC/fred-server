@@ -32,34 +32,25 @@
 #include "src/corba/notification/server_i.h"
 
 namespace Registry {
+namespace Notification {
 
-    namespace Notification {
+void Server_i::set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq) {
 
-        void Server_i::set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq) {
+    try {
+        std::map<unsigned long long, std::set<std::string> > domain_emails_map;
+        CorbaConversion::unwrap_notification_emails(domain_email_seq, domain_emails_map);
 
-            try {
-                std::map<unsigned long long, std::set<std::string> > domain_emails_map;
-                CorbaConversion::unwrap_notification_emails(domain_email_seq, domain_emails_map);
+        Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
 
-                Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
-
-            } catch (const Admin::Notification::DomainEmailValidationError &e) {
-
-                DomainEmailSeq_var invalid_domain_email_seq = new DomainEmailSeq();
-                CorbaConversion::wrap_notification_emails(e.invalid_domain_emails_map, invalid_domain_email_seq);
-
-                throw DOMAIN_EMAIL_VALIDATION_ERROR(invalid_domain_email_seq);
-
-            } catch (const Admin::Notification::InternalError &e) {
-                throw INTERNAL_SERVER_ERROR();
-            } catch (...) {
-                throw INTERNAL_SERVER_ERROR();
-            }
-
-        }
-
+    } catch (const Admin::Notification::DomainEmailValidationError &e) {
+        CorbaConversion::raise_DOMAIN_EMAIL_VALIDATION_ERROR(e);
+    } catch (...) {
+        throw INTERNAL_SERVER_ERROR();
     }
 
 }
+
+} // namespace Notification
+} // namespace Registry
 
 /* vim: set et sw=4 : */

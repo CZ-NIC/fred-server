@@ -21,7 +21,8 @@
  *  implementation for Notification Corba conversion
  */
 
-#include "src/corba/util/corba_conversions_string.cc"
+#include "util/corba_conversion.h"
+#include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_nullable_types.h"
 
 #include "src/corba/Notification.hh"
@@ -30,32 +31,53 @@
 
 namespace CorbaConversion {
 
-    void unwrap_notification_emails(const Registry::Notification::DomainEmailSeq &domain_email_seq, std::map<unsigned long long, std::set<std::string> > &domain_emails_map) {
-        for (unsigned long long index = 0; index < domain_email_seq.length(); ++index) {
-            unsigned long long domain_id = static_cast<unsigned long long>(domain_email_seq[index].domain_id);
-            std::string email = Corba::unwrap_string(domain_email_seq[index].email);
-            std::set<std::string> &domain_emails = domain_emails_map[domain_id]; // required side-effect: creates the element if it does not exist yet
-            if(!email.empty()) {
-                domain_emails.insert(email);
-            }
+void unwrap_notification_emails(const Registry::Notification::DomainEmailSeq &domain_email_seq, std::map<unsigned long long, std::set<std::string> > &domain_emails_map) {
+    for (unsigned long long index = 0; index < domain_email_seq.length(); ++index) {
+        //unsigned long long domain_id;
+        //CorbaConversion::int_to_int<CORBA::ULongLong, unsigned long long>(domain_email_seq[index].domain_id, domain_id);
+        const unsigned long long domain_id = CorbaConversion::int_to_int<CORBA::ULongLong, unsigned long long>(domain_email_seq[index].domain_id);
+        const std::string email = Corba::unwrap_string(domain_email_seq[index].email);
+        std::set<std::string> &domain_emails = domain_emails_map[domain_id]; // required side-effect: creates the element if it does not exist yet
+        if(!email.empty()) {
+            domain_emails.insert(email);
         }
     }
-
-    void wrap_notification_emails(const std::map<unsigned long long, std::set<std::string> > &domain_emails_map, Registry::Notification::DomainEmailSeq_var &domain_email_seq) {
-        unsigned long long size = 0;
-        for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
-            size += src_item->second.size();
-        }
-        domain_email_seq->length(size);
-
-        unsigned long dst_index = 0;
-        for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
-            for(std::set<std::string>::const_iterator email_ptr = src_item->second.begin(); email_ptr != src_item->second.end(); ++email_ptr) {
-                domain_email_seq[dst_index].domain_id = CORBA::ULongLong(src_item->first);
-                domain_email_seq[dst_index].email = Corba::wrap_string(*email_ptr);
-                ++dst_index;
-            }
-        }
-    }
-
 }
+
+void wrap_notification_emails(const std::map<unsigned long long, std::set<std::string> > &domain_emails_map, Registry::Notification::DomainEmailSeq_var &domain_email_seq) {
+    unsigned long long domain_email_seq_length = 0;
+    for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
+        domain_email_seq_length += src_item->second.size();
+    }
+    domain_email_seq->length(domain_email_seq_length);
+
+    unsigned long dst_index = 0;
+    for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
+        for(std::set<std::string>::const_iterator email_ptr = src_item->second.begin(); email_ptr != src_item->second.end(); ++email_ptr) {
+            domain_email_seq[dst_index].domain_id = CorbaConversion::int_to_int<unsigned long long, CORBA::ULongLong>(src_item->first);
+            //CorbaConversion::int_to_int<unsigned long long, CORBA::ULongLong>(src_item->first, domain_email_seq[dst_index].domain_id);
+            domain_email_seq[dst_index].email = CorbaConversion::wrap_string(*email_ptr);
+            ++dst_index;
+        }
+    }
+}
+
+void wrap_DomainEmailValidationError(const Admin::Notification::DomainEmailValidationError &src, Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &dst) {
+    Registry::Notification::DomainEmailSeq_var domain_invalid_email_seq = new Registry::Notification::DomainEmailSeq();
+    CorbaConversion::wrap_notification_emails(src.domain_invalid_emails_map, domain_invalid_email_seq);
+    dst = Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR(domain_invalid_email_seq);
+}
+
+void raise_DOMAIN_EMAIL_VALIDATION_ERROR(const Admin::Notification::DomainEmailValidationError &src) {
+
+    Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR e;
+    try {
+        wrap_DomainEmailValidationError(src, e);
+    }
+    catch(...) {
+        throw Registry::Notification::INTERNAL_SERVER_ERROR();
+    }
+    throw e;
+}
+
+} // namespace CorbaConversion
