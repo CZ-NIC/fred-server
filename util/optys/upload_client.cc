@@ -156,7 +156,8 @@
             size_t hlen = 0;
             {
                 unsigned char *hash = NULL;
-#if (LIBSSH_VERSION_MINOR < 6)
+
+#if LIBSSH_VERSION_MAJOR == 0 && LIBSSH_VERSION_MINOR < 6
                 if(ssh_get_pubkey_hash(session, &hash) < 0) {
                     ssh_clean_pubkey_hash(&hash);
                     throw std::runtime_error("ssh_get_pubkey_hash failed, unable to get buffer with the hash of the public key");
