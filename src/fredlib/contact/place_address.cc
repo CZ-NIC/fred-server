@@ -76,6 +76,5 @@ PlaceAddress::PlaceAddress(const std::string& _street1,
 
 std::ostream& operator<<(std::ostream &_out, const Fred::Contact::PlaceAddress &_place)
 {
-
     return _out << _place.to_string();
 }

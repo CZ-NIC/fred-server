@@ -85,8 +85,6 @@ struct PlaceAddress
  * @param src object with the content to insert
  * @return the same as parameter @a out
  */
-
 std::ostream& operator<<(std::ostream &out, const Fred::Contact::PlaceAddress &src);
-
 
 #endif//PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5
