@@ -31,7 +31,7 @@
 
 namespace CorbaConversion {
 
-void unwrap_notification_emails(const Registry::Notification::DomainEmailSeq &domain_email_seq, std::map<unsigned long long, std::set<std::string> > &domain_emails_map) {
+void unwrap_DomainEmailSeq(const Registry::Notification::DomainEmailSeq &domain_email_seq, std::map<unsigned long long, std::set<std::string> > &domain_emails_map) {
     for (unsigned long long index = 0; index < domain_email_seq.length(); ++index) {
         //unsigned long long domain_id;
         //CorbaConversion::int_to_int<CORBA::ULongLong, unsigned long long>(domain_email_seq[index].domain_id, domain_id);
@@ -44,7 +44,7 @@ void unwrap_notification_emails(const Registry::Notification::DomainEmailSeq &do
     }
 }
 
-void wrap_notification_emails(const std::map<unsigned long long, std::set<std::string> > &domain_emails_map, Registry::Notification::DomainEmailSeq_var &domain_email_seq) {
+void wrap_map_unsigned_long_long_set_string(const std::map<unsigned long long, std::set<std::string> > &domain_emails_map, Registry::Notification::DomainEmailSeq_var &domain_email_seq) {
     unsigned long long domain_email_seq_length = 0;
     for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
         domain_email_seq_length += src_item->second.size();
@@ -64,7 +64,7 @@ void wrap_notification_emails(const std::map<unsigned long long, std::set<std::s
 
 static void wrap_DomainEmailValidationError(const Admin::Notification::DomainEmailValidationError &src, Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR &dst) {
     Registry::Notification::DomainEmailSeq_var domain_invalid_email_seq = new Registry::Notification::DomainEmailSeq();
-    CorbaConversion::wrap_notification_emails(src.domain_invalid_emails_map, domain_invalid_email_seq);
+    CorbaConversion::wrap_map_unsigned_long_long_set_string(src.domain_invalid_emails_map, domain_invalid_email_seq);
     dst = Registry::Notification::DOMAIN_EMAIL_VALIDATION_ERROR(domain_invalid_email_seq);
 }
 

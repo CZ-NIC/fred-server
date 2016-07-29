@@ -38,7 +38,7 @@ void Server_i::set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq 
 
     try {
         std::map<unsigned long long, std::set<std::string> > domain_emails_map;
-        CorbaConversion::unwrap_notification_emails(domain_email_seq, domain_emails_map);
+        CorbaConversion::unwrap_DomainEmailSeq(domain_email_seq, domain_emails_map);
 
         Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
 
