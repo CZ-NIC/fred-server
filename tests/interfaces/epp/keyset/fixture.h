@@ -68,7 +68,8 @@ class ObjectsProvider:private Fixture::instantiate_db_template,
 public:
     ObjectsProvider();
     ~ObjectsProvider() { }
-    template < Fred::KeySet::HandleState::Registrability REGISTRABILITY >
+    template < Fred::KeySet::HandleState::Registrability REGISTRABILITY,
+               Fred::KeySet::HandleState::SyntaxValidity VALIDITY >
     static std::string get_keyset_handle(Fred::OperationContext&);
 };
 

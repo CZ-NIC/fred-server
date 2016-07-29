@@ -131,7 +131,8 @@ ObjectsProvider::ObjectsProvider()
 }
 
 template < >
-std::string ObjectsProvider::get_keyset_handle< Fred::KeySet::HandleState::available >(Fred::OperationContext &ctx)
+std::string ObjectsProvider::get_keyset_handle< Fred::KeySet::HandleState::available,
+                                                Fred::KeySet::HandleState::valid >(Fred::OperationContext &ctx)
 {
     for (unsigned cnt = 0; true; ++cnt) {
         std::string handle = "KEYSET";
