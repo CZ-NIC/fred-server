@@ -44,6 +44,12 @@ void unwrap_DomainEmailSeq(const Registry::Notification::DomainEmailSeq &domain_
     }
 }
 
+/**
+ * \brief  convert implementation type to interface type
+ *
+ * \param domain_emails_map  emails by domain_id
+ * \param domain_email_seq   sequence of {domain_id, email}
+ */
 void wrap_map_unsigned_long_long_set_string(const std::map<unsigned long long, std::set<std::string> > &domain_emails_map, Registry::Notification::DomainEmailSeq_var &domain_email_seq) {
     unsigned long long domain_email_seq_length = 0;
     for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
