@@ -27,18 +27,18 @@ namespace Contact
 {
     ContactHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _contact_handle) {
 
-        if( TestHandle(_contact_handle).is_invalid_handle() ) {
+        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_invalid_handle()) {
             return ContactHandleState::SyntaxValidity::invalid;
         }
         return ContactHandleState::SyntaxValidity::valid;
     }
 
     ContactHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _contact_handle) {
-        if( TestHandle(_contact_handle).is_registered(ctx, "contact") ) {
+        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_registered(ctx)) {
             return ContactHandleState::Registrability::registered;
         }
 
-        if( TestHandle(_contact_handle).is_protected(ctx, "contact") ) {
+        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_protected(ctx)) {
             return ContactHandleState::Registrability::in_protection_period;
         }
 

@@ -202,9 +202,6 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
 BOOST_FIXTURE_TEST_CASE(check_nsset_handle_true, check_handle_fixture)
 {
     Fred::OperationContextCreator ctx;
-    std::string conflicting_handle;
-    BOOST_CHECK(Fred::CheckNsset(test_nsset_handle).is_registered(ctx, conflicting_handle));
-    BOOST_CHECK(test_nsset_handle.compare(conflicting_handle) == 0);
     BOOST_CHECK(Fred::CheckNsset(test_nsset_handle).is_registered(ctx));
     BOOST_CHECK(Fred::CheckNsset(test_nsset_handle+"@").is_invalid_handle());
     BOOST_CHECK(Fred::CheckNsset(test_nsset_handle_rem).is_protected(ctx));
@@ -218,9 +215,7 @@ BOOST_FIXTURE_TEST_CASE(check_nsset_handle_false, check_handle_fixture)
 {
     BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle).is_invalid_handle());
     Fred::OperationContextCreator ctx;
-    std::string conflicting_handle;
-    BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle+xmark).is_registered(ctx, conflicting_handle));
-    BOOST_CHECK(conflicting_handle.empty());
+    BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle+xmark).is_registered(ctx));
     BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle).is_protected(ctx));
     BOOST_CHECK(!Fred::CheckNsset(test_nsset_handle).is_free(ctx));
 }
@@ -232,9 +227,6 @@ BOOST_FIXTURE_TEST_CASE(check_nsset_handle_false, check_handle_fixture)
 BOOST_FIXTURE_TEST_CASE(check_keyset_handle_true, check_handle_fixture)
 {
     Fred::OperationContextCreator ctx;
-    std::string conflicting_handle;
-    BOOST_CHECK(Fred::CheckKeyset(test_keyset_handle).is_registered(ctx, conflicting_handle));
-    BOOST_CHECK(test_keyset_handle.compare(conflicting_handle) == 0);
     BOOST_CHECK(Fred::CheckKeyset(test_keyset_handle).is_registered(ctx));
     BOOST_CHECK(Fred::CheckKeyset(test_keyset_handle+"@").is_invalid_handle());
     BOOST_CHECK(Fred::CheckKeyset(test_keyset_handle_rem).is_protected(ctx));
@@ -248,9 +240,7 @@ BOOST_FIXTURE_TEST_CASE(check_keyset_handle_false, check_handle_fixture)
 {
     BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle).is_invalid_handle());
     Fred::OperationContextCreator ctx;
-    std::string conflicting_handle;
-    BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle+xmark).is_registered(ctx, conflicting_handle));
-    BOOST_CHECK(conflicting_handle.empty());
+    BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle+xmark).is_registered(ctx));
     BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle).is_protected(ctx));
     BOOST_CHECK(!Fred::CheckKeyset(test_keyset_handle).is_free(ctx));
 }

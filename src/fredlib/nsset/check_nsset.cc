@@ -41,34 +41,26 @@ namespace Fred
     {
         try
         {
-            if(TestHandle(handle_).is_invalid_handle()) return true;
+            return TestHandleOf< Object_Type::nsset >(handle_).is_invalid_handle();
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return false;//meaning handle syntax is ok
     }
 
-    bool CheckNsset::is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const
+    bool CheckNsset::is_registered(OperationContext& ctx)const
     {
         try
         {
-            if(TestHandle(handle_).is_registered(ctx,"nsset",conflicting_handle_out)) return true;
+            return TestHandleOf< Object_Type::nsset >(handle_).is_registered(ctx);
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return false;//meaning not protected
-    }
-
-    bool CheckNsset::is_registered(OperationContext& ctx) const
-    {
-        std::string conflicting_handle_out;
-        return is_registered(ctx, conflicting_handle_out);
     }
 
 
@@ -76,33 +68,28 @@ namespace Fred
     {
         try
         {
-            if(TestHandle(handle_).is_protected(ctx,"nsset")) return true;
+            return TestHandleOf< Object_Type::nsset >(handle_).is_protected(ctx);
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return false;//meaning not protected
     }
 
     bool CheckNsset::is_free(OperationContext& ctx) const
     {
         try
         {
-            if(is_invalid_handle()
-            || is_registered(ctx)
-            || is_protected(ctx))
-            {
-                return false;
-            }
+            return !is_invalid_handle() &&
+                   !is_registered(ctx) &&
+                   !is_protected(ctx);
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return true;//meaning ok
     }
 
     std::string CheckNsset::to_string() const

@@ -24,35 +24,33 @@
 #ifndef CHECK_HANDLE_H
 #define CHECK_HANDLE_H
 
-#include <string>
-
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/object/object_type.h"
 
 namespace Fred
 {
 
-    class TestHandle
-    {
-        const std::string handle_;
-    public:
-        TestHandle(const std::string& handle);
-        //check handle syntax
-        bool is_invalid_handle() const;
-        //check if handle is in protected period
-        bool is_protected(OperationContext& ctx, const std::string& object_type_name) const;
+template < Object_Type::Enum OBJECT_TYPE >
+class TestHandleOf
+{
+public:
+    TestHandleOf(const std::string &_handle);
 
-        //check if handle is already registered, if true then set conflicting handle
-        // TODO XXX Remove conflicting_handle_out. It is nonsense, same as handle_.
-        bool is_registered(OperationContext& ctx,
-            const std::string& object_type_name,//from db enum_object_type.name
-            std::string& conflicting_handle_out) const;
+    //check handle syntax
+    bool is_invalid_handle()const;
 
-        //check if handle is already registered, if true then set conflicting handle
-        bool is_registered(
-            OperationContext& ctx,
-            const std::string& object_type_name    //from db enum_object_type.name
-        ) const;
-    };
+    //check if handle is in protected period
+    bool is_protected(OperationContext &_ctx)const;
+
+    //check if handle is already registered
+    bool is_registered(OperationContext &_ctx)const;
+private:
+    const std::string handle_;
+};
+
+//domain handle is called "fqdn" => no handle operations for domains
+template < >
+class TestHandleOf< Object_Type::domain > { };
 
 }//namespace Fred
 
