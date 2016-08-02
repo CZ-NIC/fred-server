@@ -27,10 +27,12 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object/object_type.h"
 
+#include <boost/mpl/assert.hpp>
+
 namespace Fred
 {
 
-template < Object_Type::Enum OBJECT_TYPE >
+template < Object_Type::Enum TYPE_OF_OBJECT >
 class TestHandleOf
 {
 public:
@@ -46,11 +48,12 @@ public:
     bool is_registered(OperationContext &_ctx)const;
 private:
     const std::string handle_;
+    BOOST_MPL_ASSERT_MSG((TYPE_OF_OBJECT != Object_Type::domain) && //domain handle is called "fqdn" => no handle operations for domains
+                         ((TYPE_OF_OBJECT == Object_Type::contact) ||
+                          (TYPE_OF_OBJECT == Object_Type::nsset)   ||
+                          (TYPE_OF_OBJECT == Object_Type::keyset)),
+                         unavailable_for_this_type_of_object, (Object_Type::Enum));
 };
-
-//domain handle is called "fqdn" => no handle operations for domains
-template < >
-class TestHandleOf< Object_Type::domain > { };
 
 }//namespace Fred
 

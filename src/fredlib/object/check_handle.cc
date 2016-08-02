@@ -24,27 +24,22 @@
 #include "src/fredlib/keyset/check_keyset.h"
 #include "src/fredlib/object/check_handle.h"
 
-#include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 
-#include <string>
-
 #include <boost/regex.hpp>
-#include <boost/mpl/assert.hpp>
 
 
 namespace Fred
 {
 
-template < Object_Type::Enum OBJECT_TYPE >
-TestHandleOf< OBJECT_TYPE >::TestHandleOf(const std::string &_handle)
+template < Object_Type::Enum TYPE_OF_OBJECT >
+TestHandleOf< TYPE_OF_OBJECT >::TestHandleOf(const std::string &_handle)
 :   handle_(_handle)
-{}
+{ }
 
-template < Object_Type::Enum OBJECT_TYPE >
-bool TestHandleOf< OBJECT_TYPE >::is_invalid_handle()const
+template < Object_Type::Enum TYPE_OF_OBJECT >
+bool TestHandleOf< TYPE_OF_OBJECT >::is_invalid_handle()const
 {
-    BOOST_MPL_ASSERT_MSG(OBJECT_TYPE != Object_Type::domain, deprecated_function_for_domain, (Object_Type::Enum));
     static const std::size_t max_length_of_handle = 30;
     if (max_length_of_handle < handle_.length())
     {
@@ -55,12 +50,11 @@ bool TestHandleOf< OBJECT_TYPE >::is_invalid_handle()const
 }
 
 
-template < Object_Type::Enum OBJECT_TYPE >
-bool TestHandleOf< OBJECT_TYPE >::is_protected(OperationContext &_ctx)const
+template < Object_Type::Enum TYPE_OF_OBJECT >
+bool TestHandleOf< TYPE_OF_OBJECT >::is_protected(OperationContext &_ctx)const
 {
-    BOOST_MPL_ASSERT_MSG(OBJECT_TYPE != Object_Type::domain, deprecated_function_for_domain, (Object_Type::Enum));
     static const char *const parameter_name = "handle_registration_protection_period";
-    const std::string object_type_name = Conversion::Enums::to_db_handle(OBJECT_TYPE);
+    const std::string object_type_name = Conversion::Enums::to_db_handle(TYPE_OF_OBJECT);
     const Database::Result db_res = _ctx.get_conn().exec_params(
         "WITH obj AS "
             "(SELECT obr.id,"
@@ -80,11 +74,10 @@ bool TestHandleOf< OBJECT_TYPE >::is_protected(OperationContext &_ctx)const
 }
 
 
-template < Object_Type::Enum OBJECT_TYPE >
-bool TestHandleOf< OBJECT_TYPE >::is_registered(OperationContext &_ctx)const
+template < Object_Type::Enum TYPE_OF_OBJECT >
+bool TestHandleOf< TYPE_OF_OBJECT >::is_registered(OperationContext &_ctx)const
 {
-    BOOST_MPL_ASSERT_MSG(OBJECT_TYPE != Object_Type::domain, deprecated_function_for_domain, (Object_Type::Enum));
-    const std::string object_type_name = Conversion::Enums::to_db_handle(OBJECT_TYPE);
+    const std::string object_type_name = Conversion::Enums::to_db_handle(TYPE_OF_OBJECT);
     const Database::Result db_res = _ctx.get_conn().exec_params(
         "SELECT 1 "
         "FROM object_registry "
