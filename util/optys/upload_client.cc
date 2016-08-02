@@ -35,6 +35,7 @@
 #include <boost/format.hpp>
 #include <boost/utility.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 #include <libssh/libssh.h>
 
@@ -158,10 +159,13 @@
                 unsigned char *hash = NULL;
 
 #if LIBSSH_VERSION_MAJOR == 0 && LIBSSH_VERSION_MINOR < 6
-                if(ssh_get_pubkey_hash(session, &hash) < 0) {
+                int pubkey_hash_result = 0;
+                pubkey_hash_result = ssh_get_pubkey_hash(session, &hash);
+                if(pubkey_hash_result < 0) {
                     ssh_clean_pubkey_hash(&hash);
                     throw std::runtime_error("ssh_get_pubkey_hash failed, unable to get buffer with the hash of the public key");
                 }
+                hlen = boost::numeric_cast<size_t>(pubkey_hash_result);
 #else
                 ssh_key srv_pubkey = 0;
                 if(ssh_get_publickey(session, &srv_pubkey) < 0){
