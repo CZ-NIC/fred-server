@@ -44,58 +44,6 @@ inline unsigned long long get_registrar_id(EppSessionContainer& epp_sessions, un
     return result;
 }
 
-inline Optional<bool> convert_update_discloseflag(char disclose_value) {
-
-    switch(disclose_value) {
-        case 't' : return true;
-        case 'f' : return false;
-        case ' ' : return Optional<bool>();
-    }
-
-    throw std::runtime_error("invalid disclose value");
-}
-
-inline bool DefaultPolicy() { return true; }
-
-inline bool setvalue_DISCLOSE(bool d, ccReg::Disclose flag) {
-
-    switch (flag) {
-        case ccReg::DISCL_DISPLAY:
-            if( DefaultPolicy() ) { return true; } else { return d; }
-
-        case ccReg::DISCL_HIDE:
-            if( !DefaultPolicy() ) { return true; } else { return !d; }
-
-        case ccReg::DISCL_EMPTY:
-            return DefaultPolicy();
-    }
-
-    return false;
-}
-
-inline bool get_DISCLOSE(bool db) {
-    if( DefaultPolicy() ) {
-        return !db;
-    } else {
-        return db;
-    }
-}
-
-inline char update_DISCLOSE(bool d, ccReg::Disclose flag) {
-
-    if (flag == ccReg::DISCL_EMPTY) {
-        return ' ';
-
-    } else {
-        if (setvalue_DISCLOSE(d, flag) ) {
-            return 't';
-        } else {
-            return 'f';
-        }
-    }
-
-}
-
 }
 
 #endif

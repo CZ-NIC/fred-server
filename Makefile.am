@@ -1490,6 +1490,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/response.h \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
+		src/epp/command_result.h \
+		src/epp/disclose_policy.h \
 		src/epp/localization.h \
 		src/epp/localization.cc \
 		src/epp/param.h \
