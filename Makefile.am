@@ -250,7 +250,7 @@ noinst_HEADERS = \
 		src/fredlib/public_request/info_public_request_auth.h \
 		tests/interfaces/epp/util.h \
 		tests/interfaces/epp/contact/fixture.h \
-		corba/mojeid/mojeid_corba_conversion.h \
+		src/corba/mojeid/mojeid_corba_conversion.h \
 		src/mojeid/mojeid_impl_data.h \
 		src/mojeid/mojeid_public_request.h \
 		src/mojeid/mojeid.h \
@@ -260,7 +260,7 @@ noinst_HEADERS = \
 		src/mojeid/safe_data_storage.h \
 		src/mojeid/messages/generate.h \
 		src/corba/mojeid/server_i.h \
-		src/corba/mojeid/service_name.h \
+		src/corba/mojeid/service_name.h
 
 noinst_LIBRARIES = \
 		util/libutil.a \
