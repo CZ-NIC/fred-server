@@ -221,9 +221,46 @@ noinst_HEADERS = \
 		src/fredlib/notifier/util/get_previous_object_historyid.h \
 		src/fredlib/notifier/util/string_list_utils.h \
 		tests/fredlib/notifier/fixture_data.h \
-		tests/fredlib/notifier/util.h
-
-
+		tests/fredlib/notifier/util.h \
+		util/enum_conversion.h \
+		src/fredlib/contact/handle_state.h \
+		src/fredlib/contact/ssntype.h \
+		src/fredlib/exception.h \
+		tests/util/corba_conversion_test.idl \
+		src/fredlib/object/object_type.h \
+		src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h \
+		src/epp/localized_response.h \
+		src/epp/exception.h \
+		src/epp/session_lang.h \
+		src/epp/contact/ident_type.h \
+		src/epp/get_registrar_session_data.h \
+		src/corba/epp/epp_legacy_compatibility.h \
+		src/epp/registrar_session_data.h \
+		src/epp/request_params.h \
+		src/epp/error.h \
+		src/epp/action.h \
+		src/epp/exception_aggregate_param_errors.h \
+		src/epp/impl/util.h \
+		src/fredlib/object/states_info.h \
+		src/fredlib/object/object_state.h \
+		src/epp/contact/contact_handle_state_to_check_result.h \
+		src/fredlib/public_request/public_request_status.h \
+		src/fredlib/public_request/get_active_public_request.h \
+		src/fredlib/public_request/info_public_request.h \
+		src/fredlib/public_request/info_public_request_auth.h \
+		tests/interfaces/epp/util.h \
+		tests/interfaces/epp/contact/fixture.h \
+		corba/mojeid/mojeid_corba_conversion.h \
+		src/mojeid/mojeid_impl_data.h \
+		src/mojeid/mojeid_public_request.h \
+		src/mojeid/mojeid.h \
+		src/mojeid/mojeid_checkers.h \
+		src/mojeid/mojeid_impl_data_conversion.h \
+		src/mojeid/mojeid_impl_internal.h \
+		src/mojeid/safe_data_storage.h \
+		src/mojeid/messages/generate.h \
+		src/corba/mojeid/server_i.h \
+		src/corba/mojeid/service_name.h \
 
 noinst_LIBRARIES = \
 		util/libutil.a \
@@ -1247,7 +1284,7 @@ nodist_src_corba_libcorbawhois_a_SOURCES = \
 		src/corba/WhoisSK.cc \
 		src/corba/WhoisDynSK.cc \
 		src/corba/Whois.hh
-		
+
 nodist_src_corba_libcorbawhois2_a_SOURCES = \
 		src/corba/Whois2SK.cc \
 		src/corba/Whois2DynSK.cc \
@@ -1453,10 +1490,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/response.h \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
-		src/epp/command_result.h \
 		src/epp/localization.h \
 		src/epp/localization.cc \
-		src/epp/util.h \
 		src/epp/param.h \
 		src/epp/reason.h \
 		src/epp/response.h \
