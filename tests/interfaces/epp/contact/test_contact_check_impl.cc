@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(test_result_size_nonempty)
             ("b1")
             ("c1")
             ("d1")
-            ("e1");
+            ("e1").convert_to_container<std::set<std::string> >();
 
     Fred::OperationContextCreator ctx;
 
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(test_invalid_handle)
             ("@")
             ("a*")
             ("*a")
-            ("a*a");
+            ("a*a").convert_to_container<std::set<std::string> >();
 
     Fred::OperationContextCreator ctx;
 
@@ -109,7 +109,7 @@ struct has_protected_handles : has_registrar {
             ("protHandleX3")
             ("protHandleXa")
             ("protHandleXb")
-            ("protHandleXc");
+            ("protHandleXc").convert_to_container<std::set<std::string> >();
 
         BOOST_FOREACH(const std::string& handle, protected_handles) {
             Fred::CreateContact(handle, registrar.handle).exec(ctx);
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, Test::autocommitting_context)
             ("jkl456")
             ("mno567")
             ("pqr678")
-            ("xyz789");
+            ("xyz789").convert_to_container<std::set<std::string> >();
 
     Fred::OperationContextCreator ctx;
 
@@ -171,7 +171,7 @@ struct has_existing_contacts : has_registrar {
             ("handle03")
             ("handle0a")
             ("handle0b")
-            ("handle0c");
+            ("handle0c").convert_to_container<std::set<std::string> >();
 
         BOOST_FOREACH(const std::string& handle, existing_contact_handles) {
             Fred::CreateContact(handle, registrar.handle).exec(ctx);

@@ -142,93 +142,93 @@ BOOST_AUTO_TEST_CASE(test_Resulting_check_status)
     std::vector<std::string> statuses;
 
     // resulting in ok
-    statuses = boost::assign::list_of(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_OK);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_OK);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::SKIPPED);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::SKIPPED).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_OK);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::SKIPPED);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::SKIPPED).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_OK);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_OK);
 
     // resulting in fail
-    statuses = boost::assign::list_of(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::SKIPPED);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::SKIPPED).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::SKIPPED);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::SKIPPED).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::FAIL)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::FAIL)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::OK)(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::OK)(TestStatus::OK)(TestStatus::SKIPPED)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_FAIL);
 
     // resulting in to_be_decided
-    statuses = boost::assign::list_of(TestStatus::ERROR);
+    statuses = boost::assign::list_of(TestStatus::ERROR).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::ERROR);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::ERROR).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::ERROR)(TestStatus::OK)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::ERROR)(TestStatus::OK)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::ERROR);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::ERROR).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::ERROR)(TestStatus::FAIL)(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::ERROR)(TestStatus::FAIL)(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::MANUAL);
+    statuses = boost::assign::list_of(TestStatus::MANUAL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::MANUAL);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::MANUAL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::MANUAL)(TestStatus::OK)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::OK)(TestStatus::OK)(TestStatus::OK)(TestStatus::MANUAL)(TestStatus::OK)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::MANUAL);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::MANUAL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::MANUAL)(TestStatus::FAIL)(TestStatus::FAIL);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::FAIL)(TestStatus::MANUAL)(TestStatus::FAIL)(TestStatus::FAIL).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::SKIPPED);
+    statuses = boost::assign::list_of(TestStatus::SKIPPED).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 
-    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::MANUAL)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::ERROR)(TestStatus::OK);
+    statuses = boost::assign::list_of(TestStatus::FAIL)(TestStatus::MANUAL)(TestStatus::SKIPPED)(TestStatus::FAIL)(TestStatus::ERROR)(TestStatus::OK).convert_to_container<std::vector<std::string> >();
     test_Resulting_check_status_impl(statuses, CheckStatus::AUTO_TO_BE_DECIDED);
 }
 
