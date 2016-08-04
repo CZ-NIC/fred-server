@@ -21,90 +21,76 @@
  *  keyset check
  */
 
-#include <string>
-
-#include <boost/regex.hpp>
-
 #include "src/fredlib/keyset/check_keyset.h"
 #include "src/fredlib/object/check_handle.h"
 
-#include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
+
+#include <boost/regex.hpp>
 
 
 namespace Fred
 {
 
-    ///init registry handle ctor
-    TestHandle::TestHandle(const std::string& handle)
-    :handle_(handle)
-    {}
-    ///check handle syntax
-    bool TestHandle::is_invalid_handle() const
+template < Object_Type::Enum TYPE_OF_OBJECT >
+TestHandleOf< TYPE_OF_OBJECT >::TestHandleOf(const std::string &_handle)
+:   handle_(_handle)
+{ }
+
+template < Object_Type::Enum TYPE_OF_OBJECT >
+bool TestHandleOf< TYPE_OF_OBJECT >::is_invalid_handle()const
+{
+    static const std::size_t max_length_of_handle = 30;
+    if (max_length_of_handle < handle_.length())
     {
-        static const boost::regex HANDLE_SYNTAX("[a-zA-Z0-9](-?[a-zA-Z0-9])*");
-        if (handle_.length() > 30)
-        {
-            return true;
-        }
-        return !boost::regex_match(handle_, HANDLE_SYNTAX);
+        return true;
     }
+    const boost::regex handle_syntax_rule("[a-zA-Z0-9](-?[a-zA-Z0-9])*");
+    return !boost::regex_match(handle_, handle_syntax_rule);
+}
 
-    //check if handle is in protected period
-    bool TestHandle::is_protected(OperationContext& ctx, const std::string& object_type_name) const
-    {
-        Database::Result protection_res = ctx.get_conn().exec_params(
-        "SELECT "
-            "COALESCE( "
-                "MAX(oreg.erdate) "
-                "+ "
-                "( "
-                    "( "
-                        "SELECT val "
-                            "FROM enum_parameters "
-                            "WHERE name = 'handle_registration_protection_period' "
-                    ") || ' month'"
-                ")::interval "
-                "> "
-                "CURRENT_TIMESTAMP"
-                ", false "
-            ") "
-        "FROM object_registry oreg "
-        "WHERE "
-            "oreg.erdate IS NOT NULL "
-            "AND oreg.type = get_object_type_id($1::text) "
-            "AND oreg.name=UPPER($2::text) "
-        , Database::query_param_list(object_type_name)(handle_));
 
-        if(static_cast<bool>(protection_res[0][0]) == true) return true;
+template < Object_Type::Enum TYPE_OF_OBJECT >
+bool TestHandleOf< TYPE_OF_OBJECT >::is_protected(OperationContext &_ctx)const
+{
+    static const char *const parameter_name = "handle_registration_protection_period";
+    const std::string object_type_name = Conversion::Enums::to_db_handle(TYPE_OF_OBJECT);
+    const Database::Result db_res = _ctx.get_conn().exec_params(
+        "WITH obj AS "
+            "(SELECT obr.id,"
+                    "CURRENT_TIMESTAMP<(obr.erdate+(ep.val||'MONTH')::INTERVAL) AS protected "
+             "FROM enum_parameters ep,"
+                  "object_registry obr "
+             "WHERE ep.name=$1::TEXT AND "
+                   "obr.type=get_object_type_id($2::TEXT) AND "
+                   "UPPER(obr.name)=UPPER($3::TEXT)) "
+        "SELECT protected FROM obj "
+        "ORDER BY id DESC LIMIT 1",
+        Database::query_param_list(parameter_name)
+                                  (object_type_name)
+                                  (handle_));
 
-        return false;
-    }
+    return (db_res.size() == 1) && !db_res[0][0].isnull() && static_cast< bool >(db_res[0][0]);
+}
 
-    //check if handle is already registered, if true then set conflicting handle
-    bool TestHandle::is_registered(OperationContext& ctx,
-        const std::string& object_type_name,//from db enum_object_type.name
-        std::string& conflicting_handle_out) const
-    {
-        Database::Result conflicting_handle_res  = ctx.get_conn().exec_params(
-            "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
-            " WHERE eot.name=$1::text AND o.erdate ISNULL AND o.name=UPPER($2::text) LIMIT 1"
-        , Database::query_param_list(object_type_name)(handle_));
 
-        if(conflicting_handle_res.size() > 0)//have conflicting_handle
-        {
-            conflicting_handle_out = static_cast<std::string>(conflicting_handle_res[0][0]);
-            return true;
-        }
-        return false;
-    }
+template < Object_Type::Enum TYPE_OF_OBJECT >
+bool TestHandleOf< TYPE_OF_OBJECT >::is_registered(OperationContext &_ctx)const
+{
+    const std::string object_type_name = Conversion::Enums::to_db_handle(TYPE_OF_OBJECT);
+    const Database::Result db_res = _ctx.get_conn().exec_params(
+        "SELECT 1 "
+        "FROM object_registry "
+        "WHERE erdate IS NULL AND "
+              "type=get_object_type_id($1::TEXT) AND "
+              "name=UPPER($2::TEXT)",
+        Database::query_param_list(object_type_name)(handle_));
 
-    //check if handle is already registered, if true then set conflicting handle
-    bool TestHandle::is_registered(OperationContext& ctx, const std::string& object_type_name) const {
-        std::string dummy;
+    return 0 < db_res.size();
+}
 
-        return is_registered(ctx, object_type_name, dummy);
-    }
+template class TestHandleOf< Object_Type::contact >;
+template class TestHandleOf< Object_Type::nsset >;
+template class TestHandleOf< Object_Type::keyset >;
 
 }//namespace Fred
-

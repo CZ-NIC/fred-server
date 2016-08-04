@@ -57,14 +57,6 @@ namespace Fred
         /**
         * Check if keyset handle is registered.
         * @param ctx an operation context with database and logging interface.
-        * @param conflicting_handle_out an conflicting keyset identifier reference used for output if true is returned.
-        * @return true if registered, false if not
-        */
-        bool is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const;
-
-        /**
-        * Check if keyset handle is registered.
-        * @param ctx an operation context with database and logging interface.
         * @return true if registered, false if not
         */
         bool is_registered(OperationContext& ctx) const;

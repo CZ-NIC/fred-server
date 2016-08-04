@@ -42,34 +42,26 @@ namespace Fred
     {
         try
         {
-            if(TestHandle(handle_).is_invalid_handle()) return true;
+            return TestHandleOf< Object_Type::keyset >(handle_).is_invalid_handle();
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return false;//meaning handle syntax is ok
-    }
-
-    bool CheckKeyset::is_registered(OperationContext& ctx, std::string& conflicting_handle_out) const
-    {
-        try
-        {
-            if(TestHandle(handle_).is_registered(ctx,"keyset",conflicting_handle_out)) return true;
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
-        }
-        return false;//meaning not protected
     }
 
     bool CheckKeyset::is_registered(OperationContext& ctx) const
     {
-        std::string conflicting_handle_out;
-        return is_registered(ctx, conflicting_handle_out);
+        try
+        {
+            return TestHandleOf< Object_Type::keyset >(handle_).is_registered(ctx);
+        }//try
+        catch(ExceptionStack& ex)
+        {
+            ex.add_exception_stack_info(to_string());
+            throw;
+        }
     }
 
 
@@ -77,33 +69,28 @@ namespace Fred
     {
         try
         {
-            if(TestHandle(handle_).is_protected(ctx,"keyset")) return true;
+            return TestHandleOf< Object_Type::keyset >(handle_).is_protected(ctx);
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return false;//meaning not protected
     }
 
     bool CheckKeyset::is_free(OperationContext& ctx) const
     {
         try
         {
-            if(is_invalid_handle()
-            || is_registered(ctx)
-            || is_protected(ctx))
-            {
-                return false;
-            }
+            return !is_invalid_handle() &&
+                   !is_registered(ctx) &&
+                   !is_protected(ctx);
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-        return true;//meaning ok
     }
 
     std::string CheckKeyset::to_string() const
