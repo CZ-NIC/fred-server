@@ -493,6 +493,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
     reg_val_err_impl.first_name   = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     reg_val_err_impl.last_name    = Registry::MojeIDImplData::ValidationResult::REQUIRED;
     reg_val_err_impl.birth_date   = Registry::MojeIDImplData::ValidationResult::INVALID;
+    reg_val_err_impl.vat_id_num   = Registry::MojeIDImplData::ValidationResult::REQUIRED;
     reg_val_err_impl.email        = Registry::MojeIDImplData::ValidationResult::NOT_AVAILABLE;
     reg_val_err_impl.notify_email = Registry::MojeIDImplData::ValidationResult::REQUIRED;
     reg_val_err_impl.phone        = Registry::MojeIDImplData::ValidationResult::INVALID;
@@ -513,6 +514,7 @@ BOOST_AUTO_TEST_CASE(test_mojeid_registration_validation_error)
     BOOST_CHECK(res.first_name   == Registry::MojeID::NOT_AVAILABLE);
     BOOST_CHECK(res.last_name    == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.birth_date   == Registry::MojeID::INVALID);
+    BOOST_CHECK(res.vat_id_num   == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.email        == Registry::MojeID::NOT_AVAILABLE);
     BOOST_CHECK(res.notify_email == Registry::MojeID::REQUIRED);
     BOOST_CHECK(res.phone        == Registry::MojeID::INVALID);
@@ -922,10 +924,10 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, fa
 template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, false >::
     value_to_fit[number_of_values_to_fit] = {
-        0,
-        1,
-        shorter_unsigned::max() - 1,
-        shorter_unsigned::max()
+        type(0),
+        type(1),
+        type(shorter_unsigned::max() - 1),
+        type(shorter_unsigned::max())
     };
 
 
@@ -947,18 +949,18 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, false >
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, false >::
     value_to_fit[number_of_values_to_fit] = {
-        0,
-        1,
-        shorter_signed::max() - 1,
-        shorter_signed::max()
+        type(0),
+        type(1),
+        type(shorter_signed::max() - 1),
+        type(shorter_signed::max())
     };
 
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, false >::
     out_of_range_value[number_of_out_of_range_values] = {
-        shorter_signed::min(),
-        shorter_signed::min() + 1,
-        -1
+        type(shorter_signed::min()),
+        type(shorter_signed::min() + 1),
+        type(-1)
     };
 
 
@@ -980,13 +982,13 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, false >
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, false >::
     value_to_fit[number_of_values_to_fit] = {
-        shorter_signed::min(),
-        shorter_signed::min() + 1,
-       -1,
-        0,
-        1,
-        shorter_signed::max() - 1,
-        shorter_signed::max()
+        type(shorter_signed::min()),
+        type(shorter_signed::min() + 1),
+        type(-1),
+        type(0),
+        type(1),
+        type(shorter_signed::max() - 1),
+        type(shorter_signed::max())
     };
 
 
@@ -1009,16 +1011,16 @@ struct IntConversionTraits< SRC_INT_TYPE, bool, false, false, true >
 template < class SRC_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, false, false, true >::
     value_to_fit[number_of_values_to_fit] = {
-        0,
-        1
+        type(0),
+        type(1)
     };
 
 template < class SRC_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, false, false, true >::
     out_of_range_value[number_of_out_of_range_values] = {
-        type(shorter_unsigned::max()) + 1,
-        longer_unsigned::max() - 1,
-        longer_unsigned::max()
+        type(type(shorter_unsigned::max()) + 1),
+        type(longer_unsigned::max() - 1),
+        type(longer_unsigned::max())
     };
 
 
@@ -1041,20 +1043,20 @@ struct IntConversionTraits< SRC_INT_TYPE, bool, true, false, true >
 template < class SRC_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, true, false, true >::
     value_to_fit[number_of_values_to_fit] = {
-        0,
-        1
+        type(0),
+        type(1)
     };
 
 template < class SRC_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, bool, true, false, true >::
     out_of_range_value[number_of_out_of_range_values] = {
-        longer_signed::min(),
-        longer_signed::min() + 1,
-       -type(shorter_unsigned::max()) - 1,
-       -type(shorter_unsigned::max()),
-        type(shorter_unsigned::max()) + 1,
-        longer_signed::max() - 1,
-        longer_signed::max()
+        type(longer_signed::min()),
+        type(longer_signed::min() + 1),
+        type(-type(shorter_unsigned::max()) - 1),
+        type(-type(shorter_unsigned::max())),
+        type(type(shorter_unsigned::max()) + 1),
+        type(longer_signed::max() - 1),
+        type(longer_signed::max())
     };
 
 
@@ -1077,18 +1079,18 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, tr
 template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, true >::
     value_to_fit[number_of_values_to_fit] = {
-        0,
-        1,
-        shorter::max() - 1,
-        shorter::max()
+        type(0),
+        type(1),
+        type(shorter::max() - 1),
+        type(shorter::max())
     };
 
 template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, true >::
     out_of_range_value[number_of_out_of_range_values] = {
-        type(shorter::max()) + 1,
-        longer_unsigned::max() - 1,
-        longer_unsigned::max()
+        type(type(shorter::max()) + 1),
+        type(longer_unsigned::max() - 1),
+        type(longer_unsigned::max())
     };
 
 // ===== longer signed -> shorter unsigned =====
@@ -1110,24 +1112,24 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, true >
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, true >::
     value_to_fit[number_of_values_to_fit] = {
-        0,
-        1,
-        shorter_unsigned::max() - 1,
-        shorter_unsigned::max()
+        type(0),
+        type(1),
+        type(shorter_unsigned::max() - 1),
+        type(shorter_unsigned::max())
     };
 
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, false, true >::
     out_of_range_value[number_of_out_of_range_values] = {
-        longer_signed::min(),
-        longer_signed::min() + 1,
-       -type(shorter_unsigned::max()) - 1,
-       -type(shorter_unsigned::max()),
-       -type(shorter_unsigned::max()) + 1,
-       -1,
-        type(shorter_unsigned::max()) + 1,
-        longer_signed::max() - 1,
-        longer_signed::max()
+        type(longer_signed::min()),
+        type(longer_signed::min() + 1),
+        type(-type(shorter_unsigned::max()) - 1),
+        type(-type(shorter_unsigned::max())),
+        type(-type(shorter_unsigned::max()) + 1),
+        type(-1),
+        type(type(shorter_unsigned::max()) + 1),
+        type(longer_signed::max() - 1),
+        type(longer_signed::max())
     };
 
 
@@ -1150,24 +1152,24 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, true >
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, true >::
     value_to_fit[number_of_values_to_fit] = {
-        shorter_signed::min(),
-        shorter_signed::min() + 1,
-       -1,
-        0,
-        1,
-        shorter_signed::max() - 1,
-        shorter_signed::max()
+        type(shorter_signed::min()),
+        type(shorter_signed::min() + 1),
+        type(-1),
+        type(0),
+        type(1),
+        type(shorter_signed::max() - 1),
+        type(shorter_signed::max())
     };
 
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
 const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, true >::
     out_of_range_value[number_of_out_of_range_values] = {
-        longer_signed::min(),
-        longer_signed::min() + 1,
-        type(shorter_signed::min()) - 1,
-        type(shorter_signed::max()) + 1,
-        longer_signed::max() - 1,
-        longer_signed::max()
+        type(longer_signed::min()),
+        type(longer_signed::min() + 1),
+        type(type(shorter_signed::min()) - 1),
+        type(type(shorter_signed::max()) + 1),
+        type(longer_signed::max() - 1),
+        type(longer_signed::max())
     };
 
 

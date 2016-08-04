@@ -202,13 +202,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_nsset_authinfo, has_nsset_changed_authinfo)
     email_addresses.insert( nsset_tech_c1_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( nsset_tech_c2_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::nsset, Notification::updated),
             nsset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -239,13 +238,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_nsset_removed_admin_contact, has_nsset_remo
     email_addresses.insert( nsset_tech_c1_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( nsset_tech_c2_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::nsset, Notification::updated),
             nsset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -288,13 +286,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_nsset_added_admin_contact, has_nsset_added_
     email_addresses.insert( nsset_tech_c2_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( added_tech_c.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::nsset, Notification::updated),
             nsset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
@@ -339,13 +336,12 @@ BOOST_FIXTURE_TEST_CASE(test_updated_nsset_changed_admin_contact, has_nsset_chan
     email_addresses.insert( nsset_tech_c2_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( added_tech_c.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::nsset, Notification::updated),
             nsset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 

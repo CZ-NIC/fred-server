@@ -204,13 +204,12 @@ BOOST_FIXTURE_TEST_CASE(test_transferred_keyset, has_transferred_keyset)
     email_addresses.insert( keyset_tech_c1_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( keyset_tech_c2_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::keyset, Notification::transferred),
             keyset_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 

@@ -73,13 +73,12 @@ BOOST_FIXTURE_TEST_CASE(test_created_contact, has_contact)
 
     email_addresses.insert( cont.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::created),
             cont.crhistoryid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 

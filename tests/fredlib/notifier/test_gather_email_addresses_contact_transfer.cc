@@ -98,13 +98,12 @@ BOOST_FIXTURE_TEST_CASE(test_transferred_contact, has_transferred_contact)
 
     email_addresses.insert( post_transfer_contact_data.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::contact, Notification::transferred),
             post_transfer_contact_data.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 

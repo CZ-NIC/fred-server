@@ -521,10 +521,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
                 (new_nsset_tech_c1.notifyemail.get_value())
                 (new_nsset_tech_c2.notifyemail.get_value());
 
-        BOOST_CHECK_EQUAL(
-            found_email_addresses,
-            etalon_email_addresses
-        );
+        BOOST_CHECK(found_email_addresses == etalon_email_addresses);
     }
     {
         std::map<std::string, std::string> params_etalon = boost::assign::map_list_of
@@ -575,8 +572,8 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
         BOOST_FOREACH(const MockMailerManager::MailData& mail, mocked_mailer_data_access.accumulated_data) {
             BOOST_CHECK_EQUAL( mail.from,           std::string() );
             BOOST_CHECK_EQUAL( mail.mailTemplate,   "notification_update" );
-            BOOST_CHECK_EQUAL( mail.handles,        Fred::Mailer::Handles() );
-            BOOST_CHECK_EQUAL( mail.attach,         Fred::Mailer::Attachments() );
+            BOOST_CHECK( mail.handles == Fred::Mailer::Handles() );
+            BOOST_CHECK( mail.attach == Fred::Mailer::Attachments() );
             BOOST_CHECK_EQUAL( mail.reply_to,       std::string() );
 
             check_maps_are_equal( mail.params,      params_etalon );

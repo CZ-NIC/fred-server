@@ -282,13 +282,12 @@ BOOST_FIXTURE_TEST_CASE(test_renewed_domain, has_renewed_domain)
     email_addresses.insert( admin_c1_history_to_be_notified.notifyemail.get_value() );
     email_addresses.insert( admin_c2_history_to_be_notified.notifyemail.get_value() );
 
-    BOOST_CHECK_EQUAL(
+    BOOST_CHECK(
         Notification::gather_email_addresses(
             ctx,
             Notification::EventOnObject(Fred::domain, Notification::renewed),
             dom_data_to_be_notified.historyid
-        ),
-        email_addresses
+        ) == email_addresses
     );
 }
 
