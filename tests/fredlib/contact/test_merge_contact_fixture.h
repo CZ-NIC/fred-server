@@ -383,7 +383,7 @@ namespace MergeContactFixture
                     if(j & (1 << 3)) state_case.insert(SERVER_BLOCKED);
                     if(j & (1 << 4)) state_case.insert(MOJEID_CONTACT);
                     states_.push_back(state_case);
-                    BOOST_MESSAGE(Util::format_container(state_case));
+                    BOOST_TEST_MESSAGE(Util::format_container(state_case));
                 }
                  */
             return states_;
@@ -420,7 +420,7 @@ namespace MergeContactFixture
             std::string s_idtag = boost::lexical_cast<std::string>(idtag);
             std::string handle = create_contact_handle(registrar_handle, 0,idtag, 0, 15, 0, 1);
 
-            BOOST_MESSAGE(handle);
+            BOOST_TEST_MESSAGE(handle);
             try
             {
                 contact_info.insert(std::make_pair(handle
@@ -486,7 +486,7 @@ namespace MergeContactFixture
                 , grpidtag, state_case, linked_object_case, linked_object_state_case
                 , quantity_case);
 
-            BOOST_MESSAGE(handle);
+            BOOST_TEST_MESSAGE(handle);
 
             try
             {
@@ -556,7 +556,7 @@ namespace MergeContactFixture
                 , tech_contact_handle
                 , additional_tech_contacts);
 
-            BOOST_MESSAGE(handle);
+            BOOST_TEST_MESSAGE(handle);
             try
             {
                 nsset_info.insert(std::make_pair(handle
@@ -600,7 +600,7 @@ namespace MergeContactFixture
                 , tech_contact_handle
                 , additional_tech_contacts);
 
-            BOOST_MESSAGE(handle);
+            BOOST_TEST_MESSAGE(handle);
             try
             {
                 keyset_info.insert(std::make_pair(handle
@@ -644,7 +644,7 @@ namespace MergeContactFixture
                 , owner_contact_handle
                 , admin_contacts);
 
-            BOOST_MESSAGE(fqdn);
+            BOOST_TEST_MESSAGE(fqdn);
             try
             {
             domain_info.insert(std::make_pair(fqdn
@@ -690,7 +690,7 @@ namespace MergeContactFixture
                 , admin_contact_handle
                 , additional_admin_contacts);
 
-            BOOST_MESSAGE(fqdn);
+            BOOST_TEST_MESSAGE(fqdn);
             try
             {
                 domain_info.insert(std::make_pair(fqdn
@@ -1228,11 +1228,11 @@ namespace MergeContactFixture
             for(std::vector<std::string>::const_iterator reg_ci = registrar_vect.begin()
                 ; reg_ci != registrar_vect.end(); ++reg_ci)
             {
-                BOOST_MESSAGE(*reg_ci);
+                BOOST_TEST_MESSAGE(*reg_ci);
                 registrar_info.insert(std::make_pair(*reg_ci,Test::registrar::make(ctx, Optional<std::string>(*reg_ci))));
             }
 
-            BOOST_MESSAGE(registrar_mojeid_handle);
+            BOOST_TEST_MESSAGE(registrar_mojeid_handle);
             registrar_info.insert(std::make_pair(registrar_mojeid_handle,Fred::InfoRegistrarByHandle(registrar_mojeid_handle).exec(ctx).info_registrar_data));
 
             registrar_info.insert(std::make_pair(registrar_sys_handle
@@ -1264,7 +1264,7 @@ namespace MergeContactFixture
                 {
                     for(unsigned state_num = 0; state_num < contact_states.size(); ++state_num)
                     {
-                        BOOST_MESSAGE("States S" + boost::lexical_cast<std::string>(state_num) + " " + Util::format_container(contact_states.at(state_num)));
+                        BOOST_TEST_MESSAGE("States S" + boost::lexical_cast<std::string>(state_num) + " " + Util::format_container(contact_states.at(state_num)));
                         for(std::set<unsigned>::const_iterator linked_object_cases_ci = linked_object_cases.begin()
                             ; linked_object_cases_ci != linked_object_cases.end(); ++linked_object_cases_ci)
                         {
@@ -1283,28 +1283,28 @@ namespace MergeContactFixture
             }
 
             //linked objects need pre-created contacts
-            BOOST_MESSAGE("create_linked_object");
+            BOOST_TEST_MESSAGE("create_linked_object");
             for(std::vector<std::string>::const_iterator reg_ci = registrar_vect.begin()
                 ; reg_ci != registrar_vect.end(); ++reg_ci)
             {
-                BOOST_MESSAGE(std::string("registrar: ") + *reg_ci);
+                BOOST_TEST_MESSAGE(std::string("registrar: ") + *reg_ci);
                 for(unsigned grpidtag = 0; grpidtag < mergeable_contact_group_count; ++grpidtag)
                 {
-                    BOOST_MESSAGE(std::string("grp: ") + boost::lexical_cast<std::string>(grpidtag));
+                    BOOST_TEST_MESSAGE(std::string("grp: ") + boost::lexical_cast<std::string>(grpidtag));
                     for(unsigned contact_state_case = 0; contact_state_case < contact_states.size(); ++contact_state_case)
                     {
-                        BOOST_MESSAGE(std::string("contact_state_case: ") + boost::lexical_cast<std::string>(contact_state_case));
+                        BOOST_TEST_MESSAGE(std::string("contact_state_case: ") + boost::lexical_cast<std::string>(contact_state_case));
 
                         for(std::set<unsigned>::const_iterator linked_object_cases_ci = linked_object_cases.begin()
                             ; linked_object_cases_ci != linked_object_cases.end(); ++linked_object_cases_ci)
                         {
-                            BOOST_MESSAGE(std::string("linked_object_case: ") + boost::lexical_cast<std::string>(*linked_object_cases_ci));
+                            BOOST_TEST_MESSAGE(std::string("linked_object_case: ") + boost::lexical_cast<std::string>(*linked_object_cases_ci));
                             for(unsigned linked_object_state_case = 0; linked_object_state_case < linked_object_states.size(); ++linked_object_state_case)
                             {
-                                BOOST_MESSAGE(std::string("linked_object_state_case: ") + boost::lexical_cast<std::string>(linked_object_state_case));
+                                BOOST_TEST_MESSAGE(std::string("linked_object_state_case: ") + boost::lexical_cast<std::string>(linked_object_state_case));
                                 for(std::vector<unsigned>::const_iterator q_ci = linked_object_quantities.begin(); q_ci != linked_object_quantities.end(); ++q_ci)
                                 {
-                                    BOOST_MESSAGE(std::string("linked_object_quantity: ") + boost::lexical_cast<std::string>(*q_ci));
+                                    BOOST_TEST_MESSAGE(std::string("linked_object_quantity: ") + boost::lexical_cast<std::string>(*q_ci));
                                     std::string contact_handle = create_contact_handle(
                                         *reg_ci//registrar_handle
                                         , 1 //contact data
@@ -1316,7 +1316,7 @@ namespace MergeContactFixture
                                         );//return contact handle composed of given params
                                     for(unsigned number = 0; number < *q_ci; ++number)
                                     {
-                                        BOOST_MESSAGE(std::string("linked_object_quantity_case: ") + boost::lexical_cast<std::string>(number) +" of "+ boost::lexical_cast<std::string>(*q_ci));
+                                        BOOST_TEST_MESSAGE(std::string("linked_object_quantity_case: ") + boost::lexical_cast<std::string>(number) +" of "+ boost::lexical_cast<std::string>(*q_ci));
                                         unsigned long long object_id = create_linked_object(ctx, contact_handle, *reg_ci, grpidtag, contact_state_case
                                             , *linked_object_cases_ci, linked_object_state_case, *q_ci, number);
                                         if(object_id != 0)//else no linked object states
@@ -1333,7 +1333,7 @@ namespace MergeContactFixture
 
             ctx.get_conn().exec("SELECT update_object_states(0)");
 
-            BOOST_MESSAGE("commit");
+            BOOST_TEST_MESSAGE("commit");
             ctx.commit_transaction();
         }
 public:

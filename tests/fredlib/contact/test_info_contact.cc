@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE(info_contact, test_contact_fixture_6da88b63b0bc46e29f6d0
 
     BOOST_CHECK(contact_info1 == contact_info2);
 
-    BOOST_MESSAGE(std::string("test contact id: ") + boost::lexical_cast<std::string>(contact_history_info1.at(0).info_contact_data.id));
+    BOOST_TEST_MESSAGE(std::string("test contact id: ") + boost::lexical_cast<std::string>(contact_history_info1.at(0).info_contact_data.id));
 
     //wrappers
     std::vector<Fred::InfoContactOutput> contact_history_info2 = Fred::InfoContactHistoryById(contact_history_info1.at(0).info_contact_data.id).exec(ctx);
@@ -193,13 +193,13 @@ BOOST_FIXTURE_TEST_CASE(info_contact_diff, test_contact_fixture_6da88b63b0bc46e2
     test_diff.discloseident= std::make_pair(true, false);
     test_diff.disclosenotifyemail= std::make_pair(false, true);
 
-    BOOST_MESSAGE(test_diff.to_string());
-    BOOST_MESSAGE(test_empty_diff.to_string());
+    BOOST_TEST_MESSAGE(test_diff.to_string());
+    BOOST_TEST_MESSAGE(test_empty_diff.to_string());
 
     BOOST_CHECK(!test_diff.is_empty());
     BOOST_CHECK(test_empty_diff.is_empty());
 
-    BOOST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data,contact_info2.info_contact_data).to_string());
+    BOOST_TEST_MESSAGE(Fred::diff_contact_data(contact_info1.info_contact_data,contact_info2.info_contact_data).to_string());
 }
 
 /**

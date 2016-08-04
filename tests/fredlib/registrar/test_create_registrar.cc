@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(create_registrar)
 
     if(test_info != registrar_info.info_registrar_data)
     {
-        BOOST_MESSAGE(Fred::diff_registrar_data(test_info,registrar_info.info_registrar_data).to_string());
+        BOOST_TEST_MESSAGE(Fred::diff_registrar_data(test_info,registrar_info.info_registrar_data).to_string());
     }
 
     BOOST_CHECK(test_info == registrar_info.info_registrar_data);
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(create_registrar_invalid_handle)
     catch(const Fred::CreateRegistrar::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_invalid_registrar_handle());
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_invalid_registrar_handle().compare(test_registrar_handle) == 0);
     }
 
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(create_registrar_unknown_country)
     catch(const Fred::CreateRegistrar::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_country());
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_country().compare("XY") == 0);
     }
 }

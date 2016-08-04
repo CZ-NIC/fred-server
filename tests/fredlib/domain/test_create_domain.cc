@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_valexdate_wrong_domain)
     }
     catch(const Fred::InternalError& ex)
     {
-        BOOST_MESSAGE(ex.what());
+        BOOST_TEST_MESSAGE(ex.what());
     }
 }
 
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_publish_wrong_domain)
     }
     catch(const Fred::InternalError& ex)
     {
-        BOOST_MESSAGE(ex.what());
+        BOOST_TEST_MESSAGE(ex.what());
     }
 }
 
