@@ -122,9 +122,15 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
 
     std::string instantiate_db_template::testcase_db_name()
     {
-        return get_original_db_name() + "_" +
-               get_unit_test_path(boost::unit_test::framework::current_test_case(), "_") +
-               db_name_suffix_;
+        const std::string db_name =
+            get_original_db_name() + "_" +
+            get_unit_test_path(boost::unit_test::framework::current_test_case(), "_") +
+            db_name_suffix_;
+        if (db_name.length() <= max_postgresql_database_name_length) {
+            return db_name;
+        }
+        return db_name.substr(db_name.length() - max_postgresql_database_name_length,
+                              max_postgresql_database_name_length);
     }
 
     instantiate_db_template::instantiate_db_template(const std::string& db_name_suffix)
