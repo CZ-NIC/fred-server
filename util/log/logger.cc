@@ -18,7 +18,7 @@ Log& Logger::get(const std::string& _name) {
     return *it->second;
   } else {
     Log *l = new Log(_name);
-    logs.insert(std::make_pair<std::string, Log*>(_name, l));
+    logs.insert(std::make_pair(_name, l));
     return *l;
   }
 }
@@ -27,7 +27,7 @@ void Logger::add(const std::string& _name, Log *_l) {
   std::map<std::string, Log*>::iterator it = logs.find(_name);
   if (it == logs.end()) {
     _l->setName(_name);
-    logs.insert(std::make_pair<std::string, Log*>(_name, _l));
+    logs.insert(std::make_pair(_name, _l));
   }
 }
 

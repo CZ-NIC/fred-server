@@ -93,7 +93,7 @@ std::auto_ptr<RequestCountInfo> LoggerCorbaClientImpl::getRequestCountUsers(
 
     // conversion
     for (unsigned i=0; i<info->length(); ++i) {
-        ret->insert(std::make_pair(info[i].user_handle, info[i].count));
+      ret->insert(std::make_pair(std::string(info[i].user_handle), info[i].count));
     }
 
     return ret;
