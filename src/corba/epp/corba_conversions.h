@@ -44,33 +44,12 @@ namespace Corba {
 
     Epp::RequestParams unwrap_epp_request_params(const ccReg::EppParams& _epp_request_params);
 
-    /**
-     * Computes disclosability.
-     * @param is_set value converted to disclosability
-     * @param mode selects conversion method
-     * @return true if combination of is_set and mode enables disclosing otherwise false
-     */
-    bool should_be_disclosed(CORBA::Boolean is_set, ccReg::Disclose mode);
-
-    /**
-     * Computes item's new disclose flag value.
-     * @param is_set value converted to item's disclosability
-     * @param mode selects conversion method
-     * @return unset value if flag has to be untached, set on true if item has to be disclosed otherwise set on false
-     */
-    Optional< bool > get_new_disclose_flag_value(CORBA::Boolean is_set, ccReg::Disclose mode);
-
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
 
     ccReg::Contact wrap_localized_info_contact(const Epp::LocalizedContactInfoOutputData& _input );
-
-    /**
-     * Converts database stored disclose flag value to EPP disclose flag with respect to default policy.
-     */
-    CORBA::Boolean wrap_disclose_flag_to_Boolean(bool is_set);
 
     /**
      * @returns data ordered the same way as input contact_handles

@@ -194,6 +194,96 @@ namespace Corba {
         );
     }
 
+    namespace {
+
+    //disclose flag rules:
+    //
+    // const bool disclose = should_be_disclosed(mode, policy, value);
+    //     mode ..... says how to interpret {policy, value} pair; modes are DISCL_HIDE, DISCL_DISPLAY, DISCL_EMPTY
+    //     policy ... the default server policy is 'to disclose'
+    //     value .... boolean value received from registrar
+    //
+    // a)   in DISCL_HIDE mode and default policy 'to disclose': value 'true' means 'to hide'
+    //                                                           value 'false' means 'to disclose'
+    //
+    // b)   in DISCL_DISPLAY mode and default policy 'to disclose': any value means 'to disclose'
+    //
+    // c)   in DISCL_HIDE mode and default policy 'to hide': any value means 'to hide'
+    //
+    // d)   in DISCL_DISPLAY mode and default policy 'to hide': value 'true' means 'to disclose' and
+    //                                                          value 'false' means 'to hide'
+    //
+    // e)   in DISCL_EMPTY mode and default policy 'to disclose': any value means 'to disclose'
+    //
+    // f)   in DISCL_EMPTY mode and default policy 'to hide': any value means 'to hide'
+    //
+    //       |               | policy is     |       | result is
+    //  rule | mode          | 'to disclose' | value | 'to disclose'
+    // ======+===============+===============+=======+===============
+    //   a)  | DISCL_HIDE    | true          | any   | !value
+    //   b)  | DISCL_DISPLAY | true          | any   | true
+    //   c)  | DISCL_HIDE    | false         | any   | false
+    //   d)  | DISCL_DISPLAY | false         | any   | value
+    //   e)  | DISCL_EMPTY   | true          | any   | true
+    //   f)  | DISCL_EMPTY   | false         | any   | false
+    //
+    //                | policy is     |       | result is
+    //  mode          | 'to disclose' | value | 'to disclose'
+    // ===============+===============+=======+===============
+    //  DISCL_HIDE    | false         | false | false
+    //  DISCL_HIDE    | false         | true  | false
+    //  DISCL_HIDE    | true          | false | true
+    //  DISCL_HIDE    | true          | true  | false
+    //  DISCL_DISPLAY | false         | false | false
+    //  DISCL_DISPLAY | false         | true  | true
+    //  DISCL_DISPLAY | true          | false | true
+    //  DISCL_DISPLAY | true          | true  | true
+    //  DISCL_EMPTY   | false         | false | false
+    //  DISCL_EMPTY   | false         | true  | false
+    //  DISCL_EMPTY   | true          | false | true
+    //  DISCL_EMPTY   | true          | true  | true
+
+    bool compute_disclose_flag(ccReg::Disclose mode, bool policy_is_to_disclose, CORBA::Boolean is_set)
+    {
+        const bool value = CorbaConversion::int_to_int< bool >(is_set);
+        switch (mode)
+        {
+            case ccReg::DISCL_HIDE:
+                return policy_is_to_disclose && !value;
+            case ccReg::DISCL_DISPLAY:
+                return policy_is_to_disclose || value;
+            case ccReg::DISCL_EMPTY:
+                return policy_is_to_disclose;
+        }
+        throw std::runtime_error("Invalid ccReg::Disclose value");
+    }
+
+    /**
+     * Computes attitude to data publishing.
+     * @param mode determines is_set meaning
+     * @param is_set this value is converted to attitude to data publishing
+     * @return true if combination of is_set and mode enables disclosing otherwise false
+     */
+    bool should_be_disclosed(ccReg::Disclose mode, CORBA::Boolean is_set)
+    {
+        return compute_disclose_flag(mode, Epp::is_the_default_policy_to_disclose(), is_set);
+    }
+
+    /**
+     * Computes updated attitude to data publishing.
+     * @param mode determines is_set meaning
+     * @param is_set this value is converted to attitude to data publishing
+     * @return 'unset value' if attitude is unchanged, 'true' if has to be disclosed, 'false' otherwise
+     */
+    Optional< bool > get_new_disclose_flag_value(ccReg::Disclose mode, CORBA::Boolean is_set)
+    {
+        // update works just as create but in DISCL_EMPTY mode the stored value isn't updated (no matter to server policy)
+        return (mode == ccReg::DISCL_EMPTY) ? Optional< bool >()
+                                            : should_be_disclosed(mode, is_set);
+    }
+
+    }//namespace Corba::{anonymous}
+
     Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c) {
 
         const StreetAddressPart streets = Corba::unwrap_streets(c.Streets);
@@ -217,115 +307,16 @@ namespace Corba {
             boost::trim_copy( Corba::unwrap_string(c.ident) ),
             Corba::unwrap_ident_type(c.identtype),
             boost::trim_copy( Corba::unwrap_string(c.AuthInfoPw) ),
-            should_be_disclosed(c.DiscloseName, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseOrganization, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseAddress, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseTelephone, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseFax, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseEmail, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseVAT, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseIdent, c.DiscloseFlag),
-            should_be_disclosed(c.DiscloseNotifyEmail, c.DiscloseFlag)
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseName),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseOrganization),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseAddress),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseTelephone),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseFax),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseEmail),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseVAT),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseIdent),
+            should_be_disclosed(c.DiscloseFlag, c.DiscloseNotifyEmail)
         );
-    }
-
-    namespace {
-
-    bool is_disclosed(Epp::DiscloseFlag::Enum value)
-    {
-        switch (value)
-        {
-            case Epp::DiscloseFlag::HIDE:     return false;
-            case Epp::DiscloseFlag::DISCLOSE: return true;
-        }
-        throw std::runtime_error("Invalid disclose flag value");
-    }
-
-    bool is_hidden(Epp::DiscloseFlag::Enum value)
-    {
-        switch (value)
-        {
-            case Epp::DiscloseFlag::HIDE:     return true;
-            case Epp::DiscloseFlag::DISCLOSE: return false;
-        }
-        throw std::runtime_error("Invalid disclose flag value");
-    }
-
-    bool is_default_policy_disclose()
-    {
-        return is_disclosed(Epp::get_default_disclose_policy());
-    }
-
-    bool is_default_policy_hide()
-    {
-        return is_hidden(Epp::get_default_disclose_policy());
-    }
-
-    }//namespace Corba::{anonymous}
-
-    //disclose flag rules:
-    // a)   in DISCL_HIDE mode and default policy DISCLOSE, then 'true' is saved into
-    //      database for idl items with 'false' value and 'false' for idl items with 'true' value
-    //
-    // b)   in DISCL_DISPLAY mode and default policy DISCLOSE, then is saved into database
-    //      to all items 'true' value
-    //
-    // c)   in DISCL_HIDE mode and default policy HIDE, then is saved into database
-    //      to all items 'false' value
-    //
-    // d)   in DISCL_DISPLAY mode and default policy HIDE, then 'true' is saved into
-    //      database for idl items with 'true' value and 'false' for idl items with 'false' value
-    //
-    // e)   in DISCL_EMPTY mode and default policy DISCLOSE, then 'true' is saved into database for all
-    //
-    // f)   in DISCL_EMPTY mode and default policy HIDE, then 'false' is saved into database for all
-    //
-    //  rule | mode          | policy   | db
-    // ======+===============+==========+=======
-    //   a)  | DISCL_HIDE    | DISCLOSE | !idl
-    //   b)  | DISCL_DISPLAY | DISCLOSE | true
-    //   c)  | DISCL_HIDE    | HIDE     | false
-    //   d)  | DISCL_DISPLAY | HIDE     | idl
-    //   e)  | DISCL_EMPTY   | DISCLOSE | true
-    //   f)  | DISCL_EMPTY   | HIDE     | false
-    //
-    //  id | mode          | policy   | idl   | flag
-    // ====+===============+==========+=======+=======
-    //   1 | DISCL_HIDE    | HIDE     | false | HIDE
-    //   2 | DISCL_HIDE    | HIDE     | true  | HIDE
-    //   3 | DISCL_HIDE    | DISCLOSE | false | DISCLOSE
-    //   4 | DISCL_HIDE    | DISCLOSE | true  | HIDE
-    //   5 | DISCL_DISPLAY | HIDE     | false | HIDE
-    //   6 | DISCL_DISPLAY | HIDE     | true  | DISCLOSE
-    //   7 | DISCL_DISPLAY | DISCLOSE | false | DISCLOSE
-    //   8 | DISCL_DISPLAY | DISCLOSE | true  | DISCLOSE
-    //   9 | DISCL_EMPTY   | HIDE     | false | HIDE
-    //  10 | DISCL_EMPTY   | HIDE     | true  | HIDE
-    //  11 | DISCL_EMPTY   | DISCLOSE | false | DISCLOSE
-    //  12 | DISCL_EMPTY   | DISCLOSE | true  | DISCLOSE
-
-    bool should_be_disclosed(CORBA::Boolean is_set, ccReg::Disclose mode)
-    {
-        const bool value = CorbaConversion::int_to_int< bool >(is_set);
-        switch (mode)
-        {
-            case ccReg::DISCL_HIDE:
-                return is_disclosed((is_default_policy_disclose() && !value) ? Epp::DiscloseFlag::DISCLOSE
-                                                                             : Epp::DiscloseFlag::HIDE);
-            case ccReg::DISCL_DISPLAY:
-                return is_disclosed((is_default_policy_hide() && !value) ? Epp::DiscloseFlag::HIDE
-                                                                         : Epp::DiscloseFlag::DISCLOSE);
-            case ccReg::DISCL_EMPTY:
-                return is_disclosed(Epp::get_default_disclose_policy());
-        }
-        throw std::runtime_error("Invalid ccReg::Disclose value");
-    }
-
-    // update it is same as create only if there is DISCL_EMPTY flag then database isn't updated (no matter to server policy)
-    Optional< bool > get_new_disclose_flag_value(CORBA::Boolean is_set, ccReg::Disclose mode)
-    {
-        return (mode == ccReg::DISCL_EMPTY) ? Optional< bool >()
-                                            : should_be_disclosed(is_set, mode);
     }
 
     static Optional<std::string> convert_corba_string_change(const char* input) {
@@ -362,15 +353,15 @@ namespace Corba {
             convert_corba_string_change(c.ident),
             Corba::unwrap_ident_type(c.identtype),
             convert_corba_string_change(c.AuthInfoPw),
-            get_new_disclose_flag_value(c.DiscloseName, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseOrganization, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseAddress, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseTelephone, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseFax, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseEmail, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseVAT, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseIdent, c.DiscloseFlag),
-            get_new_disclose_flag_value(c.DiscloseNotifyEmail, c.DiscloseFlag)
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseName),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseOrganization),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseAddress),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseTelephone),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseFax),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseEmail),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseVAT),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseIdent),
+            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseNotifyEmail)
         );
     }
 
@@ -380,35 +371,30 @@ namespace Corba {
         return buffer;
     }
 
-    // A)  if there is policy DISCLOSE, then flag means "hide" and items from database, which
-    // have value 'false', will have value 'true', rest 'false'. If there isn't once single item with 'true',
-    // flag DISCL_EMPTY returns (value of items aren't unsubstantial)
-    //
-    // B)  if there is policy HIDE, then flag means "disclose" and items from database, which
-    // have value 'true', will have value 'true', rest 'false'. If there isn't once single item with 'true',
-    // flag DISCL_EMPTY returns (value of items aren't unsubstantial)
-    CORBA::Boolean wrap_disclose_flag_to_Boolean(bool is_set)
-    {
-        switch (Epp::get_default_disclose_policy())
-        {
-            case Epp::DiscloseFlag::HIDE:
-                return CorbaConversion::int_to_int< CORBA::Boolean >(is_set);
-            case Epp::DiscloseFlag::DISCLOSE:
-                return CorbaConversion::int_to_int< CORBA::Boolean >(!is_set);
-        }
-        throw std::runtime_error("Invalid default disclose policy value");
-    }
-
+    
     namespace {
 
-    ccReg::Disclose wrap_disclose_flag_to_disclose(Epp::DiscloseFlag::Enum disclose_flag)
+    // policy is 'to hide':     flag means 'to disclose'.
+    // policy is 'to disclose': flag means 'to hide'.
+    bool compute_flag_dependent_on_policy(bool policy_is_to_disclose, bool disclose)
     {
-        switch (disclose_flag)
-        {
-            case Epp::DiscloseFlag::HIDE:     return ccReg::DISCL_DISPLAY;
-            case Epp::DiscloseFlag::DISCLOSE: return ccReg::DISCL_HIDE;
-        }
-        throw std::runtime_error("Invalid disclose flag value");
+        return policy_is_to_disclose ? !disclose : disclose;
+    }
+
+    ccReg::Disclose compute_mode_from_policy(bool policy_is_to_disclose)
+    {
+        return policy_is_to_disclose ? ccReg::DISCL_HIDE : ccReg::DISCL_DISPLAY;
+    }
+
+    /**
+     * Attitude to data publishing translates to EPP hide/disclose flag with respect to default policy.
+     * @param disclose data have to be disclosed
+     * @return corresponding EPP hide/disclose flag
+     */
+    CORBA::Boolean wrap_disclose_demand_to_EPP_flag(bool disclose)
+    {
+        const bool flag = compute_flag_dependent_on_policy(Epp::is_the_default_policy_to_disclose(), disclose);
+        return CorbaConversion::int_to_int< CORBA::Boolean >(flag);
     }
 
     }//namespace Corba::{anonymous}
@@ -482,29 +468,28 @@ namespace Corba {
         result.identtype = Corba::wrap_ident_type(_input.identtype);
         result.AuthInfoPw = Corba::wrap_string_to_corba_string(_input.auth_info_pw.get_value_or_default());
 
-        result.DiscloseFlag           = wrap_disclose_flag_to_disclose(Epp::get_default_disclose_policy());
-        result.DiscloseName           = wrap_disclose_flag_to_Boolean(_input.disclose_name);
-        result.DiscloseOrganization   = wrap_disclose_flag_to_Boolean(_input.disclose_organization);
-        result.DiscloseAddress        = wrap_disclose_flag_to_Boolean(_input.disclose_address);
-        result.DiscloseTelephone      = wrap_disclose_flag_to_Boolean(_input.disclose_telephone);
-        result.DiscloseFax            = wrap_disclose_flag_to_Boolean(_input.disclose_fax);
-        result.DiscloseEmail          = wrap_disclose_flag_to_Boolean(_input.disclose_email);
-        result.DiscloseVAT            = wrap_disclose_flag_to_Boolean(_input.disclose_VAT);
-        result.DiscloseIdent          = wrap_disclose_flag_to_Boolean(_input.disclose_ident);
-        result.DiscloseNotifyEmail    = wrap_disclose_flag_to_Boolean(_input.disclose_notify_email);
+        result.DiscloseFlag           = compute_mode_from_policy(Epp::is_the_default_policy_to_disclose());
+        result.DiscloseName           = wrap_disclose_demand_to_EPP_flag(_input.disclose_name);
+        result.DiscloseOrganization   = wrap_disclose_demand_to_EPP_flag(_input.disclose_organization);
+        result.DiscloseAddress        = wrap_disclose_demand_to_EPP_flag(_input.disclose_address);
+        result.DiscloseTelephone      = wrap_disclose_demand_to_EPP_flag(_input.disclose_telephone);
+        result.DiscloseFax            = wrap_disclose_demand_to_EPP_flag(_input.disclose_fax);
+        result.DiscloseEmail          = wrap_disclose_demand_to_EPP_flag(_input.disclose_email);
+        result.DiscloseVAT            = wrap_disclose_demand_to_EPP_flag(_input.disclose_VAT);
+        result.DiscloseIdent          = wrap_disclose_demand_to_EPP_flag(_input.disclose_ident);
+        result.DiscloseNotifyEmail    = wrap_disclose_demand_to_EPP_flag(_input.disclose_notify_email);
 
-        // if there is policy DISCLOSE or HIDE and if there isn't once single item with 'true',
-        // flag DISCL_EMPTY is set
-        const bool no_one_of_disclose_flags_is_set = !result.DiscloseName &&
-                                                     !result.DiscloseOrganization &&
-                                                     !result.DiscloseAddress &&
-                                                     !result.DiscloseTelephone &&
-                                                     !result.DiscloseFax &&
-                                                     !result.DiscloseEmail &&
-                                                     !result.DiscloseVAT &&
-                                                     !result.DiscloseIdent &&
-                                                     !result.DiscloseNotifyEmail;
-        if (no_one_of_disclose_flags_is_set) {
+        // mode is DISCL_EMPTY if there is not a single flag set
+        const bool at_least_one_flag_is_set = result.DiscloseName         ||
+                                              result.DiscloseOrganization ||
+                                              result.DiscloseAddress      ||
+                                              result.DiscloseTelephone    ||
+                                              result.DiscloseFax          ||
+                                              result.DiscloseEmail        ||
+                                              result.DiscloseVAT          ||
+                                              result.DiscloseIdent        ||
+                                              result.DiscloseNotifyEmail;
+        if (!at_least_one_flag_is_set) {
             result.DiscloseFlag = ccReg::DISCL_EMPTY;
         }
 

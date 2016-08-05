@@ -26,16 +26,8 @@
 
 namespace Epp {
 
-struct DiscloseFlag
-{
-    enum Enum
-    {
-        HIDE,
-        DISCLOSE
-    };
-};
-
-inline DiscloseFlag::Enum get_default_disclose_policy() { return DiscloseFlag::DISCLOSE; }
+inline bool is_the_default_policy_to_disclose() { return true; }
+inline bool is_the_default_policy_to_hide() { return !is_the_default_policy_to_disclose(); }
 
 }//namespace Epp
 
