@@ -1,4 +1,5 @@
 #include "src/epp/contact/contact_create_impl.h"
+#include "src/epp/disclose_policy.h"
 
 #include "src/epp/error.h"
 #include "src/epp/exception.h"
@@ -12,6 +13,27 @@
 #include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
+
+namespace {
+
+template < ContactDisclose::Enum ITEM >
+bool compute_disclose_flag(const ContactCreateInputData &_data, bool _default_policy_is_to_disclose)
+{
+    if (_default_policy_is_to_disclose) {
+        if (_data.to_disclose.empty()) {
+            const bool item_to_hide = _data.to_hide.find(ITEM) != _data.to_hide.end();
+            return !item_to_hide;
+        }
+        throw std::runtime_error("No items should be explicitly disclosed");
+    }
+    if (_data.to_hide.empty()) {
+        const bool item_to_disclose = _data.to_disclose.find(ITEM) != _data.to_disclose.end();
+        return item_to_disclose;
+    }
+    throw std::runtime_error("No items should be explicitly hidden");
+}
+
+}//namespace Epp::{anonymous}
 
 ContactCreateResult contact_create_impl(
     Fred::OperationContext& _ctx,
@@ -51,7 +73,7 @@ ContactCreateResult contact_create_impl(
     }
 
     try {
-        const Fred::CreateContact::Result create_data = Fred::CreateContact(
+        const Fred::CreateContact create_contact_op(
             _data.handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
             _data.authinfo,
@@ -64,8 +86,7 @@ ContactCreateResult contact_create_impl(
                 _data.city,
                 _data.state_or_province,
                 _data.postal_code,
-                _data.country_code
-            ),
+                _data.country_code),
             _data.telephone,
             _data.fax,
             _data.email,
@@ -75,20 +96,17 @@ ContactCreateResult contact_create_impl(
             _data.ident,
             // will be implemented in #13744
             Optional< Fred::ContactAddressList >(),
-            _data.disclose_name,
-            _data.disclose_organization,
-            _data.disclose_address,
-            _data.disclose_telephone,
-            _data.disclose_fax,
-            _data.disclose_email,
-            _data.disclose_VAT,
-            _data.disclose_ident,
-            _data.disclose_notify_email,
-            _logd_request_id
-        ).exec(
-            _ctx,
-            "UTC"
-        );
+            compute_disclose_flag< ContactDisclose::name         >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::organization >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::address      >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::telephone    >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::fax          >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::email        >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::vat          >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::ident        >(_data, is_the_default_policy_to_disclose()),
+            compute_disclose_flag< ContactDisclose::notify_email >(_data, is_the_default_policy_to_disclose()),
+            _logd_request_id);
+        const Fred::CreateContact::Result create_data = create_contact_op.exec(_ctx, "UTC");
 
         return ContactCreateResult(
             create_data.create_object_result.object_id,

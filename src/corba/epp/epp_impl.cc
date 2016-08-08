@@ -91,6 +91,7 @@
 #include "src/epp/registrar_session_data.h"
 #include "src/epp/request_params.h"
 #include "src/epp/localization.h"
+#include "src/epp/disclose_policy.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/corba/util/corba_conversions_string.h"
@@ -2667,7 +2668,8 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
             server_transaction_handle
         );
 
-        ccReg::Contact_var info_result = new ccReg::Contact( Corba::wrap_localized_info_contact(response.payload) );
+        ccReg::Contact_var info_result = new ccReg::Contact(
+            Corba::wrap_localized_info_contact(response.payload, Epp::is_the_default_policy_to_disclose()));
         ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
@@ -2716,7 +2718,7 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::contact_update(
-            Corba::unwrap_contact_update_input_data(_handle, _data_change),
+            Corba::unwrap_contact_update_input_data(_handle, _data_change, Epp::is_the_default_policy_to_disclose()),
             session_data.registrar_id,
             request_params.log_request_id,
             epp_update_contact_enqueue_check_,
@@ -2745,7 +2747,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedCreateContactResponse response = contact_create(
-            Corba::unwrap_contact_create_input_data(_handle, _contact_data),
+            Corba::unwrap_contact_create_input_data(_handle, _contact_data, Epp::is_the_default_policy_to_disclose()),
             session_data.registrar_id,
             request_params.log_request_id,
             session_data.language,

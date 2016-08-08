@@ -20,14 +20,41 @@
  *  @file
  */
 
+#include "tests/interfaces/epp/util.h"
+#include "tests/interfaces/epp/contact/fixture.h"
+
+#include "src/epp/disclose_policy.h"
+#include "src/epp/contact/contact_update_impl.h"
+
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/contact/fixture.h"
+namespace {
 
-#include "src/epp/contact/contact_update_impl.h"
+std::set< Epp::ContactDisclose::Enum > get_all_items()
+{
+    std::set< Epp::ContactDisclose::Enum > items;
+    items.insert(Epp::ContactDisclose::name);
+    items.insert(Epp::ContactDisclose::organization);
+    items.insert(Epp::ContactDisclose::address);
+    items.insert(Epp::ContactDisclose::telephone);
+    items.insert(Epp::ContactDisclose::fax);
+    items.insert(Epp::ContactDisclose::email);
+    items.insert(Epp::ContactDisclose::vat);
+    items.insert(Epp::ContactDisclose::ident);
+    items.insert(Epp::ContactDisclose::notify_email);
+    return items;
+}
+
+template < Epp::ContactDisclose::Enum ITEM >
+bool updated(const Epp::ContactUpdateInputData &_update, bool _before)
+{
+    const bool item_should_be_disclosed = _update.should_be_disclosed< ITEM >();
+    return (item_should_be_disclosed || _update.should_be_hidden< ITEM >()) ? item_should_be_disclosed : _before;
+}
+
+}
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(ContactUpdateImpl)
@@ -53,15 +80,8 @@ BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
         Optional<std::string>(),
         Nullable<Epp::IdentType::Enum>(),
         Optional<std::string>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>()
+        std::set< Epp::ContactDisclose::Enum >(),
+        std::set< Epp::ContactDisclose::Enum >()
     );
 
     BOOST_CHECK_THROW(
@@ -96,15 +116,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
         Optional<std::string>(),
         Nullable<Epp::IdentType::Enum>(),
         Optional<std::string>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>()
+        std::set< Epp::ContactDisclose::Enum >(),
+        std::set< Epp::ContactDisclose::Enum >()
     );
 
     BOOST_CHECK_THROW(
@@ -139,15 +152,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different
         Optional<std::string>(),
         Nullable<Epp::IdentType::Enum>(),
         Optional<std::string>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>()
+        std::set< Epp::ContactDisclose::Enum >(),
+        std::set< Epp::ContactDisclose::Enum >()
     );
 
     BOOST_CHECK_THROW(
@@ -182,15 +188,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server
         Optional<std::string>(),
         Nullable<Epp::IdentType::Enum>(),
         Optional<std::string>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>()
+        std::set< Epp::ContactDisclose::Enum >(),
+        std::set< Epp::ContactDisclose::Enum >()
     );
 
     BOOST_CHECK_THROW(
@@ -226,15 +225,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete
         Optional<std::string>(),
         Nullable<Epp::IdentType::Enum>(),
         Optional<std::string>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>(),
-        Optional<bool>()
+        std::set< Epp::ContactDisclose::Enum >(),
+        std::set< Epp::ContactDisclose::Enum >()
     );
 
     BOOST_CHECK_THROW(
@@ -270,15 +262,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_contact_with
         "CZ0123456789",
         Epp::IdentType::identity_card,
         "a6tg85jk57yu97",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        std::set< Epp::ContactDisclose::Enum >(),
+        get_all_items()
     );
 
     BOOST_CHECK_THROW(
@@ -330,15 +315,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
         Optional<std::string>(),
         Nullable<Epp::IdentType::Enum>(),
         Optional<std::string>(),
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
+        get_all_items(),
+        std::set< Epp::ContactDisclose::Enum >()
     );
 
     try {
@@ -378,15 +356,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
         Optional<std::string>(),
         Nullable<Epp::IdentType::Enum>(),
         Optional<std::string>(),
-        false,
-        false,
-        false,  /* <- !!! */
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
+        get_all_items(),  /* address <- !!! */
+        std::set< Epp::ContactDisclose::Enum >()
     );
 
     BOOST_CHECK_THROW(
@@ -490,39 +461,39 @@ static void check_equal(
     );
     BOOST_CHECK_EQUAL(
         info_after.disclosename,
-        update.disclose_name.isset()    ? update.disclose_name.get_value()  : info_before.disclosename
+        updated< Epp::ContactDisclose::name         >(update, info_before.disclosename)
     );
     BOOST_CHECK_EQUAL(
         info_after.discloseorganization,
-        update.disclose_organization.isset()? update.disclose_organization.get_value()  : info_before.discloseorganization
+        updated< Epp::ContactDisclose::organization >(update, info_before.discloseorganization)
     );
     BOOST_CHECK_EQUAL(
         info_after.discloseaddress,
-        update.disclose_address.isset()     ? update.disclose_address.get_value()       : info_before.discloseaddress
+        updated< Epp::ContactDisclose::address      >(update, info_before.discloseaddress)
     );
     BOOST_CHECK_EQUAL(
         info_after.disclosetelephone,
-        update.disclose_telephone.isset()   ? update.disclose_telephone.get_value()     : info_before.disclosetelephone
+        updated< Epp::ContactDisclose::telephone    >(update, info_before.disclosetelephone)
     );
     BOOST_CHECK_EQUAL(
         info_after.disclosefax,
-        update.disclose_fax.isset()     ? update.disclose_fax.get_value()               : info_before.disclosefax
+        updated< Epp::ContactDisclose::fax          >(update, info_before.disclosefax)
     );
     BOOST_CHECK_EQUAL(
         info_after.discloseemail,
-        update.disclose_email.isset()   ? update.disclose_email.get_value()             : info_before.discloseemail
+        updated< Epp::ContactDisclose::email        >(update, info_before.discloseemail)
     );
     BOOST_CHECK_EQUAL(
         info_after.disclosevat,
-        update.disclose_VAT.isset()     ? update.disclose_VAT.get_value()               : info_before.disclosevat
+        updated< Epp::ContactDisclose::vat          >(update, info_before.disclosevat)
     );
     BOOST_CHECK_EQUAL(
         info_after.discloseident,
-        update.disclose_ident.isset()   ? update.disclose_ident.get_value()             : info_before.discloseident
+        updated< Epp::ContactDisclose::ident        >(update, info_before.discloseident)
     );
     BOOST_CHECK_EQUAL(
         info_after.disclosenotifyemail,
-        update.disclose_notify_email.isset()    ? update.disclose_notify_email.get_value()  : info_before.disclosenotifyemail
+        updated< Epp::ContactDisclose::notify_email >(update, info_before.disclosenotifyemail)
     );
 }
 
@@ -547,15 +518,8 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
         "CZ0123456789",
         Epp::IdentType::identity_card,
         "a6tg85jk57yu97",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        std::set< Epp::ContactDisclose::Enum >(),
+        get_all_items()
     );
 
     Epp::contact_update_impl(
@@ -589,15 +553,8 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_contact_with_server_t
         "CZ0123456789",
         Epp::IdentType::identity_card,
         "a6tg85jk57yu97",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        std::set< Epp::ContactDisclose::Enum >(),
+        get_all_items()
     );
 
     Epp::contact_update_impl(

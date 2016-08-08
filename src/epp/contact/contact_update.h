@@ -25,12 +25,14 @@
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
+#include "src/epp/contact/disclose.h"
 #include "src/epp/contact/ident_type.h"
 
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 #include <string>
+#include <set>
 
 namespace Epp {
 /**
@@ -43,35 +45,8 @@ namespace Epp {
 // TODO XXX later explore relations between ident and identtype data
 // TODO XXX handle snad neni vymazatelny
 // TODO XXX authinfo snad neni vymazatelne
-struct ContactUpdateInputData {
-    std::string handle;
-    Optional<std::string> name;
-    Optional<std::string> organization;
-    Optional<std::string> street1;
-    Optional<std::string> street2;
-    Optional<std::string> street3;
-    Optional<std::string> city;
-    Optional<std::string> state_or_province;
-    Optional<std::string> postal_code;
-    Optional<std::string> country_code;
-    Optional<std::string> telephone;
-    Optional<std::string> fax;
-    Optional<std::string> email;
-    Optional<std::string> notify_email;
-    Optional<std::string> VAT;
-    Optional<std::string> ident;
-    Nullable<IdentType::Enum> identtype;
-    Optional<std::string> authinfo;
-    Optional<bool> disclose_name;
-    Optional<bool> disclose_organization;
-    Optional<bool> disclose_address;
-    Optional<bool> disclose_telephone;
-    Optional<bool> disclose_fax;
-    Optional<bool> disclose_email;
-    Optional<bool> disclose_VAT;
-    Optional<bool> disclose_ident;
-    Optional<bool> disclose_notify_email;
-
+struct ContactUpdateInputData
+{
     ContactUpdateInputData(
         const std::string&            _handle,
         const Optional<std::string>&  _name,
@@ -89,17 +64,10 @@ struct ContactUpdateInputData {
         const Optional<std::string>&  _notify_email,
         const Optional<std::string>&  _VAT,
         const Optional<std::string>&  _ident,
-        const Nullable<IdentType::Enum>&    _identtype,
+        const Nullable<IdentType::Enum>& _identtype,
         const Optional<std::string>&  _authinfo,
-        const Optional<bool>&         _disclose_name,
-        const Optional<bool>&         _disclose_organization,
-        const Optional<bool>&         _disclose_address,
-        const Optional<bool>&         _disclose_telephone,
-        const Optional<bool>&         _disclose_fax,
-        const Optional<bool>&         _disclose_email,
-        const Optional<bool>&         _disclose_VAT,
-        const Optional<bool>&         _disclose_ident,
-        const Optional<bool>&         _disclose_notify_email
+        const std::set< ContactDisclose::Enum > &_to_hide,
+        const std::set< ContactDisclose::Enum > &_to_disclose
     ) :
         handle(_handle),
         name(_name),
@@ -119,16 +87,44 @@ struct ContactUpdateInputData {
         ident(_ident),
         identtype(_identtype),
         authinfo(_authinfo),
-        disclose_name(_disclose_name),
-        disclose_organization(_disclose_organization),
-        disclose_address(_disclose_address),
-        disclose_telephone(_disclose_telephone),
-        disclose_fax(_disclose_fax),
-        disclose_email(_disclose_email),
-        disclose_VAT(_disclose_VAT),
-        disclose_ident(_disclose_ident),
-        disclose_notify_email(_disclose_notify_email)
+        to_hide(_to_hide),
+        to_disclose(_to_disclose)
     { }
+    bool should_discloseflags_be_changed()const
+    {
+        return !to_hide.empty() || !to_disclose.empty();
+    }
+    template < ContactDisclose::Enum ITEM >
+    bool should_be_hidden()const
+    {
+        return to_hide.find(ITEM) != to_hide.end();
+    }
+    template < ContactDisclose::Enum ITEM >
+    bool should_be_disclosed()const
+    {
+        return to_disclose.find(ITEM) != to_disclose.end();
+    }
+
+    std::string handle;
+    Optional<std::string> name;
+    Optional<std::string> organization;
+    Optional<std::string> street1;
+    Optional<std::string> street2;
+    Optional<std::string> street3;
+    Optional<std::string> city;
+    Optional<std::string> state_or_province;
+    Optional<std::string> postal_code;
+    Optional<std::string> country_code;
+    Optional<std::string> telephone;
+    Optional<std::string> fax;
+    Optional<std::string> email;
+    Optional<std::string> notify_email;
+    Optional<std::string> VAT;
+    Optional<std::string> ident;
+    Nullable<IdentType::Enum> identtype;
+    Optional<std::string> authinfo;
+    std::set< ContactDisclose::Enum > to_hide;
+    std::set< ContactDisclose::Enum > to_disclose;
 };
 
 LocalizedSuccessResponse contact_update(

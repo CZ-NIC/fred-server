@@ -23,17 +23,63 @@
 #ifndef EPP_CONTACT_CREATE_H_548537357434
 #define EPP_CONTACT_CREATE_H_548537357434
 
+#include "src/epp/contact/disclose.h"
 #include "src/epp/contact/ident_type.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
+#include <set>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
 
-struct ContactCreateInputData {
+struct ContactCreateInputData
+{
+    ContactCreateInputData(
+        const std::string &_handle,
+        const std::string &_name,
+        const std::string &_organization,
+        const std::string &_street1,
+        const std::string &_street2,
+        const std::string &_street3,
+        const std::string &_city,
+        const std::string &_state_or_province,
+        const std::string &_postal_code,
+        const std::string &_country_code,
+        const std::string &_telephone,
+        const std::string &_fax,
+        const std::string &_email,
+        const std::string &_notify_email,
+        const std::string &_VAT,
+        const std::string &_ident,
+        const Nullable< IdentType::Enum > &_identtype,
+        const std::string &_authinfo,
+        const std::set< ContactDisclose::Enum > &_to_hide,
+        const std::set< ContactDisclose::Enum > &_to_disclose)
+    :   handle(_handle),
+        name(_name),
+        organization(_organization),
+        street1(_street1),
+        street2(_street2),
+        street3(_street3),
+        city(_city),
+        state_or_province(_state_or_province),
+        postal_code(_postal_code),
+        country_code(_country_code),
+        telephone(_telephone),
+        fax(_fax),
+        email(_email),
+        notify_email(_notify_email),
+        VAT(_VAT),
+        ident(_ident),
+        identtype(_identtype),
+        authinfo(_authinfo),
+        to_hide(_to_hide),
+        to_disclose(_to_disclose)
+    { }
+
     std::string handle;
     std::string name;
     std::string organization;
@@ -52,73 +98,8 @@ struct ContactCreateInputData {
     std::string ident;
     Nullable<IdentType::Enum> identtype;
     std::string authinfo;
-    bool disclose_name;
-    bool disclose_organization;
-    bool disclose_address;
-    bool disclose_telephone;
-    bool disclose_fax;
-    bool disclose_email;
-    bool disclose_VAT;
-    bool disclose_ident;
-    bool disclose_notify_email;
-
-    ContactCreateInputData(
-        const std::string&  _handle,
-        const std::string&  _name,
-        const std::string&  _organization,
-        const std::string&  _street1,
-        const std::string&  _street2,
-        const std::string&  _street3,
-        const std::string&  _city,
-        const std::string&  _state_or_province,
-        const std::string&  _postal_code,
-        const std::string&  _country_code,
-        const std::string&  _telephone,
-        const std::string&  _fax,
-        const std::string&  _email,
-        const std::string&  _notify_email,
-        const std::string&  _VAT,
-        const std::string&  _ident,
-        const Nullable<IdentType::Enum>&   _identtype,
-        const std::string&  _authinfo,
-        bool                _disclose_name,
-        bool                _disclose_organization,
-        bool                _disclose_address,
-        bool                _disclose_telephone,
-        bool                _disclose_fax,
-        bool                _disclose_email,
-        bool                _disclose_VAT,
-        bool                _disclose_ident,
-        bool                _disclose_notify_email
-    ) :
-        handle(_handle),
-        name(_name),
-        organization(_organization),
-        street1(_street1),
-        street2(_street2),
-        street3(_street3),
-        city(_city),
-        state_or_province(_state_or_province),
-        postal_code(_postal_code),
-        country_code(_country_code),
-        telephone(_telephone),
-        fax(_fax),
-        email(_email),
-        notify_email(_notify_email),
-        VAT(_VAT),
-        ident(_ident),
-        identtype(_identtype),
-        authinfo(_authinfo),
-        disclose_name(_disclose_name),
-        disclose_organization(_disclose_organization),
-        disclose_address(_disclose_address),
-        disclose_telephone(_disclose_telephone),
-        disclose_fax(_disclose_fax),
-        disclose_email(_disclose_email),
-        disclose_VAT(_disclose_VAT),
-        disclose_ident(_disclose_ident),
-        disclose_notify_email(_disclose_notify_email)
-    { }
+    std::set< ContactDisclose::Enum > to_hide;
+    std::set< ContactDisclose::Enum > to_disclose;
 };
 
 struct LocalizedCreateContactResponse {

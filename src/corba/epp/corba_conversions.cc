@@ -4,7 +4,6 @@
 #include "src/epp/error.h"
 #include "src/epp/contact/ident_type.h"
 #include "src/epp/param.h"
-#include "src/epp/disclose_policy.h"
 #include "src/epp/contact/contact_create.h"
 
 #include "src/corba/epp/epp_legacy_compatibility.h"
@@ -196,127 +195,178 @@ namespace Corba {
 
     namespace {
 
-    //disclose flag rules:
-    //
-    // const bool disclose = should_be_disclosed(mode, policy, value);
-    //     mode ..... says how to interpret {policy, value} pair; modes are DISCL_HIDE, DISCL_DISPLAY, DISCL_EMPTY
-    //     policy ... the default server policy is 'to disclose'
-    //     value .... boolean value received from registrar
-    //
-    // a)   in DISCL_HIDE mode and default policy 'to disclose': value 'true' means 'to hide'
-    //                                                           value 'false' means 'to disclose'
-    //
-    // b)   in DISCL_DISPLAY mode and default policy 'to disclose': any value means 'to disclose'
-    //
-    // c)   in DISCL_HIDE mode and default policy 'to hide': any value means 'to hide'
-    //
-    // d)   in DISCL_DISPLAY mode and default policy 'to hide': value 'true' means 'to disclose' and
-    //                                                          value 'false' means 'to hide'
-    //
-    // e)   in DISCL_EMPTY mode and default policy 'to disclose': any value means 'to disclose'
-    //
-    // f)   in DISCL_EMPTY mode and default policy 'to hide': any value means 'to hide'
-    //
-    //       |               | policy is     |       | result is
-    //  rule | mode          | 'to disclose' | value | 'to disclose'
-    // ======+===============+===============+=======+===============
-    //   a)  | DISCL_HIDE    | true          | any   | !value
-    //   b)  | DISCL_DISPLAY | true          | any   | true
-    //   c)  | DISCL_HIDE    | false         | any   | false
-    //   d)  | DISCL_DISPLAY | false         | any   | value
-    //   e)  | DISCL_EMPTY   | true          | any   | true
-    //   f)  | DISCL_EMPTY   | false         | any   | false
-    //
-    //                | policy is     |       | result is
-    //  mode          | 'to disclose' | value | 'to disclose'
-    // ===============+===============+=======+===============
-    //  DISCL_HIDE    | false         | false | false
-    //  DISCL_HIDE    | false         | true  | false
-    //  DISCL_HIDE    | true          | false | true
-    //  DISCL_HIDE    | true          | true  | false
-    //  DISCL_DISPLAY | false         | false | false
-    //  DISCL_DISPLAY | false         | true  | true
-    //  DISCL_DISPLAY | true          | false | true
-    //  DISCL_DISPLAY | true          | true  | true
-    //  DISCL_EMPTY   | false         | false | false
-    //  DISCL_EMPTY   | false         | true  | false
-    //  DISCL_EMPTY   | true          | false | true
-    //  DISCL_EMPTY   | true          | true  | true
-
-    bool compute_disclose_flag(ccReg::Disclose mode, bool policy_is_to_disclose, CORBA::Boolean is_set)
+    void set_disclosed_items(const ccReg::ContactChange &data, std::set< Epp::ContactDisclose::Enum > &items)
     {
-        const bool value = CorbaConversion::int_to_int< bool >(is_set);
-        switch (mode)
-        {
-            case ccReg::DISCL_HIDE:
-                return policy_is_to_disclose && !value;
-            case ccReg::DISCL_DISPLAY:
-                return policy_is_to_disclose || value;
-            case ccReg::DISCL_EMPTY:
-                return policy_is_to_disclose;
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseName)) {
+            items.insert(Epp::ContactDisclose::name);
         }
-        throw std::runtime_error("Invalid ccReg::Disclose value");
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseOrganization)) {
+            items.insert(Epp::ContactDisclose::organization);
+        }
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseAddress)) {
+            items.insert(Epp::ContactDisclose::address);
+        }
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseTelephone)) {
+            items.insert(Epp::ContactDisclose::telephone);
+        }
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseFax)) {
+            items.insert(Epp::ContactDisclose::fax);
+        }
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseEmail)) {
+            items.insert(Epp::ContactDisclose::email);
+        }
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseVAT)) {
+            items.insert(Epp::ContactDisclose::vat);
+        }
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseIdent)) {
+            items.insert(Epp::ContactDisclose::ident);
+        }
+        if (CorbaConversion::int_to_int< bool >(data.DiscloseNotifyEmail)) {
+            items.insert(Epp::ContactDisclose::notify_email);
+        }
     }
 
-    /**
-     * Computes attitude to data publishing.
-     * @param mode determines is_set meaning
-     * @param is_set this value is converted to attitude to data publishing
-     * @return true if combination of is_set and mode enables disclosing otherwise false
-     */
-    bool should_be_disclosed(ccReg::Disclose mode, CORBA::Boolean is_set)
+    bool is_set_at_least_one_flag(const ccReg::ContactChange &data)
     {
-        return compute_disclose_flag(mode, Epp::is_the_default_policy_to_disclose(), is_set);
+        return CorbaConversion::int_to_int< bool >(data.DiscloseName) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseOrganization) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseAddress) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseTelephone) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseFax) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseEmail) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseVAT) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseIdent) ||
+               CorbaConversion::int_to_int< bool >(data.DiscloseNotifyEmail);
     }
 
-    /**
-     * Computes updated attitude to data publishing.
-     * @param mode determines is_set meaning
-     * @param is_set this value is converted to attitude to data publishing
-     * @return 'unset value' if attitude is unchanged, 'true' if has to be disclosed, 'false' otherwise
-     */
-    Optional< bool > get_new_disclose_flag_value(ccReg::Disclose mode, CORBA::Boolean is_set)
+    void set_all_disclosed_items(std::set< Epp::ContactDisclose::Enum > &items)
     {
-        // update works just as create but in DISCL_EMPTY mode the stored value isn't updated (no matter to server policy)
-        return (mode == ccReg::DISCL_EMPTY) ? Optional< bool >()
-                                            : should_be_disclosed(mode, is_set);
+        items.insert(Epp::ContactDisclose::name);
+        items.insert(Epp::ContactDisclose::organization);
+        items.insert(Epp::ContactDisclose::address);
+        items.insert(Epp::ContactDisclose::telephone);
+        items.insert(Epp::ContactDisclose::fax);
+        items.insert(Epp::ContactDisclose::email);
+        items.insert(Epp::ContactDisclose::vat);
+        items.insert(Epp::ContactDisclose::ident);
+        items.insert(Epp::ContactDisclose::notify_email);
+    }
+
+    void set_to_hide_and_to_disclose_items_for_create(
+        const ccReg::ContactChange &data,
+        bool default_policy_is_to_disclose,
+        std::set< Epp::ContactDisclose::Enum > &to_hide,
+        std::set< Epp::ContactDisclose::Enum > &to_disclose)
+    {
+        to_hide.clear();
+        to_disclose.clear();
+        switch (data.DiscloseFlag)
+        {
+            //element <contact:disclose flag="0">
+            case ccReg::DISCL_HIDE:
+                if (default_policy_is_to_disclose) {
+                    set_disclosed_items(data, to_hide);//missing items will not be hidden
+                }
+                else {
+                    set_all_disclosed_items(to_hide);//all items will be hidden
+                }
+                return;
+            //element <contact:disclose flag="1">
+            case ccReg::DISCL_DISPLAY:
+                if (default_policy_is_to_disclose) {
+                    set_all_disclosed_items(to_disclose);//all items will be disclosed
+                }
+                else {
+                    set_disclosed_items(data, to_disclose);//missing items will not be disclosed
+                }
+                return;
+            //missing element <contact:disclose>
+            case ccReg::DISCL_EMPTY:
+                if (is_set_at_least_one_flag(data)) {
+                    throw std::runtime_error("Not a single one disclose flag has to be set.");
+                }
+                if (default_policy_is_to_disclose) {
+                    set_all_disclosed_items(to_disclose);//all items will be disclosed
+                }
+                else {
+                    set_all_disclosed_items(to_hide);//all items will be hidden
+                }
+                return;
+        }
+        throw std::runtime_error("Invalid DiscloseFlag value");
+    }
+
+    void set_to_hide_and_to_disclose_items_for_update(
+        const ccReg::ContactChange &data,
+        bool default_policy_is_to_disclose,
+        std::set< Epp::ContactDisclose::Enum > &to_hide,
+        std::set< Epp::ContactDisclose::Enum > &to_disclose)
+    {
+        to_hide.clear();
+        to_disclose.clear();
+        switch (data.DiscloseFlag)
+        {
+            //element <contact:disclose flag="0">
+            case ccReg::DISCL_HIDE:
+                if (default_policy_is_to_disclose) {
+                    set_disclosed_items(data, to_hide);//missing items will not be hidden
+                }
+                else {
+                    set_all_disclosed_items(to_hide);//all items will be hidden
+                }
+                return;
+            //element <contact:disclose flag="1">
+            case ccReg::DISCL_DISPLAY:
+                if (default_policy_is_to_disclose) {
+                    set_all_disclosed_items(to_disclose);//all items will be disclosed
+                }
+                else {
+                    set_disclosed_items(data, to_disclose);//missing items will not be disclosed
+                }
+                return;
+            //missing element <contact:disclose>
+            case ccReg::DISCL_EMPTY:
+                if (is_set_at_least_one_flag(data)) {
+                    throw std::runtime_error("Not a single one disclose flag has to be set.");
+                }
+                return;
+        }
+        throw std::runtime_error("Invalid DiscloseFlag value");
     }
 
     }//namespace Corba::{anonymous}
 
-    Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c) {
-
-        const StreetAddressPart streets = Corba::unwrap_streets(c.Streets);
+    Epp::ContactCreateInputData unwrap_contact_create_input_data(
+        const char *const handle,
+        const ccReg::ContactChange &data,
+        bool default_policy_is_to_disclose)
+    {
+        const StreetAddressPart streets = Corba::unwrap_streets(data.Streets);
+        std::set< Epp::ContactDisclose::Enum > to_hide;
+        std::set< Epp::ContactDisclose::Enum > to_disclose;
+        set_to_hide_and_to_disclose_items_for_create(data, default_policy_is_to_disclose, to_hide, to_disclose);
 
         return Epp::ContactCreateInputData(
-            boost::trim_copy( Corba::unwrap_string(handle) ),
-            boost::trim_copy( Corba::unwrap_string(c.Name) ),
-            boost::trim_copy( Corba::unwrap_string(c.Organization) ),
-            boost::trim_copy( streets.street_line_1 ),
-            boost::trim_copy( streets.street_line_2 ),
-            boost::trim_copy( streets.street_line_3 ),
-            boost::trim_copy( Corba::unwrap_string(c.City) ),
-            boost::trim_copy( Corba::unwrap_string(c.StateOrProvince) ),
-            boost::trim_copy( Corba::unwrap_string(c.PostalCode) ),
-            boost::trim_copy( Corba::unwrap_string(c.CC) ),
-            boost::trim_copy( Corba::unwrap_string(c.Telephone) ),
-            boost::trim_copy( Corba::unwrap_string(c.Fax) ),
-            boost::trim_copy( Corba::unwrap_string(c.Email) ),
-            boost::trim_copy( Corba::unwrap_string(c.NotifyEmail) ),
-            boost::trim_copy( Corba::unwrap_string(c.VAT) ),
-            boost::trim_copy( Corba::unwrap_string(c.ident) ),
-            Corba::unwrap_ident_type(c.identtype),
-            boost::trim_copy( Corba::unwrap_string(c.AuthInfoPw) ),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseName),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseOrganization),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseAddress),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseTelephone),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseFax),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseEmail),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseVAT),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseIdent),
-            should_be_disclosed(c.DiscloseFlag, c.DiscloseNotifyEmail)
-        );
+            boost::trim_copy(Corba::unwrap_string(handle)),
+            boost::trim_copy(Corba::unwrap_string(data.Name)),
+            boost::trim_copy(Corba::unwrap_string(data.Organization)),
+            boost::trim_copy(streets.street_line_1),
+            boost::trim_copy(streets.street_line_2),
+            boost::trim_copy(streets.street_line_3),
+            boost::trim_copy(Corba::unwrap_string(data.City)),
+            boost::trim_copy(Corba::unwrap_string(data.StateOrProvince)),
+            boost::trim_copy(Corba::unwrap_string(data.PostalCode)),
+            boost::trim_copy(Corba::unwrap_string(data.CC)),
+            boost::trim_copy(Corba::unwrap_string(data.Telephone)),
+            boost::trim_copy(Corba::unwrap_string(data.Fax)),
+            boost::trim_copy(Corba::unwrap_string(data.Email)),
+            boost::trim_copy(Corba::unwrap_string(data.NotifyEmail)),
+            boost::trim_copy(Corba::unwrap_string(data.VAT)),
+            boost::trim_copy(Corba::unwrap_string(data.ident)),
+            Corba::unwrap_ident_type(data.identtype),
+            boost::trim_copy(Corba::unwrap_string(data.AuthInfoPw)),
+            to_hide,
+            to_disclose);
     }
 
     static Optional<std::string> convert_corba_string_change(const char* input) {
@@ -333,36 +383,36 @@ namespace Corba {
                     :   boost::trim_copy( Corba::unwrap_string(input) );
     }
 
-    Epp::ContactUpdateInputData unwrap_contact_update_input_data(const char* const handle, const ccReg::ContactChange& c) {
+    Epp::ContactUpdateInputData unwrap_contact_update_input_data(
+        const char *const handle,
+        const ccReg::ContactChange &data,
+        bool default_policy_is_to_disclose)
+    {
+        std::set< Epp::ContactDisclose::Enum > to_hide;
+        std::set< Epp::ContactDisclose::Enum > to_disclose;
+        set_to_hide_and_to_disclose_items_for_update(data, default_policy_is_to_disclose, to_hide, to_disclose);
+
         return Epp::ContactUpdateInputData(
             Corba::unwrap_string(handle),
-            convert_corba_string_change(c.Name),
-            convert_corba_string_change(c.Organization),
-            convert_corba_string_change(c.Streets.length() > 0 ? c.Streets[0] : ""),
-            convert_corba_string_change(c.Streets.length() > 1 ? c.Streets[1] : ""),
-            convert_corba_string_change(c.Streets.length() > 2 ? c.Streets[2] : ""),
-            convert_corba_string_change(c.City),
-            convert_corba_string_change(c.StateOrProvince),
-            convert_corba_string_change(c.PostalCode),
-            convert_corba_string_change(c.CC),
-            convert_corba_string_change(c.Telephone),
-            convert_corba_string_change(c.Fax),
-            convert_corba_string_change(c.Email),
-            convert_corba_string_change(c.NotifyEmail),
-            convert_corba_string_change(c.VAT),
-            convert_corba_string_change(c.ident),
-            Corba::unwrap_ident_type(c.identtype),
-            convert_corba_string_change(c.AuthInfoPw),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseName),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseOrganization),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseAddress),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseTelephone),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseFax),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseEmail),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseVAT),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseIdent),
-            get_new_disclose_flag_value(c.DiscloseFlag, c.DiscloseNotifyEmail)
-        );
+            convert_corba_string_change(data.Name),
+            convert_corba_string_change(data.Organization),
+            convert_corba_string_change(0 < data.Streets.length() ? data.Streets[0] : ""),
+            convert_corba_string_change(1 < data.Streets.length() ? data.Streets[1] : ""),
+            convert_corba_string_change(2 < data.Streets.length() ? data.Streets[2] : ""),
+            convert_corba_string_change(data.City),
+            convert_corba_string_change(data.StateOrProvince),
+            convert_corba_string_change(data.PostalCode),
+            convert_corba_string_change(data.CC),
+            convert_corba_string_change(data.Telephone),
+            convert_corba_string_change(data.Fax),
+            convert_corba_string_change(data.Email),
+            convert_corba_string_change(data.NotifyEmail),
+            convert_corba_string_change(data.VAT),
+            convert_corba_string_change(data.ident),
+            Corba::unwrap_ident_type(data.identtype),
+            convert_corba_string_change(data.AuthInfoPw),
+            to_hide,
+            to_disclose);
     }
 
     static std::string formatTime(const boost::posix_time::ptime& tm) {
@@ -381,25 +431,29 @@ namespace Corba {
         return policy_is_to_disclose ? !disclose : disclose;
     }
 
-    ccReg::Disclose compute_mode_from_policy(bool policy_is_to_disclose)
+    ccReg::Disclose compute_mode_from_policy(bool default_policy_is_to_disclose)
     {
-        return policy_is_to_disclose ? ccReg::DISCL_HIDE : ccReg::DISCL_DISPLAY;
+        return default_policy_is_to_disclose ? ccReg::DISCL_HIDE : ccReg::DISCL_DISPLAY;
     }
 
     /**
      * Attitude to data publishing translates to EPP hide/disclose flag with respect to default policy.
+     * @param default_policy_is_to_disclose disclose policy
      * @param disclose data have to be disclosed
      * @return corresponding EPP hide/disclose flag
      */
-    CORBA::Boolean wrap_disclose_demand_to_EPP_flag(bool disclose)
+    CORBA::Boolean wrap_disclose_demand_to_EPP_flag(bool default_policy_is_to_disclose,
+                                                    bool disclose)
     {
-        const bool flag = compute_flag_dependent_on_policy(Epp::is_the_default_policy_to_disclose(), disclose);
+        const bool flag = compute_flag_dependent_on_policy(default_policy_is_to_disclose, disclose);
         return CorbaConversion::int_to_int< CORBA::Boolean >(flag);
     }
 
     }//namespace Corba::{anonymous}
 
-    ccReg::Contact wrap_localized_info_contact(const Epp::LocalizedContactInfoOutputData& _input ) {
+    ccReg::Contact wrap_localized_info_contact(const Epp::LocalizedContactInfoOutputData &_input,
+                                               bool default_policy_is_to_disclose)
+    {
         ccReg::Contact result;
 
         result.handle = wrap_string_to_corba_string( _input.handle );
@@ -468,16 +522,15 @@ namespace Corba {
         result.identtype = Corba::wrap_ident_type(_input.identtype);
         result.AuthInfoPw = Corba::wrap_string_to_corba_string(_input.auth_info_pw.get_value_or_default());
 
-        result.DiscloseFlag           = compute_mode_from_policy(Epp::is_the_default_policy_to_disclose());
-        result.DiscloseName           = wrap_disclose_demand_to_EPP_flag(_input.disclose_name);
-        result.DiscloseOrganization   = wrap_disclose_demand_to_EPP_flag(_input.disclose_organization);
-        result.DiscloseAddress        = wrap_disclose_demand_to_EPP_flag(_input.disclose_address);
-        result.DiscloseTelephone      = wrap_disclose_demand_to_EPP_flag(_input.disclose_telephone);
-        result.DiscloseFax            = wrap_disclose_demand_to_EPP_flag(_input.disclose_fax);
-        result.DiscloseEmail          = wrap_disclose_demand_to_EPP_flag(_input.disclose_email);
-        result.DiscloseVAT            = wrap_disclose_demand_to_EPP_flag(_input.disclose_VAT);
-        result.DiscloseIdent          = wrap_disclose_demand_to_EPP_flag(_input.disclose_ident);
-        result.DiscloseNotifyEmail    = wrap_disclose_demand_to_EPP_flag(_input.disclose_notify_email);
+        result.DiscloseName           = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_name);
+        result.DiscloseOrganization   = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_organization);
+        result.DiscloseAddress        = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_address);
+        result.DiscloseTelephone      = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_telephone);
+        result.DiscloseFax            = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_fax);
+        result.DiscloseEmail          = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_email);
+        result.DiscloseVAT            = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_VAT);
+        result.DiscloseIdent          = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_ident);
+        result.DiscloseNotifyEmail    = wrap_disclose_demand_to_EPP_flag(default_policy_is_to_disclose, _input.disclose_notify_email);
 
         // mode is DISCL_EMPTY if there is not a single flag set
         const bool at_least_one_flag_is_set = result.DiscloseName         ||
@@ -489,9 +542,8 @@ namespace Corba {
                                               result.DiscloseVAT          ||
                                               result.DiscloseIdent        ||
                                               result.DiscloseNotifyEmail;
-        if (!at_least_one_flag_is_set) {
-            result.DiscloseFlag = ccReg::DISCL_EMPTY;
-        }
+        result.DiscloseFlag = at_least_one_flag_is_set ? compute_mode_from_policy(default_policy_is_to_disclose)
+                                                       : ccReg::DISCL_EMPTY;
 
         return result;
     }

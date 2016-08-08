@@ -20,14 +20,69 @@
  *  @file
  */
 
+#include "tests/interfaces/epp/util.h"
+#include "tests/interfaces/epp/contact/fixture.h"
+
+#include "src/epp/disclose_policy.h"
+#include "src/epp/contact/contact_create_impl.h"
+
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/contact/fixture.h"
+namespace {
 
-#include "src/epp/contact/contact_create_impl.h"
+void set_all_items(std::set< Epp::ContactDisclose::Enum > &items)
+{
+    items.insert(Epp::ContactDisclose::name);
+    items.insert(Epp::ContactDisclose::organization);
+    items.insert(Epp::ContactDisclose::address);
+    items.insert(Epp::ContactDisclose::telephone);
+    items.insert(Epp::ContactDisclose::fax);
+    items.insert(Epp::ContactDisclose::email);
+    items.insert(Epp::ContactDisclose::vat);
+    items.insert(Epp::ContactDisclose::ident);
+    items.insert(Epp::ContactDisclose::notify_email);
+}
+
+std::set< Epp::ContactDisclose::Enum > to_hide_items(bool disclose)
+{
+    std::set< Epp::ContactDisclose::Enum > items;
+    if (Epp::is_the_default_policy_to_disclose() && !disclose)
+    {
+        set_all_items(items);
+    }
+    return items;
+}
+
+std::set< Epp::ContactDisclose::Enum > to_disclose_items(bool disclose)
+{
+    std::set< Epp::ContactDisclose::Enum > items;
+    if (!Epp::is_the_default_policy_to_disclose() && disclose)
+    {
+        set_all_items(items);
+    }
+    return items;
+}
+
+template < Epp::ContactDisclose::Enum ITEM >
+bool disclose(const Epp::ContactCreateInputData &_data)
+{
+    const bool item_has_to_be_hidden    = _data.to_hide.find(ITEM) != _data.to_hide.end();
+    const bool item_has_to_be_disclosed = _data.to_disclose.find(ITEM) != _data.to_disclose.end();
+    if (item_has_to_be_hidden && !item_has_to_be_disclosed) {
+        return false;
+    }
+    if (!item_has_to_be_hidden && item_has_to_be_disclosed) {
+        return true;
+    }
+    if (!item_has_to_be_hidden && !item_has_to_be_disclosed) {
+        return Epp::is_the_default_policy_to_disclose();
+    }
+    throw std::runtime_error("Ambiguous disclose flag");
+}
+
+}
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(ContactCreateImpl)
@@ -53,15 +108,8 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
         "",
         Nullable<Epp::IdentType::Enum>(),
         "authInfo123",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        to_hide_items(true),
+        to_disclose_items(true)
     );
 
     BOOST_CHECK_THROW(
@@ -96,15 +144,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
         "",
         Nullable<Epp::IdentType::Enum>(),
         "authInfo123",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        to_hide_items(true),
+        to_disclose_items(true)
     );
 
     BOOST_CHECK_THROW(
@@ -139,15 +180,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
         "",
         Nullable<Epp::IdentType::Enum>(),
         "authInfo123",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        to_hide_items(true),
+        to_disclose_items(true)
     );
 
     BOOST_CHECK_THROW(
@@ -186,15 +220,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
         "",
         Nullable<Epp::IdentType::Enum>(),
         "authInfo123",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        to_hide_items(true),
+        to_disclose_items(true)
     );
 
     try {
@@ -230,15 +257,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
         "",
         Nullable<Epp::IdentType::Enum>(),
         "authInfo123",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        to_hide_items(true),
+        to_disclose_items(true)
     );
 
     try{
@@ -279,16 +299,16 @@ void check_equal(const Epp::ContactCreateInputData& create_data, const Fred::Inf
         info_data.ssntype.get_value_or_default()
     );
 
-    BOOST_CHECK_EQUAL( create_data.authinfo,                info_data.authinfopw );
-    BOOST_CHECK_EQUAL( create_data.disclose_name,           info_data.disclosename );
-    BOOST_CHECK_EQUAL( create_data.disclose_organization,   info_data.discloseorganization );
-    BOOST_CHECK_EQUAL( create_data.disclose_address,        info_data.discloseaddress );
-    BOOST_CHECK_EQUAL( create_data.disclose_telephone,      info_data.disclosetelephone );
-    BOOST_CHECK_EQUAL( create_data.disclose_fax,            info_data.disclosefax );
-    BOOST_CHECK_EQUAL( create_data.disclose_email,          info_data.discloseemail );
-    BOOST_CHECK_EQUAL( create_data.disclose_VAT,            info_data.disclosevat );
-    BOOST_CHECK_EQUAL( create_data.disclose_ident,          info_data.discloseident );
-    BOOST_CHECK_EQUAL( create_data.disclose_notify_email,   info_data.disclosenotifyemail );
+    BOOST_CHECK_EQUAL( create_data.authinfo,                                        info_data.authinfopw );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::name         >(create_data), info_data.disclosename );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::organization >(create_data), info_data.discloseorganization );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::address      >(create_data), info_data.discloseaddress );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::telephone    >(create_data), info_data.disclosetelephone );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::fax          >(create_data), info_data.disclosefax );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::email        >(create_data), info_data.discloseemail );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::vat          >(create_data), info_data.disclosevat );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::ident        >(create_data), info_data.discloseident );
+    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::notify_email >(create_data), info_data.disclosenotifyemail );
 }
 
 BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
@@ -312,15 +332,8 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
         "",
         Nullable<Epp::IdentType::Enum>(),
         "authInfo123",
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        to_hide_items(true),
+        to_disclose_items(true)
     );
 
     const Epp::ContactCreateResult result = Epp::contact_create_impl(

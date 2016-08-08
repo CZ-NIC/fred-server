@@ -36,9 +36,15 @@
 
 namespace Corba {
 
-    Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
+    Epp::ContactCreateInputData unwrap_contact_create_input_data(
+        const char *const handle,
+        const ccReg::ContactChange &data,
+        bool default_policy_is_to_disclose);
 
-    Epp::ContactUpdateInputData unwrap_contact_update_input_data(const char* const handle, const ccReg::ContactChange& c);
+    Epp::ContactUpdateInputData unwrap_contact_update_input_data(
+        const char *const handle,
+        const ccReg::ContactChange &data,
+        bool default_policy_is_to_disclose);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
 
@@ -49,7 +55,8 @@ namespace Corba {
 
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
 
-    ccReg::Contact wrap_localized_info_contact(const Epp::LocalizedContactInfoOutputData& _input );
+    ccReg::Contact wrap_localized_info_contact(const Epp::LocalizedContactInfoOutputData& _input,
+                                               bool default_policy_is_to_disclose);
 
     /**
      * @returns data ordered the same way as input contact_handles
