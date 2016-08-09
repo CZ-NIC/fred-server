@@ -45,24 +45,34 @@ void set_all_items(std::set< Epp::ContactDisclose::Enum > &items)
     items.insert(Epp::ContactDisclose::notify_email);
 }
 
-std::set< Epp::ContactDisclose::Enum > to_hide_items(bool disclose)
+void set_all_disclose_flags(bool to_disclose, Epp::ContactCreateInputData &data)
 {
-    std::set< Epp::ContactDisclose::Enum > items;
-    if (Epp::is_the_default_policy_to_disclose() && !disclose)
+    if (Epp::is_the_default_policy_to_disclose() != to_disclose)
     {
-        set_all_items(items);
+        set_all_items(to_disclose ? data.to_hide : data.to_disclose);
     }
-    return items;
 }
 
-std::set< Epp::ContactDisclose::Enum > to_disclose_items(bool disclose)
+void set_correct_contact_data(Epp::ContactCreateInputData &contact_data)
 {
-    std::set< Epp::ContactDisclose::Enum > items;
-    if (!Epp::is_the_default_policy_to_disclose() && disclose)
-    {
-        set_all_items(items);
-    }
-    return items;
+    contact_data.name              = "Jan Novak Jr.";
+    //contact_data.organization
+    contact_data.street1           = "ulice 1";
+    contact_data.street2           = "ulice 2";
+    contact_data.street3           = "ulice 3";
+    contact_data.city              = "mesto";
+    contact_data.state_or_province = "hejtmanstvi";
+    contact_data.postal_code       = "12345";
+    contact_data.country_code      = "CZ";
+    contact_data.telephone         = "+420 123 456 789";
+    contact_data.fax               = "+420 987 654 321";
+    contact_data.email             = "jan@novak.novak";
+    contact_data.notify_email      = "jan.notify@novak.novak";
+    contact_data.VAT               = "MyVATstring";
+    //contact_data.ident
+    //contact_data.identtype
+    contact_data.authinfo          = "authInfo123";
+    set_all_disclose_flags(true, contact_data);
 }
 
 template < Epp::ContactDisclose::Enum ITEM >
@@ -89,32 +99,13 @@ BOOST_AUTO_TEST_SUITE(ContactCreateImpl)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
 {
-    const Epp::ContactCreateInputData contact_data(
-        "contacthandle",
-        "Jan Novak Jr.",
-        "",
-        "ulice 1",
-        "ulice 2",
-        "ulice 3",
-        "mesto",
-        "hejtmanstvi",
-        "12345",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "",
-        Nullable<Epp::IdentType::Enum>(),
-        "authInfo123",
-        to_hide_items(true),
-        to_disclose_items(true)
-    );
+    Epp::ContactCreateInputData contact_data;
+    set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
         Epp::contact_create_impl(
             ctx,
+            "contacthandle",
             contact_data,
             0 /* <== !!! */,
             42
@@ -125,32 +116,13 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
 {
-    const Epp::ContactCreateInputData contact_data(
-        "contacthandle1?",
-        "Jan Novak Jr.",
-        "",
-        "ulice 1",
-        "ulice 2",
-        "ulice 3",
-        "mesto",
-        "hejtmanstvi",
-        "12345",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "",
-        Nullable<Epp::IdentType::Enum>(),
-        "authInfo123",
-        to_hide_items(true),
-        to_disclose_items(true)
-    );
+    Epp::ContactCreateInputData contact_data;
+    set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
         Epp::contact_create_impl(
             ctx,
+            "contacthandle1?" /* <== !!! */,
             contact_data,
             registrar.id,
             42 /* TODO */
@@ -161,32 +133,13 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
 {
-    const Epp::ContactCreateInputData contact_data(
-        contact.handle,
-        "Jan Novak Jr.",
-        "",
-        "ulice 1",
-        "ulice 2",
-        "ulice 3",
-        "mesto",
-        "hejtmanstvi",
-        "12345",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "",
-        Nullable<Epp::IdentType::Enum>(),
-        "authInfo123",
-        to_hide_items(true),
-        to_disclose_items(true)
-    );
+    Epp::ContactCreateInputData contact_data;
+    set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
         Epp::contact_create_impl(
             ctx,
+            contact.handle,
             contact_data,
             registrar.id,
             42 /* TODO */
@@ -201,32 +154,13 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
         Fred::DeleteContactByHandle(contact.handle).exec(ctx);
     }
 
-    const Epp::ContactCreateInputData contact_data(
-        contact.handle,
-        "Jan Novak Jr.",
-        "",
-        "ulice 1",
-        "ulice 2",
-        "ulice 3",
-        "mesto",
-        "hejtmanstvi",
-        "12345",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "",
-        Nullable<Epp::IdentType::Enum>(),
-        "authInfo123",
-        to_hide_items(true),
-        to_disclose_items(true)
-    );
+    Epp::ContactCreateInputData contact_data;
+    set_correct_contact_data(contact_data);
 
     try {
         Epp::contact_create_impl(
             ctx,
+            contact.handle,
             contact_data,
             registrar.id,
             42 /* TODO */
@@ -238,32 +172,14 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
 {
-    const Epp::ContactCreateInputData contact_data(
-        "contacthandle1",
-        "Jan Novak Jr.",
-        "",
-        "ulice 1",
-        "ulice 2",
-        "ulice 3",
-        "mesto",
-        "hejtmanstvi",
-        "12345",
-        "1Z9", /* <- !!! */
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "",
-        Nullable<Epp::IdentType::Enum>(),
-        "authInfo123",
-        to_hide_items(true),
-        to_disclose_items(true)
-    );
+    Epp::ContactCreateInputData contact_data;
+    set_correct_contact_data(contact_data);
+    contact_data.country_code      = "1Z9"; /* <- !!! */
 
     try{
         Epp::contact_create_impl(
             ctx,
+            "contacthandle1",
             contact_data,
             registrar.id,
             42 /* TODO */
@@ -273,8 +189,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
     }
 }
 
-void check_equal(const Epp::ContactCreateInputData& create_data, const Fred::InfoContactData& info_data) {
-    BOOST_CHECK_EQUAL( boost::to_upper_copy( create_data.handle ), info_data.handle );
+void check_equal(const Epp::ContactCreateInputData& create_data, const Fred::InfoContactData& info_data)
+{
     BOOST_CHECK_EQUAL( create_data.name,                info_data.name.get_value_or_default() );
     BOOST_CHECK_EQUAL( create_data.organization,        info_data.organization.get_value_or_default() );
 
@@ -313,31 +229,13 @@ void check_equal(const Epp::ContactCreateInputData& create_data, const Fred::Inf
 
 BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
 {
-    const Epp::ContactCreateInputData contact_data(
-        "contacthandle1",
-        "Jan Novak Jr.",
-        "",
-        "ulice 1",
-        "ulice 2",
-        "ulice 3",
-        "mesto",
-        "hejtmanstvi",
-        "12345",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "",
-        Nullable<Epp::IdentType::Enum>(),
-        "authInfo123",
-        to_hide_items(true),
-        to_disclose_items(true)
-    );
+    Epp::ContactCreateInputData contact_data;
+    set_correct_contact_data(contact_data);
+    const std::string contact_handle = "contacthandle1";
 
     const Epp::ContactCreateResult result = Epp::contact_create_impl(
         ctx,
+        contact_handle,
         contact_data,
         registrar.id,
         42 /* TODO */
@@ -345,20 +243,13 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
 
     /* check returned data and db changes */
     {
-        const Fred::InfoContactData check_sample = Fred::InfoContactByHandle(contact_data.handle).exec(ctx).info_contact_data;
+        const Fred::InfoContactData check_sample = Fred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data;
         BOOST_CHECK_EQUAL( check_sample.id, result.id );
-        BOOST_CHECK_EQUAL(
-            boost::posix_time::time_from_string(
-                static_cast<std::string>(
-                    ctx.get_conn().exec("SELECT now() AT TIME ZONE 'utc' AS now_")[0]["now_"]
-                )
-            ),
-            result.crdate
-        );
-        check_equal(
-            contact_data,
-            check_sample
-        );
+        const Database::Result db_res = ctx.get_conn().exec("SELECT NOW() AT TIME ZONE 'utc'");
+        const std::string current_utc_time = static_cast< std::string >(db_res[0][0]);
+        BOOST_CHECK_EQUAL(boost::posix_time::time_from_string(current_utc_time), result.crdate);
+        BOOST_CHECK_EQUAL(boost::to_upper_copy(contact_handle), check_sample.handle);
+        check_equal(contact_data, check_sample);
     }
 }
 

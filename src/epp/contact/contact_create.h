@@ -31,56 +31,34 @@
 #include "util/optional_value.h"
 
 #include <set>
+#include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
 
 struct ContactCreateInputData
 {
-    ContactCreateInputData(
-        const std::string &_handle,
-        const std::string &_name,
-        const std::string &_organization,
-        const std::string &_street1,
-        const std::string &_street2,
-        const std::string &_street3,
-        const std::string &_city,
-        const std::string &_state_or_province,
-        const std::string &_postal_code,
-        const std::string &_country_code,
-        const std::string &_telephone,
-        const std::string &_fax,
-        const std::string &_email,
-        const std::string &_notify_email,
-        const std::string &_VAT,
-        const std::string &_ident,
-        const Nullable< IdentType::Enum > &_identtype,
-        const std::string &_authinfo,
-        const std::set< ContactDisclose::Enum > &_to_hide,
-        const std::set< ContactDisclose::Enum > &_to_disclose)
-    :   handle(_handle),
-        name(_name),
-        organization(_organization),
-        street1(_street1),
-        street2(_street2),
-        street3(_street3),
-        city(_city),
-        state_or_province(_state_or_province),
-        postal_code(_postal_code),
-        country_code(_country_code),
-        telephone(_telephone),
-        fax(_fax),
-        email(_email),
-        notify_email(_notify_email),
-        VAT(_VAT),
-        ident(_ident),
-        identtype(_identtype),
-        authinfo(_authinfo),
-        to_hide(_to_hide),
-        to_disclose(_to_disclose)
-    { }
+    template < ContactDisclose::Enum ITEM >
+    bool compute_disclose_flag(bool default_policy_is_to_disclose)const
+    {
+        const bool disclose_preference_is_set = !to_hide.empty() || !to_disclose.empty();
+        if (!disclose_preference_is_set) {
+            const bool item_should_be_disclosed = default_policy_is_to_disclose;
+            return item_should_be_disclosed;
+        }
+        const bool disclose_preference_is_to_hide = to_hide.find(ITEM) != to_hide.end();
+        const bool disclose_preference_is_to_disclose = to_disclose.find(ITEM) != to_disclose.end();
+        if (disclose_preference_is_to_hide != disclose_preference_is_to_disclose) {
+            const bool item_should_be_disclosed = disclose_preference_is_to_disclose;
+            return item_should_be_disclosed;
+        }
+        if (!disclose_preference_is_to_hide && !disclose_preference_is_to_disclose) {
+            const bool item_should_be_disclosed = default_policy_is_to_disclose;
+            return item_should_be_disclosed;
+        }
+        throw std::runtime_error("The same entry can't be simultaneously hidden and disclosed.");
+    }
 
-    std::string handle;
     std::string name;
     std::string organization;
     std::string street1;
@@ -96,7 +74,7 @@ struct ContactCreateInputData
     std::string notify_email;
     std::string VAT;
     std::string ident;
-    Nullable<IdentType::Enum> identtype;
+    Nullable< IdentType::Enum > identtype;
     std::string authinfo;
     std::set< ContactDisclose::Enum > to_hide;
     std::set< ContactDisclose::Enum > to_disclose;
@@ -116,14 +94,14 @@ struct LocalizedCreateContactResponse {
 };
 
 LocalizedCreateContactResponse contact_create(
-    const ContactCreateInputData& _data,
+    const std::string &_contact_handle,
+    const ContactCreateInputData &_data,
     unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
+    const Optional< unsigned long long > &_logd_request_id,
     SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const std::string& _dont_notify_client_transaction_handles_with_this_prefix
-);
+    const std::string &_server_transaction_handle,
+    const std::string &_client_transaction_handle,
+    const std::string &_dont_notify_client_transaction_handles_with_this_prefix);
 
 }
 

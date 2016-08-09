@@ -17,64 +17,60 @@ namespace Epp {
 namespace {
 
 template < ContactDisclose::Enum ITEM >
-bool compute_disclose_flag(const ContactCreateInputData &_data, bool _default_policy_is_to_disclose)
+bool compute_disclose_flag(const ContactCreateInputData &_data)
 {
-    if (_default_policy_is_to_disclose) {
-        if (_data.to_disclose.empty()) {
-            const bool item_to_hide = _data.to_hide.find(ITEM) != _data.to_hide.end();
-            return !item_to_hide;
-        }
-        throw std::runtime_error("No items should be explicitly disclosed");
-    }
-    if (_data.to_hide.empty()) {
-        const bool item_to_disclose = _data.to_disclose.find(ITEM) != _data.to_disclose.end();
-        return item_to_disclose;
-    }
-    throw std::runtime_error("No items should be explicitly hidden");
+    return _data.compute_disclose_flag< ITEM >(is_the_default_policy_to_disclose());
 }
 
 }//namespace Epp::{anonymous}
 
 ContactCreateResult contact_create_impl(
-    Fred::OperationContext& _ctx,
-    const ContactCreateInputData& _data,
+    Fred::OperationContext &_ctx,
+    const std::string &_contact_handle,
+    const ContactCreateInputData &_data,
     const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-) {
-
+    const Optional< unsigned long long > &_logd_request_id)
+{
     if( _registrar_id == 0 ) {
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Contact::get_handle_syntax_validity(_data.handle) != Fred::ContactHandleState::SyntaxValidity::valid ) {
+    const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_contact_handle) ==
+                                 Fred::ContactHandleState::SyntaxValidity::valid;
+    if (!handle_is_valid) {
         throw InvalidHandle();
     }
 
     {
-        const Fred::ContactHandleState::Registrability::Enum in_registry = Fred::Contact::get_handle_registrability(_ctx, _data.handle);
+        const Fred::ContactHandleState::Registrability::Enum contact_registrability =
+            Fred::Contact::get_handle_registrability(_ctx, _contact_handle);
 
-        if(in_registry == Fred::ContactHandleState::Registrability::registered) {
+        const bool contact_is_registered = contact_registrability ==
+                                           Fred::ContactHandleState::Registrability::registered;
+        if (contact_is_registered) {
             throw ObjectExists();
         }
 
         AggregatedParamErrors exception;
 
-        if(in_registry == Fred::ContactHandleState::Registrability::in_protection_period) {
+        const bool contact_is_in_protection_period = contact_registrability ==
+                                                     Fred::ContactHandleState::Registrability::in_protection_period;
+        if (contact_is_in_protection_period) {
             exception.add(Error::of_scalar_parameter(Param::contact_handle, Reason::protected_period));
         }
 
-        if ( !is_country_code_valid(_ctx, _data.country_code) ) {
+        if (!is_country_code_valid(_ctx, _data.country_code)) {
             exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
         }
 
-        if ( !exception.is_empty() ) {
+        if (!exception.is_empty()) {
             throw exception;
         }
     }
 
     try {
         const Fred::CreateContact create_contact_op(
-            _data.handle,
+            _contact_handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
             _data.authinfo,
             _data.name,
@@ -96,15 +92,15 @@ ContactCreateResult contact_create_impl(
             _data.ident,
             // will be implemented in #13744
             Optional< Fred::ContactAddressList >(),
-            compute_disclose_flag< ContactDisclose::name         >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::organization >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::address      >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::telephone    >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::fax          >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::email        >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::vat          >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::ident        >(_data, is_the_default_policy_to_disclose()),
-            compute_disclose_flag< ContactDisclose::notify_email >(_data, is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::name         >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::organization >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::address      >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::telephone    >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::fax          >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::email        >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::vat          >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::ident        >(is_the_default_policy_to_disclose()),
+            _data.compute_disclose_flag< ContactDisclose::notify_email >(is_the_default_policy_to_disclose()),
             _logd_request_id);
         const Fred::CreateContact::Result create_data = create_contact_op.exec(_ctx, "UTC");
 

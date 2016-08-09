@@ -47,65 +47,29 @@ namespace Epp {
 // TODO XXX authinfo snad neni vymazatelne
 struct ContactUpdateInputData
 {
-    ContactUpdateInputData(
-        const std::string&            _handle,
-        const Optional<std::string>&  _name,
-        const Optional<std::string>&  _organization,
-        const Optional<std::string>&  _street1,
-        const Optional<std::string>&  _street2,
-        const Optional<std::string>&  _street3,
-        const Optional<std::string>&  _city,
-        const Optional<std::string>&  _state_or_province,
-        const Optional<std::string>&  _postal_code,
-        const Optional<std::string>&  _country_code,
-        const Optional<std::string>&  _telephone,
-        const Optional<std::string>&  _fax,
-        const Optional<std::string>&  _email,
-        const Optional<std::string>&  _notify_email,
-        const Optional<std::string>&  _VAT,
-        const Optional<std::string>&  _ident,
-        const Nullable<IdentType::Enum>& _identtype,
-        const Optional<std::string>&  _authinfo,
-        const std::set< ContactDisclose::Enum > &_to_hide,
-        const std::set< ContactDisclose::Enum > &_to_disclose
-    ) :
-        handle(_handle),
-        name(_name),
-        organization(_organization),
-        street1(_street1),
-        street2(_street2),
-        street3(_street3),
-        city(_city),
-        state_or_province(_state_or_province),
-        postal_code(_postal_code),
-        country_code(_country_code),
-        telephone(_telephone),
-        fax(_fax),
-        email(_email),
-        notify_email(_notify_email),
-        VAT(_VAT),
-        ident(_ident),
-        identtype(_identtype),
-        authinfo(_authinfo),
-        to_hide(_to_hide),
-        to_disclose(_to_disclose)
-    { }
     bool should_discloseflags_be_changed()const
     {
         return !to_hide.empty() || !to_disclose.empty();
     }
     template < ContactDisclose::Enum ITEM >
-    bool should_be_hidden()const
+    bool compute_disclose_flag(bool default_policy_is_to_disclose)const
     {
-        return to_hide.find(ITEM) != to_hide.end();
-    }
-    template < ContactDisclose::Enum ITEM >
-    bool should_be_disclosed()const
-    {
-        return to_disclose.find(ITEM) != to_disclose.end();
+        if (!this->should_discloseflags_be_changed()) {
+            throw std::runtime_error("Don't touch discloseflags.");
+        }
+        const bool disclose_preference_is_to_hide = to_hide.find(ITEM) != to_hide.end();
+        const bool disclose_preference_is_to_disclose = to_disclose.find(ITEM) != to_disclose.end();
+        if (disclose_preference_is_to_hide != disclose_preference_is_to_disclose) {
+            const bool item_should_be_disclosed = disclose_preference_is_to_disclose;
+            return item_should_be_disclosed;
+        }
+        if (!disclose_preference_is_to_hide && !disclose_preference_is_to_disclose) {
+            const bool item_should_be_disclosed = default_policy_is_to_disclose;
+            return item_should_be_disclosed;
+        }
+        throw std::runtime_error("The same entry can't be simultaneously hidden and disclosed.");
     }
 
-    std::string handle;
     Optional<std::string> name;
     Optional<std::string> organization;
     Optional<std::string> street1;
@@ -128,15 +92,15 @@ struct ContactUpdateInputData
 };
 
 LocalizedSuccessResponse contact_update(
-    const ContactUpdateInputData& _data,
+    const std::string &_contact_handle,
+    const ContactUpdateInputData &_data,
     unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
+    const Optional< unsigned long long > &_logd_request_id,
     bool _epp_update_contact_enqueue_check,
     SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const std::string& _client_transaction_handles_prefix_not_to_nofify
-);
+    const std::string &_server_transaction_handle,
+    const std::string &_client_transaction_handle,
+    const std::string &_client_transaction_handles_prefix_not_to_nofify);
 
 }
 

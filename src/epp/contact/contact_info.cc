@@ -7,7 +7,6 @@
 #include "src/epp/action.h"
 
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
-#include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/contact/info_contact.h"
 
@@ -20,13 +19,61 @@
 
 namespace Epp {
 
+namespace {
+
+std::set< std::string > get_non_internal_states(
+    const std::set< ContactInfoOutputData::State > &_states)
+{
+    std::set< std::string > result;
+    for (std::set< ContactInfoOutputData::State >::const_iterator state_ptr = _states.begin();
+         state_ptr != _states.end(); ++state_ptr)
+    {
+        const bool is_internal = !state_ptr->is_external;
+        if (!is_internal) {
+            result.insert(state_ptr->name);
+        }
+    }
+    return result;
+}
+
+class FilterOut
+{
+public:
+    static FilterOut what(const std::vector< std::string > &_disallowed) { return FilterOut(_disallowed); }
+    std::set< std::string >& from(std::set< std::string > &_values)const
+    {
+        for (std::vector< std::string >::const_iterator disallowed_value_ptr = disallowed_.begin();
+             disallowed_value_ptr != disallowed_.end(); ++disallowed_value_ptr)
+        {
+            std::set< std::string >::iterator value_to_remove = _values.find(*disallowed_value_ptr);
+            const bool remove_it = value_to_remove != _values.end();
+            if (remove_it) {
+                _values.erase(value_to_remove);
+            }
+        }
+        return _values;
+    }
+private:
+    FilterOut(const std::vector< std::string > &_disallowed):disallowed_(_disallowed) { }
+    const std::vector< std::string > disallowed_;
+};
+
+}//namespace Epp::{anonymous}
+
+LocalizedInfoContactResponse::LocalizedInfoContactResponse(
+    const LocalizedSuccessResponse &_ok_response,
+    const LocalizedContactInfoOutputData &_payload)
+:   ok_response(_ok_response),
+    payload(_payload)
+{
+}
+
 LocalizedInfoContactResponse contact_info(
-    const std::string& _handle,
+    const std::string &_handle,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle
-) {
-
+    const std::string &_server_transaction_handle)
+{
     try {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
@@ -35,100 +82,61 @@ LocalizedInfoContactResponse contact_info(
 
         Fred::OperationContextCreator ctx;
 
-        ContactInfoOutputData payload = contact_info_impl(ctx, _handle, _lang, _registrar_id);
+        const ContactInfoOutputData info = contact_info_impl(ctx, _handle, _lang, _registrar_id);
 
-        /* show object authinfo only to sponsoring registrar */
-        if(payload.sponsoring_registrar_handle != Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle) {
-            payload.auth_info_pw = std::string();
-        }
+        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle;
+        const bool callers_is_sponsoring_registrar = info.sponsoring_registrar_handle == callers_registrar_handle;
+        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
 
-        // hide internal states
-        {
-            std::set<std::string> filtered_states;
+        LocalizedContactInfoOutputData output_data;
+        output_data.handle                       = info.handle;
+        output_data.roid                         = info.roid;
+        output_data.sponsoring_registrar_handle  = info.sponsoring_registrar_handle;
+        output_data.creating_registrar_handle    = info.creating_registrar_handle;
+        output_data.last_update_registrar_handle = info.last_update_registrar_handle;
+        {//compute output_data.localized_external_states
+            const std::vector< std::string > admin_contact_verification_states =
+                Admin::AdminContactVerificationObjectStates::get_all();
 
-            // TODO udelat pres ziskani externich stavu, zatim na to neni ve fredlibu rozhrani
-            const std::vector<Fred::ObjectStateData> state_definitions =
-                Fred::GetObjectStates(
-                    Fred::InfoContactByHandle(payload.handle).exec(ctx).info_contact_data.id
-                ).exec(ctx);
+            std::set< std::string > filtered_states = get_non_internal_states(info.states);
+            /* XXX HACK: Ticket #10053 - temporary hack until changed xml schemas are released upon poor registrars
+             * Do not propagate admin contact verification states.
+             */
+            FilterOut::what(admin_contact_verification_states).from(filtered_states);
 
-            BOOST_FOREACH(const std::string& state, payload.states) {
-                BOOST_FOREACH(const Fred::ObjectStateData& state_def, state_definitions) {
-                    if(state_def.is_external) {
-                        filtered_states.insert(state);
-                    }
-                }
+            if (filtered_states.empty()) {//XXX HACK: OK state
+                static const char *const ok_state_name = "ok";
+                filtered_states.insert(ok_state_name);
             }
-
-            payload.states = filtered_states;
+            output_data.localized_external_states = get_object_state_descriptions(ctx, filtered_states, _lang);
         }
 
-        /* XXX HACK: OK state */
-        if( payload.states.empty() ) {
-            payload.states.insert("ok");
-        }
-
-        /* XXX HACK: Ticket #10053 - temporary hack until changed xml schemas are released upon poor registrars
-         * Do not propagate admin contact verification states.
-         */
-        {
-            std::set<std::string> filtered_states;
-
-            const std::vector<std::string> admin_contact_verification_states = Admin::AdminContactVerificationObjectStates::get_all();
-            BOOST_FOREACH(const std::string& state, payload.states) {
-                if( std::find(
-                        admin_contact_verification_states.begin(),
-                        admin_contact_verification_states.end(),
-                        state
-                    ) == admin_contact_verification_states.end()
-                ) {
-                    filtered_states.insert(state);
-                }
-            }
-
-            payload.states = filtered_states;
-        }
+        output_data.crdate            = info.crdate;
+        output_data.last_update       = info.last_update;
+        output_data.last_transfer     = info.last_transfer;
+        output_data.name              = info.name;
+        output_data.organization      = info.organization;
+        output_data.street1           = info.street1;
+        output_data.street2           = info.street2;
+        output_data.street3           = info.street3;
+        output_data.city              = info.city;
+        output_data.state_or_province = info.state_or_province;
+        output_data.postal_code       = info.postal_code;
+        output_data.country_code      = info.country_code;
+        output_data.telephone         = info.telephone;
+        output_data.fax               = info.fax;
+        output_data.email             = info.email;
+        output_data.notify_email      = info.notify_email;
+        output_data.VAT               = info.VAT;
+        output_data.ident             = info.ident;
+        output_data.identtype         = info.identtype;
+        output_data.auth_info_pw      = authinfo_has_to_be_hidden ? Nullable< std::string >() : info.auth_info_pw;
+        output_data.to_hide           = info.to_hide;
+        output_data.to_disclose       = info.to_disclose;
 
         return LocalizedInfoContactResponse(
             create_localized_success_response(Response::ok, ctx, _lang),
-            LocalizedContactInfoOutputData(
-                payload.handle,
-                payload.roid,
-                payload.sponsoring_registrar_handle,
-                payload.creating_registrar_handle,
-                payload.last_update_registrar_handle,
-                get_object_state_descriptions(ctx, payload.states, _lang),
-                payload.crdate,
-                payload.last_update,
-                payload.last_transfer,
-                payload.name,
-                payload.organization,
-                payload.street1,
-                payload.street2,
-                payload.street3,
-                payload.city,
-                payload.state_or_province,
-                payload.postal_code,
-                payload.country_code,
-                payload.telephone,
-                payload.fax,
-                payload.email,
-                payload.notify_email,
-                payload.VAT,
-                payload.ident,
-                payload.identtype,
-                payload.auth_info_pw,
-                payload.disclose_name,
-                payload.disclose_organization,
-                payload.disclose_address,
-                payload.disclose_telephone,
-                payload.disclose_fax,
-                payload.disclose_email,
-                payload.disclose_VAT,
-                payload.disclose_ident,
-                payload.disclose_notify_email
-            )
-        );
+            output_data);
 
     } catch (const AuthErrorServerClosingConnection& e) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -162,4 +170,4 @@ LocalizedInfoContactResponse contact_info(
     }
 }
 
-}
+}//namespace Epp

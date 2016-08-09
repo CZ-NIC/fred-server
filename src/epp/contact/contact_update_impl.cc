@@ -119,83 +119,67 @@ bool should_address_be_disclosed(
 }
 
 template < ContactDisclose::Enum ITEM >
-void set_ContactUpdate_disclose_flag(Fred::UpdateContactByHandle &update_op, bool value);
+void set_ContactUpdate_discloseflag(Fred::UpdateContactByHandle &update_op, bool value);
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::name >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::name >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_disclosename(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::organization >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::organization >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_discloseorganization(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::address >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::address >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_discloseaddress(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::telephone >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::telephone >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_disclosetelephone(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::fax >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::fax >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_disclosefax(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::email >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::email >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_discloseemail(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::vat >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::vat >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_disclosevat(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::ident >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::ident >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_discloseident(value);
 }
 
 template < >
-void set_ContactUpdate_disclose_flag< ContactDisclose::notify_email >(Fred::UpdateContactByHandle &update_op, bool value)
+void set_ContactUpdate_discloseflag< ContactDisclose::notify_email >(Fred::UpdateContactByHandle &update_op, bool value)
 {
     update_op.set_disclosenotifyemail(value);
 }
 
 template < ContactDisclose::Enum ITEM >
-void set_ContactUpdate_disclose_flag(
-    const ContactUpdateInputData &_data,
-    bool _default_policy_is_to_disclose,
-    Fred::UpdateContactByHandle &update_op)
+void set_ContactUpdate_discloseflag(const ContactUpdateInputData &_data, Fred::UpdateContactByHandle &update_op)
 {
-    const bool item_has_to_be_hidden    = _data.to_hide.find(ITEM) != _data.to_hide.end();
-    const bool item_has_to_be_disclosed = _data.to_disclose.find(ITEM) != _data.to_disclose.end();
-    if (item_has_to_be_hidden && !item_has_to_be_disclosed) {
-        set_ContactUpdate_disclose_flag< ITEM >(update_op, false);
-        return;
-    }
-    if (!item_has_to_be_hidden && item_has_to_be_disclosed) {
-        set_ContactUpdate_disclose_flag< ITEM >(update_op, true);
-        return;
-    }
-    if (!item_has_to_be_hidden && !item_has_to_be_disclosed) {
-        set_ContactUpdate_disclose_flag< ITEM >(update_op, _default_policy_is_to_disclose);
-        return;
-    }
-    throw std::runtime_error("Ambiguous disclose flag");
+    const bool to_disclose = _data.compute_disclose_flag< ITEM >(Epp::is_the_default_policy_to_disclose());
+    set_ContactUpdate_discloseflag< ITEM >(update_op, to_disclose);
 }
 
 }//namespace Epp::{anonymous}
@@ -233,17 +217,19 @@ struct Ident {
 };
 
 unsigned long long contact_update_impl(
-    Fred::OperationContext& _ctx,
-    const ContactUpdateInputData& _data,
+    Fred::OperationContext &_ctx,
+    const std::string &_contact_handle,
+    const ContactUpdateInputData &_data,
     const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-) {
-
-    if( _registrar_id == 0 ) {
+    const Optional< unsigned long long > &_logd_request_id)
+{
+    if (_registrar_id == 0) {
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Contact::get_handle_registrability(_ctx, _data.handle) != Fred::ContactHandleState::Registrability::registered ) {
+    const bool contact_is_registered = Fred::Contact::get_handle_registrability(_ctx, _contact_handle) ==
+                                       Fred::ContactHandleState::Registrability::registered;
+    if (!contact_is_registered) {
         throw NonexistentHandle();
     }
 
@@ -263,14 +249,14 @@ unsigned long long contact_update_impl(
 
     const Fred::InfoRegistrarData callers_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
-    const Fred::InfoContactData contact_data_before_update = translate_info_contact_exception::exec(_ctx, _data.handle);
+    const Fred::InfoContactData contact_data_before_update = translate_info_contact_exception::exec(_ctx, _contact_handle);
 
     const bool is_sponsoring_registrar = (contact_data_before_update.sponsoring_registrar_handle ==
                                           callers_registrar.handle);
     const bool is_system_registrar = callers_registrar.system.get_value_or(false);
-    const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
+    const bool operation_is_permitted = (is_system_registrar || is_sponsoring_registrar);
 
-    if (!is_operation_permitted) {
+    if (!operation_is_permitted) {
         throw AuthorizationError();
     }
 
@@ -298,47 +284,38 @@ unsigned long long contact_update_impl(
 
     // update itself
     {
-        Fred::UpdateContactByHandle update(_data.handle, callers_registrar.handle);
+        Fred::UpdateContactByHandle update(_contact_handle, callers_registrar.handle);
 
-        conditionall_set_ContactUpdate_member(_data.name,          update, &Fred::UpdateContactByHandle::set_name);
-        conditionall_set_ContactUpdate_member(_data.organization,  update, &Fred::UpdateContactByHandle::set_organization);
-        conditionall_set_ContactUpdate_member(_data.telephone,     update, &Fred::UpdateContactByHandle::set_telephone);
-        conditionall_set_ContactUpdate_member(_data.fax,           update, &Fred::UpdateContactByHandle::set_fax);
-        conditionall_set_ContactUpdate_member(_data.email,         update, &Fred::UpdateContactByHandle::set_email);
-        conditionall_set_ContactUpdate_member(_data.notify_email,  update, &Fred::UpdateContactByHandle::set_notifyemail);
-        conditionall_set_ContactUpdate_member(_data.VAT,           update, &Fred::UpdateContactByHandle::set_vat);
-        conditionall_set_ContactUpdate_member(_data.authinfo,      update, &Fred::UpdateContactByHandle::set_authinfo);
+        conditionall_set_ContactUpdate_member(_data.name,         update, &Fred::UpdateContactByHandle::set_name);
+        conditionall_set_ContactUpdate_member(_data.organization, update, &Fred::UpdateContactByHandle::set_organization);
+        conditionall_set_ContactUpdate_member(_data.telephone,    update, &Fred::UpdateContactByHandle::set_telephone);
+        conditionall_set_ContactUpdate_member(_data.fax,          update, &Fred::UpdateContactByHandle::set_fax);
+        conditionall_set_ContactUpdate_member(_data.email,        update, &Fred::UpdateContactByHandle::set_email);
+        conditionall_set_ContactUpdate_member(_data.notify_email, update, &Fred::UpdateContactByHandle::set_notifyemail);
+        conditionall_set_ContactUpdate_member(_data.VAT,          update, &Fred::UpdateContactByHandle::set_vat);
+        conditionall_set_ContactUpdate_member(_data.authinfo,     update, &Fred::UpdateContactByHandle::set_authinfo);
 
-        if( _data.ident.isset() ) {
-
+        if (_data.ident.isset())
+        {
             const Epp::Ident ident_change(_data.ident.get_value(), _data.identtype);
 
-            // delete
-            if( ident_change.is_null() ) {
-                update.set_personal_id( Nullable<Fred::PersonalIdUnion>() );
-
-            // value update
-            } else {
-                update.set_personal_id(
-                    Fred::PersonalIdUnion::get_any_type(
-                        to_db_handle( ident_change.identtype_.get_value() ),
-                        ident_change.ident_
-                    )
-                );
-            }
+            update.set_personal_id(ident_change.is_null()
+                                   ? Nullable< Fred::PersonalIdUnion >()                   //delete
+                                   : Fred::PersonalIdUnion::get_any_type(                  //update
+                                         to_db_handle(ident_change.identtype_.get_value()),
+                                         ident_change.ident_));
         }
 
         if (_data.should_discloseflags_be_changed()) {
-            const bool policy = is_the_default_policy_to_disclose();
-            set_ContactUpdate_disclose_flag< ContactDisclose::name         >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::organization >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::address      >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::telephone    >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::fax          >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::email        >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::vat          >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::ident        >(_data, policy, update);
-            set_ContactUpdate_disclose_flag< ContactDisclose::notify_email >(_data, policy, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::name         >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::organization >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::address      >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::telephone    >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::fax          >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::email        >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::vat          >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::ident        >(_data, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::notify_email >(_data, update);
         }
         else if (should_address_be_disclosed(_ctx, contact_data_before_update.id, contact_data_before_update, _data)) {
             // don't set it otherwise it might already been set to true
@@ -371,7 +348,7 @@ unsigned long long contact_update_impl(
         try {
             const unsigned long long new_history_id = update.exec(_ctx);
 
-            const Fred::InfoContactData contact_data_after_update = Fred::InfoContactByHandle(_data.handle).exec(_ctx).info_contact_data;
+            const Fred::InfoContactData contact_data_after_update = Fred::InfoContactByHandle(_contact_handle).exec(_ctx).info_contact_data;
             //check disclose address
             if (!contact_data_after_update.discloseaddress)
             {

@@ -26,6 +26,7 @@
 #include "src/epp/disclose_policy.h"
 #include "src/epp/contact/contact_update_impl.h"
 
+#include <set>
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
@@ -50,43 +51,53 @@ std::set< Epp::ContactDisclose::Enum > get_all_items()
 template < Epp::ContactDisclose::Enum ITEM >
 bool updated(const Epp::ContactUpdateInputData &_update, bool _before)
 {
-    const bool item_should_be_disclosed = _update.should_be_disclosed< ITEM >();
-    return (item_should_be_disclosed || _update.should_be_hidden< ITEM >()) ? item_should_be_disclosed : _before;
+    return _update.should_discloseflags_be_changed()
+           ? _update.compute_disclose_flag< ITEM >(Epp::is_the_default_policy_to_disclose())
+           : _before;
 }
 
+void set_correct_data(Epp::ContactUpdateInputData &data)
+{
+    data.name              = "Jan Novak";
+    data.organization      = "Firma, a. s.";
+    data.street1           = "Vaclavske namesti 1";
+    data.street2           = "53. patro";
+    data.street3           = "vpravo";
+    data.city              = "Brno";
+    data.state_or_province = "Morava";
+    data.postal_code       = "20000";
+    data.country_code      = "CZ";
 }
+
+void set_correct_data_2(Epp::ContactUpdateInputData &data)
+{
+    set_correct_data(data);
+    data.organization = "";
+    data.telephone    = "+420 123 456 789";
+    data.fax          = "+420 987 654 321";
+    data.email        = "jan@novak.novak";
+    data.notify_email = "jan.notify@novak.novak";
+    data.VAT          = "MyVATstring";
+    data.ident        = "CZ0123456789";
+    data.identtype    = Epp::IdentType::identity_card;
+    data.authinfo     = "a6tg85jk57yu97";
+    data.to_disclose  = get_all_items();
+}
+
+}//namespace {anonymous}
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(ContactUpdateImpl)
 
 BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle + "*?!",
-        "Jan Novak",
-        "Firma, a. s.",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        std::set< Epp::ContactDisclose::Enum >(),
-        std::set< Epp::ContactDisclose::Enum >()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data(data);
 
     BOOST_CHECK_THROW(
         Epp::contact_update_impl(
             ctx,
+            contact.handle + "*?!",
             data,
             0,  /* <== !!! */
             42 /* TODO */
@@ -97,32 +108,13 @@ BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle + "abc",
-        "Jan Novak",
-        "Firma, a. s.",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        std::set< Epp::ContactDisclose::Enum >(),
-        std::set< Epp::ContactDisclose::Enum >()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data(data);
 
     BOOST_CHECK_THROW(
         Epp::contact_update_impl(
             ctx,
+            contact.handle + "abc",
             data,
             registrar.id,
             42 /* TODO */
@@ -133,32 +125,13 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different_registrar)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "Firma, a. s.",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        std::set< Epp::ContactDisclose::Enum >(),
-        std::set< Epp::ContactDisclose::Enum >()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data(data);
 
     BOOST_CHECK_THROW(
         Epp::contact_update_impl(
             ctx,
+            contact.handle,
             data,
             the_different_registrar.id,
             42 /* TODO */
@@ -169,36 +142,16 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server_update_prohibited)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "Firma, a. s.",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        std::set< Epp::ContactDisclose::Enum >(),
-        std::set< Epp::ContactDisclose::Enum >()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data(data);
 
     BOOST_CHECK_THROW(
         Epp::contact_update_impl(
             ctx,
+            contact.handle,
             data,
             registrar.id,
             42 /* TODO */
-
         ),
         Epp::ObjectStatusProhibitsOperation
     );
@@ -206,36 +159,16 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete_candidate)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "Firma, a. s.",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        std::set< Epp::ContactDisclose::Enum >(),
-        std::set< Epp::ContactDisclose::Enum >()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data(data);
 
     BOOST_CHECK_THROW(
         Epp::contact_update_impl(
             ctx,
+            contact.handle,
             data,
             registrar.id,
             42 /* TODO */
-
         ),
         Epp::ObjectStatusProhibitsOperation
     );
@@ -243,86 +176,47 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_contact_with_delete_candidate_request)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "CZ0123456789",
-        Epp::IdentType::identity_card,
-        "a6tg85jk57yu97",
-        std::set< Epp::ContactDisclose::Enum >(),
-        get_all_items()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data_2(data);
 
     BOOST_CHECK_THROW(
         Epp::contact_update_impl(
             ctx,
+            contact.handle,
             data,
             registrar.id,
             42 /* TODO */
-
         ),
         Epp::ObjectStatusProhibitsOperation
     );
 
     /* now object has the state deleteCandidate itself */
     {
-        std::vector<std::string> object_states_after;
+        std::set< std::string > object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(contact.id).exec(ctx) ) {
-                object_states_after.push_back(state.state_name);
+            BOOST_FOREACH(const Fred::ObjectStateData &state, Fred::GetObjectStates(contact.id).exec(ctx))
+            {
+                object_states_after.insert(state.state_name);
             }
         }
 
-        BOOST_CHECK(
-            std::find( object_states_after.begin(), object_states_after.end(), status )
-            !=
-            object_states_after.end()
-        );
+        BOOST_CHECK(object_states_after.find(status) != object_states_after.end());
     }
 }
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "Spol s r. o.",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "X123Z", /* <- !!! */
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        get_all_items(),
-        std::set< Epp::ContactDisclose::Enum >()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data(data);
+    data.organization = "Spol s r. o.";
+    data.country_code = "X123Z"; /* <- !!! */
+    data.to_disclose  = get_all_items();
 
     try {
         try {
             Epp::contact_update_impl(
                 ctx,
+                contact.handle,
                 data,
                 registrar.id,
                 42 /* TODO */
@@ -337,32 +231,15 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "", /* <- !!! */
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Optional<std::string>(),
-        Nullable<Epp::IdentType::Enum>(),
-        Optional<std::string>(),
-        get_all_items(),  /* address <- !!! */
-        std::set< Epp::ContactDisclose::Enum >()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data(data);
+    data.organization = "";
+    data.to_hide  = get_all_items();  /* address <- !!! */
 
     BOOST_CHECK_THROW(
         Epp::contact_update_impl(
             ctx,
+            contact.handle,
             data,
             registrar.id,
             42 /* TODO */
@@ -374,8 +251,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
 static void check_equal(
     const Fred::InfoContactData& info_before,
     const Epp::ContactUpdateInputData& update,
-    const Fred::InfoContactData& info_after
-) {
+    const Fred::InfoContactData& info_after)
+{
     BOOST_CHECK_EQUAL( boost::to_upper_copy( info_after.handle ), info_before.handle );
     BOOST_CHECK_EQUAL(
         info_after.name,
@@ -499,31 +376,12 @@ static void check_equal(
 
 BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "CZ0123456789",
-        Epp::IdentType::identity_card,
-        "a6tg85jk57yu97",
-        std::set< Epp::ContactDisclose::Enum >(),
-        get_all_items()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data_2(data);
 
     Epp::contact_update_impl(
         ctx,
+        contact.handle,
         data,
         registrar.id,
         42 /* TODO */
@@ -534,31 +392,12 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_contact_with_server_transfer_prohibited_request)
 {
-    const Epp::ContactUpdateInputData data(
-        contact.handle,
-        "Jan Novak",
-        "",
-        "Vaclavske namesti 1",
-        "53. patro",
-        "vpravo",
-        "Brno",
-        "Morava",
-        "20000",
-        "CZ",
-        "+420 123 456 789",
-        "+420 987 654 321",
-        "jan@novak.novak",
-        "jan.notify@novak.novak",
-        "MyVATstring",
-        "CZ0123456789",
-        Epp::IdentType::identity_card,
-        "a6tg85jk57yu97",
-        std::set< Epp::ContactDisclose::Enum >(),
-        get_all_items()
-    );
+    Epp::ContactUpdateInputData data;
+    set_correct_data_2(data);
 
     Epp::contact_update_impl(
         ctx,
+        contact.handle,
         data,
         registrar.id,
         42 /* TODO */
@@ -568,18 +407,15 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_contact_with_server_t
 
     /* now object has the state server_transfer_prohibited itself */
     {
-        std::vector<std::string> object_states_after;
+        std::set< std::string > object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(contact.id).exec(ctx) ) {
-                object_states_after.push_back(state.state_name);
+            BOOST_FOREACH(const Fred::ObjectStateData &state, Fred::GetObjectStates(contact.id).exec(ctx))
+            {
+                object_states_after.insert(state.state_name);
             }
         }
 
-        BOOST_CHECK(
-            std::find( object_states_after.begin(), object_states_after.end(), status )
-            !=
-            object_states_after.end()
-        );
+        BOOST_CHECK(object_states_after.find(status) != object_states_after.end());
     }
 }
 

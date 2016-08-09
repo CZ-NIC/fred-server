@@ -2668,8 +2668,8 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
             server_transaction_handle
         );
 
-        ccReg::Contact_var info_result = new ccReg::Contact(
-            Corba::wrap_localized_info_contact(response.payload, Epp::is_the_default_policy_to_disclose()));
+        ccReg::Contact_var info_result = new ccReg::Contact;
+        Corba::wrap_LocalizedContactInfoOutputData(response.payload, info_result.inout());
         ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
@@ -2717,18 +2717,20 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
         const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
+        Epp::ContactUpdateInputData contact_update_data;
+        Corba::unwrap_ContactChange(_data_change, contact_update_data);
         const Epp::LocalizedSuccessResponse response = Epp::contact_update(
-            Corba::unwrap_contact_update_input_data(_handle, _data_change, Epp::is_the_default_policy_to_disclose()),
+            Corba::unwrap_string(_handle),
+            contact_update_data,
             session_data.registrar_id,
             request_params.log_request_id,
             epp_update_contact_enqueue_check_,
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
-            disable_epp_notifier_cltrid_prefix_
-        );
+            disable_epp_notifier_cltrid_prefix_);
 
-        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+        return new ccReg::Response(Corba::wrap_response(response, server_transaction_handle));
 
     } catch(const Epp::LocalizedFailResponse& e) {
         throw Corba::wrap_error(e, server_transaction_handle);
@@ -2746,8 +2748,11 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
         const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
+        Epp::ContactCreateInputData contact_create_data;
+        Corba::unwrap_ContactChange(_contact_data, contact_create_data);
         const Epp::LocalizedCreateContactResponse response = contact_create(
-            Corba::unwrap_contact_create_input_data(_handle, _contact_data, Epp::is_the_default_policy_to_disclose()),
+            Corba::unwrap_string(_handle),
+            contact_create_data,
             session_data.registrar_id,
             request_params.log_request_id,
             session_data.language,

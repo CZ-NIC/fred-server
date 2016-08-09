@@ -32,21 +32,19 @@
 
 namespace Epp {
 
-struct ContactCreateResult {
+struct ContactCreateResult
+{
+    ContactCreateResult(unsigned long long _contact_id,
+                        unsigned long long _create_history_id,
+                        const boost::posix_time::ptime &_contact_crdate)
+    :   id(_contact_id),
+        create_history_id(_create_history_id),
+        crdate(_contact_crdate)
+    { }
     const unsigned long long id;
     const unsigned long long create_history_id;
     // TODO guarantee non-special
     const boost::posix_time::ptime crdate;
-
-    ContactCreateResult(
-        unsigned long long _contact_id,
-        unsigned long long _create_history_id,
-        const boost::posix_time::ptime& _contact_crdate
-    ) :
-        id(_contact_id),
-        create_history_id(_create_history_id),
-        crdate(_contact_crdate)
-    { }
 };
 
 /**
@@ -55,11 +53,11 @@ struct ContactCreateResult {
  * @throws AggregatedParamErrors
  */
 ContactCreateResult contact_create_impl(
-    Fred::OperationContext& _ctx,
-    const ContactCreateInputData& _data,
+    Fred::OperationContext &_ctx,
+    const std::string &_contact_handle,
+    const ContactCreateInputData &_data,
     unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-);
+    const Optional< unsigned long long > &_logd_request_id);
 
 }
 
