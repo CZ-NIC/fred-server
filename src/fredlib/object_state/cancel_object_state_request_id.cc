@@ -81,6 +81,8 @@ namespace Fred
             if (ex.is_set_state_not_found()) {
                 BOOST_THROW_EXCEPTION(Exception().set_state_not_found(ex.get_state_not_found()));
             }
+
+            throw;
         }
 
         std::ostringstream cmd;
