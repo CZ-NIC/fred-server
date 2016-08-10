@@ -272,6 +272,81 @@ namespace Corba {
         throw std::runtime_error("Invalid DiscloseFlag value");
     }
 
+    bool is_contact_change_string_meaning_to_delete(const char *value)
+    {
+        return value[0] = '\b';
+    }
+
+    bool is_contact_change_string_meaning_not_to_touch(const char *value)
+    {
+        return value[0] = '\0';
+    }
+
+    boost::optional< Nullable< std::string > > convert_contact_change_string(const char *src)
+    {
+        const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(src);
+        if (src_has_special_meaning_to_delete) {
+            return Nullable< std::string >();
+        }
+        const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
+        if (src_has_special_meaning_not_to_touch) {
+            return boost::optional< Nullable< std::string > >();
+        }
+        return Nullable< std::string >(boost::trim_copy(Corba::unwrap_string(src)));
+    }
+
+    Epp::ContactDisclose convert_ContactChange_to_ContactDisclose(
+            const ccReg::ContactChange &src,
+            Epp::ContactDisclose::Flag::Enum meaning)
+    {
+        Epp::ContactDisclose result(meaning);
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseName)) {
+            result.add(Epp::ContactDisclose::name);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseOrganization)) {
+            result.add(Epp::ContactDisclose::organization);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseAddress)) {
+            result.add(Epp::ContactDisclose::address);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseTelephone)) {
+            result.add(Epp::ContactDisclose::telephone);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseFax)) {
+            result.add(Epp::ContactDisclose::fax);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseEmail)) {
+            result.add(Epp::ContactDisclose::email);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseVAT)) {
+            result.add(Epp::ContactDisclose::vat);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseIdent)) {
+            result.add(Epp::ContactDisclose::ident);
+        }
+        if (CorbaConversion::int_to_int< bool >(src.DiscloseNotifyEmail)) {
+            result.add(Epp::ContactDisclose::notify_email);
+        }
+    }
+
+    boost::optional< Epp::ContactDisclose > unwrap_ContactChange_to_optional_ContactDisclose(
+            const ccReg::ContactChange &src)
+    {
+        switch (src.DiscloseFlag)
+        {
+            //element <contact:disclose flag="0">
+            case ccReg::DISCL_HIDE:
+                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::to_hide);
+            //element <contact:disclose flag="1">
+            case ccReg::DISCL_DISPLAY:
+                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::to_disclose);
+            //missing element <contact:disclose>
+            case ccReg::DISCL_EMPTY:
+                return boost::optional< Epp::ContactDisclose >();
+        }
+        throw std::runtime_error("Invalid DiscloseFlag value");
+    }
+
     }//namespace Corba::{anonymous}
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactCreateInputData &dst)
@@ -331,6 +406,28 @@ namespace Corba {
         dst.identtype         = Corba::unwrap_ident_type(src.identtype);
         dst.authinfo          = convert_corba_string_change(src.AuthInfoPw);
         set_to_hide_and_to_disclose_items(src, dst.to_hide, dst.to_disclose);
+    }
+
+    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)
+    {
+        dst.name              = convert_contact_change_string(src.Name);
+        dst.organization      = convert_contact_change_string(src.Organization);
+        for (unsigned idx = 0; idx < src.Streets.length(); ++idx) {
+            dst.streets.push_back(convert_contact_change_string(src.Streets[idx]));
+        }
+        dst.city              = convert_contact_change_string(src.City);
+        dst.state_or_province = convert_contact_change_string(src.StateOrProvince);
+        dst.postal_code       = convert_contact_change_string(src.PostalCode);
+        dst.country_code      = convert_contact_change_string(src.CC);
+        dst.telephone         = convert_contact_change_string(src.Telephone);
+        dst.fax               = convert_contact_change_string(src.Fax);
+        dst.email             = convert_contact_change_string(src.Email);
+        dst.notify_email      = convert_contact_change_string(src.NotifyEmail);
+        dst.VAT               = convert_contact_change_string(src.VAT);
+        dst.ident             = convert_contact_change_string(src.ident);
+        dst.identtype         = Corba::unwrap_ident_type(src.identtype);
+        dst.authinfo          = convert_contact_change_string(src.AuthInfoPw);
+        unwrap_ContactChange(src, dst.disclose);
     }
 
     static std::string formatTime(const boost::posix_time::ptime& tm) {

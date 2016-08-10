@@ -30,15 +30,16 @@
 #include "src/epp/contact/contact_create.h"
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_check.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/localized_response.h"
-
-#include <boost/optional.hpp>
 
 namespace Corba {
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactCreateInputData &dst);
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactUpdateInputData &dst);
+
+    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
 

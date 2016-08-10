@@ -233,6 +233,7 @@ noinst_HEADERS = \
 		src/epp/exception.h \
 		src/epp/session_lang.h \
 		src/epp/contact/ident_type.h \
+		src/epp/contact/contact_change.h \
 		src/epp/get_registrar_session_data.h \
 		src/corba/epp/epp_legacy_compatibility.h \
 		src/epp/registrar_session_data.h \

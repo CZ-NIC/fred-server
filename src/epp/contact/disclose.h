@@ -24,22 +24,66 @@
 #ifndef DISCLOSE_H_6CCA57EF67A8AD5CE22CBA54280EAEE7//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define DISCLOSE_H_6CCA57EF67A8AD5CE22CBA54280EAEE7
 
+#include <set>
+#include <stdexcept>
+
 namespace Epp {
 
-struct ContactDisclose
+class ContactDisclose
 {
-    enum Enum
+public:
+    struct Flag
     {
-        name,
-        organization,
-        address,
-        telephone,
-        fax,
-        email,
-        vat,
-        ident,
-        notify_email,
+        enum Enum
+        {
+            hide,
+            disclose,
+        };
     };
+    explicit ContactDisclose(Flag::Enum _meaning):meaning_(_meaning) { }
+    bool does_present_item_mean_to_disclose()const
+    {
+        switch (meaning_)
+        {
+            case Flag::hide:     return false;
+            case Flag::disclose: return true;
+        }
+        throw std::runtime_error("invalid value of Epp::ContactDisclose::Flag::Enum");
+    }
+    bool does_present_item_mean_to_hide()const
+    {
+        return !this->does_present_item_mean_to_disclose();
+    }
+    struct Item
+    {
+        enum Enum
+        {
+            name,
+            organization,
+            address,
+            telephone,
+            fax,
+            email,
+            vat,
+            ident,
+            notify_email,
+        };
+    };
+    template< Item::Enum ITEM >
+    bool presents()const
+    {
+        const bool item_found = items_.find(ITEM) != items_.end();
+        return item_found;
+    }
+    template< Item::Enum ITEM >
+    ContactDisclose& add()
+    {
+        items_.insert(ITEM);
+        return *this;
+    }
+private:
+    const Flag::Enum meaning_;
+    std::set< Item::Enum > items_;
 };
 
 }//namespace Epp
