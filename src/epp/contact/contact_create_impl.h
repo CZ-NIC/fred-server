@@ -23,7 +23,6 @@
 #ifndef EPP_CONTACT_CREATE_IMPL_H_548537357434
 #define EPP_CONTACT_CREATE_IMPL_H_548537357434
 
-#include "src/epp/contact/ident_type.h"
 #include "src/fredlib/opcontext.h"
 
 #include "src/epp/contact/contact_create.h"

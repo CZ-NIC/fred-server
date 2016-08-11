@@ -23,10 +23,10 @@
 #ifndef EPP_CONTACT_INFO_IMPL_976543419473
 #define EPP_CONTACT_INFO_IMPL_976543419473
 
-#include "src/epp/contact/ident_type.h"
 #include "src/epp/contact/disclose.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/contact/info_contact_data.h"
 #include "util/db/nullable.h"
 
 #include <string>
@@ -38,19 +38,13 @@ namespace Epp {
 
 struct ContactInfoOutputData
 {
+    ContactInfoOutputData(const boost::optional< ContactDisclose > &_disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
     Nullable< std::string > last_update_registrar_handle;
-    struct State
-    {
-        State(const std::string &_name, bool _is_external):name(_name), is_external(_is_external) { }
-        bool operator<(const State &dst)const { return name < dst.name; }
-        const std::string name;
-        const bool is_external;
-    };
-    std::set< State > states;
+    std::set< std::string > states;
     boost::posix_time::ptime crdate;
     Nullable< boost::posix_time::ptime > last_update;
     Nullable< boost::posix_time::ptime > last_transfer;
@@ -68,11 +62,9 @@ struct ContactInfoOutputData
     Nullable< std::string > email;
     Nullable< std::string > notify_email;
     Nullable< std::string > VAT;
-    Nullable< std::string > ident;
-    Nullable< IdentType::Enum > identtype;
+    boost::optional< Fred::PersonalIdUnion > personal_id;
     std::string auth_info_pw;
-    std::set< ContactDisclose::Enum > to_hide;
-    std::set< ContactDisclose::Enum > to_disclose;
+    boost::optional< ContactDisclose > disclose;
 };
 
 /**

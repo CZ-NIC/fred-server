@@ -2,7 +2,6 @@
 
 #include "src/corba/EPP.hh"
 #include "src/epp/error.h"
-#include "src/epp/contact/ident_type.h"
 #include "src/epp/param.h"
 #include "src/epp/contact/contact_create.h"
 
@@ -20,19 +19,6 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Corba {
-
-    static Nullable<Epp::IdentType::Enum> unwrap_ident_type(ccReg::identtyp ssntype) {
-        switch(ssntype) {
-            case ccReg::OP:         return Epp::IdentType::identity_card;
-            case ccReg::PASS:       return Epp::IdentType::passport;
-            case ccReg::ICO:        return Epp::IdentType::organization_identification;
-            case ccReg::MPSV:       return Epp::IdentType::social_security_number;
-            case ccReg::BIRTHDAY:   return Epp::IdentType::birthday;
-            default:                return Nullable<Epp::IdentType::Enum>();
-        };
-
-        return Nullable<Epp::IdentType::Enum>();
-    }
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles) {
         std::vector<std::string> result;
@@ -55,29 +41,6 @@ namespace Corba {
                 ?   Optional<unsigned long long>()
                 :   Optional<unsigned long long>(CorbaConversion::int_to_int<unsigned long long>(_epp_request_params.requestID))
         );
-    }
-
-    struct ExceptionInvalidIdentType {};
-
-    /**
-     * @throws ExceptionInvalidIdentType
-     */
-
-    static ccReg::identtyp wrap_ident_type(Nullable<Epp::IdentType::Enum> ident) {
-        if(ident.isnull()) {
-            return ccReg::EMPTY;
-        }
-
-        switch(ident.get_value()) {
-            case Epp::IdentType::identity_card:                 return ccReg::OP;
-            case Epp::IdentType::passport:                      return ccReg::PASS;
-            case Epp::IdentType::organization_identification:   return ccReg::ICO;
-            case Epp::IdentType::social_security_number:        return ccReg::MPSV;
-            case Epp::IdentType::birthday:                      return ccReg::BIRTHDAY;
-            default:                                            throw ExceptionInvalidIdentType();
-        };
-
-        throw ExceptionInvalidIdentType();
     }
 
     struct ExceptionInvalidParam {};
@@ -160,126 +123,16 @@ namespace Corba {
         return result;
     }
 
-    struct StreetAddressPart {
-        std::string street_line_1;
-        std::string street_line_2;
-        std::string street_line_3;
-
-        StreetAddressPart(
-            const std::string& _street_line_1,
-            const std::string& _street_line_2,
-            const std::string& _street_line_3
-        ) :
-            street_line_1(_street_line_1),
-            street_line_2(_street_line_2),
-            street_line_3(_street_line_3)
-        { }
-    };
-
-    static StreetAddressPart unwrap_streets(const ccReg::Lists& _corba_streets) {
-        return StreetAddressPart(
-            (_corba_streets.length() > 0
-                ?   _corba_streets[0].in() != NULL ? Corba::unwrap_string(_corba_streets[0].in()) : ""
-                :   ""
-            ),
-            (_corba_streets.length() > 1
-                ?   _corba_streets[1].in() != NULL ? Corba::unwrap_string(_corba_streets[1].in()) : ""
-                :   ""
-            ),
-            (_corba_streets.length() > 2
-                ?   _corba_streets[2].in() != NULL ? Corba::unwrap_string(_corba_streets[2].in()) : ""
-                :   ""
-            )
-        );
-    }
-
     namespace {
-
-    void set_disclosed_items(const ccReg::ContactChange &data, std::set< Epp::ContactDisclose::Enum > &items)
-    {
-        items.clear();
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseName)) {
-            items.insert(Epp::ContactDisclose::name);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseOrganization)) {
-            items.insert(Epp::ContactDisclose::organization);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseAddress)) {
-            items.insert(Epp::ContactDisclose::address);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseTelephone)) {
-            items.insert(Epp::ContactDisclose::telephone);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseFax)) {
-            items.insert(Epp::ContactDisclose::fax);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseEmail)) {
-            items.insert(Epp::ContactDisclose::email);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseVAT)) {
-            items.insert(Epp::ContactDisclose::vat);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseIdent)) {
-            items.insert(Epp::ContactDisclose::ident);
-        }
-        if (CorbaConversion::int_to_int< bool >(data.DiscloseNotifyEmail)) {
-            items.insert(Epp::ContactDisclose::notify_email);
-        }
-        if (items.empty()) {
-            throw std::runtime_error("Empty set is disallowed.");
-        }
-    }
-
-    bool is_set_at_least_one_flag(const ccReg::ContactChange &data)
-    {
-        return CorbaConversion::int_to_int< bool >(data.DiscloseName) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseOrganization) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseAddress) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseTelephone) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseFax) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseEmail) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseVAT) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseIdent) ||
-               CorbaConversion::int_to_int< bool >(data.DiscloseNotifyEmail);
-    }
-
-    void set_to_hide_and_to_disclose_items(
-        const ccReg::ContactChange &data,
-        std::set< Epp::ContactDisclose::Enum > &to_hide,
-        std::set< Epp::ContactDisclose::Enum > &to_disclose)
-    {
-        switch (data.DiscloseFlag)
-        {
-            //element <contact:disclose flag="0">
-            case ccReg::DISCL_HIDE:
-                set_disclosed_items(data, to_hide);
-                to_disclose.clear();
-                return;
-            //element <contact:disclose flag="1">
-            case ccReg::DISCL_DISPLAY:
-                to_hide.clear();
-                set_disclosed_items(data, to_disclose);
-                return;
-            //missing element <contact:disclose>
-            case ccReg::DISCL_EMPTY:
-                if (is_set_at_least_one_flag(data)) {
-                    throw std::runtime_error("Not a single one disclose flag has to be set.");
-                }
-                to_hide.clear();
-                to_disclose.clear();
-                return;
-        }
-        throw std::runtime_error("Invalid DiscloseFlag value");
-    }
 
     bool is_contact_change_string_meaning_to_delete(const char *value)
     {
-        return value[0] = '\b';
+        return (value == NULL) || (value[0] == '\b');
     }
 
     bool is_contact_change_string_meaning_not_to_touch(const char *value)
     {
-        return value[0] = '\0';
+        return value[0] == '\0';
     }
 
     boost::optional< Nullable< std::string > > convert_contact_change_string(const char *src)
@@ -292,7 +145,10 @@ namespace Corba {
         if (src_has_special_meaning_not_to_touch) {
             return boost::optional< Nullable< std::string > >();
         }
-        return Nullable< std::string >(boost::trim_copy(Corba::unwrap_string(src)));
+        const std::string value_to_set = boost::trim_copy(Corba::unwrap_string(src));
+        const bool value_to_set_means_to_delete = value_to_set.empty();
+        return value_to_set_means_to_delete ? Nullable< std::string >()
+                                            : Nullable< std::string >(value_to_set);
     }
 
     Epp::ContactDisclose convert_ContactChange_to_ContactDisclose(
@@ -301,112 +157,65 @@ namespace Corba {
     {
         Epp::ContactDisclose result(meaning);
         if (CorbaConversion::int_to_int< bool >(src.DiscloseName)) {
-            result.add(Epp::ContactDisclose::name);
+            result.add< Epp::ContactDisclose::Item::name >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseOrganization)) {
-            result.add(Epp::ContactDisclose::organization);
+            result.add< Epp::ContactDisclose::Item::organization >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseAddress)) {
-            result.add(Epp::ContactDisclose::address);
+            result.add< Epp::ContactDisclose::Item::address >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseTelephone)) {
-            result.add(Epp::ContactDisclose::telephone);
+            result.add< Epp::ContactDisclose::Item::telephone >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseFax)) {
-            result.add(Epp::ContactDisclose::fax);
+            result.add< Epp::ContactDisclose::Item::fax >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseEmail)) {
-            result.add(Epp::ContactDisclose::email);
+            result.add< Epp::ContactDisclose::Item::email >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseVAT)) {
-            result.add(Epp::ContactDisclose::vat);
+            result.add< Epp::ContactDisclose::Item::vat >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseIdent)) {
-            result.add(Epp::ContactDisclose::ident);
+            result.add< Epp::ContactDisclose::Item::ident >();
         }
         if (CorbaConversion::int_to_int< bool >(src.DiscloseNotifyEmail)) {
-            result.add(Epp::ContactDisclose::notify_email);
+            result.add< Epp::ContactDisclose::Item::notify_email >();
         }
+        result.check_validity();
+        return result;
     }
 
-    boost::optional< Epp::ContactDisclose > unwrap_ContactChange_to_optional_ContactDisclose(
-            const ccReg::ContactChange &src)
+    boost::optional< Epp::ContactDisclose > unwrap_ContactChange_to_ContactDisclose(const ccReg::ContactChange &src)
     {
         switch (src.DiscloseFlag)
         {
-            //element <contact:disclose flag="0">
-            case ccReg::DISCL_HIDE:
-                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::to_hide);
-            //element <contact:disclose flag="1">
-            case ccReg::DISCL_DISPLAY:
-                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::to_disclose);
-            //missing element <contact:disclose>
             case ccReg::DISCL_EMPTY:
                 return boost::optional< Epp::ContactDisclose >();
+            case ccReg::DISCL_HIDE:
+                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::hide);
+            case ccReg::DISCL_DISPLAY:
+                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::disclose);
         }
-        throw std::runtime_error("Invalid DiscloseFlag value");
+        throw std::runtime_error("Invalid DiscloseFlag value;");
+    }
+
+    Nullable< Epp::ContactChange::IdentType::Enum > unwrap_identtyp(ccReg::identtyp type)
+    {
+        switch (type)
+        {
+            case ccReg::EMPTY:    return Nullable< Epp::ContactChange::IdentType::Enum >();
+            case ccReg::OP:       return Epp::ContactChange::IdentType::op;
+            case ccReg::PASS:     return Epp::ContactChange::IdentType::pass;
+            case ccReg::ICO:      return Epp::ContactChange::IdentType::ico;
+            case ccReg::MPSV:     return Epp::ContactChange::IdentType::mpsv;
+            case ccReg::BIRTHDAY: return Epp::ContactChange::IdentType::birthday;
+        }
+        throw std::runtime_error("Invalid identtyp value.");
     }
 
     }//namespace Corba::{anonymous}
-
-    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactCreateInputData &dst)
-    {
-        const StreetAddressPart streets = Corba::unwrap_streets(src.Streets);
-        dst.name              = boost::trim_copy(Corba::unwrap_string(src.Name));
-        dst.organization      = boost::trim_copy(Corba::unwrap_string(src.Organization));
-        dst.street1           = boost::trim_copy(streets.street_line_1);
-        dst.street2           = boost::trim_copy(streets.street_line_2);
-        dst.street3           = boost::trim_copy(streets.street_line_3);
-        dst.city              = boost::trim_copy(Corba::unwrap_string(src.City));
-        dst.state_or_province = boost::trim_copy(Corba::unwrap_string(src.StateOrProvince));
-        dst.postal_code       = boost::trim_copy(Corba::unwrap_string(src.PostalCode));
-        dst.country_code      = boost::trim_copy(Corba::unwrap_string(src.CC));
-        dst.telephone         = boost::trim_copy(Corba::unwrap_string(src.Telephone));
-        dst.fax               = boost::trim_copy(Corba::unwrap_string(src.Fax));
-        dst.email             = boost::trim_copy(Corba::unwrap_string(src.Email));
-        dst.notify_email      = boost::trim_copy(Corba::unwrap_string(src.NotifyEmail));
-        dst.VAT               = boost::trim_copy(Corba::unwrap_string(src.VAT));
-        dst.ident             = boost::trim_copy(Corba::unwrap_string(src.ident));
-        dst.identtype         = Corba::unwrap_ident_type(src.identtype);
-        dst.authinfo          = boost::trim_copy(Corba::unwrap_string(src.AuthInfoPw));
-        set_to_hide_and_to_disclose_items(src, dst.to_hide, dst.to_disclose);
-    }
-
-    static Optional<std::string> convert_corba_string_change(const char* input) {
-        const std::string safer_input = Corba::unwrap_string(input);
-
-        /* XXX Defined by convention. Could probably be substituted by more explicit means in IDL interface. */
-        const char char_for_value_deleting = '\b';
-
-        return
-            safer_input.empty()
-            ?   Optional<std::string>()
-            :   safer_input.at(0) == char_for_value_deleting
-                    ?   ""
-                    :   boost::trim_copy(Corba::unwrap_string(input));
-    }
-
-    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactUpdateInputData &dst)
-    {
-        dst.name              = convert_corba_string_change(src.Name);
-        dst.organization      = convert_corba_string_change(src.Organization);
-        dst.street1           = convert_corba_string_change(0 < src.Streets.length() ? src.Streets[0] : "");
-        dst.street2           = convert_corba_string_change(1 < src.Streets.length() ? src.Streets[1] : "");
-        dst.street3           = convert_corba_string_change(2 < src.Streets.length() ? src.Streets[2] : "");
-        dst.city              = convert_corba_string_change(src.City);
-        dst.state_or_province = convert_corba_string_change(src.StateOrProvince);
-        dst.postal_code       = convert_corba_string_change(src.PostalCode);
-        dst.country_code      = convert_corba_string_change(src.CC);
-        dst.telephone         = convert_corba_string_change(src.Telephone);
-        dst.fax               = convert_corba_string_change(src.Fax);
-        dst.email             = convert_corba_string_change(src.Email);
-        dst.notify_email      = convert_corba_string_change(src.NotifyEmail);
-        dst.VAT               = convert_corba_string_change(src.VAT);
-        dst.ident             = convert_corba_string_change(src.ident);
-        dst.identtype         = Corba::unwrap_ident_type(src.identtype);
-        dst.authinfo          = convert_corba_string_change(src.AuthInfoPw);
-        set_to_hide_and_to_disclose_items(src, dst.to_hide, dst.to_disclose);
-    }
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)
     {
@@ -423,11 +232,11 @@ namespace Corba {
         dst.fax               = convert_contact_change_string(src.Fax);
         dst.email             = convert_contact_change_string(src.Email);
         dst.notify_email      = convert_contact_change_string(src.NotifyEmail);
-        dst.VAT               = convert_contact_change_string(src.VAT);
+        dst.vat               = convert_contact_change_string(src.VAT);
         dst.ident             = convert_contact_change_string(src.ident);
-        dst.identtype         = Corba::unwrap_ident_type(src.identtype);
-        dst.authinfo          = convert_contact_change_string(src.AuthInfoPw);
-        unwrap_ContactChange(src, dst.disclose);
+        dst.ident_type        = unwrap_identtyp(src.identtype);
+        dst.auth_info_pw      = convert_contact_change_string(src.AuthInfoPw);
+        dst.disclose          = unwrap_ContactChange_to_ContactDisclose(src);
     }
 
     static std::string formatTime(const boost::posix_time::ptime& tm) {
@@ -439,10 +248,26 @@ namespace Corba {
     
     namespace {
 
-    template < Epp::ContactDisclose::Enum ITEM >
-    CORBA::Boolean presents(const std::set< Epp::ContactDisclose::Enum > &src)
+    template < Epp::ContactDisclose::Item::Enum ITEM >
+    CORBA::Boolean presents(const Epp::ContactDisclose &src)
     {
-        return CorbaConversion::int_to_int< CORBA::Boolean >(src.find(ITEM) != src.end());
+        return CorbaConversion::int_to_int< CORBA::Boolean >(src.presents< ITEM >());
+    }
+
+    ccReg::identtyp wrap_identtyp(const Nullable< Epp::LocalizedContactInfoOutputData::IdentType::Enum > &type)
+    {
+        if (type.isnull()) {
+            return ccReg::EMPTY;
+        }
+        switch (type.get_value())
+        {
+            case Epp::LocalizedContactInfoOutputData::IdentType::op:       return ccReg::OP;
+            case Epp::LocalizedContactInfoOutputData::IdentType::pass:     return ccReg::PASS;
+            case Epp::LocalizedContactInfoOutputData::IdentType::ico:      return ccReg::ICO;
+            case Epp::LocalizedContactInfoOutputData::IdentType::mpsv:     return ccReg::MPSV;
+            case Epp::LocalizedContactInfoOutputData::IdentType::birthday: return ccReg::BIRTHDAY;
+        }
+        throw std::runtime_error("Invalid Epp::LocalizedContactInfoOutputData::IdentType::Enum value.");
     }
 
     }//namespace Corba::{anonymous}
@@ -506,15 +331,10 @@ namespace Corba {
         dst.NotifyEmail = Corba::wrap_string_to_corba_string(src.notify_email.get_value_or_default());
         dst.VAT = Corba::wrap_string_to_corba_string(src.VAT.get_value_or_default());
         dst.ident = Corba::wrap_string_to_corba_string(src.ident.get_value_or_default());
-        dst.identtype = Corba::wrap_ident_type(src.identtype);
+        dst.identtype = Corba::wrap_identtyp(src.identtype);
         dst.AuthInfoPw = Corba::wrap_string_to_corba_string(src.auth_info_pw.get_value_or_default());
 
-        const bool some_entry_to_hide = !src.to_hide.empty();
-        const bool some_entry_to_disclose = !src.to_disclose.empty();
-        if (some_entry_to_hide && some_entry_to_disclose) {
-            throw std::runtime_error("Only hide or disclose can be set, not both.");
-        }
-        if (!some_entry_to_hide && !some_entry_to_disclose) {
+        if (!src.disclose.is_initialized()) {
             dst.DiscloseFlag           = ccReg::DISCL_EMPTY;
             dst.DiscloseName           = CorbaConversion::int_to_int< CORBA::Boolean >(false);
             dst.DiscloseOrganization   = CorbaConversion::int_to_int< CORBA::Boolean >(false);
@@ -527,18 +347,17 @@ namespace Corba {
             dst.DiscloseNotifyEmail    = CorbaConversion::int_to_int< CORBA::Boolean >(false);
         }
         else {
-            const std::set< Epp::ContactDisclose::Enum > &to_set = some_entry_to_hide ? src.to_hide
-                                                                                      : src.to_disclose;
-            dst.DiscloseFlag         = some_entry_to_hide ? ccReg::DISCL_HIDE : ccReg::DISCL_DISPLAY;
-            dst.DiscloseName         = presents< Epp::ContactDisclose::name         >(to_set);
-            dst.DiscloseOrganization = presents< Epp::ContactDisclose::organization >(to_set);
-            dst.DiscloseAddress      = presents< Epp::ContactDisclose::address      >(to_set);
-            dst.DiscloseTelephone    = presents< Epp::ContactDisclose::telephone    >(to_set);
-            dst.DiscloseFax          = presents< Epp::ContactDisclose::fax          >(to_set);
-            dst.DiscloseEmail        = presents< Epp::ContactDisclose::email        >(to_set);
-            dst.DiscloseVAT          = presents< Epp::ContactDisclose::vat          >(to_set);
-            dst.DiscloseIdent        = presents< Epp::ContactDisclose::ident        >(to_set);
-            dst.DiscloseNotifyEmail  = presents< Epp::ContactDisclose::notify_email >(to_set);
+            dst.DiscloseFlag         = src.disclose->does_present_item_mean_to_disclose() ? ccReg::DISCL_DISPLAY
+                                                                                          : ccReg::DISCL_HIDE;
+            dst.DiscloseName         = presents< Epp::ContactDisclose::Item::name         >(*src.disclose);
+            dst.DiscloseOrganization = presents< Epp::ContactDisclose::Item::organization >(*src.disclose);
+            dst.DiscloseAddress      = presents< Epp::ContactDisclose::Item::address      >(*src.disclose);
+            dst.DiscloseTelephone    = presents< Epp::ContactDisclose::Item::telephone    >(*src.disclose);
+            dst.DiscloseFax          = presents< Epp::ContactDisclose::Item::fax          >(*src.disclose);
+            dst.DiscloseEmail        = presents< Epp::ContactDisclose::Item::email        >(*src.disclose);
+            dst.DiscloseVAT          = presents< Epp::ContactDisclose::Item::vat          >(*src.disclose);
+            dst.DiscloseIdent        = presents< Epp::ContactDisclose::Item::ident        >(*src.disclose);
+            dst.DiscloseNotifyEmail  = presents< Epp::ContactDisclose::Item::notify_email >(*src.disclose);
         }
     }
 

@@ -32,34 +32,35 @@
 
 namespace {
 
-void set_all_items(std::set< Epp::ContactDisclose::Enum > &items)
+boost::optional< Epp::ContactDisclose > set_all_disclose_flags(bool to_disclose)
 {
-    items.insert(Epp::ContactDisclose::name);
-    items.insert(Epp::ContactDisclose::organization);
-    items.insert(Epp::ContactDisclose::address);
-    items.insert(Epp::ContactDisclose::telephone);
-    items.insert(Epp::ContactDisclose::fax);
-    items.insert(Epp::ContactDisclose::email);
-    items.insert(Epp::ContactDisclose::vat);
-    items.insert(Epp::ContactDisclose::ident);
-    items.insert(Epp::ContactDisclose::notify_email);
-}
-
-void set_all_disclose_flags(bool to_disclose, Epp::ContactCreateInputData &data)
-{
-    if (Epp::is_the_default_policy_to_disclose() != to_disclose)
+    if (Epp::is_the_default_policy_to_disclose() == to_disclose)
     {
-        set_all_items(to_disclose ? data.to_hide : data.to_disclose);
+        return boost::optional< Epp::ContactDisclose >();
     }
+    Epp::ContactDisclose disclose(to_disclose ? Epp::ContactDisclose::Flag::hide
+                                              : Epp::ContactDisclose::Flag::disclose);
+    disclose.add< Epp::ContactDisclose::Item::name >();
+    disclose.add< Epp::ContactDisclose::Item::organization >();
+    disclose.add< Epp::ContactDisclose::Item::address >();
+    disclose.add< Epp::ContactDisclose::Item::telephone >();
+    disclose.add< Epp::ContactDisclose::Item::fax >();
+    disclose.add< Epp::ContactDisclose::Item::email >();
+    disclose.add< Epp::ContactDisclose::Item::vat >();
+    disclose.add< Epp::ContactDisclose::Item::ident >();
+    disclose.add< Epp::ContactDisclose::Item::notify_email >();
+    return disclose;
 }
 
-void set_correct_contact_data(Epp::ContactCreateInputData &contact_data)
+void set_correct_contact_data(Epp::ContactChange &contact_data)
 {
     contact_data.name              = "Jan Novak Jr.";
-    //contact_data.organization
-    contact_data.street1           = "ulice 1";
-    contact_data.street2           = "ulice 2";
-    contact_data.street3           = "ulice 3";
+    contact_data.organization      = "";
+    contact_data.streets.clear();
+    contact_data.streets.reserve(3);
+    contact_data.streets.push_back(Nullable< std::string >("ulice 1"));
+    contact_data.streets.push_back(Nullable< std::string >("ulice 2"));
+    contact_data.streets.push_back(Nullable< std::string >("ulice 3"));
     contact_data.city              = "mesto";
     contact_data.state_or_province = "hejtmanstvi";
     contact_data.postal_code       = "12345";
@@ -68,28 +69,71 @@ void set_correct_contact_data(Epp::ContactCreateInputData &contact_data)
     contact_data.fax               = "+420 987 654 321";
     contact_data.email             = "jan@novak.novak";
     contact_data.notify_email      = "jan.notify@novak.novak";
-    contact_data.VAT               = "MyVATstring";
-    //contact_data.ident
-    //contact_data.identtype
-    contact_data.authinfo          = "authInfo123";
-    set_all_disclose_flags(true, contact_data);
+    contact_data.vat               = "MyVATstring";
+    contact_data.ident             = "";
+    contact_data.ident_type        = Nullable< Epp::ContactChange::IdentType::Enum >();
+    contact_data.auth_info_pw      = "authInfo123";
+    contact_data.disclose          = set_all_disclose_flags(true);
 }
 
-template < Epp::ContactDisclose::Enum ITEM >
-bool disclose(const Epp::ContactCreateInputData &_data)
+template < Epp::ContactDisclose::Item::Enum ITEM >
+bool to_disclose(const Epp::ContactCreateInputData &_data)
 {
-    const bool item_has_to_be_hidden    = _data.to_hide.find(ITEM) != _data.to_hide.end();
-    const bool item_has_to_be_disclosed = _data.to_disclose.find(ITEM) != _data.to_disclose.end();
-    if (item_has_to_be_hidden && !item_has_to_be_disclosed) {
-        return false;
-    }
-    if (!item_has_to_be_hidden && item_has_to_be_disclosed) {
-        return true;
-    }
-    if (!item_has_to_be_hidden && !item_has_to_be_disclosed) {
+    if (!_data.disclose.is_initialized()) {
         return Epp::is_the_default_policy_to_disclose();
     }
-    throw std::runtime_error("Ambiguous disclose flag");
+    return _data.disclose->should_be_disclosed< ITEM >(Epp::is_the_default_policy_to_disclose());
+}
+
+std::string ident_type_to_string(Epp::ContactChange::IdentType::Enum type)
+{
+    switch (type)
+    {
+        case Epp::ContactChange::IdentType::op:       return Fred::PersonalIdUnion::get_OP("").get_type();
+        case Epp::ContactChange::IdentType::pass:     return Fred::PersonalIdUnion::get_PASS("").get_type();
+        case Epp::ContactChange::IdentType::ico:      return Fred::PersonalIdUnion::get_ICO("").get_type();
+        case Epp::ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV("").get_type();
+        case Epp::ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY("").get_type();
+    }
+    throw std::runtime_error("Invalid Epp::ContactChange::IdentType::Enum value.");
+}
+
+void check_equal(const Epp::ContactCreateInputData &create_data, const Fred::InfoContactData &info_data)
+{
+    BOOST_CHECK_EQUAL(create_data.name,              info_data.name.get_value_or_default() );
+    BOOST_CHECK_EQUAL(create_data.organization,      info_data.organization.get_value_or_default() );
+
+    BOOST_CHECK_EQUAL(0 < create_data.streets.size() ? create_data.streets[0] : "",
+                      info_data.place.get_value_or_default().street1);
+    BOOST_CHECK_EQUAL(1 < create_data.streets.size() ? create_data.streets[1] : "",
+                      info_data.place.get_value_or_default().street2.get_value_or_default());
+    BOOST_CHECK_EQUAL(2 < create_data.streets.size() ? create_data.streets[2] : "",
+                      info_data.place.get_value_or_default().street3.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.city,              info_data.place.get_value_or_default().city);
+    BOOST_CHECK_EQUAL(create_data.postal_code,       info_data.place.get_value_or_default().postalcode);
+    BOOST_CHECK_EQUAL(create_data.state_or_province, info_data.place.get_value_or_default().stateorprovince.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.country_code,      info_data.place.get_value_or_default().country);
+    BOOST_CHECK_EQUAL(create_data.telephone,         info_data.telephone.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.fax,               info_data.fax.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.email,             info_data.email.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.notify_email,      info_data.notifyemail.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.VAT,               info_data.vat.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.ident,             info_data.ssn.get_value_or_default());
+
+    BOOST_CHECK_EQUAL(create_data.identtype.isnull() ? ""
+                                                     : ident_type_to_string(create_data.identtype.get_value()),
+                      info_data.ssntype.get_value_or_default());
+
+    BOOST_CHECK_EQUAL(create_data.authinfo,          info_data.authinfopw);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::name         >(create_data), info_data.disclosename);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::organization >(create_data), info_data.discloseorganization);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::address      >(create_data), info_data.discloseaddress);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::telephone    >(create_data), info_data.disclosetelephone);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::fax          >(create_data), info_data.disclosefax);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::email        >(create_data), info_data.discloseemail);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::vat          >(create_data), info_data.disclosevat);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::ident        >(create_data), info_data.discloseident);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::notify_email >(create_data), info_data.disclosenotifyemail);
 }
 
 }
@@ -99,7 +143,7 @@ BOOST_AUTO_TEST_SUITE(ContactCreateImpl)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
 {
-    Epp::ContactCreateInputData contact_data;
+    Epp::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
@@ -116,7 +160,7 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
 {
-    Epp::ContactCreateInputData contact_data;
+    Epp::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
@@ -133,7 +177,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
 {
-    Epp::ContactCreateInputData contact_data;
+    Epp::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
@@ -154,7 +198,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
         Fred::DeleteContactByHandle(contact.handle).exec(ctx);
     }
 
-    Epp::ContactCreateInputData contact_data;
+    Epp::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     try {
@@ -172,7 +216,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
 {
-    Epp::ContactCreateInputData contact_data;
+    Epp::ContactChange contact_data;
     set_correct_contact_data(contact_data);
     contact_data.country_code      = "1Z9"; /* <- !!! */
 
@@ -189,47 +233,9 @@ BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
     }
 }
 
-void check_equal(const Epp::ContactCreateInputData& create_data, const Fred::InfoContactData& info_data)
-{
-    BOOST_CHECK_EQUAL( create_data.name,                info_data.name.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.organization,        info_data.organization.get_value_or_default() );
-
-    BOOST_CHECK_EQUAL( create_data.street1,             info_data.place.get_value_or_default().street1 );
-    BOOST_CHECK_EQUAL( create_data.street2,             info_data.place.get_value_or_default().street2.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.street3,             info_data.place.get_value_or_default().street3.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.city,                info_data.place.get_value_or_default().city );
-    BOOST_CHECK_EQUAL( create_data.postal_code,         info_data.place.get_value_or_default().postalcode );
-    BOOST_CHECK_EQUAL( create_data.state_or_province,   info_data.place.get_value_or_default().stateorprovince.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.country_code,        info_data.place.get_value_or_default().country );
-    BOOST_CHECK_EQUAL( create_data.telephone,           info_data.telephone.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.fax,                 info_data.fax.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.email,               info_data.email.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.notify_email,        info_data.notifyemail.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.VAT,                 info_data.vat.get_value_or_default() );
-    BOOST_CHECK_EQUAL( create_data.ident,               info_data.ssn.get_value_or_default() );
-
-    BOOST_CHECK_EQUAL(
-        create_data.identtype.isnull()
-            ?   ""
-            :   Epp::to_db_handle( create_data.identtype.get_value() ),
-        info_data.ssntype.get_value_or_default()
-    );
-
-    BOOST_CHECK_EQUAL( create_data.authinfo,                                        info_data.authinfopw );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::name         >(create_data), info_data.disclosename );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::organization >(create_data), info_data.discloseorganization );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::address      >(create_data), info_data.discloseaddress );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::telephone    >(create_data), info_data.disclosetelephone );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::fax          >(create_data), info_data.disclosefax );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::email        >(create_data), info_data.discloseemail );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::vat          >(create_data), info_data.disclosevat );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::ident        >(create_data), info_data.discloseident );
-    BOOST_CHECK_EQUAL( disclose< Epp::ContactDisclose::notify_email >(create_data), info_data.disclosenotifyemail );
-}
-
 BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
 {
-    Epp::ContactCreateInputData contact_data;
+    Epp::ContactChange contact_data;
     set_correct_contact_data(contact_data);
     const std::string contact_handle = "contacthandle1";
 

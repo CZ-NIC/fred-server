@@ -33,21 +33,13 @@
 
 namespace {
 
-template < Epp::ContactDisclose::Enum ITEM >
-bool disclose(const Epp::ContactInfoOutputData &src)
+template < Epp::ContactDisclose::Item::Enum ITEM >
+bool to_disclose(const Epp::ContactInfoOutputData &epp_data)
 {
-        const bool some_entry_to_hide = !src.to_hide.empty();
-        const bool some_entry_to_disclose = !src.to_disclose.empty();
-        if (some_entry_to_hide && some_entry_to_disclose) {
-            throw std::runtime_error("Only hide or disclose can be set, not both.");
-        }
-        if (!some_entry_to_hide && !some_entry_to_disclose) {
-            return Epp::is_the_default_policy_to_disclose();
-        }
-        if (some_entry_to_hide && !some_entry_to_disclose) {
-            return src.to_hide.find(ITEM) == src.to_hide.end();
-        }
-        return src.to_disclose.find(ITEM) != src.to_disclose.end();
+    if (!epp_data.disclose.is_initialized()) {
+        return Epp::is_the_default_policy_to_disclose();
+    }
+    return epp_data.disclose->should_be_disclosed< ITEM >(Epp::is_the_default_policy_to_disclose());
 }
 
 void check_equal(const Epp::ContactInfoOutputData &epp_data, const Fred::InfoContactData &fred_data)
@@ -68,21 +60,22 @@ void check_equal(const Epp::ContactInfoOutputData &epp_data, const Fred::InfoCon
     BOOST_CHECK_EQUAL(epp_data.email.get_value_or_default(),        fred_data.email.get_value_or_default());
     BOOST_CHECK_EQUAL(epp_data.notify_email.get_value_or_default(), fred_data.notifyemail.get_value_or_default());
     BOOST_CHECK_EQUAL(epp_data.VAT.get_value_or_default(),          fred_data.vat.get_value_or_default());
-    BOOST_CHECK_EQUAL(epp_data.ident.get_value_or_default(),        fred_data.ssn.get_value_or_default());
+    BOOST_CHECK_EQUAL(epp_data.personal_id.is_initialized() ? epp_data.personal_id->get() : "",
+                      fred_data.ssn.get_value_or_default());
 
-    BOOST_CHECK_EQUAL(epp_data.identtype.isnull() ? "" : Epp::to_db_handle(epp_data.identtype.get_value()),
+    BOOST_CHECK_EQUAL(epp_data.personal_id.is_initialized() ? epp_data.personal_id->get_type() : "",
                       fred_data.ssntype.get_value_or_default());
 
     BOOST_CHECK_EQUAL(epp_data.auth_info_pw,                        fred_data.authinfopw);
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::name         >(epp_data), fred_data.disclosename);
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::organization >(epp_data), fred_data.discloseorganization );
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::address      >(epp_data), fred_data.discloseaddress );
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::telephone    >(epp_data), fred_data.disclosetelephone );
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::fax          >(epp_data), fred_data.disclosefax );
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::email        >(epp_data), fred_data.discloseemail );
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::vat          >(epp_data), fred_data.disclosevat );
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::ident        >(epp_data), fred_data.discloseident );
-    BOOST_CHECK_EQUAL(disclose< Epp::ContactDisclose::notify_email >(epp_data), fred_data.disclosenotifyemail );
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::name         >(epp_data), fred_data.disclosename);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::organization >(epp_data), fred_data.discloseorganization);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::address      >(epp_data), fred_data.discloseaddress);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::telephone    >(epp_data), fred_data.disclosetelephone);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::fax          >(epp_data), fred_data.disclosefax);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::email        >(epp_data), fred_data.discloseemail);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::vat          >(epp_data), fred_data.disclosevat);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::ident        >(epp_data), fred_data.discloseident);
+    BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::notify_email >(epp_data), fred_data.disclosenotifyemail);
 }
 
 }//namespace {anonymous}

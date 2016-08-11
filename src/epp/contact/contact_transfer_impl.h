@@ -23,7 +23,6 @@
 #ifndef EPP_CONTACT_TRANSFER_IMPL_H_63598781301
 #define EPP_CONTACT_TRANSFER_IMPL_H_63598781301
 
-#include "src/epp/contact/ident_type.h"
 #include "src/fredlib/opcontext.h"
 
 #include "src/epp/contact/contact_transfer.h"

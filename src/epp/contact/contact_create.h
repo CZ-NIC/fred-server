@@ -23,14 +23,12 @@
 #ifndef EPP_CONTACT_CREATE_H_548537357434
 #define EPP_CONTACT_CREATE_H_548537357434
 
-#include "src/epp/contact/disclose.h"
-#include "src/epp/contact/ident_type.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-#include <set>
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -38,32 +36,10 @@ namespace Epp {
 
 struct ContactCreateInputData
 {
-    template < ContactDisclose::Enum ITEM >
-    bool compute_disclose_flag(bool default_policy_is_to_disclose)const
-    {
-        const bool disclose_preference_is_set = !to_hide.empty() || !to_disclose.empty();
-        if (!disclose_preference_is_set) {
-            const bool item_should_be_disclosed = default_policy_is_to_disclose;
-            return item_should_be_disclosed;
-        }
-        const bool disclose_preference_is_to_hide = to_hide.find(ITEM) != to_hide.end();
-        const bool disclose_preference_is_to_disclose = to_disclose.find(ITEM) != to_disclose.end();
-        if (disclose_preference_is_to_hide != disclose_preference_is_to_disclose) {
-            const bool item_should_be_disclosed = disclose_preference_is_to_disclose;
-            return item_should_be_disclosed;
-        }
-        if (!disclose_preference_is_to_hide && !disclose_preference_is_to_disclose) {
-            const bool item_should_be_disclosed = default_policy_is_to_disclose;
-            return item_should_be_disclosed;
-        }
-        throw std::runtime_error("The same entry can't be simultaneously hidden and disclosed.");
-    }
-
+    ContactCreateInputData(const ContactChange &src);
     std::string name;
     std::string organization;
-    std::string street1;
-    std::string street2;
-    std::string street3;
+    std::vector< std::string > streets;
     std::string city;
     std::string state_or_province;
     std::string postal_code;
@@ -74,10 +50,9 @@ struct ContactCreateInputData
     std::string notify_email;
     std::string VAT;
     std::string ident;
-    Nullable< IdentType::Enum > identtype;
+    Nullable< ContactChange::IdentType::Enum > identtype;
     std::string authinfo;
-    std::set< ContactDisclose::Enum > to_hide;
-    std::set< ContactDisclose::Enum > to_disclose;
+    boost::optional< ContactDisclose > disclose;
 };
 
 struct LocalizedCreateContactResponse {

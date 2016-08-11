@@ -18,7 +18,7 @@ namespace Epp {
 
 LocalizedSuccessResponse contact_update(
     const std::string &_contact_handle,
-    const ContactUpdateInputData &_data,
+    const ContactChange &_data,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id,
     bool _epp_update_contact_enqueue_check,

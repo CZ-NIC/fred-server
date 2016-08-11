@@ -35,10 +35,6 @@
 
 namespace Corba {
 
-    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactCreateInputData &dst);
-
-    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactUpdateInputData &dst);
-
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);

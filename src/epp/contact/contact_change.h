@@ -40,7 +40,7 @@ struct ContactChange
     std::vector< boost::optional< Nullable< std::string > > > streets;
     boost::optional< Nullable< std::string > > city;
     boost::optional< Nullable< std::string > > state_or_province;
-    boost::optional< Nullable< std::string > > postalcode;
+    boost::optional< Nullable< std::string > > postal_code;
     boost::optional< Nullable< std::string > > country_code;
     boost::optional< Nullable< std::string > > telephone;
     boost::optional< Nullable< std::string > > fax;
@@ -48,15 +48,18 @@ struct ContactChange
     boost::optional< Nullable< std::string > > notify_email;
     boost::optional< Nullable< std::string > > vat;
     boost::optional< Nullable< std::string > > ident;
-    enum IdentType
+    struct IdentType
     {
-        op,
-        pass,
-        ico,
-        mpsv,
-        birthday
+        enum Enum
+        {
+            op,
+            pass,
+            ico,
+            mpsv,
+            birthday
+        };
     };
-    Nullable< IdentType > ident_type;
+    Nullable< IdentType::Enum > ident_type;
     boost::optional< Nullable< std::string > > auth_info_pw;
     boost::optional< ContactDisclose > disclose;
     struct Value

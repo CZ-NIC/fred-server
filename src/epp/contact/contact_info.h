@@ -23,7 +23,6 @@
 #ifndef EPP_CONTACT_INFO_H_0248610748501
 #define EPP_CONTACT_INFO_H_0248610748501
 
-#include "src/epp/contact/ident_type.h"
 #include "src/epp/contact/disclose.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
@@ -34,11 +33,13 @@
 #include <set>
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 namespace Epp {
 
 struct LocalizedContactInfoOutputData
 {
+    LocalizedContactInfoOutputData(const boost::optional< ContactDisclose > &disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -63,10 +64,20 @@ struct LocalizedContactInfoOutputData
     Nullable< std::string > notify_email;
     Nullable< std::string > VAT;
     Nullable< std::string > ident;
-    Nullable<IdentType::Enum> identtype;
+    struct IdentType
+    {
+        enum Enum
+        {
+            op,
+            pass,
+            ico,
+            mpsv,
+            birthday
+        };
+    };
+    Nullable< IdentType::Enum > identtype;
     Nullable< std::string > auth_info_pw;
-    std::set< ContactDisclose::Enum > to_hide;
-    std::set< ContactDisclose::Enum > to_disclose;
+    boost::optional< ContactDisclose > disclose;
 };
 
 struct LocalizedInfoContactResponse

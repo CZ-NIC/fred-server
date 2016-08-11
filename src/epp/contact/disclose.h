@@ -76,13 +76,31 @@ public:
         return item_found;
     }
     template< Item::Enum ITEM >
+    bool should_be_disclosed(bool the_default_policy_is_to_disclose)const
+    {
+        if (this->does_present_item_mean_to_disclose()) {
+            return the_default_policy_is_to_disclose || this->presents< ITEM >();
+        }
+        return the_default_policy_is_to_disclose && !this->presents< ITEM >();
+    }
+    template< Item::Enum ITEM >
     ContactDisclose& add()
     {
         items_.insert(ITEM);
         return *this;
     }
+    bool is_empty()const
+    {
+        return items_.empty();
+    }
+    void check_validity()const
+    {
+        if (this->is_empty()) {
+            throw std::runtime_error("At least one disclose flag has to be set.");
+        }
+    }
 private:
-    const Flag::Enum meaning_;
+    Flag::Enum meaning_;
     std::set< Item::Enum > items_;
 };
 

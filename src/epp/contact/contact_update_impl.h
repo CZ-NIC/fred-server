@@ -42,7 +42,7 @@ namespace Epp {
 unsigned long long contact_update_impl(
     Fred::OperationContext &_ctx,
     const std::string &_contact_handle,
-    const ContactUpdateInputData &_data,
+    const ContactChange &_data,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 

@@ -21,21 +21,6 @@ namespace Epp {
 
 namespace {
 
-std::set< std::string > get_non_internal_states(
-    const std::set< ContactInfoOutputData::State > &_states)
-{
-    std::set< std::string > result;
-    for (std::set< ContactInfoOutputData::State >::const_iterator state_ptr = _states.begin();
-         state_ptr != _states.end(); ++state_ptr)
-    {
-        const bool is_internal = !state_ptr->is_external;
-        if (!is_internal) {
-            result.insert(state_ptr->name);
-        }
-    }
-    return result;
-}
-
 class FilterOut
 {
 public:
@@ -59,6 +44,11 @@ private:
 };
 
 }//namespace Epp::{anonymous}
+
+LocalizedContactInfoOutputData::LocalizedContactInfoOutputData(const boost::optional< ContactDisclose > &_disclose)
+:   disclose(_disclose)
+{
+}
 
 LocalizedInfoContactResponse::LocalizedInfoContactResponse(
     const LocalizedSuccessResponse &_ok_response,
@@ -88,7 +78,7 @@ LocalizedInfoContactResponse contact_info(
         const bool callers_is_sponsoring_registrar = info.sponsoring_registrar_handle == callers_registrar_handle;
         const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
 
-        LocalizedContactInfoOutputData output_data;
+        LocalizedContactInfoOutputData output_data(info.disclose);
         output_data.handle                       = info.handle;
         output_data.roid                         = info.roid;
         output_data.sponsoring_registrar_handle  = info.sponsoring_registrar_handle;
@@ -98,7 +88,7 @@ LocalizedInfoContactResponse contact_info(
             const std::vector< std::string > admin_contact_verification_states =
                 Admin::AdminContactVerificationObjectStates::get_all();
 
-            std::set< std::string > filtered_states = get_non_internal_states(info.states);
+            std::set< std::string > filtered_states = info.states;
             /* XXX HACK: Ticket #10053 - temporary hack until changed xml schemas are released upon poor registrars
              * Do not propagate admin contact verification states.
              */
@@ -128,11 +118,34 @@ LocalizedInfoContactResponse contact_info(
         output_data.email             = info.email;
         output_data.notify_email      = info.notify_email;
         output_data.VAT               = info.VAT;
-        output_data.ident             = info.ident;
-        output_data.identtype         = info.identtype;
+        if (info.personal_id.is_initialized()) {
+            output_data.ident         = info.personal_id->get();
+            if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_OP("").get_type())
+            {
+                output_data.identtype = LocalizedContactInfoOutputData::IdentType::op;
+            }
+            else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_PASS("").get_type())
+            {
+                output_data.identtype = LocalizedContactInfoOutputData::IdentType::pass;
+            }
+            else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_ICO("").get_type())
+            {
+                output_data.identtype = LocalizedContactInfoOutputData::IdentType::ico;
+            }
+            else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_MPSV("").get_type())
+            {
+                output_data.identtype = LocalizedContactInfoOutputData::IdentType::mpsv;
+            }
+            else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_BIRTHDAY("").get_type())
+            {
+                output_data.identtype = LocalizedContactInfoOutputData::IdentType::birthday;
+            }
+            else
+            {
+                throw std::runtime_error("Invalid ident type.");
+            }
+        }
         output_data.auth_info_pw      = authinfo_has_to_be_hidden ? Nullable< std::string >() : info.auth_info_pw;
-        output_data.to_hide           = info.to_hide;
-        output_data.to_disclose       = info.to_disclose;
 
         return LocalizedInfoContactResponse(
             create_localized_success_response(Response::ok, ctx, _lang),
