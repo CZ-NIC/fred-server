@@ -97,6 +97,8 @@ namespace Fred
             if (e.is_set_object_id_not_found()) {
                 BOOST_THROW_EXCEPTION(Exception().set_object_id_not_found(e.get_object_id_not_found()));
             }
+
+            throw;
         }
     }
 

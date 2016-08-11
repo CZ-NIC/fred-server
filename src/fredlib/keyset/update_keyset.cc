@@ -127,16 +127,20 @@ namespace Fred
             }
             catch(const Fred::UpdateObject::Exception& ex)
             {
-                if(ex.is_set_unknown_object_handle())
-                {
-                    update_keyset_exception.set_unknown_keyset_handle(
-                            ex.get_unknown_object_handle());
+                bool caught_exception_has_been_handled = false;
+
+                if( ex.is_set_unknown_object_handle() ) {
+                    update_keyset_exception.set_unknown_keyset_handle( ex.get_unknown_object_handle() );
+                    caught_exception_has_been_handled = true;
                 }
 
-                if(ex.is_set_unknown_registrar_handle())
-                {
-                    update_keyset_exception.set_unknown_registrar_handle(
-                            ex.get_unknown_registrar_handle());
+                if( ex.is_set_unknown_registrar_handle() ) {
+                    update_keyset_exception.set_unknown_registrar_handle( ex.get_unknown_registrar_handle() );
+                    caught_exception_has_been_handled = true;
+                }
+
+                if( ! caught_exception_has_been_handled ) {
+                    throw;
                 }
             }
 
@@ -180,8 +184,9 @@ namespace Fred
                             update_keyset_exception.add_already_set_technical_contact_handle(*i);
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_tech_contact");
                         }
-                        else
+                        else {
                             throw;
+                        }
                     }
                 }//for i
             }//if add tech contacts
@@ -268,8 +273,9 @@ namespace Fred
                             update_keyset_exception.add_already_set_dns_key(*i);
                             ctx.get_conn().exec("ROLLBACK TO SAVEPOINT add_dns_key");
                         }
-                        else
+                        else {
                             throw;
+                        }
                     }
                 }//for i
             }//if add dns keys

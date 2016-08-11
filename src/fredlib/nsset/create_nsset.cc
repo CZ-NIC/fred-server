@@ -162,8 +162,9 @@ namespace Fred
                                 create_nsset_exception.add_already_set_dns_host(i->get_fqdn());
                                 ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnshost");
                             }
-                            else
+                            else {
                                 throw;
+                            }
                         }
 
                         std::vector<boost::asio::ip::address> dns_host_ip = i->get_inet_addr();
@@ -187,8 +188,9 @@ namespace Fred
                                     create_nsset_exception.add_invalid_dns_host_ipaddr(j->to_string());
                                     ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnshostipaddr");
                                 }
-                                else
+                                else {
                                     throw;
+                                }
                             }
                         }//for j
                     }//for i
@@ -234,8 +236,9 @@ namespace Fred
                                 create_nsset_exception.add_already_set_technical_contact_handle(*i);
                                 ctx.get_conn().exec("ROLLBACK TO SAVEPOINT tech_contact");
                             }
-                            else
+                            else {
                                 throw;
+                            }
                         }
                     }//for i
                 }//if set tech contacts

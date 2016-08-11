@@ -203,10 +203,12 @@ namespace Fred
 
         if (!is_enum_zone)//check ENUM specific parameters
         {
-            if(enum_validation_expiration_.isset())
+            if(enum_validation_expiration_.isset()) {
                 BOOST_THROW_EXCEPTION(InternalError("enum_validation_expiration set for non-ENUM domain"));
-            if(enum_publish_flag_.isset())
+            }
+            if(enum_publish_flag_.isset()) {
                 BOOST_THROW_EXCEPTION(InternalError("enum_publish_flag set for non-ENUM domain"));
+            }
         }
 
         Exception update_domain_exception;
@@ -220,16 +222,20 @@ namespace Fred
         }
         catch(const Fred::UpdateObject::Exception& ex)
         {
-            if(ex.is_set_unknown_object_handle())
-            {
-                update_domain_exception.set_unknown_domain_fqdn(
-                        ex.get_unknown_object_handle());
+            bool caught_exception_has_been_handled = false;
+
+            if( ex.is_set_unknown_object_handle() ) {
+                update_domain_exception.set_unknown_domain_fqdn( ex.get_unknown_object_handle() );
+                caught_exception_has_been_handled = true;
             }
 
-            if(ex.is_set_unknown_registrar_handle())
-            {
-                update_domain_exception.set_unknown_registrar_handle(
-                        ex.get_unknown_registrar_handle());
+            if( ex.is_set_unknown_registrar_handle() ) {
+                update_domain_exception.set_unknown_registrar_handle( ex.get_unknown_registrar_handle() );
+                caught_exception_has_been_handled = true;
+            }
+
+            if( ! caught_exception_has_been_handled ) {
+                throw;
             }
         }
         //update domain
@@ -306,8 +312,9 @@ namespace Fred
             }//if change exdate
 
             //check exception
-            if(update_domain_exception.throw_me())
+            if(update_domain_exception.throw_me()) {
                 BOOST_THROW_EXCEPTION(update_domain_exception);
+            }
 
             params.push_back(domain_id);
             sql << " WHERE id = $" << params.size() << "::integer RETURNING id";
@@ -359,8 +366,9 @@ namespace Fred
                         update_domain_exception.add_already_set_admin_contact_handle(*i);
                         ctx.get_conn().exec("ROLLBACK TO SAVEPOINT admin_contact");
                     }
-                    else
+                    else {
                         throw;
+                    }
                 }
             }//for i
         }//if add admin contacts

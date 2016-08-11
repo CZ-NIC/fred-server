@@ -255,12 +255,19 @@ namespace Fred
                     BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(
                             create_object_exception.get_unknown_registrar_handle()));
                 }
-                else if(create_object_exception.is_set_invalid_object_handle())
+
+                bool caught_exception_has_been_handled = false;
+
+                if(create_object_exception.is_set_invalid_object_handle())
                 {   //non-fatal good path, create can continue to check input
                     create_contact_exception.set_invalid_contact_handle(
                             create_object_exception.get_invalid_object_handle());
+                    caught_exception_has_been_handled = true;
                 }
-                else throw;//rethrow unexpected
+
+                if( ! caught_exception_has_been_handled ) {
+                    throw; //rethrow unexpected
+                }
             }
 
             //create contact
