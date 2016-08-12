@@ -232,6 +232,21 @@ private:
     }
 };
 
+class ObjectAlreadyBlocked : std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "object is already blocked";
+    }
+};
+
+class ObjectNotBlocked : std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "object is not blocked";
+    }
+};
 
 class PublicRequest
 {

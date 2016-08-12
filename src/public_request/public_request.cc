@@ -1,6 +1,9 @@
 #include "src/public_request/public_request.h"
 #include "src/fredlib/public_request/create_public_request.h"
+#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/get_present_object_id.h"
+#include "src/fredlib/object_state/get_object_states.h"
 
 namespace Registry
 {
@@ -72,7 +75,6 @@ unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
     }
 }
 
-//    raises (OBJECT_NOT_FOUND, INTERNAL_SERVER_ERROR, 
 unsigned long long PublicRequest::create_block_unblock_request(
     Fred::Object_Type::Enum object_type,
     const std::string& object_handle,
@@ -83,49 +85,72 @@ unsigned long long PublicRequest::create_block_unblock_request(
     try
     {
         Fred::OperationContextCreator ctx;
-        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(
-                ctx,
-                Fred::get_present_object_id(ctx, object_type, object_handle));
+        unsigned long long object_id = Fred::get_present_object_id(ctx, object_type, object_handle);
+        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates().exec(ctx));
         unsigned long long request_id;
         Fred::CreatePublicRequest c_p_r = Fred::CreatePublicRequest(
                 Optional<std::string>(),
                 Optional<std::string>(),
                 Optional<unsigned long long>());
-        //TODO OBJECT_ALREADY_BLOCKED, OBJECT_NOT_BLOCKED
-        if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
+        if (lock_request_type == BLOCK_TRANSFER)
         {
-            if (lock_request_type == BLOCK_TRANSFER)
+            if (states.presents(Fred::Object_State::server_transfer_prohibited))
+            {
+                throw ObjectAlreadyBlocked();
+            }
+            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
             {
                 request_id = c_p_r.exec(locked_object, BlockTransferEmail(), log_request_id);
             }
-            else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
-            {
-                request_id = c_p_r.exec(locked_object, BlockChangesEmail(), log_request_id);
-            }
-            else if (lock_request_type == UNBLOCK_TRANSFER)
-            {
-                request_id = c_p_r.exec(locked_object, UnblockTransferEmail(), log_request_id);
-            }
-            else if (lock_request_type == UNBLOCK_TRANSFER_AND_UPDATE)
-            {
-                request_id = c_p_r.exec(locked_object, UnblockChangesEmail(), log_request_id);
-            }
-        }
-        else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
-        {
-            if (lock_request_type == BLOCK_TRANSFER)
+            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
             {
                 request_id = c_p_r.exec(locked_object, BlockTransferPost(), log_request_id);
             }
-            else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
+        }
+        else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
+        {
+            if (states.presents(Fred::Object_State::server_transfer_prohibited) ||
+                states.presents(Fred::Object_State::server_update_prohibited))
+            {
+                throw ObjectAlreadyBlocked();
+            }
+            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
+            {
+                request_id = c_p_r.exec(locked_object, BlockChangesEmail(), log_request_id);
+            }
+            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
             {
                 request_id = c_p_r.exec(locked_object, BlockChangesPost(), log_request_id);
             }
-            else if (lock_request_type == UNBLOCK_TRANSFER)
+        }
+        else if (lock_request_type == UNBLOCK_TRANSFER)
+        {
+            if (states.absents(Fred::Object_State::server_transfer_prohibited))
+            {
+                throw ObjectNotBlocked();
+            }
+            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
+            {
+                request_id = c_p_r.exec(locked_object, UnblockTransferEmail(), log_request_id);
+            }
+            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
             {
                 request_id = c_p_r.exec(locked_object, UnblockTransferPost(), log_request_id);
             }
-            else if (lock_request_type == UNBLOCK_TRANSFER_AND_UPDATE)
+        }
+        else if (lock_request_type == UNBLOCK_TRANSFER_AND_UPDATE)
+        {
+            if (states.absents(Fred::Object_State::server_transfer_prohibited) ||
+                states.absents(Fred::Object_State::server_update_prohibited))
+            {
+                throw ObjectNotBlocked();
+            }
+            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
+            {
+                request_id = c_p_r.exec(locked_object, UnblockChangesEmail(), log_request_id);
+            }
+            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
             {
                 request_id = c_p_r.exec(locked_object, UnblockChangesPost(), log_request_id);
             }
