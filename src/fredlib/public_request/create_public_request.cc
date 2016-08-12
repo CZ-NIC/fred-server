@@ -2,6 +2,10 @@
 #include "src/fredlib/public_request/update_public_request.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "src/fredlib/public_request/public_request_status.h"
+#include "src/fredlib/contact_verification/django_email_format.h"
+#include "util/idn_utils.h"
+
+#include <string>
 
 namespace Fred {
 
@@ -41,8 +45,24 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
         const std::string public_request_type = _type.get_public_request_type();
         Database::query_param_list params(public_request_type);                             // $1::TEXT
         params(_locked_object.get_id())                                                     // $2::BIGINT
-              (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $3::TEXT
-              (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull); // $4::TEXT
+              (reason_.isset() ? reason_.get_value() : Database::QPNull);                   // $3::TEXT
+        if (email_to_answer_.isset())
+        {
+            const std::string& email = email_to_answer_.get_value();
+            if ((Util::get_utf8_char_len(email) <= 255) // 255: db -> public_request -> email_to_answer
+                && DjangoEmailFormat().check(email))
+            {
+                params(email);                                                              // $4::TEXT
+            }
+            else
+            {
+                BOOST_THROW_EXCEPTION(Exception().set_wrong_email(email));
+            }
+        }
+        else
+        {
+            params(Database::QPNull);                                                       // $4::TEXT
+        }
         if (registrar_id_.isset()) {
             const RegistrarId registrar_id = registrar_id_.get_value();
             const bool registrar_id_exists = static_cast< bool >(_locked_object.get_ctx().get_conn().exec_params(
@@ -63,6 +83,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
             params(Database::QPNull);                                                       // $6::BIGINT
         }
         params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));             // $7::TEXT
+
         const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "
