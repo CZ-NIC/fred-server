@@ -24,21 +24,15 @@
 #ifndef PUBLIC_REQUEST_H_75462367
 #define PUBLIC_REQUEST_H_75462367
 
-#include "src/fredlib/public_request/public_request_auth_type_iface.h"//?
 #include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/object/object_type.h"
 
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/domain/enum_validation_extension.h"
-#include "src/fredlib/nsset/nsset_dns_host.h"
-#include "src/fredlib/contact/place_address.h"
-#include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-#include <string>
-#include <vector>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <string>
+#include <vector>
 
 namespace Registry
 {
@@ -77,12 +71,11 @@ protected:
         Fred::PublicRequest::Status::Enum _old_status,
         Fred::PublicRequest::Status::Enum _new_status) const
     {
-//         if ((_old_status == Fred::PublicRequest::Status::active) && // src/fredlib/public_request/public_request_status.h
+//         if ((_old_status == Fred::PublicRequest::Status::active) &&
 //             (_new_status == Fred::PublicRequest::Status::answered)) {
 //         }
         return PublicRequestTypes();
     }
-
 };
 
 class AuthinfoAuto : public EnumPublicRequestType
@@ -265,7 +258,7 @@ public:
     unsigned long long create_block_unblock_request(
         Fred::Object_Type::Enum object_type,
         const std::string& object_handle,
-        Optional<unsigned long long>& log_request_id,
+        const Optional<unsigned long long>& log_request_id,
         /* Registry::PublicRequestImpl */ConfirmationMethod confirmation_method,
         /* Registry::PublicRequestImpl */LockRequestType lock_request_type);
 private:
