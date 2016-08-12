@@ -87,7 +87,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
         Fred::OperationContextCreator ctx;
         unsigned long long object_id = Fred::get_present_object_id(ctx, object_type, object_handle);
         Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
-        const Fred::ObjectStatesInfo states(Fred::GetObjectStates().exec(ctx));
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(object_id).exec(ctx));
         unsigned long long request_id;
         Fred::CreatePublicRequest c_p_r = Fred::CreatePublicRequest(
                 Optional<std::string>(),
