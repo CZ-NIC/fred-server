@@ -24,48 +24,51 @@
 #ifndef PUBLIC_REQUEST_IMPL_H_721142637
 #define PUBLIC_REQUEST_IMPL_H_721142637
 
+#include "src/public_request/public_request.h"
 #include "src/corba/PublicRequest.hh"
 #include "src/corba/NullableTypes.hh"
 
 #include <memory>
 
-namespace Registry {
-namespace PublicRequest {
+namespace Registry
+{
+namespace PublicRequest
+{
 
 class Server_i : public POA_Registry::PublicRequest::PublicRequestIntf
 {
+public:
+    virtual ~Server_i() {}
+
+    // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR);
+    ::CORBA::ULongLong create_authinfo_request_registry_email(
+        /* Registry::PublicRequest:: */ObjectType object_type,
+        const char* object_handle,
+        const char* reason,
+        /* Registry:: */NullableULongLong* log_request_id);
+
+    // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR, INVALID_EMAIL);
+    ::CORBA::ULongLong create_authinfo_request_non_registry_email(
+        /* Registry::PublicRequest:: */ObjectType object_type,
+        const char* object_handle,
+        const char* reason,
+        /* Registry:: */NullableULongLong* log_request_id,
+        /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,
+        const char* specified_email);
+
+    // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR, OBJECT_ALREADY_BLOCKED, OBJECT_NOT_BLOCKED);
+    ::CORBA::ULongLong create_block_unblock_request(
+        /* Registry::PublicRequest:: */ObjectType object_type,
+        const char* object_handle,
+        /* Registry:: */NullableULongLong* log_request_id,
+        /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,
+        /* Registry::PublicRequest:: */ObjectBlockType object_block_type);
+
 private:
     const std::auto_ptr<Registry::PublicRequestImpl::PublicRequest> pimpl_;
 
     Server_i(const Server_i&);//no body
     Server_i& operator= (const Server_i&);//no body
-
-public:
-    virtual ~Server_impl() {}
-
-    // raises (OBJECT_NOT_FOUND, INTERNAL_SERVER_ERROR);
-    unsigned long long create_authinfo_request_registry_email(
-        Registry::PublicRequest::ObjectType object_type,
-        const char* object_handle,
-        const char* reason,
-        ::CORBA::NullableULongLong& log_request_id);
-
-    // raises (OBJECT_NOT_FOUND, INTERNAL_SERVER_ERROR, INVALID_EMAIL);
-    unsigned long long create_authinfo_request_non_registry_email(
-        Registry::PublicRequest::ObjectType object_type,
-        const char* object_handle,
-        const char* reason,
-        ::CORBA::NullableULongLong& log_request_id,
-        Registry::PublicRequest::ConfirmationMethod confirmation_method,
-        const char* specified_email);
-
-    // raises (OBJECT_NOT_FOUND, INTERNAL_SERVER_ERROR, OBJECT_ALREADY_BLOCKED, OBJECT_NOT_BLOCKED);
-    unsigned long long create_block_unblock_request(
-        Registry::PublicRequest::ObjectType object_type,
-        const char* object_handle,
-        ::CORBA::NullableULongLong& log_request_id,
-        Registry::PublicRequest::ConfirmationMethod confirmation_method,
-        Registry::PublicRequest::LockRequestType lock_request_type);
 };
 
 }
