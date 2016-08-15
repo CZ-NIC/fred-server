@@ -94,26 +94,27 @@ bool has_data_changed(const boost::optional< Nullable< std::string > > &change,
     return false;
 }
 
-bool has_data_changed(const std::vector< boost::optional< Nullable< std::string > > > &change,
+bool has_data_changed(const boost::optional< std::string > &change,
+                      const std::string &current_value)
+{
+    if (ContactChange::does_value_mean< ContactChange::Value::to_set >(change))
+    {
+        return ContactChange::get_value(change) != current_value;
+    }
+    return false;
+}
+
+bool has_streets_changed(const std::vector< boost::optional< Nullable< std::string > > > &change,
                       const Fred::Contact::PlaceAddress &current_value)
 {
-    const std::string empty_string;
-    const bool street1_is_empty = current_value.street1.empty();
-    const bool street2_is_empty = current_value.street2.get_value_or(empty_string).empty();
-    const bool street3_is_empty = current_value.street3.get_value_or(empty_string).empty();
     switch (change.size()) {
         case 0:
-            return !street1_is_empty ||
-                   !street2_is_empty ||
-                   !street3_is_empty;
+            return false;
         case 1:
-            return has_data_changed(change[0], current_value.street1) ||
-                   !street2_is_empty ||
-                   !street3_is_empty;
+            return has_data_changed(change[0], current_value.street1);
         case 2:
             return has_data_changed(change[0], current_value.street1) ||
-                   has_data_changed(change[1], current_value.street2) ||
-                   !street3_is_empty;
+                   has_data_changed(change[1], current_value.street2);
         case 3:
             return has_data_changed(change[0], current_value.street1) ||
                    has_data_changed(change[1], current_value.street2) ||
@@ -127,7 +128,12 @@ bool has_data(const boost::optional< Nullable< std::string > > &change)
     return ContactChange::does_value_mean< ContactChange::Value::to_set >(change);
 }
 
-bool has_data(const std::vector< boost::optional< Nullable< std::string > > > &change)
+bool has_data(const boost::optional< std::string > &change)
+{
+    return ContactChange::does_value_mean< ContactChange::Value::to_set >(change);
+}
+
+bool has_streets(const std::vector< boost::optional< Nullable< std::string > > > &change)
 {
     bool result = false;
     switch (change.size())
@@ -148,17 +154,24 @@ bool has_place_changed(const ContactChange &_changed_data,
                has_data(_changed_data.state_or_province) ||
                has_data(_changed_data.postal_code)       ||
                has_data(_changed_data.country_code)      ||
-               has_data(_changed_data.streets);
+               has_streets(_changed_data.streets);
     }
     const Fred::Contact::PlaceAddress current_place = _current_place.get_value();
     return has_data_changed(_changed_data.city,              current_place.city)            ||
            has_data_changed(_changed_data.state_or_province, current_place.stateorprovince) ||
            has_data_changed(_changed_data.postal_code,       current_place.postalcode)      ||
            has_data_changed(_changed_data.country_code,      current_place.country)         ||
-           has_data_changed(_changed_data.streets,           current_place);
+           has_streets_changed(_changed_data.streets,        current_place);
 }
 
 void set_data(const boost::optional< Nullable< std::string > > &change, std::string &data)
+{
+    if (ContactChange::does_value_mean< ContactChange::Value::to_set >(change)) {
+        data = ContactChange::get_value(change);
+    }
+}
+
+void set_data(const boost::optional< std::string > &change, std::string &data)
 {
     if (ContactChange::does_value_mean< ContactChange::Value::to_set >(change)) {
         data = ContactChange::get_value(change);
@@ -397,6 +410,9 @@ unsigned long long contact_update_impl(
             throw exception;
         }
     }
+    else {
+        
+    }
 
     // update itself
     {
@@ -420,6 +436,7 @@ unsigned long long contact_update_impl(
         }
 
         if (_data.disclose.is_initialized()) {
+            _data.disclose->check_validity();
             set_ContactUpdate_discloseflag< ContactDisclose::Item::name         >(*_data.disclose, update);
             set_ContactUpdate_discloseflag< ContactDisclose::Item::organization >(*_data.disclose, update);
             set_ContactUpdate_discloseflag< ContactDisclose::Item::address      >(*_data.disclose, update);

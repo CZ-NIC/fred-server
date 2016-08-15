@@ -117,39 +117,5 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_contact)
         contact);
 }
 
-#if 0
-struct has_contact_with_external_and_nonexternal_states : has_contact
-{
-    has_contact_with_external_and_nonexternal_states()
-    {
-        external_states = boost::assign::list_of("serverDeleteProhibited")("serverUpdateProhibited");
-        nonexternal_states = boost::assign::list_of("deleteCandidate");
-
-        ctx.get_conn().exec_params(
-            "UPDATE enum_object_states "
-            "SET external='t'::BOOL,"
-                "manual='t'::BOOL "
-            "WHERE name=ANY($1::TEXT[])",
-            Database::query_param_list("{" + boost::algorithm::join(external_states, ",") + "}"));
-
-        ctx.get_conn().exec_params(
-            "UPDATE enum_object_states "
-            "SET external='f'::BOOL,"
-                "manual='t'::BOOL "
-            "WHERE name=ANY($1::TEXT[])",
-            Database::query_param_list("{" + boost::algorithm::join(nonexternal_states, ",") + "}"));
-
-        Fred::CreateObjectStateRequestId(contact.id, external_states).exec(ctx);
-        Fred::CreateObjectStateRequestId(contact.id, nonexternal_states).exec(ctx);
-        Fred::PerformObjectStateRequest(contact.id).exec(ctx);
-
-        ctx.commit_transaction();
-    }
-
-    std::set< std::string > external_states;
-    std::set< std::string > nonexternal_states;
-};
-#endif
-
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();

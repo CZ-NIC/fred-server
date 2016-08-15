@@ -1503,6 +1503,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_create.h \
 		src/epp/contact/contact_create_impl.cc \
 		src/epp/contact/contact_create_impl.h \
+		src/epp/contact/contact_change.cc \
 		src/epp/contact/contact_update.cc \
 		src/epp/contact/contact_update.h \
 		src/epp/contact/contact_update_impl.cc \

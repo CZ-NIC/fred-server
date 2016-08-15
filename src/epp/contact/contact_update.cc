@@ -34,6 +34,10 @@ LocalizedSuccessResponse contact_update(
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactUpdate)));
 
+        if (_data.disclose.is_initialized()) {
+            _data.disclose->check_validity();
+        }
+
         Fred::OperationContextCreator ctx;
 
         const unsigned long long new_history_id = contact_update_impl(

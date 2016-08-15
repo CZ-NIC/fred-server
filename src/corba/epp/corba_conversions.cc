@@ -127,7 +127,7 @@ namespace Corba {
 
     bool is_contact_change_string_meaning_to_delete(const char *value)
     {
-        return (value == NULL) || (value[0] == '\b');
+        return value[0] == '\b';
     }
 
     bool is_contact_change_string_meaning_not_to_touch(const char *value)
@@ -135,7 +135,7 @@ namespace Corba {
         return value[0] == '\0';
     }
 
-    boost::optional< Nullable< std::string > > convert_contact_change_string(const char *src)
+    boost::optional< Nullable< std::string > > convert_contact_update_or_delete_string(const char *src)
     {
         const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(src);
         if (src_has_special_meaning_to_delete) {
@@ -146,9 +146,23 @@ namespace Corba {
             return boost::optional< Nullable< std::string > >();
         }
         const std::string value_to_set = boost::trim_copy(Corba::unwrap_string(src));
-        const bool value_to_set_means_to_delete = value_to_set.empty();
-        return value_to_set_means_to_delete ? Nullable< std::string >()
-                                            : Nullable< std::string >(value_to_set);
+        const bool value_to_set_means_not_to_touch = value_to_set.empty();
+        if (value_to_set_means_not_to_touch) {
+            return boost::optional< Nullable< std::string > >();
+        }
+        return Nullable< std::string >(value_to_set);
+    }
+
+    boost::optional< std::string > convert_contact_update_string(const char *src)
+    {
+        const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
+        if (src_has_special_meaning_not_to_touch) {
+            return boost::optional< std::string >();
+        }
+        const std::string value_to_set = boost::trim_copy(Corba::unwrap_string(src));
+        const bool value_to_set_means_not_to_touch = value_to_set.empty();
+        return value_to_set_means_not_to_touch ? boost::optional< std::string >()
+                                               : value_to_set;
     }
 
     Epp::ContactDisclose convert_ContactChange_to_ContactDisclose(
@@ -183,7 +197,6 @@ namespace Corba {
         if (CorbaConversion::int_to_int< bool >(src.DiscloseNotifyEmail)) {
             result.add< Epp::ContactDisclose::Item::notify_email >();
         }
-        result.check_validity();
         return result;
     }
 
@@ -219,23 +232,23 @@ namespace Corba {
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)
     {
-        dst.name              = convert_contact_change_string(src.Name);
-        dst.organization      = convert_contact_change_string(src.Organization);
+        dst.name              = convert_contact_update_or_delete_string(src.Name);
+        dst.organization      = convert_contact_update_or_delete_string(src.Organization);
         for (unsigned idx = 0; idx < src.Streets.length(); ++idx) {
-            dst.streets.push_back(convert_contact_change_string(src.Streets[idx]));
+            dst.streets.push_back(convert_contact_update_or_delete_string(src.Streets[idx]));
         }
-        dst.city              = convert_contact_change_string(src.City);
-        dst.state_or_province = convert_contact_change_string(src.StateOrProvince);
-        dst.postal_code       = convert_contact_change_string(src.PostalCode);
-        dst.country_code      = convert_contact_change_string(src.CC);
-        dst.telephone         = convert_contact_change_string(src.Telephone);
-        dst.fax               = convert_contact_change_string(src.Fax);
-        dst.email             = convert_contact_change_string(src.Email);
-        dst.notify_email      = convert_contact_change_string(src.NotifyEmail);
-        dst.vat               = convert_contact_change_string(src.VAT);
-        dst.ident             = convert_contact_change_string(src.ident);
+        dst.city              = convert_contact_update_or_delete_string(src.City);
+        dst.state_or_province = convert_contact_update_or_delete_string(src.StateOrProvince);
+        dst.postal_code       = convert_contact_update_or_delete_string(src.PostalCode);
+        dst.country_code      = convert_contact_update_string(src.CC);
+        dst.telephone         = convert_contact_update_or_delete_string(src.Telephone);
+        dst.fax               = convert_contact_update_or_delete_string(src.Fax);
+        dst.email             = convert_contact_update_or_delete_string(src.Email);
+        dst.notify_email      = convert_contact_update_or_delete_string(src.NotifyEmail);
+        dst.vat               = convert_contact_update_or_delete_string(src.VAT);
+        dst.ident             = convert_contact_update_or_delete_string(src.ident);
         dst.ident_type        = unwrap_identtyp(src.identtype);
-        dst.auth_info_pw      = convert_contact_change_string(src.AuthInfoPw);
+        dst.auth_info_pw      = convert_contact_update_or_delete_string(src.AuthInfoPw);
         dst.disclose          = unwrap_ContactChange_to_ContactDisclose(src);
     }
 

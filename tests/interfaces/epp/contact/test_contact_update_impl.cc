@@ -87,6 +87,15 @@ void set_correct_data_2(Epp::ContactChange &data)
     data.disclose     = get_all_items();
 }
 
+std::string get_new_value(const boost::optional< std::string > &change,
+                          const std::string &before)
+{
+    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_set >(change)) {
+        return Epp::ContactChange::get_value(change);
+    }
+    return before;
+}
+
 std::string get_new_value(const boost::optional< Nullable< std::string > > &change,
                           const std::string &before)
 {

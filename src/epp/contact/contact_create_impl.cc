@@ -103,6 +103,11 @@ ContactCreateResult contact_create_impl(
         place.stateorprovince = _data.state_or_province;
         place.postalcode      = _data.postal_code;
         place.country         = _data.country_code;
+
+        if (_data.disclose.is_initialized()) {
+            _data.disclose->check_validity();
+        }
+
         const Fred::CreateContact create_contact_op(
             _contact_handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,

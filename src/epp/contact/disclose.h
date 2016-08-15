@@ -27,6 +27,10 @@
 #include <set>
 #include <stdexcept>
 
+#ifndef EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
+#define EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
+#endif// EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
+
 namespace Epp {
 
 class ContactDisclose
@@ -95,9 +99,11 @@ public:
     }
     void check_validity()const
     {
+#ifndef EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
         if (this->is_empty()) {
             throw std::runtime_error("At least one disclose flag has to be set.");
         }
+#endif
     }
 private:
     Flag::Enum meaning_;

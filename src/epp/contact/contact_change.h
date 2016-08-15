@@ -41,7 +41,7 @@ struct ContactChange
     boost::optional< Nullable< std::string > > city;
     boost::optional< Nullable< std::string > > state_or_province;
     boost::optional< Nullable< std::string > > postal_code;
-    boost::optional< Nullable< std::string > > country_code;
+    boost::optional< std::string > country_code;
     boost::optional< Nullable< std::string > > telephone;
     boost::optional< Nullable< std::string > > fax;
     boost::optional< Nullable< std::string > > email;
@@ -72,21 +72,11 @@ struct ContactChange
         };
     };
     template < Value::Meaning MEANING, class T >
-    static bool does_value_mean(const boost::optional< Nullable< T > > &_value)
-    {
-        if (_value.is_initialized()) {
-            if (_value->isnull()) {
-                return MEANING == Value::to_delete;
-            }
-            return MEANING == Value::to_set;
-        }
-        return MEANING == Value::not_to_touch;
-    }
+    static bool does_value_mean(const T &_value);
     template < class T >
-    static T get_value(const boost::optional< Nullable< T > > &_value)
-    {
-        return _value->get_value();
-    }
+    static T get_value(const boost::optional< Nullable< T > > &_value);
+    template < class T >
+    static T get_value(const boost::optional< T > &_value);
 };
 
 }//namespace Epp

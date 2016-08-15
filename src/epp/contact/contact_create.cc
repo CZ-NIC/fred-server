@@ -20,6 +20,12 @@ std::string convert(const boost::optional< Nullable< std::string > > &src)
                                                                                : std::string();
 }
 
+std::string convert(const boost::optional< std::string > &src)
+{
+    return ContactChange::does_value_mean< ContactChange::Value::to_set >(src) ? ContactChange::get_value(src)
+                                                                               : std::string();
+}
+
 std::vector< std::string > convert(const std::vector< boost::optional< Nullable< std::string > > > &src)
 {
     std::vector< std::string > result;
@@ -51,6 +57,9 @@ ContactCreateInputData::ContactCreateInputData(const ContactChange &src)
     authinfo(convert(src.auth_info_pw)),
     disclose(src.disclose)
 {
+    if (disclose.is_initialized()) {
+        disclose->check_validity();
+    }
 }
 
 LocalizedCreateContactResponse contact_create(
