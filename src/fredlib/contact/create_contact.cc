@@ -233,7 +233,7 @@ namespace Fred
         return *this;
     }
 
-    CreateContact::Result CreateContact::exec(OperationContext &ctx, const std::string &returned_timestamp_pg_time_zone_name)
+    CreateContact::Result CreateContact::exec(OperationContext &ctx, const std::string &returned_timestamp_pg_time_zone_name)const
     {
         Result result;
 

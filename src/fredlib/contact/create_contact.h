@@ -322,7 +322,7 @@ namespace Fred
         * @param returned_timestamp_pg_time_zone_name is postgresql time zone name of the returned timestamp
         * @return object id, history id and creation timestamp
         */
-        Result exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague");
+        Result exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name = "Europe/Prague")const;
 
         /**
         * Dumps state of the instance into the string

@@ -23,148 +23,76 @@
 #ifndef EPP_CONTACT_INFO_H_0248610748501
 #define EPP_CONTACT_INFO_H_0248610748501
 
-#include "src/epp/contact/ident_type.h"
+#include "src/epp/contact/disclose.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
+#include <map>
+#include <set>
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 namespace Epp {
 
-struct LocalizedContactInfoOutputData {
+struct LocalizedContactInfoOutputData
+{
+    LocalizedContactInfoOutputData(const boost::optional< ContactDisclose > &disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
-    Nullable<std::string> last_update_registrar_handle;
-    std::map<std::string, std::string> localized_external_states;
+    Nullable< std::string > last_update_registrar_handle;
+    std::map< std::string, std::string > localized_external_states;
     boost::posix_time::ptime crdate;
-    Nullable<boost::posix_time::ptime> last_update;
-    Nullable<boost::posix_time::ptime> last_transfer;
-    Nullable<std::string> name;
-    Nullable<std::string> organization;
-    Nullable<std::string> street1;
-    Nullable<std::string> street2;
-    Nullable<std::string> street3;
-    Nullable<std::string> city;
-    Nullable<std::string> state_or_province;
-    Nullable<std::string> postal_code;
-    Nullable<std::string> country_code;
-    Nullable<std::string> telephone;
-    Nullable<std::string> fax;
-    Nullable<std::string> email;
-    Nullable<std::string> notify_email;
-    Nullable<std::string> VAT;
-    Nullable<std::string> ident;
-    Nullable<IdentType::Enum> identtype;
-    Nullable<std::string> auth_info_pw;
-    bool disclose_name;
-    bool disclose_organization;
-    bool disclose_address;
-    bool disclose_telephone;
-    bool disclose_fax;
-    bool disclose_email;
-    bool disclose_VAT;
-    bool disclose_ident;
-    bool disclose_notify_email;
-
-    LocalizedContactInfoOutputData(
-        const std::string& _handle,
-        const std::string& _roid,
-        const std::string& _sponsoring_registrar_handle,
-        const std::string& _creating_registrar_handle,
-        const Nullable<std::string>& _last_update_registrar_handle,
-        const std::map<std::string, std::string>& _localized_external_states,
-        const boost::posix_time::ptime& _crdate,
-        const Nullable<boost::posix_time::ptime>& _last_update,
-        const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const Nullable<std::string>& _name,
-        const Nullable<std::string>& _organization,
-        const Nullable<std::string>& _street1,
-        const Nullable<std::string>& _street2,
-        const Nullable<std::string>& _street3,
-        const Nullable<std::string>& _city,
-        const Nullable<std::string>& _state_or_province,
-        const Nullable<std::string>& _postal_code,
-        const Nullable<std::string>& _country_code,
-        const Nullable<std::string>& _telephone,
-        const Nullable<std::string>& _fax,
-        const Nullable<std::string>& _email,
-        const Nullable<std::string>& _notify_email,
-        const Nullable<std::string>& _VAT,
-        const Nullable<std::string>& _ident,
-        const Nullable<IdentType::Enum>& _identtype,
-        const Nullable<std::string>& _auth_info_pw,
-        bool _disclose_name,
-        bool _disclose_organization,
-        bool _disclose_address,
-        bool _disclose_telephone,
-        bool _disclose_fax,
-        bool _disclose_email,
-        bool _disclose_VAT,
-        bool _disclose_ident,
-        bool _disclose_notify_email
-    ) :
-        handle(_handle),
-        roid(_roid),
-        sponsoring_registrar_handle(_sponsoring_registrar_handle),
-        creating_registrar_handle(_creating_registrar_handle),
-        last_update_registrar_handle(_last_update_registrar_handle),
-        localized_external_states(_localized_external_states),
-        crdate(_crdate),
-        last_update(_last_update),
-        last_transfer(_last_transfer),
-        name(_name),
-        organization(_organization),
-        street1(_street1),
-        street2(_street2),
-        street3(_street3),
-        city(_city),
-        state_or_province(_state_or_province),
-        postal_code(_postal_code),
-        country_code(_country_code),
-        telephone(_telephone),
-        fax(_fax),
-        email(_email),
-        notify_email(_notify_email),
-        VAT(_VAT),
-        ident(_ident),
-        identtype(_identtype),
-        auth_info_pw(_auth_info_pw),
-        disclose_name(_disclose_name),
-        disclose_organization(_disclose_organization),
-        disclose_address(_disclose_address),
-        disclose_telephone(_disclose_telephone),
-        disclose_fax(_disclose_fax),
-        disclose_email(_disclose_email),
-        disclose_VAT(_disclose_VAT),
-        disclose_ident(_disclose_ident),
-        disclose_notify_email(_disclose_notify_email)
-    { }
+    Nullable< boost::posix_time::ptime > last_update;
+    Nullable< boost::posix_time::ptime > last_transfer;
+    Nullable< std::string > name;
+    Nullable< std::string > organization;
+    Nullable< std::string > street1;
+    Nullable< std::string > street2;
+    Nullable< std::string > street3;
+    Nullable< std::string > city;
+    Nullable< std::string > state_or_province;
+    Nullable< std::string > postal_code;
+    Nullable< std::string > country_code;
+    Nullable< std::string > telephone;
+    Nullable< std::string > fax;
+    Nullable< std::string > email;
+    Nullable< std::string > notify_email;
+    Nullable< std::string > VAT;
+    Nullable< std::string > ident;
+    struct IdentType
+    {
+        enum Enum
+        {
+            op,
+            pass,
+            ico,
+            mpsv,
+            birthday
+        };
+    };
+    Nullable< IdentType::Enum > identtype;
+    Nullable< std::string > auth_info_pw;
+    boost::optional< ContactDisclose > disclose;
 };
 
-struct LocalizedInfoContactResponse {
+struct LocalizedInfoContactResponse
+{
+    LocalizedInfoContactResponse(const LocalizedSuccessResponse &_ok_response,
+                                 const LocalizedContactInfoOutputData &_payload);
     const LocalizedSuccessResponse ok_response;
     const LocalizedContactInfoOutputData payload;
-
-    LocalizedInfoContactResponse(
-        const LocalizedSuccessResponse& _ok_response,
-        const LocalizedContactInfoOutputData& _payload
-    ) :
-        ok_response(_ok_response),
-        payload(_payload)
-    { }
 };
 
 LocalizedInfoContactResponse contact_info(
-    const std::string& _handle,
+    const std::string &_handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle
-);
+    const std::string &_server_transaction_handle);
 
 }
 

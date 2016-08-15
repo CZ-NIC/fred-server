@@ -23,7 +23,6 @@
 #ifndef EPP_CONTACT_CHECK_H_63287364330
 #define EPP_CONTACT_CHECK_H_63287364330
 
-#include "src/epp/contact/ident_type.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "src/epp/contact/contact_handle_registration_obstruction.h"

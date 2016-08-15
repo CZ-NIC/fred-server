@@ -40,11 +40,11 @@ namespace Epp {
  * @throws AggregatedParamErrors
  */
 unsigned long long contact_update_impl(
-    Fred::OperationContext& _ctx,
-    const ContactUpdateInputData& _data,
+    Fred::OperationContext &_ctx,
+    const std::string &_contact_handle,
+    const ContactChange &_data,
     unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-);
+    const Optional< unsigned long long > &_logd_request_id);
 
 }
 

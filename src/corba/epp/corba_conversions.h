@@ -30,27 +30,23 @@
 #include "src/epp/contact/contact_create.h"
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_check.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/localized_response.h"
-
-#include <boost/optional.hpp>
 
 namespace Corba {
 
-    Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
-
-    Epp::ContactUpdateInputData unwrap_contact_update_input_data(const char* const handle, const ccReg::ContactChange& c);
+    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
 
     Epp::RequestParams unwrap_epp_request_params(const ccReg::EppParams& _epp_request_params);
 
 
-
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
 
-    ccReg::Contact wrap_localized_info_contact(const Epp::LocalizedContactInfoOutputData& _input );
+    void wrap_LocalizedContactInfoOutputData(const Epp::LocalizedContactInfoOutputData &src, ccReg::Contact &dst);
 
     /**
      * @returns data ordered the same way as input contact_handles

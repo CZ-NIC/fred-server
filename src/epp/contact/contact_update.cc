@@ -17,15 +17,16 @@
 namespace Epp {
 
 LocalizedSuccessResponse contact_update(
-    const ContactUpdateInputData& _data,
-    const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
-    const bool _epp_update_contact_enqueue_check,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const std::string& _client_transaction_handles_prefix_not_to_nofify
-) {
+    const std::string &_contact_handle,
+    const ContactChange &_data,
+    unsigned long long _registrar_id,
+    const Optional< unsigned long long > &_logd_request_id,
+    bool _epp_update_contact_enqueue_check,
+    SessionLang::Enum _lang,
+    const std::string &_server_transaction_handle,
+    const std::string &_client_transaction_handle,
+    const std::string &_client_transaction_handles_prefix_not_to_nofify)
+{
 
     try {
         Logging::Context logging_ctx1("rifd");
@@ -33,10 +34,15 @@ LocalizedSuccessResponse contact_update(
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactUpdate)));
 
+        if (_data.disclose.is_initialized()) {
+            _data.disclose->check_validity();
+        }
+
         Fred::OperationContextCreator ctx;
 
         const unsigned long long new_history_id = contact_update_impl(
             ctx,
+            _contact_handle,
             _data,
             _registrar_id,
             _logd_request_id
@@ -45,7 +51,7 @@ LocalizedSuccessResponse contact_update(
 
         post_contact_update_hooks(
             ctx,
-            _data.handle,
+            _contact_handle,
             _logd_request_id,
             _epp_update_contact_enqueue_check
         );

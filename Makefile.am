@@ -232,7 +232,7 @@ noinst_HEADERS = \
 		src/epp/localized_response.h \
 		src/epp/exception.h \
 		src/epp/session_lang.h \
-		src/epp/contact/ident_type.h \
+		src/epp/contact/contact_change.h \
 		src/epp/get_registrar_session_data.h \
 		src/corba/epp/epp_legacy_compatibility.h \
 		src/epp/registrar_session_data.h \
@@ -1490,6 +1490,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/response.h \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
+		src/epp/command_result.h \
+		src/epp/disclose_policy.h \
 		src/epp/localization.h \
 		src/epp/localization.cc \
 		src/epp/param.h \
@@ -1501,6 +1503,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_create.h \
 		src/epp/contact/contact_create_impl.cc \
 		src/epp/contact/contact_create_impl.h \
+		src/epp/contact/contact_change.cc \
 		src/epp/contact/contact_update.cc \
 		src/epp/contact/contact_update.h \
 		src/epp/contact/contact_update_impl.cc \
@@ -1522,6 +1525,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_transfer_impl.cc \
 		src/epp/contact/contact_transfer_impl.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
+		src/epp/contact/disclose.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
 		util/corba_conversion.h \
