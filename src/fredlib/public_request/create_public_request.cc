@@ -46,21 +46,17 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
         Database::query_param_list params(public_request_type);                             // $1::TEXT
         params(_locked_object.get_id())                                                     // $2::BIGINT
               (reason_.isset() ? reason_.get_value() : Database::QPNull);                   // $3::TEXT
-        if (email_to_answer_.isset())
-        {
+        if (email_to_answer_.isset()) {
             const std::string& email = email_to_answer_.get_value();
             if ((Util::get_utf8_char_len(email) <= 255) // 255: db -> public_request -> email_to_answer
-                && DjangoEmailFormat().check(email))
-            {
+                && DjangoEmailFormat().check(email)) {
                 params(email);                                                              // $4::TEXT
             }
-            else
-            {
+            else {
                 BOOST_THROW_EXCEPTION(Exception().set_wrong_email(email));
             }
         }
-        else
-        {
+        else {
             params(Database::QPNull);                                                       // $4::TEXT
         }
         if (registrar_id_.isset()) {
