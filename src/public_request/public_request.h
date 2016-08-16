@@ -234,6 +234,7 @@ private:
 
 class ObjectAlreadyBlocked : std::exception
 {
+public:
     virtual const char* what() const throw()
     {
         return "object is already blocked";
@@ -242,6 +243,7 @@ class ObjectAlreadyBlocked : std::exception
 
 class ObjectNotBlocked : std::exception
 {
+public:
     virtual const char* what() const throw()
     {
         return "object is not blocked";
