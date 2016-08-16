@@ -50,7 +50,7 @@ enum ConfirmationMethod
     LETTER_WITH_AUTHENTICATED_SIGNATURE
 };
 
-enum LockRequestType
+enum ObjectBlockType
 {
     BLOCK_TRANSFER,
     BLOCK_TRANSFER_AND_UPDATE,
@@ -274,11 +274,12 @@ public:
         Fred::Object_Type::Enum object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        /* Registry::PublicRequestImpl */ConfirmationMethod confirmation_method,
-        /* Registry::PublicRequestImpl */LockRequestType lock_request_type);
+        ConfirmationMethod confirmation_method,
+        ObjectBlockType object_block_type);
 private:
 
 };
+
 } // namespace Registry
 } // namespace PublicRequestImpl
 

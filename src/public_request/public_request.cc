@@ -80,7 +80,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
     const std::string& object_handle,
     const Optional<unsigned long long>& log_request_id,
     ConfirmationMethod confirmation_method,
-    LockRequestType lock_request_type)
+    ObjectBlockType object_block_type)
 {
     try
     {
@@ -93,7 +93,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 Optional<std::string>(),
                 Optional<std::string>(),
                 Optional<unsigned long long>());
-        if (lock_request_type == BLOCK_TRANSFER)
+        if (object_block_type == BLOCK_TRANSFER)
         {
             if (states.presents(Fred::Object_State::server_transfer_prohibited))
             {
@@ -108,7 +108,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 request_id = c_p_r.exec(locked_object, BlockTransferPost(), log_request_id);
             }
         }
-        else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
+        else if (object_block_type == BLOCK_TRANSFER_AND_UPDATE)
         {
             if (states.presents(Fred::Object_State::server_transfer_prohibited) ||
                 states.presents(Fred::Object_State::server_update_prohibited))
@@ -124,7 +124,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 request_id = c_p_r.exec(locked_object, BlockChangesPost(), log_request_id);
             }
         }
-        else if (lock_request_type == UNBLOCK_TRANSFER)
+        else if (object_block_type == UNBLOCK_TRANSFER)
         {
             if (states.absents(Fred::Object_State::server_transfer_prohibited))
             {
@@ -139,7 +139,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 request_id = c_p_r.exec(locked_object, UnblockTransferPost(), log_request_id);
             }
         }
-        else if (lock_request_type == UNBLOCK_TRANSFER_AND_UPDATE)
+        else if (object_block_type == UNBLOCK_TRANSFER_AND_UPDATE)
         {
             if (states.absents(Fred::Object_State::server_transfer_prohibited) ||
                 states.absents(Fred::Object_State::server_update_prohibited))
