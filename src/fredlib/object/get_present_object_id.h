@@ -26,35 +26,25 @@
 
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
 
 #include <string>
 
 namespace Fred
 {
-    struct UnknownObject : std::exception
-    {
-        virtual const char* what() const throw()
-        {
-            return "unknown registry object type or handle";
-        }
-    };
 
-    unsigned long long get_present_object_id(OperationContext& ctx, Fred::Object_Type::Enum object_type, const std::string& handle)
+struct UnknownObject : std::exception
+{
+    virtual const char* what() const throw()
     {
-         Database::Result id = ctx.get_conn().exec_params(
-                 "SELECT id "
-                 "FROM object_registry "
-                 "WHERE type = get_object_type_id($1) "
-                   "AND name = $2::text "
-                   "AND erdate IS NULL ",
-                   Database::query_param_list(Conversion::Enums::to_db_handle(object_type))(handle));
-         if (id.size() < 1)
-         {
-             throw UnknownObject();
-         }
-         return id[0][0];
+        return "unknown registry object type or handle";
     }
+};
+
+unsigned long long get_present_object_id(
+        OperationContext& ctx,
+        Object_Type::Enum object_type,
+        const std::string& handle);
+
 }
 
 #endif // GET_PRESENT_OBJECT_ID_H_72462423417
