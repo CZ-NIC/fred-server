@@ -90,6 +90,9 @@ CLEANFILES = \
 		src/corba/DomainBrowserSK.cc \
 		src/corba/DomainBrowserDynSK.cc \
 		src/corba/DomainBrowser.hh \
+		src/corba/PublicRequestSK.cc \
+		src/corba/PublicRequestDynSK.cc \
+		src/corba/PublicRequest.hh \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/AdminContactVerificationDynSK.cc \
 		src/corba/AdminContactVerificationSK.h \
@@ -315,6 +318,7 @@ noinst_LIBRARIES = \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
 		src/corba/libcorbadomainbrowser.a \
+		src/corba/libcorbapublicrequest.a \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorba_conversion_test.a \
@@ -1238,6 +1242,7 @@ BUILT_SOURCES = \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/DomainBrowserSK.cc \
+		src/corba/PublicRequestSK.cc \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/corba_conversion_testSK.cc \
 		src/corba/NotificationSK.cc
@@ -1371,6 +1376,11 @@ nodist_src_corba_libcorbadomainbrowser_a_SOURCES = \
 		src/corba/DomainBrowserDynSK.cc \
 		src/corba/DomainBrowser.hh
 
+nodist_src_corba_libcorbapublicrequest_a_SOURCES = \
+		src/corba/PublicRequestSK.cc \
+		src/corba/PublicRequestDynSK.cc \
+		src/corba/PublicRequest.hh
+
 nodist_src_corba_libcorba_conversion_test_a_SOURCES = \
 		src/corba/corba_conversion_testSK.cc \
 		src/corba/corba_conversion_testDynSK.cc \
@@ -1409,6 +1419,7 @@ src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
 src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
 src/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
+src/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
 
 src/corba/%.cc:
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $<
@@ -1893,6 +1904,7 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorbanullabletypes.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
+		src/corba/libcorbapublicrequest.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/banking/libbanking.a \
 		src/fredlib/messages/libmessages.a \
