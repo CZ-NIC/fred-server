@@ -23,10 +23,8 @@
 #ifndef TRANSFER_H_0790EF0C53DC1FB4B518D07199911170//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define TRANSFER_H_0790EF0C53DC1FB4B518D07199911170
 
-#include "src/epp/contact/ident_type.h"
 #include "src/fredlib/opcontext.h"
-
-#include "src/epp/contact/contact_transfer.h"
+#include "util/optional_value.h"
 
 namespace Epp {
 

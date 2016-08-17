@@ -30,6 +30,8 @@
 #include "src/epp/exception_aggregate_param_errors.h"
 #include "src/epp/error.h"
 
+#include <boost/test/test_tools.hpp>
+
 namespace Test {
 
     struct autocommitting_context : virtual Fixture::instantiate_db_template {
