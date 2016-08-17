@@ -38,6 +38,8 @@ namespace PublicRequest
 class Server_i : public POA_Registry::PublicRequest::PublicRequestIntf
 {
 public:
+    Server_i() {}
+
     virtual ~Server_i() {}
 
     ::CORBA::ULongLong create_authinfo_request_registry_email(
