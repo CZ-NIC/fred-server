@@ -40,35 +40,32 @@ class Server_i : public POA_Registry::PublicRequest::PublicRequestIntf
 public:
     virtual ~Server_i() {}
 
-    // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR);
     ::CORBA::ULongLong create_authinfo_request_registry_email(
         ObjectType_PR object_type,
         const char* object_handle,
         const char* reason,
-        /* Registry:: */NullableULongLong* log_request_id);
+        NullableULongLong* log_request_id);
 
-    // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR, INVALID_EMAIL);
     ::CORBA::ULongLong create_authinfo_request_non_registry_email(
         ObjectType_PR object_type,
         const char* object_handle,
         const char* reason,
-        /* Registry:: */NullableULongLong* log_request_id,
-        /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,
+        NullableULongLong* log_request_id,
+        ConfirmationMethod confirmation_method,
         const char* specified_email);
 
-    // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR, OBJECT_ALREADY_BLOCKED, OBJECT_NOT_BLOCKED);
     ::CORBA::ULongLong create_block_unblock_request(
         ObjectType_PR object_type,
         const char* object_handle,
-        /* Registry:: */NullableULongLong* log_request_id,
-        /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,
-        /* Registry::PublicRequest:: */ObjectBlockType object_block_type);
+        NullableULongLong* log_request_id,
+        ConfirmationMethod confirmation_method,
+        ObjectBlockType object_block_type);
 
 private:
     const std::auto_ptr<Registry::PublicRequestImpl::PublicRequest> pimpl_;
 
-    Server_i(const Server_i&);//no body
-    Server_i& operator= (const Server_i&);//no body
+    Server_i(const Server_i&); // no body
+    Server_i& operator= (const Server_i&); // no body
 };
 
 }

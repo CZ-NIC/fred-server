@@ -36,7 +36,7 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
     ObjectType_PR object_type,
     const char* object_handle,
     const char* reason,
-    /* ::Registry::PublicRequest:: */NullableULongLong* log_request_id)
+    NullableULongLong* log_request_id)
 {
     try
     {
@@ -62,26 +62,26 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
     }
 }
 
-// Registry::PublicRequestImpl::ConfirmationMethod unwrap_confirmation_method(
-//         ConfirmationMethod confirmation_method)
-// {
-//     switch (confirmation_method)
-//     {
-//         case EMAIL_WITH_QUALIFIED_CERTIFICATE :
-//             return Fred::Object_Type::contact;
-//         case LETTER_WITH_AUTHENTICATED_SIGNATURE :
-//             return Fred::Object_Type::nsset;
-//         default :
-//             throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType");
-//     }
-// }
-// 
+Registry::PublicRequestImpl::ConfirmationMethod unwrap_confirmation_method(
+        ConfirmationMethod confirmation_method)
+{
+    switch (confirmation_method)
+    {
+        case EMAIL_WITH_QUALIFIED_CERTIFICATE :
+            return Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE;
+        case LETTER_WITH_AUTHENTICATED_SIGNATURE :
+            return Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE;
+        default:
+            throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ConfirmationMethod");
+    }
+}
+
 ::CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
     ObjectType_PR object_type,
     const char* object_handle,
     const char* reason,
-    /* ::Registry::PublicRequest:: */NullableULongLong* log_request_id,
-    /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,
+    NullableULongLong* log_request_id,
+    ConfirmationMethod confirmation_method,
     const char* specified_email)
 {
     try
@@ -91,7 +91,7 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 Corba::unwrap_string_from_const_char_ptr(reason),
                 unwrap_ulonglong_optional_from_nullable(log_request_id),
-                static_cast<Registry::PublicRequestImpl::ConfirmationMethod>(confirmation_method), // change to func
+                unwrap_confirmation_method(confirmation_method),
                 Corba::unwrap_string_from_const_char_ptr(specified_email));
     }
     catch (const Fred::UnknownObject& e)
@@ -110,12 +110,29 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
     }
 }
 
+Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBlockType object_block_type)
+{
+    switch (object_block_type)
+    {
+        case BLOCK_TRANSFER:
+            return Registry::PublicRequestImpl::BLOCK_TRANSFER;
+        case BLOCK_TRANSFER_AND_UPDATE:
+            return Registry::PublicRequestImpl::BLOCK_TRANSFER_AND_UPDATE;
+        case UNBLOCK_TRANSFER:
+            return Registry::PublicRequestImpl::UNBLOCK_TRANSFER;
+        case UNBLOCK_TRANSFER_AND_UPDATE:
+            return Registry::PublicRequestImpl::UNBLOCK_TRANSFER_AND_UPDATE;
+        default:
+            throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectBlockType");
+    }
+}
+
 ::CORBA::ULongLong Server_i::create_block_unblock_request(
     ObjectType_PR object_type,
     const char* object_handle,
-    /* ::Registry::PublicRequest:: */NullableULongLong* log_request_id,
-    /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,
-    /* Registry::PublicRequest:: */ObjectBlockType object_block_type)
+    NullableULongLong* log_request_id,
+    ConfirmationMethod confirmation_method,
+    ObjectBlockType object_block_type)
 {
     try
     {
@@ -123,8 +140,8 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
                 unwrap_object_type(object_type),
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_ulonglong_optional_from_nullable(log_request_id),
-                static_cast<Registry::PublicRequestImpl::ConfirmationMethod>(confirmation_method), // to func
-                static_cast<Registry::PublicRequestImpl::ObjectBlockType>(object_block_type)); // to func
+                unwrap_confirmation_method(confirmation_method),
+                unwrap_object_block_type(object_block_type));
     }
     catch (const Fred::UnknownObject& e)
     {

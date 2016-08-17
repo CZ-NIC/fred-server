@@ -33,16 +33,12 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 namespace Registry
 {
 namespace PublicRequestImpl
 {
-
-// static const unsigned CONTACT = 1;
-// static const unsigned NSSET = 2;
-// static const unsigned DOMAIN = 3;
-// static const unsigned KEYSET = 4;
 
 enum ConfirmationMethod
 {
@@ -253,25 +249,20 @@ public:
 class PublicRequest
 {
 public:
-
-    //    raises (OBJECT_NOT_FOUND, INTERNAL_SERVER_ERROR);
     unsigned long long create_authinfo_request_registry_email(
         Fred::Object_Type::Enum object_type,
         const std::string& object_handle,
         const std::string& reason,
         Optional<unsigned long long>& log_request_id);
 
-    //    raises (OBJECT_NOT_FOUND, INTERNAL_SERVER_ERROR, INVALID_EMAIL);
     unsigned long long create_authinfo_request_non_registry_email(
         Fred::Object_Type::Enum object_type,
         const std::string& object_handle,
         const std::string& reason,
-        Optional<unsigned long long>& log_request_id,
-        /* Registry::PublicRequestImpl */ConfirmationMethod confirmation_method,
+        const Optional<unsigned long long>& log_request_id,
+        ConfirmationMethod confirmation_method,
         const std::string& specified_email);
 
-    //    raises (OBJECT_NOT_FOUND, INTERNAL_SERVER_ERROR, OBJECT_ALREADY_BLOCKED,
-    //    OBJECT_NOT_BLOCKED);
     unsigned long long create_block_unblock_request(
         Fred::Object_Type::Enum object_type,
         const std::string& object_handle,
