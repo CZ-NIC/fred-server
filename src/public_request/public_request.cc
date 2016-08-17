@@ -14,7 +14,7 @@ unsigned long long PublicRequest::create_authinfo_request_registry_email(
     Fred::Object_Type::Enum object_type,
     const std::string& object_handle,
     const std::string& reason,
-    Optional<unsigned long long>& log_request_id)
+    const Optional<unsigned long long>& log_request_id)
 {
     try
     {
@@ -41,7 +41,7 @@ unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
     Fred::Object_Type::Enum object_type,
     const std::string& object_handle,
     const std::string& reason,
-    Optional<unsigned long long>& log_request_id,
+    const Optional<unsigned long long>& log_request_id,
     ConfirmationMethod confirmation_method,
     const std::string& specified_email)
 {
