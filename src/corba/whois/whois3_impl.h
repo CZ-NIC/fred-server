@@ -57,9 +57,6 @@ public:
 
     Domain* get_domain_by_handle(const char* handle);
 
-    DomainSeq* get_domains_by_(const Registry::WhoisImpl::DomainSeq& dom_seq,
-                               ::CORBA::Boolean& limit_exceeded);
-
     DomainSeq* get_domains_by_registrant(
         const char* handle,
         ::CORBA::ULong limit,

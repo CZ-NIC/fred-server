@@ -556,8 +556,9 @@ Domain set_element_of_corba_seq<Domain, Registry::WhoisImpl::Domain>(
     return wrap_domain(domain);
 }
 
-DomainSeq* Server_impl::get_domains_by_(const Registry::WhoisImpl::DomainSeq& dom_seq,
-                                        ::CORBA::Boolean& limit_exceeded)
+static DomainSeq* get_domains_by_(
+    const Registry::WhoisImpl::DomainSeq& dom_seq,
+    ::CORBA::Boolean& limit_exceeded)
 {
     try
     {
