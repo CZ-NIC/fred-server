@@ -94,6 +94,6 @@ public:
     ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
 };
 
-}
-}
+} // namespace Whois
+} // namespace Registry
 #endif

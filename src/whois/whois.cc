@@ -906,5 +906,5 @@ std::vector<ObjectStatusDesc> Server_impl::get_keyset_status_descriptions(const 
     return get_object_status_descriptions(lang, "keyset");
 }
 
-}//Registry
 }//WhoisImpl
+}//Registry
