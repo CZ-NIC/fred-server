@@ -15,16 +15,12 @@ namespace Whois
 
 class Server_impl : public POA_Registry::Whois::WhoisIntf
 {
-private:
-    const std::auto_ptr<Registry::WhoisImpl::Server_impl> pimpl_;
-
 public:
-
     Server_impl()
     : pimpl_(new Registry::WhoisImpl::Server_impl())
     {}
 
-    virtual ~Server_impl() {};
+    virtual ~Server_impl() {}
 
     Registrar* get_registrar_by_handle(const char* handle);
 
@@ -92,6 +88,9 @@ public:
     ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
     ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);
     ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
+
+private:
+    const std::auto_ptr<Registry::WhoisImpl::Server_impl> pimpl_;
 };
 
 } // namespace Whois
