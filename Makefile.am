@@ -897,6 +897,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object/generated_authinfo_password.h \
 		src/fredlib/object/generated_authinfo_password.cc \
 		src/fredlib/object/generated_authinfo_password_exception.h \
+		src/fredlib/object/get_present_object_id.h \
+		src/fredlib/object/get_present_object_id.cc \
 		src/fredlib/object/transfer_object.h \
 		src/fredlib/object/transfer_object.cc \
 		src/fredlib/object/transfer_object_exception.h \
