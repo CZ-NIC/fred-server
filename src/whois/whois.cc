@@ -48,7 +48,8 @@ static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
     catch(const Fred::OperationException& ex)
     {
         ctx.get_log().warning(ex.what());
-        ctx.get_log().warning(boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
+        ctx.get_log().warning(
+                boost::algorithm::replace_all_copy(boost::diagnostic_information(ex),"\n", " "));
         throw;
     }
     catch(const Fred::InternalError& ex)
@@ -151,8 +152,7 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
     Fred::OperationContextCreator ctx;
     try
     {
-        const std::map<std::string, std::vector<std::string> > groups =
-                ::Whois::get_registrar_groups(ctx);
+        const std::map<std::string, std::vector<std::string> > groups = ::Whois::get_registrar_groups(ctx);
         std::vector<RegistrarGroup> reg_grp_seq;
         reg_grp_seq.reserve(groups.size());
         RegistrarGroup temp;
@@ -219,7 +219,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
         try
         {
             const Fred::InfoContactData icd =
-                Fred::InfoContactByHandle(handle).exec(ctx, get_output_timezone()).info_contact_data;
+                    Fred::InfoContactByHandle(handle).exec(ctx, get_output_timezone()).info_contact_data;
             Contact con;
             con.handle                             = icd.handle;
             con.organization                       = icd.organization.get_value_or_default();
@@ -240,7 +240,8 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             con.address.city                       = icd.place.get_value_or_default().city;
             con.address.country_code               = icd.place.get_value_or_default().country;
             con.address.postal_code                = icd.place.get_value_or_default().postalcode;
-            con.address.stateorprovince = icd.place.get_value_or_default().stateorprovince.get_value_or_default();
+            con.address.stateorprovince =
+                    icd.place.get_value_or_default().stateorprovince.get_value_or_default();
             con.address.street1 = icd.place.get_value_or_default().street1;
             con.address.street2 = icd.place.get_value_or_default().street2.get_value_or_default();
             con.address.street3 = icd.place.get_value_or_default().street3.get_value_or_default();
@@ -276,9 +277,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
     return Contact();
 }
 
-static WhoisImpl::NSSet make_nsset_from_info_data(
-        const Fred::InfoNssetData& ind,
-        Fred::OperationContext& ctx)
+static WhoisImpl::NSSet make_nsset_from_info_data(const Fred::InfoNssetData& ind, Fred::OperationContext& ctx)
 {
     WhoisImpl::NSSet nss;
     nss.changed       = ind.update_time;
@@ -290,8 +289,7 @@ static WhoisImpl::NSSet make_nsset_from_info_data(
     BOOST_FOREACH(Fred::DnsHost it, ind.dns_hosts)
     {
         ns.fqdn = it.get_fqdn();
-        const std::vector<boost::asio::ip::address> ip_addresses =
-                it.get_inet_addr();
+        const std::vector<boost::asio::ip::address> ip_addresses = it.get_inet_addr();
 
         ns.ip_addresses.reserve(ip_addresses.size());
         BOOST_FOREACH(boost::asio::ip::address addr_it, ip_addresses)
@@ -326,10 +324,8 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
         try
         {
             return make_nsset_from_info_data(
-                       Fred::InfoNssetByHandle(handle)
-                           .exec(ctx, get_output_timezone())
-                           .info_nsset_data,
-                       ctx);
+                    Fred::InfoNssetByHandle(handle).exec(ctx, get_output_timezone()).info_nsset_data,
+                    ctx);
         }
         catch(const Fred::InfoNssetByHandle::Exception& e)
         {
@@ -351,10 +347,11 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
     return WhoisImpl::NSSet();
 }
 
-static NSSetSeq get_nssets_by_(Fred::OperationContext& ctx,
-                               const std::vector<Fred::InfoNssetOutput>& nss_info,
-                               const std::string& handle,
-                               unsigned long limit)
+static NSSetSeq get_nssets_by_(
+    Fred::OperationContext& ctx,
+    const std::vector<Fred::InfoNssetOutput>& nss_info,
+    const std::string& handle,
+    unsigned long limit)
 {
     NSSetSeq nss_seq;
     std::vector<Fred::InfoNssetOutput>::const_iterator it = nss_info.begin(), end;
@@ -377,8 +374,9 @@ static NSSetSeq get_nssets_by_(Fred::OperationContext& ctx,
     return nss_seq;
 }
 
-NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
-                                       unsigned long limit)
+NSSetSeq Server_impl::get_nssets_by_ns(
+    const std::string& handle,
+    unsigned long limit)
 {
     Fred::OperationContextCreator ctx;
     try
@@ -404,8 +402,7 @@ NSSetSeq Server_impl::get_nssets_by_ns(const std::string& handle,
     return NSSetSeq();
 }
 
-NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
-                                           unsigned long limit)
+NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle, unsigned long limit)
 {
     Fred::OperationContextCreator ctx;
     try
@@ -430,7 +427,6 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle,
     }
     return NSSetSeq();
 }
-
 
 NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
 {
@@ -474,7 +470,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
         try
         {
             const Fred::InfoKeysetData ikd =
-                Fred::InfoKeysetByHandle(handle).exec(ctx, get_output_timezone()).info_keyset_data;
+                    Fred::InfoKeysetByHandle(handle).exec(ctx, get_output_timezone()).info_keyset_data;
             WhoisImpl::KeySet ks;
             ks.handle             = ikd.handle;
             ks.changed            = ikd.update_time;
@@ -505,7 +501,6 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
                 {
                     throw InvalidHandle();
                 }
-
                 throw ObjectNotExists();
             }
             throw;
@@ -518,8 +513,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
     return KeySet();
 }
 
-KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
-                                             unsigned long limit)
+KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned long limit)
 {
     Fred::OperationContextCreator ctx;
     try
@@ -571,7 +565,8 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle,
             temp.last_transfer = it->info_keyset_data.transfer_time;
             temp.sponsoring_registrar = it->info_keyset_data.sponsoring_registrar_handle;
 
-            const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(it->info_keyset_data.id).exec(ctx);
+            const std::vector<Fred::ObjectStateData> v_osd =
+                    Fred::GetObjectStates(it->info_keyset_data.id).exec(ctx);
             temp.statuses.reserve(v_osd.size());
             BOOST_FOREACH(Fred::ObjectStateData it_osd, v_osd)
             {
@@ -603,7 +598,9 @@ WhoisImpl::Domain generate_obfuscate_domain_delete_candidate(const std::string& 
     return temp;
 }
 
-static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& idd, Fred::OperationContext& ctx)
+static WhoisImpl::Domain make_domain_from_info_data(
+    const Fred::InfoDomainData& idd,
+    Fred::OperationContext& ctx)
 {
     WhoisImpl::Domain result;
     result.admin_contacts.reserve(idd.admin_contacts.size());
@@ -631,8 +628,10 @@ static WhoisImpl::Domain make_domain_from_info_data(const Fred::InfoDomainData& 
         result.validated_to = idd.enum_domain_validation.get_value().validation_expiration;
         result.validated_to_time_estimate = 
             ::Whois::domain_validation_expiration_datetime_estimate(
-                ctx, idd.enum_domain_validation.get_value().validation_expiration);
-        Optional<boost::posix_time::ptime> vtta = ::Whois::domain_validation_expiration_datetime_actual(ctx, idd.id);
+                ctx,
+                idd.enum_domain_validation.get_value().validation_expiration);
+        Optional<boost::posix_time::ptime> vtta =
+                ::Whois::domain_validation_expiration_datetime_actual(ctx, idd.id);
         if(vtta.isset())
         {
             result.validated_to_time_actual = vtta.get_value();
@@ -673,10 +672,10 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                 return Domain(generate_obfuscate_domain_delete_candidate(handle));
             }
             return make_domain_from_info_data(
-                       Fred::InfoDomainByHandle(handle)
-                           .exec( ctx, get_output_timezone() )
-                           .info_domain_data,
-                       ctx);
+                    Fred::InfoDomainByHandle(handle)
+                        .exec( ctx, get_output_timezone() )
+                        .info_domain_data,
+                    ctx);
         }
         catch(const Fred::InfoDomainByHandle::Exception& e)
         {
@@ -691,10 +690,10 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                         return Domain(generate_obfuscate_domain_delete_candidate(conflicting_enum_domain));
                     }
                     return make_domain_from_info_data(
-                               Fred::InfoDomainByHandle(conflicting_enum_domain)
-                                   .exec( ctx, get_output_timezone() )
-                                   .info_domain_data,
-                               ctx);
+                            Fred::InfoDomainByHandle(conflicting_enum_domain)
+                                .exec( ctx, get_output_timezone() )
+                                .info_domain_data,
+                            ctx);
                 }
                 if(Fred::CheckDomain(handle).is_invalid_handle(ctx))
                 {
@@ -712,15 +711,14 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
     return Domain();
 }
 
-static DomainSeq get_domains_by_(Fred::OperationContext& ctx,
-        unsigned long limit,
-        const std::vector<Fred::InfoDomainOutput>& domain_info)
+static DomainSeq get_domains_by_(
+    Fred::OperationContext& ctx,
+    unsigned long limit,
+    const std::vector<Fred::InfoDomainOutput>& domain_info)
 {
     DomainSeq domain_seq;
     unsigned int non_del_pending_domains = 0;
-    domain_seq.content.reserve(domain_info.size() > limit ?
-            limit :
-            domain_info.size());
+    domain_seq.content.reserve( (domain_info.size() > limit) ? limit : domain_info.size());
     BOOST_FOREACH(const Fred::InfoDomainOutput& it, domain_info)
     {
         if(! ::Whois::is_domain_delete_pending(it.info_domain_data.fqdn, ctx, "Europe/Prague"))
@@ -730,16 +728,13 @@ static DomainSeq get_domains_by_(Fred::OperationContext& ctx,
                 domain_seq.limit_exceeded = true;
                 break;
             }
-            domain_seq.content.push_back(
-                make_domain_from_info_data(
-                    it.info_domain_data, ctx));
+            domain_seq.content.push_back(make_domain_from_info_data(it.info_domain_data, ctx));
         }
     }
     return domain_seq;
 }
 
-DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
-                                                 unsigned long limit)
+DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle, unsigned long limit)
 {
     Fred::OperationContextCreator ctx;
     try
@@ -765,8 +760,7 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle,
     return DomainSeq();
 }
 
-DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
-                                                    unsigned long limit)
+DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle, unsigned long limit)
 {
     Fred::OperationContextCreator ctx;
     try
@@ -791,8 +785,7 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle,
     return DomainSeq();
 }
 
-DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle,
-                                            unsigned long limit)
+DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle, unsigned long limit)
 {
     Fred::OperationContextCreator ctx;
     try
@@ -817,8 +810,7 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle,
     return DomainSeq();
 }
 
-DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
-                                             unsigned long limit)
+DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle, unsigned long limit)
 {
     Fred::OperationContextCreator ctx;
     try
@@ -844,17 +836,17 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle,
 }
 
 static std::vector<ObjectStatusDesc> get_object_status_descriptions(
-        const std::string& lang,
-        const std::string& type)
+    const std::string& lang,
+    const std::string& type)
 {
     Fred::OperationContextCreator ctx;
     try
     {
         const std::vector<Fred::ObjectStateDescription> states =
-                    Fred::GetObjectStateDescriptions(lang)
-                        .set_object_type(type)
-                        .set_external()
-                        .exec(ctx);
+                Fred::GetObjectStateDescriptions(lang)
+                    .set_object_type(type)
+                    .set_external()
+                    .exec(ctx);
         if(states.empty())
         {
             throw MissingLocalization();

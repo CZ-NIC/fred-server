@@ -4,7 +4,7 @@
 #include "src/corba/Whois2.hh"
 #include "src/whois/whois.h"
 
-#include "src/fredlib/fredlib.h"
+//#include "src/fredlib/fredlib.h"
 
 #include <string>
 

@@ -42,8 +42,7 @@ Registrar* Server_impl::get_registrar_by_handle(const char* handle)
                 wrap_registrar(
                     pimpl_->get_registrar_by_handle(std::string(handle))));
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     // default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -54,8 +53,7 @@ RegistrarSeq* Server_impl::get_registrars()
     try
     {
         RegistrarSeq_var result = new RegistrarSeq;
-        std::vector<Registry::WhoisImpl::Registrar> registrars =
-                pimpl_->get_registrars();
+        std::vector<Registry::WhoisImpl::Registrar> registrars = pimpl_->get_registrars();
         result->length(registrars.size());
         for(CORBA::ULong i = 0; i < result->length(); ++i)
         {
@@ -63,8 +61,7 @@ RegistrarSeq* Server_impl::get_registrars()
         }
         return result._retn();
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -76,13 +73,13 @@ RegistrarSeq* Server_impl::get_registrars()
 template<class CORBA_SEQ_ELEMENT, class IN_LIST_ELEMENT>
 CORBA_SEQ_ELEMENT set_element_of_corba_seq(const IN_LIST_ELEMENT& ile);
 
-template<> CORBA::String_var set_element_of_corba_seq<
-    CORBA::String_var,std::string>(const std::string& ile)
+template<>
+CORBA::String_var set_element_of_corba_seq<CORBA::String_var, std::string>(const std::string& ile)
 {
     return Corba::wrap_string_to_corba_string(ile);
 }
 
-/** COPIED FROM src/corba/whois2_impl
+/**
  * generic implementation of allocation and setting CORBA sequence
  * from container with begin(), end(), size() and value_type member
  */
@@ -93,8 +90,7 @@ void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
     unsigned long long i = 0;
     for(typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
     {
-        cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, 
-            typename IN_LIST::value_type>(*ci);
+        cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename IN_LIST::value_type>(*ci);
     }
 }
 
@@ -107,10 +103,8 @@ RegistrarGroup wrap_registrar_group(const Registry::WhoisImpl::RegistrarGroup& g
 }
 
 template<> 
-RegistrarGroup set_element_of_corba_seq<
-    RegistrarGroup, 
-    Registry::WhoisImpl::RegistrarGroup>(
-        const Registry::WhoisImpl::RegistrarGroup& ile)
+RegistrarGroup set_element_of_corba_seq<RegistrarGroup, Registry::WhoisImpl::RegistrarGroup>(
+    const Registry::WhoisImpl::RegistrarGroup& ile)
 {
     return wrap_registrar_group(ile);
 }
@@ -121,14 +115,11 @@ RegistrarGroupList* Server_impl::get_registrar_groups()
     {
         RegistrarGroupList_var result = new RegistrarGroupList;
 
-        set_corba_seq<RegistrarGroupList, RegistrarGroup>(
-                result, 
-                pimpl_->get_registrar_groups());
+        set_corba_seq<RegistrarGroupList, RegistrarGroup>(result, pimpl_->get_registrar_groups());
 
         return result._retn();
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -163,8 +154,7 @@ RegistrarCertificationList* Server_impl::get_registrar_certification_list()
                 pimpl_->get_registrar_certification_list());
         return result._retn();
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -175,13 +165,10 @@ ZoneFqdnList* Server_impl::get_managed_zone_list()
     try
     {
         ZoneFqdnList_var zone_seq = new ZoneFqdnList;
-        set_corba_seq<ZoneFqdnList, CORBA::String_var>(
-                zone_seq, 
-                pimpl_->get_managed_zone_list());
+        set_corba_seq<ZoneFqdnList, CORBA::String_var>(zone_seq, pimpl_->get_managed_zone_list());
         return zone_seq._retn();
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -258,8 +245,7 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -297,10 +283,7 @@ void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out )
 }
 
 template<> 
-IPAddress set_element_of_corba_seq<
-    IPAddress, 
-    boost::asio::ip::address>(
-        const boost::asio::ip::address& ile)
+IPAddress set_element_of_corba_seq<IPAddress, boost::asio::ip::address>(const boost::asio::ip::address& ile)
 {
     IPAddress ip;
     wrap_ipaddress(ile,ip);
@@ -329,9 +312,7 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
 
     set_corba_seq<NameServerSeq, NameServer>(result.nservers, nsset.nservers);
 
-    set_corba_seq<StringSeq, CORBA::String_var>(
-            result.tech_contact_handles, 
-            nsset.tech_contacts);
+    set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, nsset.tech_contacts);
 
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, nsset.statuses);
     return result;
@@ -347,16 +328,14 @@ NSSet* Server_impl::get_nsset_by_handle(const char* handle)
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
 }
 
 template<> 
-NSSet set_element_of_corba_seq<NSSet, Registry::WhoisImpl::NSSet>(
-    const Registry::WhoisImpl::NSSet& nsset)
+NSSet set_element_of_corba_seq<NSSet, Registry::WhoisImpl::NSSet>(const Registry::WhoisImpl::NSSet& nsset)
 {
     return wrap_nsset(nsset);
 }
@@ -378,8 +357,7 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -403,8 +381,7 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -415,8 +392,7 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
     try
     {
         NameServer result;
-        result.fqdn = Corba::wrap_string_to_corba_string(
-                pimpl_->get_nameserver_by_fqdn(handle).fqdn);
+        result.fqdn = Corba::wrap_string_to_corba_string(pimpl_->get_nameserver_by_fqdn(handle).fqdn);
         /*
          * Because of grouping nameservers in NSSet we don't include
          * IP address in output (given nameserver can be in different
@@ -430,8 +406,7 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -459,11 +434,8 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
     result.changed = Corba::wrap_nullable_datetime(keyset.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(keyset.last_transfer);
 
-    set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, 
-                                                keyset.tech_contacts);
-
+    set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, keyset.tech_contacts);
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, keyset.statuses);
-
     set_corba_seq<DNSKeySeq, DNSKey>(result.dns_keys, keyset.dns_keys);
 
     return result;
@@ -479,8 +451,7 @@ KeySet* Server_impl::get_keyset_by_handle(const char* handle)
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -509,8 +480,7 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -527,8 +497,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else 
     {
-        result.nsset_handle = new NullableString(
-                Corba::wrap_string_to_corba_string(domain.nsset));
+        result.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.nsset));
     }
     if(domain.keyset.size() == 0)
     {
@@ -536,8 +505,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else 
     {
-        result.keyset_handle = new NullableString(
-                Corba::wrap_string_to_corba_string(domain.keyset));
+        result.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.keyset));
     }
     result.registrar_handle = Corba::wrap_string_to_corba_string(domain.sponsoring_registrar);
     result.registered = Corba::wrap_time(domain.registered);
@@ -554,14 +522,13 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else 
     {
-        result.validated_to = new Registry::NullableDate(
-                Corba::wrap_date(domain.validated_to.get_value()));
+        result.validated_to = new Registry::NullableDate(Corba::wrap_date(domain.validated_to.get_value()));
         result.validated_to_time_estimate = Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
         result.validated_to_time_actual = Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
     } 
     set_corba_seq<StringSeq, CORBA::String_var>(result.admin_contact_handles, domain.admin_contacts);
-
     set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, domain.statuses);
+
     return result;
 
 }
@@ -576,8 +543,7 @@ Domain* Server_impl::get_domain_by_handle(const char* handle)
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -604,8 +570,7 @@ DomainSeq* Server_impl::get_domains_by_(const Registry::WhoisImpl::DomainSeq& do
     {
         throw;
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -662,8 +627,7 @@ ObjectStatusDescSeq* Server_impl::get_object_status_descriptions(
         set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>(state_seq, state_vec);
         return state_seq._retn();
     }
-    catch (...)
-    {}
+    catch (...) { }
 
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
@@ -689,5 +653,5 @@ ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lan
     return get_object_status_descriptions(pimpl_->get_keyset_status_descriptions(lang));
 }
 
-}//Registry
 }//Whois 
+}//Registry

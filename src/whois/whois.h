@@ -138,30 +138,30 @@ struct ContactIdentification
 struct Contact
 {
     std::string handle;
-    std::string   organization;
-    bool disclose_organization;
-    std::string   name;
-    bool disclose_name;
-    PlaceAddress  address;
-    bool disclose_address;
-    std::string   phone;
-    bool disclose_phone;
-    std::string   fax;
-    bool disclose_fax;
-    std::string   email;
-    bool disclose_email;
-    std::string   notify_email;
-    bool disclose_notify_email;
+    std::string organization;
+    std::string name;
+    PlaceAddress address;
+    std::string phone;
+    std::string fax;
+    std::string email;
+    std::string notify_email;
     ContactIdentification identification;
-    bool         disclose_identification;
-    std::string   vat_number;
-    bool disclose_vat_number;
+    std::string vat_number;
     std::string creating_registrar;
     std::string sponsoring_registrar;
     boost::posix_time::ptime created;
     Nullable<boost::posix_time::ptime> changed;
     Nullable<boost::posix_time::ptime> last_transfer;
     std::vector<std::string> statuses;
+    bool disclose_organization;
+    bool disclose_name;
+    bool disclose_address;
+    bool disclose_phone;
+    bool disclose_fax;
+    bool disclose_email;
+    bool disclose_notify_email;
+    bool disclose_identification;
+    bool disclose_vat_number;
 
     Contact() {}
 
@@ -415,8 +415,8 @@ struct Domain
         expire(_expire),
         validated_to(_validated_to),
         expire_time_estimate(_expire_time_estimate),
-        validated_to_time_estimate(_validated_to_time_estimate),
         expire_time_actual(_expire_time_actual),
+        validated_to_time_estimate(_validated_to_time_estimate),
         validated_to_time_actual(_validated_to_time_actual)
     {}
 };
