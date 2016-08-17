@@ -22,8 +22,13 @@ unsigned long long PublicRequest::create_authinfo_request_registry_email(
         Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(
                 ctx,
                 Fred::get_present_object_id(ctx, object_type, object_handle));
-        return Fred::CreatePublicRequest(reason, Optional< std::string >(), Optional<unsigned long long>())
+        unsigned long long id = Fred::CreatePublicRequest(
+                reason,
+                Optional< std::string >(),
+                Optional<unsigned long long>())
             .exec(locked_object, AuthinfoAuto(), log_request_id);
+        ctx.commit_transaction();
+        return id;
     }
     catch (const std::exception& e)
     {
@@ -61,6 +66,7 @@ unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
         {
             request_id = cpr.exec(locked_object, AuthinfoPost(), log_request_id);
         }
+        ctx.commit_transaction();
         return request_id;
     }
     catch (const std::exception& e)
@@ -155,6 +161,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 request_id = c_p_r.exec(locked_object, UnblockChangesPost(), log_request_id);
             }
         }
+        ctx.commit_transaction();
         return request_id;
     }
     catch (const std::exception& e)
