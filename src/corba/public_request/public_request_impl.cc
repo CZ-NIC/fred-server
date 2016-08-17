@@ -26,8 +26,8 @@ Fred::Object_Type::Enum unwrap_object_type(ObjectType_PR object_type)
             throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType_PR");
     }
 }
-/* inline */ Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(
-    /* ::Registry::PublicRequest:: */NullableULongLong* nullable)
+
+inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(NullableULongLong* nullable)
 {
     return (nullable) ? Optional<unsigned long long>(nullable->_value()) : Optional<unsigned long long>();
 }
