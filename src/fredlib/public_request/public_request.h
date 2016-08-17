@@ -75,13 +75,13 @@ typedef std::string Type;
 
 
 /// Request status
-enum Status {
+enum Status_PR { // suffix to fix name clash with public_request_status.h status struct
   PRS_NEW,       ///< Request was created and waiting for autorization 
   PRS_ANSWERED,  ///< Email with answer was sent
   PRS_INVALID    ///< Time passed without authorization   
 };
 
-std::string Status2Str(Status _status); 
+std::string Status2Str(Status_PR _status); 
 /// Object types
 enum ObjectType {
   OT_UNKNOWN = 0,
@@ -136,8 +136,8 @@ public:
 
   virtual Fred::PublicRequest::Type getType() const = 0;
   virtual void setType(Fred::PublicRequest::Type _type) = 0;
-  virtual Fred::PublicRequest::Status getStatus() const = 0;
-  virtual void setStatus(Fred::PublicRequest::Status _status) = 0;
+  virtual Fred::PublicRequest::Status_PR getStatus() const = 0;
+  virtual void setStatus(Fred::PublicRequest::Status_PR _status) = 0;
   virtual ptime getCreateTime() const = 0;
   virtual ptime getResolveTime() const = 0;
   virtual const std::string& getReason() const = 0;

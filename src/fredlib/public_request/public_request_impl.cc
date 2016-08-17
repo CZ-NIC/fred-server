@@ -21,7 +21,7 @@ namespace PublicRequest {
 
 
 
-std::string Status2Str(Status _status)
+std::string Status2Str(Status_PR _status)
 {
   switch (_status) {
     case PRS_NEW:       return "New";
@@ -216,7 +216,7 @@ PublicRequestImpl::PublicRequestImpl(
         Fred::PublicRequest::Type _type,
         Database::ID _create_request_id,
         Database::DateTime _create_time,
-        Fred::PublicRequest::Status _status,
+        Fred::PublicRequest::Status_PR _status,
         Database::DateTime _resolve_time,
         std::string _reason,
         std::string _email_to_answer,
@@ -250,7 +250,7 @@ void PublicRequestImpl::init(Database::Row::Iterator& _it)
     create_request_id_  = *(++_it);
     resolve_request_id_ = *(++_it);
     create_time_      = *(++_it);
-    status_           = (Fred::PublicRequest::Status)(int)*(++_it);
+    status_           = (Fred::PublicRequest::Status_PR)(int)*(++_it);
     resolve_time_     = *(++_it);
     reason_           = (std::string)*(++_it);
     email_to_answer_  = (std::string)*(++_it);
@@ -377,13 +377,13 @@ void PublicRequestImpl::setType(Fred::PublicRequest::Type _type)
 }
 
 
-Fred::PublicRequest::Status PublicRequestImpl::getStatus() const
+Fred::PublicRequest::Status_PR PublicRequestImpl::getStatus() const
 {
     return status_;
 }
 
 
-void PublicRequestImpl::setStatus(Fred::PublicRequest::Status _status)
+void PublicRequestImpl::setStatus(Fred::PublicRequest::Status_PR _status)
 {
    status_ = _status;
    modified_ = true;
