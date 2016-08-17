@@ -67,10 +67,7 @@ protected:
         Fred::PublicRequest::Status::Enum _old_status,
         Fred::PublicRequest::Status::Enum _new_status) const
     {
-//         if ((_old_status == Fred::PublicRequest::Status::active) &&
-//             (_new_status == Fred::PublicRequest::Status::answered)) {
-//         }
-        return PublicRequestTypes();
+        throw std::runtime_error("method must not be called");
     }
 };
 
