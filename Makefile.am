@@ -1885,6 +1885,8 @@ src_corba_fred_pifd_SOURCES = \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
 		src/public_request/public_request.cc \
 		src/public_request/public_request.h \
+		src/corba/public_request/public_request_impl.cc \
+		src/corba/public_request/public_request_impl.h \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \

@@ -120,6 +120,8 @@ int main(int argc, char *argv[])
 
         std::auto_ptr<Registry::Whois::Server_impl> myWhois2 ( new Registry::Whois::Server_impl("Whois2"));
 
+       std::auto_ptr<Registry::PublicRequest::Server_i> myPublicRequest ( new Registry::PublicRequest::Server_i);
+
         std::auto_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
 
@@ -138,6 +140,9 @@ int main(int argc, char *argv[])
 
         CorbaContainer::get_instance()
             ->register_server(myWhois2.release(), "Whois2");
+
+        CorbaContainer::get_instance()
+            ->register_server(myPublicRequest.release(), "PublicRequest");
 
         CorbaContainer::get_instance()
             ->register_server(contact_vrf_iface.release(), "ContactVerification");
