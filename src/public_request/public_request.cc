@@ -129,65 +129,41 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 Optional<unsigned long long>());
         if (object_block_type == BLOCK_TRANSFER)
         {
-            if (states.presents(Fred::Object_State::server_transfer_prohibited))
-            {
-                throw ObjectAlreadyBlocked();
-            }
-            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
-            {
-                request_id = c_p_r.exec(locked_object, BlockTransferEmail(), log_request_id);
-            }
-            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
-            {
-                request_id = c_p_r.exec(locked_object, BlockTransferPost(), log_request_id);
-            }
+            request_id = get_id<ObjectAlreadyBlocked, BlockTransferEmail, BlockTransferPost>(
+                    states.presents(Fred::Object_State::server_transfer_prohibited),
+                    confirmation_method,
+                    c_p_r,
+                    locked_object,
+                    log_request_id);
         }
         else if (object_block_type == BLOCK_TRANSFER_AND_UPDATE)
         {
-            if (states.presents(Fred::Object_State::server_transfer_prohibited) ||
-                states.presents(Fred::Object_State::server_update_prohibited))
-            {
-                throw ObjectAlreadyBlocked();
-            }
-            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
-            {
-                request_id = c_p_r.exec(locked_object, BlockChangesEmail(), log_request_id);
-            }
-            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
-            {
-                request_id = c_p_r.exec(locked_object, BlockChangesPost(), log_request_id);
-            }
+            request_id = get_id<ObjectAlreadyBlocked, BlockChangesEmail, BlockChangesPost>(
+                    (states.presents(Fred::Object_State::server_transfer_prohibited) ||
+                     states.presents(Fred::Object_State::server_update_prohibited)),
+                    confirmation_method,
+                    c_p_r,
+                    locked_object,
+                    log_request_id);
         }
         else if (object_block_type == UNBLOCK_TRANSFER)
         {
-            if (states.absents(Fred::Object_State::server_transfer_prohibited))
-            {
-                throw ObjectNotBlocked();
-            }
-            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
-            {
-                request_id = c_p_r.exec(locked_object, UnblockTransferEmail(), log_request_id);
-            }
-            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
-            {
-                request_id = c_p_r.exec(locked_object, UnblockTransferPost(), log_request_id);
-            }
+            request_id = get_id<ObjectNotBlocked, UnblockTransferEmail, UnblockTransferPost>(
+                    states.absents(Fred::Object_State::server_transfer_prohibited),
+                    confirmation_method,
+                    c_p_r,
+                    locked_object,
+                    log_request_id);
         }
         else if (object_block_type == UNBLOCK_TRANSFER_AND_UPDATE)
         {
-            if (states.absents(Fred::Object_State::server_transfer_prohibited) ||
-                states.absents(Fred::Object_State::server_update_prohibited))
-            {
-                throw ObjectNotBlocked();
-            }
-            if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
-            {
-                request_id = c_p_r.exec(locked_object, UnblockChangesEmail(), log_request_id);
-            }
-            else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
-            {
-                request_id = c_p_r.exec(locked_object, UnblockChangesPost(), log_request_id);
-            }
+            request_id = get_id<ObjectNotBlocked, UnblockChangesEmail, UnblockChangesPost>(
+                    (states.absents(Fred::Object_State::server_transfer_prohibited) ||
+                     states.absents(Fred::Object_State::server_update_prohibited)),
+                    confirmation_method,
+                    c_p_r,
+                    locked_object,
+                    log_request_id);
         }
         ctx.commit_transaction();
         return request_id;
