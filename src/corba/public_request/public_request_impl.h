@@ -42,14 +42,14 @@ public:
 
     // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR);
     ::CORBA::ULongLong create_authinfo_request_registry_email(
-        /* Registry::PublicRequest:: */ObjectType object_type,
+        ObjectType_PR object_type,
         const char* object_handle,
         const char* reason,
         /* Registry:: */NullableULongLong* log_request_id);
 
     // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR, INVALID_EMAIL);
     ::CORBA::ULongLong create_authinfo_request_non_registry_email(
-        /* Registry::PublicRequest:: */ObjectType object_type,
+        ObjectType_PR object_type,
         const char* object_handle,
         const char* reason,
         /* Registry:: */NullableULongLong* log_request_id,
@@ -58,7 +58,7 @@ public:
 
     // raises (OBJECT_NOT_EXISTS, INTERNAL_SERVER_ERROR, OBJECT_ALREADY_BLOCKED, OBJECT_NOT_BLOCKED);
     ::CORBA::ULongLong create_block_unblock_request(
-        /* Registry::PublicRequest:: */ObjectType object_type,
+        ObjectType_PR object_type,
         const char* object_handle,
         /* Registry:: */NullableULongLong* log_request_id,
         /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,

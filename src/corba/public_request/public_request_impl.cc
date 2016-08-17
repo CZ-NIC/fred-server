@@ -10,7 +10,7 @@ namespace Registry
 namespace PublicRequest
 {
 
-Fred::Object_Type::Enum unwrap_object_type(ObjectType object_type)
+Fred::Object_Type::Enum unwrap_object_type(ObjectType_PR object_type)
 {
     switch (object_type)
     {
@@ -23,7 +23,7 @@ Fred::Object_Type::Enum unwrap_object_type(ObjectType object_type)
         case Registry::PublicRequest::keyset :
             return Fred::Object_Type::keyset;
         default :
-            throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType");
+            throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType_PR");
     }
 }
 /* inline */ Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(
@@ -33,7 +33,7 @@ Fred::Object_Type::Enum unwrap_object_type(ObjectType object_type)
 }
 
 ::CORBA::ULongLong Server_i::create_authinfo_request_registry_email(
-    /* Registry::PublicRequest:: */ObjectType object_type,
+    ObjectType_PR object_type,
     const char* object_handle,
     const char* reason,
     /* ::Registry::PublicRequest:: */NullableULongLong* log_request_id)
@@ -77,7 +77,7 @@ Fred::Object_Type::Enum unwrap_object_type(ObjectType object_type)
 // }
 // 
 ::CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
-    /* Registry::PublicRequest:: */ObjectType object_type,
+    ObjectType_PR object_type,
     const char* object_handle,
     const char* reason,
     /* ::Registry::PublicRequest:: */NullableULongLong* log_request_id,
@@ -111,7 +111,7 @@ Fred::Object_Type::Enum unwrap_object_type(ObjectType object_type)
 }
 
 ::CORBA::ULongLong Server_i::create_block_unblock_request(
-    /* Registry::PublicRequest:: */ObjectType object_type,
+    ObjectType_PR object_type,
     const char* object_handle,
     /* ::Registry::PublicRequest:: */NullableULongLong* log_request_id,
     /* Registry::PublicRequest:: */ConfirmationMethod confirmation_method,
