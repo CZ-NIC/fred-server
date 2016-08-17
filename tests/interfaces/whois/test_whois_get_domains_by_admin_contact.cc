@@ -148,7 +148,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact, domains_by_admin_contact_f
         BOOST_CHECK(it.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, found->second.expiration_date));
         BOOST_CHECK(it.expire_time_actual.isnull());
         BOOST_CHECK(it.validated_to_time_actual.isnull());
-        if(! found->second.enum_domain_validation.isnull())//enum
+        if(! found->second.enum_domain_validation.isnull())
         {
             BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
             BOOST_CHECK(it.validated_to_time_estimate ==
@@ -201,7 +201,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_admin_contact_limit_exceeded, domains_by_
         BOOST_CHECK(it.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, found->second.expiration_date));
         BOOST_CHECK(it.expire_time_actual.isnull());
         BOOST_CHECK(it.validated_to_time_actual.isnull());
-        if(! found->second.enum_domain_validation.isnull())//enum
+        if(! found->second.enum_domain_validation.isnull())
         {
             BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
             BOOST_CHECK(it.validated_to_time_estimate ==

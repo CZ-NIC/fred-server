@@ -156,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset, domains_by_keyset_fixture)
                     it.statuses.end());
         }
         BOOST_CHECK(it.statuses.size() == v_osd.size());
-        if(! found->second.enum_domain_validation.isnull())//enum
+        if(! found->second.enum_domain_validation.isnull())
         {
             BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
             BOOST_CHECK(it.validated_to_time_estimate ==
@@ -211,7 +211,7 @@ BOOST_FIXTURE_TEST_CASE(get_domains_by_keyset_limit_exceeded, domains_by_keyset_
                     it.statuses.end());
         }
         BOOST_CHECK(it.statuses.size() == v_osd.size());
-        if(! found->second.enum_domain_validation.isnull())//enum
+        if(! found->second.enum_domain_validation.isnull())
         {
             BOOST_CHECK(it.validated_to.get_value() == found->second.enum_domain_validation.get_value().validation_expiration);
             BOOST_CHECK(it.validated_to_time_estimate ==
