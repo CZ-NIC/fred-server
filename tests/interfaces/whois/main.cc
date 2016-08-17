@@ -21,40 +21,44 @@
 #include "util/cfg/handle_mojeid_args.h"
 
 #include <boost/assign/list_of.hpp>
+#include <boost/test/unit_test.hpp>
 
+namespace Test
+{
 
+struct handle_command_line_args
+{
+    HandlerPtrVector config_handlers;
 
-namespace Test {
+    handle_command_line_args()
+    {
 
-    struct handle_command_line_args {
-        HandlerPtrVector config_handlers;
+        config_handlers =
+            boost::assign::list_of
+                (HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
+                (HandleArgsPtr(new HandleServerArgs))
+                (HandleArgsPtr(new HandleLoggingArgs))
+                (HandleArgsPtr(new HandleDatabaseArgs))
+                (HandleArgsPtr(new HandleCorbaNameServiceArgs))
+                (HandleArgsPtr(new HandleThreadGroupArgs))
+                (HandleArgsPtr(new HandleRegistryArgs))
+                (HandleArgsPtr(new HandleRifdArgs))
+                (HandleArgsPtr(new HandleMojeIDArgs))
+                (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs));
 
-        handle_command_line_args() {
+        namespace boost_args_ns = boost::unit_test::framework;
 
-            config_handlers =
-                boost::assign::list_of
-                    (HandleArgsPtr(new HandleTestsArgs(CONFIG_FILE)))
-                    (HandleArgsPtr(new HandleServerArgs))
-                    (HandleArgsPtr(new HandleLoggingArgs))
-                    (HandleArgsPtr(new HandleDatabaseArgs))
-                    (HandleArgsPtr(new HandleCorbaNameServiceArgs))
-                    (HandleArgsPtr(new HandleThreadGroupArgs))
-                    (HandleArgsPtr(new HandleRegistryArgs))
-                    (HandleArgsPtr(new HandleRifdArgs))
-                    (HandleArgsPtr(new HandleMojeIDArgs))
-                    (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs));
+        CfgArgs::init<HandleTestsArgs>(config_handlers)->handle(
+            boost_args_ns::master_test_suite().argc,
+            boost_args_ns::master_test_suite().argv
+        ).copy_onlynospaces_args();
+    }
+};
 
-            namespace boost_args_ns = boost::unit_test::framework;
+} // namespace Test
 
-            CfgArgs::init<HandleTestsArgs>(config_handlers)->handle(
-                boost_args_ns::master_test_suite().argc,
-                boost_args_ns::master_test_suite().argv
-            ).copy_onlynospaces_args();
-        }
-    };
-}
-
-struct global_fixture {
+struct global_fixture
+{
     Test::handle_command_line_args handle_admin_db_cmd_line_args;
     Test::Fixture::create_db_template create_db_template;
 };

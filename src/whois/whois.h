@@ -37,8 +37,10 @@
 #include <string>
 #include <vector>
 
-namespace Registry {
-namespace WhoisImpl {
+namespace Registry
+{
+namespace WhoisImpl
+{
 
 struct PlaceAddress
 {

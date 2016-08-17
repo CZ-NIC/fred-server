@@ -8,11 +8,12 @@
 
 #include <string>
 
-namespace Registry {
-namespace Whois {
+namespace Registry
+{
+namespace Whois
+{
 
-class Server_impl :
-    public POA_Registry::Whois::WhoisIntf
+class Server_impl : public POA_Registry::Whois::WhoisIntf
 {
 private:
     const std::auto_ptr<Registry::WhoisImpl::Server_impl> pimpl_;

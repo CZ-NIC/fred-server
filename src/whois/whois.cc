@@ -31,8 +31,10 @@
 #include <boost/foreach.hpp>
 
 
-namespace Registry{
-namespace WhoisImpl{
+namespace Registry
+{
+namespace WhoisImpl
+{
 
 static std::string get_output_timezone() { static const std::string timezone("UTC"); return timezone; }
 
