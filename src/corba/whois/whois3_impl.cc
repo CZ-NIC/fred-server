@@ -1,11 +1,9 @@
-#include <src/corba/whois/whois3_impl.h>
-#include <src/corba/common_wrappers.h>
-#include <src/corba/util/corba_conversions_string.h>
-#include <src/corba/util/corba_conversions_datetime.h>
-#include <src/corba/util/corba_conversions_nullable_types.h>
-
-#include <src/whois/whois.h>
-
+#include "src/corba/whois/whois3_impl.h"
+#include "src/whois/whois.h"
+#include "src/corba/common_wrappers.h"
+#include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_datetime.h"
+#include "src/corba/util/corba_conversions_nullable_types.h"
 
 namespace Registry {
 namespace Whois {

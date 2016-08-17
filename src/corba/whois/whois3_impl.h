@@ -2,8 +2,9 @@
 #define WHOIS2_IMPL_H_6545489794
 
 #include "src/corba/Whois2.hh"
-#include <fredlib/fredlib.h>
 #include "src/whois/whois.h"
+
+#include "src/fredlib/fredlib.h"
 
 #include <string>
 

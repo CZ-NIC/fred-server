@@ -1,6 +1,8 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "boost/date_time/posix_time/posix_time_types.hpp"
+
 #include "src/fredlib/keyset/keyset_dns_key.h"
+
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestWhois)
 BOOST_AUTO_TEST_SUITE(get_keyset_by_handle)

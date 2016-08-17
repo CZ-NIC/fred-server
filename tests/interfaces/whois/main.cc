@@ -1,9 +1,6 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE TestWhois
 
-// dynamic library version
-#include <boost/test/unit_test.hpp>
-
 #include "config.h"
 
 #include "tests/setup/fixtures.h"

@@ -24,17 +24,18 @@
 #ifndef _WHOIS_H_3513138416434634
 #define _WHOIS_H_3513138416434634
 
-#include <string>
-#include <vector>
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/domain/info_domain_output.h"
+#include "src/fredlib/nsset/info_nsset_output.h"
+#include "src/fredlib/opcontext.h"
+#include "util/db/nullable.h"
+
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/asio/ip/address.hpp>
-#include <src/fredlib/object_state/get_object_states.h>
-#include <src/fredlib/domain/info_domain_output.h>
-#include <src/fredlib/nsset/info_nsset_output.h>
-#include <src/fredlib/opcontext.h>
 
-#include "util/db/nullable.h"
+#include <string>
+#include <vector>
 
 namespace Registry {
 namespace WhoisImpl {
