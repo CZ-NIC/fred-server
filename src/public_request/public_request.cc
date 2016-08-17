@@ -167,7 +167,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
         LOGGER(PACKAGE).info("Unknown error");
         throw;
     }
-}
+} // create_block_unblock_request
 
 } // namespace Registry
 } // namespace PublicRequestImpl

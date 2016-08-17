@@ -167,7 +167,7 @@ Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBloc
     {
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
-}
+} // create_block_unblock_request
 
 } // Registry
 } // PublicRequest

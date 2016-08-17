@@ -68,7 +68,7 @@ private:
     Server_i& operator= (const Server_i&); // no body
 };
 
-}
-}
+} // namespace Registry
+} // namespace PublicRequest
 
 #endif // PUBLIC_REQUEST_IMPL_H_721142637
