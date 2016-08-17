@@ -266,8 +266,6 @@ public:
         const Optional<unsigned long long>& log_request_id,
         ConfirmationMethod confirmation_method,
         ObjectBlockType object_block_type);
-private:
-
 };
 
 } // namespace Registry
