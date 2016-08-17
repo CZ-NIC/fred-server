@@ -81,6 +81,34 @@ unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
     }
 }
 
+template<typename Exception, typename EmailInterface, typename PostInterface>
+unsigned long long get_id(
+    bool are_states_ok,
+    ConfirmationMethod confirmation_method,
+    const Fred::CreatePublicRequest& c_p_r,
+    const Fred::PublicRequestsOfObjectLockGuardByObjectId& locked_object,
+    const Optional<unsigned long long>& log_request_id)
+{
+    unsigned long long request_id;
+    if (are_states_ok)
+    {
+        throw Exception();
+    }
+    if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
+    {
+        request_id = c_p_r.exec(locked_object, EmailInterface(), log_request_id);
+    }
+    else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
+    {
+        request_id = c_p_r.exec(locked_object, PostInterface(), log_request_id);
+    }
+    else
+    {
+        throw std::invalid_argument("Registry::PublicRequest::ConfirmationMethod doesn't contain that value");
+    }
+    return request_id;
+}
+
 unsigned long long PublicRequest::create_block_unblock_request(
     Fred::Object_Type::Enum object_type,
     const std::string& object_handle,
