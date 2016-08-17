@@ -442,7 +442,6 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
             NameServer temp;
             temp.fqdn = fqdn;
             /*
-             * copy from whois2_impl.cc:
              * Because of grouping nameservers in NSSet we don't include
              * IP address in output (given nameserver can be in different
              * NSSets with different IP addresses)
@@ -657,7 +656,6 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
     {
         try
         {
-            //check general name rules
             if(check_domain.is_invalid_syntax())
             {
                 throw InvalidLabel();
@@ -697,9 +695,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                                    .exec( ctx, get_output_timezone() )
                                    .info_domain_data,
                                ctx);
-                    //                    return get_domain_info(ctx, conflicting_enum_domain, false);
                 }
-                //check current registry name rules (that might change over time)
                 if(Fred::CheckDomain(handle).is_invalid_handle(ctx))
                 {
                     throw InvalidLabel();
