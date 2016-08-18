@@ -4,8 +4,10 @@
 #include "src/corba/util/corba_conversions_datetime.h"
 #include "src/corba/util/corba_conversions_nullable_types.h"
 
-namespace Registry {
-namespace Whois {
+namespace Registry
+{
+namespace Whois
+{
 
 PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
 {

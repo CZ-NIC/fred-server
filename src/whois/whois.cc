@@ -38,7 +38,6 @@ namespace WhoisImpl
 
 static std::string get_output_timezone() { static const std::string timezone("UTC"); return timezone; }
 
-
 static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
 {
     try
@@ -474,12 +473,12 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
             const Fred::InfoKeysetData ikd =
                     Fred::InfoKeysetByHandle(handle).exec(ctx, get_output_timezone()).info_keyset_data;
             WhoisImpl::KeySet ks;
-            ks.handle             = ikd.handle;
-            ks.changed            = ikd.update_time;
-            ks.created            = ikd.creation_time;
+            ks.handle               = ikd.handle;
+            ks.changed              = ikd.update_time;
+            ks.created              = ikd.creation_time;
             ks.sponsoring_registrar = ikd.sponsoring_registrar_handle;
+            ks.last_transfer        = ikd.transfer_time;
             ks.dns_keys.reserve(ikd.dns_keys.size());
-            ks.last_transfer      = ikd.transfer_time;
             DNSKey dns_k;
             BOOST_FOREACH(Fred::DnsKey it, ikd.dns_keys)
             {
@@ -611,14 +610,14 @@ static WhoisImpl::Domain make_domain_from_info_data(
     {
         result.admin_contacts.push_back(it.handle);
     }
-    result.changed            = idd.update_time;
-    result.expire             = idd.expiration_date;
-    result.fqdn               = idd.fqdn;
-    result.keyset             = idd.keyset.get_value_or_default().handle;
-    result.last_transfer      = idd.transfer_time;
-    result.nsset              = idd.nsset.get_value_or_default().handle;
-    result.registered         = idd.creation_time;
-    result.registrant         = idd.registrant.handle;
+    result.changed              = idd.update_time;
+    result.expire               = idd.expiration_date;
+    result.fqdn                 = idd.fqdn;
+    result.keyset               = idd.keyset.get_value_or_default().handle;
+    result.last_transfer        = idd.transfer_time;
+    result.nsset                = idd.nsset.get_value_or_default().handle;
+    result.registered           = idd.creation_time;
+    result.registrant           = idd.registrant.handle;
     result.sponsoring_registrar = idd.sponsoring_registrar_handle;
     const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(idd.id).exec(ctx);
     result.statuses.reserve(v_osd.size());

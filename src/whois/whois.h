@@ -279,10 +279,12 @@ struct NSSetSeq
     : limit_exceeded(false)
     {}
 
-    NSSetSeq(const std::vector<NSSet>& _content,
-             bool _limit_exceeded = false)
-    : content(_content),
-      limit_exceeded(_limit_exceeded)
+    NSSetSeq(
+        const std::vector<NSSet>& _content,
+        bool _limit_exceeded = false
+    ) :
+        content(_content),
+        limit_exceeded(_limit_exceeded)
     {}
 };
 
@@ -433,9 +435,9 @@ struct DomainSeq
     DomainSeq(
         const std::vector<Domain>& _content,
         bool _limit_exceeded = false
-    )
-    : content(_content),
-      limit_exceeded(_limit_exceeded)
+    ) :
+        content(_content),
+        limit_exceeded(_limit_exceeded)
     {}
 };
 
@@ -494,8 +496,7 @@ struct ObjectStatusDesc
  * Object requested by ID was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
-struct ObjectNotExists
-: virtual std::exception
+struct ObjectNotExists : virtual std::exception
 {
     const char* what() const throw() {return "registry object with specified ID does not exist";}
 };
@@ -504,8 +505,7 @@ struct ObjectNotExists
  * Object requested by handle was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
-struct InvalidHandle
-: virtual std::exception
+struct InvalidHandle : virtual std::exception
 {
     const char* what() const throw() {return "registry object with specified handle does not exist";}
 };
@@ -514,8 +514,7 @@ struct InvalidHandle
  * Internal server error.
  * Unexpected failure, requires maintenance.
  */
-struct InternalServerError
-: virtual std::exception
+struct InternalServerError : virtual std::exception
 {
     const char* what() const throw() {return "internal server error";}
 };
@@ -541,8 +540,7 @@ struct UnmanagedZone
 /**
  * Domain name contains more labels than allowed for its type.
  */
-struct TooManyLabels
-: virtual std::exception
+struct TooManyLabels : virtual std::exception
 {
     const char* what() const throw() {return "domain has too many labels";}
 };
@@ -562,7 +560,6 @@ struct MissingLocalization
 class Server_impl
 {
 public:
-
     virtual ~Server_impl() {}
 
     /**
