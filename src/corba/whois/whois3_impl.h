@@ -77,10 +77,6 @@ public:
         ::CORBA::ULong limit,
         ::CORBA::Boolean& limit_exceeded);
 
-
-    ObjectStatusDescSeq* get_object_status_descriptions(
-        const std::vector<Registry::WhoisImpl::ObjectStatusDesc>& state_vec);
-
     ObjectStatusDescSeq* get_domain_status_descriptions(const char* lang);
     ObjectStatusDescSeq* get_contact_status_descriptions(const char* lang);
     ObjectStatusDescSeq* get_nsset_status_descriptions(const char* lang);

@@ -619,7 +619,7 @@ ObjectStatusDesc set_element_of_corba_seq<ObjectStatusDesc, Registry::WhoisImpl:
     return result;
 }
 
-ObjectStatusDescSeq* Server_impl::get_object_status_descriptions(
+static ObjectStatusDescSeq* get_object_status_descriptions(
     const std::vector<Registry::WhoisImpl::ObjectStatusDesc>& state_vec)
 {
     try
