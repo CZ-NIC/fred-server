@@ -496,7 +496,7 @@ struct ObjectStatusDesc
  * Object requested by ID was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
-struct ObjectNotExists : virtual std::exception
+struct ObjectNotExists : std::exception
 {
     const char* what() const throw() {return "registry object with specified ID does not exist";}
 };
@@ -505,7 +505,7 @@ struct ObjectNotExists : virtual std::exception
  * Object requested by handle was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
-struct InvalidHandle : virtual std::exception
+struct InvalidHandle : std::exception
 {
     const char* what() const throw() {return "registry object with specified handle does not exist";}
 };
@@ -514,7 +514,7 @@ struct InvalidHandle : virtual std::exception
  * Internal server error.
  * Unexpected failure, requires maintenance.
  */
-struct InternalServerError : virtual std::exception
+struct InternalServerError : std::exception
 {
     const char* what() const throw() {return "internal server error";}
 };
@@ -522,8 +522,7 @@ struct InternalServerError : virtual std::exception
 /**
  * Label of the object was incorrectly specified.
  */
-struct InvalidLabel
-: virtual std::exception
+struct InvalidLabel : std::exception
 {
     const char* what() const throw() {return "the label is invalid";}
 };
@@ -531,8 +530,7 @@ struct InvalidLabel
 /**
  * Zone of the domain is not managed by the service.
  */
-struct UnmanagedZone
-: virtual std::exception
+struct UnmanagedZone : std::exception
 {
     const char* what() const throw() {return "this zone is not managed";}
 };
@@ -540,7 +538,7 @@ struct UnmanagedZone
 /**
  * Domain name contains more labels than allowed for its type.
  */
-struct TooManyLabels : virtual std::exception
+struct TooManyLabels : std::exception
 {
     const char* what() const throw() {return "domain has too many labels";}
 };
@@ -548,8 +546,7 @@ struct TooManyLabels : virtual std::exception
 /**
  * Database does not contain the localization of the description of the object.
  */
-struct MissingLocalization
-: virtual std::exception
+struct MissingLocalization : std::exception
 {
     const char* what() const throw() {return "the localization is missing";}
 };
