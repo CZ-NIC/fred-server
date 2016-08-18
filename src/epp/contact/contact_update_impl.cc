@@ -316,19 +316,19 @@ struct Ident
     :   ident_value_(_ident_value),
         ident_type_(_ident_type)
     {
-        const bool ident_value_presents = ContactChange::does_value_mean< ContactChange::Value::to_set >(ident_value_);
-        const bool ident_type_presents = !ident_type_.isnull();
-        if (ident_value_presents != ident_type_presents) {
-            if (ident_type_presents) {
-                throw SsnTypeWithoutSsn();
-            }
-            throw SsnWithoutSsnType();
+        const bool ident_type_has_to_be_changed = !ident_type_.isnull();
+        const bool ident_value_has_to_be_changed =
+            !ContactChange::does_value_mean< ContactChange::Value::not_to_touch >(ident_value_);
+        if (ident_type_has_to_be_changed != ident_value_has_to_be_changed) {
+            ident_type_has_to_be_changed ? throw SsnTypeWithoutSsn()
+                                         : throw SsnWithoutSsnType();
         }
     }
 
-    bool presents()const
+    template < ContactChange::Value::Meaning MEANING >
+    bool does_value_mean()const
     {
-        return ContactChange::does_value_mean< ContactChange::Value::to_set >(ident_value_);
+        return ContactChange::does_value_mean< MEANING >(ident_value_);
     }
 
     Fred::PersonalIdUnion get()const
@@ -417,12 +417,14 @@ unsigned long long contact_update_impl(
         set_ContactUpdate_member(_change.vat,          update, &Fred::UpdateContactByHandle::set_vat);
         set_ContactUpdate_member(_change.auth_info_pw, update, &Fred::UpdateContactByHandle::set_authinfo);
 
-        if (ContactChange::does_value_mean< ContactChange::Value::to_set >(_change.ident))
         {
             const Ident ident(_change.ident, _change.ident_type);
-            const bool ident_has_to_be_updated = ident.presents();
-            update.set_personal_id(ident_has_to_be_updated ? ident.get()                          //to update
-                                                           : Nullable< Fred::PersonalIdUnion >());//to delete
+            if (ident.does_value_mean< ContactChange::Value::to_set >()) {
+                update.set_personal_id(ident.get());
+            }
+            else if (ident.does_value_mean< ContactChange::Value::to_delete >()) {
+                update.set_personal_id(Nullable< Fred::PersonalIdUnion >());
+            }
         }
 
         if (_change.disclose.is_initialized()) {
