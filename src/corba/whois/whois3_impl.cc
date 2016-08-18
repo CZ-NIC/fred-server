@@ -55,7 +55,7 @@ RegistrarSeq* Server_impl::get_registrars()
         RegistrarSeq_var result = new RegistrarSeq;
         std::vector<Registry::WhoisImpl::Registrar> registrars = pimpl_->get_registrars();
         result->length(registrars.size());
-        for(CORBA::ULong i = 0; i < result->length(); ++i)
+        for (CORBA::ULong i = 0; i < result->length(); ++i)
         {
             result[i] = wrap_registrar(registrars[i]);
         }
@@ -88,7 +88,7 @@ void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
 {
     cs.length(il.size());
     unsigned long long i = 0;
-    for(typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
+    for (typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
     {
         cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename IN_LIST::value_type>(*ci);
     }
@@ -241,7 +241,7 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
     {
         return new Contact(wrap_contact(pimpl_->get_contact_by_handle(handle)));
     }
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -268,11 +268,11 @@ struct InvalidIPAddressException : public std::runtime_error
 void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out )
 {
     out.address = Corba::wrap_string(in.to_string());
-    if(in.is_v4()) 
+    if (in.is_v4()) 
     {
         out.version = IPv4;
     }
-    else if(in.is_v6()) 
+    else if (in.is_v6()) 
     {
         out.version = IPv6;
     }
@@ -324,7 +324,7 @@ NSSet* Server_impl::get_nsset_by_handle(const char* handle)
     {
         return new NSSet(wrap_nsset(pimpl_->get_nsset_by_handle(handle)));
     }
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -353,7 +353,7 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
         set_corba_seq<NSSetSeq, NSSet>(result.inout(), nss_seq.content);
         return result._retn();
     } 
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -377,7 +377,7 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
         set_corba_seq<NSSetSeq, NSSet>(result.inout(), nss_seq.content);
         return result._retn();
     } 
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -402,7 +402,7 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
          */
         return new NameServer(result);
     }
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -447,7 +447,7 @@ KeySet* Server_impl::get_keyset_by_handle(const char* handle)
     {
         return new KeySet(wrap_keyset(pimpl_->get_keyset_by_handle(handle)));
     }
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -476,7 +476,7 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
         set_corba_seq<KeySetSeq, KeySet>(result.inout(), ks_seq.content);
         return result._retn();
     }
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -491,7 +491,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     Domain result;
     result.handle = Corba::wrap_string_to_corba_string(domain.fqdn);
     result.registrant_handle = Corba::wrap_string_to_corba_string(domain.registrant);
-    if(domain.nsset.size() == 0)
+    if (domain.nsset.size() == 0)
     {
         result.nsset_handle = NULL;
     }
@@ -499,7 +499,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     {
         result.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.nsset));
     }
-    if(domain.keyset.size() == 0)
+    if (domain.keyset.size() == 0)
     {
         result.keyset_handle = NULL;
     }
@@ -514,7 +514,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     result.expire = Corba::wrap_date(domain.expire);
     result.expire_time_estimate = Corba::wrap_time(domain.expire_time_estimate);
     result.expire_time_actual = Corba::wrap_nullable_datetime(domain.expire_time_actual);
-    if(domain.validated_to.isnull()) 
+    if (domain.validated_to.isnull()) 
     {
         result.validated_to = NULL;
         result.validated_to_time_estimate = NULL;
@@ -539,7 +539,7 @@ Domain* Server_impl::get_domain_by_handle(const char* handle)
     {
         return new Domain(wrap_domain(pimpl_->get_domain_by_handle(handle)));
     }
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
@@ -567,7 +567,7 @@ static DomainSeq* get_domains_by_(
         set_corba_seq<DomainSeq, Domain>(result.inout(), dom_seq.content);
         return result._retn();
     }
-    catch(const ::CORBA::UserException& )
+    catch (const ::CORBA::UserException& )
     {
         throw;
     }
