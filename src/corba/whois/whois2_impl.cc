@@ -1,1338 +1,659 @@
-#include "util/random.h"
-
 #include "src/corba/whois/whois2_impl.h"
+#include "src/corba/common_wrappers.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_datetime.h"
 #include "src/corba/util/corba_conversions_nullable_types.h"
 
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/object_state/get_object_state_descriptions.h"
-#include "src/fredlib/registrar/info_registrar.h"
-#include "src/fredlib/registrar/check_registrar.h"
-#include "src/fredlib/registrar/get_registrar_handles.h"
-#include "src/fredlib/domain/check_domain.h"
-#include "src/fredlib/zone/zone.h"
+namespace Registry
+{
+namespace Whois
+{
 
-#include "src/whois/nameserver_exists.h"
-#include "src/whois/is_domain_delete_pending.h"
-#include "src/whois/domain_expiration_datetime.h"
-#include "src/whois/registrar_group.h"
-#include "src/whois/registrar_certification.h"
-#include "src/whois/zone_list.h"
+PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
+{
+    PlaceAddress result;
+    result.street1    = Corba::wrap_string_to_corba_string(address.street1);
+    result.street2    = Corba::wrap_string_to_corba_string(address.street2);
+    result.street3    = Corba::wrap_string_to_corba_string(address.street3);
+    result.city       = Corba::wrap_string_to_corba_string(address.city);
+    result.postalcode = Corba::wrap_string_to_corba_string(address.postal_code);
+    result.stateorprovince = Corba::wrap_string_to_corba_string(address.stateorprovince);
+    result.country_code    = Corba::wrap_string_to_corba_string(address.country_code);
+    return result;
+}
 
-#include <boost/foreach.hpp>
-#include <boost/asio.hpp>
+Registrar wrap_registrar(const Registry::WhoisImpl::Registrar& registrar)
+{
+    Registrar result;
+    result.handle  = Corba::wrap_string_to_corba_string(registrar.handle);
+    result.name    = Corba::wrap_string_to_corba_string(registrar.name);
+    result.organization = Corba::wrap_string_to_corba_string(registrar.organization);
+    result.url     = Corba::wrap_string_to_corba_string(registrar.url);
+    result.phone   = Corba::wrap_string_to_corba_string(registrar.phone);
+    result.fax     = Corba::wrap_string_to_corba_string(registrar.fax);
+    result.address = wrap_address(registrar.address);
+    return result;
+} 
 
-#include <stdexcept>
-
-namespace Registry {
-namespace Whois {
-
-
-    std::string create_ctx_invocation_id()
+Registrar* Server_impl::get_registrar_by_handle(const char* handle)
+{
+    try
     {
-        return str(boost::format("fred-pifd-<%1%>") % Random::integer(0, 10000));
+        return new Registrar(
+                wrap_registrar(
+                    pimpl_->get_registrar_by_handle(std::string(handle))));
     }
+    catch (...) { }
 
-    std::string create_ctx_function_name(const char *fnc)
+    // default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+RegistrarSeq* Server_impl::get_registrars()
+{
+    try
     {
-        if (fnc == NULL)
+        RegistrarSeq_var result = new RegistrarSeq;
+        std::vector<Registry::WhoisImpl::Registrar> registrars = pimpl_->get_registrars();
+        result->length(registrars.size());
+        for (CORBA::ULong i = 0; i < result->length(); ++i)
         {
-            return std::string();
+            result[i] = wrap_registrar(registrars[i]);
         }
-        std::string name(fnc);
-        std::replace(name.begin(), name.end(), '_', '-');
-        return name;
+        return result._retn();
     }
+    catch (...) { }
 
-    class LogContext
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+/**
+ * CORBA sequence element factory, template to be specialized, there is no generic enough implementation
+ */
+template<class CORBA_SEQ_ELEMENT, class IN_LIST_ELEMENT>
+CORBA_SEQ_ELEMENT set_element_of_corba_seq(const IN_LIST_ELEMENT& ile);
+
+template<>
+CORBA::String_var set_element_of_corba_seq<CORBA::String_var, std::string>(const std::string& ile)
+{
+    return Corba::wrap_string_to_corba_string(ile);
+}
+
+/**
+ * generic implementation of allocation and setting CORBA sequence
+ * from container with begin(), end(), size() and value_type member
+ */
+template<class CORBA_SEQ, class CORBA_SEQ_ELEMENT, class IN_LIST>
+void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
+{
+    cs.length(il.size());
+    unsigned long long i = 0;
+    for (typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
     {
-    public:
-        LogContext(const std::string &_op_name)
-        :   ctx_server_(create_ctx_invocation_id()),
-            ctx_operation_(_op_name)
-        {
-        }
-    private:
-        Logging::Context ctx_server_;
-        Logging::Context ctx_operation_;
-    };
-
-    #define LOGGING_CONTEXT(CTX_VAR) LogContext CTX_VAR(create_ctx_function_name(__FUNCTION__))
-
-
-
-    const std::string Server_impl::output_timezone("UTC");
-
-    struct InvalidIPAddressException : public std::runtime_error {
-        static const char* what_msg() throw() {return "invalid IP address";}
-
-        InvalidIPAddressException()
-        : std::runtime_error(what_msg())
-        { }
-
-        const char* what() const throw() {return what_msg();}
-    };
-
-    /**
-     * @throws InvalidIPAddressException
-     */
-    void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out ) {
-        out.address = Corba::wrap_string(in.to_string());
-        if(in.is_v4()) {
-            out.version = IPv4;
-        } else if(in.is_v6()) {
-            out.version = IPv6;
-        } else {
-            throw InvalidIPAddressException();
-        }
-    }
-
-    PlaceAddress wrap_registrar_address(const Fred::InfoRegistrarData& in)
-    {
-        PlaceAddress result;
-        result.street1 = Corba::wrap_string_to_corba_string(in.street1.get_value_or_default());
-        result.street2 = Corba::wrap_string_to_corba_string(in.street2.get_value_or_default());
-        result.street3 = Corba::wrap_string_to_corba_string(in.street3.get_value_or_default());
-        result.city = Corba::wrap_string_to_corba_string(in.city.get_value_or_default());
-        result.postalcode = Corba::wrap_string_to_corba_string(in.postalcode.get_value_or_default());
-        result.stateorprovince = Corba::wrap_string_to_corba_string(in.stateorprovince.get_value_or_default());
-        result.country_code = Corba::wrap_string_to_corba_string(in.country.get_value_or_default());
-        return result;
-    }
-
-   Registrar wrap_registrar(const Fred::InfoRegistrarData& in)
-   {
-        Registrar temp;
-        temp.handle = Corba::wrap_string_to_corba_string(in.handle);
-        temp.name = Corba::wrap_string_to_corba_string(in.name.get_value_or_default());
-        temp.organization = Corba::wrap_string_to_corba_string(in.organization.get_value_or_default());
-        temp.url = Corba::wrap_string_to_corba_string(in.url.get_value_or_default());
-        temp.phone = Corba::wrap_string_to_corba_string(in.telephone.get_value_or_default());
-        temp.fax = Corba::wrap_string_to_corba_string(in.fax.get_value_or_default());
-        temp.address = wrap_registrar_address(in);
-        return temp;
-    }
-
-   DisclosableString wrap_disclosable_string(const std::string& str, bool disclose)
-   {
-       DisclosableString temp;
-       temp.value = Corba::wrap_string_to_corba_string(str);
-       temp.disclose = disclose;
-       return temp;
-   }
-
-   DisclosablePlaceAddress wrap_disclosable_address(const Fred::Contact::PlaceAddress& addr, bool disclose)
-   {
-       DisclosablePlaceAddress temp;
-       temp.value.street1 = Corba::wrap_string_to_corba_string(addr.street1);
-       temp.value.street2 = Corba::wrap_string_to_corba_string(addr.street2.get_value_or_default());
-       temp.value.street3 = Corba::wrap_string_to_corba_string(addr.street3.get_value_or_default());
-       temp.value.city = Corba::wrap_string_to_corba_string(addr.city);
-       temp.value.stateorprovince = Corba::wrap_string_to_corba_string(addr.stateorprovince.get_value_or_default());
-       temp.value.postalcode = Corba::wrap_string_to_corba_string(addr.postalcode);
-       temp.value.country_code = Corba::wrap_string_to_corba_string(addr.country);
-       temp.disclose = disclose;
-       return temp;
-   }
-
-   DisclosableContactIdentification wrap_disclosable_contact_identification(
-       const std::string& ssntype, const std::string& ssn, bool disclose)
-   {
-       DisclosableContactIdentification temp;
-       temp.value.identification_type = Corba::wrap_string_to_corba_string(ssntype);
-       temp.value.identification_data = Corba::wrap_string_to_corba_string(ssn);
-       temp.disclose = disclose;
-       return temp;
-   }
-
-
-    /**
-     * CORBA sequence element factory, template to be specialized, there is no generic enough implementation
-     */
-    template<class CORBA_SEQ_ELEMENT, class IN_LIST_ELEMENT>
-        CORBA_SEQ_ELEMENT set_element_of_corba_seq(const IN_LIST_ELEMENT& ile);
-
-    /**
-     * generic implementation of allocation and setting CORBA sequence
-     * from container with begin(), end(), size() and value_type member
-     */
-    template<class CORBA_SEQ, class CORBA_SEQ_ELEMENT,
-        class IN_LIST>
-    void set_corba_seq(CORBA_SEQ& cs, const IN_LIST& il)
-    {
-        cs.length(il.size());
-        unsigned long long i = 0;
-        for(typename IN_LIST::const_iterator ci = il.begin() ; ci != il.end(); ++ci,++i)
-        {
-            cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename IN_LIST::value_type >(*ci);
-        }
-    }
-
-    template<> IPAddress set_element_of_corba_seq<
-        IPAddress, boost::asio::ip::address>(const boost::asio::ip::address& ile)
-    {
-        IPAddress ip;
-        wrap_ipaddress(ile,ip);
-        return ip;
-    }
-
-    template<> NameServer set_element_of_corba_seq<
-        NameServer, Fred::DnsHost>(const Fred::DnsHost& ile)
-    {
-        NameServer ns;
-        ns.fqdn = Corba::wrap_string_to_corba_string(ile.get_fqdn());
-        set_corba_seq<IPAddressSeq, IPAddress>(ns.ip_addresses, ile.get_inet_addr());
-        return ns;
-    }
-
-    template<> CORBA::String_var set_element_of_corba_seq<
-        CORBA::String_var, Fred::ObjectIdHandlePair>(const Fred::ObjectIdHandlePair& ile)
-    {
-        return Corba::wrap_string_to_corba_string(ile.handle);
-    }
-
-    template<> CORBA::String_var set_element_of_corba_seq<
-        CORBA::String_var,Fred::ObjectStateData>(
-            const Fred::ObjectStateData& ile)
-    {
-        return Corba::wrap_string_to_corba_string(ile.state_name);
-    }
-
-    template<> CORBA::String_var set_element_of_corba_seq<
-        CORBA::String_var,std::string>(
-            const std::string& ile)
-    {
-        return Corba::wrap_string_to_corba_string(ile);
-    }
-
-    template<> DNSKey set_element_of_corba_seq<
-    DNSKey, Fred::DnsKey>(const Fred::DnsKey& ile)
-    {
-        DNSKey key;
-        key.flags = ile.get_flags();
-        key.protocol = ile.get_protocol();
-        key.alg = ile.get_alg();
-        key.public_key = Corba::wrap_string_to_corba_string(ile.get_key());
-        return key;
-    }
-
-    template<> Registrar set_element_of_corba_seq<
-    Registrar, Fred::InfoRegistrarData>(const Fred::InfoRegistrarData& ile)
-    {
-        return wrap_registrar(ile);
-    }
-
-
-    RegistrarGroup wrap_registrar_group(const std::pair<const std::string, std::vector<std::string> >& in)
-    {
-        RegistrarGroup temp;
-         temp.name = Corba::wrap_string_to_corba_string(in.first);
-
-         set_corba_seq<RegistrarHandleList, CORBA::String_var>(temp.members, in.second);
-
-         return temp;
-     }
-
-    template<> RegistrarGroup set_element_of_corba_seq<
-    RegistrarGroup, std::pair<const std::string, std::vector<std::string> > >(const std::pair<const std::string, std::vector<std::string> >& ile)
-    {
-        return wrap_registrar_group(ile);
-    }
-
-
-    RegistrarCertification wrap_registrar_certification(const ::Whois::RegistrarCertificationData& in)
-    {
-        RegistrarCertification temp;
-         temp.registrar_handle = Corba::wrap_string_to_corba_string(in.get_registrar_handle());
-         temp.score = in.get_registrar_score();
-         temp.evaluation_file_id = in.get_registrar_evaluation_file_id();
-         return temp;
-     }
-
-    template<> RegistrarCertification set_element_of_corba_seq<
-    RegistrarCertification, ::Whois::RegistrarCertificationData >(const ::Whois::RegistrarCertificationData& ile)
-    {
-        return wrap_registrar_certification(ile);
-    }
-
-
-    void wrap_object_states(StringSeq& states_seq, unsigned long long object_id)
-    {
-        std::vector<std::string> statuses;
-        {
-            Fred::OperationContextCreator ctx;
-
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(object_id).exec(ctx)) {
-                if(state.is_external) {
-                    statuses.push_back(state.state_name);
-                }
-            }
-        }
-
-        set_corba_seq<StringSeq, CORBA::String_var>(states_seq, statuses);
-    }
-
-    Contact wrap_contact(const Fred::InfoContactData& in)
-    {
-
-        Contact temp;
-
-        temp.handle = Corba::wrap_string_to_corba_string(in.handle);
-        temp.organization = wrap_disclosable_string(in.organization.get_value_or_default(), in.discloseaddress);
-        temp.name = wrap_disclosable_string(in.name.get_value_or_default(), in.disclosename);
-        temp.address = wrap_disclosable_address(in.place.get_value_or_default(), in.discloseaddress);
-        temp.phone = wrap_disclosable_string(in.telephone.get_value_or_default(), in.disclosetelephone);
-        temp.fax = wrap_disclosable_string(in.fax.get_value_or_default(), in.disclosefax);;
-        temp.email = wrap_disclosable_string(in.email.get_value_or_default(), in.discloseemail);
-        temp.notify_email = wrap_disclosable_string(in.notifyemail.get_value_or_default(), in.disclosenotifyemail);
-        temp.vat_number = wrap_disclosable_string(in.vat.get_value_or_default(), in.disclosevat);
-        temp.identification = wrap_disclosable_contact_identification(
-            in.ssntype.get_value_or_default(), in.ssn.get_value_or_default(), in.discloseident);
-        temp.creating_registrar_handle = Corba::wrap_string_to_corba_string(in.create_registrar_handle);
-        temp.sponsoring_registrar_handle = Corba::wrap_string_to_corba_string(in.sponsoring_registrar_handle);
-        temp.created = Corba::wrap_time(in.creation_time);
-        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
-        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
-
-        wrap_object_states(temp.statuses, in.id);
-
-        return temp;
-    }
-
-    Domain generate_obfuscate_domain_delete_candidate(const std::string& _handle)
-    {
-        Domain temp;
-        temp.handle = Corba::wrap_string_to_corba_string(_handle);
-        temp.registrant_handle = Corba::wrap_string_to_corba_string("");
-        temp.nsset_handle = NULL;
-        temp.keyset_handle = NULL;
-        temp.registrar_handle = Corba::wrap_string_to_corba_string("");
-        temp.registered = Corba::wrap_time(boost::posix_time::ptime());
-        temp.changed = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
-        temp.last_transfer = Corba::wrap_nullable_datetime(Nullable<boost::posix_time::ptime>());
-        temp.expire = Corba::wrap_date(boost::gregorian::date());
-        temp.expire_time_estimate = Corba::wrap_time(boost::posix_time::ptime());
-        temp.expire_time_actual = NULL;
-        temp.validated_to = NULL;
-        temp.validated_to_time_estimate = NULL;
-        temp.validated_to_time_actual = NULL;
-        {
-            std::vector<std::string> statuses;
-            statuses.push_back("deleteCandidate");
-            set_corba_seq<StringSeq, CORBA::String_var>(temp.statuses, statuses);
-        }
-        return temp;
-    }
-
-
-    class DomainInfo
-    {
-        Fred::InfoDomainOutput info;
-        bool delete_candidate;
-        boost::posix_time::ptime expire_time_estimate;
-        Optional<boost::posix_time::ptime> expire_time_actual;
-        Optional<boost::posix_time::ptime> val_expire_time_estimate;
-        Optional<boost::posix_time::ptime> val_expire_time_actual;
-
-    public:
-        DomainInfo(
-            const Fred::InfoDomainOutput &_info,
-            bool _delete_candidate,
-            const boost::posix_time::ptime &_expire_time_estimate,
-            const Optional<boost::posix_time::ptime> &_expire_time_actual,
-            const Optional<boost::posix_time::ptime> &_val_expire_time_estimate,
-            const Optional<boost::posix_time::ptime> &_val_expire_time_actual
-        )
-        : info(_info),
-          delete_candidate(_delete_candidate),
-          expire_time_estimate(_expire_time_estimate),
-          expire_time_actual(_expire_time_actual),
-          val_expire_time_estimate(_val_expire_time_estimate),
-          val_expire_time_actual(_val_expire_time_actual)
-
-        {
-        }
-
-        Fred::InfoDomainOutput get_info() const
-        {
-            return info;
-        }
-
-        bool get_delete_candidate() const
-        {
-            return delete_candidate;
-        }
-
-        boost::posix_time::ptime get_expire_time_estimate() const
-        {
-            return expire_time_estimate;
-        }
-
-        Optional<boost::posix_time::ptime> get_expire_time_actual() const
-        {
-            return expire_time_actual;
-        }
-
-        Optional<boost::posix_time::ptime> get_val_expire_time_estimate() const
-        {
-            return val_expire_time_estimate;
-        }
-
-        Optional<boost::posix_time::ptime> get_val_expire_time_actual() const
-        {
-            return val_expire_time_actual;
-        }
-
-        static DomainInfo create(Fred::OperationContext &_ctx, const Fred::InfoDomainOutput &_info)
-        {
-            return DomainInfo(
-                _info,
-                ::Whois::is_domain_delete_pending(_info.info_domain_data.fqdn, _ctx, "Europe/Prague"),
-                ::Whois::domain_expiration_datetime_estimate(_ctx, _info.info_domain_data.expiration_date),
-                ::Whois::domain_expiration_datetime_actual(_ctx, _info.info_domain_data.id),
-                _info.info_domain_data.enum_domain_validation.isnull() ? Optional<boost::posix_time::ptime>()
-                    : ::Whois::domain_validation_expiration_datetime_estimate(
-                        _ctx, _info.info_domain_data.enum_domain_validation.get_value().validation_expiration
-                      ),
-                _info.info_domain_data.enum_domain_validation.isnull() ? Optional<boost::posix_time::ptime>()
-                    : ::Whois::domain_validation_expiration_datetime_actual(_ctx, _info.info_domain_data.id)
-            );
-        }
-    };
-
-    Domain wrap_domain(
-        const Fred::InfoDomainData& in,
-        const boost::posix_time::ptime &_expire_time_estimate,
-        const Optional<boost::posix_time::ptime> &_expire_time_actual,
-        const Optional<boost::posix_time::ptime> &_val_expire_time_estimate,
-        const Optional<boost::posix_time::ptime> &_val_expire_time_actual
-
-    )
-    {
-        Domain temp;
-        temp.handle = Corba::wrap_string_to_corba_string(in.fqdn);
-        temp.registrant_handle = Corba::wrap_string_to_corba_string(in.registrant.handle);
-        if( in.nsset.isnull() ) {
-            temp.nsset_handle = NULL;
-        } else {
-            temp.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(in.nsset.get_value().handle));
-        }
-        if( in.keyset.isnull() ) {
-            temp.keyset_handle = NULL;
-        } else {
-            temp.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(in.keyset.get_value().handle));
-        }
-        temp.registrar_handle = Corba::wrap_string_to_corba_string(in.sponsoring_registrar_handle);
-        temp.registered = Corba::wrap_time(in.creation_time);
-        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
-        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
-        temp.expire = Corba::wrap_date(in.expiration_date);
-        temp.expire_time_estimate = Corba::wrap_time(_expire_time_estimate);
-        temp.expire_time_actual = Corba::wrap_optional_datetime(_expire_time_actual);
-        if(! in.enum_domain_validation.isnull()) {
-            temp.validated_to = new Registry::NullableDate(
-                Corba::wrap_date(in.enum_domain_validation.get_value().validation_expiration)
-            );
-            temp.validated_to_time_estimate = Corba::wrap_optional_datetime(_val_expire_time_estimate);
-            temp.validated_to_time_actual = Corba::wrap_optional_datetime(_val_expire_time_actual);
-        } else {
-            temp.validated_to = NULL;
-            temp.validated_to_time_estimate = NULL;
-            temp.validated_to_time_actual = NULL;
-
-        }
-        set_corba_seq<StringSeq, CORBA::String_var>(temp.admin_contact_handles, in.admin_contacts);
-
-        wrap_object_states(temp.statuses, in.id);
-        return temp;
-    }
-
-    Domain wrap_whois_domain_info(const DomainInfo &_whois_domain)
-    {
-        if (_whois_domain.get_delete_candidate())
-        {
-            return generate_obfuscate_domain_delete_candidate(
-                _whois_domain.get_info().info_domain_data.fqdn
-            );
-        }
-        else
-        {
-            return wrap_domain(
-                _whois_domain.get_info().info_domain_data,
-                _whois_domain.get_expire_time_estimate(),
-                _whois_domain.get_expire_time_actual(),
-                _whois_domain.get_val_expire_time_estimate(),
-                _whois_domain.get_val_expire_time_actual()
-            );
-        }
-    }
-
-    template<> Domain set_element_of_corba_seq<Domain, DomainInfo>(const DomainInfo& ile)
-    {
-        return wrap_whois_domain_info(ile);
-    }
-
-
-    KeySet wrap_keyset(const Fred::InfoKeysetData& in)
-    {
-        KeySet temp;
-
-        temp.handle = Corba::wrap_string_to_corba_string(in.handle);
-        temp.registrar_handle = Corba::wrap_string_to_corba_string(in.sponsoring_registrar_handle);
-        temp.created = Corba::wrap_time(in.creation_time);
-        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
-        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
-
-        set_corba_seq<StringSeq, CORBA::String_var>(temp.tech_contact_handles, in.tech_contacts);
-
-        wrap_object_states(temp.statuses, in.id);
-
-        set_corba_seq<DNSKeySeq, DNSKey>(temp.dns_keys, in.dns_keys);
-
-        return temp;
-    }
-
-    template<> KeySet set_element_of_corba_seq<KeySet,  Fred::InfoKeysetOutput>
-        (const Fred::InfoKeysetOutput& ile)
-    {
-        return wrap_keyset(ile.info_keyset_data);
-    }
-
-
-    NSSet wrap_nsset(const Fred::InfoNssetData& in)
-    {
-        NSSet temp;
-
-        temp.handle = Corba::wrap_string_to_corba_string(in.handle);
-        temp.registrar_handle = Corba::wrap_string_to_corba_string(in.sponsoring_registrar_handle);
-        temp.created = Corba::wrap_time(in.creation_time);
-        temp.changed = Corba::wrap_nullable_datetime(in.update_time);
-        temp.last_transfer = Corba::wrap_nullable_datetime(in.transfer_time);
-
-        set_corba_seq<NameServerSeq, NameServer>(temp.nservers, in.dns_hosts);
-
-        set_corba_seq<StringSeq, CORBA::String_var>(temp.tech_contact_handles, in.tech_contacts);
-
-        wrap_object_states(temp.statuses, in.id);
-        return temp;
-    }
-
-    template<> NSSet set_element_of_corba_seq<NSSet,  Fred::InfoNssetOutput>
-        (const Fred::InfoNssetOutput& ile)
-    {
-        return wrap_nsset(ile.info_nsset_data);
-    }
-
-    Registrar* Server_impl::get_registrar_by_handle(const char* handle)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-            try
-            {
-                Fred::OperationContextCreator ctx;
-                return new Registrar(wrap_registrar(
-                        Fred::InfoRegistrarByHandle(
-                            Corba::unwrap_string_from_const_char_ptr(handle)
-                        ).exec(ctx, output_timezone)
-                        .info_registrar_data));
-            }
-            catch(const Fred::InfoRegistrarByHandle::Exception& e)
-            {
-                if(e.is_set_unknown_registrar_handle())
-                {
-                    if(Fred::CheckRegistrar(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
-                    {
-                        throw INVALID_HANDLE();
-                    }
-
-                    throw OBJECT_NOT_FOUND();
-                }
-            }
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-
-    RegistrarSeq* Server_impl::get_registrars()
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            RegistrarSeq_var registrar_seq = new RegistrarSeq;
-            std::vector<Fred::InfoRegistrarData> registrar_data_list;
-            Fred::OperationContextCreator ctx;
-
-            BOOST_FOREACH(const Fred::InfoRegistrarOutput& registrar_output, Fred::InfoRegistrarAllExceptSystem().exec(ctx, output_timezone))
-            {
-                registrar_data_list.push_back(registrar_output.info_registrar_data);
-            }
-
-            set_corba_seq<RegistrarSeq, Registrar>(
-                    registrar_seq, registrar_data_list);
-
-            return registrar_seq._retn();
-        }
-        catch (...)
-        {}
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    RegistrarGroupList* Server_impl::get_registrar_groups()
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            RegistrarGroupList_var reg_grp_seq = new RegistrarGroupList;
-            Fred::OperationContextCreator ctx;
-
-            set_corba_seq<RegistrarGroupList, RegistrarGroup>(
-                reg_grp_seq, ::Whois::get_registrar_groups(ctx));
-
-            return reg_grp_seq._retn();
-        }
-        catch (...)
-        {}
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    RegistrarCertificationList* Server_impl::get_registrar_certification_list()
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            RegistrarCertificationList_var reg_cert_seq = new RegistrarCertificationList;
-            Fred::OperationContextCreator ctx;
-            set_corba_seq<RegistrarCertificationList, RegistrarCertification>
-                (reg_cert_seq, ::Whois::get_registrar_certifications(ctx));
-            return reg_cert_seq._retn();
-        }
-        catch (...)
-        {}
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    ZoneFqdnList* Server_impl::get_managed_zone_list()
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            ZoneFqdnList_var zone_seq = new ZoneFqdnList;
-            Fred::OperationContextCreator ctx;
-            set_corba_seq<ZoneFqdnList, CORBA::String_var>
-                (zone_seq, ::Whois::get_managed_zone_list(ctx));
-            return zone_seq._retn();
-        }
-        catch (...)
-        {}
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-
-    Contact* Server_impl::get_contact_by_handle(const char* handle)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-            try
-            {
-                Fred::OperationContextCreator ctx;
-                return new Contact(
-                    wrap_contact(
-                        Fred::InfoContactByHandle(
-                            Corba::unwrap_string_from_const_char_ptr(handle)
-                        ).exec(ctx, output_timezone)
-                        .info_contact_data
-                    ));
-            }
-            catch(const Fred::InfoContactByHandle::Exception& e)
-            {
-                if(e.is_set_unknown_contact_handle())
-                {
-                    if( Fred::Contact::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
-                    {
-                        throw INVALID_HANDLE();
-                    }
-
-                    throw OBJECT_NOT_FOUND();
-                }
-            }
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...)
-        {}
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    NSSet* Server_impl::get_nsset_by_handle(const char* handle)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-            try
-            {
-                Fred::OperationContextCreator ctx;
-                return new NSSet(wrap_nsset(Fred::InfoNssetByHandle(
-                    Corba::unwrap_string_from_const_char_ptr(handle)
-                        ).exec(ctx, output_timezone).info_nsset_data));
-            }
-            catch(const Fred::InfoNssetByHandle::Exception& e)
-            {
-                if(e.is_set_unknown_handle())
-                {
-                    if(Fred::CheckNsset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
-                    {
-                        throw INVALID_HANDLE();
-                    }
-
-                    throw OBJECT_NOT_FOUND();
-                }
-            }
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...)
-        { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    NSSetSeq* Server_impl::get_nssets_by_ns(
-        const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            const std::string fqdn_input = Corba::unwrap_string_from_const_char_ptr(handle);
-            /* remove optional trailing dot for db search
-             * XXX: this should be handled by passing appropriate data type for domain name
-             *      (more occurences in methods bellow)
-             **/
-            const std::string fqdn = Fred::Zone::rem_trailing_dot(fqdn_input);
-
-            Fred::OperationContextCreator ctx;
-            NSSetSeq_var nss_seq = new NSSetSeq;
-
-            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByDNSFqdn(fqdn)
-                .set_limit(limit + 1)
-                .exec(ctx, output_timezone);
-
-            if(nss_info.empty())
-            {
-                if(Fred::CheckDomain(fqdn_input).is_invalid_syntax())
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(nss_info.size() > limit)
-            {
-                limit_exceeded = true;
-                nss_info.erase(nss_info.begin());//depends on InfoNsset ordering
-            }
-
-            set_corba_seq<NSSetSeq, NSSet>(nss_seq.inout(), nss_info);
-            return nss_seq._retn();
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    NSSetSeq* Server_impl::get_nssets_by_tech_c(
-        const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            Fred::OperationContextCreator ctx;
-            NSSetSeq_var nss_seq = new NSSetSeq;
-
-            std::vector<Fred::InfoNssetOutput> nss_info = Fred::InfoNssetByTechContactHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1)
-                    .exec(ctx, output_timezone);
-
-            if(nss_info.empty())
-            {
-                if( Fred::Contact::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(nss_info.size() > limit)
-            {
-                limit_exceeded = true;
-                nss_info.erase(nss_info.begin());//depends on InfoNsset ordering
-            }
-
-            set_corba_seq<NSSetSeq, NSSet>(nss_seq.inout(), nss_info);
-
-            return nss_seq._retn();
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-
-    NameServer* Server_impl::get_nameserver_by_fqdn(const char* fqdn)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            const std::string ns_fqdn_input = Corba::unwrap_string_from_const_char_ptr(fqdn);
-            /* remove optional trailing dot for db search */
-            const std::string ns_fqdn = Fred::Zone::rem_trailing_dot(ns_fqdn_input);
-
-            Fred::OperationContextCreator ctx;
-
-            if(::Whois::nameserver_exists(ns_fqdn, ctx))
-            {
-                NameServer temp;
-                temp.fqdn = Corba::wrap_string_to_corba_string(ns_fqdn);
-                /*
-                 * Because of grouping nameservers in NSSet we don't include
-                 * IP address in output (given nameserver can be in different
-                 * NSSets with different IP addresses)
-                 *
-                 * temp.ip_addresses;
-                 */
-                return new NameServer(temp);
-            }
-            else
-            {
-                if(Fred::CheckDomain(ns_fqdn_input).is_invalid_syntax())
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch(...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    KeySet* Server_impl::get_keyset_by_handle(const char* handle)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-            try
-            {
-                Fred::OperationContextCreator ctx;
-
-                return new KeySet(wrap_keyset(Fred::InfoKeysetByHandle(
-                    Corba::unwrap_string_from_const_char_ptr(handle)
-                    ).exec(ctx, output_timezone).info_keyset_data));
-
-            }
-            catch(const Fred::InfoKeysetByHandle::Exception& e)
-            {
-                if(e.is_set_unknown_handle())
-                {
-                    if(Fred::CheckKeyset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
-                    {
-                        throw INVALID_HANDLE();
-                    }
-
-                    throw OBJECT_NOT_FOUND();
-                }
-            }
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    KeySetSeq* Server_impl::get_keysets_by_tech_c(
-        const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            Fred::OperationContextCreator ctx;
-            KeySetSeq_var ks_seq = new KeySetSeq;
-
-            std::vector<Fred::InfoKeysetOutput> ks_info = Fred::InfoKeysetByTechContactHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-                ).set_limit(limit + 1).exec(ctx, output_timezone);
-
-            if(ks_info.empty())
-            {
-                if( Fred::Contact::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(ks_info.size() > limit)
-            {
-                limit_exceeded = true;
-                ks_info.erase(ks_info.begin());//depends on InfoKeyset ordering
-            }
-
-            set_corba_seq<KeySetSeq, KeySet>(ks_seq.inout(), ks_info);
-
-            return ks_seq._retn();
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    Domain* Server_impl::get_domain_by_handle(const char* handle)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            const std::string fqdn_input = Corba::unwrap_string_from_const_char_ptr(handle);
-            /* remove optional trailing dot for db search */
-            const std::string fqdn = Fred::Zone::rem_trailing_dot(fqdn_input);
-
-
-            Fred::OperationContextCreator ctx;
-            try
-            {
-                //check general name rules
-                if(Fred::CheckDomain(fqdn_input).is_invalid_syntax())
-                {
-                    throw INVALID_LABEL();
-                }
-
-                if(Fred::CheckDomain(fqdn_input).is_bad_zone(ctx))
-                {
-                    throw UNMANAGED_ZONE();
-                }
-
-                if(Fred::CheckDomain(fqdn_input).is_bad_length(ctx))
-                {
-                    throw TOO_MANY_LABELS();
-                }
-
-                return Domain_var(new Domain(wrap_whois_domain_info(
-                    DomainInfo::create(
-                        ctx,
-                        Fred::InfoDomainByHandle(fqdn).exec(ctx, output_timezone)
-                    )
-                )))._retn();
-            }
-            catch(const Fred::InfoDomainByHandle::Exception& e)
-            {
-                if(e.is_set_unknown_fqdn())
-                {
-                    //check current registry name rules (that might change over time)
-                    if(Fred::CheckDomain(fqdn_input).is_invalid_handle(ctx))
-                    {
-                        throw INVALID_LABEL();
-                    }
-
-                    throw OBJECT_NOT_FOUND();
-                }
-            }
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    /**
-     * get_domains_by_* implementation of allocation and setting CORBA sequence
-     */
-    void set_domains_seq(DomainSeq& domain_seq, const std::vector<Fred::InfoDomainOutput>& il, Fred::OperationContextCreator& ctx)
-    {
-        std::vector<DomainInfo> aux_list;
-        aux_list.reserve(il.size());
-
-        BOOST_FOREACH(const Fred::InfoDomainOutput& i, il)
-        {
-            aux_list.push_back(DomainInfo::create(ctx, i));
-        }
-
-        set_corba_seq<DomainSeq, Domain>(domain_seq, aux_list);
-    }
-
-    DomainSeq* Server_impl::get_domains_by_registrant(
-        const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            Fred::OperationContextCreator ctx;
-            DomainSeq_var domain_seq = new DomainSeq;
-
-            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByRegistrantHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-            ).set_limit(limit + 1).exec(ctx, output_timezone);
-
-            if(domain_info.empty())
-            {
-                if( Fred::Contact::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(domain_info.size() > limit)
-            {
-                limit_exceeded = true;
-                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
-            }
-
-            set_domains_seq(domain_seq.inout(),domain_info,ctx);
-
-            return domain_seq._retn();
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    DomainSeq* Server_impl::get_domains_by_admin_contact(
-        const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            Fred::OperationContextCreator ctx;
-            DomainSeq_var domain_seq = new DomainSeq;
-
-            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByAdminContactHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
-
-            if(domain_info.empty())
-            {
-                if( Fred::Contact::get_handle_syntax_validity(Corba::unwrap_string_from_const_char_ptr(handle)) == Fred::ContactHandleState::SyntaxValidity::invalid )
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(domain_info.size() > limit)
-            {
-                limit_exceeded = true;
-                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
-            }
-
-            set_domains_seq(domain_seq.inout(),domain_info,ctx);
-
-            return domain_seq._retn();
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    DomainSeq* Server_impl::get_domains_by_nsset(
-        const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            Fred::OperationContextCreator ctx;
-            DomainSeq_var domain_seq = new DomainSeq;
-
-            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByNssetHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)
-            ).set_limit(limit + 1).exec(ctx, output_timezone);
-
-            if(domain_info.empty())
-            {
-                if(Fred::CheckNsset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(domain_info.size() > limit)
-            {
-                limit_exceeded = true;
-                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
-            }
-
-            set_domains_seq(domain_seq.inout(),domain_info,ctx);
-
-            return domain_seq._retn();
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    DomainSeq* Server_impl::get_domains_by_keyset(
-        const char* handle,
-        ::CORBA::ULong limit,
-        ::CORBA::Boolean& limit_exceeded)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            Fred::OperationContextCreator ctx;
-            DomainSeq_var domain_seq = new DomainSeq;
-
-            std::vector<Fred::InfoDomainOutput> domain_info = Fred::InfoDomainByKeysetHandle(
-                Corba::unwrap_string_from_const_char_ptr(handle)).set_limit(limit + 1).exec(ctx, output_timezone);
-
-            if(domain_info.empty())
-            {
-                if(Fred::CheckKeyset(Corba::unwrap_string_from_const_char_ptr(handle)).is_invalid_handle())
-                {
-                    throw INVALID_HANDLE();
-                }
-
-                throw OBJECT_NOT_FOUND();
-            }
-
-            limit_exceeded = false;
-            if(domain_info.size() > limit)
-            {
-                limit_exceeded = true;
-                domain_info.erase(domain_info.begin());//depends on InfoDomain ordering
-            }
-
-            set_domains_seq(domain_seq.inout(),domain_info,ctx);
-
-            return domain_seq._retn();
-        }
-        catch(const ::CORBA::UserException& )
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    std::vector< std::pair<std::string, std::string> > get_object_status_desc(
-        const std::string& lang,const std::string& type, Fred::OperationContextCreator& ctx)
-    {
-        std::vector<Fred::ObjectStateDescription> states = Fred::GetObjectStateDescriptions(
-            lang).set_object_type(type).set_external().exec(ctx);
-
-        if(states.empty()) throw MISSING_LOCALIZATION();
-
-        std::vector< std::pair<std::string, std::string> > temp;
-        for(std::vector<Fred::ObjectStateDescription>::const_iterator ci
-                = states.begin(); ci != states.end(); ++ci)
-        {
-            temp.push_back(std::make_pair(ci->handle, ci->description));
-        }
-
-        return temp;
-    }
-
-    template<> ObjectStatusDesc set_element_of_corba_seq<
-    ObjectStatusDesc, std::pair<std::string, std::string> >(const std::pair<std::string, std::string>& ile)
-    {
-        ObjectStatusDesc temp;
-        temp.handle = Corba::wrap_string_to_corba_string(ile.first);
-        temp.name = Corba::wrap_string_to_corba_string(ile.second);
-        return temp;
-    }
-
-    ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
-            Fred::OperationContextCreator ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, get_object_status_desc(
-                Corba::unwrap_string_from_const_char_ptr(lang),"domain", ctx));
-            return state_seq._retn();
-        }
-        catch(const MISSING_LOCALIZATION&)
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-
-    ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
-            Fred::OperationContextCreator ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, get_object_status_desc(
-                Corba::unwrap_string_from_const_char_ptr(lang),"contact", ctx));
-            return state_seq._retn();
-        }
-        catch(const MISSING_LOCALIZATION&)
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-    ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
-            Fred::OperationContextCreator ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, get_object_status_desc(
-                Corba::unwrap_string_from_const_char_ptr(lang),"nsset", ctx));
-            return state_seq._retn();
-        }
-        catch(const MISSING_LOCALIZATION&)
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
-    }
-    ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lang)
-    {
-        try
-        {
-            LOGGING_CONTEXT(log_ctx);
-
-            ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
-            Fred::OperationContextCreator ctx;
-            set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>
-            (state_seq, get_object_status_desc(
-                Corba::unwrap_string_from_const_char_ptr(lang),"keyset", ctx));
-            return state_seq._retn();
-        }
-        catch(const MISSING_LOCALIZATION&)
-        {
-            throw;
-        }
-        catch (...) { }
-
-        // default exception handling
-        throw INTERNAL_SERVER_ERROR();
+        cs[i] = set_element_of_corba_seq<CORBA_SEQ_ELEMENT, typename IN_LIST::value_type>(*ci);
     }
 }
+
+RegistrarGroup wrap_registrar_group(const Registry::WhoisImpl::RegistrarGroup& group)
+{
+    RegistrarGroup result;
+    result.name = Corba::wrap_string_to_corba_string(group.name);
+    set_corba_seq<RegistrarHandleList, CORBA::String_var>(result.members, group.members);
+    return result;
 }
+
+template<> 
+RegistrarGroup set_element_of_corba_seq<RegistrarGroup, Registry::WhoisImpl::RegistrarGroup>(
+    const Registry::WhoisImpl::RegistrarGroup& ile)
+{
+    return wrap_registrar_group(ile);
+}
+
+RegistrarGroupList* Server_impl::get_registrar_groups()
+{
+    try
+    {
+        RegistrarGroupList_var result = new RegistrarGroupList;
+
+        set_corba_seq<RegistrarGroupList, RegistrarGroup>(result, pimpl_->get_registrar_groups());
+
+        return result._retn();
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+RegistrarCertification wrap_registrar_certification(
+    const Registry::WhoisImpl::RegistrarCertification& cert)
+{
+    RegistrarCertification result;
+    result.registrar_handle = Corba::wrap_string_to_corba_string(cert.registrar);
+    result.score = cert.score;
+    result.evaluation_file_id = cert.evaluation_file_id;
+    return result;
+}
+
+template<> 
+RegistrarCertification set_element_of_corba_seq<
+    RegistrarCertification, 
+    Registry::WhoisImpl::RegistrarCertification>(
+        const Registry::WhoisImpl::RegistrarCertification& ile)
+{
+    return wrap_registrar_certification(ile);
+}
+
+RegistrarCertificationList* Server_impl::get_registrar_certification_list()
+{
+    try
+    {
+        RegistrarCertificationList_var result = new RegistrarCertificationList;
+        set_corba_seq<RegistrarCertificationList, RegistrarCertification>(
+                result, 
+                pimpl_->get_registrar_certification_list());
+        return result._retn();
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+ZoneFqdnList* Server_impl::get_managed_zone_list() 
+{
+    try
+    {
+        ZoneFqdnList_var zone_seq = new ZoneFqdnList;
+        set_corba_seq<ZoneFqdnList, CORBA::String_var>(zone_seq, pimpl_->get_managed_zone_list());
+        return zone_seq._retn();
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+DisclosableString wrap_disclosable_string(const std::string& str, bool disclose)
+{
+    DisclosableString temp;
+    temp.value = Corba::wrap_string_to_corba_string(str);
+    temp.disclose = disclose;
+    return temp;
+}
+
+void wrap_object_states(StringSeq& states_seq, std::vector<std::string>& statuses)
+{
+    set_corba_seq<StringSeq, CORBA::String_var>(states_seq, statuses);
+}
+
+DisclosablePlaceAddress wrap_disclosable_address(
+    const Registry::WhoisImpl::PlaceAddress& addr,
+    bool disclose)
+{
+    DisclosablePlaceAddress temp;
+    temp.value.street1 = Corba::wrap_string_to_corba_string(addr.street1);
+    temp.value.street2 = Corba::wrap_string_to_corba_string(addr.street2);
+    temp.value.street3 = Corba::wrap_string_to_corba_string(addr.street3);
+    temp.value.city    = Corba::wrap_string_to_corba_string(addr.city);
+    temp.value.stateorprovince = Corba::wrap_string_to_corba_string(addr.stateorprovince);
+    temp.value.postalcode      = Corba::wrap_string_to_corba_string(addr.postal_code);
+    temp.value.country_code    = Corba::wrap_string_to_corba_string(addr.country_code);
+    temp.disclose = disclose;
+    return temp;
+}
+
+Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
+{
+    Contact result;
+    result.handle       = Corba::wrap_string_to_corba_string(con.handle);
+    result.organization = wrap_disclosable_string(con.organization, con.disclose_organization);
+    result.name         = wrap_disclosable_string(con.name, con.disclose_name);
+    result.address      = wrap_disclosable_address(con.address, con.disclose_address);
+    result.phone        = wrap_disclosable_string(con.phone, con.disclose_phone);
+    result.fax          = wrap_disclosable_string(con.fax, con.disclose_fax);;
+    result.email        = wrap_disclosable_string(con.email, con.disclose_email);
+    result.notify_email = wrap_disclosable_string(con.notify_email, con.disclose_notify_email);
+    result.vat_number   = wrap_disclosable_string(con.vat_number, con.disclose_vat_number);
+
+    result.identification.value.identification_type =
+            Corba::wrap_string_to_corba_string(con.identification.identification_type);
+    result.identification.value.identification_data =
+            Corba::wrap_string_to_corba_string(con.identification.identification_data);
+    result.identification.disclose = con.disclose_identification;
+
+    result.creating_registrar_handle =
+            Corba::wrap_string_to_corba_string(con.creating_registrar);
+    result.sponsoring_registrar_handle =
+            Corba::wrap_string_to_corba_string(con.sponsoring_registrar);
+    result.created = Corba::wrap_time(con.created);
+    result.changed = Corba::wrap_nullable_datetime(con.changed);
+    result.last_transfer = Corba::wrap_nullable_datetime(con.last_transfer);
+
+    set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, con.statuses);
+
+    return result;
+}
+
+Contact* Server_impl::get_contact_by_handle(const char* handle)
+{
+    try
+    {
+        return new Contact(wrap_contact(pimpl_->get_contact_by_handle(handle)));
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+struct InvalidIPAddressException : public std::runtime_error 
+{
+    static const char* what_msg() throw() {return "invalid IP address";}
+
+    InvalidIPAddressException()
+    : std::runtime_error(what_msg())
+    {}
+
+    const char* what() const throw() {return what_msg();}
+};
+
+/**
+ * @throws InvalidIPAddressException
+ */
+void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out )
+{
+    out.address = Corba::wrap_string(in.to_string());
+    if (in.is_v4()) 
+    {
+        out.version = IPv4;
+    }
+    else if (in.is_v6()) 
+    {
+        out.version = IPv6;
+    }
+    else 
+    {
+        throw InvalidIPAddressException();
+    }
+}
+
+template<> 
+IPAddress set_element_of_corba_seq<IPAddress, boost::asio::ip::address>(const boost::asio::ip::address& ile)
+{
+    IPAddress ip;
+    wrap_ipaddress(ile,ip);
+    return ip;
+}
+
+template<> 
+NameServer set_element_of_corba_seq<NameServer, Registry::WhoisImpl::NameServer>(
+    const Registry::WhoisImpl::NameServer& ns)
+{
+    NameServer result;
+    result.fqdn = Corba::wrap_string_to_corba_string(ns.fqdn);
+    set_corba_seq<IPAddressSeq, IPAddress>(result.ip_addresses, ns.ip_addresses);
+    return result;
+}
+
+NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
+{
+    NSSet result;
+
+    result.handle = Corba::wrap_string_to_corba_string(nsset.handle);
+    result.registrar_handle = Corba::wrap_string_to_corba_string(nsset.sponsoring_registrar);
+    result.created = Corba::wrap_time(nsset.created);
+    result.changed = Corba::wrap_nullable_datetime(nsset.changed);
+    result.last_transfer = Corba::wrap_nullable_datetime(nsset.last_transfer);
+
+    set_corba_seq<NameServerSeq, NameServer>(result.nservers, nsset.nservers);
+
+    set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, nsset.tech_contacts);
+
+    set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, nsset.statuses);
+    return result;
+}
+
+NSSet* Server_impl::get_nsset_by_handle(const char* handle)
+{
+    try
+    {
+        return new NSSet(wrap_nsset(pimpl_->get_nsset_by_handle(handle)));
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+template<> 
+NSSet set_element_of_corba_seq<NSSet, Registry::WhoisImpl::NSSet>(const Registry::WhoisImpl::NSSet& nsset)
+{
+    return wrap_nsset(nsset);
+}
+
+NSSetSeq* Server_impl::get_nssets_by_ns(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    try
+    {
+        NSSetSeq_var result = new NSSetSeq;
+        Registry::WhoisImpl::NSSetSeq nss_seq = pimpl_->get_nssets_by_ns(handle, limit);
+        limit_exceeded = nss_seq.limit_exceeded;
+        set_corba_seq<NSSetSeq, NSSet>(result.inout(), nss_seq.content);
+        return result._retn();
+    } 
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+
+NSSetSeq* Server_impl::get_nssets_by_tech_c(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    try
+    {
+        NSSetSeq_var result = new NSSetSeq;
+        Registry::WhoisImpl::NSSetSeq nss_seq = pimpl_->get_nssets_by_tech_c(handle, limit);
+        limit_exceeded = nss_seq.limit_exceeded;
+        set_corba_seq<NSSetSeq, NSSet>(result.inout(), nss_seq.content);
+        return result._retn();
+    } 
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
+{
+    try
+    {
+        NameServer result;
+        result.fqdn = Corba::wrap_string_to_corba_string(pimpl_->get_nameserver_by_fqdn(handle).fqdn);
+        /*
+         * Because of grouping nameservers in NSSet we don't include
+         * IP address in output (given nameserver can be in different
+         * NSSets with different IP addresses)
+         *
+         * result.ip_addresses;
+         */
+        return new NameServer(result);
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+template<> 
+DNSKey set_element_of_corba_seq<DNSKey, Registry::WhoisImpl::DNSKey>(
+    const Registry::WhoisImpl::DNSKey& dnskey)
+{
+    DNSKey result;
+    result.flags      = dnskey.flags;
+    result.protocol   = dnskey.protocol;
+    result.alg        = dnskey.alg;
+    result.public_key = Corba::wrap_string_to_corba_string(dnskey.public_key);
+    return result;
+}
+
+KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
+{
+    KeySet result;
+
+    result.handle  = Corba::wrap_string_to_corba_string(keyset.handle);
+    result.registrar_handle = Corba::wrap_string_to_corba_string(keyset.sponsoring_registrar);
+    result.created = Corba::wrap_time(keyset.created);
+    result.changed = Corba::wrap_nullable_datetime(keyset.changed);
+    result.last_transfer = Corba::wrap_nullable_datetime(keyset.last_transfer);
+
+    set_corba_seq<StringSeq, CORBA::String_var>(result.tech_contact_handles, keyset.tech_contacts);
+    set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, keyset.statuses);
+    set_corba_seq<DNSKeySeq, DNSKey>(result.dns_keys, keyset.dns_keys);
+
+    return result;
+}
+
+KeySet* Server_impl::get_keyset_by_handle(const char* handle)
+{
+    try
+    {
+        return new KeySet(wrap_keyset(pimpl_->get_keyset_by_handle(handle)));
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+template<> 
+KeySet set_element_of_corba_seq<KeySet, Registry::WhoisImpl::KeySet>(
+    const Registry::WhoisImpl::KeySet& keyset)
+{
+    return wrap_keyset(keyset);
+}
+
+KeySetSeq* Server_impl::get_keysets_by_tech_c(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    try
+    {
+        KeySetSeq_var result = new KeySetSeq;
+        Registry::WhoisImpl::KeySetSeq ks_seq = pimpl_->get_keysets_by_tech_c(handle, limit);
+        set_corba_seq<KeySetSeq, KeySet>(result.inout(), ks_seq.content);
+        return result._retn();
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
+{
+    Domain result;
+    result.handle = Corba::wrap_string_to_corba_string(domain.fqdn);
+    result.registrant_handle = Corba::wrap_string_to_corba_string(domain.registrant);
+    if (domain.nsset.size() == 0)
+    {
+        result.nsset_handle = NULL;
+    }
+    else 
+    {
+        result.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.nsset));
+    }
+    if (domain.keyset.size() == 0)
+    {
+        result.keyset_handle = NULL;
+    }
+    else 
+    {
+        result.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.keyset));
+    }
+    result.registrar_handle = Corba::wrap_string_to_corba_string(domain.sponsoring_registrar);
+    result.registered = Corba::wrap_time(domain.registered);
+    result.changed = Corba::wrap_nullable_datetime(domain.changed);
+    result.last_transfer = Corba::wrap_nullable_datetime(domain.last_transfer);
+    result.expire = Corba::wrap_date(domain.expire);
+    result.expire_time_estimate = Corba::wrap_time(domain.expire_time_estimate);
+    result.expire_time_actual = Corba::wrap_nullable_datetime(domain.expire_time_actual);
+    if (domain.validated_to.isnull()) 
+    {
+        result.validated_to = NULL;
+        result.validated_to_time_estimate = NULL;
+        result.validated_to_time_actual = NULL;
+    }
+    else 
+    {
+        result.validated_to = new Registry::NullableDate(Corba::wrap_date(domain.validated_to.get_value()));
+        result.validated_to_time_estimate = Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
+        result.validated_to_time_actual = Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
+    } 
+    set_corba_seq<StringSeq, CORBA::String_var>(result.admin_contact_handles, domain.admin_contacts);
+    set_corba_seq<StringSeq, CORBA::String_var>(result.statuses, domain.statuses);
+
+    return result;
+
+}
+
+Domain* Server_impl::get_domain_by_handle(const char* handle)
+{
+    try
+    {
+        return new Domain(wrap_domain(pimpl_->get_domain_by_handle(handle)));
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+template<>
+Domain set_element_of_corba_seq<Domain, Registry::WhoisImpl::Domain>(
+    const Registry::WhoisImpl::Domain& domain)
+{
+    return wrap_domain(domain);
+}
+
+static DomainSeq* get_domains_by_(
+    const Registry::WhoisImpl::DomainSeq& dom_seq,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    try
+    {
+        DomainSeq_var result = new DomainSeq;
+        limit_exceeded = dom_seq.limit_exceeded;
+        set_corba_seq<DomainSeq, Domain>(result.inout(), dom_seq.content);
+        return result._retn();
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+DomainSeq* Server_impl::get_domains_by_registrant(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    return get_domains_by_(pimpl_->get_domains_by_registrant(handle, limit), limit_exceeded);
+}
+
+DomainSeq* Server_impl::get_domains_by_admin_contact(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    return get_domains_by_(pimpl_->get_domains_by_admin_contact(handle, limit), limit_exceeded);
+}
+
+DomainSeq* Server_impl::get_domains_by_nsset(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    return get_domains_by_(pimpl_->get_domains_by_nsset(handle, limit), limit_exceeded);
+}
+
+DomainSeq* Server_impl::get_domains_by_keyset(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
+    return get_domains_by_(pimpl_->get_domains_by_keyset(handle, limit), limit_exceeded);
+}
+
+template<>
+ObjectStatusDesc set_element_of_corba_seq<ObjectStatusDesc, Registry::WhoisImpl::ObjectStatusDesc>(
+    const Registry::WhoisImpl::ObjectStatusDesc& osd)
+{
+    ObjectStatusDesc result;
+    result.handle = Corba::wrap_string_to_corba_string(osd.handle);
+    result.name = Corba::wrap_string_to_corba_string(osd.name);
+    return result;
+}
+
+static ObjectStatusDescSeq* get_object_status_descriptions(
+    const std::vector<Registry::WhoisImpl::ObjectStatusDesc>& state_vec)
+{
+    try
+    {
+        ObjectStatusDescSeq_var state_seq = new ObjectStatusDescSeq;
+        set_corba_seq<ObjectStatusDescSeq, ObjectStatusDesc>(state_seq, state_vec);
+        return state_seq._retn();
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
+}
+
+ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang)
+{
+    return get_object_status_descriptions(pimpl_->get_domain_status_descriptions(lang));
+}
+
+ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang)
+{
+    return get_object_status_descriptions(pimpl_->get_contact_status_descriptions(lang));
+}
+
+ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang)
+{
+    return get_object_status_descriptions(pimpl_->get_nsset_status_descriptions(lang));
+}
+
+ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lang)
+{
+    return get_object_status_descriptions(pimpl_->get_keyset_status_descriptions(lang));
+}
+
+}//Whois 
+}//Registry
