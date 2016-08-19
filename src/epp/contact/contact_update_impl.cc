@@ -13,6 +13,8 @@
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 
+#include <boost/mpl/assert.hpp>
+
 namespace Epp {
 
 namespace {
@@ -287,8 +289,34 @@ void set_ContactUpdate_discloseflag< ContactDisclose::Item::notify_email >(Fred:
 template < ContactDisclose::Item::Enum ITEM >
 void set_ContactUpdate_discloseflag(const ContactDisclose &_disclose, Fred::UpdateContactByHandle &update_op)
 {
+    BOOST_MPL_ASSERT_MSG(ITEM != ContactDisclose::Item::address,
+                         discloseflag_address_has_its_own_method,
+                         (ContactDisclose::Item::Enum));
     const bool to_disclose = _disclose.should_be_disclosed< ITEM >(is_the_default_policy_to_disclose());
     set_ContactUpdate_discloseflag< ITEM >(update_op, to_disclose);
+}
+
+void set_ContactUpdate_discloseflag_address(
+    Fred::OperationContext &_ctx,
+    const ContactChange &_change,
+    const Fred::InfoContactData &_contact_data_before_update,
+    Fred::UpdateContactByHandle &update_op)
+{
+    bool address_has_to_be_disclosed =
+        _change.disclose->should_be_disclosed< ContactDisclose::Item::address >(is_the_default_policy_to_disclose());
+
+    if (!address_has_to_be_disclosed) {
+        static const bool address_has_to_be_hidden = true;
+        const bool address_can_be_hidden = !should_address_be_disclosed(_ctx,
+                                                                        _contact_data_before_update,
+                                                                        _change);
+        if (address_has_to_be_hidden && !address_can_be_hidden) {
+            throw ObjectStatusProhibitsOperation();
+        }
+        address_has_to_be_disclosed = !address_has_to_be_hidden || !address_can_be_hidden;
+    }
+
+    update_op.set_discloseaddress(address_has_to_be_disclosed);
 }
 
 Fred::InfoContactData info_contact_by_handle(const std::string &handle, Fred::OperationContext &ctx)
@@ -429,23 +457,9 @@ unsigned long long contact_update_impl(
 
         if (_change.disclose.is_initialized()) {
             _change.disclose->check_validity();
-            const bool address_was_disclosed = contact_data_before_update.discloseaddress;
-            if (address_was_disclosed) {
-                const bool address_has_to_be_hidden =
-                    !_change.disclose->should_be_disclosed< ContactDisclose::Item::address >(
-                        is_the_default_policy_to_disclose());
-                if (address_has_to_be_hidden) {
-                    const bool address_can_be_hidden = !should_address_be_disclosed(_ctx,
-                                                                                    contact_data_before_update,
-                                                                                    _change);
-                    if (!address_can_be_hidden) {
-                        throw ObjectStatusProhibitsOperation();
-                    }
-                }
-            }
+            set_ContactUpdate_discloseflag_address(_ctx, _change, contact_data_before_update, update);
             set_ContactUpdate_discloseflag< ContactDisclose::Item::name         >(*_change.disclose, update);
             set_ContactUpdate_discloseflag< ContactDisclose::Item::organization >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::address      >(*_change.disclose, update);
             set_ContactUpdate_discloseflag< ContactDisclose::Item::telephone    >(*_change.disclose, update);
             set_ContactUpdate_discloseflag< ContactDisclose::Item::fax          >(*_change.disclose, update);
             set_ContactUpdate_discloseflag< ContactDisclose::Item::email        >(*_change.disclose, update);
