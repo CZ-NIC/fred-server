@@ -70,28 +70,24 @@ class DbSavepoint
 public:
     DbSavepoint(Fred::OperationContext &_ctx, const std::string &_name)
     :   ctx_(_ctx),
-        name_(_name),
-        release_me_(false)
+        name_(_name)
     {
         ctx_.get_conn().exec("SAVEPOINT " + name_);
-        release_me_ = true;
     }
-    ~DbSavepoint()
-    {
-        if (release_me_) {
-            ctx_.get_conn().exec("ROLLBACK TO " + name_);
-        }
-    }
+    ~DbSavepoint() { }
     DbSavepoint& release()
     {
         ctx_.get_conn().exec("RELEASE SAVEPOINT " + name_);
-        release_me_ = false;
+        return *this;
+    }
+    DbSavepoint& rollback()
+    {
+        ctx_.get_conn().exec("ROLLBACK TO " + name_);
         return *this;
     }
 private:
     Fred::OperationContext &ctx_;
     const std::string name_;
-    bool release_me_;
 };
 
 }//namespace Epp::{anonymous}
@@ -104,22 +100,29 @@ void post_contact_update_hooks(
 {
     DbSavepoint savepoint(_ctx, "before_post_contact_update_hooks");
 
-    // TODO fredlib_modification - mozna uz obecnejsi pattern, ze jako vstup mam handle a volana implementace po me chce idcko
-    const unsigned long long contact_id = Fred::InfoContactByHandle(_contact_handle).exec(_ctx).info_contact_data.id;
+    try {
+        // TODO fredlib_modification - mozna uz obecnejsi pattern, ze jako vstup mam handle a volana implementace po me chce idcko
+        const unsigned long long contact_id = Fred::InfoContactByHandle(_contact_handle).exec(_ctx).info_contact_data.id;
 
-    Fred::PerformObjectStateRequest(contact_id).exec(_ctx);
+        Fred::PerformObjectStateRequest(contact_id).exec(_ctx);
 
-    conditionally_cancel_contact_verification_states(_ctx, contact_id);
+        conditionally_cancel_contact_verification_states(_ctx, contact_id);
 
-    Fred::PerformObjectStateRequest(contact_id).exec(_ctx);
-    // admin contact verification Ticket #10935
-    if (Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(_ctx, contact_id)) {
-        if (_epp_update_contact_enqueue_check) {
-            Admin::enqueue_check_if_no_other_exists(_ctx, contact_id, Fred::TestsuiteHandle::AUTOMATIC, _logd_requst_id);
+        Fred::PerformObjectStateRequest(contact_id).exec(_ctx);
+        // admin contact verification Ticket #10935
+        if (Admin::AdminContactVerificationObjectStates::conditionally_cancel_final_states(_ctx, contact_id)) {
+            if (_epp_update_contact_enqueue_check) {
+                Admin::enqueue_check_if_no_other_exists(_ctx, contact_id, Fred::TestsuiteHandle::AUTOMATIC, _logd_requst_id);
+            }
         }
-    }
 
-    savepoint.release();
+        savepoint.release();
+    }
+    catch (...) {
+        savepoint.rollback();
+        savepoint.release();
+        throw;
+    }
 }
 
 }
