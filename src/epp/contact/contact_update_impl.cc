@@ -13,6 +13,8 @@
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 
+#include <boost/mpl/assert.hpp>
+
 namespace Epp {
 
 namespace {
@@ -188,10 +190,10 @@ void set_data(const boost::optional< Nullable< std::string > > &change, Optional
 bool should_address_be_disclosed(
     Fred::OperationContext &_ctx,
     const Fred::InfoContactData &_current_contact_data,
-    const ContactChange &_data)
+    const ContactChange &_change)
 {
     //don't touch organization => current value has to be checked
-    if (ContactChange::does_value_mean< ContactChange::Value::not_to_touch >(_data.organization))
+    if (ContactChange::does_value_mean< ContactChange::Value::not_to_touch >(_change.organization))
     {
         const bool contact_is_organization = !_current_contact_data.organization.isnull() &&
                                              !_current_contact_data.organization.get_value().empty();
@@ -203,7 +205,7 @@ bool should_address_be_disclosed(
     //change organization => new value has to be checked
     else {
         const bool contact_will_be_organization =
-            ContactChange::does_value_mean< ContactChange::Value::to_set >(_data.organization);
+            ContactChange::does_value_mean< ContactChange::Value::to_set >(_change.organization);
         if (contact_will_be_organization)
         {
             return true;
@@ -211,11 +213,11 @@ bool should_address_be_disclosed(
     }
 
     const bool contact_will_lose_identification =
-        has_data_changed(_data.email,        _current_contact_data.email)        ||
-        has_data_changed(_data.telephone,    _current_contact_data.telephone)    ||
-        has_data_changed(_data.name,         _current_contact_data.name)         ||
-        has_data_changed(_data.organization, _current_contact_data.organization) ||
-        has_place_changed(_data,             _current_contact_data.place);
+        has_data_changed(_change.email,        _current_contact_data.email)        ||
+        has_data_changed(_change.telephone,    _current_contact_data.telephone)    ||
+        has_data_changed(_change.name,         _current_contact_data.name)         ||
+        has_data_changed(_change.organization, _current_contact_data.organization) ||
+        has_place_changed(_change,             _current_contact_data.place);
     if (contact_will_lose_identification)
     {
         return true;
@@ -287,8 +289,45 @@ void set_ContactUpdate_discloseflag< ContactDisclose::Item::notify_email >(Fred:
 template < ContactDisclose::Item::Enum ITEM >
 void set_ContactUpdate_discloseflag(const ContactDisclose &_disclose, Fred::UpdateContactByHandle &update_op)
 {
+    BOOST_MPL_ASSERT_MSG(ITEM != ContactDisclose::Item::address,
+                         discloseflag_address_has_its_own_method,
+                         (ContactDisclose::Item::Enum));
     const bool to_disclose = _disclose.should_be_disclosed< ITEM >(is_the_default_policy_to_disclose());
     set_ContactUpdate_discloseflag< ITEM >(update_op, to_disclose);
+}
+
+void set_ContactUpdate_discloseflag_address(
+    Fred::OperationContext &_ctx,
+    const ContactChange &_change,
+    const Fred::InfoContactData &_contact_data_before_update,
+    Fred::UpdateContactByHandle &update_op)
+{
+    bool address_has_to_be_disclosed =
+        _change.disclose->should_be_disclosed< ContactDisclose::Item::address >(is_the_default_policy_to_disclose());
+
+    if (!address_has_to_be_disclosed) {
+        static const bool address_has_to_be_hidden = true;
+        const bool address_can_be_hidden = !should_address_be_disclosed(_ctx,
+                                                                        _contact_data_before_update,
+                                                                        _change);
+        if (address_has_to_be_hidden && !address_can_be_hidden) {
+            throw ObjectStatusProhibitsOperation();
+        }
+        address_has_to_be_disclosed = !address_has_to_be_hidden || !address_can_be_hidden;
+    }
+
+    update_op.set_discloseaddress(address_has_to_be_disclosed);
+}
+
+Fred::InfoContactData info_contact_by_handle(const std::string &handle, Fred::OperationContext &ctx)
+{
+    try {
+        // TODO admin_contact_verification_modification AdminContactVerificationObjectStates::conditionally_cancel_final_states( ) relies on this exclusive lock
+        return Fred::InfoContactByHandle(handle).set_lock().exec(ctx).info_contact_data;
+    }
+    catch (const Fred::InfoContactByHandle::Exception &e) {
+        e.is_set_unknown_contact_handle() ? throw NonexistentHandle() : throw;
+    }
 }
 
 /**
@@ -305,19 +344,19 @@ struct Ident
     :   ident_value_(_ident_value),
         ident_type_(_ident_type)
     {
-        const bool ident_value_presents = ContactChange::does_value_mean< ContactChange::Value::to_set >(ident_value_);
-        const bool ident_type_presents = !ident_type_.isnull();
-        if (ident_value_presents != ident_type_presents) {
-            if (ident_type_presents) {
-                throw SsnTypeWithoutSsn();
-            }
-            throw SsnWithoutSsnType();
+        const bool ident_type_has_to_be_changed = !ident_type_.isnull();
+        const bool ident_value_has_to_be_changed =
+            !ContactChange::does_value_mean< ContactChange::Value::not_to_touch >(ident_value_);
+        if (ident_type_has_to_be_changed != ident_value_has_to_be_changed) {
+            ident_type_has_to_be_changed ? throw SsnTypeWithoutSsn()
+                                         : throw SsnWithoutSsnType();
         }
     }
 
-    bool presents()const
+    template < ContactChange::Value::Meaning MEANING >
+    bool does_value_mean()const
     {
-        return ContactChange::does_value_mean< ContactChange::Value::to_set >(ident_value_);
+        return ContactChange::does_value_mean< MEANING >(ident_value_);
     }
 
     Fred::PersonalIdUnion get()const
@@ -343,7 +382,7 @@ struct Ident
 unsigned long long contact_update_impl(
     Fred::OperationContext &_ctx,
     const std::string &_contact_handle,
-    const ContactChange &_data,
+    const ContactChange &_change,
     const unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id)
 {
@@ -358,32 +397,14 @@ unsigned long long contact_update_impl(
         throw NonexistentHandle();
     }
 
-    class InfoContactByHandle
-    {
-    public:
-        InfoContactByHandle(const std::string &_handle):handle_(_handle) { }
-        Fred::InfoContactData exec(Fred::OperationContext &_ctx)const
-        {
-            try {
-                // TODO admin_contact_verification_modification AdminContactVerificationObjectStates::conditionally_cancel_final_states( ) relies on this exclusive lock
-                return Fred::InfoContactByHandle(handle_).set_lock().exec(_ctx).info_contact_data;
-            }
-            catch (const Fred::InfoContactByHandle::Exception &e) {
-                e.is_set_unknown_contact_handle() ? throw NonexistentHandle() : throw;
-            }
-        }
-    private:
-        const std::string handle_;
-    };
-
     const Fred::InfoRegistrarData callers_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
-    const Fred::InfoContactData contact_data_before_update = InfoContactByHandle(_contact_handle).exec(_ctx);
+    const Fred::InfoContactData contact_data_before_update = info_contact_by_handle(_contact_handle, _ctx);
 
     const bool is_sponsoring_registrar = (contact_data_before_update.sponsoring_registrar_handle ==
                                           callers_registrar.handle);
     const bool is_system_registrar = callers_registrar.system.get_value_or(false);
-    const bool operation_is_permitted = (is_system_registrar || is_sponsoring_registrar);
+    const bool operation_is_permitted = (is_sponsoring_registrar || is_system_registrar);
 
     if (!operation_is_permitted) {
         throw AuthorizationError();
@@ -403,70 +424,76 @@ unsigned long long contact_update_impl(
     }
 
     // when deleting or not-changing, no check of data is needed
-    if (ContactChange::does_value_mean< ContactChange::Value::to_set >(_data.country_code)) {
-        if (!is_country_code_valid(_ctx, ContactChange::get_value(_data.country_code))) {
+    if (ContactChange::does_value_mean< ContactChange::Value::to_set >(_change.country_code)) {
+        if (!is_country_code_valid(_ctx, ContactChange::get_value(_change.country_code))) {
             AggregatedParamErrors exception;
             exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
             throw exception;
         }
-    }
-    else {
-        
     }
 
     // update itself
     {
         Fred::UpdateContactByHandle update(_contact_handle, callers_registrar.handle);
 
-        set_ContactUpdate_member(_data.name,         update, &Fred::UpdateContactByHandle::set_name);
-        set_ContactUpdate_member(_data.organization, update, &Fred::UpdateContactByHandle::set_organization);
-        set_ContactUpdate_member(_data.telephone,    update, &Fred::UpdateContactByHandle::set_telephone);
-        set_ContactUpdate_member(_data.fax,          update, &Fred::UpdateContactByHandle::set_fax);
-        set_ContactUpdate_member(_data.email,        update, &Fred::UpdateContactByHandle::set_email);
-        set_ContactUpdate_member(_data.notify_email, update, &Fred::UpdateContactByHandle::set_notifyemail);
-        set_ContactUpdate_member(_data.vat,          update, &Fred::UpdateContactByHandle::set_vat);
-        set_ContactUpdate_member(_data.auth_info_pw, update, &Fred::UpdateContactByHandle::set_authinfo);
+        set_ContactUpdate_member(_change.name,         update, &Fred::UpdateContactByHandle::set_name);
+        set_ContactUpdate_member(_change.organization, update, &Fred::UpdateContactByHandle::set_organization);
+        set_ContactUpdate_member(_change.telephone,    update, &Fred::UpdateContactByHandle::set_telephone);
+        set_ContactUpdate_member(_change.fax,          update, &Fred::UpdateContactByHandle::set_fax);
+        set_ContactUpdate_member(_change.email,        update, &Fred::UpdateContactByHandle::set_email);
+        set_ContactUpdate_member(_change.notify_email, update, &Fred::UpdateContactByHandle::set_notifyemail);
+        set_ContactUpdate_member(_change.vat,          update, &Fred::UpdateContactByHandle::set_vat);
+        set_ContactUpdate_member(_change.auth_info_pw, update, &Fred::UpdateContactByHandle::set_authinfo);
 
-        if (ContactChange::does_value_mean< ContactChange::Value::to_set >(_data.ident))
         {
-            const Ident ident(_data.ident, _data.ident_type);
-            const bool ident_has_to_be_updated = ident.presents();
-            update.set_personal_id(ident_has_to_be_updated ? ident.get()                          //to update
-                                                           : Nullable< Fred::PersonalIdUnion >());//to delete
+            const Ident ident(_change.ident, _change.ident_type);
+            if (ident.does_value_mean< ContactChange::Value::to_set >()) {
+                update.set_personal_id(ident.get());
+            }
+            else if (ident.does_value_mean< ContactChange::Value::to_delete >()) {
+                update.set_personal_id(Nullable< Fred::PersonalIdUnion >());
+            }
         }
 
-        if (_data.disclose.is_initialized()) {
-            _data.disclose->check_validity();
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::name         >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::organization >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::address      >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::telephone    >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::fax          >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::email        >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::vat          >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::ident        >(*_data.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::notify_email >(*_data.disclose, update);
+        if (_change.disclose.is_initialized()) {
+            _change.disclose->check_validity();
+            set_ContactUpdate_discloseflag_address(_ctx, _change, contact_data_before_update, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::name         >(*_change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::organization >(*_change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::telephone    >(*_change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::fax          >(*_change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::email        >(*_change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::vat          >(*_change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::ident        >(*_change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::notify_email >(*_change.disclose, update);
         }
-        else if (should_address_be_disclosed(_ctx, contact_data_before_update, _data)) {
-            // don't set it otherwise it might already been set to true
-            update.set_discloseaddress(true);
+        else {
+            const bool address_was_hidden = !contact_data_before_update.discloseaddress;
+            if (address_was_hidden) {
+                const bool address_has_to_be_disclosed = should_address_be_disclosed(_ctx,
+                                                                                     contact_data_before_update,
+                                                                                     _change);
+                if (address_has_to_be_disclosed) {
+                    update.set_discloseaddress(true);
+                }
+            }
         }
 
-        if (has_place_changed(_data, contact_data_before_update.place))
+        if (has_place_changed(_change, contact_data_before_update.place))
         {
             Fred::Contact::PlaceAddress new_place;
-            switch (_data.streets.size())
+            switch (_change.streets.size())
             {
-                case 3: set_data(_data.streets[2], new_place.street3);
-                case 2: set_data(_data.streets[1], new_place.street2);
-                case 1: set_data(_data.streets[0], new_place.street1);
+                case 3: set_data(_change.streets[2], new_place.street3);
+                case 2: set_data(_change.streets[1], new_place.street2);
+                case 1: set_data(_change.streets[0], new_place.street1);
                 case 0: break;
                 default: throw std::runtime_error("Too many streets.");
             }
-            set_data(_data.city,              new_place.city);
-            set_data(_data.state_or_province, new_place.stateorprovince);
-            set_data(_data.postal_code,       new_place.postalcode);
-            set_data(_data.country_code,      new_place.country);
+            set_data(_change.city,              new_place.city);
+            set_data(_change.state_or_province, new_place.stateorprovince);
+            set_data(_change.postal_code,       new_place.postalcode);
+            set_data(_change.country_code,      new_place.country);
             update.set_place(new_place);
         }
 
@@ -476,27 +503,6 @@ unsigned long long contact_update_impl(
 
         try {
             const unsigned long long new_history_id = update.exec(_ctx);
-
-            const Fred::InfoContactData contact_data_after_update = Fred::InfoContactByHandle(_contact_handle).exec(_ctx).info_contact_data;
-            //check disclose address
-            if (!contact_data_after_update.discloseaddress)
-            {
-                //discloseaddress conditions #7493
-                const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_update.id).exec(_ctx));
-                const bool hidden_address_allowed_by_contact_state =
-                    contact_states.presents(Fred::Object_State::identified_contact) ||
-                    contact_states.presents(Fred::Object_State::validated_contact);
-                const bool contact_is_organization = !contact_data_after_update.organization.isnull() &&
-                                                     !contact_data_after_update.organization.get_value().empty();
-                const bool hidden_address_allowed = !contact_is_organization &&
-                                                    hidden_address_allowed_by_contact_state;
-
-                if (!hidden_address_allowed)
-                {
-                    throw ObjectStatusProhibitsOperation();
-                }
-            }
-
             return new_history_id;
 
         }

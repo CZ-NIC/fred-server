@@ -271,15 +271,14 @@ namespace Fred
         //update contact
         {
             Database::query_param_list params;
-            std::ostringstream sql;
+            std::ostringstream update_set;
             Util::HeadSeparator set_separator("SET ",",");
-            sql << "UPDATE contact ";
 
-            sql << update_value(name_,         "name",         set_separator, params);
-            sql << update_value(organization_, "organization", set_separator, params);
+            update_set << update_value(name_,         "name",         set_separator, params);
+            update_set << update_value(organization_, "organization", set_separator, params);
             if (place_.isset()) {
                 if (place_.get_value().isnull()) {
-                    sql << set_separator.get() << "street1=NULL::text,"
+                    update_set << set_separator.get() << "street1=NULL::text,"
                                                   "street2=NULL::text,"
                                                   "street3=NULL::text,"
                                                   "city=NULL::text,"
@@ -291,27 +290,27 @@ namespace Fred
                     const Fred::Contact::PlaceAddress place = place_.get_value().get_value();
                     const std::string country = Contact::get_country_code(
                         place.country, ctx, &update_contact_exception, &Exception::set_unknown_country);
-                    sql << set_separator.get();
-                    sql << update_value(place.street1,         "street1",         params) << ",";
-                    sql << update_value(place.street2,         "street2",         params) << ",";
-                    sql << update_value(place.street3,         "street3",         params) << ",";
-                    sql << update_value(place.city,            "city",            params) << ",";
-                    sql << update_value(place.stateorprovince, "stateorprovince", params) << ",";
-                    sql << update_value(place.postalcode,      "postalcode",      params) << ",";
-                    sql << update_value(country,               "country",         params);
+                    update_set << set_separator.get();
+                    update_set << update_value(place.street1,         "street1",         params) << ",";
+                    update_set << update_value(place.street2,         "street2",         params) << ",";
+                    update_set << update_value(place.street3,         "street3",         params) << ",";
+                    update_set << update_value(place.city,            "city",            params) << ",";
+                    update_set << update_value(place.stateorprovince, "stateorprovince", params) << ",";
+                    update_set << update_value(place.postalcode,      "postalcode",      params) << ",";
+                    update_set << update_value(country,               "country",         params);
                 }
             }
 
-            sql << update_value(telephone_,   "telephone",   set_separator, params);
-            sql << update_value(fax_,         "fax",         set_separator, params);
-            sql << update_value(email_,       "email",       set_separator, params);
-            sql << update_value(notifyemail_, "notifyemail", set_separator, params);
-            sql << update_value(vat_,         "vat",         set_separator, params);
+            update_set << update_value(telephone_,   "telephone",   set_separator, params);
+            update_set << update_value(fax_,         "fax",         set_separator, params);
+            update_set << update_value(email_,       "email",       set_separator, params);
+            update_set << update_value(notifyemail_, "notifyemail", set_separator, params);
+            update_set << update_value(vat_,         "vat",         set_separator, params);
 
             if (personal_id_.isset()) {
                 const Nullable< PersonalIdUnion > nullable_personal_id = personal_id_.get_value();
                 if (nullable_personal_id.isnull()) {
-                    sql << set_separator.get() << "ssntype=NULL::integer,"
+                    update_set << set_separator.get() << "ssntype=NULL::integer,"
                                                   "ssn=NULL::text";
                 }
                 else {
@@ -319,35 +318,32 @@ namespace Fred
                     const ::size_t ssn_type_id(
                         Contact::get_ssntype_id(personal_id.get_type(),
                                                 ctx, &update_contact_exception, &Exception::set_unknown_ssntype));
-                    sql << set_separator.get() << "ssntype=$" << params.add(ssn_type_id) << "::integer,"
+                    update_set << set_separator.get() << "ssntype=$" << params.add(ssn_type_id) << "::integer,"
                                                   "ssn=$" << params.add(personal_id.get()) << "::text";
                 }
             }
 
-            sql << update_value(disclosename_,         "disclosename",         set_separator, params);
-            sql << update_value(discloseorganization_, "discloseorganization", set_separator, params);
-            sql << update_value(discloseaddress_,      "discloseaddress",      set_separator, params);
-            sql << update_value(disclosetelephone_,    "disclosetelephone",    set_separator, params);
-            sql << update_value(disclosefax_,          "disclosefax",          set_separator, params);
-            sql << update_value(discloseemail_,        "discloseemail",        set_separator, params);
-            sql << update_value(disclosevat_,          "disclosevat",          set_separator, params);
-            sql << update_value(discloseident_,        "discloseident",        set_separator, params);
-            sql << update_value(disclosenotifyemail_,  "disclosenotifyemail",  set_separator, params);
+            update_set << update_value(disclosename_,         "disclosename",         set_separator, params);
+            update_set << update_value(discloseorganization_, "discloseorganization", set_separator, params);
+            update_set << update_value(discloseaddress_,      "discloseaddress",      set_separator, params);
+            update_set << update_value(disclosetelephone_,    "disclosetelephone",    set_separator, params);
+            update_set << update_value(disclosefax_,          "disclosefax",          set_separator, params);
+            update_set << update_value(discloseemail_,        "discloseemail",        set_separator, params);
+            update_set << update_value(disclosevat_,          "disclosevat",          set_separator, params);
+            update_set << update_value(discloseident_,        "discloseident",        set_separator, params);
+            update_set << update_value(disclosenotifyemail_,  "disclosenotifyemail",  set_separator, params);
 
             if (domain_expiration_letter_flag_.isset()) {
                 const Nullable< bool > flag = domain_expiration_letter_flag_.get_value();
-                sql << set_separator.get() << "warning_letter=";
+                update_set << set_separator.get() << "warning_letter=";
                 if (flag.isnull()) {
-                    sql << "NULL";
+                    update_set << "NULL";
                 }
                 else {
-                    sql << "$" << params.add(flag.get_value());
+                    update_set << "$" << params.add(flag.get_value());
                 }
-                sql << "::boolean";
+                update_set << "::boolean";
             }
-
-            params.push_back(contact.info_contact_data.id);
-            sql << " WHERE id = $" << params.size() << "::integer RETURNING id";
 
             //check exception
             if (update_contact_exception.throw_me()) {
@@ -355,7 +351,11 @@ namespace Fred
             }
 
             //execute update of the contact
-            if (1 < params.size()) {
+            if (!update_set.str().empty()) {
+                std::ostringstream sql;
+                params.push_back(contact.info_contact_data.id);
+                sql << "UPDATE contact " << update_set.str() << " "
+                       "WHERE id=$" << params.size() << "::integer RETURNING id";
                 Database::Result update_contact_res = ctx.get_conn().exec_params(sql.str(), params);
                 if (update_contact_res.size() != 1) {
                     BOOST_THROW_EXCEPTION(InternalError("failed to update contact"));
@@ -400,7 +400,7 @@ namespace Fred
                     const std::string type = addr_ptr->first.to_string();
                     const ContactAddress &address = addr_ptr->second;
                     if (updatable.find(addr_ptr->first) != updatable.end()) { //UPDATE
-                        sql.str("");
+                        std::ostringstream sql;
                         sql << "UPDATE contact_address SET ";
                         params.clear();
                         params.push_back(contact.info_contact_data.id);//$1 = contactid
@@ -545,7 +545,7 @@ namespace Fred
                 const ContactAddressToUpdate::ToRemove &to_remove = addresses_.to_remove();
                 params.clear();
                 params.push_back(contact.info_contact_data.id);//$1 = contactid
-                sql.str("");
+                std::ostringstream sql;
                 sql << "DELETE FROM contact_address WHERE contactid=$1::bigint AND "
                                                          "type IN (";
                 for (ContactAddressToUpdate::ToRemove::const_iterator type_ptr = to_remove.begin();
