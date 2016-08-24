@@ -33,7 +33,7 @@
 namespace CorbaConversion {
 
 /**
- * \brief convert Corba DomainEmailSeq to C++ map of sets of emails (domain_emails_map)
+ * \brief convert Corba DomainEmailSeq to STL map of domain_ids to sets of emails (domain_emails_map)
  *
  * \param domain_email_seq   sequence of {domain_id, email}
  * \param domain_emails_map  emails by domain_id

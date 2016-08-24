@@ -33,8 +33,6 @@ namespace CorbaConversion {
 
 void unwrap_DomainEmailSeq(const Registry::Notification::DomainEmailSeq &domain_email_seq, std::map<unsigned long long, std::set<std::string> > &domain_emails_map) {
     for (unsigned long long index = 0; index < domain_email_seq.length(); ++index) {
-        //unsigned long long domain_id;
-        //CorbaConversion::int_to_int<CORBA::ULongLong, unsigned long long>(domain_email_seq[index].domain_id, domain_id);
         const unsigned long long domain_id = CorbaConversion::int_to_int<unsigned long long>(domain_email_seq[index].domain_id);
         const std::string email = Corba::unwrap_string(domain_email_seq[index].email);
         std::set<std::string> &domain_emails = domain_emails_map[domain_id]; // required side-effect: creates the element if it does not exist yet
@@ -61,7 +59,6 @@ void wrap_map_unsigned_long_long_set_string(const std::map<unsigned long long, s
     for(std::map<unsigned long long, std::set<std::string> >::const_iterator src_item = domain_emails_map.begin(); src_item != domain_emails_map.end(); ++src_item) {
         for(std::set<std::string>::const_iterator email_ptr = src_item->second.begin(); email_ptr != src_item->second.end(); ++email_ptr) {
             domain_email_seq[dst_index].domain_id = CorbaConversion::int_to_int<CORBA::ULongLong>(src_item->first);
-            //CorbaConversion::int_to_int<unsigned long long, CORBA::ULongLong>(src_item->first, domain_email_seq[dst_index].domain_id);
             domain_email_seq[dst_index].email = CorbaConversion::wrap_string(*email_ptr);
             ++dst_index;
         }
