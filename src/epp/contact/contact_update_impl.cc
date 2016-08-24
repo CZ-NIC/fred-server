@@ -344,9 +344,15 @@ struct Ident
     :   ident_value_(_ident_value),
         ident_type_(_ident_type)
     {
+        const bool ident_value_and_ident_type_have_to_be_deleted =
+            ContactChange::does_value_mean< ContactChange::Value::to_delete >(ident_value_);
+        if (ident_value_and_ident_type_have_to_be_deleted) {
+            return;
+        }
+
         const bool ident_type_has_to_be_changed = !ident_type_.isnull();
         const bool ident_value_has_to_be_changed =
-            !ContactChange::does_value_mean< ContactChange::Value::not_to_touch >(ident_value_);
+            ContactChange::does_value_mean< ContactChange::Value::to_set >(ident_value_);
         if (ident_type_has_to_be_changed != ident_value_has_to_be_changed) {
             ident_type_has_to_be_changed ? throw SsnTypeWithoutSsn()
                                          : throw SsnWithoutSsnType();
