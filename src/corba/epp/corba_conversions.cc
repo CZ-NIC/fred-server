@@ -378,7 +378,7 @@ namespace Corba {
         char time[size_enough_for_string_representation_of_time];
         const std::string iso_extended_time = boost::posix_time::to_iso_extended_string(_src);
         convert_rfc3339_timestamp(time, size_enough_for_string_representation_of_time, iso_extended_time.c_str());
-        return time;
+        return const_cast< const char* >(time);
     }
 
     CORBA::String_var wrap_Nullable_boost_posix_time_ptime_to_string(const Nullable< boost::posix_time::ptime > &_src)
