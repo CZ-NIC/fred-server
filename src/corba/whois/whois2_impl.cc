@@ -115,8 +115,7 @@ RegistrarGroupList* Server_impl::get_registrar_groups()
     throw INTERNAL_SERVER_ERROR();
 }
 
-RegistrarCertification wrap_registrar_certification(
-    const Registry::WhoisImpl::RegistrarCertification& cert)
+RegistrarCertification wrap_registrar_certification(const Registry::WhoisImpl::RegistrarCertification& cert)
 {
     RegistrarCertification result;
     result.registrar_handle = Corba::wrap_string_to_corba_string(cert.registrar);
@@ -318,7 +317,6 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
     //default exception handling
     throw INTERNAL_SERVER_ERROR();
 }
-
 
 NSSetSeq* Server_impl::get_nssets_by_tech_c(
     const char* handle,
