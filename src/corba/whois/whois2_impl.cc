@@ -47,6 +47,16 @@ Registrar* Server_impl::get_registrar_by_handle(const char* handle)
                 wrap_registrar(
                     pimpl_->get_registrar_by_handle(std::string(handle))));
     }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
     catch (...) { }
 
     // default exception handling
@@ -220,6 +230,16 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
     {
         return new Contact(wrap_contact(pimpl_->get_contact_by_handle(handle)));
     }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
     catch (const ::CORBA::UserException& )
     {
         throw;
@@ -311,6 +331,16 @@ NSSet* Server_impl::get_nsset_by_handle(const char* handle)
     {
         return new NSSet(wrap_nsset(pimpl_->get_nsset_by_handle(handle)));
     }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
     catch (const ::CORBA::UserException& )
     {
         throw;
@@ -337,7 +367,17 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
             result[i] = wrap_nsset(nss_seq.content[i]);
         }
         return result._retn();
-    } 
+    }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
     catch (const ::CORBA::UserException&)
     {
         throw;
@@ -364,7 +404,17 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
             result[i] = wrap_nsset(nss_seq.content[i]);
         }
         return result._retn();
-    } 
+    }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
     catch (const ::CORBA::UserException& )
     {
         throw;
@@ -389,6 +439,16 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
          * result.ip_addresses;
          */
         return new NameServer(result);
+    }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (const ::CORBA::UserException& )
     {
@@ -450,6 +510,16 @@ KeySet* Server_impl::get_keyset_by_handle(const char* handle)
     {
         return new KeySet(wrap_keyset(pimpl_->get_keyset_by_handle(handle)));
     }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
     catch (const ::CORBA::UserException& )
     {
         throw;
@@ -476,6 +546,16 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
             result[i] = wrap_keyset(ks_seq.content[i]);
         }
         return result._retn();
+    }
+    catch (const Registry::WhoisImpl::InvalidHandle& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_HANDLE();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (const ::CORBA::UserException& )
     {
@@ -554,6 +634,26 @@ Domain* Server_impl::get_domain_by_handle(const char* handle)
     {
         return new Domain(wrap_domain(pimpl_->get_domain_by_handle(handle)));
     }
+    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_LABEL();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
+    catch (const Registry::WhoisImpl::TooManyLabels& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::TOO_MANY_LABELS();
+    }
+    catch (const Registry::WhoisImpl::UnmanagedZone& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::UNMANAGED_ZONE();
+    }
     catch (const ::CORBA::UserException& )
     {
         throw;
@@ -568,16 +668,34 @@ static DomainSeq* get_domains_by_(
     const Registry::WhoisImpl::DomainSeq& dom_seq,
     ::CORBA::Boolean& limit_exceeded)
 {
+    DomainSeq_var result = new DomainSeq;
+    limit_exceeded = dom_seq.limit_exceeded;
+    result->length(dom_seq.content.size());
+    for (CORBA::ULong i = 0; i < dom_seq.content.size(); ++i)
+    {
+        result[i] = wrap_domain(dom_seq.content[i]);
+    }
+    return result._retn();
+}
+
+DomainSeq* Server_impl::get_domains_by_registrant(
+    const char* handle,
+    ::CORBA::ULong limit,
+    ::CORBA::Boolean& limit_exceeded)
+{
     try
     {
-        DomainSeq_var result = new DomainSeq;
-        limit_exceeded = dom_seq.limit_exceeded;
-        result->length(dom_seq.content.size());
-        for (CORBA::ULong i = 0; i < dom_seq.content.size(); ++i)
-        {
-            result[i] = wrap_domain(dom_seq.content[i]);
-        }
-        return result._retn();
+        return get_domains_by_(pimpl_->get_domains_by_registrant(handle, limit), limit_exceeded);
+    }
+    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_LABEL();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (const ::CORBA::UserException& )
     {
@@ -589,20 +707,33 @@ static DomainSeq* get_domains_by_(
     throw INTERNAL_SERVER_ERROR();
 }
 
-DomainSeq* Server_impl::get_domains_by_registrant(
-    const char* handle,
-    ::CORBA::ULong limit,
-    ::CORBA::Boolean& limit_exceeded)
-{
-    return get_domains_by_(pimpl_->get_domains_by_registrant(handle, limit), limit_exceeded);
-}
-
 DomainSeq* Server_impl::get_domains_by_admin_contact(
     const char* handle,
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
-    return get_domains_by_(pimpl_->get_domains_by_admin_contact(handle, limit), limit_exceeded);
+    try
+    {
+        return get_domains_by_(pimpl_->get_domains_by_admin_contact(handle, limit), limit_exceeded);
+    }
+    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_LABEL();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
 }
 
 DomainSeq* Server_impl::get_domains_by_nsset(
@@ -610,7 +741,28 @@ DomainSeq* Server_impl::get_domains_by_nsset(
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
-    return get_domains_by_(pimpl_->get_domains_by_nsset(handle, limit), limit_exceeded);
+    try
+    {
+        return get_domains_by_(pimpl_->get_domains_by_nsset(handle, limit), limit_exceeded);
+    }
+    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_LABEL();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
 }
 
 DomainSeq* Server_impl::get_domains_by_keyset(
@@ -618,7 +770,28 @@ DomainSeq* Server_impl::get_domains_by_keyset(
     ::CORBA::ULong limit,
     ::CORBA::Boolean& limit_exceeded)
 {
-    return get_domains_by_(pimpl_->get_domains_by_keyset(handle, limit), limit_exceeded);
+    try
+    {
+        return get_domains_by_(pimpl_->get_domains_by_keyset(handle, limit), limit_exceeded);
+    }
+    catch (const Registry::WhoisImpl::InvalidLabel& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::INVALID_LABEL();
+    }
+    catch (const Registry::WhoisImpl::ObjectNotExists& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::OBJECT_NOT_FOUND();
+    }
+    catch (const ::CORBA::UserException& )
+    {
+        throw;
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
 }
 
 ObjectStatusDesc wrap_ObjectStatusDesc(const Registry::WhoisImpl::ObjectStatusDesc& osd)
@@ -632,17 +805,27 @@ ObjectStatusDesc wrap_ObjectStatusDesc(const Registry::WhoisImpl::ObjectStatusDe
 static ObjectStatusDescSeq* get_object_status_descriptions(
     const std::vector<Registry::WhoisImpl::ObjectStatusDesc>& state_vec)
 {
+    ObjectStatusDescSeq_var result = new ObjectStatusDescSeq;
+    result->length(state_vec.size());
+    CORBA::ULong i = 0;
+    for (std::vector<Registry::WhoisImpl::ObjectStatusDesc>::const_iterator cit = state_vec.begin();
+            cit != state_vec.end(); ++cit, ++i)
+    {
+        result[i] = wrap_ObjectStatusDesc(*cit);
+    }
+    return result._retn();
+}
+
+ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang)
+{
     try
     {
-        ObjectStatusDescSeq_var result = new ObjectStatusDescSeq;
-        result->length(state_vec.size());
-        CORBA::ULong i = 0;
-        for (std::vector<Registry::WhoisImpl::ObjectStatusDesc>::const_iterator cit = state_vec.begin();
-                cit != state_vec.end(); ++cit, ++i)
-        {
-            result[i] = wrap_ObjectStatusDesc(*cit);
-        }
-        return result._retn();
+        return get_object_status_descriptions(pimpl_->get_domain_status_descriptions(lang));
+    }
+    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
 
@@ -650,24 +833,55 @@ static ObjectStatusDescSeq* get_object_status_descriptions(
     throw INTERNAL_SERVER_ERROR();
 }
 
-ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lang)
-{
-    return get_object_status_descriptions(pimpl_->get_domain_status_descriptions(lang));
-}
-
 ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* lang)
 {
-    return get_object_status_descriptions(pimpl_->get_contact_status_descriptions(lang));
+    try
+    {
+        return get_object_status_descriptions(pimpl_->get_contact_status_descriptions(lang));
+    }
+    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::MISSING_LOCALIZATION();
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
 }
 
 ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang)
 {
-    return get_object_status_descriptions(pimpl_->get_nsset_status_descriptions(lang));
+    try
+    {
+        return get_object_status_descriptions(pimpl_->get_nsset_status_descriptions(lang));
+    }
+    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::MISSING_LOCALIZATION();
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
 }
 
 ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lang)
 {
-    return get_object_status_descriptions(pimpl_->get_keyset_status_descriptions(lang));
+    try
+    {
+        return get_object_status_descriptions(pimpl_->get_keyset_status_descriptions(lang));
+    }
+    catch (const Registry::WhoisImpl::MissingLocalization& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::Whois::MISSING_LOCALIZATION();
+    }
+    catch (...) { }
+
+    //default exception handling
+    throw INTERNAL_SERVER_ERROR();
 }
 
 }//Whois 
