@@ -572,7 +572,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
             temp.statuses.reserve(v_osd.size());
             BOOST_FOREACH(Fred::ObjectStateData it_osd, v_osd)
             {
-                if (it.is_external)
+                if (it_osd.is_external)
                 {
                     temp.statuses.push_back(it_osd.state_name);
                 }
