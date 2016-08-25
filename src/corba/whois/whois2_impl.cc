@@ -53,25 +53,17 @@ Registrar* Server_impl::get_registrar_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-template <class T, class SeqType>
-void wrap_unbound_sequence(
-    const std::vector<T>& vec,
-    _CORBA_Unbounded_Sequence<SeqType>& seq,
-    SeqType (*wrap_function)(const T&))
-{
-    seq.length(vec.size());
-    for (CORBA::ULong i = 0; i < vec.size(); ++i)
-    {
-        seq[i] = wrap_function(vec[i]);
-    }
-}
-
 RegistrarSeq* Server_impl::get_registrars()
 {
     try
     {
         RegistrarSeq_var result = new RegistrarSeq;
-        wrap_unbound_sequence(pimpl_->get_registrars(), result.inout(), wrap_registrar);
+        const std::vector<Registry::WhoisImpl::Registrar>& registrars = pimpl_->get_registrars();
+        result->length(registrars.size());
+        for (CORBA::ULong i = 0; i < registrars.size(); ++i)
+        {
+            result[i] = wrap_registrar(registrars[i]);
+        }
         return result._retn();
     }
     catch (...) { }
@@ -80,22 +72,17 @@ RegistrarSeq* Server_impl::get_registrars()
     throw INTERNAL_SERVER_ERROR();
 }
 
-void wrap_string_sequence(const std::vector<std::string>& str_vec, _CORBA_Unbounded_Sequence_String& seq)
-{
-    seq.length(str_vec.size());
-    CORBA::ULong i = 0;
-    for (std::vector<std::string>::const_iterator cit = str_vec.begin();
-            cit != str_vec.end(); ++cit, ++i)
-    {
-        seq[i] = Corba::wrap_string_to_corba_string(*cit);
-    }
-}
-
 RegistrarGroup wrap_registrar_group(const Registry::WhoisImpl::RegistrarGroup& group)
 {
     RegistrarGroup result;
     result.name = Corba::wrap_string_to_corba_string(group.name);
-    wrap_string_sequence(group.members, result.members);
+    result.members.length(group.members.size());
+    CORBA::ULong i = 0;
+    for (std::vector<std::string>::const_iterator cit = group.members.begin();
+            cit != group.members.end(); ++cit, ++i)
+    {
+        result.members[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
     return result;
 }
 
@@ -104,7 +91,12 @@ RegistrarGroupList* Server_impl::get_registrar_groups()
     try
     {
         RegistrarGroupList_var result = new RegistrarGroupList;
-        wrap_unbound_sequence(pimpl_->get_registrar_groups(), result.inout(), wrap_registrar_group);
+        const std::vector<Registry::WhoisImpl::RegistrarGroup>& groups = pimpl_->get_registrar_groups();
+        result->length(groups.size());
+        for (CORBA::ULong i = 0; i < groups.size(); ++i)
+        {
+            result[i] = wrap_registrar_group(groups[i]);
+        }
         return result._retn();
     }
     catch (...) { }
@@ -127,7 +119,12 @@ RegistrarCertificationList* Server_impl::get_registrar_certification_list()
     try
     {
         RegistrarCertificationList_var result = new RegistrarCertificationList;
-        wrap_unbound_sequence(pimpl_->get_registrar_certification_list(), result.inout(), wrap_registrar_certification);
+        const std::vector<Registry::WhoisImpl::RegistrarCertification>& certifications = pimpl_->get_registrar_certification_list();
+        result->length(certifications.size());
+        for (CORBA::ULong i = 0; i < certifications.size(); ++i)
+        {
+            result[i] = wrap_registrar_certification(certifications[i]);
+        }
         return result._retn();
     }
     catch (...) { }
@@ -142,7 +139,13 @@ ZoneFqdnList* Server_impl::get_managed_zone_list()
     {
         ZoneFqdnList_var result = new ZoneFqdnList;
         const std::vector<std::string>& zones = pimpl_->get_managed_zone_list();
-        wrap_string_sequence(zones, result);
+        result->length(zones.size());
+        CORBA::ULong i = 0;
+        for (std::vector<std::string>::const_iterator cit = zones.begin();
+                cit != zones.end(); ++cit, ++i)
+        {
+            result[i] = Corba::wrap_string_to_corba_string(*cit);
+        }
         return result._retn();
     }
     catch (...) { }
@@ -200,7 +203,13 @@ Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
     result.changed = Corba::wrap_nullable_datetime(con.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(con.last_transfer);
 
-    wrap_string_sequence(con.statuses, result.statuses);
+    result.statuses.length(con.statuses.size());
+    CORBA::ULong i = 0;
+    for (std::vector<std::string>::const_iterator cit = con.statuses.begin();
+            cit != con.statuses.end(); ++cit, ++i)
+    {
+        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
 
     return result;
 }
@@ -255,7 +264,11 @@ NameServer wrap_nameserver(const Registry::WhoisImpl::NameServer& ns)
 {
     NameServer result;
     result.fqdn = Corba::wrap_string_to_corba_string(ns.fqdn);
-    wrap_unbound_sequence(ns.ip_addresses, result.ip_addresses, wrap_ipaddress);
+    result.ip_addresses.length(ns.ip_addresses.size());
+    for (CORBA::ULong i = 0; i < ns.ip_addresses.size(); ++i)
+    {
+        result.ip_addresses[i] = wrap_ipaddress(ns.ip_addresses[i]);
+    }
     return result;
 }
 
@@ -269,9 +282,26 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
     result.changed = Corba::wrap_nullable_datetime(nsset.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(nsset.last_transfer);
 
-    wrap_unbound_sequence(nsset.nservers, result.nservers, wrap_nameserver);
-    wrap_string_sequence(nsset.tech_contacts, result.tech_contact_handles);
-    wrap_string_sequence(nsset.statuses, result.statuses);
+    result.nservers.length(nsset.nservers.size());
+    for (CORBA::ULong i = 0; i < nsset.nservers.size(); ++i)
+    {
+        result.nservers[i] = wrap_nameserver(nsset.nservers[i]);
+    }
+    result.tech_contact_handles.length(nsset.tech_contacts.size());
+    CORBA::ULong i = 0;
+    for (std::vector<std::string>::const_iterator cit = nsset.tech_contacts.begin();
+            cit != nsset.tech_contacts.end(); ++cit, ++i)
+    {
+        result.tech_contact_handles[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
+
+    result.statuses.length(nsset.statuses.size());
+    i = 0;
+    for (std::vector<std::string>::const_iterator cit = nsset.statuses.begin();
+            cit != nsset.statuses.end(); ++cit, ++i)
+    {
+        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
     return result;
 }
 
@@ -301,7 +331,11 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
         NSSetSeq_var result = new NSSetSeq;
         Registry::WhoisImpl::NSSetSeq nss_seq = pimpl_->get_nssets_by_ns(handle, limit);
         limit_exceeded = nss_seq.limit_exceeded;
-        wrap_unbound_sequence(nss_seq.content, result.inout(), wrap_nsset);
+        result->length(nss_seq.content.size());
+        for (CORBA::ULong i = 0; i < nss_seq.content.size(); ++i)
+        {
+            result[i] = wrap_nsset(nss_seq.content[i]);
+        }
         return result._retn();
     } 
     catch (const ::CORBA::UserException&)
@@ -324,7 +358,11 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
         NSSetSeq_var result = new NSSetSeq;
         Registry::WhoisImpl::NSSetSeq nss_seq = pimpl_->get_nssets_by_tech_c(handle, limit);
         limit_exceeded = nss_seq.limit_exceeded;
-        wrap_unbound_sequence(nss_seq.content, result.inout(), wrap_nsset);
+        result->length(nss_seq.content.size());
+        for (CORBA::ULong i = 0; i < nss_seq.content.size(); ++i)
+        {
+            result[i] = wrap_nsset(nss_seq.content[i]);
+        }
         return result._retn();
     } 
     catch (const ::CORBA::UserException& )
@@ -382,9 +420,27 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
     result.changed = Corba::wrap_nullable_datetime(keyset.changed);
     result.last_transfer = Corba::wrap_nullable_datetime(keyset.last_transfer);
 
-    wrap_string_sequence(keyset.tech_contacts, result.tech_contact_handles);
-    wrap_string_sequence(keyset.statuses, result.statuses);
-    wrap_unbound_sequence(keyset.dns_keys, result.dns_keys, wrap_dnskey);
+    result.tech_contact_handles.length(keyset.tech_contacts.size());
+    CORBA::ULong i = 0;
+    for (std::vector<std::string>::const_iterator cit = keyset.tech_contacts.begin();
+            cit != keyset.tech_contacts.end(); ++cit, ++i)
+    {
+        result.tech_contact_handles[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
+
+    result.statuses.length(keyset.statuses.size());
+    i = 0;
+    for (std::vector<std::string>::const_iterator cit = keyset.statuses.begin();
+            cit != keyset.statuses.end(); ++cit, ++i)
+    {
+        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
+
+    result.dns_keys.length(keyset.dns_keys.size());
+    for (CORBA::ULong i = 0; i < keyset.dns_keys.size(); ++i)
+    {
+        result.dns_keys[i] = wrap_dnskey(keyset.dns_keys[i]);
+    }
     return result;
 }
 
@@ -414,7 +470,11 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
         KeySetSeq_var result = new KeySetSeq;
         Registry::WhoisImpl::KeySetSeq ks_seq = pimpl_->get_keysets_by_tech_c(handle, limit);
         limit_exceeded = ks_seq.limit_exceeded;
-        wrap_unbound_sequence(ks_seq.content, result.inout(), wrap_keyset);
+        result->length(ks_seq.content.size());
+        for (CORBA::ULong i = 0; i < ks_seq.content.size(); ++i)
+        {
+            result[i] = wrap_keyset(ks_seq.content[i]);
+        }
         return result._retn();
     }
     catch (const ::CORBA::UserException& )
@@ -467,8 +527,22 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
         result.validated_to_time_estimate = Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
         result.validated_to_time_actual = Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
     } 
-    wrap_string_sequence(domain.admin_contacts, result.admin_contact_handles);
-    wrap_string_sequence(domain.statuses, result.statuses);
+
+    result.admin_contact_handles.length(domain.admin_contacts.size());
+    CORBA::ULong i = 0;
+    for (std::vector<std::string>::const_iterator cit = domain.admin_contacts.begin();
+            cit != domain.admin_contacts.end(); ++cit, ++i)
+    {
+        result.admin_contact_handles[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
+
+    result.statuses.length(domain.statuses.size());
+    i = 0;
+    for (std::vector<std::string>::const_iterator cit = domain.statuses.begin();
+            cit != domain.statuses.end(); ++cit, ++i)
+    {
+        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+    }
 
     return result;
 
@@ -498,7 +572,11 @@ static DomainSeq* get_domains_by_(
     {
         DomainSeq_var result = new DomainSeq;
         limit_exceeded = dom_seq.limit_exceeded;
-        wrap_unbound_sequence(dom_seq.content, result.inout(), wrap_domain);
+        result->length(dom_seq.content.size());
+        for (CORBA::ULong i = 0; i < dom_seq.content.size(); ++i)
+        {
+            result[i] = wrap_domain(dom_seq.content[i]);
+        }
         return result._retn();
     }
     catch (const ::CORBA::UserException& )
