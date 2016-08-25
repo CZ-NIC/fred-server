@@ -572,7 +572,10 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
             temp.statuses.reserve(v_osd.size());
             BOOST_FOREACH(Fred::ObjectStateData it_osd, v_osd)
             {
-                temp.statuses.push_back(it_osd.state_name);
+                if (it.is_external)
+                {
+                    temp.statuses.push_back(it_osd.state_name);
+                }
             }
 
             temp.tech_contacts.reserve(it->info_keyset_data.tech_contacts.size());
@@ -623,7 +626,10 @@ static WhoisImpl::Domain make_domain_from_info_data(
     result.statuses.reserve(v_osd.size());
     BOOST_FOREACH(Fred::ObjectStateData it, v_osd)
     {
-        result.statuses.push_back(it.state_name);
+        if (it.is_external)
+        {
+            result.statuses.push_back(it.state_name);
+        }
     }
     if (! idd.enum_domain_validation.isnull())
     {
