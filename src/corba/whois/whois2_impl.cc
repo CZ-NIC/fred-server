@@ -413,6 +413,7 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
     {
         KeySetSeq_var result = new KeySetSeq;
         Registry::WhoisImpl::KeySetSeq ks_seq = pimpl_->get_keysets_by_tech_c(handle, limit);
+        limit_exceeded = ks_seq.limit_exceeded;
         wrap_unbound_sequence(ks_seq.content, result.inout(), wrap_keyset);
         return result._retn();
     }
