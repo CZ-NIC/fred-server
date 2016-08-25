@@ -71,8 +71,7 @@ RegistrarSeq* Server_impl::get_registrars()
     try
     {
         RegistrarSeq_var result = new RegistrarSeq;
-        std::vector<Registry::WhoisImpl::Registrar> registrars = pimpl_->get_registrars();
-        wrap_unbound_sequence(registrars, result.inout(), wrap_registrar);
+        wrap_unbound_sequence(pimpl_->get_registrars(), result.inout(), wrap_registrar);
         return result._retn();
     }
     catch (...) { }
@@ -105,8 +104,7 @@ RegistrarGroupList* Server_impl::get_registrar_groups()
     try
     {
         RegistrarGroupList_var result = new RegistrarGroupList;
-        const std::vector<Registry::WhoisImpl::RegistrarGroup>& reg_grps = pimpl_->get_registrar_groups();
-        wrap_unbound_sequence(reg_grps, result.inout(), wrap_registrar_group);
+        wrap_unbound_sequence(pimpl_->get_registrar_groups(), result.inout(), wrap_registrar_group);
         return result._retn();
     }
     catch (...) { }
@@ -129,8 +127,7 @@ RegistrarCertificationList* Server_impl::get_registrar_certification_list()
     try
     {
         RegistrarCertificationList_var result = new RegistrarCertificationList;
-        const std::vector<Registry::WhoisImpl::RegistrarCertification>& reg_certs = pimpl_->get_registrar_certification_list();
-        wrap_unbound_sequence(reg_certs, result.inout(), wrap_registrar_certification);
+        wrap_unbound_sequence(pimpl_->get_registrar_certification_list(), result.inout(), wrap_registrar_certification);
         return result._retn();
     }
     catch (...) { }
