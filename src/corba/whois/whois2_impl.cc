@@ -235,24 +235,23 @@ struct InvalidIPAddressException : public std::runtime_error
     const char* what() const throw() {return what_msg();}
 };
 
-/**
- * @throws InvalidIPAddressException
- */
-void wrap_ipaddress(const boost::asio::ip::address& in, IPAddress& out )
+IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
 {
-    out.address = Corba::wrap_string(in.to_string());
+    IPAddress result;
+    result.address = Corba::wrap_string(in.to_string());
     if (in.is_v4()) 
     {
-        out.version = IPv4;
+        result.version = IPv4;
     }
     else if (in.is_v6()) 
     {
-        out.version = IPv6;
+        result.version = IPv6;
     }
     else 
     {
         throw InvalidIPAddressException();
     }
+    return result;
 }
 
 NameServer wrap_nameserver(const Registry::WhoisImpl::NameServer& ns)
