@@ -240,10 +240,6 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...) { }
 
     //default exception handling
@@ -341,10 +337,6 @@ NSSet* Server_impl::get_nsset_by_handle(const char* handle)
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...) { }
 
     //default exception handling
@@ -377,10 +369,6 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
     {
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
-    }
-    catch (const ::CORBA::UserException&)
-    {
-        throw;
     }
     catch (...) { }
 
@@ -415,10 +403,6 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...) { }
 
     //default exception handling
@@ -449,10 +433,6 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
     {
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
-    }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
     }
     catch (...) { }
 
@@ -520,10 +500,6 @@ KeySet* Server_impl::get_keyset_by_handle(const char* handle)
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...) { }
 
     //default exception handling
@@ -556,10 +532,6 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
     {
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
-    }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
     }
     catch (...) { }
 
@@ -654,10 +626,6 @@ Domain* Server_impl::get_domain_by_handle(const char* handle)
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::UNMANAGED_ZONE();
     }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...) { }
 
     //default exception handling
@@ -697,10 +665,6 @@ DomainSeq* Server_impl::get_domains_by_registrant(
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...) { }
 
     //default exception handling
@@ -725,10 +689,6 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
     {
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
-    }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
     }
     catch (...) { }
 
@@ -755,10 +715,6 @@ DomainSeq* Server_impl::get_domains_by_nsset(
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
-    }
     catch (...) { }
 
     //default exception handling
@@ -783,10 +739,6 @@ DomainSeq* Server_impl::get_domains_by_keyset(
     {
         LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
-    }
-    catch (const ::CORBA::UserException& )
-    {
-        throw;
     }
     catch (...) { }
 
