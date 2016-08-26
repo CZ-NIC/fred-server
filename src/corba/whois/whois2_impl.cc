@@ -248,13 +248,7 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
 
 struct InvalidIPAddressException : public std::runtime_error 
 {
-    static const char* what_msg() throw() {return "invalid IP address";}
-
-    InvalidIPAddressException()
-    : std::runtime_error(what_msg())
-    {}
-
-    const char* what() const throw() {return what_msg();}
+    InvalidIPAddressException() : std::runtime_error("invalid IP address") {}
 };
 
 IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
