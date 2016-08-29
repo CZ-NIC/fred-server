@@ -40,14 +40,4 @@ inline char* corba_wrap_string(const std::string &_s)
     return corba_wrap_string(_s.c_str());
 }
 
-inline std::string corba_unwrap_string(const CORBA::String_member &_s)
-{
-    return static_cast<std::string>(_s);
-}
-
-
-
-
-
-
 #endif // COMMON_WRAPPERS_H_
