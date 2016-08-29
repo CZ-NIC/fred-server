@@ -59,11 +59,12 @@ bool TestHandleOf< TYPE_OF_OBJECT >::is_protected(OperationContext &_ctx)const
         "WITH obj AS "
             "(SELECT obr.id,"
                     "CURRENT_TIMESTAMP<(obr.erdate+(ep.val||'MONTH')::INTERVAL) AS protected "
-             "FROM enum_parameters ep,"
+            "FROM enum_parameters ep,"
                   "object_registry obr "
-             "WHERE ep.name=$1::TEXT AND "
+            "WHERE ep.name=$1::TEXT AND "
                    "obr.type=get_object_type_id($2::TEXT) AND "
-                   "UPPER(obr.name)=UPPER($3::TEXT)) "
+                   "UPPER(obr.name)=UPPER($3::TEXT) "
+            "FOR SHARE of obr) "
         "SELECT protected FROM obj "
         "ORDER BY id DESC LIMIT 1",
         Database::query_param_list(parameter_name)
@@ -83,7 +84,8 @@ bool TestHandleOf< TYPE_OF_OBJECT >::is_registered(OperationContext &_ctx)const
         "FROM object_registry "
         "WHERE erdate IS NULL AND "
               "type=get_object_type_id($1::TEXT) AND "
-              "name=UPPER($2::TEXT)",
+              "name=UPPER($2::TEXT) "
+        "FOR SHARE",
         Database::query_param_list(object_type_name)(handle_));
 
     return 0 < db_res.size();
