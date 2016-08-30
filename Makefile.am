@@ -1520,6 +1520,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/action.h \
 		src/corba/epp/reason.h \
 		src/corba/epp/response.h \
+		src/corba/epp/domain/domain_check_corba_conversions.h \
+		src/corba/epp/domain/domain_check_corba_conversions.cc \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
 		src/epp/disclose_policy.h \
@@ -1562,6 +1564,12 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_transfer_impl.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
 		src/epp/contact/disclose.h \
+		src/epp/domain/domain_check.cc \
+		src/epp/domain/domain_check.h \
+		src/epp/domain/domain_check_impl.cc \
+		src/epp/domain/domain_check_impl.h \
+		src/epp/domain/domain_check_localization.cc \
+		src/epp/domain/domain_check_localization.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
 		src/epp/keyset/dns_key.cc \
@@ -1623,6 +1631,27 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/nsset_impl.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
+
+#src/epp/domain/domain_create.cc \
+#src/epp/domain/domain_create.h \
+#src/epp/domain/domain_create_impl.cc \
+#src/epp/domain/domain_create_impl.h \
+#src/epp/domain/domain_delete.cc \
+#src/epp/domain/domain_delete.h \
+#src/epp/domain/domain_delete_impl.cc \
+#src/epp/domain/domain_delete_impl.h \
+#src/epp/domain/domain_info.cc \
+#src/epp/domain/domain_info.h \
+#src/epp/domain/domain_info_impl.cc \
+#src/epp/domain/domain_info_impl.h \
+#src/epp/domain/domain_transfer.cc \
+#src/epp/domain/domain_transfer.h \
+#src/epp/domain/domain_transfer_impl.cc \
+#src/epp/domain/domain_transfer_impl.h \
+#src/epp/domain/domain_update.cc \
+#src/epp/domain/domain_update.h \
+#src/epp/domain/domain_update_impl.cc \
+#src/epp/domain/domain_update_impl.h \
 
 
 #

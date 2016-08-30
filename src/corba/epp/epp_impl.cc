@@ -88,14 +88,13 @@
 #include "src/epp/contact/contact_delete.h"
 #include "src/epp/contact/contact_transfer.h"
 #include "src/epp/contact/post_contact_update_hooks.h"
-
+#include "src/epp/domain/domain_check.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_create.h"
 #include "src/epp/keyset/localized_update.h"
 #include "src/epp/keyset/localized_check.h"
 #include "src/epp/keyset/localized_delete.h"
 #include "src/epp/keyset/localized_transfer.h"
-
 #include "src/epp/response.h"
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
@@ -109,6 +108,7 @@
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/epp/corba_conversions.h"
+#include "src/corba/epp/domain/domain_check_corba_conversions.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "util/util.h"
 
@@ -2647,14 +2647,41 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
 }
 
 ccReg::Response* ccReg_EPP_i::DomainCheck(
-  const ccReg::Check& fqdn, ccReg::CheckResp_out a, const ccReg::EppParams &params)
+  const ccReg::Check& fqdn,
+  ccReg::CheckResp_out a,
+  const ccReg::EppParams &params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
+    try {
+        /* output data must be ordered exactly the same */
+        const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(fqdn);
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-  return ObjectCheck( EPP_DomainCheck , "DOMAIN" , "fqdn" , fqdn , a , params);
+        const Epp::Domain::DomainCheckResponse response = Epp::Domain::domain_check(
+            std::set<std::string>(domain_fqdns.begin(), domain_fqdns.end()),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle
+        );
+
+        ccReg::CheckResp_var check_results = new ccReg::CheckResp(
+            CorbaConversion::wrap_DomainFqdnToDomainLocalizedRegistrationObstruction(
+                domain_fqdns,
+                response.domain_fqdn_to_domain_localized_registration_obstruction
+            )
+        );
+
+        ccReg::Response_var return_value = new ccReg::Response(Corba::wrap_response(response.localized_success_response, server_transaction_handle));
+
+        /* No exception shall be thrown from here onwards. */
+
+        a = check_results._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::KeySetCheck(

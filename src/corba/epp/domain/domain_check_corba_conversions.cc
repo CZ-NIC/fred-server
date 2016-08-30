@@ -1,0 +1,57 @@
+#include "src/corba/epp/corba_conversions.h"
+
+#include "src/corba/EPP.hh"
+#include "src/corba/util/corba_conversions_string.h"
+#include "src/epp/domain/domain_check.h"
+#include "src/epp/domain/domain_registration_obstruction.h"
+
+#include "util/map_at.h"
+
+namespace CorbaConversion {
+
+namespace {
+
+ccReg::CheckAvail wrap_DomainLocalizedRegistrationObstruction(const boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction>& obstruction) {
+
+    if (!obstruction.is_initialized()) {
+        return ccReg::NotExist;
+    }
+
+    switch (obstruction.get().state) {
+        case Epp::Domain::DomainRegistrationObstruction::registered           : return ccReg::Exist;
+        case Epp::Domain::DomainRegistrationObstruction::blacklisted          : return ccReg::BlackList;
+        case Epp::Domain::DomainRegistrationObstruction::zone_not_in_registry : return ccReg::NotApplicable;
+        case Epp::Domain::DomainRegistrationObstruction::invalid_fqdn         : return ccReg::BadFormat;
+    }
+
+    throw std::runtime_error("unknown_domain_state");
+}
+
+} // namespace CorbaConversion::{anonymous}}
+
+/**
+ * @returns check results in the same order as input handles
+ */
+ccReg::CheckResp wrap_DomainFqdnToDomainLocalizedRegistrationObstruction(
+    const std::vector<std::string>& domain_fqdns,
+    const Epp::Domain::DomainFqdnToDomainLocalizedRegistrationObstruction& domain_fqdn_to_domain_localized_registration_obstruction
+) {
+    ccReg::CheckResp result;
+    result.length(domain_fqdns.size());
+
+    CORBA::ULong i = 0;
+    for(
+        std::vector<std::string>::const_iterator domain_fqdn_ptr = domain_fqdns.begin();
+        domain_fqdn_ptr != domain_fqdns.end();
+        ++domain_fqdn_ptr, ++i
+    ) {
+        const boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> domain_localized_registration_obstruction = map_at(domain_fqdn_to_domain_localized_registration_obstruction, *domain_fqdn_ptr);
+
+        result[i].avail = wrap_DomainLocalizedRegistrationObstruction(domain_localized_registration_obstruction);
+        result[i].reason = Corba::wrap_string_to_corba_string(domain_localized_registration_obstruction.is_initialized() ? domain_localized_registration_obstruction.get().description : "");
+    }
+
+    return result;
+}
+
+}
