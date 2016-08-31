@@ -139,6 +139,7 @@ BOOST_FIXTURE_TEST_CASE(notification_created, has_nonsystem_registrar_updated_co
         registrar_id,
         "srv-trx-007",
         "cl-trx-007",
+        false,
         "somethingElseAndNotMatching"
     );
 
@@ -157,6 +158,7 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_prefix, has_nonsyste
         registrar_id,
         "srv-trx-007",
         "DOnotNOTIFY-cl-trx-007",
+        false,
         "DOnotNOTIFY"
     );
 
@@ -175,6 +177,7 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_system_registrar, ha
         registrar_id,
         "srv-trx-007",
         "DOnotNOTIFY-cl-trx-007",
+        false,
         "somethingElseAndNotMatching"
     );
 

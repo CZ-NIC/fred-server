@@ -2697,6 +2697,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_
         );
 
@@ -2728,6 +2729,7 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_);
 
         return new ccReg::Response(Corba::wrap_response(response, server_transaction_handle));
@@ -2758,6 +2760,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_
         );
 
@@ -3021,6 +3024,7 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
                     session_data.language,
                     server_transaction_handle,
                     request_params.client_transaction_id,
+                    disable_epp_notifier_,
                     disable_epp_notifier_cltrid_prefix_
                 ),
                 server_transaction_handle

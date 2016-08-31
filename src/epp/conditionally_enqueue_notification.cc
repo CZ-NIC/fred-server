@@ -12,40 +12,55 @@ void conditionally_enqueue_notification(
     const unsigned long long _registrar_id,
     const std::string& _server_transaction_handle,
     const std::string& _client_transaction_handle,
+    bool _epp_notification_disabled,
     const std::string& _client_transaction_handles_prefix_not_to_notify
 ) throw() {
 
     try {
         Fred::OperationContextCreator ctx;
         try {
-            if( _client_transaction_handle.substr( 0, _client_transaction_handles_prefix_not_to_notify.length() )
-                != _client_transaction_handles_prefix_not_to_notify
 
-                ||
-
-                ! Fred::InfoRegistrarById(_registrar_id).exec(ctx)
-                    .info_registrar_data.system.get_value_or_default() // if Null given default is false ...
-            ) {
-                Notification::enqueue_notification(
-                    ctx,
-                    _event,
-                    _registrar_id,
-                    _object_history_id_post_change,
-                    _server_transaction_handle
-                );
-
-                ctx.commit_transaction();
-            }
-            else
+            if(_epp_notification_disabled)
             {
                 ctx.get_log().info(
-                "command notification avoided ("
+                "epp notification disabled ("
                 "registrar=" + boost::lexical_cast<std::string>(_registrar_id)
                 + " event="+ to_db_handle(_event)
                 + " object_historyid_post_change=" + boost::lexical_cast<std::string>(_object_history_id_post_change)
                 + " cltrid=" +_client_transaction_handle
                 + " svtrid=" + _server_transaction_handle
                 +")");
+            }
+            else
+            {
+                if(_client_transaction_handle.substr( 0, _client_transaction_handles_prefix_not_to_notify.length() )
+                    == _client_transaction_handles_prefix_not_to_notify
+                    &&
+                    Fred::InfoRegistrarById(_registrar_id).exec(ctx)
+                        .info_registrar_data.system.get_value_or_default() // if Null given default is false ...
+                )
+                {
+                    ctx.get_log().info(
+                    "command notification avoided because of system registrar and cltrid prefix("
+                    "registrar=" + boost::lexical_cast<std::string>(_registrar_id)
+                    + " event="+ to_db_handle(_event)
+                    + " object_historyid_post_change=" + boost::lexical_cast<std::string>(_object_history_id_post_change)
+                    + " cltrid=" +_client_transaction_handle
+                    + " svtrid=" + _server_transaction_handle
+                    +")");
+                }
+                else
+                {
+                    Notification::enqueue_notification(
+                        ctx,
+                        _event,
+                        _registrar_id,
+                        _object_history_id_post_change,
+                        _server_transaction_handle
+                    );
+
+                    ctx.commit_transaction();
+                }
             }
 
         } catch(...) {
