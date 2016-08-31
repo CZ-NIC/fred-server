@@ -3,6 +3,7 @@
 #include "src/epp/domain/domain_check_localization.h"
 #include "src/epp/domain/domain_registration_obstruction.h"
 #include "src/fredlib/object/object_type.h"
+#include "src/fredlib/registrar/info_registrar.h"
 #include "util/idn_utils.h"
 
 #include <boost/foreach.hpp>
@@ -25,19 +26,19 @@ bool domain_fqdn_is_enum(const std::string& domain_fqdn) {
     return boost::algorithm::ends_with(domain_fqdn, enum_suffix);
 }
 
-bool registrar_is_system_registrar(Fred::OperationContext& ctx, unsigned registrar_id) {
-
-    const std::string object_type_name = Conversion::Enums::to_db_handle(Fred::Object_Type::domain);
-    const Database::Result db_res = ctx.get_conn().exec_params(
-        "SELECT system FROM registrar where id = $1::INTEGER",
-        Database::query_param_list
-            (registrar_id)
-    );
-
-    ctx.get_log().debug(boost::format("registrar_is_system_registrar(%1%) == %2%") % registrar_id % db_res.size());
-
-    return db_res.size() > 0;
-}
+//bool registrar_is_system_registrar(Fred::OperationContext& ctx, unsigned registrar_id) {
+//
+//    const std::string object_type_name = Conversion::Enums::to_db_handle(Fred::Object_Type::domain);
+//    const Database::Result db_res = ctx.get_conn().exec_params(
+//        "SELECT system FROM registrar where id = $1::INTEGER",
+//        Database::query_param_list
+//            (registrar_id)
+//    );
+//
+//    ctx.get_log().debug(boost::format("registrar_is_system_registrar(%1%) == %2%") % registrar_id % db_res.size());
+//
+//    return db_res.size() > 0;
+//}
 
 bool domain_zone_is_not_in_registry(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
     const Database::Result db_res = ctx.get_conn().exec(
@@ -262,7 +263,9 @@ bool domain_fqdn_is_invalid(Fred::OperationContext &ctx, const unsigned long lon
             }
             const bool is_idn_label = boost::algorithm::starts_with(*label_ptr, punycode_prefix);
             if (is_idn_label) {
-                const bool idn_allowed = registrar_is_system_registrar(ctx, registrar_id); // TODO or idn configured...
+                const Fred::InfoRegistrarData callers_registrar = Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data;
+                const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+                const bool idn_allowed = is_system_registrar;
                 if (!idn_allowed) {
                     return true;
                 }
