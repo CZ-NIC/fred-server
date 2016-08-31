@@ -30,7 +30,7 @@
 namespace Epp {
 
 /**
- * Creates notification request in case registrar is not system registrar and _client_transaction_handle is not beginning with _client_transaction_handles_prefix_not_to_nofify.
+ * Creates notification request in case registrar is not system registrar and _client_transaction_handle is not beginning with _client_transaction_handles_prefix_not_to_notify.
  */
 void conditionally_enqueue_notification(
     const Notification::notified_event _event,
@@ -38,7 +38,7 @@ void conditionally_enqueue_notification(
     const unsigned long long _registrar_id,
     const std::string& _server_transaction_handle,
     const std::string& _client_transaction_handle,
-    const std::string& _client_transaction_handles_prefix_not_to_nofify
+    const std::string& _client_transaction_handles_prefix_not_to_notify
 ) throw();
 
 }

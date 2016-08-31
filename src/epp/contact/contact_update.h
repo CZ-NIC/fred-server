@@ -42,7 +42,7 @@ LocalizedSuccessResponse contact_update(
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle,
     const std::string &_client_transaction_handle,
-    const std::string &_client_transaction_handles_prefix_not_to_nofify);
+    const std::string &_client_transaction_handles_prefix_not_to_notify);
 
 }
 
