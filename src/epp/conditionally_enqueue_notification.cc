@@ -21,7 +21,7 @@ void conditionally_enqueue_notification(
             if( _client_transaction_handle.substr( 0, _client_transaction_handles_prefix_not_to_nofify.length() )
                 != _client_transaction_handles_prefix_not_to_nofify
 
-                &&
+                ||
 
                 ! Fred::InfoRegistrarById(_registrar_id).exec(ctx)
                     .info_registrar_data.system.get_value_or_default() // if Null given default is false ...
@@ -35,6 +35,17 @@ void conditionally_enqueue_notification(
                 );
 
                 ctx.commit_transaction();
+            }
+            else
+            {
+                ctx.get_log().info(
+                "command notification avoided ("
+                "registrar=" + boost::lexical_cast<std::string>(_registrar_id)
+                + " event="+ to_db_handle(_event)
+                + " object_historyid_post_change=" + boost::lexical_cast<std::string>(_object_history_id_post_change)
+                + " cltrid=" +_client_transaction_handle
+                + " svtrid=" + _server_transaction_handle
+                +")");
             }
 
         } catch(...) {
