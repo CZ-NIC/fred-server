@@ -3,29 +3,9 @@
 #include "src/fredlib/notifier/gather_email_data/gather_email_addresses.h"
 #include "src/fredlib/notifier/gather_email_data/gather_email_content.h"
 #include "src/fredlib/notifier/exception.h"
-
-#include <string>
-#include <boost/shared_ptr.hpp>
-#include <boost/foreach.hpp>
-#include <boost/algorithm/string/trim.hpp>
+#include "src/fredlib/email/email_utils.h"
 
 namespace Notification {
-
-struct email_data {
-    const std::set<std::string>                 recipient_email_addresses;
-    const std::string                           template_name;
-    const std::map<std::string, std::string>    template_parameters;
-
-    email_data(
-        const std::set<std::string>&                _recipient_email_addresses,
-        const std::string&                          _template_name,
-        const std::map<std::string, std::string>&   _template_parameters
-    ) :
-        recipient_email_addresses(_recipient_email_addresses),
-        template_name(_template_name),
-        template_parameters(_template_parameters)
-    { }
-};
 
 /**
  * @returns template name as specified by table 'mail_type' column 'name'
@@ -41,53 +21,6 @@ static std::string get_template_name(notified_event _event) {
     }
 
     throw ExceptionUnknownEmailTemplate();
-}
-
-struct FailedToSendMailToRecipient {
-    const std::string failed_recipient;
-    const std::set<std::string> skipped_recipients;
-
-    FailedToSendMailToRecipient(
-        const std::string& _failed_recipient,
-        const std::set<std::string>& _skipped_recipients
-    ) :
-        failed_recipient(_failed_recipient),
-        skipped_recipients(_skipped_recipients)
-    { }
-};
-
-/**
- * @throws FailedToSendMailToRecipient
- */
-static void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const email_data& _data) {
-
-    std::set<std::string> trimmed_recipient_email_addresses;
-    BOOST_FOREACH(const std::string& email, _data.recipient_email_addresses) {
-        trimmed_recipient_email_addresses.insert( boost::trim_copy(email) );
-    }
-
-    for(
-        std::set<std::string>::const_iterator it = trimmed_recipient_email_addresses.begin();
-        it != trimmed_recipient_email_addresses.end();
-        ++it
-    ) {
-        try {
-            _mailer->sendEmail(
-                "",
-                *it,
-                "",
-                _data.template_name,
-                _data.template_parameters,
-                Fred::Mailer::Handles(),
-                Fred::Mailer::Attachments()
-            );
-        } catch(const Fred::Mailer::NOT_SEND& e) {
-            throw FailedToSendMailToRecipient(
-                *it,
-                std::set<std::string>(it, trimmed_recipient_email_addresses.end())
-            );
-        }
-    }
 }
 
 bool process_one_notification_request(Fred::OperationContext& _ctx, boost::shared_ptr<Fred::Mailer::Manager> _mailer) {
@@ -168,7 +101,7 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
             "history_id_post_change=\"" + boost::lexical_cast<std::string>( request.history_id_post_change ) + "\" "
             "svtrid=\"" + request.svtrid + "\" ";
 
-        const email_data data(
+        const Fred::EmailData data(
             gather_email_addresses( _ctx, request.event, request.history_id_post_change ),
             get_template_name( request.event.get_event() ),
             gather_email_content(_ctx, request)
@@ -189,9 +122,9 @@ bool process_one_notification_request(Fred::OperationContext& _ctx, boost::share
 
         try {
 
-            send_email(_mailer, data);
+            Fred::send_email(_mailer, data);
 
-        } catch(const FailedToSendMailToRecipient& e) {
+        } catch(const Fred::FailedToSendMailToRecipient& e) {
 
             throw FailedToSendMail(
                 request,
