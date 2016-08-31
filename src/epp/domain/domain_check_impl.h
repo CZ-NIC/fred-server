@@ -42,7 +42,8 @@ namespace Domain {
  */
 DomainFqdnToDomainRegistrationObstruction domain_check_impl(
     Fred::OperationContext& ctx,
-    const std::set<std::string>& domain_fqdns
+    const std::set<std::string>& domain_fqdns,
+    unsigned long long registrar_id
 );
 
 }

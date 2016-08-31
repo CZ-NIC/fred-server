@@ -44,7 +44,7 @@ DomainCheckResponse domain_check(
         Fred::OperationContextCreator ctx;
 
         // FOR EACH...
-        const DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction = domain_check_impl(ctx, domain_fqdns);
+        const DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction = domain_check_impl(ctx, domain_fqdns, registrar_id);
 
         const DomainFqdnToDomainLocalizedRegistrationObstruction domain_fqdn_to_domain_localized_registration_obstruction =
             create_domain_fqdn_to_domain_localized_registration_obstruction(ctx, domain_fqdn_to_domain_registration_obstruction, lang);
