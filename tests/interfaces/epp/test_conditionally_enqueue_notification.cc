@@ -150,7 +150,7 @@ BOOST_FIXTURE_TEST_CASE(notification_created, has_nonsystem_registrar_updated_co
     ctx.commit_transaction();
 }
 
-BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_prefix, has_nonsystem_registrar_updated_contact_and_empty_notification_queue)
+BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonsystem_registrar, has_nonsystem_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
         Notification::updated,
@@ -164,12 +164,12 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_prefix, has_nonsyste
 
     Fred::OperationContextCreator ctx;
 
-    BOOST_CHECK( ! Notification::process_one_notification_request(ctx, mailer) );
+    BOOST_CHECK( Notification::process_one_notification_request(ctx, mailer) );
 
     ctx.commit_transaction();
 }
 
-BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_system_registrar, has_system_registrar_updated_contact_and_empty_notification_queue)
+BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonmatching_prefix, has_system_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
         Notification::updated,
@@ -183,7 +183,45 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_system_registrar, ha
 
     Fred::OperationContextCreator ctx;
 
-    BOOST_CHECK( ! Notification::process_one_notification_request(ctx, mailer) );
+    BOOST_CHECK( Notification::process_one_notification_request(ctx, mailer) );
+
+    ctx.commit_transaction();
+}
+
+BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_system_registrar_and_matching_prefix, has_system_registrar_updated_contact_and_empty_notification_queue)
+{
+    Epp::conditionally_enqueue_notification(
+        Notification::updated,
+        post_update_contact_history_id,
+        registrar_id,
+        "srv-trx-007",
+        "DOnotNOTIFY-cl-trx-007",
+        false,
+        "DOnotNOTIFY"
+    );
+
+    Fred::OperationContextCreator ctx;
+
+    BOOST_CHECK( !Notification::process_one_notification_request(ctx, mailer) );
+
+    ctx.commit_transaction();
+}
+
+BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_config, has_nonsystem_registrar_updated_contact_and_empty_notification_queue)
+{
+    Epp::conditionally_enqueue_notification(
+        Notification::updated,
+        post_update_contact_history_id,
+        registrar_id,
+        "srv-trx-007",
+        "DOnotNOTIFY-cl-trx-007",
+        true,
+        "somethingElseAndNotMatching"
+    );
+
+    Fred::OperationContextCreator ctx;
+
+    BOOST_CHECK( !Notification::process_one_notification_request(ctx, mailer) );
 
     ctx.commit_transaction();
 }
