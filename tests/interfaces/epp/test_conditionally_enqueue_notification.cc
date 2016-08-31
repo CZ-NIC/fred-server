@@ -188,7 +188,7 @@ BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonmatching_prefix, has_
     ctx.commit_transaction();
 }
 
-BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_system_registrar_and_matching_prefix, has_system_registrar_updated_contact_and_empty_notification_queue)
+BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_sys_reg_and_prefix, has_system_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
         Notification::updated,
