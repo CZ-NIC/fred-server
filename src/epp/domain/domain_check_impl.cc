@@ -2,6 +2,7 @@
 
 #include "src/epp/domain/domain_check_localization.h"
 #include "src/epp/domain/domain_registration_obstruction.h"
+#include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "util/idn_utils.h"
@@ -26,48 +27,13 @@ bool domain_fqdn_is_enum(const std::string& domain_fqdn) {
     return boost::algorithm::ends_with(domain_fqdn, enum_suffix);
 }
 
-//bool registrar_is_system_registrar(Fred::OperationContext& ctx, unsigned registrar_id) {
-//
-//    const std::string object_type_name = Conversion::Enums::to_db_handle(Fred::Object_Type::domain);
-//    const Database::Result db_res = ctx.get_conn().exec_params(
-//        "SELECT system FROM registrar where id = $1::INTEGER",
-//        Database::query_param_list
-//            (registrar_id)
-//    );
-//
-//    ctx.get_log().debug(boost::format("registrar_is_system_registrar(%1%) == %2%") % registrar_id % db_res.size());
-//
-//    return db_res.size() > 0;
-//}
+bool domain_zone_fqdn_is_invalid(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
+    //return Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx);
+    return false; // TODO
+}
 
 bool domain_zone_is_not_in_registry(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
-    const Database::Result db_res = ctx.get_conn().exec(
-            "SELECT fqdn as zone_fqdn "
-            "FROM zone "
-            "ORDER BY LENGTH(fqdn) DESC"
-    );
-
-    ctx.get_log().debug(boost::format("domain_zone_is_not_in_registry(%1%) == zones:%2%") % domain_fqdn % db_res.size());
-
-    if (db_res.size() == 0) {
-        return true;
-    }
-
-    bool domain_zone_found = false;
-    for (std::size_t i = 0; i < db_res.size(); ++i) {
-        const std::string zone_fqdn = static_cast<std::string>(db_res[i]["zone_fqdn"]);
-        ctx.get_log().debug(boost::format("domain_zone_is_not_in_registry(%1%) zone %2%") % domain_fqdn % zone_fqdn);
-        if (boost::algorithm::ends_with(domain_fqdn, zone_fqdn)) {
-            if (boost::algorithm::ends_with(domain_fqdn, std::string(".") + zone_fqdn)) {
-                domain_zone_found = true;
-                break;
-            }
-        }
-    }
-
-    ctx.get_log().debug(boost::format("domain_zone_is_not_in_registry(%1%) == %2%") % domain_fqdn % !domain_zone_found);
-
-    return !domain_zone_found;
+    return Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx);
 }
 
 bool domain_is_registered_enum(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
@@ -90,43 +56,11 @@ bool domain_is_registered_enum(Fred::OperationContext& ctx, const std::string& d
 }
 
 bool domain_is_registered(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
-    if (domain_fqdn_is_enum(domain_fqdn)) {
-        return domain_is_registered_enum(ctx, domain_fqdn);
-    }
-
-    const std::string object_type_name = Conversion::Enums::to_db_handle(Fred::Object_Type::domain);
-    const Database::Result db_res = ctx.get_conn().exec_params(
-        "SELECT 1 "
-        "FROM object_registry "
-        "WHERE erdate IS NULL "
-          "AND type=get_object_type_id($1::TEXT) "
-          "AND name=LOWER($2::TEXT)",
-        Database::query_param_list
-            (object_type_name)
-            (domain_fqdn)
-    );
-
-    ctx.get_log().debug(boost::format("domain_is_registered(%1%) == %2%") % domain_fqdn % db_res.size());
-
-    return db_res.size() > 0;
+    return Fred::CheckDomain(domain_fqdn).is_registered(ctx);
 }
 
 bool domain_is_blacklisted(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
-    const Database::Result db_res = ctx.get_conn().exec_params(
-            "SELECT 1 "
-            "FROM domain_blacklist "
-            "WHERE regexp ~ '$1::TEXT' "
-              "AND NOW() > valid_from "
-              "AND "
-                "(NOW() < valid_to "
-                "OR valid_to IS NULL)",
-            Database::query_param_list
-                (domain_fqdn)
-    );
-
-    ctx.get_log().debug(boost::format("domain_is_blacklisted(%1%) == %2%") % domain_fqdn % db_res.size());
-
-    return db_res.size() > 0;
+    return Fred::CheckDomain(domain_fqdn).is_blacklisted(ctx);
 }
 
 std::string utf8_to_punycode(const std::string& fqdn) {
@@ -287,6 +221,8 @@ bool domain_fqdn_is_invalid(Fred::OperationContext &ctx, const unsigned long lon
         }
     }
     return false;
+    //return Fred::CheckDomain(domain_fqdn).is_invalid_syntax(); // not IDN aware
+    //return Fred::CheckDomain(domain_fqdn).is_invalid_handle(ctx); // not IDN aware
 }
 
 Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstruction_by_fqdn(Fred::OperationContext& ctx, const unsigned long long registrar_id, const std::string domain_fqdn) {
@@ -295,14 +231,17 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
     if (domain_is_registered(ctx, domain_fqdn)) {
         return DomainRegistrationObstruction::registered;
     }
-    //else if (domain_is_blacklisted(ctx, domain_fqdn)) {
-    //    return DomainRegistrationObstruction::blacklisted;
-    //}
-    else if (domain_fqdn_is_invalid(ctx, registrar_id, domain_fqdn)) {
+    else if (domain_is_blacklisted(ctx, domain_fqdn)) {
+        return DomainRegistrationObstruction::blacklisted;
+    }
+    else if (domain_zone_fqdn_is_invalid(ctx, domain_fqdn)) {
         return DomainRegistrationObstruction::invalid_fqdn;
     }
     else if (domain_zone_is_not_in_registry(ctx, domain_fqdn)) {
         return DomainRegistrationObstruction::zone_not_in_registry;
+    }
+    else if (domain_fqdn_is_invalid(ctx, registrar_id, domain_fqdn)) {
+        return DomainRegistrationObstruction::invalid_fqdn;
     }
     return Nullable<DomainRegistrationObstruction::Enum>();
 }
@@ -318,10 +257,6 @@ DomainFqdnToDomainRegistrationObstruction domain_check_impl(
 
     BOOST_FOREACH(const std::string &domain_fqdn, domain_fqdns) {
         domain_fqdn_to_domain_registration_obstruction[domain_fqdn] = domain_get_registration_obstruction_by_fqdn(ctx, registrar_id, domain_fqdn);
-        //domain_fqdn_to_domain_registration_obstruction[domain_fqdn] = domain_state_to_domain_check_result(
-        //    Fred::Domain::get_domain_fqdn_syntax_validity(domain_fqdn),
-        //    Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, domain_fqdn)
-        //);
     }
 
     return domain_fqdn_to_domain_registration_obstruction;
