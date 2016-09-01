@@ -2,6 +2,7 @@
 
 #include "src/epp/domain/domain_check_localization.h"
 #include "src/epp/domain/domain_registration_obstruction.h"
+#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -27,9 +28,8 @@ bool domain_fqdn_is_enum(const std::string& domain_fqdn) {
     return boost::algorithm::ends_with(domain_fqdn, enum_suffix);
 }
 
-bool domain_zone_fqdn_is_invalid(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
-    //return Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx);
-    return false; // TODO
+bool domain_fqdn_is_invalid_syntactically(const std::string& domain_fqdn) {
+    return !Fred::Domain::general_domain_name_syntax_check(domain_fqdn);
 }
 
 bool domain_zone_is_not_in_registry(Fred::OperationContext& ctx, const std::string& domain_fqdn) {
@@ -132,11 +132,13 @@ bool domain_fqdn_label_is_valid_punycode(const std::string& fqdn) {
  *
  * @return 
  */
-bool domain_fqdn_is_invalid(Fred::OperationContext &ctx, const unsigned long long registrar_id, const std::string& domain_fqdn) { // TODO refactoring
+bool domain_fqdn_is_invalid_for_registration(Fred::OperationContext &ctx, const unsigned long long registrar_id, const std::string& domain_fqdn) { // TODO refactoring
+    ////old impl:
     //// ! the last asterisk means only that last label has {0,n} chars with 0 enabling fqdn to end with dot
     ////                                    (somelabel.)*(label )
     ////                                    |          | |      |
     //static const boost::regex fqdn_regex("([^\\.]+\\.)*[^\\.]*");
+
     // regular expression for at least one label + one TLD
     // numbers in TLD and 1-character long TLDs are allowed
     static const boost::regex fqdn_regex("([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.?", boost::regex::icase);
@@ -234,13 +236,13 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
     else if (domain_is_blacklisted(ctx, domain_fqdn)) {
         return DomainRegistrationObstruction::blacklisted;
     }
-    else if (domain_zone_fqdn_is_invalid(ctx, domain_fqdn)) {
+    else if (domain_fqdn_is_invalid_syntactically(domain_fqdn)) {
         return DomainRegistrationObstruction::invalid_fqdn;
     }
     else if (domain_zone_is_not_in_registry(ctx, domain_fqdn)) {
         return DomainRegistrationObstruction::zone_not_in_registry;
     }
-    else if (domain_fqdn_is_invalid(ctx, registrar_id, domain_fqdn)) {
+    else if (domain_fqdn_is_invalid_for_registration(ctx, registrar_id, domain_fqdn)) {
         return DomainRegistrationObstruction::invalid_fqdn;
     }
     return Nullable<DomainRegistrationObstruction::Enum>();
