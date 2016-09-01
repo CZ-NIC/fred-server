@@ -20,18 +20,7 @@ void conditionally_enqueue_notification(
         Fred::OperationContextCreator ctx;
         try {
 
-            if(_epp_notification_disabled)
-            {
-                ctx.get_log().info(
-                "epp notification disabled ("
-                "registrar=" + boost::lexical_cast<std::string>(_registrar_id)
-                + " event="+ to_db_handle(_event)
-                + " object_historyid_post_change=" + boost::lexical_cast<std::string>(_object_history_id_post_change)
-                + " cltrid=" +_client_transaction_handle
-                + " svtrid=" + _server_transaction_handle
-                +")");
-            }
-            else
+            if(!_epp_notification_disabled)
             {
                 if(_client_transaction_handle.substr( 0, _client_transaction_handles_prefix_not_to_notify.length() )
                     == _client_transaction_handles_prefix_not_to_notify
