@@ -38,7 +38,7 @@ void conditionally_enqueue_notification(
     const unsigned long long _registrar_id,
     const std::string& _server_transaction_handle,
     const std::string& _client_transaction_handle,
-    bool _epp_notification_disabled,
+    const bool _epp_notification_disabled,
     const std::string& _client_transaction_handles_prefix_not_to_notify
 ) throw();
 
