@@ -102,6 +102,8 @@ template<bool SystemReg>struct has_updated_contact_and_empty_notification_queue 
     boost::shared_ptr<Fred::Mailer::Manager> mailer;
     unsigned long long post_update_contact_history_id;
     unsigned long long registrar_id;
+    static const bool epp_notification_disabled = true;
+    static const bool epp_notification_enabled = false;
 
     has_updated_contact_and_empty_notification_queue()
     :
@@ -139,7 +141,7 @@ BOOST_FIXTURE_TEST_CASE(notification_created, has_nonsystem_registrar_updated_co
         registrar_id,
         "srv-trx-007",
         "cl-trx-007",
-        false,
+        epp_notification_enabled,
         "somethingElseAndNotMatching"
     );
 
@@ -158,7 +160,7 @@ BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonsystem_registrar, has
         registrar_id,
         "srv-trx-007",
         "DOnotNOTIFY-cl-trx-007",
-        false,
+        epp_notification_enabled,
         "DOnotNOTIFY"
     );
 
@@ -177,7 +179,7 @@ BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonmatching_prefix, has_
         registrar_id,
         "srv-trx-007",
         "DOnotNOTIFY-cl-trx-007",
-        false,
+        epp_notification_enabled,
         "somethingElseAndNotMatching"
     );
 
@@ -196,7 +198,7 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_sys_reg_and_prefix, 
         registrar_id,
         "srv-trx-007",
         "DOnotNOTIFY-cl-trx-007",
-        false,
+        epp_notification_enabled,
         "DOnotNOTIFY"
     );
 
@@ -215,7 +217,7 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_config, has_nonsyste
         registrar_id,
         "srv-trx-007",
         "DOnotNOTIFY-cl-trx-007",
-        true,
+        epp_notification_disabled,
         "somethingElseAndNotMatching"
     );
 
