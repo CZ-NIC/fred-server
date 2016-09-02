@@ -27,16 +27,17 @@
 #include "src/fredlib/keyset/check_keyset.h"
 #include "src/fredlib/keyset/keyset_dns_key.h"
 #include "src/fredlib/nsset/check_nsset.h"
+#include "util/log/context.h"
+#include "util/random.h"
 
+#include <algorithm>
 #include <boost/foreach.hpp>
-
+#include <boost/format.hpp>
 
 namespace Registry
 {
 namespace WhoisImpl
 {
-
-static std::string get_output_timezone() { static const std::string timezone("UTC"); return timezone; }
 
 static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
 {
@@ -70,6 +71,38 @@ static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
     }
 }
 
+namespace
+{
+std::string get_output_timezone() { static const std::string timezone("UTC"); return timezone; }
+
+std::string create_ctx_name(const std::string &_name)
+{
+    return boost::str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+}
+
+std::string create_ctx_function_name(const char *fnc)
+{
+    std::string name(fnc);
+    std::replace(name.begin(), name.end(), '_', '-');
+    return name;
+}
+
+class LogContext
+{
+public:
+    LogContext(const Server_impl& _impl, const std::string& _op_name)
+    : ctx_server_(create_ctx_name(_impl.get_server_name())),
+      ctx_operation_(_op_name)
+    {
+    }
+private:
+    Logging::Context ctx_server_;
+    Logging::Context ctx_operation_;
+};
+
+#define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
+} // anonymous namespace
+
 Registrar make_registrar_from_info_data(const Fred::InfoRegistrarData& ird)
 {
     Registrar reg;
@@ -92,6 +125,8 @@ Registrar make_registrar_from_info_data(const Fred::InfoRegistrarData& ird)
 
 Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -125,6 +160,8 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
 
 std::vector<Registrar> Server_impl::get_registrars()
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -148,6 +185,8 @@ std::vector<Registrar> Server_impl::get_registrars()
 
 std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -172,6 +211,8 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
 
 std::vector<RegistrarCertification> Server_impl::get_registrar_certification_list()
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -198,6 +239,8 @@ std::vector<RegistrarCertification> Server_impl::get_registrar_certification_lis
 
 std::vector<std::string> Server_impl::get_managed_zone_list()
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -212,6 +255,8 @@ std::vector<std::string> Server_impl::get_managed_zone_list()
 
 Contact Server_impl::get_contact_by_handle(const std::string& handle)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -318,6 +363,8 @@ static WhoisImpl::NSSet make_nsset_from_info_data(const Fred::InfoNssetData& ind
 
 WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -378,6 +425,8 @@ NSSetSeq Server_impl::get_nssets_by_ns(
     const std::string& handle,
     unsigned long limit)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -404,6 +453,8 @@ NSSetSeq Server_impl::get_nssets_by_ns(
 
 NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle, unsigned long limit)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -431,6 +482,8 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle, unsigned l
 
 NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -465,6 +518,8 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
 
 WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -516,6 +571,8 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
 
 KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned long limit)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -657,6 +714,8 @@ static WhoisImpl::Domain make_domain_from_info_data(
 
 WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     const Fred::CheckDomain check_domain(handle);
     try
@@ -744,6 +803,8 @@ static DomainSeq get_domains_by_(
 
 DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle, unsigned long limit)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -771,6 +832,8 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle, unsi
 
 DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle, unsigned long limit)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -797,6 +860,8 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle, u
 
 DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle, unsigned long limit)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -822,6 +887,8 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle, unsigned 
 
 DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle, unsigned long limit)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -847,8 +914,11 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle, unsigned
 
 static std::vector<ObjectStatusDesc> get_object_status_descriptions(
     const std::string& lang,
-    const std::string& type)
+    const std::string& type,
+    const Server_impl& impl)
 {
+    LOGGING_CONTEXT(log_ctx, impl);
+
     Fred::OperationContextCreator ctx;
     try
     {
@@ -886,22 +956,22 @@ static std::vector<ObjectStatusDesc> get_object_status_descriptions(
 
 std::vector<ObjectStatusDesc> Server_impl::get_domain_status_descriptions(const std::string& lang)
 {
-    return get_object_status_descriptions(lang, "domain");
+    return get_object_status_descriptions(lang, "domain", *this);
 }
 
 std::vector<ObjectStatusDesc> Server_impl::get_contact_status_descriptions(const std::string& lang)
 {
-    return get_object_status_descriptions(lang, "contact");
+    return get_object_status_descriptions(lang, "contact", *this);
 }
 
 std::vector<ObjectStatusDesc> Server_impl::get_nsset_status_descriptions(const std::string& lang)
 {
-    return get_object_status_descriptions(lang, "nsset");
+    return get_object_status_descriptions(lang, "nsset", *this);
 }
 
 std::vector<ObjectStatusDesc> Server_impl::get_keyset_status_descriptions(const std::string& lang)
 {
-    return get_object_status_descriptions(lang, "keyset");
+    return get_object_status_descriptions(lang, "keyset", *this);
 }
 
 }//WhoisImpl
