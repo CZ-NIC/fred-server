@@ -14,8 +14,8 @@ namespace Whois
 class Server_impl : public POA_Registry::Whois::WhoisIntf
 {
 public:
-    Server_impl()
-    : pimpl_(new Registry::WhoisImpl::Server_impl())
+    Server_impl(const std::string& server_name_)
+    : pimpl_(new Registry::WhoisImpl::Server_impl(server_name_))
     {}
 
     virtual ~Server_impl() {}

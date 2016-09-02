@@ -13,6 +13,10 @@
 struct whois_impl_instance_fixture : Test::Fixture::instantiate_db_template
 {
     Registry::WhoisImpl::Server_impl impl;
+
+    whois_impl_instance_fixture()
+    : impl("test-whois")
+    {}
 };
 
 #endif //WHOIS_FIXTURE_COMMON_H_

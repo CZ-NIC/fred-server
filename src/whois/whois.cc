@@ -158,6 +158,17 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
     return Registrar();
 }
 
+Server_impl::Server_impl(const std::string& _server_name)
+: server_name(_server_name)
+{
+    LogContext log_ctx(*this, "init");
+}
+
+const std::string& Server_impl::get_server_name() const
+{
+    return server_name;
+}
+
 std::vector<Registrar> Server_impl::get_registrars()
 {
     LOGGING_CONTEXT(log_ctx, *this);

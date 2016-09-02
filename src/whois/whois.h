@@ -557,8 +557,10 @@ struct MissingLocalization : std::exception
 class Server_impl
 {
 public:
+    Server_impl(const std::string& _server_name);
     virtual ~Server_impl() {}
 
+    const std::string& get_server_name() const;
     /**
      * Returns registrar (system/non-system) by a handle.
      * @param handle contains handle of the registrar.
@@ -709,6 +711,8 @@ public:
      */
     std::vector<ObjectStatusDesc> get_keyset_status_descriptions(const std::string& lang);
 
+private:
+    const std::string server_name;
 };//Server_impl
 
 }//WhoisImpl
