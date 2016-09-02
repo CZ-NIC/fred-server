@@ -49,12 +49,10 @@ Registrar* Server_impl::get_registrar_by_handle(const char* handle)
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -232,12 +230,10 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -323,12 +319,10 @@ NSSet* Server_impl::get_nsset_by_handle(const char* handle)
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -356,12 +350,10 @@ NSSetSeq* Server_impl::get_nssets_by_ns(
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -389,12 +381,10 @@ NSSetSeq* Server_impl::get_nssets_by_tech_c(
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -420,12 +410,10 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -486,12 +474,10 @@ KeySet* Server_impl::get_keyset_by_handle(const char* handle)
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -519,12 +505,10 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
     }
     catch (const Registry::WhoisImpl::InvalidHandle& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_HANDLE();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -602,22 +586,18 @@ Domain* Server_impl::get_domain_by_handle(const char* handle)
     }
     catch (const Registry::WhoisImpl::InvalidLabel& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_LABEL();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (const Registry::WhoisImpl::TooManyLabels& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::TOO_MANY_LABELS();
     }
     catch (const Registry::WhoisImpl::UnmanagedZone& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::UNMANAGED_ZONE();
     }
     catch (...) { }
@@ -651,12 +631,10 @@ DomainSeq* Server_impl::get_domains_by_registrant(
     }
     catch (const Registry::WhoisImpl::InvalidLabel& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_LABEL();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -676,12 +654,10 @@ DomainSeq* Server_impl::get_domains_by_admin_contact(
     }
     catch (const Registry::WhoisImpl::InvalidLabel& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_LABEL();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -701,12 +677,10 @@ DomainSeq* Server_impl::get_domains_by_nsset(
     }
     catch (const Registry::WhoisImpl::InvalidLabel& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_LABEL();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -726,12 +700,10 @@ DomainSeq* Server_impl::get_domains_by_keyset(
     }
     catch (const Registry::WhoisImpl::InvalidLabel& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::INVALID_LABEL();
     }
     catch (const Registry::WhoisImpl::ObjectNotExists& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::OBJECT_NOT_FOUND();
     }
     catch (...) { }
@@ -770,7 +742,6 @@ ObjectStatusDescSeq* Server_impl::get_domain_status_descriptions(const char* lan
     }
     catch (const Registry::WhoisImpl::MissingLocalization& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
@@ -787,7 +758,6 @@ ObjectStatusDescSeq* Server_impl::get_contact_status_descriptions(const char* la
     }
     catch (const Registry::WhoisImpl::MissingLocalization& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
@@ -804,7 +774,6 @@ ObjectStatusDescSeq* Server_impl::get_nsset_status_descriptions(const char* lang
     }
     catch (const Registry::WhoisImpl::MissingLocalization& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
@@ -821,7 +790,6 @@ ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lan
     }
     catch (const Registry::WhoisImpl::MissingLocalization& e)
     {
-        LOGGER(PACKAGE).error(e.what());
         throw Registry::Whois::MISSING_LOCALIZATION();
     }
     catch (...) { }
