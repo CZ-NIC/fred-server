@@ -97,7 +97,7 @@ Registrar Server_impl::get_registrar_by_handle(const std::string& handle)
     {
         try
         {
-            return make_registrar_from_info_data( 
+            return make_registrar_from_info_data(
                     Fred::InfoRegistrarByHandle(handle)
                        .exec(ctx, get_output_timezone())
                        .info_registrar_data);
@@ -634,7 +634,7 @@ static WhoisImpl::Domain make_domain_from_info_data(
     if (! idd.enum_domain_validation.isnull())
     {
         result.validated_to = idd.enum_domain_validation.get_value().validation_expiration;
-        result.validated_to_time_estimate = 
+        result.validated_to_time_estimate =
             ::Whois::domain_validation_expiration_datetime_estimate(
                 ctx,
                 idd.enum_domain_validation.get_value().validation_expiration);
@@ -646,7 +646,7 @@ static WhoisImpl::Domain make_domain_from_info_data(
         }
     }
     result.expire_time_estimate = ::Whois::domain_expiration_datetime_estimate(ctx, idd.expiration_date);
-    
+
     Optional<boost::posix_time::ptime> eta = ::Whois::domain_expiration_datetime_actual(ctx, idd.id);
     if (eta.isset())
     {

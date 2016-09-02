@@ -37,7 +37,7 @@ Registrar wrap_registrar(const Registry::WhoisImpl::Registrar& registrar)
     result.fax     = Corba::wrap_string_to_corba_string(registrar.fax);
     result.address = wrap_address(registrar.address);
     return result;
-} 
+}
 
 Registrar* Server_impl::get_registrar_by_handle(const char* handle)
 {
@@ -143,7 +143,7 @@ RegistrarCertificationList* Server_impl::get_registrar_certification_list()
     throw INTERNAL_SERVER_ERROR();
 }
 
-ZoneFqdnList* Server_impl::get_managed_zone_list() 
+ZoneFqdnList* Server_impl::get_managed_zone_list()
 {
     try
     {
@@ -246,7 +246,7 @@ Contact* Server_impl::get_contact_by_handle(const char* handle)
     throw INTERNAL_SERVER_ERROR();
 }
 
-struct InvalidIPAddressException : public std::runtime_error 
+struct InvalidIPAddressException : public std::runtime_error
 {
     InvalidIPAddressException() : std::runtime_error("invalid IP address") {}
 };
@@ -255,15 +255,15 @@ IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
 {
     IPAddress result;
     result.address = Corba::wrap_string(in.to_string());
-    if (in.is_v4()) 
+    if (in.is_v4())
     {
         result.version = IPv4;
     }
-    else if (in.is_v6()) 
+    else if (in.is_v6())
     {
         result.version = IPv6;
     }
-    else 
+    else
     {
         throw InvalidIPAddressException();
     }
@@ -542,7 +542,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     {
         result.nsset_handle = NULL;
     }
-    else 
+    else
     {
         result.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.nsset));
     }
@@ -550,7 +550,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     {
         result.keyset_handle = NULL;
     }
-    else 
+    else
     {
         result.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.keyset));
     }
@@ -561,18 +561,18 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     result.expire = Corba::wrap_date(domain.expire);
     result.expire_time_estimate = Corba::wrap_time(domain.expire_time_estimate);
     result.expire_time_actual = Corba::wrap_nullable_datetime(domain.expire_time_actual);
-    if (domain.validated_to.isnull()) 
+    if (domain.validated_to.isnull())
     {
         result.validated_to = NULL;
         result.validated_to_time_estimate = NULL;
         result.validated_to_time_actual = NULL;
     }
-    else 
+    else
     {
         result.validated_to = new Registry::NullableDate(Corba::wrap_date(domain.validated_to.get_value()));
         result.validated_to_time_estimate = Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
         result.validated_to_time_actual = Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
-    } 
+    }
 
     result.admin_contact_handles.length(domain.admin_contacts.size());
     CORBA::ULong i = 0;
@@ -830,5 +830,5 @@ ObjectStatusDescSeq* Server_impl::get_keyset_status_descriptions(const char* lan
     throw INTERNAL_SERVER_ERROR();
 }
 
-}//Whois 
+}//Whois
 }//Registry
