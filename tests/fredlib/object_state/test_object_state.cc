@@ -287,6 +287,9 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
             "INSERT INTO enum_object_states_desc VALUES (27, 'EN', 'Contact has failed the verification by CZ.NIC customer support'); "
 
             "INSERT INTO enum_object_states VALUES (28,'outzoneUnguardedWarning','{3}','f','f', NULL); "
+
+            "INSERT INTO enum_object_states_desc VALUES (28,'CS','Doména bude brzy vyřazena ze zóny.'); "
+            "INSERT INTO enum_object_states_desc VALUES (28,'EN','The domain is to be out of zone soon.'); "
         );
         ctx.commit_transaction();
     }
