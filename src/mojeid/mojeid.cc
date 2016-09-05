@@ -1566,6 +1566,10 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
         LOGGER(PACKAGE).info("request failed (incorrect data)");
         throw;
     }
+    catch (const MojeIDImplData::IdentificationAlreadyProcessed&) {
+        LOGGER(PACKAGE).info("request failed (IdentificationAlreadyProcessed)");
+        throw;
+    }
     catch (const Fred::PublicRequestLockGuardByIdentification::Exception &e) {
         if (e.is_set_public_request_doesnt_exist()) {
             LOGGER(PACKAGE).info(boost::format("request failed (%1%)") % e.what());
