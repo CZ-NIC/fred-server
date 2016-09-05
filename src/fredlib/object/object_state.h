@@ -66,6 +66,7 @@ public:
         validated_contact,                  ///< means database `validatedContact` state
         validation_warning1,                ///< means database `validationWarning1` state
         validation_warning2,                ///< means database `validationWarning2` state
+        outzone_unguarded_warning,          ///< means database `outzoneUnguardedWarning` state
     };
 };
 
@@ -105,6 +106,7 @@ inline std::string to_db_handle(Fred::Object_State::Enum value)
         case Fred::Object_State::validated_contact:                   return "validatedContact";
         case Fred::Object_State::validation_warning1:                 return "validationWarning1";
         case Fred::Object_State::validation_warning2:                 return "validationWarning2";
+        case Fred::Object_State::outzone_unguarded_warning:           return "outzoneUnguardedWarning";
     }
     throw std::invalid_argument("value doesn't exist in Fred::Object_State::Enum");
 }
@@ -139,6 +141,7 @@ inline Fred::Object_State::Enum from_db_handle< Fred::Object_State >(const std::
     if (to_db_handle(Fred::Object_State::validated_contact) == db_handle) { return Fred::Object_State::validated_contact; }
     if (to_db_handle(Fred::Object_State::validation_warning1) == db_handle) { return Fred::Object_State::validation_warning1; }
     if (to_db_handle(Fred::Object_State::validation_warning2) == db_handle) { return Fred::Object_State::validation_warning2; }
+    if (to_db_handle(Fred::Object_State::outzone_unguarded_warning) == db_handle) { return Fred::Object_State::outzone_unguarded_warning; }
     throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Object_State::Enum");
 }
 
