@@ -98,6 +98,10 @@ public:
         ContactId contact_id,
         LogRequestId log_request_id);
 
+    void validate_contact(
+        ContactId contact_id,
+        LogRequestId log_request_id);
+
     ContactStateInfoList* get_contacts_state_changes(
         ::CORBA::ULong last_hours);
 

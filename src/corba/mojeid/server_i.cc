@@ -334,6 +334,27 @@ void Server_i::create_validation_request(
     }
 }//create_validation_request
 
+void Server_i::validate_contact(
+        ContactId _contact_id,
+        LogRequestId _log_request_id)
+{
+    try {
+        impl_ptr_->validate_contact(_contact_id, _log_request_id);
+    }
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
+        throw IDL::OBJECT_NOT_EXISTS();
+    }
+    catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
+        throw IDL::VALIDATION_ALREADY_PROCESSED();
+    }
+    catch (const MojeIDImplData::CreateValidationRequestValidationResult &e) {
+        CorbaConversion::raise_CREATE_VALIDATION_REQUEST_VALIDATION_ERROR(e);
+    }
+    catch (...) {
+        throw IDL::INTERNAL_SERVER_ERROR();
+    }
+}//validate_contact
+
 ContactStateInfoList* Server_i::get_contacts_state_changes(
         ::CORBA::ULong _last_hours)
 {

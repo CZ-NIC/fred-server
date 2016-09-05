@@ -96,6 +96,10 @@ public:
         ContactId contact_id,
         LogRequestId log_request_id)const;
 
+    void validate_contact(
+        ContactId contact_id,
+        LogRequestId log_request_id)const;
+
     ContactId process_registration_request(
         const std::string &_ident_request_id,
         const std::string &_password,

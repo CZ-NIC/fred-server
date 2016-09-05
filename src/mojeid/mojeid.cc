@@ -1972,6 +1972,78 @@ void MojeIDImpl::create_validation_request(
     }
 }
 
+void MojeIDImpl::validate_contact(
+        ContactId _contact_id,
+        LogRequestId _log_request_id)const
+{
+    LOGGING_CONTEXT(log_ctx, *this);
+
+    try {
+        Fred::OperationContextCreator ctx;
+        const Fred::PublicRequestsOfObjectLockGuardByObjectId locked_contact(ctx, _contact_id);
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(_contact_id).exec(ctx));
+        if (states.presents(Fred::Object_State::validated_contact)) {
+            throw MojeIDImplData::ValidationAlreadyProcessed();
+        }
+        if (states.absents(Fred::Object_State::mojeid_contact)) {
+            throw MojeIDImplData::ObjectDoesntExist();
+        }
+        const Fred::InfoContactData contact_data = Fred::InfoContactById(_contact_id).exec(ctx).info_contact_data;
+        {
+            const MojeIDImplInternal::CheckCreateValidationRequest check_create_validation_request(contact_data);
+            if (!check_create_validation_request.success()) {
+                MojeIDImplInternal::raise(check_create_validation_request);
+            }
+        }
+        const Fred::PublicRequestId public_request_id =
+            Fred::CreatePublicRequest().set_registrar_id(mojeid_registrar_id_)
+                                       .exec(locked_contact,
+                                             Fred::MojeID::PublicRequest::ContactValidation().iface(),
+                                             get_optional_log_request_id(_log_request_id));
+        const Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
+        Fred::UpdatePublicRequest().set_registrar_id(mojeid_registrar_id_)
+                                   .set_status(Fred::PublicRequest::Status::answered)
+                                   .set_reason("MojeID validate_contact function has been called")
+                                   .exec(locked_request,
+                                         Fred::MojeID::PublicRequest::ContactValidation().iface(),
+                                         get_optional_log_request_id(_log_request_id));
+        Fred::StatusList to_set;
+        to_set.insert(Conversion::Enums::to_db_handle(Fred::Object_State::validated_contact));
+        Fred::CreateObjectStateRequestId(_contact_id, to_set).exec(ctx);
+        Fred::PerformObjectStateRequest(_contact_id).exec(ctx);
+        ctx.commit_transaction();
+        return;
+    }
+    catch (const Fred::PublicRequestsOfObjectLockGuardByObjectId::Exception &e) {
+        if (e.is_set_object_doesnt_exist()) {
+            LOGGER(PACKAGE).info(boost::format("contact doesn't exist (%1%)") % e.what());
+            throw MojeIDImplData::ObjectDoesntExist();
+        }
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (const MojeIDImplData::ObjectDoesntExist&) {
+        LOGGER(PACKAGE).info("contact doesn't exist (ObjectDoesntExist)");
+        throw;
+    }
+    catch (const MojeIDImplData::ValidationAlreadyProcessed&) {
+        LOGGER(PACKAGE).info("contact already validated (ValidationAlreadyProcessed)");
+        throw;
+    }
+    catch (const MojeIDImplData::CreateValidationRequestValidationResult&) {
+        LOGGER(PACKAGE).info("request failed (CreateValidationRequestValidationResult)");
+        throw;
+    }
+    catch (const std::exception &e) {
+        LOGGER(PACKAGE).error(boost::format("request failed (%1%)") % e.what());
+        throw;
+    }
+    catch (...) {
+        LOGGER(PACKAGE).error("request failed (unknown error)");
+        throw;
+    }
+}
+
 namespace {
 
 typedef bool IsNotNull;
