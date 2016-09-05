@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
             ->register_server(new Registry::Administrative::Server_i(server_name), "AdminBlocking");
 
         CorbaContainer::get_instance()
-            ->register_server(new Registry::Notification::Server_i(), "Notification");
+            ->register_server(new Registry::Notification::Server_i(server_name), "Notification");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

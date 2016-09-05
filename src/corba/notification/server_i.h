@@ -38,12 +38,24 @@ class Server_i : public POA_Registry::Notification::Server {
 
     public:
 
+        Server_i(const std::string &server_name);
+
         virtual ~Server_i() {}
+
+        /**
+         * Get server name
+         * @return name for logging context
+         */
+        std::string get_server_name();
 
         /**
          * Wrapper for IDL Notification::Server interface method of the same name
          */
         void set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq);
+
+    private:
+
+        std::string server_name;
 
 };
 

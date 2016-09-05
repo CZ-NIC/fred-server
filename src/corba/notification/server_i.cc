@@ -34,7 +34,32 @@
 namespace Registry {
 namespace Notification {
 
-void Server_i::set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq) {
+/* Create string for logging context
+ * @param server_name  server name
+ * @return  "server_name-<call_id>"
+ */
+static const std::string create_ctx_name(const std::string &server_name)
+{
+    return boost::str(boost::format("%1%-<%2%>")% server_name % Random::integer(0, 10000));
+}
+
+Server_i::Server_i(const std::string &server_name)
+    : server_name(server_name)
+{
+    Logging::Context lctx_server(server_name);
+    Logging::Context lctx("init");
+
+}
+
+std::string Server_i::get_server_name()
+{
+    return server_name;
+}
+
+void Server_i::set_domain_outzone_unguarded_warning_emails(const DomainEmailSeq &domain_email_seq)
+{
+    Logging::Context lctx_server(create_ctx_name(get_server_name()));
+    Logging::Context lctx("set-domain-outzone-unguarded-warning-emails");
 
     try {
         std::map<unsigned long long, std::set<std::string> > domain_emails_map;
