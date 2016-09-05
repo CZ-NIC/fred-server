@@ -17,7 +17,7 @@
  */
 
 /**
- *  @file
+ *  @file DEPRECATED implementation of object states. Do not use. Use src/fredlib/object/object_state.h instead.
  *  object state name
  */
 
@@ -58,6 +58,7 @@ namespace Fred
         const std::string IDENTIFIED_CONTACT = "identifiedContact";//id 22
         const std::string VALIDATED_CONTACT = "validatedContact";//id 23
         const std::string MOJEID_CONTACT = "mojeidContact";//id 24
+        const std::string OUTZONE_UNGUARDED_WARNING = "outzoneUnguardedWarning";//id 28
     }
 }//namespace Fred
 
