@@ -33,9 +33,8 @@ DomainCheckResponse domain_check(
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % registrar_id));
         Logging::Context logging_ctx3(server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactCheck) ) );
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::DomainCheck)));
 
-        // CHECK_SESSION
         bool authentization_invalid = !registrar_id;
         if (authentization_invalid) {
             throw AuthentizationInvalid();
@@ -43,7 +42,6 @@ DomainCheckResponse domain_check(
 
         Fred::OperationContextCreator ctx;
 
-        // FOR EACH...
         const DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction = domain_check_impl(ctx, domain_fqdns, registrar_id);
 
         const DomainFqdnToDomainLocalizedRegistrationObstruction domain_fqdn_to_domain_localized_registration_obstruction =
@@ -51,7 +49,6 @@ DomainCheckResponse domain_check(
         const LocalizedSuccessResponse localized_success_response =
             create_localized_success_response(Response::ok, ctx, lang);
 
-        // RETURN
         return DomainCheckResponse(localized_success_response, domain_fqdn_to_domain_localized_registration_obstruction);
 
     }

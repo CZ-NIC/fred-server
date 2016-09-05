@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef __DOMAIN_CHECK_LOCALIZATION_H__
-#define __DOMAIN_CHECK_LOCALIZATION_H__
+#ifndef SRC_EPP_DOMAIN_DOMAIN_CHECK_LOCALIZATION_H
+#define SRC_EPP_DOMAIN_DOMAIN_CHECK_LOCALIZATION_H
 
 #include "src/epp/domain/domain_registration_obstruction.h"
 #include "src/epp/session_lang.h"

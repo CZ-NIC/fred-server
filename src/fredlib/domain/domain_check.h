@@ -17,34 +17,24 @@
  */
 
 /**
- *  @file domain_check_impl.h
- *  <++>
+ *  @file
  */
 
-#ifndef SRC_EPP_DOMAIN_DOMAIN_CHECK_IMPL_H
-#define SRC_EPP_DOMAIN_DOMAIN_CHECK_IMPL_H
+#ifndef SRC_FREDLIB_DOMAIN_DOMAIN_CHECK_H
+#define SRC_FREDLIB_DOMAIN_DOMAIN_CHECK_H
 
-#include "src/epp/domain/domain_check.h"
-#include "src/epp/domain/domain_check_localization.h"
-#include "src/epp/domain/domain_registration_obstruction.h"
-#include "src/fredlib/opcontext.h"
-#include "util/db/nullable.h"
+#include "src/fredlib/domain/domain.h"
 
-#include <map>
 #include <string>
 
-namespace Epp {
+#include "src/fredlib/opcontext.h"
+
+namespace Fred {
 
 namespace Domain {
 
-/**
- * @returns check results for given domain FQDNs
- */
-DomainFqdnToDomainRegistrationObstruction domain_check_impl(
-    Fred::OperationContext& ctx,
-    const std::set<std::string>& domain_fqdns,
-    unsigned long long registrar_id
-);
+DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(OperationContext& ctx, const std::string& domain_fqdn);
+DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(OperationContext& ctx, const std::string& domain_fqdn);
 
 }
 

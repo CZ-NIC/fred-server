@@ -44,7 +44,7 @@ struct DomainCheckResponse {
     const DomainFqdnToDomainLocalizedRegistrationObstruction domain_fqdn_to_domain_localized_registration_obstruction;
 
     DomainCheckResponse(
-        const LocalizedSuccessResponse &localized_success_response,
+        const LocalizedSuccessResponse& localized_success_response,
         const DomainFqdnToDomainLocalizedRegistrationObstruction& domain_fqdn_to_domain_localized_registration_obstruction
     ) :
         localized_success_response(localized_success_response),

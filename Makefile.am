@@ -831,6 +831,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		src/fredlib/domain/transfer_domain.h \
 		src/fredlib/domain/transfer_domain.cc \
+		src/fredlib/domain/domain.h \
+		src/fredlib/domain/domain.cc \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
 		src/fredlib/nsset/info_nsset.h \

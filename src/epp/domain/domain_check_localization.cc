@@ -34,7 +34,8 @@ DomainRegistrationObstructionToDescription get_localized_description_of_obstruct
     }
 
     Database::query_param_list params;
-    std::string query = "SELECT id as obstruction_description_id, " + get_localized_reason_column_name(lang) + " as obstruction_description "
+    std::string query = "SELECT id AS obstruction_description_id, " +
+                        get_localized_reason_column_name(lang) + " AS obstruction_description "
                         "FROM enum_reason "
                         "WHERE id IN (";
     for (DescriptionIdToDomainRegistrationObstruction::const_iterator obstruction_ptr = obstructions.begin();
