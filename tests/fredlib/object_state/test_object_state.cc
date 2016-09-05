@@ -153,6 +153,7 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
             (Fred::ObjectStateDescription(25,"contactPassedManualVerification", "Contact has been verified by CZ.NIC customer support"))
             (Fred::ObjectStateDescription(26,"contactInManualVerification", "Contact is being verified by CZ.NIC customer support"))
             (Fred::ObjectStateDescription(27,"contactFailedManualVerification", "Contact has failed the verification by CZ.NIC customer support"))
+            (Fred::ObjectStateDescription(28,"outzoneUnguardedWarning", "Email notification should be send after outzone_unguarded_email_warning_period after expiration state"))
         )
     , state_desc_en_contact_vect(Util::vector_of<Fred::ObjectStateDescription>
             (Fred::ObjectStateDescription(1,"serverDeleteProhibited", "Deletion forbidden"))
@@ -284,6 +285,8 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
             "INSERT INTO enum_object_states_desc VALUES (26, 'EN', 'Contact is being verified by CZ.NIC customer support'); "
             "INSERT INTO enum_object_states_desc VALUES (25, 'EN', 'Contact has been verified by CZ.NIC customer support'); "
             "INSERT INTO enum_object_states_desc VALUES (27, 'EN', 'Contact has failed the verification by CZ.NIC customer support'); "
+
+            "INSERT INTO enum_object_states VALUES (28,'outzoneUnguardedWarning','{3}','f','f', NULL); "
         );
         ctx.commit_transaction();
     }
@@ -310,7 +313,7 @@ BOOST_AUTO_TEST_CASE(fred_object_state_conversions)
 {
     Fred::OperationContextCreator ctx;
     static const char *const sql = "SELECT name FROM enum_object_states";
-    enum_to_db_handle_conversion_test< Fred::Object_State, 27 >(ctx, sql);
+    enum_to_db_handle_conversion_test< Fred::Object_State, 28 >(ctx, sql);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_object_state_descriptions, object_state_description_fixture)
