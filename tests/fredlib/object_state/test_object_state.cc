@@ -153,7 +153,7 @@ struct object_state_description_fixture : public Test::Fixture::instantiate_db_t
             (Fred::ObjectStateDescription(25,"contactPassedManualVerification", "Contact has been verified by CZ.NIC customer support"))
             (Fred::ObjectStateDescription(26,"contactInManualVerification", "Contact is being verified by CZ.NIC customer support"))
             (Fred::ObjectStateDescription(27,"contactFailedManualVerification", "Contact has failed the verification by CZ.NIC customer support"))
-            (Fred::ObjectStateDescription(28,"outzoneUnguardedWarning", "Email notification should be send after outzone_unguarded_email_warning_period after expiration state"))
+            (Fred::ObjectStateDescription(28,"outzoneUnguardedWarning", "The domain is to be out of zone soon."))
         )
     , state_desc_en_contact_vect(Util::vector_of<Fred::ObjectStateDescription>
             (Fred::ObjectStateDescription(1,"serverDeleteProhibited", "Deletion forbidden"))
