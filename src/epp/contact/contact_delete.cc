@@ -17,7 +17,8 @@ LocalizedSuccessResponse contact_delete(
     const SessionLang::Enum _lang,
     const std::string& _server_transaction_handle,
     const std::string& _client_transaction_handle,
-    const std::string& _client_transaction_handles_prefix_not_to_nofify
+    const bool _epp_notification_disabled,
+    const std::string& _client_transaction_handles_prefix_not_to_notify
 ) {
 
     try {
@@ -44,7 +45,8 @@ LocalizedSuccessResponse contact_delete(
             _registrar_id,
             _server_transaction_handle,
             _client_transaction_handle,
-            _client_transaction_handles_prefix_not_to_nofify
+            _epp_notification_disabled,
+            _client_transaction_handles_prefix_not_to_notify
         );
 
         return result;
