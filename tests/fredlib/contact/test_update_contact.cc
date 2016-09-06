@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE(update_contact_by_handle)
     //history check
     BOOST_CHECK(history_info_data_1.at(0) == info_data_1);
 
-    BOOST_MESSAGE(std::string("history_info_data_1.at(0).info_contact_data.crhistoryid: ") + boost::lexical_cast<std::string>(history_info_data_1.at(0).info_contact_data.crhistoryid ));
-    BOOST_MESSAGE(std::string("info_data_1.info_contact_data.historyid: ") + boost::lexical_cast<std::string>(info_data_1.info_contact_data.historyid ));
+    BOOST_TEST_MESSAGE(std::string("history_info_data_1.at(0).info_contact_data.crhistoryid: ") + boost::lexical_cast<std::string>(history_info_data_1.at(0).info_contact_data.crhistoryid ));
+    BOOST_TEST_MESSAGE(std::string("info_data_1.info_contact_data.historyid: ") + boost::lexical_cast<std::string>(info_data_1.info_contact_data.historyid ));
 
     BOOST_CHECK(history_info_data_1.at(0).info_contact_data.crhistoryid == info_data_1.info_contact_data.historyid);
 

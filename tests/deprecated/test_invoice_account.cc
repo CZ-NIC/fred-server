@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
     std::string registrar_handle =     registrar->getHandle();
     unsigned long long registrar_inv_id = registrar->getId();
 
-    BOOST_MESSAGE(registrar_handle);
+    BOOST_TEST_MESSAGE(registrar_handle);
 
 
     for(unsigned long long iter_account = 0; iter_account < 2 ; ++iter_account)
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
                 test_domain_fqdn += time_string;
                 test_domain_fqdn += ".cz";
 
-                BOOST_MESSAGE(test_domain_fqdn);
+                BOOST_TEST_MESSAGE(test_domain_fqdn);
 
                 Fred::CreateDomain(test_domain_fqdn, registrar_handle, registrant_contact_handle)
                 .set_admin_contacts(Util::vector_of<std::string>(admin_contact2_handle))
@@ -423,12 +423,12 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
         }
         catch(boost::exception& ex)
         {
-            BOOST_MESSAGE(boost::diagnostic_information(ex));
+            BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
             throw;
         }
         catch(std::exception& ex)
         {
-            BOOST_MESSAGE(ex.what());
+            BOOST_TEST_MESSAGE(ex.what());
             throw;
         }
 

@@ -238,8 +238,8 @@ BOOST_FIXTURE_TEST_CASE(info_domain_wrong_handle, test_domain_fixture)
     catch(const Fred::InfoDomainByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_fqdn());
-        BOOST_MESSAGE(wrong_fqdn);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(wrong_fqdn);
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_fqdn() == wrong_fqdn);
     }
 }
@@ -261,8 +261,8 @@ BOOST_FIXTURE_TEST_CASE(info_domain_wrong_id, test_domain_fixture)
     catch(const Fred::InfoDomainById::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_object_id());
-        BOOST_MESSAGE(wrong_id);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(wrong_id);
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_object_id() == wrong_id);
     }
 }
@@ -284,8 +284,8 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_wrong_historyid, test_domain_fixture
     catch(const Fred::InfoDomainHistoryByHistoryid::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_object_historyid());
-        BOOST_MESSAGE(wrong_historyid);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(wrong_historyid);
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_object_historyid() == wrong_historyid);
     }
 }
@@ -366,13 +366,13 @@ BOOST_FIXTURE_TEST_CASE(info_domain_diff, test_domain_fixture)
                 ,Nullable<boost::posix_time::ptime>(boost::posix_time::second_clock::local_time()));
     test_diff.authinfopw = std::make_pair(std::string("testpass1"),std::string("testpass2"));
 
-    BOOST_MESSAGE(test_diff.to_string());
-    BOOST_MESSAGE(test_empty_diff.to_string());
+    BOOST_TEST_MESSAGE(test_diff.to_string());
+    BOOST_TEST_MESSAGE(test_empty_diff.to_string());
 
     BOOST_CHECK(!test_diff.is_empty());
     BOOST_CHECK(test_empty_diff.is_empty());
 
-    BOOST_MESSAGE(Fred::diff_domain_data(domain_info1.info_domain_data,domain_info2.info_domain_data).to_string());
+    BOOST_TEST_MESSAGE(Fred::diff_domain_data(domain_info1.info_domain_data,domain_info2.info_domain_data).to_string());
 }
 
 struct test_info_domain_order_fixture : public test_domain_fixture

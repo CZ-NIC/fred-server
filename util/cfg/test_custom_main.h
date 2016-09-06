@@ -68,6 +68,11 @@ int main( int argc, char* argv[] )
         return 0;
     }
 
+//https://svn.boost.org/trac/boost/ticket/11279 from boost 1.61.0
+#if ( BOOST_VERSION >= 106000 )
+    fa = FakedArgs(argc, argv);
+#endif
+
 //fn init_unit_test_suite added in 1.35.0
 #if ( BOOST_VERSION > 103401 )
 

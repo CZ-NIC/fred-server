@@ -286,7 +286,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
             Test::check_correct_aggregated_exception_was_thrown(Epp::Error::of_scalar_parameter(Epp::Param::contact_cc, Epp::Reason::country_notexist));
         }
     } catch (const std::exception& e) {
-        BOOST_MESSAGE(e.what());
+        BOOST_TEST_MESSAGE(e.what());
     }
 }
 

@@ -62,7 +62,7 @@ struct update_keyset_fixture : public Test::Fixture::instantiate_db_template
             .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
-        BOOST_MESSAGE(std::string("admin_contact4_handle: ") + admin_contact4_handle);
+        BOOST_TEST_MESSAGE(std::string("admin_contact4_handle: ") + admin_contact4_handle);
 
         Fred::CreateContact(admin_contact5_handle,registrar_handle)
             .set_name(admin_contact5_handle+xmark)
@@ -70,7 +70,7 @@ struct update_keyset_fixture : public Test::Fixture::instantiate_db_template
             .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
-        BOOST_MESSAGE(std::string("admin_contact5_handle: ") + admin_contact5_handle);
+        BOOST_TEST_MESSAGE(std::string("admin_contact5_handle: ") + admin_contact5_handle);
 
         Fred::CreateContact(admin_contact6_handle,registrar_handle)
             .set_name(admin_contact6_handle+xmark)
@@ -78,13 +78,13 @@ struct update_keyset_fixture : public Test::Fixture::instantiate_db_template
             .set_place(place)
             .set_discloseaddress(true)
             .exec(ctx);
-        BOOST_MESSAGE(std::string("admin_contact6_handle: ") + admin_contact6_handle);
+        BOOST_TEST_MESSAGE(std::string("admin_contact6_handle: ") + admin_contact6_handle);
 
         Fred::CreateKeyset(test_keyset_handle, registrar_handle)
                 .set_tech_contacts(Util::vector_of<std::string>(admin_contact6_handle))
                 .set_dns_keys(Util::vector_of<Fred::DnsKey> (Fred::DnsKey(257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8")))
                 .exec(ctx);
-        BOOST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
+        BOOST_TEST_MESSAGE(std::string("test_keyset_handle: ") + test_keyset_handle);
         ctx.commit_transaction();
     }
     ~update_keyset_fixture()
@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_wrong_tech_contact)
         info_data_1 = Fred::InfoKeysetByHandle(test_keyset_handle).exec(ctx);
     }
 
-    BOOST_MESSAGE(std::string("handle: ") + info_data_1.info_keyset_data.handle + " roid: " + info_data_1.info_keyset_data.roid);
+    BOOST_TEST_MESSAGE(std::string("handle: ") + info_data_1.info_keyset_data.handle + " roid: " + info_data_1.info_keyset_data.roid);
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
@@ -593,7 +593,7 @@ BOOST_AUTO_TEST_CASE(update_keyset_add_wrong_tech_contact)
     catch(const Fred::UpdateKeyset::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_vector_of_unknown_technical_contact_handle());
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_vector_of_unknown_technical_contact_handle().at(0).compare(bad_tech_contact_handle) == 0);
     }
 

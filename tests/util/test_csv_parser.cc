@@ -674,7 +674,7 @@ BOOST_AUTO_TEST_CASE(test_err_big_random_data)
         try
         {
             Util::CsvParser(csv_file).parse();
-            //BOOST_MESSAGE(csv_file);
+            //BOOST_TEST_MESSAGE(csv_file);
         }
         catch(std::runtime_error&)
         {
