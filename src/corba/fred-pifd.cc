@@ -25,7 +25,8 @@
 #include "src/corba/Admin.hh"
 #include "admin/admin_impl.h"
 #include "whois/whois_impl.h"
-#include "whois/whois2_impl.h"
+#include "src/corba/whois/whois2_impl.h"
+#include "src/whois/whois.h"
 #include "contact_verification/contact_verification_i.h"
 
 #include <iostream>
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
                 , server_name
                     , registry_args_ptr->restricted_handles));
 
-        std::auto_ptr<Registry::Whois::Server_impl> myWhois2 ( new Registry::Whois::Server_impl);
+        std::auto_ptr<Registry::Whois::Server_impl> myWhois2 ( new Registry::Whois::Server_impl("Whois2"));
 
         std::auto_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));

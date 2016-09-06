@@ -29,25 +29,15 @@
 
 #include <omniORB4/CORBA.h>
 
-char* corba_wrap_string(const char* _s)
+inline char* corba_wrap_string(const char* _s)
 {
     return CORBA::string_dup(_s);
 }
 
 
-char* corba_wrap_string(const std::string &_s)
+inline char* corba_wrap_string(const std::string &_s)
 {
     return corba_wrap_string(_s.c_str());
 }
-
-std::string corba_unwrap_string(const CORBA::String_member &_s)
-{
-    return static_cast<std::string>(_s);
-}
-
-
-
-
-
 
 #endif // COMMON_WRAPPERS_H_

@@ -170,7 +170,7 @@ struct test_registrar_fixture
     {
         Fred::OperationContextCreator ctx;
 
-        Fred::CreateRegistrar(test_registrar_handle).set_name(std::string("TEST-REGISTRAR NAME")+xmark)
+        Fred::CreateRegistrar(test_registrar_handle)
             .set_name(std::string("TEST-REGISTRAR NAME")+xmark)
             .set_street1(std::string("STR1")+xmark)
             .set_city("Praha").set_postalcode("11150").set_country("CZ")
@@ -397,7 +397,7 @@ struct test_contact_fixture
         place.city = "Praha";
         place.postalcode = "11150";
         place.country = "CZ";
-        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
+        Fred::CreateContact(test_contact_handle,test_registrar_handle)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_place(place)
@@ -615,7 +615,7 @@ struct registrant_contact_fixture
         place.city = "Praha";
         place.postalcode = "11150";
         place.country = "CZ";
-        Fred::CreateContact(test_contact_handle,test_registrar_handle).set_name(std::string("TEST-CONTACT NAME")+xmark)
+        Fred::CreateContact(test_contact_handle,test_registrar_handle)
             .set_name(std::string("TEST-CONTACT NAME")+xmark)
             .set_disclosename(true)
             .set_place(place)
