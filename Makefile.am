@@ -1529,6 +1529,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/response.h \
 		src/corba/epp/domain/domain_check_corba_conversions.h \
 		src/corba/epp/domain/domain_check_corba_conversions.cc \
+		src/corba/epp/domain/domain_info_corba_conversions.h \
+		src/corba/epp/domain/domain_info_corba_conversions.cc \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
 		src/epp/disclose_policy.h \
@@ -1571,6 +1573,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_transfer_impl.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
 		src/epp/contact/disclose.h \
+		src/epp/domain/domain_info.cc \
+		src/epp/domain/domain_info.h \
+		src/epp/domain/domain_info_impl.cc \
+		src/epp/domain/domain_info_impl.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
 		src/epp/domain/domain_check.cc \

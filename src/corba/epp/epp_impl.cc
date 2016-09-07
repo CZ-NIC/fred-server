@@ -90,6 +90,7 @@
 #include "src/epp/contact/post_contact_update_hooks.h"
 #include "src/epp/domain/domain_check.h"
 #include "src/epp/domain/domain_delete.h"
+#include "src/epp/domain/domain_info.h"
 #include "src/epp/domain/domain_transfer.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_create.h"
@@ -111,6 +112,7 @@
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/epp/corba_conversions.h"
 #include "src/corba/epp/domain/domain_check_corba_conversions.h"
+#include "src/corba/epp/domain/domain_info_corba_conversions.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "util/util.h"
 
@@ -3364,45 +3366,34 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::DomainInfo(
-  const char* fqdn, ccReg::Domain_out d, const ccReg::EppParams &params)
+  const char* fqdn,
+  ccReg::Domain_out d,
+  const ccReg::EppParams &params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
+    try {
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-  LOG(
-      NOTICE_LOG, "DomainInfo: clientID -> %llu clTRID [%s] fqdn  [%s] ",
-       params.loginID, static_cast<const char*>(params.clTRID), fqdn
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_DomainInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  // initialize managers for domain manipulation
-  std::auto_ptr<Fred::Zone::Manager>
-      zman(Fred::Zone::Manager::create() );
-  std::auto_ptr<Fred::Domain::Manager>
-      dman(Fred::Domain::Manager::create(a.getDB(), zman.get()) );
-  // first check handle for proper format
+        const Epp::Domain::DomainInfoResponse domain_info_response = Epp::Domain::domain_info(
+            Corba::unwrap_string(fqdn),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle
+        );
 
-  Fred::Domain::CheckAvailType caType = dman->checkHandle(fqdn, idn_allowed(a));
-  if (caType != Fred::Domain::CA_AVAILABLE) {
-    // failure in FQDN check, throw exception
-    a.failed(SetReasonDomainFQDN(a.getErrors(), fqdn, caType
-        != Fred::Domain::CA_BAD_ZONE ? -1 : 0, a.getLang() ));
-  }
-  // now load domain by fqdn
-  std::auto_ptr<Fred::Domain::List> dlist(dman->createList());
-  dlist->setFQDNFilter(fqdn);
-  try {dlist->reload();}
-  catch (...) {a.failedInternal("Cannot load domains");}
-  if (dlist->getCount() != 1)
-    // failer because non existance, throw exception
-    a.failed(COMMAND_OBJECT_NOT_EXIST);
-  // start filling output domain structure
-  Fred::Domain::Domain *dom = dlist->getDomain(0);
-  d = new ccReg::Domain;
-  corba_domain_data_copy(a, regMan.get(), d, dom);
-  return a.getRet()._retn();
+        ccReg::Domain_var domain_info_result = new ccReg::Domain;
+        CorbaConversion::wrap_DomainInfoOutputData(domain_info_response.domain_info_output_data, domain_info_result.inout());
+        ccReg::Response_var return_value = new ccReg::Response(Corba::wrap_response(domain_info_response.localized_success_response, server_transaction_handle));
+
+        /* No exception shall be thrown from here onwards. */
+
+        d = domain_info_result._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 /***********************************************************************
