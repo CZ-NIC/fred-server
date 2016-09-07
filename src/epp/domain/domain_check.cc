@@ -17,12 +17,6 @@ namespace Epp {
 
 namespace Domain {
 
-namespace {
-
-struct AuthentizationInvalid{};
-
-} // namespace Epp::{anonymous}
-
 DomainCheckResponse domain_check(
     const std::set<std::string> &domain_fqdns,
     unsigned long long registrar_id,
@@ -34,11 +28,6 @@ DomainCheckResponse domain_check(
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % registrar_id));
         Logging::Context logging_ctx3(server_transaction_handle);
         Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::DomainCheck)));
-
-        bool authentization_invalid = !registrar_id;
-        if (authentization_invalid) {
-            throw AuthentizationInvalid();
-        }
 
         Fred::OperationContextCreator ctx;
 
@@ -52,7 +41,7 @@ DomainCheckResponse domain_check(
         return DomainCheckResponse(localized_success_response, domain_fqdn_to_domain_localized_registration_obstruction);
 
     }
-    catch (AuthentizationInvalid&) {
+    catch (const AuthErrorServerClosingConnection& e) {
         Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
             ctx,

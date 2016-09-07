@@ -33,7 +33,31 @@ namespace Fred {
 
 namespace Domain {
 
+/**
+ * \brief  Returns whether the domain's fully qualified name is syntactically valid for registration or not.
+ *
+ * \param ctx  operation context
+ * \param domain_fqdn  fully qualified domain name
+ *
+ * \return  domain name syntax validity
+ */
 DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(OperationContext& ctx, const std::string& domain_fqdn);
+
+/**
+ * \brief  Returns whether the domain identified by its FQDN is generally registrable, blacklisted or not in zone.
+ *
+ *         Includes very basic "general domain name syntax check".  Should be the domain registered,
+ *         advanced FQDN syntax check must be performed in addition to this registrability check.
+ *
+ *         \sa get_domain_fqdn_syntax_validity
+ *
+ * \param ctx  operation context
+ * \param domain_fqdn  fully qualified domain name
+ *
+ * \return  domain registrability status.  Does NOT include advanced FQDN syntax check.
+ *
+ * \throw  DomainFqdnSyntaxInvalidException 
+ */
 DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(OperationContext& ctx, const std::string& domain_fqdn);
 
 }

@@ -34,7 +34,7 @@ namespace Domain {
     }
 
     /**
-    * @throws DomainFqdnSyntaxInvalidException
+    * \throws DomainFqdnSyntaxInvalidException
     */
     DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(OperationContext& ctx, const std::string& domain_fqdn) {
         if (Fred::CheckDomain(domain_fqdn).is_registered(ctx)) {

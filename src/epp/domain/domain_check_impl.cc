@@ -29,27 +29,6 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
     const unsigned long long registrar_id,
     const std::string domain_fqdn)
 {
-    ctx.get_log().debug("--------------------------------------- MARK ------------------------------------------");
-
-    // this worked fine:
-    //if (Fred::CheckDomain(domain_fqdn).is_registered(ctx)) {
-    //    return DomainRegistrationObstruction::registered;
-    //}
-    //else if (Fred::CheckDomain(domain_fqdn).is_blacklisted(ctx)) {
-    //    return DomainRegistrationObstruction::blacklisted;
-    //}
-    //else if (!Fred::Domain::general_domain_name_syntax_check(domain_fqdn)) {
-    //    return DomainRegistrationObstruction::invalid_fqdn;
-    //}
-    //else if (Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx)) {
-    //    return DomainRegistrationObstruction::zone_not_in_registry;
-    //}
-    //else if (!Fred::Domain::get_domain_fqdn_syntax_validity(ctx, domain_fqdn)) {
-    //    return DomainRegistrationObstruction::invalid_fqdn;
-    //}
-    //return Nullable<DomainRegistrationObstruction::Enum>();
-
-    // this is how it should (?) be done using fredlib domain flags "registrability" and "syntax_validity"
     try {
         Fred::Domain::DomainRegistrability::Enum domain_registrability
             = Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, domain_fqdn);
@@ -84,7 +63,6 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
     catch (Fred::Domain::DomainFqdnSyntaxInvalidException&) {
         return DomainRegistrationObstruction::invalid_fqdn;
     }
-
 }
 
 } // namespace Epp::Domain::{anonymous}
@@ -94,6 +72,12 @@ DomainFqdnToDomainRegistrationObstruction domain_check_impl(
     const std::set<std::string>& domain_fqdns,
     unsigned long long registrar_id
 ) {
+
+    const bool registrar_is_authenticated = registrar_id != 0;
+    if (!registrar_is_authenticated) {
+        throw AuthErrorServerClosingConnection();
+    }
+
     DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction;
 
     BOOST_FOREACH(const std::string &domain_fqdn, domain_fqdns) {
