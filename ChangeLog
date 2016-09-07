@@ -1,3 +1,15 @@
+2016-09-07 (2.27.0)
+
+  * whois - internal searation of implementation and corba wrapper
+    * fix - enum domain search bug
+    * fix - domain delete pending bug
+
+  * mojeid
+    * method for direct contact validation
+    * fix - logging severity
+
+  * epp - fix - notification configuration
+
 2016-07-10 (2.26.0)
 
   * epp backend rewrite - contact methods
