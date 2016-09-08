@@ -26,25 +26,52 @@
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
+#include "src/fredlib/object/object_state.h"
+#include "util/db/nullable.h"
+
+#include <set>
+#include <string>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/optional.hpp>
 
 namespace Epp {
 
 namespace Domain {
 
-struct DomainInfoOutputData {
-    DomainInfoOutputData() { }
+struct LocalizedDomainInfoOutputData {
+    typedef std::set<Fred::Object_State::Enum> States;
+    std::string roid;
+    std::string fqdn;
+    std::string registrant;
+    Nullable<std::string> nsset;
+    Nullable<std::string> keyset;
+    States localized_external_states;
+    std::string sponsoring_registrar_handle;
+    std::string creating_registrar_handle;
+    Nullable<std::string> last_update_registrar_handle;
+
+    boost::posix_time::ptime crdate;
+    Nullable<boost::posix_time::ptime> last_update;
+    Nullable<boost::posix_time::ptime> last_transfer;
+    boost::gregorian::date exdate;
+    Nullable<std::string> auth_info_pw;
+    //tmp?
+    //admin
+    //ext
+    //tmpcontact
 };
 
 struct DomainInfoResponse {
     const LocalizedSuccessResponse localized_success_response;
-    const DomainInfoOutputData domain_info_output_data;
+    const LocalizedDomainInfoOutputData localized_domain_info_output_data;
 
     DomainInfoResponse(
         const LocalizedSuccessResponse& localized_success_response,
-        const DomainInfoOutputData& domain_info_output_data
+        const LocalizedDomainInfoOutputData& localized_domain_info_output_data
     ) :
         localized_success_response(localized_success_response),
-        domain_info_output_data(domain_info_output_data)
+        localized_domain_info_output_data(localized_domain_info_output_data)
     { }
 };
 

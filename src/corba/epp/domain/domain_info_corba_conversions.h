@@ -32,8 +32,8 @@
 
 namespace CorbaConversion {
 
-    void wrap_DomainInfoOutputData(
-        const Epp::Domain::DomainInfoOutputData& src,
+    void wrap_LocalizedDomainInfoOutputData(
+        const Epp::Domain::LocalizedDomainInfoOutputData& src,
         ccReg::Domain& dst
     );
 

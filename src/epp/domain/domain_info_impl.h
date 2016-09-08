@@ -24,11 +24,39 @@
 #ifndef SRC_EPP_DOMAIN_DOMAIN_INFO_IMPL_H
 #define SRC_EPP_DOMAIN_DOMAIN_INFO_IMPL_H
 
-#include "src/epp/domain/domain_info.h"
+#include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"
+#include "util/db/nullable.h"
+
+#include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+
 namespace Epp {
 
 namespace Domain {
+
+struct DomainInfoOutputData {
+    typedef std::set<Fred::Object_State::Enum> States;
+    std::string roid; ///< Domain repository ID
+    std::string fqdn; ///< Domain FQDN
+    std::string registrant;
+    Nullable<std::string> nsset;
+    Nullable<std::string> keyset;
+    States states; ///< Domain states list
+    std::string sponsoring_registrar_handle; ///< Registrar which has to right for change
+    std::string creating_registrar_handle; ///< Registrar which created contact
+    Nullable<std::string> last_update_registrar_handle; ///< Registrar which realized changes
+
+    boost::posix_time::ptime crdate; ///< Creation date and time
+    Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
+    Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
+    boost::gregorian::date exdate;
+    Nullable<std::string> auth_info_pw; ///< Password for keyset transfer
+    //tmp?
+    //admin
+    //ext
+    //tmpcontact ///< List of contacts identifier
+};
 
 /**
  * @returns domain data for given domain FQDN
