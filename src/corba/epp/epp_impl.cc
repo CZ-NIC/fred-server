@@ -2332,7 +2332,6 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
     unsigned long i, len;
 
     Fred::NameIdPair caConflict;
-    Fred::Domain::CheckAvailType caType;
     Fred::Contact::Manager::CheckAvailType cType;
     Fred::NSSet::Manager::CheckAvailType nType;
     Fred::KeySet::Manager::CheckAvailType kType;
@@ -2494,65 +2493,8 @@ ccReg_EPP_i::ObjectCheck(short act, const char * table, const char *fname,
 
             case EPP_DomainCheck:
 
-                try {
-                    std::auto_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
-                    std::auto_ptr<Fred::Domain::Manager> dman( Fred::Domain::Manager::create(action.getDB(),zm.get()) );
+                throw std::logic_error("Old DomainCheck Implementation Called");
 
-                    LOG( NOTICE_LOG , "domain checkAvail fqdn [%s]" , (const char * ) chck[i] );
-
-                    caType = dman->checkAvail( ( const char * ) chck[i] , caConflict, idn_allowed(action) );
-                    LOG( NOTICE_LOG , "domain type %d" , caType );
-                    switch (caType) {
-                        case Fred::Domain::CA_INVALID_HANDLE:
-                        case Fred::Domain::CA_BAD_LENGHT:
-                            a[i].avail = ccReg::BadFormat;
-                            a[i].reason
-                                = CORBA::string_dup(GetReasonMessage(REASON_MSG_INVALID_FORMAT , action.getLang()) );
-                            LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) chck[i] );
-                            break;
-                        case Fred::Domain::CA_REGISTRED:
-                        case Fred::Domain::CA_CHILD_REGISTRED:
-                        case Fred::Domain::CA_PARENT_REGISTRED:
-                            a[i].avail = ccReg::Exist;
-                            a[i].reason
-                                = CORBA::string_dup(GetReasonMessage( REASON_MSG_REGISTRED , action.getLang()) );
-                            LOG( NOTICE_LOG , "domain %s exist not Avail" , (const char * ) chck[i] );
-                            break;
-                        case Fred::Domain::CA_BLACKLIST:
-                            a[i].avail = ccReg::BlackList;
-                            a[i].reason
-                                = CORBA::string_dup(GetReasonMessage( REASON_MSG_BLACKLISTED_DOMAIN , action.getLang()) );
-                            LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) chck[i] );
-                            break;
-                        case Fred::Domain::CA_AVAILABLE:
-                            a[i].avail = ccReg::NotExist;
-                            a[i].reason = CORBA::string_dup(""); // free
-                            LOG( NOTICE_LOG , "domain %s not exist  Avail" ,(const char * ) chck[i] );
-                            break;
-                        case Fred::Domain::CA_BAD_ZONE:
-                            a[i].avail = ccReg::NotApplicable; // unusable domain isn't in zone
-                            a[i].reason
-                                = CORBA::string_dup(GetReasonMessage(REASON_MSG_NOT_APPLICABLE_DOMAIN , action.getLang()) );
-                            LOG( NOTICE_LOG , "not applicable %s" , (const char * ) chck[i] );
-                            break;
-                    }
-
-                    /*
-#      CA_INVALID_HANDLE, ///< bad formed handle
-#      CA_BAD_ZONE, ///< domain outside of registry
-#      CA_BAD_LENGHT, ///< domain longer then acceptable
-#      CA_PROTECTED, ///< domain temporary protected for registration
-#      CA_BLACKLIST, ///< registration blocked in blacklist
-#      CA_REGISTRED, ///< domain registred
-#      CA_PARENT_REGISTRED, ///< parent already registred
-#      CA_CHILD_REGISTRED, ///< child already registred
-#      CA_AVAILABLE ///< domain is available
-*/
-                }
-                catch (...) {
-                    LOG( WARNING_LOG, "cannot run Fred::Domain::checkAvail");
-                    code=COMMAND_FAILED;
-                }
                 break;
 
         }
@@ -2666,7 +2608,7 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
         );
 
         ccReg::CheckResp_var domain_check_results = new ccReg::CheckResp(
-            CorbaConversion::wrap_DomainFqdnToDomainLocalizedRegistrationObstruction(
+            CorbaConversion::wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
                 domain_fqdns,
                 domain_check_response.domain_fqdn_to_domain_localized_registration_obstruction
             )

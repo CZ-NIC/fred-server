@@ -11,7 +11,7 @@ namespace CorbaConversion {
 
 namespace {
 
-ccReg::CheckAvail wrap_DomainLocalizedRegistrationObstruction(
+ccReg::CheckAvail wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
     const boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction>& obstruction
 ) {
 
@@ -34,7 +34,7 @@ ccReg::CheckAvail wrap_DomainLocalizedRegistrationObstruction(
 /**
  * @returns check results in the same order as input handles
  */
-ccReg::CheckResp wrap_DomainFqdnToDomainLocalizedRegistrationObstruction(
+ccReg::CheckResp wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
     const std::vector<std::string>& domain_fqdns,
     const Epp::Domain::DomainFqdnToDomainLocalizedRegistrationObstruction& domain_fqdn_to_domain_localized_registration_obstruction
 ) {
@@ -51,7 +51,7 @@ ccReg::CheckResp wrap_DomainFqdnToDomainLocalizedRegistrationObstruction(
             map_at(domain_fqdn_to_domain_localized_registration_obstruction, *domain_fqdn_ptr);
 
         result[result_idx].avail =
-            wrap_DomainLocalizedRegistrationObstruction(domain_localized_registration_obstruction);
+            wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(domain_localized_registration_obstruction);
 
         result[result_idx].reason =
             Corba::wrap_string_to_corba_string(

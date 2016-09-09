@@ -51,7 +51,7 @@ struct DomainRegistrationObstruction {
             case registered:           return Reason::existing;
             case blacklisted:          return Reason::blacklisted_domain;
             case zone_not_in_registry: return Reason::not_applicable_domain;
-            case invalid_fqdn:         return Reason::bad_format_fqdn;
+            case invalid_fqdn:         return Reason::invalid_handle;
         }
         throw MissingLocalizedDescription();
     }

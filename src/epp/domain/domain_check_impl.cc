@@ -3,7 +3,6 @@
 #include "src/epp/domain/domain_check_localization.h"
 #include "src/epp/domain/domain_registration_obstruction.h"
 #include "src/fredlib/domain/domain.h"
-#include "src/fredlib/domain/domain_check.h"
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/object/object_type.h"
@@ -60,7 +59,7 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
         throw std::logic_error("Unexpected Fred::Domain::DomainRegistrability::Enum value.");
 
     }
-    catch (Fred::Domain::DomainFqdnSyntaxInvalidException&) {
+    catch (Fred::Domain::ExceptionInvalidFqdn&) {
         return DomainRegistrationObstruction::invalid_fqdn;
     }
 }

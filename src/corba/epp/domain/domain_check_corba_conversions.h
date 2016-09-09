@@ -36,7 +36,7 @@ namespace CorbaConversion {
     /**
      * @returns data ordered the same way as input fqdns
      */
-    ccReg::CheckResp wrap_DomainFqdnToDomainLocalizedRegistrationObstruction(
+    ccReg::CheckResp wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
         const std::vector<std::string>& domain_fqdns,
         const Epp::Domain::DomainFqdnToDomainLocalizedRegistrationObstruction& domain_fqdn_to_domain_localized_registration_obstruction
     );
