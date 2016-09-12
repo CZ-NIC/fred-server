@@ -96,7 +96,11 @@ CLEANFILES = \
 		src/corba/corba_conversion_testSK.cc \
 		src/corba/corba_conversion_testDynSK.cc \
 		src/corba/corba_conversion_testSK.h \
-		src/corba/corba_conversion_test.hh
+		src/corba/corba_conversion_test.hh \
+		src/corba/NotificationSK.cc \
+		src/corba/NotificationDynSK.cc \
+		src/corba/NotificationSK.h \
+		src/corba/Notification.hh
 
 
 
@@ -292,6 +296,7 @@ noinst_LIBRARIES = \
 		src/corba/libcorbawhois.a \
 		src/corba/libcorbawhois2.a \
 		src/corba/libcorbaadmin.a \
+		src/corba/libcorbanotification.a \
 		src/corba/libcorbalogger.a \
 		src/corba/libcorbatechcheck.a \
 		src/corba/libcorbaepp.a \
@@ -1205,7 +1210,8 @@ BUILT_SOURCES = \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/DomainBrowserSK.cc \
 		src/corba/AdminContactVerificationSK.cc \
-		src/corba/corba_conversion_testSK.cc
+		src/corba/corba_conversion_testSK.cc \
+		src/corba/NotificationSK.cc
 
 
 # src/corba/libcorba.a
@@ -1341,6 +1347,11 @@ nodist_src_corba_libcorba_conversion_test_a_SOURCES = \
 		src/corba/corba_conversion_testDynSK.cc \
 		src/corba/corba_conversion_test.hh
 
+nodist_src_corba_libcorbanotification_a_SOURCES = \
+		src/corba/NotificationSK.cc \
+		src/corba/NotificationDynSK.cc \
+		src/corba/Notification.hh
+
 #
 # nodist corba libs
 
@@ -1368,6 +1379,7 @@ src/corba/ZoneGeneratorSK.cc: $(IDLDIR)/ZoneGenerator.idl $(IDLDIR)/_dataTypes.i
 src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
 src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
+src/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
 
 src/corba/%.cc:
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $<
@@ -1434,7 +1446,6 @@ src_corba_admin_libadmin_impl_a_SOURCES = \
 		src/corba/admin/bankinginvoicing_impl.h
 #
 # src/corba/admin/libadmin_impl.a
-
 
 # src/corba/whois/libwhois_impl.a
 #
@@ -1659,11 +1670,20 @@ src_corba_fred_adifd_SOURCES = \
 		src/admin/contact/verification/test_impl/test_send_letter.h \
 		src/admin/contact/verification/test_impl/test_send_letter.cc \
 		src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.h \
-		src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.cc
+		src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.cc \
+		src/corba/notification/server_i.h \
+		src/corba/notification/server_i.cc \
+		src/corba/notification/notification_corba_conversion.h \
+		src/corba/notification/notification_corba_conversion.cc \
+		src/admin/notification/notification.h \
+		src/admin/notification/notification.cc \
+		util/corba_conversion.h \
+		util/corba_conversion.cc
 
 src_corba_fred_adifd_LDADD = \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/libcorbaadmin.a \
+		src/corba/libcorbanotification.a \
 		src/corba/libcorbaregistry.a \
 		src/corba/libcorbafilters.a \
 		src/corba/libcorbazone.a \
@@ -2025,7 +2045,9 @@ src_cli_admin_fred_admin_SOURCES = \
 		util/optys/upload_client.cc \
 		util/optys/upload_client.h \
 		util/optys/download_client.h \
-		util/optys/download_client.cc
+		util/optys/download_client.cc \
+		src/admin/notification/notification.h \
+		src/admin/notification/notification.cc
 
 src_cli_admin_fred_admin_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

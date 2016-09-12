@@ -25,6 +25,8 @@
 #include "src/corba/Admin.hh"
 #include "admin/admin_impl.h"
 #include "admin_block/server_i.h"
+#include "src/corba/Notification.hh"
+#include "src/corba/notification/server_i.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -124,6 +126,9 @@ int main(int argc, char *argv[])
 
         CorbaContainer::get_instance()
             ->register_server(new Registry::Administrative::Server_i(server_name), "AdminBlocking");
+
+        CorbaContainer::get_instance()
+            ->register_server(new Registry::Notification::Server_i(server_name), "Notification");
 
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

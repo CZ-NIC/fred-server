@@ -21,6 +21,9 @@
 #include "src/old_utils/log.h"
 #include "sql.h"
 
+#include "util/db/result.h"
+#include "util/db/query_param.h"
+
 #include <sstream>
 #include <boost/assign/list_of.hpp>
 
@@ -137,6 +140,23 @@ namespace Fred
           }
 
           return emails;
+      }
+      /* ticket #14873 */
+      std::string getDomainAdditionalEmails(TID state_id, TID obj_id)
+      {
+        std::stringstream sql;
+        // select unnotified (state_id IS NULL) emails inserted
+        // into notify_outzone_unguarded_domain_additional_email
+        // between domain expiration date (exdate) and current object state (valid_from)
+        sql << "SELECT n.email "
+            "FROM notify_outzone_unguarded_domain_additional_email n "
+            "JOIN object_state os ON os.object_id = n.domain_id "
+            "JOIN domain d ON d.id = n.domain_id "
+            "WHERE os.id = " << state_id << " "
+            "AND n.domain_id = " << obj_id << " "
+            "AND n.state_id IS NULL "
+            "AND n.crdate BETWEEN d.exdate AND os.valid_from";
+        return getEmailList(sql);
       }
       std::string getNSSetTechEmailsHistory(TID nsset)
       {
@@ -322,6 +342,13 @@ namespace Fred
         sql << ")";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
+      void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, std::string email) {
+        std::ostringstream sql;
+        sql << "UPDATE notify_outzone_unguarded_domain_additional_email "
+               "SET state_id = " << state_id << " "
+               "WHERE domain_id = " << obj_id << " AND email = '" << db->Escape2(email) << "' AND state_id IS NULL";
+        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+      }
       struct NotifyRequest {
         TID state_id; ///< id of state change (not id of status)
         unsigned type; ///< notification id
@@ -362,10 +389,10 @@ namespace Fred
             << "nt.state_id=ns.state_id AND nt.type=ns.type) "
             << "WHERE ns.state_id ISNULL ";
         if (!exceptList.empty())
-        	sql << "AND nt.type NOT IN (" << exceptList << ") ";
+            sql << "AND nt.type NOT IN (" << exceptList << ") ";
         sql << "ORDER BY nt.state_id ASC ";
         if (limit)
-        	sql << "LIMIT " << limit;
+            sql << "LIMIT " << limit;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         std::vector<NotifyRequest> nlist;
         for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
@@ -421,6 +448,9 @@ namespace Fred
                    case 3:
                      emails = getDomainGenericEmails(params["domain"]);
                      break;
+                   case 4:
+                     emails = getDomainAdditionalEmails(i->state_id, i->obj_id);
+                     break;
                  }
 
                }
@@ -435,6 +465,9 @@ namespace Fred
                      break;
                    case 3:
                      emails = getDomainGenericEmails(params["domain"]);
+                     break;
+                   case 4:
+                     emails = getDomainAdditionalEmails(i->state_id, i->obj_id);
                      break;
                  }
                }
@@ -464,6 +497,8 @@ namespace Fred
                 mail = mm->sendEmail("", emails, "", i->mtype, params, handles, attach);
               }
               saveNotification(i->state_id, i->type, mail);
+              if((i->obj_type == 3) && (i->emails == 4)) // 3: domain, 4: additional email
+                saveDomainAdditionalEmailsState(i->state_id, i->obj_id, emails);
             }
           }
           catch (...) {
@@ -629,11 +664,11 @@ public:
       virtual void generateLetters(unsigned item_count_limit)
       {
         TRACE("[CALL] Fred::Notify::generateLetters()");
-    	// transaction is needed for 'ON COMMIT DROP' functionality
-        
+        // transaction is needed for 'ON COMMIT DROP' functionality
+
         Connection conn = Database::Manager::acquire();
         Database::Transaction trans(conn);
-    	// because every expiration date is
+        // because every expiration date is
         // generated into separate PDF, there are two SQL queries.
         // first for getting expiration dates and second for real data
         // to fixate set of states between these two queries temporary
