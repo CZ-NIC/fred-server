@@ -1572,6 +1572,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_check_impl.h \
 		src/epp/domain/domain_check_localization.cc \
 		src/epp/domain/domain_check_localization.h \
+		src/epp/domain/domain_delete.cc \
+		src/epp/domain/domain_delete.h \
+		src/epp/domain/domain_delete_impl.cc \
+		src/epp/domain/domain_delete_impl.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
 		src/epp/keyset/dns_key.cc \

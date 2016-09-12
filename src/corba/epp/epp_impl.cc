@@ -89,6 +89,7 @@
 #include "src/epp/contact/contact_transfer.h"
 #include "src/epp/contact/post_contact_update_hooks.h"
 #include "src/epp/domain/domain_check.h"
+#include "src/epp/domain/domain_delete.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_create.h"
 #include "src/epp/keyset/localized_update.h"
@@ -3400,69 +3401,29 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::DomainDelete(
-  const char* fqdn, const ccReg::EppParams &params)
+  const char* fqdn,
+  const ccReg::EppParams &params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    int id, zone;
-    short int code = 0;
-
-    EPPAction action(this, params.loginID, EPP_DomainDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    LOGGER(PACKAGE).notice(boost::format("DomainDelete: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") % (int ) params.loginID % static_cast<const char*>(params.clTRID) % fqdn );
-
-    if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , idn_allowed(action), true,  &zone) ) <= 0) {
-        LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-        code=COMMAND_OBJECT_NOT_EXIST;
-    }
-    else if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
-        LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-        code = COMMAND_AUTHENTICATION_ERROR;
-    }
-    else if ( !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) {
-        LOG( WARNING_LOG, "bad autorization not client of fqdn [%s]", fqdn );
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
-    }
+    const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
     try {
-        if (!code && (
-                    testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
-                    testObjectHasState(action,id,FLAG_deleteCandidate)
-                    ))
-        {
-            LOG( WARNING_LOG, "delete of object %s is prohibited" , fqdn );
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
-        }
-    } catch (...) {
-        code = COMMAND_FAILED;
-    }
-    if (!code) {
-        if (action.getDB()->SaveObjectDelete(id) ) //save object as delete
-        {
-            if (action.getDB()->DeleteDomainObject(id) )
-                code = COMMAND_OK; // if succesfully deleted
-        }
-        if (code == COMMAND_OK)
-        {
-            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
-        }
-    }
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
+        const Epp::LocalizedSuccessResponse response = Epp::Domain::domain_delete(
+            Corba::unwrap_string(fqdn),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_,
+            disable_epp_notifier_cltrid_prefix_
+        );
 
-    if (code == 0) {
-        action.failedInternal("DomainDelete");
-    }
+        return new ccReg::Response(Corba::wrap_response(response, server_transaction_handle));
 
-    return action.getRet()._retn();
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 /***********************************************************************
