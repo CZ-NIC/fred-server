@@ -10,6 +10,8 @@
 
   * epp - fix - notification configuration
 
+  * new interface method for custom e-mail notification about domain going outzone (after expiration)
+
 2016-07-10 (2.26.0)
 
   * epp backend rewrite - contact methods
