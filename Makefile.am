@@ -909,6 +909,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_transfer_contact_poll_message.cc \
 		src/fredlib/poll/create_transfer_nsset_poll_message.h \
 		src/fredlib/poll/create_transfer_nsset_poll_message.cc \
+		src/fredlib/poll/create_transfer_domain_poll_message.h \
+		src/fredlib/poll/create_transfer_domain_poll_message.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/copy_history_impl.h \
 		src/fredlib/contact/copy_history_impl.cc \
@@ -1507,6 +1509,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
 		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/fredlib/contact_verification/contact_verification_state.cc \
+		src/fredlib/domain/domain.h \
+		src/fredlib/domain/domain.cc \
 		src/corba/epp/epp_session.h \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
@@ -2474,6 +2478,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_check_impl.cc \
 		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/domain/test_domain_transfer_impl.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
 		tests/interfaces/epp/keyset/test_create.cc \

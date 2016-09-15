@@ -21,6 +21,8 @@
 
 namespace Epp {
 
+namespace Domain {
+
 unsigned long long domain_transfer_impl(
     Fred::OperationContext& _ctx,
     const std::string& _domain_fqdn,
@@ -79,6 +81,8 @@ unsigned long long domain_transfer_impl(
     } catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
         throw ObjectNotEligibleForTransfer();
     }
+}
+
 }
 
 }
