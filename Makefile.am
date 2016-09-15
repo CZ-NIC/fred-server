@@ -254,6 +254,7 @@ noinst_HEADERS = \
 		src/fredlib/public_request/info_public_request_auth.h \
 		tests/interfaces/epp/util.h \
 		tests/interfaces/epp/contact/fixture.h \
+		tests/interfaces/epp/domain/fixture.h \
 		src/corba/mojeid/mojeid_corba_conversion.h \
 		src/mojeid/mojeid_impl_data.h \
 		src/mojeid/mojeid_public_request.h \
