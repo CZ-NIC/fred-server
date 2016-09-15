@@ -90,6 +90,7 @@
 #include "src/epp/contact/post_contact_update_hooks.h"
 #include "src/epp/domain/domain_check.h"
 #include "src/epp/domain/domain_delete.h"
+#include "src/epp/domain/domain_transfer.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_create.h"
 #include "src/epp/keyset/localized_update.h"
@@ -2818,7 +2819,6 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
 
     LOGGER(PACKAGE).notice(boost::format("ObjectContact: act %1%  clientID -> %2% clTRID [%3%] object [%4%] authInfo [%5%] ") % act % (int ) params.loginID % (const char*)params.clTRID % name % authInfo );
 
-    int zone = 0; // for domain zone check
     switch (act) {
         case EPP_ContactTransfer:
             if ( (id = getIdOfContact(action.getDB(), name, restricted_handles_
@@ -2854,14 +2854,9 @@ ccReg::Response* ccReg_EPP_i::ObjectTransfer(
             break;
 
         case EPP_DomainTransfer:
-            if ( (id = getIdOfDomain(action.getDB(), name, lock_epp_commands_
-                    , idn_allowed(action), true, &zone ) ) <= 0) {
-                code=COMMAND_OBJECT_NOT_EXIST;
-            }
-            if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
-                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-                code = COMMAND_AUTHENTICATION_ERROR;
-            }
+
+            throw std::logic_error("Old DomainCheck Implementation Called");
+
             break;
         default:
             code = COMMAND_PARAMETR_ERROR;
@@ -3080,14 +3075,37 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
 }
 
 ccReg::Response* ccReg_EPP_i::DomainTransfer(
-  const char* fqdn, const char* authInfo, const ccReg::EppParams &params)
+  const char* _fqdn,
+  const char* _auth_info,
+  const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
 
-  return ObjectTransfer( EPP_DomainTransfer , "DOMAIN" , "fqdn" , fqdn, authInfo, params);
+    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
+    try {
+
+        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        return new ccReg::Response(
+            Corba::wrap_response(
+                Epp::Domain::domain_transfer(
+                    Corba::unwrap_string(_fqdn),
+                    Corba::unwrap_string(_auth_info),
+                    session_data.registrar_id,
+                    request_params.log_request_id,
+                    session_data.language,
+                    server_transaction_handle,
+                    request_params.client_transaction_id,
+                    disable_epp_notifier_,
+                    disable_epp_notifier_cltrid_prefix_
+                ),
+                server_transaction_handle
+            )
+        );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response*
