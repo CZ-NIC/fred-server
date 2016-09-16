@@ -88,7 +88,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, HasInfoDomainDa
 //    );
 //}
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_authz_info_error, HasInfoDomainDataAndDifferentInfoRegistrarData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_transfer_impl(
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, HasInfoDomainDataAndDifferent
             different_info_registrar_data.id,
             42
         ),
-        Epp::AuthorizationError
+        Epp::AuthorizationInformationError
     );
 }
 

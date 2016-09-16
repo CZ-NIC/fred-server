@@ -36,12 +36,14 @@ namespace Domain {
  * If successful (no exception thrown), state requests of domain are performed.
  * In case of exception, behaviour is undefined and transaction should bo rolled back.
  *
- * @returns  last domain history id before delete
+ * \returns last domain history id before delete
  *
- * @throws AuthErrorServerClosingConnection
- * @throws NonexistentHandle
- * @throws AuthorizationError
- * @throws ObjectStatusProhibitsOperation  if domain has serverDeleteProhibited, serverUpdateProhibited or deleteCandidate status
+ * \throws AuthErrorServerClosingConnection in case registrar_id is zero (legacy reasons)
+ * \throws NonexistentHandle
+ * \throws AuthorizationError
+ * \throws ObjectStatusProhibitsOperation  if domain has serverDeleteProhibited, serverUpdateProhibited or deleteCandidate status
+ *
+ * \throws Fred::DeleteDomainByHandle::Exception
  */
 unsigned long long domain_delete_impl(
     Fred::OperationContext& ctx,

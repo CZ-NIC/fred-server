@@ -36,13 +36,13 @@ namespace Domain {
  * If successful (no exception thrown), state requests of domain are performed.
  * In case of exception, behaviour is undefined and transaction should bo rolled back.
  *
- * @returns new history id
+ * \returns new history id
  *
- * @throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
- * @throws NonexistentHandle
- * @throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
- * @throws ObjectStatusProhibitsOperation
- * @throws AuthorizationError in case invalid _authinfopw is given
+ * \throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
+ * \throws NonexistentHandle
+ * \throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
+ * \throws ObjectStatusProhibitsOperation
+ * \throws AuthorizationInformationError in case invalid _authinfopw is given
  */
 unsigned long long domain_transfer_impl(
     Fred::OperationContext& _ctx,

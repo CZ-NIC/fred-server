@@ -37,7 +37,9 @@ namespace Epp {
 namespace Domain {
 
 /**
- * @returns check results for given domain FQDNs
+ * \returns check results for given domain FQDNs
+ *
+ * \throws  AuthErrorServerClosingConnection
  */
 DomainFqdnToDomainRegistrationObstruction domain_check_impl(
     Fred::OperationContext& ctx,

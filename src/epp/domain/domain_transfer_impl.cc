@@ -7,6 +7,7 @@
 #include "src/epp/impl/util.h"
 
 #include "src/fredlib/domain/domain.h"
+#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/transfer_domain.h"
 #include "src/fredlib/exception.h"
@@ -31,12 +32,21 @@ unsigned long long domain_transfer_impl(
     const Optional<unsigned long long>& _logd_request_id
 ) {
 
-    if( _registrar_id == 0 ) {
+    const bool registrar_is_authenticated = _registrar_id != 0;
+    if (!registrar_is_authenticated) {
         throw AuthErrorServerClosingConnection();
     }
 
-    if( Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered ) {
+    try {
+        if( Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered ) {
+            throw NonexistentHandle();
+        }
+    }
+    catch (Fred::Domain::ExceptionInvalidFqdn&) {
         throw NonexistentHandle();
+    }
+    catch (NonexistentHandle&) {
+        throw;
     }
 
     // TODO optimize out
@@ -60,7 +70,7 @@ unsigned long long domain_transfer_impl(
     }
 
     if(domain_data.authinfopw != _authinfopw) {
-        throw AuthorizationError();
+        throw AuthorizationInformationError();
     }
 
     try {
@@ -76,7 +86,7 @@ unsigned long long domain_transfer_impl(
         throw NonexistentHandle();
 
     } catch (const Fred::IncorrectAuthInfoPw&) {
-        throw AuthorizationError();
+        throw AuthorizationInformationError();
 
     } catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
         throw ObjectNotEligibleForTransfer();
