@@ -123,7 +123,7 @@ void set_domain_outzone_unguarded_warning_emails(
             ++email_ptr) 
         {
             if(!email_valid(*email_ptr)) {
-                ctx.get_log().warning(boost::format("invalid email address for domain id %2%") % domain_emails_map_iter->first);
+                ctx.get_log().warning(boost::format("invalid email address for domain id %1%") % domain_emails_map_iter->first);
                 domain_invalid_emails_map[domain_emails_map_iter->first].insert(*email_ptr);
             }
         }
