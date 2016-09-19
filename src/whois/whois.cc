@@ -204,12 +204,10 @@ std::vector<RegistrarGroup> Server_impl::get_registrar_groups()
         const std::map<std::string, std::vector<std::string> > groups = ::Whois::get_registrar_groups(ctx);
         std::vector<RegistrarGroup> reg_grp_seq;
         reg_grp_seq.reserve(groups.size());
-        RegistrarGroup temp;
-        BOOST_FOREACH(RegistrarGroup it, reg_grp_seq)
+        for (std::map<std::string, std::vector<std::string> >::const_iterator it = groups.begin();
+                it != groups.end(); ++it)
         {
-             temp.name = it.name;
-             temp.members = it.members;
-             reg_grp_seq.push_back(temp);
+             reg_grp_seq.push_back(RegistrarGroup(it->first, it->second));
         }
         return reg_grp_seq;
     }
