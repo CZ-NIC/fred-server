@@ -111,29 +111,29 @@ void set_domain_outzone_unguarded_warning_emails(
     Fred::OperationContextCreator ctx;
 
     std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map;
-    // check emails for validity
-    for(
-        std::map<unsigned long long, std::set<std::string> >::const_iterator domain_emails_map_iter = domain_emails_map.begin();
-        domain_emails_map_iter != domain_emails_map.end();
-        ++domain_emails_map_iter)
-    {
-        for(
-            std::set<std::string>::const_iterator email_ptr = domain_emails_map_iter->second.begin();
-            email_ptr != domain_emails_map_iter->second.end();
-            ++email_ptr) 
-        {
-            if(!email_valid(*email_ptr)) {
-                ctx.get_log().warning(boost::format("invalid email address for domain id %2%") % domain_emails_map_iter->first);
-                domain_invalid_emails_map[domain_emails_map_iter->first].insert(*email_ptr);
-            }
-        }
-    }
-    if (!domain_invalid_emails_map.empty()) {
-        ctx.get_log().warning("invalid emails");
-        throw DomainEmailValidationError(domain_invalid_emails_map);
-    }
 
     try {
+
+        // check emails for validity
+        for(
+            std::map<unsigned long long, std::set<std::string> >::const_iterator domain_emails_map_iter = domain_emails_map.begin();
+            domain_emails_map_iter != domain_emails_map.end();
+            ++domain_emails_map_iter)
+        {
+            for(
+                std::set<std::string>::const_iterator email_ptr = domain_emails_map_iter->second.begin();
+                email_ptr != domain_emails_map_iter->second.end();
+                ++email_ptr)
+            {
+                if(!email_valid(*email_ptr)) {
+                    ctx.get_log().warning(boost::format("invalid email address for domain id %1%") % domain_emails_map_iter->first);
+                    domain_invalid_emails_map[domain_emails_map_iter->first].insert(*email_ptr);
+                }
+            }
+        }
+        if (!domain_invalid_emails_map.empty()) {
+            throw DomainEmailValidationError(domain_invalid_emails_map);
+        }
 
         // set emails
         for(
@@ -153,6 +153,10 @@ void set_domain_outzone_unguarded_warning_emails(
                 ctx.get_log().warning(boost::format("domain with id %1% not found") % domain_emails_map_iter->first);
             }
         }
+
+    } catch (DomainEmailValidationError&) {
+        ctx.get_log().warning("invalid emails");
+        throw;
     } catch (const std::exception &e) {
         ctx.get_log().error(e.what());
         throw InternalError();
