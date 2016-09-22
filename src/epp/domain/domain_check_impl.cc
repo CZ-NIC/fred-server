@@ -59,7 +59,7 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
         throw std::logic_error("Unexpected Fred::Domain::DomainRegistrability::Enum value.");
 
     }
-    catch (Fred::Domain::ExceptionInvalidFqdn&) {
+    catch (const Fred::Domain::ExceptionInvalidFqdn&) {
         return DomainRegistrationObstruction::invalid_fqdn;
     }
 }

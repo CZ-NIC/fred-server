@@ -61,7 +61,7 @@ DomainRegistrationObstructionToDescription get_localized_description_of_obstruct
             throw UnknownLocalizedDescriptionId();
         }
         const DomainRegistrationObstruction::Enum obstruction = obstruction_ptr->second;
-        const std::string obstruction_description = static_cast< std::string >(db_res[i]["obstruction_description"]);
+        const std::string obstruction_description = static_cast<std::string>(db_res[i]["obstruction_description"]);
         result.insert(std::make_pair(obstruction, obstruction_description));
     }
 

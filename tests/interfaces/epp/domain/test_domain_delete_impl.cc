@@ -20,14 +20,13 @@
  *  @file
  */
 
-#include <boost/test/unit_test.hpp>
+#include "src/epp/domain/domain_delete_impl.h"
+#include "tests/interfaces/epp/domain/fixture.h"
+#include "tests/interfaces/epp/util.h"
+
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
-
-#include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/domain/fixture.h"
-
-#include "src/epp/domain/domain_delete_impl.h"
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(DomainDeleteImpl)
@@ -44,12 +43,12 @@ BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, HasInfoDomainData)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, HasInfoDomainDataOfNonexistentDomain)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
             ctx,
-            "SOMEobscureString",
+            info_domain_data.fqdn,
             info_registrar_data.id
         ),
         Epp::NonexistentHandle

@@ -62,7 +62,7 @@ LocalizedSuccessResponse domain_transfer(
 
         return result;
 
-    } catch(const AuthErrorServerClosingConnection& e) {
+    } catch(const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -71,7 +71,7 @@ LocalizedSuccessResponse domain_transfer(
             _lang
         );
 
-    } catch(const NonexistentHandle& e) {
+    } catch(const NonexistentHandle&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -80,7 +80,7 @@ LocalizedSuccessResponse domain_transfer(
             _lang
         );
 
-    } catch(const ObjectNotEligibleForTransfer& e) {
+    } catch(const ObjectNotEligibleForTransfer&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -89,7 +89,7 @@ LocalizedSuccessResponse domain_transfer(
             _lang
         );
 
-    } catch(const ObjectStatusProhibitsOperation& e) {
+    } catch(const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -98,7 +98,7 @@ LocalizedSuccessResponse domain_transfer(
             _lang
         );
 
-    } catch(const AuthorizationInformationError& e) {
+    } catch(const AuthorizationInformationError&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,

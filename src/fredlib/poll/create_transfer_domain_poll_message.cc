@@ -11,7 +11,7 @@ namespace Poll {
 
 namespace {
 
-std::string message_type_handle() { return TRANSFER_CONTACT; }
+std::string message_type_handle() { return TRANSFER_DOMAIN; }
 
 }
 

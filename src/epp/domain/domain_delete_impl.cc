@@ -64,7 +64,7 @@ unsigned long long domain_delete_impl(
 
         return domain_data_before_delete.historyid;
 
-    } catch(const Fred::DeleteDomainByHandle::Exception& e) {
+    } catch (const Fred::DeleteDomainByHandle::Exception& e) {
 
         /* general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority */
         if(e.is_set_unknown_domain_fqdn()) {

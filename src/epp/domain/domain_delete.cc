@@ -53,7 +53,7 @@ LocalizedSuccessResponse domain_delete(
 
         return result;
 
-    } catch(const AuthErrorServerClosingConnection& e) {
+    } catch(const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -62,7 +62,7 @@ LocalizedSuccessResponse domain_delete(
             lang
         );
 
-    } catch(const NonexistentHandle& e) {
+    } catch(const NonexistentHandle&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -71,7 +71,7 @@ LocalizedSuccessResponse domain_delete(
             lang
         );
 
-    } catch(const AuthorizationError& e) {
+    } catch(const AuthorizationError&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -80,7 +80,7 @@ LocalizedSuccessResponse domain_delete(
             lang
         );
 
-    } catch(const ObjectStatusProhibitsOperation& e) {
+    } catch(const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,

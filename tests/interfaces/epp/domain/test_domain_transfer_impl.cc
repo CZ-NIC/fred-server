@@ -20,14 +20,13 @@
  *  @file
  */
 
-#include <boost/test/unit_test.hpp>
+#include "src/epp/domain/domain_transfer_impl.h"
+#include "tests/interfaces/epp/domain/fixture.h"
+#include "tests/interfaces/epp/util.h"
+
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
-
-#include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/domain/fixture.h"
-
-#include "src/epp/domain/domain_transfer_impl.h"
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(DomainTransferImpl)

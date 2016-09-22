@@ -1470,6 +1470,7 @@ src_corba_admin_libadmin_impl_a_SOURCES = \
 #
 # src/corba/admin/libadmin_impl.a
 
+
 # src/corba/whois/libwhois_impl.a
 #
 src_corba_whois_libwhois_impl_a_SOURCES = \
@@ -1570,6 +1571,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_transfer_impl.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
 		src/epp/contact/disclose.h \
+		src/epp/contact/post_contact_update_hooks.cc \
+		src/epp/contact/post_contact_update_hooks.h \
 		src/epp/domain/domain_check.cc \
 		src/epp/domain/domain_check.h \
 		src/epp/domain/domain_check_impl.cc \
@@ -1580,8 +1583,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_delete.h \
 		src/epp/domain/domain_delete_impl.cc \
 		src/epp/domain/domain_delete_impl.h \
-		src/epp/contact/post_contact_update_hooks.cc \
-		src/epp/contact/post_contact_update_hooks.h \
 		src/epp/domain/domain_transfer.cc \
 		src/epp/domain/domain_transfer.h \
 		src/epp/domain/domain_transfer_impl.cc \
@@ -2478,6 +2479,8 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_check_impl.cc \
 		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/domain/test_domain_check_impl.cc \
+		tests/interfaces/epp/domain/test_domain_delete_impl.cc \
 		tests/interfaces/epp/domain/test_domain_transfer_impl.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \

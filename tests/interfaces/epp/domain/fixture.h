@@ -24,21 +24,24 @@
 #ifndef TESTS_INTERFACES_EPP_DOMAIN_FIXTURE_H
 #define TESTS_INTERFACES_EPP_DOMAIN_FIXTURE_H
 
-#include "tests/setup/fixtures.h"
-#include "tests/interfaces/epp/util.h"
-
+#include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
+#include "tests/interfaces/epp/util.h"
+#include "tests/setup/fixtures.h"
+
+#include <boost/exception/diagnostic_information.hpp>
 
 struct HasInfoRegistrarData : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData info_registrar_data;
 
     HasInfoRegistrarData() {
-        const std::string registrar_handle = "REGISTRAR1";
+        const std::string registrar_handle = "RARTSIGER1";
         Fred::CreateRegistrar(registrar_handle).exec(ctx);
         info_registrar_data = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
     }
@@ -48,7 +51,7 @@ struct HasDifferentInfoRegistrarData : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData different_info_registrar_data;
 
     HasDifferentInfoRegistrarData() {
-        const std::string different_registrar_handle = "REGISTRAR2";
+        const std::string different_registrar_handle = "RARTSIGER2";
         Fred::CreateRegistrar(different_registrar_handle).exec(ctx);
         different_info_registrar_data = Fred::InfoRegistrarByHandle(different_registrar_handle).exec(ctx).info_registrar_data;
     }
@@ -58,10 +61,11 @@ struct HasInfoDomainData : HasInfoRegistrarData {
     Fred::InfoDomainData info_domain_data;
 
     HasInfoDomainData() {
-        const std::string fqdn = "fred.cz";
-        const std::string registrant = "REGISTRANT1";
+        const std::string fqdn = "derf.cz";
+        const std::string registrant = "TNARTSIGER1";
+        Fred::CreateContact(registrant, info_registrar_data.handle).exec(ctx);
         Fred::CreateDomain(fqdn, info_registrar_data.handle, registrant).exec(ctx);
-        info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+        info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
     }
 };
 
@@ -148,6 +152,13 @@ struct HasInfoDomainDataWithServerUpdateProhibitedRequest : HasInfoDomainDataWit
     HasInfoDomainDataWithServerUpdateProhibitedRequest()
     : HasInfoDomainDataWithStatusRequest("serverUpdateProhibited")
     { }
+};
+
+struct HasInfoDomainDataOfNonexistentDomain : HasInfoDomainData {
+    HasInfoDomainDataOfNonexistentDomain() {
+        const std::string nonexistent_fqdn = "nonexistent-domain.cz"; // TODO check it
+        info_domain_data.fqdn = nonexistent_fqdn;
+    }
 };
 
 #endif

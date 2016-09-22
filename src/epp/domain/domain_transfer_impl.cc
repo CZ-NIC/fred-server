@@ -42,10 +42,10 @@ unsigned long long domain_transfer_impl(
             throw NonexistentHandle();
         }
     }
-    catch (Fred::Domain::ExceptionInvalidFqdn&) {
+    catch (const Fred::Domain::ExceptionInvalidFqdn&) {
         throw NonexistentHandle();
     }
-    catch (NonexistentHandle&) {
+    catch (const NonexistentHandle&) {
         throw;
     }
 

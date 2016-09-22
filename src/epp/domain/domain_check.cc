@@ -41,7 +41,7 @@ DomainCheckResponse domain_check(
         return DomainCheckResponse(localized_success_response, domain_fqdn_to_domain_localized_registration_obstruction);
 
     }
-    catch (const AuthErrorServerClosingConnection& e) {
+    catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
             ctx,
