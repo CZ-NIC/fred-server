@@ -10,14 +10,12 @@ BOOST_AUTO_TEST_SUITE(get_registrar_groups)
 struct get_registrar_groups_fixture
 : whois_impl_instance_fixture
 {
-    unsigned long long group_number;
     std::map<std::string, std::vector<std::string> > fixture_groups;
 
     get_registrar_groups_fixture()
     {
         Fred::OperationContextCreator ctx;
         fixture_groups = Whois::get_registrar_groups(ctx);
-        group_number = fixture_groups.size();
         for(int i = 0; i < 5; ++i) //XXX
         {
             std::string name("test-group");
