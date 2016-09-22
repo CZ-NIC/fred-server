@@ -234,7 +234,7 @@ std::vector<RegistrarCertification> Server_impl::get_registrar_certification_lis
             result.push_back(RegistrarCertification(
                     it.get_registrar_handle(),
                     it.get_registrar_score(),
-                    it.get_registrar_evaluation_file_id());
+                    it.get_registrar_evaluation_file_id()));
         }
         return result;
     }
