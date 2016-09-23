@@ -2342,6 +2342,7 @@ tests_interfaces_test_whois_SOURCES = \
 		tests/interfaces/whois/test_whois_get_domains_by_registrant.cc \
 		tests/interfaces/whois/test_whois_get_keyset_by_handle.cc \
 		tests/interfaces/whois/test_whois_get_keysets_by_tech_c.cc \
+		tests/interfaces/whois/test_whois_get_managed_zone_list.cc \
 		tests/interfaces/whois/test_whois_get_nameserver_by_fqdn.cc \
 		tests/interfaces/whois/test_whois_get_nsset_by_handle.cc \
 		tests/interfaces/whois/test_whois_get_nssets_by_ns.cc \
