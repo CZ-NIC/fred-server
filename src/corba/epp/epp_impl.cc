@@ -3091,6 +3091,7 @@ ccReg_EPP_i::KeySetTransfer(
             session_data.language,
             server_transaction_handle,
             epp_request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_);
 
         ccReg::Response_var return_value = new ccReg::Response;
@@ -5357,6 +5358,7 @@ ccReg_EPP_i::KeySetDelete(
             session_data.language,
             server_transaction_handle,
             epp_request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_);
 
         ccReg::Response_var return_value = new ccReg::Response;
@@ -5454,6 +5456,7 @@ ccReg_EPP_i::KeySetCreate(
             session_data.language,
             server_transaction_handle,
             epp_request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_);
 
         ccReg::timestamp_var create_time = formatTime(response.crdate).c_str();
@@ -5525,6 +5528,7 @@ ccReg_EPP_i::KeySetUpdate(
             session_data.language,
             server_transaction_handle,
             epp_request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_);
 
         ccReg::Response_var return_value = new ccReg::Response;

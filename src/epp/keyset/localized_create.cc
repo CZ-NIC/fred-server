@@ -60,6 +60,7 @@ ResponseOfCreate create(
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle,
     const std::string &_client_transaction_handle,
+    bool _epp_notification_disabled,
     const std::string &_dont_notify_client_transaction_handles_with_this_prefix)
 {
     try {
@@ -90,6 +91,7 @@ ResponseOfCreate create(
             _registrar_id,
             _server_transaction_handle,
             _client_transaction_handle,
+            _epp_notification_disabled,
             _dont_notify_client_transaction_handles_with_this_prefix);
 
         return localized_result;
