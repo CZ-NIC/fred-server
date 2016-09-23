@@ -1,5 +1,4 @@
 #include "tests/interfaces/whois/fixture_common.h"
-#include "src/whois/registrar_group.h"
 
 #include "src/fredlib/db_settings.h"
 #include "util/random_data_generator.h"
@@ -55,5 +54,5 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_certification_list, certification_list_fix
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END()//get_registrar_groups
+BOOST_AUTO_TEST_SUITE_END()//get_registrar_certification_list
 BOOST_AUTO_TEST_SUITE_END()//TestWhois
