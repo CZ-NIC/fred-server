@@ -21,16 +21,16 @@
  *  corba server implementation of registry notification
  */
 
-#ifndef ADMIN_NOTIFICATION_NOTIFICATION_H_
-#define ADMIN_NOTIFICATION_NOTIFICATION_H_
-
-#include <boost/format.hpp>
+#ifndef SRC_ADMIN_NOTIFICATION_NOTIFICATION_H_
+#define SRC_ADMIN_NOTIFICATION_NOTIFICATION_H_
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
 
 // CORBA stub for Notification.idl
 #include "src/corba/Notification.hh"
+
+#include <boost/format.hpp>
 
 namespace Admin {
 namespace Notification {

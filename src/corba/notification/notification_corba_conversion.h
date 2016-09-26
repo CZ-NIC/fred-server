@@ -21,8 +21,8 @@
  *  declaration for Notification Corba conversion
  */
 
-#ifndef CORBA_NOTIFICATION_CORBA_CONVERSION_H_
-#define CORBA_NOTIFICATION_CORBA_CONVERSION_H_
+#ifndef SRC_CORBA_NOTIFICATION_NOTIFICATION_CORBA_CONVERSION_H_
+#define SRC_CORBA_NOTIFICATION_NOTIFICATION_CORBA_CONVERSION_H_
 
 #include "util/corba_conversion.h"
 
