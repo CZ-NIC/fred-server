@@ -46,16 +46,8 @@ NssetCreateResult nsset_create_impl(
         throw RequiredParameterMissing();
     }
 
-    if(_data.tech_contacts.size() > max_nsset_tech_contacts)
-    {
-        ParameterValuePolicyError ex;
-        for(std::size_t i = max_nsset_tech_contacts; i < _data.tech_contacts.size(); ++i)
-        {
-            ex.add(Error::of_vector_parameter(Param::nsset_tech,
-                boost::numeric_cast<unsigned short>(i),
-                Reason::techadmin_limit));
-        }
-        throw ex;
+    if(_data.tech_contacts.size() > max_nsset_tech_contacts) {
+        throw ParameterValuePolicyError();
     }
 
     //check number of nameservers
@@ -67,16 +59,8 @@ NssetCreateResult nsset_create_impl(
         throw ParameterValuePolicyError();
     }
 
-    if(_data.dns_hosts.size() > max_nsset_dns_hosts)
-    {
-        ParameterValuePolicyError ex;
-        for(std::size_t i = max_nsset_dns_hosts; i < _data.dns_hosts.size(); ++i)
-        {
-            ex.add(Error::of_vector_parameter(Param::nsset_tech,
-                boost::numeric_cast<unsigned short>(i),
-                Reason::nsset_limit));
-        }
-        throw ex;
+    if(_data.dns_hosts.size() > max_nsset_dns_hosts) {
+        throw ParameterValuePolicyError();
     }
 
     //check new nsset handle
