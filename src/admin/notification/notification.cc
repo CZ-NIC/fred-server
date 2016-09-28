@@ -21,6 +21,9 @@
  *  corba server implementation of registry notification
  */
 
+#include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/contact_verification/django_email_format.h"
 
@@ -34,25 +37,31 @@ namespace Notification {
 
 namespace {
 
-bool domain_id_exists(const Fred::OperationContext &ctx, const unsigned long long domain_id) {
-    const Database::Result result = ctx.get_conn().exec_params(
-        "SELECT 1 FROM domain WHERE id=$1::bigint FOR SHARE",
-        Database::query_param_list
-        (domain_id)
-    );
-    return result.size() > 0;
+bool domain_id_exists(Fred::OperationContext &ctx, const unsigned long long domain_id) {
+    try {
+        Fred::InfoDomainById(domain_id).exec(ctx);
+    }
+    catch (const Fred::InfoDomainById::Exception &e) {
+        if (e.is_set_unknown_object_id()) {
+            return false;
+        }
+        throw;
+    }
+    return true;
 }
 
-bool domain_is_expired(const Fred::OperationContext &ctx, const unsigned long long domain_id) {
-    const Database::Result result = ctx.get_conn().exec_params(
-        "SELECT 1 FROM domain d "
-        "JOIN object_state os ON d.id = os.object_id "
-        "JOIN enum_object_states eos ON (os.state_id = eos.id AND eos.name = 'expired') "
-        "WHERE d.id = $1::bigint FOR SHARE",
-        Database::query_param_list
-        (domain_id)
-    );
-    return result.size() > 0;
+bool domain_is_expired(Fred::OperationContext &ctx, const unsigned long long domain_id) {
+    const std::vector<Fred::ObjectStateData> states_data = Fred::GetObjectStates(domain_id).exec(ctx);
+    for (
+        std::vector<Fred::ObjectStateData>::const_iterator data_ptr = states_data.begin();
+        data_ptr != states_data.end();
+        ++data_ptr)
+    {
+        if (Conversion::Enums::from_db_handle<Fred::Object_State>(data_ptr->state_name) == Fred::Object_State::expired) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static const int max_notification_email_length = 1024;

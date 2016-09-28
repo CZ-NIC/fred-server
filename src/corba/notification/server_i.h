@@ -20,8 +20,8 @@
 *  @file
 *  header of notification wrapper over corba
 */
-#ifndef CORBA_NOTIFICATION_SERVER_I_H_
-#define CORBA_NOTIFICATION_SERVER_I_H_
+#ifndef SRC_CORBA_NOTIFICATION_SERVER_I_H_
+#define SRC_CORBA_NOTIFICATION_SERVER_I_H_
 
 #include <string>
 
