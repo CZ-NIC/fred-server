@@ -48,8 +48,31 @@ struct has_nsset : has_registrar {
     Fred::InfoNssetData nsset;
 
     has_nsset() {
+        namespace ip = boost::asio::ip;
+
+        Fred::Contact::PlaceAddress place;
+        place.street1 = "street 1";
+        place.city = "Praha";
+        place.postalcode = "11150";
+        place.country = "CZ";
+
+        std::string admin_contact2_handle = "TEST-ADMIN-CONTACT2";
+
+        Fred::CreateContact(admin_contact2_handle,registrar.handle)
+            .set_name("TEST-ADMIN-CONTACT2 NAME")
+            .set_disclosename(true)
+            .set_place(place)
+            .set_discloseaddress(true)
+            .exec(ctx);
+
         const std::string nsset_handle = "NSSET1";
-        Fred::CreateNsset(nsset_handle, registrar.handle).exec(ctx);
+        Fred::CreateNsset(nsset_handle, registrar.handle)
+        .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
+        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("10.0.0.3"))(ip::address::from_string("10.1.1.3")))) //add_dns
+            (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("10.0.0.4"))(ip::address::from_string("10.1.1.4")))) //add_dns
+            )
+        .exec(ctx);
         nsset = Fred::InfoNssetByHandle(nsset_handle).exec(ctx).info_nsset_data;
     }
 };
