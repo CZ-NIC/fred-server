@@ -1,6 +1,7 @@
 #include "src/epp/nsset/nsset_update_impl.h"
 #include "src/epp/nsset/nsset_impl.h"
 #include "src/epp/nsset/nsset_dns_host_data.h"
+#include "src/epp/nsset/nsset_constants.h"
 
 #include "src/epp/exception.h"
 #include "src/epp/exception_aggregate_param_errors.h"
@@ -281,6 +282,20 @@ unsigned long long nsset_update_impl(
 
         try {
             const unsigned long long new_history_id = update.exec(_ctx);
+
+            const Fred::InfoNssetData nsset_data_after_update = translate_info_nsset_exception::exec(_ctx, _data.handle);
+
+            if(nsset_data_after_update.tech_contacts.empty()
+            || nsset_data_after_update.tech_contacts.size() > max_nsset_tech_contacts)
+            {
+                throw ParameterValuePolicyError();
+            }
+
+            if(nsset_data_after_update.dns_hosts.size() < min_nsset_dns_hosts
+            || nsset_data_after_update.dns_hosts.size() > max_nsset_dns_hosts)
+            {
+                throw ParameterValuePolicyError();
+            }
 
             return new_history_id;
 
