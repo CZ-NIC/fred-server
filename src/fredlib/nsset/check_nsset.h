@@ -37,5 +37,4 @@ namespace Nsset
     NssetHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _nsset_handle);
 }
 }
-
 #endif

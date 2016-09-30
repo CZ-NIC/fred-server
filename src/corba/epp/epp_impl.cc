@@ -3097,6 +3097,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
                     session_data.language,
                     server_transaction_handle,
                     request_params.client_transaction_id,
+                    disable_epp_notifier_,
                     disable_epp_notifier_cltrid_prefix_
                 ),
                 server_transaction_handle
@@ -3234,6 +3235,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_
         );
 
@@ -3285,6 +3287,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_
         );
 
@@ -3346,6 +3349,7 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
             session_data.language,
             server_transaction_handle,
             request_params.client_transaction_id,
+            disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_
         );
 

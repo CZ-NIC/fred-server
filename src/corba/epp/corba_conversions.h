@@ -34,7 +34,6 @@
 #include "src/epp/contact/contact_create.h"
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_check.h"
-#include "src/epp/contact/contact_change.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_check.h"
@@ -53,7 +52,7 @@ namespace Corba {
 
     Optional<std::string> convert_corba_string_change(const char* input);
 
-    Epp::ContactUpdateInputData unwrap_contact_update_input_data(const char* const handle, const ccReg::ContactChange& c);
+    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
 

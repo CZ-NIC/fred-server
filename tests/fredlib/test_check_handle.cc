@@ -202,6 +202,7 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
 BOOST_FIXTURE_TEST_CASE(check_nsset_handle_ok, check_handle_fixture)
 {
     Fred::OperationContextCreator ctx;
+
     BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle) == Fred::NssetHandleState::Registrability::registered);
     BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(test_nsset_handle+"@") == Fred::NssetHandleState::SyntaxValidity::invalid);
     BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle_rem) == Fred::NssetHandleState::Registrability::in_protection_period);

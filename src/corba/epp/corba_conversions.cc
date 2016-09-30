@@ -40,19 +40,6 @@ namespace Corba {
     }
 
 
-    static Nullable<Epp::IdentType::Enum> unwrap_ident_type(ccReg::identtyp ssntype) {
-        switch(ssntype) {
-            case ccReg::OP:         return Epp::IdentType::identity_card;
-            case ccReg::PASS:       return Epp::IdentType::passport;
-            case ccReg::ICO:        return Epp::IdentType::organization_identification;
-            case ccReg::MPSV:       return Epp::IdentType::social_security_number;
-            case ccReg::BIRTHDAY:   return Epp::IdentType::birthday;
-            default:                return Nullable<Epp::IdentType::Enum>();
-        };
-
-        return Nullable<Epp::IdentType::Enum>();
-    }
-
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles) {
         std::vector<std::string> result;
 
@@ -162,27 +149,6 @@ namespace Corba {
 
     struct ExceptionInvalidIdentType {};
 
-    /**
-     * @throws ExceptionInvalidIdentType
-     */
-
-    static ccReg::identtyp wrap_ident_type(Nullable<Epp::IdentType::Enum> ident) {
-        if(ident.isnull()) {
-            return ccReg::EMPTY;
-        }
-
-        switch(ident.get_value()) {
-            case Epp::IdentType::identity_card:                 return ccReg::OP;
-            case Epp::IdentType::passport:                      return ccReg::PASS;
-            case Epp::IdentType::organization_identification:   return ccReg::ICO;
-            case Epp::IdentType::social_security_number:        return ccReg::MPSV;
-            case Epp::IdentType::birthday:                      return ccReg::BIRTHDAY;
-            default:                                            throw ExceptionInvalidIdentType();
-        };
-
-        throw ExceptionInvalidIdentType();
-    }
-
     struct ExceptionInvalidParam {};
 
     /**
@@ -281,8 +247,35 @@ namespace Corba {
         return value[0] == '\0';
     }
 
-    Optional<std::string> convert_corba_string_change(const char* input) {
-        const std::string safer_input = Corba::unwrap_string(input);
+    boost::optional< Nullable< std::string > > convert_contact_update_or_delete_string(const char *src)
+    {
+        const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(src);
+        if (src_has_special_meaning_to_delete) {
+            return Nullable< std::string >();
+        }
+        const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
+        if (src_has_special_meaning_not_to_touch) {
+            return boost::optional< Nullable< std::string > >();
+        }
+        const std::string value_to_set = boost::trim_copy(Corba::unwrap_string(src));
+        const bool value_to_set_means_not_to_touch = value_to_set.empty();
+        if (value_to_set_means_not_to_touch) {
+            return boost::optional< Nullable< std::string > >();
+        }
+        return Nullable< std::string >(value_to_set);
+    }
+
+    boost::optional< std::string > convert_contact_update_string(const char *src)
+    {
+        const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
+        if (src_has_special_meaning_not_to_touch) {
+            return boost::optional< std::string >();
+        }
+        const std::string value_to_set = boost::trim_copy(Corba::unwrap_string(src));
+        const bool value_to_set_means_not_to_touch = value_to_set.empty();
+        return value_to_set_means_not_to_touch ? boost::optional< std::string >()
+                                               : value_to_set;
+    }
 
     template < class TARGET_INTEGRAL_TYPE, class SOURCE_INTEGRAL_TYPE >
     TARGET_INTEGRAL_TYPE wrap_int(SOURCE_INTEGRAL_TYPE src)
@@ -356,6 +349,20 @@ namespace Corba {
     }
 
     }//namespace Corba::{anonymous}
+
+    Optional<std::string> convert_corba_string_change(const char* input) {
+        const std::string safer_input = Corba::unwrap_string(input);
+
+        /* XXX Defined by convention. Could probably be substituted by more explicit means in IDL interface. */
+        const char char_for_value_deleting = '\b';
+
+        return
+            safer_input.empty()
+            ?   Optional<std::string>()
+            :   safer_input.at(0) == char_for_value_deleting
+                    ?   ""
+                    :   boost::trim_copy( Corba::unwrap_string(input) );
+    }
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)
     {
@@ -826,3 +833,4 @@ namespace Corba {
         return result;
     }
 }
+

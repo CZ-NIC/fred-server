@@ -26,18 +26,18 @@ namespace Fred
 namespace Nsset
 {
     NssetHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _nsset_handle) {
-        if( TestHandle(_nsset_handle).is_invalid_handle() ) {
+        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_invalid_handle() ) {
             return NssetHandleState::SyntaxValidity::invalid;
         }
         return NssetHandleState::SyntaxValidity::valid;
     }
 
     NssetHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _nsset_handle) {
-        if( TestHandle(_nsset_handle).is_registered(ctx, "nsset") ) {
+        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_registered(ctx) ) {
             return NssetHandleState::Registrability::registered;
         }
 
-        if( TestHandle(_nsset_handle).is_protected(ctx, "nsset") ) {
+        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_protected(ctx) ) {
             return NssetHandleState::Registrability::in_protection_period;
         }
 

@@ -182,7 +182,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_nsset_and_another_registrar)
         ("historyid")
         ("authinfopw");
 
-    BOOST_CHECK_EQUAL(nsset_data_change.changed_fields(), change_fields_etalon);
+    BOOST_CHECK(nsset_data_change.changed_fields() == change_fields_etalon);
 
     BOOST_CHECK_EQUAL(nsset_data_after.sponsoring_registrar_handle, another_registrar.handle);
 
