@@ -69,8 +69,8 @@ struct has_nsset : has_registrar {
         Fred::CreateNsset(nsset_handle, registrar.handle)
         .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle))
         .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("10.0.0.3"))(ip::address::from_string("10.1.1.3")))) //add_dns
-            (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("10.0.0.4"))(ip::address::from_string("10.1.1.4")))) //add_dns
+            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.3"))(ip::address::from_string("11.1.1.3")))) //add_dns
+            (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.4"))(ip::address::from_string("11.1.1.4")))) //add_dns
             )
         .exec(ctx);
         nsset = Fred::InfoNssetByHandle(nsset_handle).exec(ctx).info_nsset_data;
@@ -131,8 +131,8 @@ struct has_nsset_with_all_data_set : has_registrar {
         const std::string nsset_handle = "NSSET1";
         Fred::CreateNsset(nsset_handle, registrar.handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("10.0.0.3"))(ip::address::from_string("10.1.1.3")))) //add_dns
-                (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("10.0.0.4"))(ip::address::from_string("10.1.1.4")))) //add_dns
+                (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.3"))(ip::address::from_string("11.1.1.3")))) //add_dns
+                (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.4"))(ip::address::from_string("11.1.1.4")))) //add_dns
                 )
             .set_authinfo("abcdef1234")
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact3_handle)(admin_contact2_handle))
@@ -153,12 +153,12 @@ struct has_nsset_input_data_set : has_registrar
             Util::vector_of<Epp::DNShostData>
                 (Epp::DNShostData("a.ns.nic.cz",
                     Util::vector_of< boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("10.0.0.3"))
-                        (boost::asio::ip::address::from_string("10.1.1.3")))) //add_dns
+                        (boost::asio::ip::address::from_string("11.0.0.3"))
+                        (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
                 (Epp::DNShostData("c.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("10.0.0.4"))
-                        (boost::asio::ip::address::from_string("10.1.1.4")))), //add_dns
+                        (boost::asio::ip::address::from_string("11.0.0.4"))
+                        (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
@@ -203,12 +203,12 @@ struct has_nsset_with_input_data_set : has_registrar {
             Util::vector_of<Epp::DNShostData>
                 (Epp::DNShostData("a.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("10.0.0.3"))
-                        (boost::asio::ip::address::from_string("10.1.1.3")))) //add_dns
+                        (boost::asio::ip::address::from_string("11.0.0.3"))
+                        (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
                 (Epp::DNShostData("c.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("10.0.0.4"))
-                        (boost::asio::ip::address::from_string("10.1.1.4")))), //add_dns
+                        (boost::asio::ip::address::from_string("11.0.0.4"))
+                        (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
