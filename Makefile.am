@@ -309,7 +309,8 @@ noinst_LIBRARIES = \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorba_conversion_test.a \
-		src/admin/contact/verification/libadmin_contact_verification.a
+		src/admin/contact/verification/libadmin_contact_verification.a \
+		src/admin/notification/libadmin_notification.a
 
 
 noinst_PROGRAMS = \
@@ -1188,6 +1189,14 @@ src_admin_contact_verification_libadmin_contact_verification_a_SOURCES = \
 		src/admin/contact/verification/test_impl/test_email_exists_for_managed_zones.cc
 #
 # src/admin/contact/verification/libadmin_contact_verification.a
+
+# src/admin/notification/libadmin_notification.a
+#
+src_admin_notification_libadmin_notification_a_SOURCES = \
+		src/admin/notification/notification.h \
+		src/admin/notification/notification.cc
+#
+# src/admin/notification/libadmin_notification.a
 
 BUILT_SOURCES = \
 		src/corba/MessagesSK.cc \
@@ -2187,6 +2196,7 @@ SERVER_TESTS = \
 		tests/test-server \
 		tests/interfaces/test-admin-contact-verification \
 		tests/interfaces/test-admin-contact-automerge \
+		tests/interfaces/test-admin-notification \
 		tests/interfaces/test-epp \
 		tests/interfaces/test-whois \
 		tests/test-exception \
@@ -2287,6 +2297,41 @@ tests_interfaces_test_admin_contact_automerge_LDADD = \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 #
 # tests/interfaces/test-admin-contact-automerge
+
+# tests/interfaces/test-admin-notification
+#
+tests_interfaces_test_admin_notification_SOURCES = \
+		tests/interfaces/admin/notification/fixtures.h \
+		tests/interfaces/admin/notification/main.cc \
+		tests/interfaces/admin/notification/test_set_domain_outzone_unguarded_warning_emails.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_admin_notification_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_admin_notification_LDADD = \
+		src/admin/notification/libadmin_notification.a \
+		src/corba/libcorba.a \
+		src/fredlib/libfred.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
+		$(LIBIDN_CFLAGS) \
+		$(LIBIDN_LIBS)
+#
+# tests/interfaces/test-admin-notification
 
 # tests/interfaces/test-epp
 #
@@ -2478,6 +2523,7 @@ tests_test_server_LDADD = \
 		src/corba/whois/libwhois_impl.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/admin/contact/verification/libadmin_contact_verification.a \
+		src/admin/notification/libadmin_notification.a \
 		src/fredlib/libfred.a \
 		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \

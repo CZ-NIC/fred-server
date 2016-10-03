@@ -25,6 +25,8 @@
 #include "util/db/query_param.h"
 
 #include <sstream>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/assign/list_of.hpp>
 
 using namespace Database;
@@ -342,12 +344,16 @@ namespace Fred
         sql << ")";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
-      void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, std::string email) {
+      void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, std::string space_separated_emails) {
+        std::vector<std::string> emails;
+        boost::split(emails, space_separated_emails, boost::is_any_of(" "), boost::token_compress_on);
         std::ostringstream sql;
-        sql << "UPDATE notify_outzone_unguarded_domain_additional_email "
-               "SET state_id = " << state_id << " "
-               "WHERE domain_id = " << obj_id << " AND email = '" << db->Escape2(email) << "' AND state_id IS NULL";
-        if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+        for (std::vector<std::string>::iterator email_ptr = emails.begin(); email_ptr != emails.end(); ++email_ptr) {
+            sql << "UPDATE notify_outzone_unguarded_domain_additional_email "
+                   "SET state_id = " << state_id << " "
+                   "WHERE domain_id = " << obj_id << " AND email = '" << db->Escape2(*email_ptr) << "' AND state_id IS NULL";
+            if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
+        }
       }
       struct NotifyRequest {
         TID state_id; ///< id of state change (not id of status)

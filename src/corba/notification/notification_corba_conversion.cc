@@ -35,10 +35,7 @@ void unwrap_DomainEmailSeq(const Registry::Notification::DomainEmailSeq &domain_
     for (unsigned long long index = 0; index < domain_email_seq.length(); ++index) {
         const unsigned long long domain_id = CorbaConversion::int_to_int<unsigned long long>(domain_email_seq[index].domain_id);
         const std::string email = Corba::unwrap_string(domain_email_seq[index].email);
-        std::set<std::string> &domain_emails = domain_emails_map[domain_id]; // required side-effect: creates the element if it does not exist yet
-        if(!email.empty()) {
-            domain_emails.insert(email);
-        }
+        domain_emails_map[domain_id].insert(email);
     }
 }
 
