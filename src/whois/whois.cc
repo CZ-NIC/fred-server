@@ -229,13 +229,12 @@ std::vector<RegistrarCertification> Server_impl::get_registrar_certification_lis
         const CertificateList v_rcd = ::Whois::get_registrar_certifications(ctx);
         std::vector<RegistrarCertification> result;
         result.reserve(v_rcd.size());
-        RegistrarCertification temp;
-        BOOST_FOREACH(Whois::RegistrarCertificationData it, v_rcd)
+        BOOST_FOREACH(const Whois::RegistrarCertificationData& it, v_rcd)
         {
-            temp.evaluation_file_id = it.get_registrar_evaluation_file_id();
-            temp.registrar = it.get_registrar_handle();
-            temp.score = it.get_registrar_score();
-            result.push_back(temp);
+            result.push_back(RegistrarCertification(
+                    it.get_registrar_handle(),
+                    it.get_registrar_score(),
+                    it.get_registrar_evaluation_file_id()));
         }
         return result;
     }
