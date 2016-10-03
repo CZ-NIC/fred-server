@@ -129,17 +129,11 @@ LocalizedSuccessResponse update(
             throw create_localized_fail_response(ctx, Response::authorization_error, errors, _lang);
         }
 
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dsrecord, Reason::dsrecord_limit, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_range_error, errors, _lang);
-            
-        }
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_tech,     Reason::techadmin_limit, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_range_error, errors, _lang);
-            
-        }
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey,   Reason::dnskey_limit, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_range_error, errors, _lang);
-            
+        if (e.has_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit)  ||
+            e.has_scalar_parameter_error(Param::keyset_tech,     Reason::techadmin_limit) ||
+            e.has_scalar_parameter_error(Param::keyset_dnskey,   Reason::dnskey_limit))
+        {
+            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, std::set< Error >(), _lang);
         }
 
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::tech_notexist, errors);

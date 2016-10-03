@@ -109,33 +109,30 @@ ResponseOfCreate create(
         std::set< Error > errors;
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_tech, Reason::tech_notexist, errors)) {
-            insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::no_dnskey, errors);
             throw create_localized_fail_response(ctx, Response::parameter_missing, errors, _lang);
-        }
-
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_tech, Reason::techadmin_limit, errors)) {
-            insert_scalar_parameter_error_if_presents(e, Param::keyset_dsrecord, Reason::dsrecord_limit, errors);
-            insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_limit, errors);
-            throw create_localized_fail_response(ctx, Response::parameter_value_range_error, errors, _lang);
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::no_dnskey, errors)) {
             throw create_localized_fail_response(ctx, Response::parameter_missing, errors, _lang);
         }
 
-        insert_scalar_parameter_error_if_presents(e, Param::keyset_dsrecord, Reason::dsrecord_limit, errors);
-        insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_limit, errors);
-        if (!errors.empty()) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_range_error, errors, _lang);
+        if (e.has_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit)  ||
+            e.has_scalar_parameter_error(Param::keyset_tech,     Reason::techadmin_limit) ||
+            e.has_scalar_parameter_error(Param::keyset_dnskey,   Reason::dnskey_limit))
+        {
+            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, std::set< Error >(), _lang);
+        }
+
+        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::no_dnskey, errors)) {
+            throw create_localized_fail_response(ctx, Response::parameter_missing, errors, _lang);
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::bad_format_keyset_handle, errors)) {
             throw create_localized_fail_response(ctx, Response::parameter_value_syntax_error, errors, _lang);
         }
 
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::existing, errors)) {
-            errors.clear();
-            throw create_localized_fail_response(ctx, Response::object_exist, errors, _lang);
+        if (e.has_scalar_parameter_error(Param::keyset_handle, Reason::existing)) {
+            throw create_localized_fail_response(ctx, Response::object_exist, std::set< Error >(), _lang);
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::protected_period, errors)) {
