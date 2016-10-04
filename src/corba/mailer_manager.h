@@ -49,6 +49,9 @@ class MailerManager : public Fred::Mailer::Manager
     const Fred::Mailer::Attachments &attach,
     const std::string& reply_to = std::string("")
   ) throw (Fred::Mailer::NOT_SEND) ;
+  /**
+   * Besides of checking, also MODIFIES _email_list (removes emails without @, removes dupliacates, sorts, sets separator to " ").
+   */
   bool checkEmailList(std::string &_email_list) const;
 
   struct Filter 
