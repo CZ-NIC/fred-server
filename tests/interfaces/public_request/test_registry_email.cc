@@ -149,48 +149,31 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixtu
 {
     Fred::OperationContextCreator ctx;
     Database::Result request = ctx.get_conn().exec_params(
-            "SELECT create_request_id, resolve_request_id "
+            "SELECT * "
             "FROM public_request "
             "WHERE id=$1::bigint "
-              "AND request_type=$2::text "
+              "AND request_type=$2::smallint "
               "AND status=$3::smallint "
               "AND reason=$4::text "
               "AND email_to_answer IS NULL "
               "AND registrar_id IS NULL ",
-            Database::query_param_list(id)(1)(0)(reason));
+            Database::query_param_list(contact_id)(1)(0)(reason));
     BOOST_CHECK(request.size() == 1);
 }
 
-BOOST_AUTO_TEST_CASE(no_object)
+BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
 {
+    boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     BOOST_CHECK_THROW(
-            Fred::PublicRequest().create_authinfo_request_registry_email(
+            Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
                 Fred::Object_Type::contact,
                 "test handle",
-                reason,
-                Optional<unsigned long long>()),
-            Fred::UnknownObject);
-    BOOST_CHECK_THROW(
-            Fred::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::nsset,
-                "test handle",
-                reason,
-                Optional<unsigned long long>()),
-            Fred::UnknownObject);
-    BOOST_CHECK_THROW(
-            Fred::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::domain,
-                "test handle",
-                reason,
-                Optional<unsigned long long>()),
-            Fred::UnknownObject);
-    BOOST_CHECK_THROW(
-            Fred::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::keyset,
-                "test handle",
-                reason,
-                Optional<unsigned long long>()),
+                "some reason",
+                Optional<unsigned long long>(),
+                mailer_manager),
             Fred::UnknownObject);
 }
+
+BOOST_AUTO_TEST_SUITE_END() // TestRegistryEmail
 
 BOOST_AUTO_TEST_SUITE_END() // TestPublicRequest
