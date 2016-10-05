@@ -2353,6 +2353,7 @@ SERVER_TESTS = \
 		tests/interfaces/test-admin-notification \
 		tests/interfaces/test-epp \
 		tests/interfaces/test-whois \
+		tests/interfaces/test-public-request \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
@@ -2745,6 +2746,45 @@ tests_test_server_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_server
+
+# tests/interfaces/test_public_request
+#
+tests_interfaces_test_public_request_SOURCES = \
+		tests/interfaces/public_request/main.cc \
+		src/public_request/public_request.cc \
+		tests/interfaces/public_request/test_registry_email.cc \
+		tests/interfaces/public_request/test_non_registry_email.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc
+
+tests_interfaces_test_public_request_LDFLAGS = \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_public_request_LDADD = \
+		src/fredlib/public_request/libpublic_request.a \
+		src/corba/libcorbadatatypes.a \
+		src/fredlib/libfred.a \
+		src/corba/libcorba.a \
+		src/corba/libmailer.a \
+		src/fredlib/requests/librequests.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_DATE_TIME_LIB)\
+		$(LIBIDN_CFLAGS) \
+		$(LIBIDN_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/interfaces/test_public_request
 
 
 # tests/test_blocking
