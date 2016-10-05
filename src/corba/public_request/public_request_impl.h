@@ -24,14 +24,17 @@
 #ifndef PUBLIC_REQUEST_IMPL_H_721142637
 #define PUBLIC_REQUEST_IMPL_H_721142637
 
-#include "src/public_request/public_request.h"
 #include "src/corba/PublicRequest.hh"
-#include "src/corba/NullableTypes.hh"
 
 #include <memory>
 
+namespace Registry { namespace PublicRequestImpl { class PublicRequest; } }
+
 namespace Registry
 {
+
+class NullableULongLong;
+
 namespace PublicRequest
 {
 
