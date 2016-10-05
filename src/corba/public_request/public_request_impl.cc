@@ -121,7 +121,17 @@ Registry::PublicRequestImpl::ConfirmationMethod unwrap_confirmation_method(
     catch (const Fred::UnknownObject& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw Registry::PublicRequest::OBJECT_NOT_EXISTS();
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
+    }
+    catch (const Fred::CreatePublicRequest::Exception& e)
+    {
+        if (e.is_set_wrong_email())
+        {
+            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            throw Registry::PublicRequest::INVALID_EMAIL();
+        }
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (const std::exception& e)
     {
@@ -172,7 +182,17 @@ Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBloc
     catch (const Fred::UnknownObject& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw Registry::PublicRequest::OBJECT_NOT_EXISTS();
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
+    }
+    catch (const Fred::CreatePublicRequest::Exception& e)
+    {
+        if (e.is_set_wrong_email())
+        {
+            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            throw Registry::PublicRequest::INVALID_EMAIL();
+        }
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
     catch (const Registry::PublicRequestImpl::ObjectAlreadyBlocked& e)
     {
