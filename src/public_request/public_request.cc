@@ -24,17 +24,57 @@ unsigned long long PublicRequest::create_authinfo_request_registry_email(
 {
     try
     {
-        Fred::OperationContextCreator ctx;
-        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(
-                ctx,
-                Fred::get_present_object_id(ctx, object_type, object_handle));
-        unsigned long long id = Fred::CreatePublicRequest(
-                reason,
-                Optional< std::string >(),
-                Optional<unsigned long long>())
-            .exec(locked_object, AuthinfoAuto(), log_request_id);
-        ctx.commit_transaction();
-        return id;
+        unsigned long long present_obj_id;
+        unsigned long long public_request_id;
+        {
+            Fred::OperationContextCreator ctx;
+            present_obj_id = Fred::get_present_object_id(ctx, object_type, object_handle);
+            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, present_obj_id);
+            public_request_id = Fred::CreatePublicRequest(
+                    reason,
+                    Optional<std::string>(),
+                    Optional<unsigned long long>())
+                .exec(locked_object, AuthinfoAuto(), log_request_id);
+            ctx.commit_transaction();
+        }
+        unsigned long long email_id;
+        try
+        {
+            email_id = Fred::send_authinfo(public_request_id, object_handle, object_type, manager);
+        }
+        catch (...)
+        {
+            Fred::OperationContextCreator ctx;
+            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, present_obj_id);
+            Fred::UpdatePublicRequest(
+                    Fred::PublicRequest::Status::invalidated,
+                    Optional< Nullable< std::string > >(),
+                    Optional< Nullable< std::string > >(),
+                    email_id,
+                    Optional< Nullable< Fred::RegistrarId  > >())
+                .exec(locked_object, AuthinfoAuto(), log_request_id);
+            ctx.commit_transaction();
+            throw;
+        }
+        try
+        {
+            Fred::OperationContextCreator ctx;
+            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, present_obj_id);
+            Fred::UpdatePublicRequest(
+                    Fred::PublicRequest::Status::answered,
+                    Optional< Nullable< std::string > >(),
+                    Optional< Nullable< std::string > >(),
+                    email_id,
+                    Optional< Nullable< Fred::RegistrarId  > >())
+                .exec(locked_object, AuthinfoAuto(), log_request_id);
+            ctx.commit_transaction();
+        }
+        catch (...)
+        {
+            LOGGER(PACKAGE).info(boost::format("Request %1% update failed, but email %2% sent") % public_request_id % email_id);
+            //no throw
+        }
+        return public_request_id;
     }
     catch (const std::exception& e)
     {
