@@ -71,7 +71,7 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
     catch (const Fred::UnknownObject& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw Registry::PublicRequest::OBJECT_NOT_EXISTS();
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
     catch (const std::exception& e)
     {
