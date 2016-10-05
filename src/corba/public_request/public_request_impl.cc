@@ -51,6 +51,7 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
     const char* reason,
     NullableULongLong* log_request_id)
 {
+    ::CORBA::ULongLong result;
     try
     {
         boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(
@@ -106,9 +107,10 @@ Registry::PublicRequestImpl::ConfirmationMethod unwrap_confirmation_method(
     ConfirmationMethod confirmation_method,
     const char* specified_email)
 {
+    ::CORBA::ULongLong result;
     try
     {
-        return pimpl_->create_authinfo_request_non_registry_email(
+        result = pimpl_->create_authinfo_request_non_registry_email(
                 unwrap_object_type(object_type),
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 Corba::unwrap_string_from_const_char_ptr(reason),
@@ -130,6 +132,7 @@ Registry::PublicRequestImpl::ConfirmationMethod unwrap_confirmation_method(
     {
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
+    return result;
 }
 
 Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBlockType object_block_type)
@@ -156,9 +159,10 @@ Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBloc
     ConfirmationMethod confirmation_method,
     ObjectBlockType object_block_type)
 {
+    ::CORBA::ULongLong result;
     try
     {
-        return pimpl_->create_block_unblock_request(
+        result = pimpl_->create_block_unblock_request(
                 unwrap_object_type(object_type),
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_ulonglong_optional_from_nullable(log_request_id),
@@ -189,6 +193,7 @@ Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBloc
     {
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
+    return result;
 } // create_block_unblock_request
 
 } // Registry
