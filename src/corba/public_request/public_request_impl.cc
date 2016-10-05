@@ -53,11 +53,19 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
 {
     try
     {
-        return pimpl_->create_authinfo_request_registry_email(
+        boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(
+                new MailerManager(CorbaContainer::get_instance()->getNS()));
+        result = pimpl_->create_authinfo_request_registry_email(
                 unwrap_object_type(object_type),
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 Corba::unwrap_string_from_const_char_ptr(reason),
-                unwrap_ulonglong_optional_from_nullable(log_request_id));
+                unwrap_ulonglong_optional_from_nullable(log_request_id),
+                mailer_manager);
+    }
+    catch (const Fred::NoContactEmail& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::INVALID_EMAIL(); // same as for nonreg?
     }
     catch (const Fred::UnknownObject& e)
     {
@@ -73,6 +81,7 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
     {
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
+    return result;
 }
 
 Registry::PublicRequestImpl::ConfirmationMethod unwrap_confirmation_method(

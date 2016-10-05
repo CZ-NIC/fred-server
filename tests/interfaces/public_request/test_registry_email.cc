@@ -45,12 +45,30 @@
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 
-BOOST_AUTO_TEST_CASE(interface_exception)
+BOOST_AUTO_TEST_SUITE(TestRegistryEmail) //TODO check if makefile has all 3 files
+
+class FakeMailer : public Fred::Mailer::Manager
 {
-    BOOST_CHECK_THROW(
-            AuthinfoAuto().get_public_request_types_to_cancel_on_update(),
-            std::runtime_error);
-}
+public:
+    virtual ~FakeMailer() {}
+
+    virtual unsigned long long sendEmail(
+            const std::string& from,
+            const std::string& to,
+            const std::string& subject,
+            const std::string& mailTemplate,
+            const std::map<std::string,std::string>& params,
+            const std::vector<std::string>& handles,
+            const std::vector<unsigned long long>& attach,
+            const std::string& reply_to) throw (Fred::Mailer::NOT_SEND)
+    {
+        return 0;
+    }
+    virtual bool checkEmailList(std::string &_email_list) const
+    {
+        return true;
+    }
+};
 
 struct fixture //TODO
 {
