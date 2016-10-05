@@ -18,10 +18,29 @@
 
 #include "src/fredlib/object/get_present_object_id.h"
 #include "src/public_request/public_request.h"
-#include "tests/util/fixtures_utils.h"
+#include "src/fredlib/object/get_present_object_id.h"
+
+#include "src/fredlib/object/object_type.h"
+#include "src/fredlib/contact/info_contact_data.h"
+#include "src/fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/registrar/info_registrar_data.h"
+#include "src/fredlib/domain/info_domain_data.h"
+#include "src/fredlib/keyset/info_keyset_data.h"
+#include "src/fredlib/mailer.h"
+#include "util/corba_wrapper_decl.h"
+#include "util/cfg/config_handler_decl.h"
+
+#include "util/cfg/faked_args.h"
+#include "util/util.h"
+
+#include "util/cfg/config_handler_decl.h"
+
+#include "tests/setup/fixtures_utils.h"
+#include "tests/setup/fixtures.h"
 
 #define BOOST_TEST_NO_MAIN
 
+#include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)

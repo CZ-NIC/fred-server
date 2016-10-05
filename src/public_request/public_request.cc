@@ -1,9 +1,14 @@
 #include "src/public_request/public_request.h"
 #include "src/fredlib/public_request/create_public_request.h"
+#include "src/fredlib/public_request/update_public_request.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/get_present_object_id.h"
 #include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/send_authinfo.h"
+#include "src/fredlib/public_request/public_request_status.h"
+
+#include <boost/format.hpp>
 
 namespace Registry
 {
