@@ -61,7 +61,7 @@ public:
         const char* object_handle,
         NullableULongLong* log_request_id,
         ConfirmationMethod confirmation_method,
-        ObjectBlockType object_block_type);
+        LockRequestType lock_request_type);
 
 private:
     const std::auto_ptr<Registry::PublicRequestImpl::PublicRequest> pimpl_;

@@ -145,9 +145,9 @@ Registry::PublicRequestImpl::ConfirmationMethod unwrap_confirmation_method(
     return result;
 }
 
-Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBlockType object_block_type)
+Registry::PublicRequestImpl::LockRequestType unwrap_lock_request_type(LockRequestType lock_request_type)
 {
-    switch (object_block_type)
+    switch (lock_request_type)
     {
         case BLOCK_TRANSFER:
             return Registry::PublicRequestImpl::BLOCK_TRANSFER;
@@ -158,7 +158,7 @@ Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBloc
         case UNBLOCK_TRANSFER_AND_UPDATE:
             return Registry::PublicRequestImpl::UNBLOCK_TRANSFER_AND_UPDATE;
         default:
-            throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectBlockType");
+            throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::LockRequestType");
     }
 }
 
@@ -167,7 +167,7 @@ Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBloc
     const char* object_handle,
     NullableULongLong* log_request_id,
     ConfirmationMethod confirmation_method,
-    ObjectBlockType object_block_type)
+    LockRequestType lock_request_type)
 {
     ::CORBA::ULongLong result;
     try
@@ -177,7 +177,7 @@ Registry::PublicRequestImpl::ObjectBlockType unwrap_object_block_type(ObjectBloc
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_ulonglong_optional_from_nullable(log_request_id),
                 unwrap_confirmation_method(confirmation_method),
-                unwrap_object_block_type(object_block_type));
+                unwrap_lock_request_type(lock_request_type));
     }
     catch (const Fred::UnknownObject& e)
     {

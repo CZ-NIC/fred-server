@@ -119,7 +119,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
     const std::string& object_handle,
     const Optional<unsigned long long>& log_request_id,
     ConfirmationMethod confirmation_method,
-    ObjectBlockType object_block_type)
+    LockRequestType lock_request_type)
 {
     try
     {
@@ -132,7 +132,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 Optional<std::string>(),
                 Optional<std::string>(),
                 Optional<unsigned long long>());
-        if (object_block_type == BLOCK_TRANSFER)
+        if (lock_request_type == BLOCK_TRANSFER)
         {
             request_id = get_id<ObjectAlreadyBlocked, BlockTransferEmail, BlockTransferPost>(
                     states.presents(Fred::Object_State::server_transfer_prohibited),
@@ -141,7 +141,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                     locked_object,
                     log_request_id);
         }
-        else if (object_block_type == BLOCK_TRANSFER_AND_UPDATE)
+        else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
         {
             request_id = get_id<ObjectAlreadyBlocked, BlockChangesEmail, BlockChangesPost>(
                     (states.presents(Fred::Object_State::server_transfer_prohibited) ||
@@ -151,7 +151,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                     locked_object,
                     log_request_id);
         }
-        else if (object_block_type == UNBLOCK_TRANSFER)
+        else if (lock_request_type == UNBLOCK_TRANSFER)
         {
             request_id = get_id<ObjectNotBlocked, UnblockTransferEmail, UnblockTransferPost>(
                     states.absents(Fred::Object_State::server_transfer_prohibited),
@@ -160,7 +160,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                     locked_object,
                     log_request_id);
         }
-        else if (object_block_type == UNBLOCK_TRANSFER_AND_UPDATE)
+        else if (lock_request_type == UNBLOCK_TRANSFER_AND_UPDATE)
         {
             request_id = get_id<ObjectNotBlocked, UnblockChangesEmail, UnblockChangesPost>(
                     (states.absents(Fred::Object_State::server_transfer_prohibited) ||
