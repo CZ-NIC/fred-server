@@ -16,7 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/fredlib/object/get_present_object_id.h"
 #include "src/public_request/public_request.h"
 #include "src/fredlib/object/get_present_object_id.h"
 
