@@ -60,16 +60,17 @@ class EnumPublicRequestType : public Fred::PublicRequestTypeIface
 {
 public:
     const Fred::PublicRequestTypeIface& iface() const { return *this; }
-    std::string get_public_request_type() const = 0;
+//    virtual std::string get_public_request_type() const = 0;
+//protected: // why did i make it so?
+//    PublicRequestTypes get_public_request_types_to_cancel_on_create() const = 0;
 
-protected:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const = 0;
-
-    PublicRequestTypes get_public_request_types_to_cancel_on_update(
+private:
+    virtual PublicRequestTypes get_public_request_types_to_cancel_on_update( // TODO specify when behavior is known
         Fred::PublicRequest::Status::Enum _old_status,
         Fred::PublicRequest::Status::Enum _new_status) const
     {
-        throw std::runtime_error("method must not be called");
+        //if _new_status == invalid -> apply immediately
+        return PublicRequestTypes();
     }
 };
 
@@ -78,7 +79,6 @@ class AuthinfoAuto : public EnumPublicRequestType
 public:
     std::string get_public_request_type() const { return "authinfo_auto_pif"; }
 
-private:
     PublicRequestTypes get_public_request_types_to_cancel_on_create() const
     {
         PublicRequestTypes res;
@@ -271,7 +271,7 @@ public:
         LockRequestType lock_request_type);
 };
 
-} // namespace Registry
 } // namespace PublicRequestImpl
+} // namespace Registry
 
 #endif // PUBLIC_REQUEST_H_75462367
