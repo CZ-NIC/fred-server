@@ -69,54 +69,83 @@ public:
     }
 };
 
-struct fixture //TODO
+struct registry_email_fixture : Test::Fixture::instantiate_db_template
 {
+private:
+    Fred::OperationContextCreator ctx;
+
+public:
     Fred::InfoContactData contact;
-    Fred::InfonssetData nsset;
+    Fred::InfoNssetData nsset;
     Fred::InfoDomainData domain;
-    Fred::InfokeysetData keyset;
+    Fred::InfoKeysetData keyset;
+    const std::string reason;
     unsigned long long contact_id;
     unsigned long long nsset_id;
     unsigned long long domain_id;
     unsigned long long keyset_id;
-    const std::string reason;
 
-    fixture()
+    registry_email_fixture()
     : ctx(),
-      contact(Test::contact::make(ctx)),
-      nsset(Test::nsset::make(ctx)),
-      domain(Test::domain::make(ctx)),
-      keyset(Test::keyset::make(ctx)),
       reason("some reason")
     {
-        Fred::PublicRequest pr;
+        Fred::InfoRegistrarData registrar = Test::exec(
+                Test::CreateX_factory<Fred::CreateRegistrar>()
+                    .make(),
+                ctx);
+        contact = Test::exec(
+                Test::CreateX_factory<Fred::CreateContact>()
+                    .make(registrar.handle)
+                    .set_email("someemail@nic.cz"),
+                ctx);
+        nsset = Test::exec(
+                Test::CreateX_factory<Fred::CreateNsset>()
+                    .make(registrar.handle)
+                    .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+                ctx);
+        domain = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(registrar.handle, contact.handle),
+                ctx);
+        keyset = Test::exec(
+                Test::CreateX_factory<Fred::CreateKeyset>()
+                    .make(registrar.handle)
+                    .set_tech_contacts(Util::vector_of<std::string>(contact.handle)),
+                ctx);
+        ctx.commit_transaction();
+
+        boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(
+                new FakeMailer());
+
+        Registry::PublicRequestImpl::PublicRequest pr;
         contact_id = pr.create_authinfo_request_registry_email(
                 Fred::Object_Type::contact,
                 contact.handle,
                 reason,
-                Optional<unsigned long long>());
+                Optional<unsigned long long>(),
+                mailer_manager);
         nsset_id = pr.create_authinfo_request_registry_email(
                 Fred::Object_Type::nsset,
                 nsset.handle,
                 reason,
-                Optional<unsigned long long>());
+                Optional<unsigned long long>(),
+                mailer_manager);
         domain_id = pr.create_authinfo_request_registry_email(
                 Fred::Object_Type::domain,
-                domain.handle,
+                domain.fqdn,
                 reason,
-                Optional<unsigned long long>());
+                Optional<unsigned long long>(),
+                mailer_manager);
         keyset_id = pr.create_authinfo_request_registry_email(
                 Fred::Object_Type::keyset,
                 keyset.handle,
                 reason,
-                Optional<unsigned long long>());
+                Optional<unsigned long long>(),
+                mailer_manager);
     }
-
-private:
-    Fred::OperationContextCreator ctx;
 };
-
-BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, fixture)
+// TODO no email entities?
+BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixture)
 {
     Fred::OperationContextCreator ctx;
     Database::Result request = ctx.get_conn().exec_params(
