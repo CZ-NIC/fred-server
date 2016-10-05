@@ -214,6 +214,9 @@ MailerManager::_resolveInit() throw (RESOLVE_FAILED)
 }
 
 
+/**
+ * Besides of checking, also MODIFIES _email_list (removes emails without @, removes dupliacates, sorts, sets separator to " ").
+ */
 bool
 MailerManager::checkEmailList(std::string &_email_list) const 
 {

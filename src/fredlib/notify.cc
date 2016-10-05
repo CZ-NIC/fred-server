@@ -344,11 +344,10 @@ namespace Fred
         sql << ")";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
       }
-      void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, std::string space_separated_emails) {
-        std::vector<std::string> emails;
-        boost::split(emails, space_separated_emails, boost::is_any_of(" "), boost::token_compress_on);
-        std::ostringstream sql;
-        for (std::vector<std::string>::iterator email_ptr = emails.begin(); email_ptr != emails.end(); ++email_ptr) {
+      void saveDomainAdditionalEmailsState(TID state_id, TID obj_id, const std::vector<std::string>& emails) {
+        for (std::vector<std::string>::const_iterator email_ptr = emails.begin(); email_ptr != emails.end(); ++email_ptr)
+        {
+            std::ostringstream sql;
             sql << "UPDATE notify_outzone_unguarded_domain_additional_email "
                    "SET state_id = " << state_id << " "
                    "WHERE domain_id = " << obj_id << " AND email = '" << db->Escape2(*email_ptr) << "' AND state_id IS NULL";
@@ -499,12 +498,17 @@ namespace Fred
               *debugOutput << "</notify>" << std::endl;
             } else {
               TID mail = 0;
-              if (mm->checkEmailList(emails)) {
-                mail = mm->sendEmail("", emails, "", i->mtype, params, handles, attach);
+              const bool some_emails_are_valid = mm->checkEmailList(emails); // remove "emails" without @, remove duplicates, sort them, set separator to " "
+              const std::string space_separated_emails = emails; // emails were modified above
+              if (some_emails_are_valid) {
+                mail = mm->sendEmail("", space_separated_emails, "", i->mtype, params, handles, attach);
               }
               saveNotification(i->state_id, i->type, mail);
-              if((i->obj_type == 3) && (i->emails == 4)) // 3: domain, 4: additional email
-                saveDomainAdditionalEmailsState(i->state_id, i->obj_id, emails);
+              if((i->obj_type == 3) && (i->emails == 4)) { // 3: domain, 4: additional email
+                std::vector<std::string> set_of_emails;
+                boost::split(set_of_emails, space_separated_emails, boost::is_any_of(" "), boost::token_compress_on);
+                saveDomainAdditionalEmailsState(i->state_id, i->obj_id, set_of_emails);
+              }
             }
           }
           catch (...) {
