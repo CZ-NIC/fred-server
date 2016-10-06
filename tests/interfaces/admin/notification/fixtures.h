@@ -24,10 +24,10 @@
 #ifndef TESTS_INTERFACES_ADMIN_NOTIFICATION_FIXTURES_H
 #define TESTS_INTERFACES_ADMIN_NOTIFICATION_FIXTURES_H
 
-#include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/opcontext.h"
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 #include "util/random_data_generator.h"
@@ -36,7 +36,7 @@
 #include <set>
 #include <boost/test/unit_test.hpp>
 
-struct HasExpiredDomain : public Test::Fixture::instantiate_db_template {
+struct HasExpiredDomain : virtual Test::Fixture::instantiate_db_template {
     Fred::InfoDomainData domain;
     HasExpiredDomain() {
         Fred::OperationContextCreator ctx;
