@@ -108,7 +108,7 @@ const std::string server_name = "test-printable";
  */
 template <class T> void printable_test(const T& i)
 {
-    BOOST_MESSAGE(i.to_string());
+    BOOST_TEST_MESSAGE(i.to_string());
     std::stringstream ss;
     ss << i;
     BOOST_CHECK(i.to_string().compare(ss.str()) == 0);

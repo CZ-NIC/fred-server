@@ -48,7 +48,7 @@ namespace Test {
                     (HandleArgsPtr(new HandleServerArgs))
                     (HandleArgsPtr(new HandleLoggingArgs))
                     (HandleArgsPtr(new HandleDatabaseArgs))
-                    (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs));
+                    (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>();
 
             namespace boost_args_ns = boost::unit_test::framework;
 

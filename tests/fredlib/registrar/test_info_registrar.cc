@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(info_registrar)
     Fred::InfoRegistrarOutput registrar_info2 = Fred::InfoRegistrarByHandle(test_registrar_data_1.handle).set_lock().exec(ctx);
     BOOST_CHECK(registrar_info2.info_registrar_data == test_registrar_data_1);
 
-    BOOST_MESSAGE(std::string("test registrar id: ") + boost::lexical_cast<std::string>(test_registrar_data_1.id));
+    BOOST_TEST_MESSAGE(std::string("test registrar id: ") + boost::lexical_cast<std::string>(test_registrar_data_1.id));
 
     Fred::InfoRegistrarOutput registrar_info3 = Fred::InfoRegistrarById(test_registrar_data_1.id).exec(ctx);
     BOOST_CHECK(registrar_info3.info_registrar_data == test_registrar_data_1);
@@ -221,8 +221,8 @@ BOOST_AUTO_TEST_CASE(info_registrar_wrong_handle)
     catch(const Fred::InfoRegistrarByHandle::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_handle());
-        BOOST_MESSAGE(bad_registrar_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(bad_registrar_handle);
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_registrar_handle().compare(bad_registrar_handle) == 0);
     }
 }
@@ -243,8 +243,8 @@ BOOST_AUTO_TEST_CASE(info_registrar_wrong_id)
     catch(const Fred::InfoRegistrarById::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_registrar_id());
-        BOOST_MESSAGE(bad_registrar_id);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(bad_registrar_id);
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_registrar_id() == bad_registrar_id);
     }
 }
@@ -287,8 +287,8 @@ BOOST_AUTO_TEST_CASE(info_registrar_diff)
     BOOST_CHECK(!test_diff.is_empty());
     BOOST_CHECK(test_empty_diff.is_empty());
 
-    BOOST_MESSAGE(Fred::diff_registrar_data(registrar_info1.info_registrar_data,registrar_info2.info_registrar_data).to_string());
-    BOOST_MESSAGE(test_diff.to_string());
+    BOOST_TEST_MESSAGE(Fred::diff_registrar_data(registrar_info1.info_registrar_data,registrar_info2.info_registrar_data).to_string());
+    BOOST_TEST_MESSAGE(test_diff.to_string());
 
     BOOST_CHECK(Fred::diff_registrar_data(registrar_info1.info_registrar_data,registrar_info2.info_registrar_data).to_string() == test_diff.to_string());
 }

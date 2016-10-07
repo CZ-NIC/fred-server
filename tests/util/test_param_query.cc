@@ -102,8 +102,8 @@ BOOST_AUTO_TEST_CASE(query_composition_30k_params)
         test_non_rep_query(in_separator2.get()).param_bigint(1);
     }
 
-    //BOOST_MESSAGE(test_rep_query.get_query_string());
-    //BOOST_MESSAGE(test_non_rep_query.get_query_string());
+    //BOOST_TEST_MESSAGE(test_rep_query.get_query_string());
+    //BOOST_TEST_MESSAGE(test_non_rep_query.get_query_string());
 
     BOOST_CHECK(test_rep_query.get_query().second.size() == 1);
     BOOST_CHECK(test_non_rep_query.get_query().second.size() == 30000);

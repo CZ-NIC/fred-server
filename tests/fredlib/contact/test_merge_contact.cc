@@ -76,7 +76,7 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
         , 0//linked_object_state_case
         , 0//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -86,7 +86,7 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
         , 0//linked_object_state_case
         , 0//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -94,7 +94,7 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
     //src contact
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -114,7 +114,7 @@ BOOST_FIXTURE_TEST_CASE(test_no_linked_objects_no_states, merge_fixture)
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
     //dst contact
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -173,7 +173,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
         , 0//linked_object_state_case
         , 0//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -181,7 +181,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -191,7 +191,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -199,7 +199,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -228,9 +228,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset, merge_fixture)
         , 0//number in quantity
         , contact_handle_src //tech contact
     );
-    BOOST_MESSAGE(nsset_handle);
+    BOOST_TEST_MESSAGE(nsset_handle);
 
-    BOOST_MESSAGE(std::string("changed nsset fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed nsset fields: (\"")
             + Util::format_container(map_at(changed_nssets,nsset_handle).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_nssets,nsset_handle).changed_fields()
         == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -280,7 +280,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -290,7 +290,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -298,7 +298,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -308,7 +308,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -316,7 +316,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -339,7 +339,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
 
     for(std::map<std::string, Fred::InfoNssetDiff>::const_iterator ci = changed_nssets.begin(); ci != changed_nssets.end(); ++ci)
     {
-        BOOST_MESSAGE("changed_nsset handle: " << ci->first);
+        BOOST_TEST_MESSAGE("changed_nsset handle: " << ci->first);
     }
 
     BOOST_CHECK(changed_nssets.size() == 2); //updated nsset, tech contact changed from src contact to dst contact
@@ -351,9 +351,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
         , contact_handle_src //tech contact
         , Util::vector_of<std::string>(contact_handle_dst)
     );
-    BOOST_MESSAGE(nsset1_handle);
+    BOOST_TEST_MESSAGE(nsset1_handle);
 
-    BOOST_MESSAGE(std::string("changed nsset fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed nsset fields: (\"")
             + Util::format_container(map_at(changed_nssets,nsset1_handle).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_nssets,nsset1_handle).changed_fields()
         == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -384,9 +384,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_with_added_tech_contact, merge_fixture
         , contact_handle_dst //tech contact
         , Util::vector_of<std::string>(contact_handle_src)
     );
-    BOOST_MESSAGE(nsset2_handle);
+    BOOST_TEST_MESSAGE(nsset2_handle);
 
-    BOOST_MESSAGE(std::string("changed nsset fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed nsset fields: (\"")
             + Util::format_container(map_at(changed_nssets,nsset2_handle).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_nssets,nsset2_handle).changed_fields()
         == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -439,7 +439,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -449,7 +449,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
         , 0//linked_object_state_case
         , 0//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -457,7 +457,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -467,7 +467,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -475,7 +475,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -507,9 +507,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset, merge_fixture)
         , 0//number in quantity
         , contact_handle_src //tech contact
     );
-    BOOST_MESSAGE(keyset_handle);
+    BOOST_TEST_MESSAGE(keyset_handle);
 
-    BOOST_MESSAGE(std::string("changed keyset fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed keyset fields: (\"")
         + Util::format_container(map_at(changed_keysets,keyset_handle).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_keysets,keyset_handle).changed_fields()
         == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -558,7 +558,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -568,7 +568,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -576,7 +576,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -586,7 +586,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -594,7 +594,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -622,7 +622,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
 
     for(std::map<std::string, Fred::InfoKeysetDiff>::const_iterator ci = changed_keysets.begin(); ci != changed_keysets.end(); ++ci)
     {
-        BOOST_MESSAGE("changed_keyset handle: " << ci->first);
+        BOOST_TEST_MESSAGE("changed_keyset handle: " << ci->first);
     }
 
     std::string keyset1_handle= create_keyset_with_tech_contact_handle(
@@ -632,9 +632,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
         , contact_handle_src //tech contact
         , Util::vector_of<std::string>(contact_handle_dst)
     );
-    BOOST_MESSAGE(keyset1_handle);
+    BOOST_TEST_MESSAGE(keyset1_handle);
 
-    BOOST_MESSAGE(std::string("changed keyset fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed keyset fields: (\"")
         + Util::format_container(map_at(changed_keysets,keyset1_handle).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_keysets,keyset1_handle).changed_fields()
         == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -666,9 +666,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_with_added_tech_contact, merge_fixtur
         , contact_handle_dst //tech contact
         , Util::vector_of<std::string>(contact_handle_src)
     );
-    BOOST_MESSAGE(keyset2_handle);
+    BOOST_TEST_MESSAGE(keyset2_handle);
 
-    BOOST_MESSAGE(std::string("changed keyset fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed keyset fields: (\"")
         + Util::format_container(map_at(changed_keysets,keyset2_handle).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_keysets,keyset2_handle).changed_fields()
         == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -719,7 +719,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -729,7 +729,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
         , 0//linked_object_state_case
         , 0//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -737,7 +737,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -747,7 +747,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -755,7 +755,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -790,9 +790,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner, merge_fixture)
         , 0//number in quantity
         , contact_handle_src //owner contact
     );
-    BOOST_MESSAGE(fqdn);
+    BOOST_TEST_MESSAGE(fqdn);
 
-    BOOST_MESSAGE(std::string("changed domain fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
         + Util::format_container(map_at(changed_domains,fqdn).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_domains,fqdn).changed_fields()
         == Util::set_of<std::string>("historyid")("registrant")("update_registrar_handle")("update_time"));
@@ -837,7 +837,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -847,7 +847,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
         , 0//linked_object_state_case
         , 0//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -855,7 +855,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -865,7 +865,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -873,7 +873,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -909,9 +909,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin, merge_fixture)
         , create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1)//owner contact
         , contact_handle_src //admin contact
     );
-    BOOST_MESSAGE(fqdn);
+    BOOST_TEST_MESSAGE(fqdn);
 
-    BOOST_MESSAGE(std::string("changed domain fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
         + Util::format_container(map_at(changed_domains,fqdn).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_domains,fqdn).changed_fields()
         == Util::set_of<std::string>("admin_contacts")("historyid")("update_registrar_handle")("update_time"));
@@ -957,7 +957,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
         , 0//linked_object_state_case
         , nsset_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -967,7 +967,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
         , 0//linked_object_state_case
         , nsset_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -975,7 +975,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -985,7 +985,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -993,7 +993,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -1023,8 +1023,8 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_5, merge_fixture)
             , number//number in quantity
             , contact_handle_src //tech contact
         );
-        BOOST_MESSAGE(nsset_handle);
-        BOOST_MESSAGE(std::string("changed nsset fields: (\"")
+        BOOST_TEST_MESSAGE(nsset_handle);
+        BOOST_TEST_MESSAGE(std::string("changed nsset fields: (\"")
                 + Util::format_container(map_at(changed_nssets,nsset_handle).changed_fields(), "\")(\"") + "\")");
         BOOST_CHECK(map_at(changed_nssets,nsset_handle).changed_fields()
             == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -1075,7 +1075,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
         , 0//linked_object_state_case
         , keyset_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -1085,7 +1085,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
         , 0//linked_object_state_case
         , keyset_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -1093,7 +1093,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -1103,7 +1103,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -1111,7 +1111,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -1145,9 +1145,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_keyset_5, merge_fixture)
             , number//number in quantity
             , contact_handle_src //tech contact
         );
-        BOOST_MESSAGE(keyset_handle);
+        BOOST_TEST_MESSAGE(keyset_handle);
 
-        BOOST_MESSAGE(std::string("changed keyset fields: (\"")
+        BOOST_TEST_MESSAGE(std::string("changed keyset fields: (\"")
             + Util::format_container(map_at(changed_keysets,keyset_handle).changed_fields(), "\")(\"") + "\")");
         BOOST_CHECK(map_at(changed_keysets,keyset_handle).changed_fields()
             == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -1196,7 +1196,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
         , 0//linked_object_state_case
         , domain_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -1206,7 +1206,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
         , 0//linked_object_state_case
         , domain_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -1214,7 +1214,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -1224,7 +1224,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -1232,7 +1232,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -1269,9 +1269,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_owner_5, merge_fixture)
             , number//number in quantity
             , contact_handle_src //owner contact
         );
-        BOOST_MESSAGE(fqdn);
+        BOOST_TEST_MESSAGE(fqdn);
 
-        BOOST_MESSAGE(std::string("changed domain fields: (\"")
+        BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
             + Util::format_container(map_at(changed_domains,fqdn).changed_fields(), "\")(\"") + "\")");
         BOOST_CHECK(map_at(changed_domains,fqdn).changed_fields()
             == Util::set_of<std::string>("historyid")("registrant")("update_registrar_handle")("update_time"));
@@ -1317,7 +1317,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
         , 0//linked_object_state_case
         , domain_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -1327,7 +1327,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
         , 0//linked_object_state_case
         , domain_quantity//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -1335,7 +1335,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -1345,7 +1345,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -1353,7 +1353,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -1390,9 +1390,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_domain_via_admin_5, merge_fixture)
             , create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1) //owner contact
             , contact_handle_src //admin contact
         );
-        BOOST_MESSAGE(fqdn);
+        BOOST_TEST_MESSAGE(fqdn);
 
-        BOOST_MESSAGE(std::string("changed domain fields: (\"")
+        BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
             + Util::format_container(map_at(changed_domains,fqdn).changed_fields(), "\")(\"") + "\")");
         BOOST_CHECK(map_at(changed_domains,fqdn).changed_fields()
             == Util::set_of<std::string>("admin_contacts")("historyid")("update_registrar_handle")("update_time"));
@@ -1472,7 +1472,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
             , 0//linked_object_state_case
             , *loq_ci//quantity_case
         );
-        BOOST_MESSAGE(contact_handle_src);
+        BOOST_TEST_MESSAGE(contact_handle_src);
         std::string contact_handle_dst = create_contact_handle(
             registrar_vect.at(0)//registrar handle
             , 1 //contact data
@@ -1482,7 +1482,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
             , 0//linked_object_state_case
             , *loq_ci//quantity_case
         );
-        BOOST_MESSAGE(contact_handle_dst);
+        BOOST_TEST_MESSAGE(contact_handle_dst);
         try
         {
             Fred::OperationContextCreator ctx;
@@ -1490,7 +1490,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
                 contact_handle_src, contact_handle_dst
                 , registrar_sys_handle).exec(ctx);
                 ctx.commit_transaction();
-                BOOST_MESSAGE(merge_data);
+                BOOST_TEST_MESSAGE(merge_data);
         }
         catch(boost::exception& ex)
         {
@@ -1502,7 +1502,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
         //accumulated changed contacts 2,4,8,...
         BOOST_CHECK(changed_contacts.size() == static_cast<std::size_t>(2+2*(loq_ci - linked_object_quantities.begin()))); //deleted src contact, updated dst contact authinfo
 
-        BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+        BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
             + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
         BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -1510,7 +1510,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
         BOOST_CHECK(map_at(changed_contacts,contact_handle_src).delete_time.get_value().first.isnull());
         BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
-        BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+        BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
             + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
         BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
             == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -1541,9 +1541,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
                 , number//number in quantity
                 , contact_handle_src //tech contact
             );
-            BOOST_MESSAGE(nsset_handle);
+            BOOST_TEST_MESSAGE(nsset_handle);
 
-            BOOST_MESSAGE(std::string("changed nsset fields: (\"")
+            BOOST_TEST_MESSAGE(std::string("changed nsset fields: (\"")
                     + Util::format_container(map_at(changed_nssets,nsset_handle).changed_fields(), "\")(\"") + "\")");
             BOOST_CHECK(map_at(changed_nssets,nsset_handle).changed_fields()
                 == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -1575,9 +1575,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
                 , number//number in quantity
                 , contact_handle_src //tech contact
             );
-            BOOST_MESSAGE(keyset_handle);
+            BOOST_TEST_MESSAGE(keyset_handle);
 
-            BOOST_MESSAGE(std::string("changed keyset fields: (\"")
+            BOOST_TEST_MESSAGE(std::string("changed keyset fields: (\"")
                 + Util::format_container(map_at(changed_keysets,keyset_handle).changed_fields(), "\")(\"") + "\")");
             BOOST_CHECK(map_at(changed_keysets,keyset_handle).changed_fields()
                 == Util::set_of<std::string>("historyid")("tech_contacts")("update_registrar_handle")("update_time"));
@@ -1609,9 +1609,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
                 , number//number in quantity
                 , contact_handle_src //owner contact
             );
-            BOOST_MESSAGE(owner_fqdn);
+            BOOST_TEST_MESSAGE(owner_fqdn);
 
-            BOOST_MESSAGE(std::string("changed domain fields: (\"")
+            BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
                 + Util::format_container(map_at(changed_domains,owner_fqdn).changed_fields(), "\")(\"") + "\")");
             BOOST_CHECK(map_at(changed_domains,owner_fqdn).changed_fields()
                 == Util::set_of<std::string>("historyid")("registrant")("update_registrar_handle")("update_time"));
@@ -1636,9 +1636,9 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
                 , create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1) //owner contact
                 , contact_handle_src //admin contact
             );
-            BOOST_MESSAGE(admin_fqdn);
+            BOOST_TEST_MESSAGE(admin_fqdn);
 
-            BOOST_MESSAGE(std::string("changed domain fields: (\"")
+            BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
                 + Util::format_container(map_at(changed_domains,admin_fqdn).changed_fields(), "\")(\"") + "\")");
             BOOST_CHECK(map_at(changed_domains,admin_fqdn).changed_fields()
                 == Util::set_of<std::string>("admin_contacts")("historyid")("update_registrar_handle")("update_time"));
@@ -1671,7 +1671,7 @@ BOOST_FIXTURE_TEST_CASE(test_linked_nsset_keyset_domain_via_admin_domain_via_own
 BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
 {
     std::string contact_handle_src = "NONEXISTENT";
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
         , 1 //contact data
@@ -1681,7 +1681,7 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_src_contact, merge_fixture)
         , 0//linked_object_state_case
         , 0//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -1737,10 +1737,10 @@ BOOST_FIXTURE_TEST_CASE(test_non_existing_dst_contact, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = "NONEXISTENT";
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -1797,10 +1797,10 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1); //owner contact
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -1850,7 +1850,7 @@ BOOST_FIXTURE_TEST_CASE(test_different_dst_contact, merge_fixture)
 BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
 {
     std::string contact_handle_src = create_contact_handle(registrar_vect.at(0), 0, 1, 0, 15, 0, 1); //owner contact
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -1861,7 +1861,7 @@ BOOST_FIXTURE_TEST_CASE(test_different_src_contact, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -1919,10 +1919,10 @@ BOOST_FIXTURE_TEST_CASE(test_identical_contact, merge_fixture)
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = contact_handle_src;
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -1976,7 +1976,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -1987,7 +1987,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -1996,7 +1996,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -2008,7 +2008,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
     //src contact
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -2017,7 +2017,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
     //dst contact
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -2045,7 +2045,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
     for(std::map<std::string, Fred::InfoDomainDiff>::const_iterator ci = changed_domains.begin(); ci != changed_domains.end(); ++ci)
     {
-        BOOST_MESSAGE("changed_domain fqdn: " << ci->first);
+        BOOST_TEST_MESSAGE("changed_domain fqdn: " << ci->first);
     }
 
     BOOST_CHECK(changed_domains.size() == 2); //updated domain, owner and admin contact changed from src contact to dst contact
@@ -2057,9 +2057,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
         , contact_handle_src //owner contact
         ,  Util::vector_of<std::string>(contact_handle_src)(contact_handle_dst)
     );
-    BOOST_MESSAGE(fqdn1);
+    BOOST_TEST_MESSAGE(fqdn1);
 
-    BOOST_MESSAGE(std::string("changed domain fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
         + Util::format_container(map_at(changed_domains,fqdn1).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_domains,fqdn1).changed_fields()
         == Util::set_of<std::string>("admin_contacts")("historyid")("registrant")("update_registrar_handle")("update_time"));
@@ -2094,9 +2094,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
         , contact_handle_dst //owner contact
         ,  Util::vector_of<std::string>(contact_handle_dst)(contact_handle_src)
     );
-    BOOST_MESSAGE(fqdn2);
+    BOOST_TEST_MESSAGE(fqdn2);
 
-    BOOST_MESSAGE(std::string("changed domain fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
         + Util::format_container(map_at(changed_domains,fqdn2).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_domains,fqdn2).changed_fields()
         == Util::set_of<std::string>("admin_contacts")("historyid")("update_registrar_handle")("update_time"));
@@ -2205,7 +2205,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixtu
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2216,7 +2216,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_mojeid_contact, merge_with_states_fixtu
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -2282,7 +2282,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_state
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2293,7 +2293,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_serverblocked_contact, merge_with_state
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -2359,7 +2359,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_st
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2370,7 +2370,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_src_deleteprohibited_contact, merge_with_st
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -2437,7 +2437,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_state
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2448,7 +2448,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_dst_serverblocked_contact, merge_with_state
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -2513,7 +2513,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
         , 2//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2524,7 +2524,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_admin_serverblocked, 
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -2595,7 +2595,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
         , 2//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2606,7 +2606,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_contact_linked_domain_via_owner_serverblocked, 
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -2665,7 +2665,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_src);
+    BOOST_TEST_MESSAGE(contact_handle_src);
 
     std::string contact_handle_dst = create_contact_handle(
         registrar_vect.at(0)//registrar handle
@@ -2676,7 +2676,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
         , 0//linked_object_state_case
         , 1//quantity_case
     );
-    BOOST_MESSAGE(contact_handle_dst);
+    BOOST_TEST_MESSAGE(contact_handle_dst);
 
     try
     {
@@ -2685,7 +2685,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
             contact_handle_src, contact_handle_dst
             , registrar_sys_handle).exec(ctx);
             ctx.commit_transaction();
-            BOOST_MESSAGE(merge_data);
+            BOOST_TEST_MESSAGE(merge_data);
     }
     catch(boost::exception& ex)
     {
@@ -2697,7 +2697,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
     BOOST_CHECK(changed_contacts.size() == 2); //deleted src contact, updated dst contact authinfo
 
     //src contact
-    BOOST_MESSAGE(std::string("changed src contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed src contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_src).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_src).changed_fields() == Util::set_of<std::string>("delete_time"));
 
@@ -2706,7 +2706,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
     BOOST_CHECK(!map_at(changed_contacts,contact_handle_src).delete_time.get_value().second.isnull());
 
     //dst contact
-    BOOST_MESSAGE(std::string("changed dst contact fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed dst contact fields: (\"")
         + Util::format_container(map_at(changed_contacts,contact_handle_dst).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_contacts,contact_handle_dst).changed_fields()
         == Util::set_of<std::string>("update_time")("authinfopw")("historyid")("update_registrar_handle"));
@@ -2733,7 +2733,7 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
     std::map<std::string, Fred::InfoDomainDiff> changed_domains = diff_domains();
     for(std::map<std::string, Fred::InfoDomainDiff>::const_iterator ci = changed_domains.begin(); ci != changed_domains.end(); ++ci)
     {
-        BOOST_MESSAGE("changed_domain fqdn: " << ci->first);
+        BOOST_TEST_MESSAGE("changed_domain fqdn: " << ci->first);
     }
 
     BOOST_CHECK(changed_domains.size() == 1); //updated domain, owner and admin contact changed from src contact to dst contact
@@ -2745,9 +2745,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
         , contact_handle_src //owner contact
         ,  Util::vector_of<std::string>(contact_handle_src)(contact_handle_dst)
     );
-    BOOST_MESSAGE(fqdn1);
+    BOOST_TEST_MESSAGE(fqdn1);
 
-    BOOST_MESSAGE(std::string("changed domain fields: (\"")
+    BOOST_TEST_MESSAGE(std::string("changed domain fields: (\"")
         + Util::format_container(map_at(changed_domains,fqdn1).changed_fields(), "\")(\"") + "\")");
     BOOST_CHECK(map_at(changed_domains,fqdn1).changed_fields()
         == Util::set_of<std::string>("admin_contacts")("historyid")("registrant")("update_registrar_handle")("update_time"));

@@ -1113,8 +1113,8 @@ BOOST_AUTO_TEST_CASE(update_domain_wrong_registrant)
     catch(const Fred::UpdateDomain::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_registrant_handle());
-        BOOST_MESSAGE(bad_registrant_handle);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(bad_registrant_handle);
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         BOOST_CHECK(ex.get_unknown_registrant_handle().compare(bad_registrant_handle) == 0);
     }
 
@@ -1489,7 +1489,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_valexdate_wrong_domain, update_domain_
     }
     catch(const Fred::InternalError& ex)
     {
-        BOOST_MESSAGE(ex.what());
+        BOOST_TEST_MESSAGE(ex.what());
     }
 
     Fred::InfoDomainOutput info_data_2;
@@ -1523,7 +1523,7 @@ BOOST_FIXTURE_TEST_CASE(update_domain_set_publish_wrong_domain, update_domain_fi
     }
     catch(const Fred::InternalError& ex)
     {
-        BOOST_MESSAGE(ex.what());
+        BOOST_TEST_MESSAGE(ex.what());
     }
 
     Fred::InfoDomainOutput info_data_2;

@@ -141,7 +141,7 @@ struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
         }
 
         ctx.commit_transaction();
-        BOOST_MESSAGE(msg_id_str);
+        BOOST_TEST_MESSAGE(msg_id_str);
         BOOST_REQUIRE(msg_id_set.size() == 9);
 
         //msg id 0 - 6 undelivered, 7 and 8 delivered
@@ -168,7 +168,7 @@ struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
         //optys config
         std::map<std::string, std::string> set_cfg = Admin::readConfigFile<HandleOptysUndeliveredArgs>(std::string(OPTYS_CONFIG));
         local_download_dir = map_at(set_cfg, "local_download_dir");
-        BOOST_MESSAGE(local_download_dir);
+        BOOST_TEST_MESSAGE(local_download_dir);
 
         boost::filesystem::path local_download_dir_path(local_download_dir.c_str());
         if(!boost::filesystem::exists(local_download_dir))

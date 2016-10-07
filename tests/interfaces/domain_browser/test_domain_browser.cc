@@ -108,7 +108,7 @@ struct user_contact_handle_fixture
     :xmark(RandomDataGenerator().xnumstring(6))
     , user_contact_handle(std::string("USER-CONTACT-HANDLE-")+xmark)
     {
-        BOOST_MESSAGE(user_contact_handle);
+        BOOST_TEST_MESSAGE(user_contact_handle);
     }
     ~user_contact_handle_fixture(){}
 };
@@ -154,7 +154,7 @@ struct mojeid_user_contact_fixture
         Fred::PerformObjectStateRequest(user_contact_info.info_contact_data.id).exec(ctx);
 
         ctx.commit_transaction();//commit fixture
-        BOOST_MESSAGE(Fred::ObjectState::MOJEID_CONTACT);
+        BOOST_TEST_MESSAGE(Fred::ObjectState::MOJEID_CONTACT);
     }
     ~mojeid_user_contact_fixture(){}
 };
@@ -177,7 +177,7 @@ struct test_registrar_fixture
             .exec(ctx);
 
         ctx.commit_transaction();//commit fixture
-        BOOST_MESSAGE(test_registrar_handle);
+        BOOST_TEST_MESSAGE(test_registrar_handle);
     }
     ~test_registrar_fixture()
     {}
@@ -296,7 +296,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail, get_registrar_fixture )
     BOOST_CHECK(rd.address == (registrar_info.info_registrar_data.street1.get_value_or_default()+ ", "
         + registrar_info.info_registrar_data.postalcode.get_value_or_default() + " "
         + registrar_info.info_registrar_data.city.get_value_or_default()));
-    BOOST_MESSAGE(rd.address);
+    BOOST_TEST_MESSAGE(rd.address);
 }
 
 struct get_registrar_detail_no_user_fixture
@@ -320,7 +320,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_user, get_registrar_detail_no_us
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -348,7 +348,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_not_mojeid_user, get_registrar_deta
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -372,7 +372,7 @@ BOOST_FIXTURE_TEST_CASE(get_registrar_detail_no_registrar, get_registrar_detail_
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -544,7 +544,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_user, get_contact_detail_no_user_f
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -570,7 +570,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_not_mojeid_user, get_contact_detail_n
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -593,7 +593,7 @@ BOOST_FIXTURE_TEST_CASE(get_contact_detail_no_test_contact, get_contact_detail_n
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -765,7 +765,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_detail_no_domain, get_domain_detail_no_domain
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -852,7 +852,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_detail_no_nsset, get_nsset_detail_no_nsset_fix
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -938,7 +938,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_detail_no_keyset, get_keyset_detail_no_keyset
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1055,7 +1055,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_in_mojeid, set_conta
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1081,7 +1081,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_user_not_identified, set_cont
     catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1115,7 +1115,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_contact_blocked, set_contact_
     catch( const Registry::DomainBrowserImpl::ObjectBlocked& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1149,7 +1149,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_disclose_flags_hide_organization_address, se
     catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1231,7 +1231,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_in_mojeid, set_contact_aut
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1255,7 +1255,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_user_not_identified, set_contact_au
     catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1286,7 +1286,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_contact_blocked, set_contact_authin
     catch( const Registry::DomainBrowserImpl::ObjectBlocked& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1354,7 +1354,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_authinfo_too_long, set_contact_authinfo_too_
     catch( const Registry::DomainBrowserImpl::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1840,7 +1840,7 @@ BOOST_FIXTURE_TEST_CASE(set_contact_object_block_status, set_contact_object_bloc
     catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1864,7 +1864,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_missing_user_validation, set_obj
     catch(const Registry::DomainBrowserImpl::AccessDenied& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1896,7 +1896,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_wrong_object_type, set_object_bl
     catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1951,7 +1951,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_status_big_input, set_object_block_stat
     catch(const Registry::DomainBrowserImpl::IncorrectUsage& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -1983,7 +1983,7 @@ BOOST_FIXTURE_TEST_CASE(set_object_block_wrong_object_id, set_object_block_wrong
     catch(const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2073,7 +2073,7 @@ struct get_my_domains_fixture
 
             if(i%2)
             {
-                BOOST_MESSAGE(fqdn.str() + " blocked");
+                BOOST_TEST_MESSAGE(fqdn.str() + " blocked");
                 Fred::CreateObjectStateRequestId(map_at(domain_info,fqdn.str()).info_domain_data.id,
                     Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
                 Fred::PerformObjectStateRequest().set_object_id(map_at(domain_info,fqdn.str()).info_domain_data.id).exec(ctx);
@@ -2147,13 +2147,13 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list, get_my_domains_fixture )
 
         if(i%2)
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
             if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
@@ -2195,13 +2195,13 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_contact, get_my_domains_fixture )
 
         if(i%2)
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
             if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
@@ -2251,13 +2251,13 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_nsset, get_my_domains_fixture )
 
         if(i%2)
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
             if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
@@ -2306,13 +2306,13 @@ BOOST_FIXTURE_TEST_CASE(get_my_domain_list_by_keyset, get_my_domains_fixture )
 
         if(i%2)
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked);
             if(i > 2) BOOST_CHECK(std::find(domain_list_out.at(i).state_code.begin(), domain_list_out.at(i).state_code.end(), "serverBlocked") != domain_list_out.at(i).state_code.end());
         }
         else
         {
-            //BOOST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
+            //BOOST_TEST_MESSAGE(domain_list_out.at(i).is_server_blocked ? "is_server_blocked: true" : "is_server_blocked: false");
             BOOST_CHECK(domain_list_out.at(i).is_server_blocked == false);
         }
     }
@@ -2341,7 +2341,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_user_not_in_mojeid, get_domain_list_user
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2364,7 +2364,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_nsset_user_not_nsset_admin, get_my_d
     catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2387,7 +2387,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_keyset_user_not_keyset_admin, get_my
     catch( const Registry::DomainBrowserImpl::AccessDenied& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2410,7 +2410,7 @@ BOOST_FIXTURE_TEST_CASE(get_domain_list_for_not_existing_contact, get_my_domains
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2450,7 +2450,7 @@ struct get_my_nssets_fixture
 
             if(i%2)
             {
-                BOOST_MESSAGE(nsset_handle.str() + " blocked");
+                BOOST_TEST_MESSAGE(nsset_handle.str() + " blocked");
                 Fred::LockObjectStateRequestLock(map_at(nsset_info,nsset_handle.str()).info_nsset_data.id).exec(ctx);
                 ctx.get_conn().exec_params(
                     "INSERT INTO object_state_request (object_id, state_id)"
@@ -2540,7 +2540,7 @@ BOOST_FIXTURE_TEST_CASE(get_nsset_list_for_not_existing_contact, get_my_nssets_f
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2575,7 +2575,7 @@ struct get_my_keysets_fixture
 
             if(i%2)
             {
-                BOOST_MESSAGE(keyset_handle.str() + " blocked");
+                BOOST_TEST_MESSAGE(keyset_handle.str() + " blocked");
                 Fred::LockObjectStateRequestLock(map_at(keyset_info,keyset_handle.str()).info_keyset_data.id).exec(ctx);
                 ctx.get_conn().exec_params(
                     "INSERT INTO object_state_request (object_id, state_id)"
@@ -2666,7 +2666,7 @@ BOOST_FIXTURE_TEST_CASE(get_keyset_list_for_not_existing_contact, get_my_keysets
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2681,7 +2681,7 @@ BOOST_FIXTURE_TEST_CASE(get_public_status_desc, domain_browser_impl_instance_fix
 
     for(unsigned long long i = 0 ; i < status_desc_out.size(); ++i)
     {
-        BOOST_MESSAGE(std::string("code: ") << status_desc_out.at(i).state_code << std::string(" desc: ") << status_desc_out.at(i).state_desc);
+        BOOST_TEST_MESSAGE(std::string("code: ") << status_desc_out.at(i).state_code << std::string(" desc: ") << status_desc_out.at(i).state_desc);
     }
 }
 
@@ -2713,7 +2713,7 @@ BOOST_FIXTURE_TEST_CASE(get_object_id_by_wrong_handle, get_my_contact_object_fix
     catch( const Registry::DomainBrowserImpl::ObjectNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -2880,7 +2880,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " mojeidContact");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " mojeidContact");
                         unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
                         Fred::CreateObjectStateRequestId(contact_id,
                             Util::set_of<std::string>(Fred::ObjectState::MOJEID_CONTACT)).exec(ctx);
@@ -2896,7 +2896,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " serverBlocked");
                         unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
                         Fred::CreateObjectStateRequestId(contact_id,
                             Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
@@ -2912,7 +2912,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " serverDeleteProhibited");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " serverDeleteProhibited");
                         unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
                         Fred::CreateObjectStateRequestId(contact_id,
                             Util::set_of<std::string>(Fred::ObjectState::SERVER_DELETE_PROHIBITED)).exec(ctx);
@@ -2928,7 +2928,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different name");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different name");
 
                     merge_candidate = false;
                 }
@@ -2941,7 +2941,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different organization");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different organization");
 
                     merge_candidate = false;
                 }
@@ -2954,7 +2954,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different street1");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different street1");
 
                     merge_candidate = false;
                 }
@@ -2967,7 +2967,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different street2");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different street2");
 
                     merge_candidate = false;
                 }
@@ -2980,7 +2980,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different street3");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different street3");
 
                     merge_candidate = false;
                 }
@@ -2993,7 +2993,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different city");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different city");
 
                     merge_candidate = false;
                 }
@@ -3006,7 +3006,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different postalcode");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different postalcode");
 
                     merge_candidate = false;
                 }
@@ -3019,7 +3019,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different stateorprovince");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different stateorprovince");
 
                     merge_candidate = false;
                 }
@@ -3032,7 +3032,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different country");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different country");
 
                     merge_candidate = false;
                 }
@@ -3044,7 +3044,7 @@ struct merge_contacts_fixture
                         .set_place(place).set_email("test@test.cz")
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different email");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different email");
 
                     merge_candidate = false;
                 }
@@ -3056,7 +3056,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("SK1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different vat");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different vat");
 
                     merge_candidate = false;
                 }
@@ -3068,7 +3068,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("223456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different ssn");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different ssn");
 
                     merge_candidate = false;
                 }
@@ -3080,7 +3080,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("RC").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " different ssntype");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " different ssntype");
 
                     merge_candidate = false;
                 }
@@ -3092,7 +3092,7 @@ struct merge_contacts_fixture
                         .set_place(place)
                         .set_vat("CZ1234567890").set_ssntype("OP").set_ssn("123456")
                         .exec(ctx);
-                        BOOST_MESSAGE(contact_handle.str() + " serverBlocked");
+                        BOOST_TEST_MESSAGE(contact_handle.str() + " serverBlocked");
                         unsigned long long contact_id = Fred::InfoContactByHandle(contact_handle.str()).exec(ctx).info_contact_data.id;
                         Fred::CreateObjectStateRequestId(contact_id,
                             Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
@@ -3186,7 +3186,7 @@ BOOST_FIXTURE_TEST_CASE(get_candidate_contact_list_user_not_in_mojeid, get_domai
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3231,7 +3231,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_user_not_in_mojeid, merge_contacts_user_n
     catch( const Registry::DomainBrowserImpl::UserNotExists& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3283,7 +3283,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_no_src_contacts, merge_contacts_no_src_co
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3301,7 +3301,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_dst_contacts, merge_contacts_no_src_conta
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3320,7 +3320,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_mojeid_src_contact, merge_contacts_fixtur
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3339,7 +3339,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_blocked_src_contact, merge_contacts_fixtu
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3358,7 +3358,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_delete_prohibited_src_contact, merge_cont
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3377,7 +3377,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_name, merge_contac
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3396,7 +3396,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_org, merge_contact
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3415,7 +3415,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_street1, merge_con
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3434,7 +3434,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_city, merge_contac
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3453,7 +3453,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_postalcode, merge_
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3472,7 +3472,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_country, merge_con
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3491,7 +3491,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_email, merge_conta
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3510,7 +3510,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_vat, merge_contact
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
@@ -3529,7 +3529,7 @@ BOOST_FIXTURE_TEST_CASE(merge_contacts_src_contact_differs_in_ssn, merge_contact
     catch( const Registry::DomainBrowserImpl::InvalidContacts& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
