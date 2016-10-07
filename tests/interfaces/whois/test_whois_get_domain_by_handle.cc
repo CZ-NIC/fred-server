@@ -252,7 +252,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_handle_unmanaged_zone, invalid_unmanaged_fixture
     catch(const Registry::WhoisImpl::InvalidLabel& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
     catch(const Registry::WhoisImpl::UnmanagedZone& ex)
     {
@@ -288,7 +288,7 @@ BOOST_FIXTURE_TEST_CASE(unmanaged_zone_too_many_labels, unmanaged_toomany_fixtur
     catch(const Registry::WhoisImpl::UnmanagedZone& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
     catch(const Registry::WhoisImpl::TooManyLabels& ex)
     {
@@ -347,7 +347,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_handle_too_many_labels, invalid_toomany_fixture)
         catch(const Registry::WhoisImpl::InvalidLabel& ex)
         {
             BOOST_CHECK(true);
-            BOOST_MESSAGE(boost::diagnostic_information(ex));
+            BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
         }
         catch(const Registry::WhoisImpl::TooManyLabels& ex)
         {
@@ -384,7 +384,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_unmanaged_toomany, invalid_unmanaged_toomany_fix
     catch(const Registry::WhoisImpl::InvalidLabel& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
     catch(const Registry::WhoisImpl::UnmanagedZone& ex)
     {
