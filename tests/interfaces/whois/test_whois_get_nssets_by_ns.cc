@@ -125,12 +125,12 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_limit_exceeded, get_nssets_by_ns_fixtur
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_no_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_ns("fine-fqdn.cz", 1), Registry::WhoisImpl::ObjectNotExists)
+    BOOST_CHECK_THROW(impl.get_nssets_by_ns("fine-fqdn.cz", 1), Registry::WhoisImpl::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_ns_wrong_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_ns(".", 1), Registry::WhoisImpl::InvalidHandle)
+    BOOST_CHECK_THROW(impl.get_nssets_by_ns(".", 1), Registry::WhoisImpl::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_ns

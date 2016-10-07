@@ -122,12 +122,12 @@ BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_limit_exceeded, get_nssets_by_tech_
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_no_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("absent-contact", 1), Registry::WhoisImpl::ObjectNotExists)
+    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("absent-contact", 1), Registry::WhoisImpl::ObjectNotExists);
 }
 
 BOOST_FIXTURE_TEST_CASE(get_nssets_by_tech_c_wrong_ns, whois_impl_instance_fixture)
 {
-    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("", 1), Registry::WhoisImpl::InvalidHandle)
+    BOOST_CHECK_THROW(impl.get_nssets_by_tech_c("", 1), Registry::WhoisImpl::InvalidHandle);
 }
 
 BOOST_AUTO_TEST_SUITE_END()//get_nssets_by_tech_c

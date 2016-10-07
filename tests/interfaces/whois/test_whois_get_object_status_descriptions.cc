@@ -146,7 +146,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(gdsdm, T, test_types, T)
     catch(const Registry::WhoisImpl::MissingLocalization& ex)
     {
         BOOST_CHECK(true);
-        BOOST_MESSAGE(boost::diagnostic_information(ex));
+        BOOST_TEST_MESSAGE(boost::diagnostic_information(ex));
     }
 }
 
