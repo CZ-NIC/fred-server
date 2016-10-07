@@ -23,25 +23,26 @@
 #ifndef HANDLE_STATE_9878314471
 #define HANDLE_STATE_9878314471
 
-namespace Fred
+namespace Fred {
+namespace KeySet {
+
+struct HandleState
 {
-
-namespace KeysetHandleState {
-    struct InRegistry {
-        enum Enum {
-            registered,
-            in_protection_period,
-            unregistered,
-        };
+    enum Registrability
+    {
+        registered,
+        in_protection_period,
+        available,
     };
 
-    struct SyntaxValidity {
-        enum Enum {
-            valid,
-            invalid,
-        };
+    enum SyntaxValidity
+    {
+        valid,
+        invalid,
     };
-}
+};
 
-}
+}//namespace Fred::KeySet
+}//namespace Fred
+
 #endif

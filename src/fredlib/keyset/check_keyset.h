@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -18,70 +18,25 @@
 
 /**
  *  @file
- *  keyset check
  */
 
-#ifndef CHECK_KEYSET_H
-#define CHECK_KEYSET_H
+#ifndef CHECK_KEYSET_H_741E2B9DDFAC8B4EC8F797F6DD42603C//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define CHECK_KEYSET_H_741E2B9DDFAC8B4EC8F797F6DD42603C
+
+#include "src/fredlib/keyset/handle_state.h"
+#include "src/fredlib/opcontext.h"
 
 #include <string>
 
-#include "src/fredlib/opexception.h"
-#include "src/fredlib/opcontext.h"
-#include "util/printable.h"
+namespace Fred {
+namespace KeySet {
 
-namespace Fred
-{
+HandleState::SyntaxValidity get_handle_syntax_validity(const std::string &_keyset_handle);
 
-    /**
-    * Checking of keyset properties.
-    */
-    class CheckKeyset : public Util::Printable
-    {
-        const std::string handle_;/**< keyset identifier */
-    public:
+HandleState::Registrability get_handle_registrability(OperationContext &_ctx,
+                                                      const std::string &_keyset_handle);
 
-        /**
-        * Check keyset constructor.
-        * @param handle a keyset identifier.
-        */
-        CheckKeyset(const std::string& handle);
-
-        /**
-        * Check keyset handle syntax.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if invalid, false if ok
-        */
-        bool is_invalid_handle() const;
-
-        /**
-        * Check if keyset handle is registered.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if registered, false if not
-        */
-        bool is_registered(OperationContext& ctx) const;
-
-        /**
-        * Check if keyset handle is in protection period.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if protected, false if not
-        */
-        bool is_protected(OperationContext& ctx) const;
-
-        /**
-        * Check if keyset handle is free for registration.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if protected, false if not
-        */
-        bool is_free(OperationContext& ctx) const;
-
-        /**
-        * Dumps state of the instance into the string
-        * @return string with description of the instance state
-        */
-        std::string to_string() const;
-    };//class CheckKeyset
-
+}//namespace Fred::KeySet
 }//namespace Fred
 
-#endif//CHECK_KEYSET_H
+#endif//CHECK_KEYSET_H_741E2B9DDFAC8B4EC8F797F6DD42603C

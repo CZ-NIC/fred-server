@@ -31,6 +31,7 @@
 #include "src/fredlib/keyset/copy_history_impl.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/object/object_impl.h"
+#include "src/fredlib/object/object_type.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
@@ -51,17 +52,12 @@ namespace Fred
             , const std::string& registrar
             , const Optional<std::string>& authinfo
             , const std::vector<DnsKey>& dns_keys
-            , const std::vector<std::string>& tech_contacts
-            , const Optional<unsigned long long> logd_request_id
-            )
+            , const std::vector<std::string>& tech_contacts)
     : handle_(handle)
     , registrar_(registrar)
     , authinfo_(authinfo)
     , dns_keys_(dns_keys)
     , tech_contacts_(tech_contacts)
-    , logd_request_id_(logd_request_id.isset()
-            ? Nullable<unsigned long long>(logd_request_id.get_value())
-            : Nullable<unsigned long long>())//is NULL if not set
     {}
 
     CreateKeyset& CreateKeyset::set_authinfo(const std::string& authinfo)
@@ -82,32 +78,33 @@ namespace Fred
         return *this;
     }
 
-    CreateKeyset& CreateKeyset::set_logd_request_id(unsigned long long logd_request_id)
+    CreateKeyset::Result CreateKeyset::exec(OperationContext &_ctx,
+                                            const Optional< unsigned long long > &_logd_request_id,
+                                            const std::string &_returned_timestamp_pg_time_zone_name)
     {
-        logd_request_id_ = logd_request_id;
-        return *this;
-    }
-
-    boost::posix_time::ptime CreateKeyset::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
-    {
-        boost::posix_time::ptime timestamp;
-
         try
         {
+            Result result;
             //check registrar
             Registrar::get_registrar_id_by_handle(
-                ctx, registrar_, static_cast<Exception*>(0)//set throw
+                _ctx, registrar_, static_cast<Exception*>(0)//set throw
                 , &Exception::set_unknown_registrar_handle);
 
-            CreateObject::Result create_object_result = CreateObject("keyset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
+            result.create_object_result =
+                CreateObject(Conversion::Enums::to_db_handle(Object_Type::keyset),
+                             handle_,
+                             registrar_,
+                             authinfo_,
+                             _logd_request_id.isset() ? _logd_request_id.get_value()
+                                                      : Nullable< unsigned long long >()).exec(_ctx);
 
             Exception create_keyset_exception;
 
             //create keyset
             {
                 //insert
-                ctx.get_conn().exec_params("INSERT INTO keyset (id) VALUES ($1::integer)"
-                        , Database::query_param_list(create_object_result.object_id));
+                _ctx.get_conn().exec_params("INSERT INTO keyset (id) VALUES ($1::integer)"
+                        , Database::query_param_list(result.create_object_result.object_id));
 
                 //set dns keys
                 if(!dns_keys_.empty())
@@ -116,12 +113,16 @@ namespace Fred
                     {
                         try
                         {
-                            ctx.get_conn().exec("SAVEPOINT dnskey");
-                            ctx.get_conn().exec_params(
+                            _ctx.get_conn().exec("SAVEPOINT dnskey");
+                            _ctx.get_conn().exec_params(
                             "INSERT INTO dnskey (keysetid, flags, protocol, alg, key) VALUES($1::integer "
                             ", $2::integer, $3::integer, $4::integer, $5::text)"
-                            , Database::query_param_list(create_object_result.object_id)(i->get_flags())(i->get_protocol())(i->get_alg())(i->get_key()));
-                            ctx.get_conn().exec("RELEASE SAVEPOINT dnskey");
+                            , Database::query_param_list(result.create_object_result.object_id)
+                                                        (i->get_flags())
+                                                        (i->get_protocol())
+                                                        (i->get_alg())
+                                                        (i->get_key()));
+                            _ctx.get_conn().exec("RELEASE SAVEPOINT dnskey");
                         }
                         catch(const std::exception& ex)
                         {
@@ -129,7 +130,7 @@ namespace Fred
                             if(what_string.find("dnskey_unique_key") != std::string::npos)
                             {
                                 create_keyset_exception.add_already_set_dns_key(*i);
-                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnskey");
+                                _ctx.get_conn().exec("ROLLBACK TO SAVEPOINT dnskey");
                             }
                             else {
                                 throw;
@@ -145,7 +146,7 @@ namespace Fred
                     Database::QueryParams params;//query params
                     std::stringstream sql;
 
-                    params.push_back(create_object_result.object_id);
+                    params.push_back(result.create_object_result.object_id);
                     sql << "INSERT INTO keyset_contact_map(keysetid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
@@ -153,7 +154,9 @@ namespace Fred
                     {
                         //lock object_registry row for update and get id
                         unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
-                                ctx,*i,"contact",&create_keyset_exception,
+                                _ctx, *i,
+                                Conversion::Enums::to_db_handle(Object_Type::contact),
+                                &create_keyset_exception,
                                 &Exception::add_unknown_technical_contact_handle);
                         if(tech_contact_id == 0) continue;
 
@@ -166,9 +169,9 @@ namespace Fred
 
                         try
                         {
-                            ctx.get_conn().exec("SAVEPOINT tech_contact");
-                            ctx.get_conn().exec_params(sql_i.str(), params_i);
-                            ctx.get_conn().exec("RELEASE SAVEPOINT tech_contact");
+                            _ctx.get_conn().exec("SAVEPOINT tech_contact");
+                            _ctx.get_conn().exec_params(sql_i.str(), params_i);
+                            _ctx.get_conn().exec("RELEASE SAVEPOINT tech_contact");
                         }
                         catch(const std::exception& ex)
                         {
@@ -176,7 +179,7 @@ namespace Fred
                             if(what_string.find("keyset_contact_map_pkey") != std::string::npos)
                             {
                                 create_keyset_exception.add_already_set_technical_contact_handle(*i);
-                                ctx.get_conn().exec("ROLLBACK TO SAVEPOINT tech_contact");
+                                _ctx.get_conn().exec("ROLLBACK TO SAVEPOINT tech_contact");
                             }
                             else {
                                 throw;
@@ -188,35 +191,37 @@ namespace Fred
 
                 //get crdate from object_registry
                 {
-                    Database::Result crdate_res = ctx.get_conn().exec_params(
+                    Database::Result crdate_res = _ctx.get_conn().exec_params(
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_result.object_id));
+                        , Database::query_param_list(_returned_timestamp_pg_time_zone_name)
+                                                    (result.create_object_result.object_id));
 
                     if (crdate_res.size() != 1)
                     {
                         BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the keyset creation was not found"));
                     }
 
-                    timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
+                    result.creation_time = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
 
             //check exception
-            if(create_keyset_exception.throw_me())
+            if (create_keyset_exception.throw_me()) {
                 BOOST_THROW_EXCEPTION(create_keyset_exception);
+            }
 
-            copy_keyset_data_to_keyset_history_impl(ctx, create_object_result.object_id, create_object_result.history_id);
-
+            copy_keyset_data_to_keyset_history_impl(_ctx,
+                                                    result.create_object_result.object_id,
+                                                    result.create_object_result.history_id);
+            return result;
         }//try
         catch(ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
-
-        return timestamp;
     }
 
     std::string CreateKeyset::to_string() const
@@ -228,7 +233,6 @@ namespace Fred
         (std::make_pair("authinfo",authinfo_.print_quoted()))
         (std::make_pair("dns_keys", Util::format_container(dns_keys_)))
         (std::make_pair("tech_contacts",Util::format_container(tech_contacts_)))
-        (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
     }
 

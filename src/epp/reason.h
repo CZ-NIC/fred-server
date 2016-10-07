@@ -172,6 +172,17 @@ inline unsigned to_description_db_id(const Reason::Enum value)
                                    : throw InvalidReasonValue();
 }
 
+template < class HOST >
+typename HOST::Enum from_description_db_id(unsigned);
+
+template < >
+inline Reason::Enum from_description_db_id< Reason >(unsigned description_db_id)
+{
+    const Reason::Enum result = static_cast< Reason::Enum >(description_db_id);
+    return Reason::is_valid(result) ? result
+                                    : throw UnknownLocalizedDescriptionId();
+}
+
 }
 
 #endif

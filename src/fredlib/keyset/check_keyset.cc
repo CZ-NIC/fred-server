@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016 CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,89 +16,34 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  keyset check
- */
-
-#include <string>
-
-#include <boost/regex.hpp>
-
 #include "src/fredlib/keyset/check_keyset.h"
+#include "src/fredlib/object/object_type.h"
 #include "src/fredlib/object/check_handle.h"
 
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
-#include "util/printable.h"
+namespace Fred {
+namespace KeySet {
 
-
-namespace Fred
+HandleState::SyntaxValidity get_handle_syntax_validity(const std::string &_keyset_handle)
 {
-    CheckKeyset::CheckKeyset(const std::string& handle)
-    : handle_(handle)
-    {}
-    bool CheckKeyset::is_invalid_handle() const
-    {
-        try
-        {
-            return TestHandleOf< Object_Type::keyset >(handle_).is_invalid_handle();
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
-        }
+    if (TestHandleOf< Object_Type::keyset >(_keyset_handle).is_invalid_handle()) {
+        return HandleState::invalid;
+    }
+    return HandleState::valid;
+}
+
+HandleState::Registrability get_handle_registrability(OperationContext &_ctx,
+                                                      const std::string &_keyset_handle)
+{
+    if (TestHandleOf< Object_Type::keyset >(_keyset_handle).is_registered(_ctx)) {
+        return HandleState::registered;
     }
 
-    bool CheckKeyset::is_registered(OperationContext& ctx) const
-    {
-        try
-        {
-            return TestHandleOf< Object_Type::keyset >(handle_).is_registered(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
-        }
+    if (TestHandleOf< Object_Type::keyset >(_keyset_handle).is_protected(_ctx)) {
+        return HandleState::in_protection_period;
     }
 
+    return HandleState::available;
+}
 
-    bool CheckKeyset::is_protected(OperationContext& ctx) const
-    {
-        try
-        {
-            return TestHandleOf< Object_Type::keyset >(handle_).is_protected(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
-        }
-    }
-
-    bool CheckKeyset::is_free(OperationContext& ctx) const
-    {
-        try
-        {
-            return !is_invalid_handle() &&
-                   !is_registered(ctx) &&
-                   !is_protected(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
-        }
-    }
-
-    std::string CheckKeyset::to_string() const
-    {
-        return Util::format_operation_state("CheckKeyset",
-        Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("handle",handle_)));
-    }
-
+}//namespace Fred::KeySet
 }//namespace Fred
-

@@ -20,28 +20,25 @@
  *  @file
  */
 
-#ifndef CORBA_EPP_REQUEST_PARAMS_90798304534
-#define CORBA_EPP_REQUEST_PARAMS_90798304534
-
-#include "util/util.h"
-#include "util/optional_value.h"
-
-#include <string>
+#ifndef LIMITS_H_6FBC5448A8637E00488EEB81C6607506//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define LIMITS_H_6FBC5448A8637E00488EEB81C6607506
 
 namespace Epp {
+namespace KeySet {
 
-struct RequestParams
-{
-    std::string get_server_transaction_handle()const
-    {
-        return Util::make_svtrid(log_request_id.get_value_or(0));
-    }
+//allowed values from interval <min, max>
+const unsigned min_number_of_tech_contacts =  1;
+const unsigned max_number_of_tech_contacts = 10;
 
-    unsigned long long session_id;
-    std::string client_transaction_id;
-    Optional< unsigned long long > log_request_id;
-};
+//allowed values from interval <min, max>
+const unsigned min_number_of_dns_keys =  1;
+const unsigned max_number_of_dns_keys = 10;
 
-}
+//allowed values from interval <min, max>
+const unsigned min_number_of_ds_records = 0;
+const unsigned max_number_of_ds_records = 0;
 
-#endif
+}//namespace Epp::KeySet
+}//namespace Epp
+
+#endif//LIMITS_H_6FBC5448A8637E00488EEB81C6607506

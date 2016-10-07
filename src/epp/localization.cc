@@ -136,6 +136,21 @@ LocalizedSuccessResponse create_localized_success_response(
     );
 }
 
+namespace {
+
+std::string get_ok_state_description(SessionLang::Enum _lang)
+{
+    switch (_lang)
+    {
+        case SessionLang::en:
+            return "Object is without restrictions";
+        case SessionLang::cs:
+            return "Objekt je bez omezení";
+    }
+    return std::string();
+}
+
+}
 std::map<std::string, std::string> get_object_state_descriptions(
     Fred::OperationContext& _ctx,
     const std::set<std::string>& _state_handles,
@@ -143,7 +158,8 @@ std::map<std::string, std::string> get_object_state_descriptions(
 ) {
     std::map<std::string, std::string> handle_to_description;
     {
-        const std::vector<Fred::ObjectStateDescription> all_state_descriptions = Fred::GetObjectStateDescriptions( to_db_handle(_lang) ).exec(_ctx);
+        const std::vector< Fred::ObjectStateDescription > all_state_descriptions =
+            Fred::GetObjectStateDescriptions(Conversion::Enums::to_db_handle(_lang)).exec(_ctx);
         BOOST_FOREACH(const Fred::ObjectStateDescription& state_description, all_state_descriptions) {
             handle_to_description.insert(std::make_pair(state_description.handle, state_description.description));
         }
@@ -152,15 +168,8 @@ std::map<std::string, std::string> get_object_state_descriptions(
     std::map<std::string, std::string> result;
     BOOST_FOREACH(const std::string& handle, _state_handles) {
         /* XXX HACK: OK state */
-        if( handle == "ok" ) {
-
-            result["ok"] =
-                _lang == SessionLang::en
-                    ? "Object is without restrictions"
-                    : _lang == SessionLang::cs
-                        ? "Objekt je bez omezení"
-                        : "";
-
+        if (handle == "ok") {
+            result["ok"] = get_ok_state_description(_lang);
             continue;
         }
 
@@ -173,6 +182,29 @@ std::map<std::string, std::string> get_object_state_descriptions(
     }
 
     return result;
+}
+
+LocalizedStates get_localized_object_state(
+    Fred::OperationContext &_ctx,
+    const std::set< Fred::Object_State::Enum > &_states,
+    SessionLang::Enum _lang)
+{
+    typedef std::vector< Fred::ObjectStateDescription > ObjectStateDescriptions;
+    const ObjectStateDescriptions all_state_descriptions =
+        Fred::GetObjectStateDescriptions(Conversion::Enums::to_db_handle(_lang)).exec(_ctx);
+
+    LocalizedStates states;
+    for (ObjectStateDescriptions::const_iterator state_ptr = all_state_descriptions.begin();
+         state_ptr != all_state_descriptions.end(); ++state_ptr)
+    {
+        const Fred::Object_State::Enum state =
+            Conversion::Enums::from_db_handle< Fred::Object_State >(state_ptr->handle);
+        if (_states.find(state) != _states.end()) {
+            states.descriptions[state] = state_ptr->description;
+        }
+    }
+    states.ok_state_description = get_ok_state_description(_lang);
+    return states;
 }
 
 }

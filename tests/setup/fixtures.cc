@@ -104,12 +104,33 @@ namespace Fixture {
     }
 
 
+namespace {
+
+std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
+                               const std::string &delimiter = "/")
+{
+    using namespace boost::unit_test;
+    const bool has_no_parent = (tu.p_parent_id < MIN_TEST_SUITE_ID) || (tu.p_parent_id == INV_TEST_UNIT_ID);
+    if (has_no_parent) {
+        return static_cast< std::string >(tu.p_name);
+    }
+    return get_unit_test_path(framework::get< test_suite >(tu.p_parent_id), delimiter) +
+           delimiter + static_cast< std::string >(tu.p_name);
+}
+
+}
+
     std::string instantiate_db_template::testcase_db_name()
     {
-        std::string log_db_name(get_original_db_name() + "_");
-        log_db_name += boost::unit_test::framework::current_test_case().p_name;
-        log_db_name += db_name_suffix_;
-        return log_db_name;
+        const std::string db_name =
+            get_original_db_name() + "_" +
+            get_unit_test_path(boost::unit_test::framework::current_test_case(), "_") +
+            db_name_suffix_;
+        if (db_name.length() <= max_postgresql_database_name_length) {
+            return db_name;
+        }
+        return db_name.substr(db_name.length() - max_postgresql_database_name_length,
+                              max_postgresql_database_name_length);
     }
 
     instantiate_db_template::instantiate_db_template(const std::string& db_name_suffix)

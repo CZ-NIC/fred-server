@@ -20,28 +20,23 @@
  *  @file
  */
 
-#ifndef CORBA_EPP_REQUEST_PARAMS_90798304534
-#define CORBA_EPP_REQUEST_PARAMS_90798304534
+#ifndef LOCALIZED_STATES_H_0E3D3ED62A7B8FCC566C8FC4C927EF6D//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define LOCALIZED_STATES_H_0E3D3ED62A7B8FCC566C8FC4C927EF6D
 
-#include "util/util.h"
-#include "util/optional_value.h"
+#include "src/fredlib/object/object_state.h"
 
-#include <string>
+#include <map>
 
 namespace Epp {
 
-struct RequestParams
+struct LocalizedStates
 {
-    std::string get_server_transaction_handle()const
-    {
-        return Util::make_svtrid(log_request_id.get_value_or(0));
-    }
-
-    unsigned long long session_id;
-    std::string client_transaction_id;
-    Optional< unsigned long long > log_request_id;
+    typedef std::map< Fred::Object_State::Enum, std::string > Descriptions;
+    Descriptions descriptions;
+    std::string ok_state_description;
 };
+
 
 }
 
-#endif
+#endif//LOCALIZED_STATES_H_0E3D3ED62A7B8FCC566C8FC4C927EF6D

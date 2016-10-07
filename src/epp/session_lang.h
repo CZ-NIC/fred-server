@@ -38,19 +38,25 @@ struct SessionLang
     };
 };
 
+}//namespace Epp
+
+namespace Conversion {
+namespace Enums {
+
 /**
- * @throws InvalidSessionLang
+ * @throws Epp::InvalidSessionLang
  */
-inline std::string to_db_handle(const SessionLang::Enum lang)
+inline std::string to_db_handle(Epp::SessionLang::Enum lang)
 {
-    switch(lang)
+    switch (lang)
     {
-        case SessionLang::en : return "en";
-        case SessionLang::cs : return "cs";
+        case Epp::SessionLang::en: return "en";
+        case Epp::SessionLang::cs: return "cs";
     }
-    throw InvalidSessionLang();
+    throw Epp::InvalidSessionLang();
 }
 
-}
+}//namespace Conversion::Enums
+}//namespace Conversion
 
 #endif

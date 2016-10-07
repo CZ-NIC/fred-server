@@ -20,28 +20,26 @@
  *  @file
  */
 
-#ifndef CORBA_EPP_REQUEST_PARAMS_90798304534
-#define CORBA_EPP_REQUEST_PARAMS_90798304534
+#ifndef CHECK_H_62795D72C8FB7ACA38CE9C700EB7B637//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define CHECK_H_62795D72C8FB7ACA38CE9C700EB7B637
 
-#include "util/util.h"
-#include "util/optional_value.h"
+#include "src/epp/keyset/handle_check_result.h"
+#include "src/fredlib/opcontext.h"
+#include "util/db/nullable.h"
 
+#include <map>
+#include <set>
 #include <string>
 
 namespace Epp {
 
-struct RequestParams
-{
-    std::string get_server_transaction_handle()const
-    {
-        return Util::make_svtrid(log_request_id.get_value_or(0));
-    }
-
-    unsigned long long session_id;
-    std::string client_transaction_id;
-    Optional< unsigned long long > log_request_id;
-};
+/**
+ * @returns check results for given contact handles
+ */
+std::map< std::string, Nullable< KeySet::HandleCheckResult::Enum > > keyset_check(
+    Fred::OperationContext &_ctx,
+    const std::set< std::string > &_keyset_handles);
 
 }
 
-#endif
+#endif//CHECK_H_62795D72C8FB7ACA38CE9C700EB7B637

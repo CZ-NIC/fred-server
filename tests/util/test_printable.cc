@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(create_keyset)
     .set_dns_keys(Util::vector_of<Fred::DnsKey>
         (Fred::DnsKey(257, 3, 5, "test1"))
         (Fred::DnsKey(257, 3, 5, "test2")))
-    .set_authinfo("testauthinfo").set_logd_request_id(0)
+    .set_authinfo("testauthinfo")
     );
 }
 
@@ -341,16 +341,6 @@ BOOST_AUTO_TEST_CASE(delete_keyset)
 {
     printable_test(
     Fred::DeleteKeysetByHandle("TEST-DEL-KEYSET-HANDLE")
-    );
-}
-
-/**
- * test CheckKeyset print to string
- */
-BOOST_AUTO_TEST_CASE(check_keyset)
-{
-    printable_test(
-    Fred::CheckKeyset("TEST-CHECK-KEYSET-HANDLE")
     );
 }
 

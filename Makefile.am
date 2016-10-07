@@ -1515,9 +1515,15 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/disclose_policy.h \
 		src/epp/localization.h \
 		src/epp/localization.cc \
+		src/epp/localized_response.h \
+		src/epp/localized_states.h \
+		src/epp/util.h \
 		src/epp/param.h \
 		src/epp/reason.h \
 		src/epp/response.h \
+		src/epp/error.h \
+		src/epp/parameter_errors.h \
+		src/epp/parameter_errors.cc \
 		src/epp/conditionally_enqueue_notification.h \
 		src/epp/conditionally_enqueue_notification.cc \
 		src/epp/contact/contact_create.cc \
@@ -1549,6 +1555,36 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/disclose.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
+		src/epp/keyset/dns_key.cc \
+		src/epp/keyset/dns_key.h \
+		src/epp/keyset/ds_record.h \
+		src/epp/keyset/info_data.h \
+		src/epp/keyset/info.cc \
+		src/epp/keyset/info.h \
+		src/epp/keyset/localized_info.cc \
+		src/epp/keyset/localized_info.h \
+		src/epp/keyset/create.cc \
+		src/epp/keyset/create.h \
+		src/epp/keyset/localized_create.cc \
+		src/epp/keyset/localized_create.h \
+		src/epp/keyset/update.cc \
+		src/epp/keyset/update.h \
+		src/epp/keyset/localized_update.cc \
+		src/epp/keyset/localized_update.h \
+		src/epp/keyset/limits.h \
+		src/epp/keyset/check.cc \
+		src/epp/keyset/check.h \
+		src/epp/keyset/handle_check_result.h \
+		src/epp/keyset/localized_check.cc \
+		src/epp/keyset/localized_check.h \
+		src/epp/keyset/delete.cc \
+		src/epp/keyset/delete.h \
+		src/epp/keyset/localized_delete.cc \
+		src/epp/keyset/localized_delete.h \
+		src/epp/keyset/transfer.cc \
+		src/epp/keyset/transfer.h \
+		src/epp/keyset/localized_transfer.cc \
+		src/epp/keyset/localized_transfer.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
 #
@@ -2335,8 +2371,10 @@ tests_interfaces_test_admin_notification_LDADD = \
 # tests/interfaces/test-epp
 #
 tests_interfaces_test_epp_SOURCES = \
+		tests/interfaces/epp/util.h \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
+		tests/interfaces/epp/contact/fixture.h \
 		tests/interfaces/epp/contact/test_contact_create_impl.cc \
 		tests/interfaces/epp/contact/test_contact_delete_impl.cc \
 		tests/interfaces/epp/contact/test_contact_info_impl.cc \
@@ -2344,6 +2382,9 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_check_impl.cc \
 		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/keyset/fixture.h \
+		tests/interfaces/epp/keyset/fixture.cc \
+		tests/interfaces/epp/keyset/test_create.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \

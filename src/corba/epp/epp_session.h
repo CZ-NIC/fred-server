@@ -1,16 +1,9 @@
 #ifndef SRC_CORBA_EPP_F_INCLUDE_GUARD_FOR_F_EPP_SESSION_138671357410
 #define SRC_CORBA_EPP_F_INCLUDE_GUARD_FOR_F_EPP_SESSION_138671357410
 
-#include <vector>
 #include <map>
 
-#include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
-
-// logger
-#include "log/logger.h"
-#include "log/context.h"
-#include "src/old_utils/log.h"
 
 class NumberSessionLimit : public std::runtime_error {
 public:
