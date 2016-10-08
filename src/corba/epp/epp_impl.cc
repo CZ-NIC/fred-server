@@ -2599,7 +2599,7 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
     try {
         /* output data must be ordered exactly the same */
         const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(fqdn);
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::Domain::DomainCheckResponse domain_check_response = Epp::Domain::domain_check(
@@ -3083,7 +3083,7 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
     const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
     try {
 
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         return new ccReg::Response(
@@ -3424,7 +3424,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
 {
     const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::Domain::domain_delete(
