@@ -26,9 +26,11 @@
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
+#include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
 
+#include <map>
 #include <set>
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -39,36 +41,34 @@ namespace Epp {
 
 namespace Domain {
 
-struct LocalizedDomainInfoOutputData {
+struct DomainInfoLocalizedOutputData {
     typedef std::set<Fred::Object_State::Enum> States;
-    std::string roid;
-    std::string fqdn;
+    std::string roid; ///< Domain repository ID
+    std::string fqdn; ///< Domain FQDN
     std::string registrant;
     Nullable<std::string> nsset;
     Nullable<std::string> keyset;
-    States localized_external_states;
-    std::string sponsoring_registrar_handle;
-    std::string creating_registrar_handle;
-    Nullable<std::string> last_update_registrar_handle;
-
-    boost::posix_time::ptime crdate;
-    Nullable<boost::posix_time::ptime> last_update;
-    Nullable<boost::posix_time::ptime> last_transfer;
+    LocalizedStates localized_external_states; ///< Domain states list
+    std::string sponsoring_registrar_handle; ///< Registrar which has to right for change
+    std::string creating_registrar_handle; ///< Registrar which created contact
+    Nullable<std::string> last_update_registrar_handle; ///< Registrar which realized changes
+    boost::posix_time::ptime crdate; ///< Creation date and time
+    Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
+    Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
     boost::gregorian::date exdate;
-    Nullable<std::string> auth_info_pw;
-    //tmp?
-    //admin
-    //ext
-    //tmpcontact
+    Nullable<std::string> auth_info_pw; ///< Password for keyset transfer
+    std::set<std::string> admin; ///< List of contacts identifier
+    Nullable<Fred::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
+    std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
 };
 
 struct DomainInfoResponse {
     const LocalizedSuccessResponse localized_success_response;
-    const LocalizedDomainInfoOutputData localized_domain_info_output_data;
+    const DomainInfoLocalizedOutputData localized_domain_info_output_data;
 
     DomainInfoResponse(
         const LocalizedSuccessResponse& localized_success_response,
-        const LocalizedDomainInfoOutputData& localized_domain_info_output_data
+        const DomainInfoLocalizedOutputData& localized_domain_info_output_data
     ) :
         localized_success_response(localized_success_response),
         localized_domain_info_output_data(localized_domain_info_output_data)

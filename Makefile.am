@@ -2487,6 +2487,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
 		tests/interfaces/epp/domain/test_domain_check_impl.cc \
 		tests/interfaces/epp/domain/test_domain_delete_impl.cc \
+		tests/interfaces/epp/domain/test_domain_info_impl.cc \
 		tests/interfaces/epp/domain/test_domain_transfer_impl.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
