@@ -108,7 +108,7 @@ ResponseOfCreate create(
         Fred::OperationContextCreator ctx;
         std::set< Error > errors;
 
-        if (e.has_scalar_parameter_error(Param::keyset_tech, Reason::tech_notexist) ||
+        if (e.has_scalar_parameter_error(Param::keyset_tech, Reason::technical_contact_not_registered) ||
             e.has_scalar_parameter_error(Param::keyset_dnskey, Reason::no_dnskey))
         {
             throw create_localized_fail_response(ctx, Response::parameter_missing, std::set< Error >(), _lang);
@@ -133,7 +133,7 @@ ResponseOfCreate create(
             throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
         }
 
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech, Reason::tech_notexist, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_tech, Reason::technical_contact_not_registered, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech, Reason::duplicated_contact, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::duplicated_dnskey, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey, Reason::dnskey_bad_flags, errors);

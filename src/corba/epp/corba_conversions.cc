@@ -554,19 +554,11 @@ namespace Corba {
             }
         }
 
-        result.CrDate = wrap_string_to_corba_string( formatTime( _input.crdate ) );
+        result.CrDate = wrap_boost_posix_time_ptime_to_string(_input.crdate);
         // XXX IDL nonsense
-        result.UpDate = wrap_string_to_corba_string(
-            _input.last_update.isnull()
-                ? std::string()
-                : formatTime( _input.last_update.get_value() )
-        );
+        result.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_input.last_update);
         // XXX IDL nonsense
-        result.TrDate = wrap_string_to_corba_string(
-            _input.last_transfer.isnull()
-                ? std::string()
-                : formatTime( _input.last_transfer.get_value() )
-        );
+        result.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_input.last_transfer);
 
         result.AuthInfoPw = Corba::wrap_string_to_corba_string(_input.auth_info_pw.get_value_or_default());
 

@@ -52,7 +52,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts,
                             ParameterErrors &_param_errors)
 {
     if (_tech_contacts.size() < KeySet::min_number_of_tech_contacts) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_tech, Reason::tech_notexist);
+        _param_errors.add_scalar_parameter_error(Param::keyset_tech, Reason::technical_contact_not_registered);
         return false;
     }
     if (KeySet::max_number_of_tech_contacts < _tech_contacts.size()) {
@@ -72,9 +72,9 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts,
             _param_errors.add_vector_parameter_error(Param::keyset_tech, idx, Reason::duplicated_contact);
             if (_param_errors.has_vector_parameter_error_at(Param::keyset_tech,
                                                             handle_index_ptr->second,
-                                                            Reason::tech_notexist))
+                                                            Reason::technical_contact_not_registered))
             {
-                _param_errors.add_vector_parameter_error(Param::keyset_tech, idx, Reason::tech_notexist);
+                _param_errors.add_vector_parameter_error(Param::keyset_tech, idx, Reason::technical_contact_not_registered);
             }
             existing_tech_contacts = false;
         }
@@ -86,7 +86,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts,
                     break;
                 case Fred::ContactHandleState::Registrability::available:
                 case Fred::ContactHandleState::Registrability::in_protection_period:
-                    _param_errors.add_vector_parameter_error(Param::keyset_tech, idx, Reason::tech_notexist);
+                    _param_errors.add_vector_parameter_error(Param::keyset_tech, idx, Reason::technical_contact_not_registered);
                     existing_tech_contacts = false;
                     break;
             }

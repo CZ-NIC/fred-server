@@ -2617,7 +2617,7 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
     try {
         /* output data must be ordered exactly the same */
         const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedCheckNssetResponse response = Epp::nsset_check(
@@ -3084,7 +3084,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
 
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         return new ccReg::Response(
@@ -3183,7 +3183,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
 
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(
             epp_sessions,
-            Corba::unwrap_epp_request_params(_epp_params).session_id
+            Corba::unwrap_EppParams(_epp_params).session_id
         );
 
         const Epp::LocalizedInfoNssetResponse response = Epp::nsset_info(
@@ -3226,7 +3226,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
 {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::nsset_delete(
@@ -3271,7 +3271,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
         const Epp::LocalizedCreateNssetResponse response = nsset_create(
@@ -3331,7 +3331,7 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
 {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_epp_request_params(_epp_params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
         const Epp::LocalizedSuccessResponse response = Epp::nsset_update(
                 Epp::NssetUpdateInputData(
