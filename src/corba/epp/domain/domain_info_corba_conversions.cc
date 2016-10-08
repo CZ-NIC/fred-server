@@ -1,16 +1,14 @@
-#include "src/corba/epp/domain/domain_info_corba_conversions.h"
-#include "src/epp/domain/domain_info.h"
-
-#include "src/old_utils/util.h" // for convert_rfc3339_timestamp()
-
 #include "src/corba/epp/corba_conversions.h"
-
+#include "src/corba/epp/domain/domain_info_corba_conversions.h"
 #include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/epp/domain/domain_info.h"
+#include "src/old_utils/util.h" // for convert_rfc3339_timestamp()
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <string>
 
 namespace CorbaConversion {
@@ -51,7 +49,7 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     dst.nsset = Corba::wrap_string_to_corba_string(src.nsset.get_value_or(std::string()));
     dst.keyset = Corba::wrap_string_to_corba_string(src.keyset.get_value_or(std::string()));
 
-    wrap_Epp_LocalizedStates(src.localized_external_states, dst.stat);
+    Corba::wrap_Epp_LocalizedStates(src.localized_external_states, dst.stat);
 
     dst.ClID = Corba::wrap_string_to_corba_string(src.sponsoring_registrar_handle);
     dst.CrID = Corba::wrap_string_to_corba_string(src.creating_registrar_handle);

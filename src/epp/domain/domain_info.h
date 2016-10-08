@@ -25,17 +25,19 @@
 #define SRC_EPP_DOMAIN_DOMAIN_INFO_H
 
 #include "src/epp/localized_response.h"
+#include "src/epp/localized_states.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
 
+#include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include <map>
 #include <set>
 #include <string>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/gregorian/greg_date.hpp>
-#include <boost/optional.hpp>
 
 namespace Epp {
 

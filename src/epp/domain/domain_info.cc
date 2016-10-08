@@ -4,6 +4,7 @@
 
 #include "src/epp/action.h"
 #include "src/epp/localization.h"
+#include "src/epp/localized_states.h"
 #include "src/epp/response.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/exception.h"
