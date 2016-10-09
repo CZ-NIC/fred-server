@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016 CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,88 +16,34 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  nsset check
- */
-
-#include <string>
-
-#include <boost/regex.hpp>
-
 #include "src/fredlib/nsset/check_nsset.h"
+
 #include "src/fredlib/object/check_handle.h"
-
-#include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
-
 
 namespace Fred
 {
-    CheckNsset::CheckNsset(const std::string& handle)
-    : handle_(handle)
-    {}
-    bool CheckNsset::is_invalid_handle() const
-    {
-        try
-        {
-            return TestHandleOf< Object_Type::nsset >(handle_).is_invalid_handle();
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
+
+namespace Nsset
+{
+    NssetHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _nsset_handle) {
+        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_invalid_handle() ) {
+            return NssetHandleState::SyntaxValidity::invalid;
         }
+        return NssetHandleState::SyntaxValidity::valid;
     }
 
-    bool CheckNsset::is_registered(OperationContext& ctx)const
-    {
-        try
-        {
-            return TestHandleOf< Object_Type::nsset >(handle_).is_registered(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
+    NssetHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _nsset_handle) {
+        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_registered(ctx) ) {
+            return NssetHandleState::Registrability::registered;
         }
-    }
 
-
-    bool CheckNsset::is_protected(OperationContext& ctx) const
-    {
-        try
-        {
-            return TestHandleOf< Object_Type::nsset >(handle_).is_protected(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
+        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_protected(ctx) ) {
+            return NssetHandleState::Registrability::in_protection_period;
         }
-    }
 
-    bool CheckNsset::is_free(OperationContext& ctx) const
-    {
-        try
-        {
-            return !is_invalid_handle() &&
-                   !is_registered(ctx) &&
-                   !is_protected(ctx);
-        }//try
-        catch(ExceptionStack& ex)
-        {
-            ex.add_exception_stack_info(to_string());
-            throw;
-        }
+        return NssetHandleState::Registrability::unregistered;
     }
+}
 
-    std::string CheckNsset::to_string() const
-    {
-        return Util::format_operation_state("CheckNsset",
-        Util::vector_of<std::pair<std::string,std::string> >
-        (std::make_pair("handle",handle_)));
-    }
-
-}//namespace Fred
+}
 

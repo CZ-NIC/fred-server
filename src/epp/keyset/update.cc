@@ -146,9 +146,9 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
         const HandleIndex::const_iterator handle_index_ptr = unique_handles.find(*handle_ptr);
         if (handle_index_ptr != unique_handles.end()) {//a duplicate handle
             _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::duplicated_contact);
-            copy_error(Param::keyset_tech_add, Reason::tech_notexist,
+            copy_error(Param::keyset_tech_add, Reason::technical_contact_not_registered,
                        handle_index_ptr->second, idx, _param_errors);
-            copy_error(Param::keyset_tech_add, Reason::tech_exist,
+            copy_error(Param::keyset_tech_add, Reason::technical_contact_already_assigned,
                        handle_index_ptr->second, idx, _param_errors);
             check_result = false;
             continue;
@@ -156,7 +156,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
         //unique handle
         unique_handles.insert(std::make_pair(*handle_ptr, idx));
         if (0 < current_tech_contacts.count(*handle_ptr)) {
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::tech_exist);
+            _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::technical_contact_already_assigned);
             check_result = false;
             continue;
         }
@@ -166,7 +166,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
                 break;
             case Fred::ContactHandleState::Registrability::available:
             case Fred::ContactHandleState::Registrability::in_protection_period:
-                _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::tech_notexist);
+                _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::technical_contact_not_registered);
                 check_result = false;
                 break;
         }
@@ -180,7 +180,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
         const HandleIndex::const_iterator handle_index_ptr = unique_handles.find(*handle_ptr);
         if (handle_index_ptr != unique_handles.end()) {//a duplicate handle
             _param_errors.add_vector_parameter_error(Param::keyset_tech_rem, idx, Reason::duplicated_contact);
-            copy_error(Param::keyset_tech_rem, Reason::tech_notexist,
+            copy_error(Param::keyset_tech_rem, Reason::technical_contact_not_registered,
                        handle_index_ptr->second, idx, _param_errors);
             check_result = false;
             continue;
@@ -188,7 +188,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
         //unique handle
         unique_handles.insert(std::make_pair(*handle_ptr, idx));
         if (current_tech_contacts.count(*handle_ptr) == 0) {
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_rem, idx, Reason::tech_notexist);
+            _param_errors.add_vector_parameter_error(Param::keyset_tech_rem, idx, Reason::technical_contact_not_registered);
             check_result = false;
             continue;
         }

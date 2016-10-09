@@ -452,15 +452,6 @@ BOOST_AUTO_TEST_CASE(delete_nsset)
     );
 }
 
-/**
- * test CheckNsset print to string
- */
-BOOST_AUTO_TEST_CASE(check_nsset)
-{
-    printable_test(
-    Fred::CheckNsset("TEST-CHECK-NSSET-HANDLE")
-    );
-}
 
 /**
  * test InfoNssetData print to string

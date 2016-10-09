@@ -96,20 +96,36 @@ namespace Fred
         return *this;
     }
 
-    boost::posix_time::ptime CreateNsset::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
+    CreateNsset::Result CreateNsset::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
     {
-        boost::posix_time::ptime timestamp;
+        Result result;
 
         try
         {
-            //check registrar
-            Registrar::get_registrar_id_by_handle(
-                ctx, registrar_, static_cast<Exception*>(0)//set throw
-                , &Exception::set_unknown_registrar_handle);
-
-            CreateObject::Result create_object_result = CreateObject("nsset", handle_, registrar_, authinfo_, logd_request_id_).exec(ctx);
 
             Exception create_nsset_exception;
+            try
+            {
+                result.create_object_result = CreateObject(
+                    "nsset", handle_, registrar_, authinfo_, logd_request_id_)
+                    .exec(ctx);
+            }
+            catch(const CreateObject::Exception& create_object_exception)
+            {
+                //CreateObject implementation sets only one member at once into Exception instance
+                if(create_object_exception.is_set_unknown_registrar_handle())
+                {
+                    //fatal good path, need valid registrar performing create
+                    BOOST_THROW_EXCEPTION(Exception().set_unknown_registrar_handle(
+                            create_object_exception.get_unknown_registrar_handle()));
+                }
+                else if(create_object_exception.is_set_invalid_object_handle())
+                {   //non-fatal good path, create can continue to check input
+                    create_nsset_exception.set_invalid_nsset_handle(
+                            create_object_exception.get_invalid_object_handle());
+                }
+                else throw;//rethrow unexpected
+            }
 
             //create nsset
             {
@@ -121,7 +137,7 @@ namespace Fred
                 val_sql << " VALUES (";
 
                 //id
-                params.push_back(create_object_result.object_id);
+                params.push_back(result.create_object_result.object_id);
                 col_sql << col_separator.get() << "id";
                 val_sql << val_separator.get() << "$" << params.size() <<"::integer";
 
@@ -149,7 +165,7 @@ namespace Fred
                             Database::Result add_host_id_res = ctx.get_conn().exec_params(
                             "INSERT INTO host (nssetid, fqdn) VALUES( "
                             " $1::integer, LOWER($2::text)) RETURNING id"
-                            , Database::query_param_list(create_object_result.object_id)(i->get_fqdn()));
+                            , Database::query_param_list(result.create_object_result.object_id)(i->get_fqdn()));
                             ctx.get_conn().exec("RELEASE SAVEPOINT dnshost");
 
                             add_host_id = static_cast<unsigned long long>(add_host_id_res[0][0]);
@@ -177,7 +193,7 @@ namespace Fred
                                 ctx.get_conn().exec_params(
                                 "INSERT INTO host_ipaddr_map (hostid, nssetid, ipaddr) "
                                 " VALUES($1::integer, $2::integer, $3::inet)"
-                                , Database::query_param_list(add_host_id)(create_object_result.object_id)(*j));
+                                , Database::query_param_list(add_host_id)(result.create_object_result.object_id)(*j));
                                 ctx.get_conn().exec("RELEASE SAVEPOINT dnshostipaddr");
                             }
                             catch(const std::exception& ex)
@@ -203,7 +219,7 @@ namespace Fred
                     Database::QueryParams params;//query params
                     std::stringstream sql;
 
-                    params.push_back(create_object_result.object_id);
+                    params.push_back(result.create_object_result.object_id);
                     sql << "INSERT INTO nsset_contact_map(nssetid, contactid) "
                             " VALUES ($" << params.size() << "::integer, ";
 
@@ -253,16 +269,16 @@ namespace Fred
                             "SELECT crdate::timestamp AT TIME ZONE 'UTC' AT TIME ZONE $1::text "
                             "  FROM object_registry "
                             " WHERE id = $2::bigint"
-                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(create_object_result.object_id));
+                        , Database::query_param_list(returned_timestamp_pg_time_zone_name)(result.create_object_result.object_id));
                     if (crdate_res.size() != 1)
                     {
                         BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the nsset creation was not found"));
                     }
-                    timestamp = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
+                    result.creation_time = boost::posix_time::time_from_string(std::string(crdate_res[0][0]));
                 }
             }
 
-            copy_nsset_data_to_nsset_history_impl(ctx, create_object_result.object_id, create_object_result.history_id);
+            copy_nsset_data_to_nsset_history_impl(ctx, result.create_object_result.object_id, result.create_object_result.history_id);
 
         }//try
         catch(ExceptionStack& ex)
@@ -271,7 +287,7 @@ namespace Fred
             throw;
         }
 
-        return timestamp;
+        return result;
     }
 
     std::string CreateNsset::to_string() const

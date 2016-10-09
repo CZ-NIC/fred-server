@@ -46,12 +46,15 @@ namespace Epp {
     struct InvalidResponseValue               :Exception { const char* what() const throw() { return "invalid Response::Enum value"; } };
     struct InvalidReasonValue                 :Exception { const char* what() const throw() { return "invalid Reason::Enum value"; } };
 
+    struct RequiredParameterMissing : Exception { const char* what() const throw() { return "Required parameter missing"; } };
+
     /* localized descriptions */
     struct LocalizedDescriptionException:Exception { };
 
     struct UnknownLocalizationLanguage        :LocalizedDescriptionException { const char* what() const throw() { return "unknown localization language"; } };
     struct MissingLocalizedDescription        :LocalizedDescriptionException { const char* what() const throw() { return "missing localized description"; } };
     struct UnknownLocalizedDescriptionId      :LocalizedDescriptionException { const char* what() const throw() { return "unknown localized description id"; } };
+
 }
 
 #endif

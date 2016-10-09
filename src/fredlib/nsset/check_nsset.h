@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -18,69 +18,23 @@
 
 /**
  *  @file
- *  nsset check
  */
 
-#ifndef CHECK_NSSET_H
-#define CHECK_NSSET_H
+#ifndef CHECK_NSSET_H_1891b4d769ff4638a99477500bba8aa4
+#define CHECK_NSSET_H_1891b4d769ff4638a99477500bba8aa4
+
+#include "src/fredlib/nsset/handle_state.h"
 
 #include <string>
 
-#include "src/fredlib/opexception.h"
 #include "src/fredlib/opcontext.h"
-#include "util/printable.h"
 
 namespace Fred
 {
-
-    /**
-    * Checking of nsset properties.
-    */
-    class CheckNsset : public Util::Printable
-    {
-        const std::string handle_;/**< nsset identifier */
-    public:
-
-        /**
-        * Check nsset ctor.
-        * @param handle a nsset identifier.
-        */
-        CheckNsset(const std::string& handle);
-
-        /**
-        * Check nsset handle syntax.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if invalid, false if ok
-        */
-        bool is_invalid_handle() const;
-
-        /**
-        * Check if nsset handle is registered.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if registered, false if not
-        */
-        bool is_registered(OperationContext& ctx) const;
-
-        /**
-        * Check if nsset handle is in protection period.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if protected, false if not
-        */
-        bool is_protected(OperationContext& ctx) const;
-
-        /**
-        * Check if nsset handle is free for registration.
-        * @param ctx an operation context with database and logging interface.
-        * @return true if protected, false if not
-        */
-        bool is_free(OperationContext& ctx) const;
-        /**
-        * Dumps state of the instance into the string
-        * @return string with description of the instance state
-        */
-        std::string to_string() const;
-    };//class CheckNsset
-
-}//namespace Fred
-
-#endif//CHECK_NSSET_H
+namespace Nsset
+{
+    NssetHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _nsset_handle);
+    NssetHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _nsset_handle);
+}
+}
+#endif

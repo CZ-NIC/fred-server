@@ -20,28 +20,14 @@
  *  @file
  */
 
-#ifndef HANDLE_STATE_7739859411
-#define HANDLE_STATE_7739859411
+#ifndef EPP_NSSET_CONSTANTS_H_611e9635c6c043989c826ded664da836
+#define EPP_NSSET_CONSTANTS_H_611e9635c6c043989c826ded664da836
 
-namespace Fred
-{
+namespace Epp {
 
-namespace NssetHandleState {
-    struct Registrability {
-        enum Enum {
-            registered,
-            in_protection_period,
-            unregistered,
-        };
-    };
-
-    struct SyntaxValidity {
-        enum Enum {
-            valid,
-            invalid,
-        };
-    };
+const unsigned max_nsset_tech_contacts = 10;
+const unsigned min_nsset_dns_hosts = 2;
+const unsigned max_nsset_dns_hosts = 9;
 }
 
-}
 #endif

@@ -26,7 +26,7 @@
 #include "src/fredlib/keyset/info_keyset_data.h"
 #include "src/fredlib/keyset/check_keyset.h"
 #include "src/fredlib/keyset/keyset_dns_key.h"
-#include "src/fredlib/nsset/check_nsset.h"
+#include "src/fredlib/object/check_handle.h"
 #include "util/log/context.h"
 #include "util/random.h"
 
@@ -386,7 +386,7 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
         {
             if (e.is_set_unknown_handle())
             {
-                if (Fred::CheckNsset(handle).is_invalid_handle())
+                if (Fred::TestHandleOf< Fred::Object_Type::nsset >(handle).is_invalid_handle())
                 {
                     throw InvalidHandle();
                 }
@@ -878,7 +878,7 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle, unsigned 
                     .exec(ctx, get_output_timezone());
         if (domain_info.empty())
         {
-            if (Fred::CheckNsset(handle).is_invalid_handle())
+            if (Fred::TestHandleOf< Fred::Object_Type::nsset >(handle).is_invalid_handle())
             {
                 throw InvalidHandle();
             }

@@ -273,7 +273,7 @@ namespace Fred
 
                 unsigned long long rem_host_id = rem_host_id_res[0][0];
 
-                ctx.get_conn().exec_params("DELETE FROM host_ipaddr_map WHERE id = $1::integer"
+                ctx.get_conn().exec_params("DELETE FROM host_ipaddr_map WHERE hostid = $1::integer"
                     , Database::query_param_list(rem_host_id));
             }//for i
         }//if delete dns hosts

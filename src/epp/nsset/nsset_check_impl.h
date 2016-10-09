@@ -20,28 +20,26 @@
  *  @file
  */
 
-#ifndef HANDLE_STATE_7739859411
-#define HANDLE_STATE_7739859411
+#ifndef EPP_NSSET_CHECK_IMPL_H_ca494567ef5445e09d94c094c9b2c7e2
+#define EPP_NSSET_CHECK_IMPL_H_ca494567ef5445e09d94c094c9b2c7e2
 
-namespace Fred
-{
+#include "src/epp/nsset/nsset_handle_registration_obstruction.h"
+#include "src/fredlib/opcontext.h"
 
-namespace NssetHandleState {
-    struct Registrability {
-        enum Enum {
-            registered,
-            in_protection_period,
-            unregistered,
-        };
-    };
+#include <map>
+#include <set>
+#include <string>
 
-    struct SyntaxValidity {
-        enum Enum {
-            valid,
-            invalid,
-        };
-    };
-}
+namespace Epp {
+
+/**
+ * @returns check results for given nsset handles
+ */
+std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > nsset_check_impl(
+    Fred::OperationContext& _ctx,
+    const std::set<std::string>& _nsset_handles
+);
 
 }
+
 #endif

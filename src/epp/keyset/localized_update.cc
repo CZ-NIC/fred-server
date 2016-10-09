@@ -136,14 +136,14 @@ LocalizedSuccessResponse update(
             throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, std::set< Error >(), _lang);
         }
 
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::tech_notexist, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::technical_contact_not_registered, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::duplicated_contact, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::tech_exist, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::technical_contact_already_assigned, errors);
         if (!errors.empty()) {
             throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
         }
 
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_rem,   Reason::tech_notexist, errors);
+        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_rem,   Reason::technical_contact_not_registered, errors);
         insert_vector_parameter_error_if_presents(e, Param::keyset_tech_rem,   Reason::duplicated_contact, errors);
         if (!errors.empty()) {
             throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);

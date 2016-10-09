@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2007  CZ.NIC, z.s.p.o.
+ *  Copyright (C) 2016 CZ.NIC, z.s.p.o.
  *
  *  This file is part of FRED.
  *
@@ -16,15 +16,13 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//  implementing IDL interfaces for file ccReg.idl
-// author: Petr Blaha petr.blaha@nic.cz
-
 #include <fstream>
 #include <iostream>
 
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/local_time_adjustor.hpp"
 #include "boost/date_time/c_local_time_adjustor.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_ptr.hpp>
 
@@ -76,6 +74,13 @@
 // logger
 #include "log/logger.h"
 #include "log/context.h"
+
+#include "src/epp/nsset/nsset_check.h"
+#include "src/epp/nsset/nsset_info.h"
+#include "src/epp/nsset/nsset_delete.h"
+#include "src/epp/nsset/nsset_create.h"
+#include "src/epp/nsset/nsset_update.h"
+#include "src/epp/nsset/nsset_transfer.h"
 
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/contact/contact_create.h"
@@ -2605,14 +2610,40 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(
-  const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params)
+  const ccReg::Check& _handles_to_be_checked, ccReg::CheckResp_out _check_results, const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
 
-  return ObjectCheck( EPP_NSsetCheck , "NSSET" , "handle" , handle , a , params);
+    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
+    try {
+        /* output data must be ordered exactly the same */
+        const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        const Epp::LocalizedCheckNssetResponse response = Epp::nsset_check(
+                    std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
+                    session_data.registrar_id,
+                    session_data.language,
+                    server_transaction_handle
+                );
+
+        ccReg::CheckResp_var check_results = new ccReg::CheckResp(
+            Corba::wrap_localized_check_info(
+                handles_to_be_checked,
+                response.nsset_statuses
+            )
+        );
+
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+
+        /* No exception shall be thrown from here onwards. */
+
+        _check_results = check_results._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainCheck(
@@ -3048,14 +3079,34 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetTransfer(
-  const char* handle, const char* authInfo, const ccReg::EppParams &params)
+  const char* _handle, const char* _auth_info, const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
 
-  return ObjectTransfer( EPP_NSsetTransfer , "NSSET" , "handle" , handle, authInfo, params);
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        return new ccReg::Response(
+            Corba::wrap_response(
+                nsset_transfer(
+                    Corba::unwrap_string(_handle),
+                    Corba::unwrap_string(_auth_info),
+                    session_data.registrar_id,
+                    request_params.log_request_id,
+                    session_data.language,
+                    server_transaction_handle,
+                    request_params.client_transaction_id,
+                    disable_epp_notifier_,
+                    disable_epp_notifier_cltrid_prefix_
+                ),
+                server_transaction_handle
+            )
+        );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainTransfer(
@@ -3124,44 +3175,35 @@ ccReg_EPP_i::KeySetTransfer(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetInfo(
-  const char* handle, ccReg::NSSet_out n,
-  const ccReg::EppParams &params)
+  const char* _handle, ccReg::NSSet_out _info_result,
+  const ccReg::EppParams &_epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
 
-  LOG(
-      NOTICE_LOG,
-      "NSSetInfo: clientID -> %llu clTRID [%s] handle [%s] ",
-       params.loginID, static_cast<const char*>(params.clTRID), handle
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_NSsetInfo, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  // initialize managers for nsset manipulation
-  std::auto_ptr<Fred::Zone::Manager>
-      zman(Fred::Zone::Manager::create() );
-  std::auto_ptr<Fred::NSSet::Manager>
-      nman(Fred::NSSet::Manager::create(a.getDB(), zman.get(),
-          restricted_handles_ ) );
-  // first check handle for proper format
-  if (!nman->checkHandleFormat(handle))
-    // failure in handle check, throw exception
-    a.failed(SetReasonNSSetHandle(a.getErrors(), handle, a.getLang()));
-  // now load nsset by handle
-  std::auto_ptr<Fred::NSSet::List> nlist(nman->createList());
-  nlist->setHandleFilter(handle);
-  try {nlist->reload();}
-  catch (...) {a.failedInternal("Cannot load nsset");}
-  if (nlist->getCount() != 1)
-    // failer because non existance, throw exception
-    a.failed(COMMAND_OBJECT_NOT_EXIST);
-  // start filling output nsset structure
-  Fred::NSSet::NSSet *nss = nlist->getNSSet(0);
-  n = new ccReg::NSSet;
-  corba_nsset_data_copy(a, regMan.get(), n, nss);
-  return a.getRet()._retn();
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(
+            epp_sessions,
+            Corba::unwrap_EppParams(_epp_params).session_id
+        );
+
+        const Epp::LocalizedInfoNssetResponse response = Epp::nsset_info(
+            Corba::unwrap_string(_handle),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle
+        );
+
+        ccReg::NSSet_var info_result = new ccReg::NSSet( Corba::wrap_localized_info_nsset(response.payload) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+
+        /* No exception shall be thrown from here onwards. */
+
+        _info_result = info_result._retn();
+        return return_value._retn();
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
+    }
 }
 
 /***********************************************************************
@@ -3180,82 +3222,28 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
  ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetDelete(
-  const char* handle, const ccReg::EppParams &params)
+  const char* _handle, const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    int id;
-    short int code = 0;
-
-    EPPAction action(this, params.loginID, EPP_NSsetDelete, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    LOGGER(PACKAGE).notice(boost::format("NSSetDelete: clientID -> %1% clTRID [%2%] handle [%3%] ") % (int ) params.loginID % (const char*)params.clTRID % handle );
-
-    // lock row
-    id = getIdOfNSSet(action.getDB(), handle, restricted_handles_
-            , lock_epp_commands_, true);
-    if (id < 0) {
-        LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::nsset_handle, 1,
-                REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
-    } else if (id == 0) {
-        LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-        code = COMMAND_OBJECT_NOT_EXIST;
-    }
-    if (!code &&  !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) // if not client od the object
-    {
-        LOG( WARNING_LOG, "bad autorization not client of nsset [%s]", handle );
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0, REASON_MSG_REGISTRAR_AUTOR);
-    }
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        if (!code && (
-                    testObjectHasState(action,id,FLAG_serverDeleteProhibited) ||
-                    testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
-                    testObjectHasState(action,id,FLAG_deleteCandidate)
-                    ))
-        {
-            LOG( WARNING_LOG, "delete of object %s is prohibited" , handle );
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
-        }
-    } catch (...) {
-        code = COMMAND_FAILED;
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+
+        const Epp::LocalizedSuccessResponse response = Epp::nsset_delete(
+            Corba::unwrap_string(_handle),
+            session_data.registrar_id,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_,
+            disable_epp_notifier_cltrid_prefix_
+        );
+
+        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    if (!code) {
-
-        // test to  table domain if relations to nsset
-        if (action.getDB()->TestNSSetRelations(id) ) //  can not be delete
-        {
-            LOG( WARNING_LOG, "database relations" );
-            code = COMMAND_PROHIBITS_OPERATION;
-        } else {
-            if (action.getDB()->SaveObjectDelete(id) ) // save to delete object
-            {
-                if (action.getDB()->DeleteNSSetObject(id) )
-                    code = COMMAND_OK; // if is OK
-            }
-        }
-
-        if (code == COMMAND_OK)
-        {
-            action.set_notification_params(id,Notification::deleted, disable_epp_notifier_);
-        }
-    }
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("NSSetDelete");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************
@@ -3277,329 +3265,43 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
  ***********************************************************************/
 
 ccReg::Response * ccReg_EPP_i::NSSetCreate(
-  const char *handle, const char *authInfoPw, const ccReg::TechContact & tech,
-  const ccReg::DNSHost & dns, CORBA::Short level, ccReg::timestamp_out crDate,
-  const ccReg::EppParams &params)
+  const char *_handle, const char *authInfoPw, const ccReg::TechContact & tech,
+  const ccReg::DNSHost & dns, CORBA::Short level, ccReg::timestamp_out _create_time,
+  const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-    char NAME[256]; // to upper case of name of DNS hosts
-    int id, techid, hostID;
-    unsigned int i, j, l;
-    short inetNum;
-    int *tch= NULL;
-    short int code = 0;
+        const Epp::LocalizedCreateNssetResponse response = nsset_create(
+            Epp::NssetCreateInputData(
+                Corba::unwrap_string_from_const_char_ptr(_handle),
+                Corba::unwrap_string_from_const_char_ptr(authInfoPw),
+                Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns),
+                Corba::unwrap_ccreg_techcontacts_to_vector_string(tech),
+                Corba::unwrap_tech_check_level_create(level, this->nsset_level_)
+            ),
+            session_data.registrar_id,
+            request_params.log_request_id,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_,
+            disable_epp_notifier_cltrid_prefix_
+        );
 
-    LOGGER(PACKAGE).notice(boost::format("NSSetCreate: clientID -> %1% clTRID [%2%] handle [%3%]  authInfoPw [%4%]") % (int ) params.loginID % (const char*)params.clTRID % handle % authInfoPw );
-    LOGGER(PACKAGE).notice(boost::format("NSSetCreate: tech check level %1% tech num %2%") % (int) level % (int) tech.length() );
+        ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string( formatTime( response.crdate ) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
 
-    crDate = CORBA::string_dup("");
-    EPPAction action(this, params.loginID, EPP_NSsetCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        /* No exception shall be thrown from here onwards. */
 
-    std::auto_ptr<Fred::Zone::Manager> zman(
-            Fred::Zone::Manager::create());
-    std::auto_ptr<Fred::NSSet::Manager> nman(
-            Fred::NSSet::Manager::create(action.getDB(),zman.get(),restricted_handles_));
+        _create_time = create_time._retn();
+        return return_value._retn();
 
-    if (tech.length() < 1) {
-        LOG( WARNING_LOG, "NSSetCreate: not any tech Contact " );
-        code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
-                ccReg::nsset_tech, 0, REASON_MSG_TECH_NOTEXIST);
-    } else if (tech.length() > 9) {
-        LOG(WARNING_LOG, "NSSetCreate: too many tech contacts (max is 9)");
-        code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                ccReg::nsset_tech, 0, REASON_MSG_TECHADMIN_LIMIT);
-    } else if (dns.length() < 2) {
-        //  minimal two dns hosts
-        if (dns.length() == 1) {
-            LOG( WARNING_LOG, "NSSetCreate: minimal two dns host create one %s" , (const char *) dns[0].fqdn );
-            code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                    ccReg::nsset_dns_name, 1, REASON_MSG_MIN_TWO_DNS_SERVER);
-        } else {
-            LOG( WARNING_LOG, "NSSetCreate: minimal two dns DNS hosts" );
-            code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
-                    ccReg::nsset_dns_name, 0, REASON_MSG_MIN_TWO_DNS_SERVER);
-        }
-
-    } else if (dns.length() > 9) {
-        LOG(WARNING_LOG, "NSSetCreate: too many dns hosts (maximum is 9)");
-        code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                ccReg::nsset_dns_name, 0, REASON_MSG_NSSET_LIMIT);
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    if (code == 0) {
-        Fred::NSSet::Manager::CheckAvailType caType;
-
-        tch = new int[tech.length()];
-
-        try {
-            Fred::NameIdPair nameId;
-            caType = nman->checkAvail(handle, nameId);
-            id = nameId.id;
-        }
-        catch (...) {
-            caType = Fred::NSSet::Manager::CA_INVALID_HANDLE;
-            id = -1;
-        }
-
-        if (id<0 || caType == Fred::NSSet::Manager::CA_INVALID_HANDLE) {
-            LOG(WARNING_LOG, "bad format of nssset [%s]", handle);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::nsset_handle, 1, REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
-        } else if (caType == Fred::NSSet::Manager::CA_REGISTRED) {
-            LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
-            code = COMMAND_OBJECT_EXIST;
-        } else if (caType == Fred::NSSet::Manager::CA_PROTECTED) {
-            LOG(WARNING_LOG, "object [%s] in history period", handle);
-            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                    ccReg::nsset_handle, 1, REASON_MSG_PROTECTED_PERIOD);
-        }
-    }
-    if (code == 0) {
-        // test tech-c
-        std::auto_ptr<Fred::Contact::Manager>
-            cman(Fred::Contact::Manager::create(action.getDB(),
-                        restricted_handles_) );
-        for (i = 0; i < tech.length() ; i++) {
-            Fred::Contact::Manager::CheckAvailType caType;
-            try {
-                Fred::NameIdPair nameId;
-                caType = cman->checkAvail((const char *)tech[i],nameId);
-                techid = nameId.id;
-            } catch (...) {
-                caType = Fred::Contact::Manager::CA_INVALID_HANDLE;
-                techid = 0;
-            }
-
-            if (caType != Fred::Contact::Manager::CA_REGISTRED) {
-                if (techid < 0) {
-                    LOG(WARNING_LOG, "bad format of Contact %s", (const char *)tech[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_tech, i + 1, REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-                } else if (techid == 0) {
-                    LOG(WARNING_LOG, "Contact %s not exist", (const char *)tech[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_tech, i, REASON_MSG_TECH_NOTEXIST);
-                }
-            } else {
-                tch[i] = techid;
-                for (j = 0; j < i; j ++) // test duplicity
-                {
-                    LOG( DEBUG_LOG , "tech compare j %d techid %d ad %d" , j , techid , tch[j] );
-                    if (tch[j] == techid && tch[j] > 0) {
-                        tch[j]= 0;
-                        LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)tech[i]);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_tech, i, REASON_MSG_DUPLICITY_CONTACT);
-                    }
-                }
-            }
-        }
-    }
-
-    if (code == 0) {
-
-        LOG( DEBUG_LOG , "NSSetCreate:  dns.length %d" , (int ) dns.length() );
-        // test DNS host
-
-        // test IP address of  DNS host
-
-        for (i = 0, inetNum=0; i < dns.length() ; i++) {
-
-            LOG( DEBUG_LOG , "NSSetCreate: test host %s" , (const char *) dns[i].fqdn );
-
-            //  list sequence
-            for (j = 0; j < dns[i].inet.length(); j++) {
-                LOG( DEBUG_LOG , "NSSetCreate: test inet[%d] = %s " , j , (const char *) dns[i].inet[j] );
-                if (TestInetAddress(dns[i].inet[j]) ) {
-                    for (l = 0; l < j; l ++) // test to duplicity
-                    {
-                        if (strcmp(dns[i].inet[l], dns[i].inet[j]) == 0) {
-                            LOG( WARNING_LOG, "NSSetCreate: duplicity host address %s " , (const char *) dns[i].inet[j] );
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::nsset_dns_addr, inetNum + j + 1,
-                                    REASON_MSG_DUPLICITY_DNS_ADDRESS);
-                        }
-                    }
-
-                } else {
-                    LOG( WARNING_LOG, "NSSetCreate: bad host address %s " , (const char *) dns[i].inet[j] );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_addr, inetNum + j + 1,
-                            REASON_MSG_BAD_IP_ADDRESS);
-                }
-
-            }
-
-            // test DNS hosts
-            unsigned hostnameTest = nman->checkHostname(
-                    (const char *)dns[i].fqdn, dns[i].inet.length() > 0, true);
-            if (hostnameTest == 1) {
-
-                LOG( WARNING_LOG, "NSSetCreate: bad host name %s " , (const char *) dns[i].fqdn );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_dns_name, i + 1, REASON_MSG_BAD_DNS_NAME);
-            } else {
-                LOG( NOTICE_LOG , "NSSetCreate: test DNS Host %s", (const char *) dns[i].fqdn );
-                convert_hostname(NAME, dns[i].fqdn);
-
-                // not in defined zones and exist record of ip address
-                if (hostnameTest == 2) {
-
-                    for (j = 0; j < dns[i].inet.length() ; j ++) {
-
-                        LOG( WARNING_LOG, "NSSetCreate:  ipaddr  glue not allowed %s " , (const char *) dns[i].inet[j] );
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_dns_addr, inetNum + j + 1,
-                                REASON_MSG_IP_GLUE_NOT_ALLOWED);
-                    }
-
-                }
-
-                // test to duplicity of nameservers
-                for (l = 0; l < i; l ++) {
-                    char PREV_NAME[256]; // to upper case of name of DNS hosts
-                    convert_hostname(PREV_NAME, dns[l].fqdn);
-                    if (strcmp(NAME, PREV_NAME) == 0) {
-                        LOG( WARNING_LOG, "NSSetCreate: duplicity host name %s " , (const char *) NAME );
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_dns_name, i + 1,
-                                REASON_MSG_DNS_NAME_EXIST);
-                    }
-                }
-
-            }
-
-            inetNum+= dns[i].inet.length(); //  InetNum counter  for return errors
-        } // end of cycle
-
-        LOG( DEBUG_LOG , "NSSetCreate: code %d" , code );
-
-    }
-
-    if (code == 0) {
-
-        id = action.getDB()->CreateObject("N", action.getRegistrar(), handle, authInfoPw);
-        if (id<=0) {
-            if (id==0) {
-                LOG( WARNING_LOG, "nsset handle [%s] EXIST", handle );
-                code= COMMAND_OBJECT_EXIST;
-            } else {
-                LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", handle );
-                code= COMMAND_FAILED;
-            }
-        } else {
-
-            if (level<0)
-                level = nsset_level_;
-            // write to nsset table
-            action.getDB()->INSERT("NSSET");
-            action.getDB()->INTO("id");
-            if (level >= 0)
-                action.getDB()->INTO("checklevel");
-            action.getDB()->VALUE(id);
-            if (level >= 0)
-                action.getDB()->VALUE(level);
-
-            // nsset first
-            if ( !action.getDB()->EXEC() )
-                code = COMMAND_FAILED;
-            else {
-
-                // get local timestamp with timezone of created object
-                CORBA::string_free(crDate);
-                crDate= CORBA::string_dup(action.getDB()->GetObjectCrDateTime(id) );
-
-                // insert all tech-c
-                for (i = 0; i < tech.length() ; i++) {
-                    LOG( DEBUG_LOG, "NSSetCreate: add tech Contact %s id %d " , (const char *) tech[i] , tch[i]);
-                    if ( !action.getDB()->AddContactMap("nsset", id, tch[i]) ) {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-                }
-
-                // insert all DNS hosts
-
-
-                for (i = 0; i < dns.length() ; i++) {
-
-                    // convert host name to lower case
-                    LOG( NOTICE_LOG , "NSSetCreate: DNS Host %s ", (const char *) dns[i].fqdn );
-                    convert_hostname(NAME, dns[i].fqdn);
-
-                    // ID  sequence
-                    hostID = action.getDB()->GetSequenceID("host");
-
-                    // HOST  informations
-                    action.getDB()->INSERT("HOST");
-                    action.getDB()->INTO("ID");
-                    action.getDB()->INTO("NSSETID");
-                    action.getDB()->INTO("fqdn");
-                    action.getDB()->VALUE(hostID);
-                    action.getDB()->VALUE(id);
-                    action.getDB()->VVALUE(NAME);
-                    if (action.getDB()->EXEC() ) {
-
-                        // save ip address of host
-                        for (j = 0; j < dns[i].inet.length(); j++) {
-                            LOG( NOTICE_LOG , "NSSetCreate: IP address hostID  %d [%s] ", hostID , (const char *) dns[i].inet[j] );
-
-                            // HOST_IPADDR insert IP address of DNS host
-                            action.getDB()->INSERT("HOST_IPADDR_map");
-                            action.getDB()->INTO("HOSTID");
-                            action.getDB()->INTO("NSSETID");
-                            action.getDB()->INTO("ipaddr");
-                            action.getDB()->VALUE(hostID);
-                            action.getDB()->VALUE(id); // write nssetID
-                            action.getDB()->VVALUE(dns[i].inet[j]);
-
-                            if (action.getDB()->EXEC() == false) {
-                                code = COMMAND_FAILED;
-                                break;
-                            }
-
-                        }
-
-                    } else {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-
-                } // end of host cycle
-
-
-                //  save to  historie if is OK
-                if (code != COMMAND_FAILED)
-                    if (action.getDB()->SaveNSSetHistory(id, params.requestID))
-                        if (action.getDB()->SaveObjectCreate(id) )
-                            code = COMMAND_OK;
-            } //
-
-
-            if (code == COMMAND_OK) // run notifier
-            {
-                action.set_notification_params(id,Notification::created, disable_epp_notifier_);
-            }
-
-        }
-    }
-
-    delete[] tch;
-
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("NSSetCreate");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************
@@ -3622,440 +3324,40 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
  ***********************************************************************/
 
 ccReg::Response *
-ccReg_EPP_i::NSSetUpdate(const char* handle, const char* authInfo_chg,
+ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
         const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
         const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
-        CORBA::Short level, const ccReg::EppParams &params)
+        CORBA::Short level, const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    char NAME[256], REM_NAME[256];
-    int nssetID, techid, hostID;
-    unsigned int i, j, k, l;
-    short inetNum;
-    int hostNum, techNum;
-    bool findRem; // test for change DNS hosts
-    short int code = 0;
-
-    int *tch_add = new int[ tech_add.length() ];
-    if (tech_add.length() > 0) {
-        for (unsigned int i = 0; i < tech_add.length(); ++i)
-            tch_add[i] = 0;
-    }
-
-    int *tch_rem = new int[ tech_rem.length() ];
-    if (tech_rem.length() > 0) {
-        for (unsigned int i = 0; i < tech_rem.length(); ++i)
-            tch_rem[i] = 0;
-    }
-
-    EPPAction action(this, params.loginID, EPP_NSsetUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-
-    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: clientID -> %1% clTRID [%2%] handle [%3%] authInfo_chg  [%4%] ") % (int ) params.loginID % (const char*)params.clTRID % handle % authInfo_chg);
-    LOGGER(PACKAGE).notice( boost::format("NSSetUpdate: tech check level %1%") % (int) level );
-
-    std::auto_ptr<Fred::Zone::Manager> zman(
-            Fred::Zone::Manager::create());
-    std::auto_ptr<Fred::NSSet::Manager> nman(
-            Fred::NSSet::Manager::create(action.getDB(),zman.get(),restricted_handles_));
-
-    if ( (nssetID = getIdOfNSSet(action.getDB(), handle, restricted_handles_
-            , lock_epp_commands_, true) ) < 0) {
-        LOG(WARNING_LOG, "bad format of nsset [%s]", handle);
-    } else if (nssetID == 0) {
-        LOG( WARNING_LOG, "nsset handle [%s] NOT_EXIST", handle );
-        code = COMMAND_OBJECT_NOT_EXIST;
-    }
-    // registrar of the object
-    if (!code && !action.getDB()->TestObjectClientID(nssetID, action.getRegistrar()) ) {
-        LOG( WARNING_LOG, "bad autorization not  client of nsset [%s]", handle );
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0,
-                REASON_MSG_REGISTRAR_AUTOR);
-    }
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        if (!code && (testObjectHasState(action,nssetID,FLAG_serverUpdateProhibited) ||
-                testObjectHasState(action,nssetID,FLAG_deleteCandidate)))
-        {
-            LOG( WARNING_LOG, "update of object %s is prohibited" , handle );
-            code = COMMAND_STATUS_PROHIBITS_OPERATION;
-        }
-    } catch (...) {
-        code = COMMAND_FAILED;
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::LocalizedSuccessResponse response = Epp::nsset_update(
+                Epp::NssetUpdateInputData(
+                    Corba::unwrap_string_from_const_char_ptr(_handle),
+                    Corba::convert_corba_string_change(authInfo_chg),
+                    Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_add),
+                    Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_rem),
+                    Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),
+                    Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_rem),
+                    Corba::unwrap_tech_check_level_update(level)
+                ),
+            session_data.registrar_id,
+            request_params.log_request_id,
+            epp_update_contact_enqueue_check_,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_,
+            disable_epp_notifier_cltrid_prefix_
+        );
+
+        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-
-    if (!code) {
-
-        // test  ADD tech-c
-        for (i = 0; i < tech_add.length(); i++) {
-            if ( (techid = getIdOfContact(action.getDB(), tech_add[i], restricted_handles_
-                    , lock_epp_commands_) ) <= 0) {
-                if (techid < 0) {
-                    LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_add[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_tech_add, i + 1,
-                            REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-                } else if (techid == 0) {
-                    LOG(WARNING_LOG, "Contact %s not exist", (const char *)tech_add[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_tech_add, i + 1,
-                            REASON_MSG_TECH_NOTEXIST);
-                }
-            } else if (action.getDB()->CheckContactMap("nsset", nssetID, techid, 0) ) {
-                LOG(WARNING_LOG, "Tech Contact [%s] exist in contact map table",
-                        (const char *)tech_add[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_tech_add, i + 1,
-                        REASON_MSG_TECH_EXIST);
-            } else {
-                tch_add[i] = techid;
-                for (j = 0; j < i; j ++)
-                    // duplicity test
-                    if (tch_add[j] == techid && tch_add[j] > 0) {
-                        tch_add[j] = 0;
-                        LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)tech_add[i]);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_tech_add, i,
-                                REASON_MSG_DUPLICITY_CONTACT);
-                    }
-            }
-
-            LOG( NOTICE_LOG , "ADD  tech  techid ->%d [%s]" , techid , (const char *) tech_add[i] );
-        }
-
-        // test REM tech-c
-        for (i = 0; i < tech_rem.length(); i++) {
-
-            if ( (techid = getIdOfContact(action.getDB(), tech_rem[i], restricted_handles_
-                    , lock_epp_commands_) ) <= 0) {
-                LOG(WARNING_LOG, "bad format of contact %s", (const char *)tech_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_tech_rem, i + 1,
-                        REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-            } else if ( !action.getDB()->CheckContactMap("nsset", nssetID, techid, 0) ) {
-                LOG(WARNING_LOG, "Contact %s not exist", (const char *)tech_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_tech_rem, i + 1,
-                        REASON_MSG_TECH_NOTEXIST);
-            } else {
-                tch_rem[i] = techid;
-                for (j = 0; j < i; j ++)
-                    // test  duplicity
-                    if (tch_rem[j] == techid && tch_rem[j] > 0) {
-                        tch_rem[j] = 0;
-                        LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)tech_rem[i]);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_tech_rem, i,
-                                REASON_MSG_DUPLICITY_CONTACT);
-                    }
-            }
-            LOG( NOTICE_LOG , "REM  tech  techid ->%d [%s]" , techid , (const char *) tech_rem[i] );
-
-        }
-
-        // ADD DNS HOSTS  and TEST IP address and name of the  DNS HOST
-        for (i = 0, inetNum =0; i < dns_add.length(); i++) {
-
-            /// test DNS host
-            if (nman->checkHostname((const char *)dns_add[i].fqdn, false, true)) {
-                LOG( WARNING_LOG, "NSSetUpdate: bad add host name %s " , (const char *) dns_add[i].fqdn );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_dns_name_add, i + 1,
-                        REASON_MSG_BAD_DNS_NAME);
-            } else {
-                LOG( NOTICE_LOG , "NSSetUpdate: add dns [%s]" , (const char * ) dns_add[i].fqdn );
-
-                convert_hostname(NAME, dns_add[i].fqdn); // convert to lower case
-                // HOST is not in defined zone and contain ip address
-                if (getZone(action.getDB(), dns_add[i].fqdn) == 0
-                        && (int ) dns_add[i].inet.length() > 0) {
-                    for (j = 0; j < dns_add[i].inet.length() ; j ++) {
-                        LOG( WARNING_LOG, "NSSetUpdate:  ipaddr  glue not allowed %s " , (const char *) dns_add[i].inet[j] );
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::nsset_dns_addr, inetNum + j + 1,
-                                REASON_MSG_IP_GLUE_NOT_ALLOWED);
-                    }
-                } else {
-
-                    if (action.getDB()->GetHostID(NAME, nssetID) ) // already exist can not add
-                    {
-                        // TEST if the add DNS host is in REM   dns_rem[i].fqdn
-                        findRem=false;
-                        for (k = 0; k < dns_rem.length(); k++) {
-                            convert_hostname(REM_NAME, dns_rem[k].fqdn);
-                            if (strcmp(NAME, REM_NAME) == 0) {
-                                LOG( NOTICE_LOG ,"NSSetUpdate: add HOST %s find remove host %s" , NAME , REM_NAME );
-                                findRem=true;
-                                break;
-                            }
-                        }
-
-                        if ( !findRem) // if is not in the REM DNS hosts
-                        {
-                            LOG( WARNING_LOG, "NSSetUpdate:  host name %s exist" , (const char *) dns_add[i].fqdn );
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::nsset_dns_name_add, i + 1,
-                                    REASON_MSG_DNS_NAME_EXIST);
-                        }
-
-                    }
-
-                }
-
-            }
-
-            // TEST IP addresses
-            for (j = 0; j < dns_add[i].inet.length(); j++) {
-
-                if (TestInetAddress(dns_add[i].inet[j]) ) {
-                    for (l = 0; l < j; l ++) // duplicity test
-                    {
-                        if (strcmp(dns_add[i].inet[l], dns_add[i].inet[j]) == 0) {
-                            LOG( WARNING_LOG, "NSSetUpdate: duplicity host address %s " , (const char *) dns_add[i].inet[j] );
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::nsset_dns_addr, inetNum + j + 1,
-                                    REASON_MSG_DUPLICITY_DNS_ADDRESS);
-                        }
-                    }
-
-                } else // not valid IP address
-                {
-                    LOG( WARNING_LOG, "NSSetUpdate: bad add host address %s " , (const char *) dns_add[i].inet[j] );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_addr, inetNum + j + 1,
-                            REASON_MSG_BAD_IP_ADDRESS);
-                }
-            }
-
-            inetNum+= dns_add[i].inet.length(); //  count  InetNum for errors
-
-            // test to duplicity of added nameservers
-            for (l = 0; l < i; l ++) {
-                char PREV_NAME[256]; // to upper case of name of DNS hosts
-                convert_hostname(PREV_NAME, dns_add[l].fqdn);
-                if (strcmp(NAME, PREV_NAME) == 0) {
-                    LOG( WARNING_LOG, "NSSetUpdate:  host name %s duplicate" , (const char *) dns_add[i].fqdn );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_name_add, i + 1,
-                            REASON_MSG_DNS_NAME_EXIST);
-                }
-            }
-
-        } // end of cycle
-
-
-        // test for DNS HOSTS to REMOVE if is valid format and if is exist in the table
-        for (i = 0; i < dns_rem.length(); i++) {
-            LOG( NOTICE_LOG , "NSSetUpdate:  delete  host  [%s] " , (const char *) dns_rem[i].fqdn );
-
-            if (nman->checkHostname((const char *)dns_rem[i].fqdn, false, true)) {
-                LOG( WARNING_LOG, "NSSetUpdate: bad rem host name %s " , (const char *) dns_rem[i].fqdn );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::nsset_dns_name_rem, i + 1,
-                        REASON_MSG_BAD_DNS_NAME);
-            } else {
-                convert_hostname(NAME, dns_rem[i].fqdn);
-                if ( (hostID = action.getDB()->GetHostID(NAME, nssetID) ) == 0) {
-                    LOG( WARNING_LOG, "NSSetUpdate:  host  [%s] not in table" , (const char *) dns_rem[i].fqdn );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_name_rem, i + 1,
-                            REASON_MSG_DNS_NAME_NOTEXIST);
-                }
-            }
-
-            // test to duplicity of removing nameservers
-            for (l = 0; l < i; l ++) {
-                char PREV_NAME[256]; // to upper case of name of DNS hosts
-                convert_hostname(PREV_NAME, dns_rem[l].fqdn);
-                if (strcmp(NAME, PREV_NAME) == 0) {
-                    LOG( WARNING_LOG, "NSSetUpdate:  host name %s duplicate" , (const char *) dns_rem[i].fqdn );
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::nsset_dns_name_rem, i + 1,
-                            REASON_MSG_DNS_NAME_NOTEXIST);
-                }
-            }
-
-        }
-
-        // if not any errors in the parametrs run update
-        if (code == 0)
-            if (action.getDB()->ObjectUpdate(nssetID, action.getRegistrar(), authInfo_chg) ) {
-
-                // update tech level
-                if (level >= 0) {
-                    LOG( NOTICE_LOG, "update nsset check level %d ", (int ) level );
-                    action.getDB()->UPDATE("nsset");
-                    action.getDB()->SET("checklevel", level);
-                    action.getDB()->WHERE("id", nssetID);
-                    if (action.getDB()->EXEC() == false)
-                        code = COMMAND_FAILED;
-                }
-
-                //-------- TECH contacts
-
-                // add tech contacts
-                for (i = 0; i < tech_add.length(); i++) {
-
-                    LOG( NOTICE_LOG , "INSERT add techid ->%d [%s]" , tch_add[i] , (const char *) tech_add[i] );
-                    if ( !action.getDB()->AddContactMap("nsset", nssetID, tch_add[i]) ) {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-
-                }
-
-                // delete  tech contacts
-                for (i = 0; i < tech_rem.length(); i++) {
-
-                    LOG( NOTICE_LOG , "DELETE rem techid ->%d [%s]" , tch_rem[i] , (const char *) tech_rem[i] );
-                    if ( !action.getDB()->DeleteFromTableMap("nsset", nssetID, tch_rem[i]) ) {
-                        code = COMMAND_FAILED;
-                        break;
-                    }
-
-                }
-
-                //--------- TEST for numer of tech-c after  ADD & REM
-                // only if the tech-c remove
-                if (tech_rem.length() > 0) {
-                    techNum = action.getDB()->GetNSSetContacts(nssetID);
-                    LOG(NOTICE_LOG, "NSSetUpdate: tech Contact  %d" , techNum );
-
-                    if (techNum == 0) // can not be nsset without tech-c
-                    {
-
-                        // marked all  REM tech-c as param  errors
-                        for (i = 0; i < tech_rem.length(); i++) {
-                            code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                    ccReg::nsset_tech_rem, i + 1,
-                                    REASON_MSG_CAN_NOT_REMOVE_TECH);
-                        }
-                    }
-                }
-
-                // delete DNS HOSTY  first step
-                for (i = 0; i < dns_rem.length(); i++) {
-                    LOG( NOTICE_LOG , "NSSetUpdate:  delete  host  [%s] " , (const char *) dns_rem[i].fqdn );
-
-                    convert_hostname(NAME, dns_rem[i].fqdn);
-                    hostID = action.getDB()->GetHostID(NAME, nssetID);
-                    LOG( NOTICE_LOG , "DELETE  hostID %d" , hostID );
-                    if ( !action.getDB()->DeleteFromTable("HOST", "id", hostID) )
-                        code = COMMAND_FAILED;
-                    else if ( !action.getDB()->DeleteFromTable("HOST_IPADDR_map", "hostID",
-                                hostID) )
-                        code = COMMAND_FAILED;
-                }
-
-                //-------- add  DNS HOSTs second step
-
-                for (i = 0; i < dns_add.length(); i++) {
-                    // to lowe case
-                    convert_hostname(NAME, dns_add[i].fqdn);
-
-                    // hostID from sequence
-                    hostID = action.getDB()->GetSequenceID("host");
-
-                    // HOST information
-                    action.getDB()->INSERT("HOST");
-                    action.getDB()->INTO("ID");
-                    action.getDB()->INTO("nssetid");
-                    action.getDB()->INTO("fqdn");
-                    action.getDB()->VALUE(hostID);
-                    action.getDB()->VALUE(nssetID); // add nssetID
-                    action.getDB()->VALUE(NAME);
-                    if (action.getDB()->EXEC()) // add all IP address
-                    {
-
-                        for (j = 0; j < dns_add[i].inet.length(); j++) {
-                            LOG( NOTICE_LOG , "insert  IP address hostID  %d [%s] ", hostID , (const char *) dns_add[i].inet[j] );
-
-                            // insert ipaddr with hostID and nssetID
-                            action.getDB()->INSERT("HOST_IPADDR_map");
-                            action.getDB()->INTO("HOSTID");
-                            action.getDB()->INTO("NSSETID");
-                            action.getDB()->INTO("ipaddr");
-                            action.getDB()->VALUE(hostID);
-                            action.getDB()->VALUE(nssetID);
-                            action.getDB()->VVALUE(dns_add[i].inet[j]);
-
-                            // if failed
-                            if (action.getDB()->EXEC() == false) {
-                                code = COMMAND_FAILED;
-                                break;
-                            }
-
-                        }
-
-                    } else {
-                        code = COMMAND_FAILED;
-                        break;
-                    } // if add host failed
-
-
-                }
-
-                //------- TEST number DNS host after REM & ADD
-                //  only if the add or rem
-                if (dns_rem.length() > 0 || dns_add.length() > 0) {
-                    hostNum = action.getDB()->GetNSSetHosts(nssetID);
-                    LOG(NOTICE_LOG, "NSSetUpdate:  hostNum %d" , hostNum );
-
-                    if (hostNum < 2) //  minimal two DNS
-                    {
-                        for (i = 0; i < dns_rem.length(); i++) {
-                            // marked all  REM DNS hots as param error
-                            code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                    ccReg::nsset_dns_name_rem, i + 1,
-                                    REASON_MSG_CAN_NOT_REM_DNS);
-                        }
-                    }
-
-                    if (hostNum > 9) // maximal number
-                    {
-                        for (i = 0; i < dns_add.length(); i++) {
-                            // marked all ADD dns host  as param error
-                            code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                    ccReg::nsset_dns_name_add, i + 1,
-                                    REASON_MSG_CAN_NOT_ADD_DNS);
-                        }
-                    }
-
-                }
-
-                // save to history if not errors
-                if (code == 0)
-                    if (action.getDB()->SaveNSSetHistory(nssetID, params.requestID) )
-                        code = COMMAND_OK; // set up successfully as default
-
-
-                if (code == COMMAND_OK)
-                {
-                    action.set_notification_params(nssetID,Notification::updated, disable_epp_notifier_);
-                }
-
-
-            }
-
-    }
-    // free mem
-    delete[] tch_add;
-    delete[] tch_rem;
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("NSSetUpdate");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************

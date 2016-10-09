@@ -226,7 +226,7 @@ public:
   ccReg::Response* ContactCreate(const char* handle, const ccReg::ContactChange& c, ccReg::timestamp_out crDate, const ccReg::EppParams &params);
   ccReg::Response* ContactTransfer(const char* handle, const char* authInfo, const ccReg::EppParams &params);
 
-  ccReg::Response* NSSetCheck(const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params);
+  ccReg::Response* NSSetCheck(const ccReg::Check& _handles_to_be_checked, ccReg::CheckResp_out _check_results, const ccReg::EppParams &_epp_params);
 
   ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, const ccReg::EppParams &params);
 
