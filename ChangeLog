@@ -1,3 +1,7 @@
+2016-10-09 (2.28.0)
+
+  * epp backend rewrite - nsset and keyset methods
+
 2016-09-07 (2.27.0)
 
   * whois - internal searation of implementation and corba wrapper
