@@ -987,6 +987,7 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/info_registrar_diff.cc \
 		src/fredlib/registrar/info_registrar_diff.h \
 		src/fredlib/registrar/registrar_zone_access.h \
+		src/fredlib/registrar/registrar_zone_access.cc \
 		src/fredlib/registrar/create_registrar.cc \
 		src/fredlib/registrar/create_registrar.h \
 		src/fredlib/registrar/info_registrar_impl.cc \
@@ -2807,6 +2808,7 @@ tests_test_blocking_LDADD = \
 #
 tests_test_fredlib_SOURCES = \
 		tests/fredlib/main.cc \
+		tests/fredlib/registrar/test_registrar_zone_access.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \
 		tests/fredlib/registrar/test_create_registrar.cc \
 		tests/fredlib/contact/test_delete_contact.cc \

@@ -21,9 +21,13 @@
  *  registrar zone access
  */
 
+#ifndef REGISTRAR_ZONE_ACCESS_H_
+#define REGISTRAR_ZONE_ACCESS_H_
+
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "src/fredlib/opcontext.h"
-
+#include "util/db/param_query_composition.h"
+#include "src/fredlib/registrar/registrar_zone_access.h"
 namespace Fred
 {
 
@@ -32,8 +36,18 @@ namespace Fred
      */
     bool registrar_zone_access(unsigned long long registrar_id,
             unsigned long long zone_id,
-            boost::gregorian::date _local_today, OperationContext& ctx);
-
+            boost::gregorian::date _local_today, OperationContext& ctx)
+    {
+        Database::ReusableParameter local_today = Database::ReusableParameter(_local_today,"date");
+        return ctx.get_conn().exec_params(Database::ParamQuery(
+            "SELECT id "
+            "FROM registrarinvoice "
+            "WHERE registrarid=").param_bigint(registrar_id)
+            (" AND zone=").param_bigint(zone_id)
+            (" AND fromdate <= ").param(local_today)
+            (" AND (todate >= ").param(local_today)(" OR todate IS NULL)")
+            ).size();
+    }
 }//namespace Fred
 
-
+#endif//REGISTRAR_ZONE_ACCESS_H_
