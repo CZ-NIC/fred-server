@@ -1674,8 +1674,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 #src/epp/domain/domain_update.h \
 #src/epp/domain/domain_update_impl.cc \
 #src/epp/domain/domain_update_impl.h \
-
-
 #
 # src/corba/epp/libepp_impl.a
 
