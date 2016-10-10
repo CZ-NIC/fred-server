@@ -4,6 +4,10 @@
 #include "src/epp/error.h"
 #include "src/epp/param.h"
 #include "src/epp/contact/contact_create.h"
+#include "src/epp/nsset/nsset_dns_host_data.h"
+#include "src/epp/domain/domain_registration_time.h"
+#include "src/epp/domain/domain_enum_validation.h"
+
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
 
@@ -16,6 +20,7 @@
 #include <string>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/integer_traits.hpp>
@@ -812,6 +817,64 @@ namespace Corba {
         }
 
         return result;
+    }
+
+    /**
+     * length of domain registration period
+     */
+    Epp::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period)
+    {
+        switch(period.unit)
+        {
+            case ccReg::unit_month:
+                return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::month);
+                break;
+            case ccReg::unit_year:
+                return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::year);
+                break;
+        };
+        throw std::runtime_error("unwrap_domain_registration_period internal error");
+    }
+
+    /**
+     * domain administrative contacts unwrapper
+     */
+    std::vector<std::string> unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact & in)
+    {
+        std::vector<std::string> ret;
+        ret.reserve(in.length());
+        for(unsigned long long i = 0 ; i < in.length();++i)
+        {
+            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            ret.push_back(std::string(in[i]));
+        }
+        return ret;
+    }
+
+    /**
+     * ENUM validation list unwrapper
+     */
+    std::vector<Epp::ENUMValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext)
+    {
+        const ccReg::ENUMValidationExtension *enum_ext = 0;
+        std::vector<Epp::ENUMValidationExtension> ret;
+        ret.reserve(ext.length());
+        for(unsigned i = 0; i < ext.length(); ++i)
+        {
+            if (ext[i] >>= enum_ext)
+            {
+                ret.push_back(Epp::ENUMValidationExtension(
+                        boost::gregorian::from_string(
+                                Corba::unwrap_string_from_const_char_ptr(enum_ext->valExDate)),
+                        enum_ext->publish)
+                );
+            }
+            else
+            {
+                throw std::runtime_error("unknown extension found when extracting domain enum extension");
+            }
+        }
+        return ret;
     }
 }
 

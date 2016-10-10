@@ -141,9 +141,9 @@ namespace Fred
         return *this;
     }
 
-    boost::posix_time::ptime CreateDomain::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
+    CreateDomain::Result CreateDomain::exec(OperationContext& ctx, const std::string& returned_timestamp_pg_time_zone_name)
     {
-        boost::posix_time::ptime timestamp;
+        Result result;
 
         try
         {
@@ -205,6 +205,7 @@ namespace Fred
             }
 
             CreateObject::Result create_object_result = CreateObject("domain", no_root_dot_fqdn, registrar_, authinfo_, logd_request_id_).exec(ctx);
+            result.create_object_result = create_object_result;
 
             //expiration_period
             unsigned expiration_period = zone.ex_period_min;//in months
@@ -223,7 +224,7 @@ namespace Fred
                     BOOST_THROW_EXCEPTION(Fred::InternalError("timestamp of the domain creation was not found"));
                 }
 
-                timestamp = boost::posix_time::time_from_string(std::string(reg_date_res[0][0]));
+                result.creation_time = boost::posix_time::time_from_string(std::string(reg_date_res[0][0]));
                 if(!expiration_date_.isset())
                 {
                     expiration_date_ = boost::gregorian::from_simple_string(std::string(reg_date_res[0][1]));
@@ -441,7 +442,7 @@ namespace Fred
             throw;
         }
 
-        return timestamp;
+        return result;
     }
 
     std::string CreateDomain::to_string() const

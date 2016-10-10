@@ -92,6 +92,7 @@
 #include "src/epp/domain/domain_delete.h"
 #include "src/epp/domain/domain_info.h"
 #include "src/epp/domain/domain_transfer.h"
+#include "src/epp/domain/domain_create.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_create.h"
 #include "src/epp/keyset/localized_update.h"
@@ -3874,414 +3875,55 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         const char *AuthInfoPw,
         const ccReg::Period_str& period,
         const ccReg::AdminContact & admin,
-        ccReg::timestamp_out crDate,
+        ccReg::timestamp_out _create_time,
         ccReg::timestamp_out exDate,
-        const ccReg::EppParams &params,
+        const ccReg::EppParams &_epp_params,
         const ccReg::ExtensionList & ext
         )
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
-
-    std::string valexdate;
-    ccReg::Disclose publish;
-    std::string FQDN(fqdn);
-    boost::to_lower(FQDN);
-
-    int contactid, nssetid, adminid, id, keysetid;
-    int zone =0;
-    unsigned int i, j;
-    std::vector<int> ad;
-    int period_count;
-    char periodStr[10];
-    Fred::NameIdPair dConflict;
-    Fred::Domain::CheckAvailType dType;
-    short int code = 0;
-
-    crDate = CORBA::string_dup("");
-    exDate = CORBA::string_dup("");
-
-    EPPAction action(this, params.loginID, EPP_DomainCreate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    ad.resize(admin.length());
-
-    LOGGER(PACKAGE).notice(boost::format("DomainCreate: clientID -> %1% clTRID [%2%] fqdn  [%3%] ") %
-            (int ) params.loginID % (const char*)params.clTRID % fqdn );
-    LOGGER(PACKAGE).notice(boost::format("DomainCreate:  Registrant  [%1%]  nsset [%2%]  keyset [%3%] AuthInfoPw [%4%]") %
-            Registrant % nsset % keyset % AuthInfoPw);
-
-    //  period transform from structure to month
-    // if in year
-    if (period.unit == ccReg::unit_year) {
-        period_count = period.count * 12;
-        snprintf(periodStr, sizeof(periodStr), "y%d", period.count);
-    }
-    // if in month
-    else if (period.unit == ccReg::unit_month) {
-        period_count = period.count;
-        snprintf(periodStr, sizeof(periodStr), "m%d", period.count);
-    } else
-        period_count = 0;
-
-    LOG( NOTICE_LOG,
-            "DomainCreate: period count %d unit %d period_count %d string [%s]" ,
-            period.count , period.unit , period_count , periodStr);
-
-    // parse enum.exdate extension for validitydate
-    extractEnumDomainExtension(valexdate, publish, ext);
-
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
-        std::auto_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
-        std::auto_ptr<Fred::Domain::Manager> dman( Fred::Domain::Manager::create(action.getDB(),zm.get()) );
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        LOG( NOTICE_LOG , "Domain::checkAvail  fqdn [%s]" , (const char * ) fqdn );
-
-        dType = dman->checkAvail( FQDN , dConflict, idn_allowed(action));
-        const Fred::Zone::Zone* temp_zone = NULL;
-
-        LOG( NOTICE_LOG , "domain type %d" , dType );
-        switch (dType) {
-            case Fred::Domain::CA_INVALID_HANDLE:
-            case Fred::Domain::CA_BAD_LENGHT:
-                LOG( NOTICE_LOG , "bad format %s of fqdn" , (const char * ) fqdn );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_fqdn, 1, REASON_MSG_BAD_FORMAT_FQDN);
-                break;
-            case Fred::Domain::CA_REGISTRED:
-            case Fred::Domain::CA_CHILD_REGISTRED:
-            case Fred::Domain::CA_PARENT_REGISTRED:
-                LOG( WARNING_LOG, "domain  [%s] EXIST", fqdn );
-                code = COMMAND_OBJECT_EXIST; // if is exist
-                break;
-            case Fred::Domain::CA_BLACKLIST: // black listed
-                LOG( NOTICE_LOG , "blacklisted  %s" , (const char * ) fqdn );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_fqdn, 1, REASON_MSG_BLACKLISTED_DOMAIN);
-                break;
-            case Fred::Domain::CA_AVAILABLE: // if fqdn has valid format
-                temp_zone = zm->findApplicableZone(FQDN);
-                if(temp_zone != NULL) {
-                    zone = temp_zone->getId();
-                } else {
-                    zone = -1;
-                }
-                temp_zone = NULL;
-
-                LOG( NOTICE_LOG , "domain %s avail zone %d" ,(const char * ) FQDN.c_str(), zone );
-                break;
-            case Fred::Domain::CA_BAD_ZONE:
-                // domain not in zone
-                LOG( NOTICE_LOG , "NOn in zone not applicable %s" , (const char * ) FQDN.c_str() );
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_fqdn, 1, REASON_MSG_NOT_APPLICABLE_DOMAIN);
-                break;
-        }
-
-        if (dType == Fred::Domain::CA_AVAILABLE) {
-
-            if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
-                LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-                code = COMMAND_AUTHENTICATION_ERROR;
-            } else {
-
-                if (strlen(nsset) == 0) {
-                    nssetid = 0; // domain can be create without nsset
-                } else {
-                    nssetid = getIdOfNSSet( action.getDB(), nsset
-                            , restricted_handles_, lock_epp_commands_);
-                    if (nssetid < 0) {
-                        LOG(WARNING_LOG, "bad format of domain nsset [%s]", nsset);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::domain_nsset, 1, REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
-                    } else if (nssetid == 0) {
-                        LOG(WARNING_LOG, "domain nsset not exist [%s]", nsset);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::domain_nsset, 1, REASON_MSG_NSSET_NOTEXIST);
-                    }
-                }
-                // KeySet
-                if (strlen(keyset) == 0) {
-                    keysetid = 0;
-                } else {
-                    keysetid = getIdOfKeySet(action.getDB(), keyset
-                                , restricted_handles_, lock_epp_commands_);
-                    if (keysetid < 0) {
-                        LOG(WARNING_LOG, "bad format of domain keyset [%s]", keyset);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::domain_keyset, 1, REASON_MSG_BAD_FORMAT_KEYSET_HANDLE);
-                    } else if (keysetid == 0) {
-                        LOG(WARNING_LOG, "domain keyset not exist [%s]", keyset);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::domain_keyset, 1, REASON_MSG_KEYSET_NOTEXIST);
-                    }
-                }
-
-                //  owner of domain
-                if ( (contactid = getIdOfContact(action.getDB(), Registrant
-                        , restricted_handles_, lock_epp_commands_) ) <= 0) {
-                    if (contactid < 0) {
-                        LOG(WARNING_LOG, "bad format of registrant [%s]", Registrant);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::domain_registrant, 1,
-                                REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-                    } else if (contactid == 0) {
-                        LOG(WARNING_LOG, "domain registrant not exist [%s]", Registrant);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::domain_registrant, 1,
-                                REASON_MSG_REGISTRANT_NOTEXIST);
-                    }
-                }
-
-                // default period if not set from zone parametrs
-                if (period_count == 0) {
-                    period_count = GetZoneExPeriodMin(action.getDB(), zone);
-                    LOG( NOTICE_LOG, "get defualt peridod %d month  for zone   %d ", period_count , zone );
-                }
-
-                // test period validity range and modulo
-                switch (TestPeriodyInterval(period_count,
-                            GetZoneExPeriodMin(action.getDB(), zone) , GetZoneExPeriodMax(action.getDB(), zone) ) ) {
-                    case 2:
-                        LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d" , period_count , GetZoneExPeriodMax(action.getDB(),  zone ) , GetZoneExPeriodMin(action.getDB(),  zone ) );
-                        code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                                ccReg::domain_period, 1, REASON_MSG_PERIOD_RANGE);
-                        break;
-                    case 1:
-                        LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count , GetZoneExPeriodMin(action.getDB(),  zone ) );
-                        code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                ccReg::domain_period, 1, REASON_MSG_PERIOD_POLICY);
-                        break;
-
-                }
-
-                // test  validy date for enum domain
-                if (valexdate.length() == 0) {
-                    // for enum domain must set validity date
-                    if (GetZoneEnum(action.getDB(), zone) ) {
-                        LOG( WARNING_LOG, "DomainCreate: validity exp date MISSING" );
-                        code = action.setErrorReason(COMMAND_PARAMETR_MISSING,
-                                ccReg::domain_ext_valDate_missing, 0,
-                                REASON_MSG_VALEXPDATE_REQUIRED);
-                    }
-                } else {
-                    // Test for enum domain
-                    if (GetZoneEnum(action.getDB(), zone) ) {
-                        // test
-                        if (action.getDB()->TestValExDate(valexdate.c_str(),
-                                    GetZoneValPeriod(action.getDB(), zone) , DefaultValExpInterval() , 0)
-                                == false) {
-                            LOG(WARNING_LOG, "Validity exp date is not valid %s", valexdate.c_str());
-                            code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                                    ccReg::domain_ext_valDate, 1,
-                                    REASON_MSG_VALEXPDATE_NOT_VALID);
-                        }
-                    } else {
-                        LOG(WARNING_LOG, "Validity exp date %s not used", valexdate.c_str());
-                        code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                                ccReg::domain_ext_valDate, 1,
-                                REASON_MSG_VALEXPDATE_NOT_USED);
-                    }
-
-                }
-
-                // test   admin-c if set
-
-                if (admin.length() > 0) {
-                    // test
-                    for (i = 0; i < admin.length(); i++) {
-                        adminid = getIdOfContact( action.getDB(), admin[i]
-                                    , restricted_handles_, lock_epp_commands_);
-                        if (adminid < 0) {
-                            LOG(WARNING_LOG, "bad format of contact %", (const char *)admin[i]);
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::domain_admin, i + 1,
-                                    REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-                        } else if (adminid == 0) {
-                            LOG(WARNING_LOG, "contact %s not exist", (const char *)admin[i]);
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::domain_admin, i + 1,
-                                    REASON_MSG_ADMIN_NOTEXIST);
-                        } else {
-                            ad[i] = adminid;
-                            for (j = 0; j < i; j ++) // test  duplicity
-                            {
-                                LOG( DEBUG_LOG , "admin comapare j %d adminid %d ad %d" , j , adminid , ad[j] );
-                                if (ad[j] == adminid && ad[j] > 0) {
-                                    ad[j] = 0;
-                                    LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)admin[i]);
-                                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                            ccReg::domain_admin, i, REASON_MSG_DUPLICITY_CONTACT);
-                                }
-                            }
-
-                        }
-                    }
-
-                }
-
-                if (code == 0) // if not error
-                {
-
-                    id= action.getDB()->CreateObject("D", action.getRegistrar(), FQDN.c_str(), AuthInfoPw);
-                    if (id<=0) {
-                        if (id == 0) {
-                            LOG( WARNING_LOG, "domain fqdn [%s] EXIST", fqdn );
-                            code= COMMAND_OBJECT_EXIST;
-                        } else {
-                            LOG( WARNING_LOG, "Cannot insert [%s] into object_registry", fqdn );
-                            code= COMMAND_FAILED;
-                        }
-                    } else {
-
-                        std::string computed_exdate;
-                        try {
-                            /* compute expiration date from creation time - need
-                             * proper conversion to local time then take only date
-                             */
-                            using namespace boost::posix_time;
-
-                            ptime db_crdate = time_from_string(action.getDB()->GetValueFromTable("object_registry", "crdate", "id", id));
-                            ptime local_crdate = boost::date_time::c_local_adjustor<ptime>::utc_to_local(db_crdate);
-                            date local_exdate = (local_crdate + months(period_count)).date();
-                            computed_exdate = to_iso_extended_string(local_exdate);
-
-                            LOG(DEBUG_LOG, "db crdate: [%s] local create date: [%s] computed exdate: [%s]",
-                                    to_simple_string(db_crdate).c_str(),
-                                    to_simple_string(local_crdate).c_str(),
-                                    computed_exdate.c_str());
-                        }
-                        catch (std::exception &ex) {
-                            /* on error log and rethrow again - we can't create
-                             * domain without expiration date
-                             */
-                            LOG(DEBUG_LOG, "time convert error: %s", ex.what());
-                            throw;
-                        }
-
-                        action.getDB()->INSERT("DOMAIN");
-                        action.getDB()->INTO("id");
-                        action.getDB()->INTO("zone");
-                        action.getDB()->INTO("Exdate");
-                        action.getDB()->INTO("Registrant");
-                        action.getDB()->INTO("nsset");
-                        action.getDB()->INTO("keyset");
-
-                        action.getDB()->VALUE(id);
-                        action.getDB()->VALUE(zone);
-                        action.getDB()->VALUE(computed_exdate.c_str());
-                        //action.getDB()->VALUEPERIOD(period_count); // actual time plus interval of period in months
-                        action.getDB()->VALUE(contactid);
-                        if (nssetid == 0)
-                            action.getDB()->VALUENULL(); // domain without  nsset write NULL value
-                        else
-                            action.getDB()->VALUE(nssetid);
-
-                        if (keysetid == 0)
-                            action.getDB()->VALUENULL();
-                        else
-                            action.getDB()->VALUE(keysetid);
-
-                        if (action.getDB()->EXEC() ) {
-
-                            // get local timestamp of created domain
-                            CORBA::string_free(crDate);
-                            crDate= CORBA::string_dup(action.getDB()->GetObjectCrDateTime(id) );
-
-                            //  get local date of expiration
-                            CORBA::string_free(exDate);
-                            exDate = CORBA::string_dup(action.getDB()->GetDomainExDate(id) );
-
-                            // save  enum domain   extension validity date
-                            if (GetZoneEnum(action.getDB(), zone) && valexdate.length() > 0) {
-                                action.getDB()->INSERT("enumval");
-                                action.getDB()->VALUE(id);
-                                action.getDB()->VALUE(valexdate.c_str());
-                                if (publish == ccReg::DISCL_DISPLAY) {
-                                    action.getDB()->VALUE(true);
-                                }
-                                if (publish == ccReg::DISCL_HIDE) {
-                                    action.getDB()->VALUE(false);
-                                }
-
-                                if (action.getDB()->EXEC() == false)
-                                    code = COMMAND_FAILED;
-                            }
-
-                            // insert   admin-c
-                            for (i = 0; i < admin.length(); i++) {
-                                LOG( DEBUG_LOG, "DomainCreate: add admin Contact %s id %d " , (const char *) admin[i] , ad[i] );
-                                if ( !action.getDB()->AddContactMap("domain", id, ad[i]) ) {
-                                    code = COMMAND_FAILED;
-                                    break;
-                                }
-
-                            }
-
-                            if(rifd_epp_operations_charging_)
-                            {
-                                std::auto_ptr<Fred::Invoicing::Manager> invMan(
-                                        Fred::Invoicing::Manager::create());
-                                if (invMan->chargeDomainCreate(zone, action.getRegistrar(),
-                                            id, Database::Date(std::string(exDate)), period_count)) {
-
-                                    if(!invMan->chargeDomainRenew(zone, action.getRegistrar(),
-                                            id, Database::Date(std::string(exDate)), period_count)) {
-                                        code = COMMAND_BILLING_FAILURE;
-                                    }
-
-                                    else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
-                                        if (action.getDB()->SaveObjectCreate(id)) {
-                                            code = COMMAND_OK;
-                                        }
-                                    } else {
-                                        code = COMMAND_FAILED;
-                                    }
-                                } else {
-                                    code = COMMAND_BILLING_FAILURE;
-                                }
-
-                            }
-                            else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
-                                if (action.getDB()->SaveObjectCreate(id)) {
-                                    code = COMMAND_OK;
-                                }
-                            } else {
-                                code = COMMAND_FAILED;
-                            }
+        const Epp::LocalizedCreateDomainResponse response = domain_create(
+            Epp::DomainCreateInputData(
+                Corba::unwrap_string_from_const_char_ptr(fqdn),
+                Corba::unwrap_string_from_const_char_ptr(Registrant),
+                Corba::unwrap_string_from_const_char_ptr(nsset),
+                Corba::unwrap_string_from_const_char_ptr(keyset),
+                Corba::unwrap_string_from_const_char_ptr(AuthInfoPw),
+                Corba::unwrap_domain_registration_period(period),
+                Corba::unwrap_ccreg_admincontacts_to_vector_string(admin),
+                Corba::unwrap_enum_validation_extension(ext)
+            ),
+            session_data.registrar_id,
+            request_params.log_request_id,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_,
+            disable_epp_notifier_cltrid_prefix_,
+            rifd_epp_operations_charging_
+        );
 
 
-                        } else
-                            code = COMMAND_FAILED;
+        ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string(
+                formatTime(response.crtime));
+        ccReg::timestamp_var exdate = Corba::wrap_string_to_corba_string(
+                boost::gregorian::to_iso_extended_string(response.expiration_date));
+        ccReg::Response_var return_value = new ccReg::Response(
+                Corba::wrap_response(response.ok_response, server_transaction_handle));
 
-                            if (code == COMMAND_OK) // run notifier
-                            {
-                                action.set_notification_params(id,Notification::created, disable_epp_notifier_);
-                            }
-                    }
-                }
+        /* No exception shall be thrown from here onwards. */
 
-            }
+        _create_time = create_time._retn();
+        exDate = exdate._retn();
+        return return_value._retn();
 
-        }
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    catch (...) {
-        LOG( WARNING_LOG, "cannot run Fred::Domain::checkAvail");
-        code=COMMAND_FAILED;
-    }
-
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("DomainCreate");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************

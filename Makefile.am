@@ -1594,6 +1594,12 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_transfer.h \
 		src/epp/domain/domain_transfer_impl.cc \
 		src/epp/domain/domain_transfer_impl.h \
+		src/epp/domain/domain_create.cc \
+		src/epp/domain/domain_create.h \
+		src/epp/domain/domain_registration_time.h \
+		src/epp/domain/domain_enum_validation.h \
+		src/epp/domain/domain_create_impl.cc \
+		src/epp/domain/domain_create_impl.h \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \
@@ -1653,6 +1659,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/nsset_impl.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
+
 #
 # src/corba/epp/libepp_impl.a
 

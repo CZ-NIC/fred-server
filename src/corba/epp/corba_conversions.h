@@ -41,6 +41,10 @@
 #include "src/epp/nsset/nsset_check.h"
 #include "src/epp/nsset/nsset_info.h"
 #include "src/epp/nsset/nsset_delete.h"
+#include "src/epp/nsset/nsset_dns_host_data.h"
+#include "src/epp/domain/domain_registration_time.h"
+#include "src/epp/domain/domain_enum_validation.h"
+
 
 namespace Corba {
 
@@ -115,6 +119,21 @@ namespace Corba {
         const std::vector<std::string>& nsset_handles,
         const std::map<std::string, boost::optional<Epp::LocalizedNssetHandleRegistrationObstruction> >& nsset_handle_check_results
     );
+
+    /**
+     * length of domain registration period
+     */
+    Epp::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period);
+
+    /**
+     * domain administrative contacts unwrapper
+     */
+    std::vector<std::string> unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact & in);
+
+    /**
+     * ENUM validation list unwrapper
+     */
+    std::vector<Epp::ENUMValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext);
 }
 
 #endif
