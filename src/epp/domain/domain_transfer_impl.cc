@@ -37,8 +37,10 @@ unsigned long long domain_transfer_impl(
         throw AuthErrorServerClosingConnection();
     }
 
+    // TODO checkRegistrarZoneAccess
+
     try {
-        if( Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered ) {
+        if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
             throw NonexistentHandle();
         }
     }
@@ -49,19 +51,22 @@ unsigned long long domain_transfer_impl(
         throw;
     }
 
-    // TODO optimize out
-    const Fred::InfoDomainData domain_data = Fred::InfoDomainByHandle(_domain_fqdn).set_lock().exec(_ctx).info_domain_data;
-    const std::string session_registrar_handle = Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data.handle;
+    const std::string session_registrar_handle =
+        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data.handle;
+    const Fred::InfoDomainData domain_data_before_transfer = Fred::InfoDomainByHandle(_domain_fqdn).set_lock().exec(_ctx).info_domain_data;
 
-    if(domain_data.sponsoring_registrar_handle == session_registrar_handle) {
+    const bool is_sponsoring_registrar = (domain_data_before_transfer.sponsoring_registrar_handle ==
+                                          session_registrar_handle);
+
+    if(is_sponsoring_registrar) {
         throw ObjectNotEligibleForTransfer();
     }
 
     // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(domain_data.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(domain_data.id).exec(_ctx);
+    Fred::LockObjectStateRequestLock(domain_data_before_transfer.id).exec(_ctx);
+    Fred::PerformObjectStateRequest(domain_data_before_transfer.id).exec(_ctx);
 
-    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data.id).exec(_ctx));
+    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_transfer.id).exec(_ctx));
 
     if (domain_states.presents(Fred::Object_State::server_transfer_prohibited) ||
         domain_states.presents(Fred::Object_State::delete_candidate))
@@ -69,14 +74,14 @@ unsigned long long domain_transfer_impl(
         throw ObjectStatusProhibitsOperation();
     }
 
-    if(domain_data.authinfopw != _authinfopw) {
+    if(domain_data_before_transfer.authinfopw != _authinfopw) {
         throw AuthorizationInformationError();
     }
 
     try {
         return
             Fred::TransferDomain(
-                domain_data.id,
+                domain_data_before_transfer.id,
                 session_registrar_handle,
                 _authinfopw,
                 _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>()

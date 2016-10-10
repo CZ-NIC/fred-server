@@ -3,6 +3,7 @@
 #include "src/epp/exception.h"
 
 #include "src/fredlib/domain/domain.h"
+#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/domain/check_domain.h"
@@ -27,17 +28,27 @@ unsigned long long domain_delete_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    if(Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, fqdn) != Fred::Domain::DomainRegistrability::registered) {
+    // TODO checkRegistrarZoneAccess
+
+    try {
+        if(Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, fqdn) != Fred::Domain::DomainRegistrability::registered) {
+            throw NonexistentHandle();
+        }
+    }
+    catch (const Fred::Domain::ExceptionInvalidFqdn&) {
         throw NonexistentHandle();
     }
+    catch (const NonexistentHandle&) {
+        throw;
+    }
 
-    const Fred::InfoRegistrarData callers_registrar =
+    const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(registrar_id).set_lock().exec(ctx).info_registrar_data;
     const Fred::InfoDomainData domain_data_before_delete = Fred::InfoDomainByHandle(fqdn).set_lock().exec(ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_delete.sponsoring_registrar_handle ==
-                                          callers_registrar.handle);
-    const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+                                          session_registrar.handle);
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
     const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
 
     if (!is_operation_permitted) {
