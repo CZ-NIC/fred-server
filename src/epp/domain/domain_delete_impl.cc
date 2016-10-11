@@ -49,18 +49,18 @@ unsigned long long domain_delete_impl(
     const bool is_sponsoring_registrar = (domain_data_before_delete.sponsoring_registrar_handle ==
                                           session_registrar.handle);
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
-    const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
+    const bool is_operation_permitted = (is_sponsoring_registrar || is_system_registrar);
 
     if (!is_operation_permitted) {
         throw AuthorizationError();
     }
 
-    // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(domain_data_before_delete.id).exec(ctx);
-    Fred::PerformObjectStateRequest(domain_data_before_delete.id).exec(ctx);
-
-    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_delete.id).exec(ctx));
     if (!is_system_registrar) {
+        // do it before any object state related checks
+        Fred::LockObjectStateRequestLock(domain_data_before_delete.id).exec(ctx);
+        Fred::PerformObjectStateRequest(domain_data_before_delete.id).exec(ctx);
+
+        const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_delete.id).exec(ctx));
         if (domain_states.presents(Fred::Object_State::server_update_prohibited) ||
             domain_states.presents(Fred::Object_State::server_delete_prohibited) ||
             domain_states.presents(Fred::Object_State::delete_candidate))
