@@ -2592,10 +2592,21 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
     }
 }
 
+/**
+ * DomainCheck - retrieve states of domains identified by their FQDNs
+ *
+ * \param fqdn - identifiers of domains to check
+ * \param a - output sequence of check results
+ * \param params - parameters of EPP session
+ *
+ * \return ccReg::Response
+ *
+ * \throws ccReg::EPP::EppError
+ */
 ccReg::Response* ccReg_EPP_i::DomainCheck(
   const ccReg::Check& fqdn,
   ccReg::CheckResp_out a,
-  const ccReg::EppParams &params)
+  const ccReg::EppParams& params)
 {
     const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
     try {
@@ -3076,10 +3087,21 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
     }
 }
 
+/**
+ * DomainTransfer - transfer domain to other registrar
+ *
+ * \param _fqdn - identifier of domain to transfer
+ * \param _auth_info - secret authorization information
+ * \param _epp_params - parameters of EPP session
+ *
+ * \return ccReg::Response
+ *
+ * \throws ccReg::EPP::EppError
+ */
 ccReg::Response* ccReg_EPP_i::DomainTransfer(
   const char* _fqdn,
   const char* _auth_info,
-  const ccReg::EppParams &_epp_params)
+  const ccReg::EppParams& _epp_params)
 {
 
     const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
@@ -3351,24 +3373,21 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
     }
 }
 
-/***********************************************************************
+/**
+ * DomainInfo - get information obout domain identified by its FQDN
  *
- * FUNCTION:    DomainInfo
+ * \param fqdn - identifier of domain - fully qualified domain name
+ * \param d - output information
+ * \param params - parameters of EPP session
  *
- * DESCRIPTION: return detailed information about domain
- *              empty value if domain doesn't exists
- * PARAMETERS:  fqdn - domain identifier its name
- *        OUT:  d - domain structure detailed description
- *              params - common EPP parametres
+ * \return ccReg::Response
  *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
+ * \throws ccReg::EPP::EppError
+ */
 ccReg::Response* ccReg_EPP_i::DomainInfo(
   const char* fqdn,
   ccReg::Domain_out d,
-  const ccReg::EppParams &params)
+  const ccReg::EppParams& params)
 {
     const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
     try {
@@ -3396,22 +3415,19 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     }
 }
 
-/***********************************************************************
+/**
+ * DomainDelete - delete domain identified by its FQDN
  *
- * FUNCTION:    DomainDelete
+ * \param fqdn - identifier of domain - fully qualified domain name
+ * \param params - parameters of EPP session
  *
- * DESCRIPTION: domain delete and save into history
+ * \return ccReg::Response
  *
- * PARAMETERS:  fqdn - domain identifier its name
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
+ * \throws ccReg::EPP::EppError
+ */
 ccReg::Response* ccReg_EPP_i::DomainDelete(
   const char* fqdn,
-  const ccReg::EppParams &params)
+  const ccReg::EppParams& params)
 {
     const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
     try {
