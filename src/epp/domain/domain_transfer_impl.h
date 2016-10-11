@@ -24,9 +24,10 @@
 #ifndef SRC_EPP_DOMAIN_DOMAIN_TRANSFER_IMPL_H
 #define SRC_EPP_DOMAIN_DOMAIN_TRANSFER_IMPL_H
 
+#include "src/epp/domain/domain_transfer.h"
 #include "src/fredlib/opcontext.h"
 
-#include "src/epp/domain/domain_transfer.h"
+#include <string>
 
 namespace Epp {
 

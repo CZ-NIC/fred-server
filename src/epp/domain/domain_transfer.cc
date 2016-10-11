@@ -2,15 +2,14 @@
 
 #include "src/epp/action.h"
 #include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/domain/domain_transfer_impl.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/localization.h"
 #include "src/fredlib/poll/create_transfer_domain_poll_message.h"
 #include "util/log/context.h"
 
-#include "src/epp/domain/domain_transfer_impl.h"
-
-#include "boost/format.hpp"
+#include <boost/format.hpp>
 
 namespace Epp {
 

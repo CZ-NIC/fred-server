@@ -24,9 +24,9 @@
 #ifndef SRC_EPP_DOMAIN_DOMAIN_DELETE_IMPL_H
 #define SRC_EPP_DOMAIN_DOMAIN_DELETE_IMPL_H
 
-#include <string>
-
 #include "src/fredlib/opcontext.h"
+
+#include <string>
 
 namespace Epp {
 

@@ -30,6 +30,7 @@
 #include "util/db/nullable.h"
 
 #include <boost/optional.hpp>
+
 #include <map>
 #include <string>
 

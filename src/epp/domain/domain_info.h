@@ -33,9 +33,7 @@
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
 
-#include <map>
 #include <set>
 #include <string>
 

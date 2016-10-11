@@ -10,11 +10,7 @@
 #include "util/idn_utils.h"
 
 #include <boost/foreach.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/regex.hpp>
-#include <boost/format.hpp>
+
 #include <idna.h>
 
 namespace Epp {

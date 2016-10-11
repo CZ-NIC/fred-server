@@ -30,8 +30,6 @@
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 
-#include <boost/optional.hpp>
-
 #include <set>
 #include <map>
 

@@ -6,8 +6,9 @@
 #include "src/epp/impl/util.h"
 #include "src/epp/localization.h"
 #include "src/epp/action.h"
-
 #include "util/log/context.h"
+
+#include <boost/format.hpp>
 
 namespace Epp {
 

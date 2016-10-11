@@ -1,19 +1,19 @@
 #include "src/epp/domain/domain_info.h"
 
-#include "src/epp/domain/domain_info_impl.h"
-
 #include "src/epp/action.h"
+#include "src/epp/domain/domain_info_impl.h"
 #include "src/epp/localization.h"
 #include "src/epp/localized_states.h"
 #include "src/epp/response.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/exception.h"
-#include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/registrar/info_registrar.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
+
 #include <set>
 #include <stdexcept>
 

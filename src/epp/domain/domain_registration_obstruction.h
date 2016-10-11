@@ -27,7 +27,6 @@
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
 
-#include <set>
 #include <string>
 
 namespace Epp {

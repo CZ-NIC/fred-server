@@ -10,6 +10,8 @@
 #include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 
+#include <boost/format.hpp>
+
 #include <set>
 #include <stdexcept>
 

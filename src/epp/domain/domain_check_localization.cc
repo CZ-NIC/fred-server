@@ -3,6 +3,8 @@
 #include "src/epp/domain/domain_registration_obstruction.h"
 #include "src/epp/session_lang.h"
 
+#include <boost/optional.hpp>
+
 #include <map>
 
 namespace Epp {
