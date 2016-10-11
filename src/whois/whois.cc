@@ -288,7 +288,6 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
             con.last_transfer                      = icd.transfer_time;
             con.identification.identification_type = icd.ssntype.get_value_or_default();
             con.identification.identification_data = icd.ssn.get_value_or_default();
-            con.disclose_identification            = icd.discloseident;
             con.address.city                       = icd.place.get_value_or_default().city;
             con.address.country_code               = icd.place.get_value_or_default().country;
             con.address.postal_code                = icd.place.get_value_or_default().postalcode;
@@ -307,6 +306,17 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
                     con.statuses.push_back(it.state_name);
                 }
             }
+
+            con.disclose_organization = icd.discloseorganization;
+            con.disclose_name = icd.disclosename;
+            con.disclose_address = icd.discloseaddress;
+            con.disclose_phone = icd.disclosetelephone;
+            con.disclose_fax = icd.disclosefax;
+            con.disclose_email = icd.discloseemail;
+            con.disclose_notify_email = icd.disclosenotifyemail;
+            con.disclose_identification = icd.discloseident;
+            con.disclose_vat_number = icd.disclosevat;
+
             return con;
         }
         catch (const Fred::InfoContactByHandle::Exception& e)
