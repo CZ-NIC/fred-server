@@ -1653,28 +1653,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/nsset_impl.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
-
-
-#src/epp/domain/domain_create.cc \
-#src/epp/domain/domain_create.h \
-#src/epp/domain/domain_create_impl.cc \
-#src/epp/domain/domain_create_impl.h \
-#src/epp/domain/domain_delete.cc \
-#src/epp/domain/domain_delete.h \
-#src/epp/domain/domain_delete_impl.cc \
-#src/epp/domain/domain_delete_impl.h \
-#src/epp/domain/domain_info.cc \
-#src/epp/domain/domain_info.h \
-#src/epp/domain/domain_info_impl.cc \
-#src/epp/domain/domain_info_impl.h \
-#src/epp/domain/domain_transfer.cc \
-#src/epp/domain/domain_transfer.h \
-#src/epp/domain/domain_transfer_impl.cc \
-#src/epp/domain/domain_transfer_impl.h \
-#src/epp/domain/domain_update.cc \
-#src/epp/domain/domain_update.h \
-#src/epp/domain/domain_update_impl.cc \
-#src/epp/domain/domain_update_impl.h \
 #
 # src/corba/epp/libepp_impl.a
 

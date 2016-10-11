@@ -25,10 +25,7 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
     const std::string domain_fqdn)
 {
     try {
-        Fred::Domain::DomainRegistrability::Enum domain_registrability
-            = Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, domain_fqdn);
-
-        switch (domain_registrability) {
+        switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, domain_fqdn)) {
 
             case Fred::Domain::DomainRegistrability::registered:
                 return DomainRegistrationObstruction::registered;
