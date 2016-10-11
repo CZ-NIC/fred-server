@@ -59,6 +59,16 @@ static void log_and_rethrow_exception_handler(Fred::OperationContext& ctx)
         ctx.get_log().error(ex.what());
         throw;
     }
+    catch (const FatalException& ex)
+    {
+        ctx.get_log().error(ex.what());
+        throw;
+    }
+    catch (const Exception& ex)
+    {
+        ctx.get_log().info(ex.what());
+        throw;
+    }
     catch (const std::exception& ex)
     {
         ctx.get_log().error(ex.what());
