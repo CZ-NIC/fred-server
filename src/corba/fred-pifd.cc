@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "src/corba/Admin.hh"
-//#include "src/whois/whois.h"
 #include "src/corba/admin/admin_impl.h"
 #include "src/corba/whois/whois_impl.h"
 #include "src/corba/whois/whois2_impl.h"
@@ -120,7 +119,7 @@ int main(int argc, char *argv[])
 
         std::auto_ptr<Registry::Whois::Server_impl> myWhois2 ( new Registry::Whois::Server_impl("Whois2"));
 
-       std::auto_ptr<Registry::PublicRequest::Server_i> myPublicRequest ( new Registry::PublicRequest::Server_i);
+        std::auto_ptr<Registry::PublicRequest::Server_i> myPublicRequest ( new Registry::PublicRequest::Server_i);
 
         std::auto_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));

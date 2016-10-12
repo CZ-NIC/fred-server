@@ -24,7 +24,6 @@
 #ifndef PUBLIC_REQUEST_H_75462367
 #define PUBLIC_REQUEST_H_75462367
 
-#include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/object/object_type.h"
 
 #include "util/optional_value.h"
