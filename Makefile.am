@@ -2753,6 +2753,7 @@ tests_interfaces_test_public_request_SOURCES = \
 		src/public_request/public_request.cc \
 		tests/interfaces/public_request/test_registry_email.cc \
 		tests/interfaces/public_request/test_non_registry_email.cc \
+		tests/interfaces/public_request/test_create_block_unblock_request.cc \
 		tests/setup/fixtures.h \
 		tests/setup/fixtures.cc \
 		tests/setup/fixtures_utils.h \
