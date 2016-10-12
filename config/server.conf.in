@@ -11,24 +11,28 @@
 # These settings are common to all CORBA servers.
 
 ###
-### PostgreSQL database settings
+### Database connection settings
 ###
 [database]
-# Database host or socket
+# Host name of the machine on which the database server is running
+# or the directory for the Unix-domain socket (starting with ``/``)
 host = @DBHOST@
-# Database port
+# TCP port or the Unix-domain socket file extension
+# on which the database server is listening for connections
 port = @DBPORT@
-# Database name
+# Name of the database intended for the domain registry, usually "fred"
 name = @DBNAME@
-# Database user
+# Connect to the database as this user instead of the default
+# The user must have appropriate permissions.
 user = @DBUSER@
-# Database password (if required)
+# Password for authentication by the database server (if required)
 password = @DBPASS@
-# Query timeout (seconds)
+# Maximum wait for connection (seconds, integer), 0 or empty - wait indefinitely
+# Not recommended to use timeout < 2 seconds
 timeout = 2
 
 ###
-### CORBA nameservice settings
+### CORBA naming service settings
 ###
 [nameservice]
 # CORBA nameservice host
@@ -49,7 +53,7 @@ port = @NSPORT@
 context = @NSCONTEXT@
 
 ###
-### Server logging settings
+### Process logging settings
 ###
 [log]
 # Supported log types:
@@ -111,7 +115,7 @@ fileclient_path = @BINDIR@/filemanager_client
 ### RIFD specific settings
 ###
 [rifd]
-# $DEPRECATED$ Total number of sessions permitted
+# $DEPRECATED$ Total number of sessions permitted (0 - no session)
 session_max = 200
 # Session timeout (seconds)
 session_timeout = 300
@@ -130,7 +134,7 @@ epp_update_contact_enqueue_check = false
 ### ADIFD specific settings
 ###
 [adifd]
-# $DEPRECATED$ The total number of sessions permitted
+# $DEPRECATED$ The total number of sessions permitted (0 - unlimited)
 session_max = 0
 # $DEPRECATED$ Daphne backend session timeout in seconds
 session_timeout = 3600
@@ -171,7 +175,7 @@ demo_mode = false
 auto_email_generation = true
 auto_sms_generation = true
 
-# Maximum number of letters sent by one contact in the specified interval
+# Maximum number of letters sent to one contact in the specified interval
 #letter_limit_count = 6
 # Interval (days) for limiting the number of sent letters
 #letter_limit_interval = 30
