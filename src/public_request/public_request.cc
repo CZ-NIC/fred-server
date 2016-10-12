@@ -7,6 +7,7 @@
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/send_authinfo.h"
 #include "src/fredlib/public_request/public_request_status.h"
+#include "src/fredlib/public_request/public_request_type_iface.h"
 
 #include <boost/format.hpp>
 
