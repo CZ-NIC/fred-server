@@ -84,7 +84,7 @@ unsigned long long send_joined_addresses_email(boost::shared_ptr<Fred::Mailer::M
     for (std::set<std::string>::const_iterator it = trimmed_recipient_email_addresses.begin();
             it != trimmed_recipient_email_addresses.end(); ++it)
     {
-        oss << *it;
+        oss << *it << ' ';
     }
     try
     {
