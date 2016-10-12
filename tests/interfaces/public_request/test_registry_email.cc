@@ -20,14 +20,15 @@
 #include "src/fredlib/object/get_present_object_id.h"
 
 #include "src/fredlib/object/object_type.h"
+#include "src/fredlib/registrar/info_registrar_data.h"
 #include "src/fredlib/contact/info_contact_data.h"
 #include "src/fredlib/nsset/info_nsset_data.h"
-#include "src/fredlib/registrar/info_registrar_data.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/keyset/info_keyset_data.h"
 #include "src/fredlib/mailer.h"
 #include "util/corba_wrapper_decl.h"
 #include "util/cfg/config_handler_decl.h"
+#include "src/fredlib/public_request/update_public_request.h"
 
 #include "util/cfg/faked_args.h"
 #include "util/util.h"
@@ -44,7 +45,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 
-BOOST_AUTO_TEST_SUITE(TestRegistryEmail) //TODO check if makefile has all 3 files
+BOOST_AUTO_TEST_SUITE(TestRegistryEmail)
 
 class FakeMailer : public Fred::Mailer::Manager
 {
@@ -144,7 +145,7 @@ public:
                 mailer_manager);
     }
 };
-// TODO no email entities?
+
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixture)
 {
     Fred::OperationContextCreator ctx;
@@ -157,8 +158,76 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixtu
               "AND reason=$4::text "
               "AND email_to_answer IS NULL "
               "AND registrar_id IS NULL ",
-            Database::query_param_list(contact_id)(1)(0)(reason));
+            Database::query_param_list(contact_id)(1)(0)(reason)); //TODO take request type id from DB
     BOOST_CHECK(request.size() == 1);
+}
+
+BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
+{
+    Fred::OperationContextCreator ctx;
+    Fred::InfoContactData contact = Test::contact::make(ctx);
+    Fred::InfoNssetData nsset = Test::nsset::make(ctx);
+    Fred::InfoDomainData domain = Test::domain::make(ctx);
+    Fred::InfoKeysetData keyset = Test::keyset::make(ctx);
+    ctx.commit_transaction();
+
+    boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
+    try
+    {
+        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
+                Fred::Object_Type::contact,
+                contact.handle,
+                "some reason",
+                Optional<unsigned long long>(),
+                mailer_manager);
+        BOOST_ERROR("exception of no email awaited");
+    }
+    catch (const Fred::UpdatePublicRequest::Exception& e)
+    {
+        BOOST_CHECK(e.is_set_unknown_email_id());
+    }
+    try
+    {
+        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
+                Fred::Object_Type::nsset,
+                nsset.handle,
+                "some reason",
+                Optional<unsigned long long>(),
+                mailer_manager);
+        BOOST_ERROR("exception of no email awaited");
+    }
+    catch (const Fred::UpdatePublicRequest::Exception& e)
+    {
+        BOOST_CHECK(e.is_set_unknown_email_id());
+    }
+    try
+    {
+        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
+                Fred::Object_Type::domain,
+                domain.fqdn,
+                "some reason",
+                Optional<unsigned long long>(),
+                mailer_manager);
+        BOOST_ERROR("exception of no email awaited");
+    }
+    catch (const Fred::UpdatePublicRequest::Exception& e)
+    {
+        BOOST_CHECK(e.is_set_unknown_email_id());
+    }
+    try
+    {
+        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
+                Fred::Object_Type::keyset,
+                keyset.handle,
+                "some reason",
+                Optional<unsigned long long>(),
+                mailer_manager);
+        BOOST_ERROR("exception of no email awaited");
+    }
+    catch (const Fred::UpdatePublicRequest::Exception& e)
+    {
+        BOOST_CHECK(e.is_set_unknown_email_id());
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
