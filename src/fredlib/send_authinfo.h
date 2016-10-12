@@ -56,7 +56,7 @@ unsigned long long send_authinfo(
                 "SELECT authinfopw, email FROM object "
                     "JOIN object_registry ON object.id = object_registry.id "
                     "JOIN contact ON object.id = contact.id "
-                "WHERE object_registry.name = $1::text ",
+                "WHERE object_registry.name = $1::text AND email IS NOT NULL ",
                 Database::query_param_list(handle));
     }
     else if (object_type == Fred::Object_Type::nsset)
@@ -67,7 +67,7 @@ unsigned long long send_authinfo(
                     "JOIN nsset ON object.id = nsset.id "
                     "JOIN nsset_contact_map ON nsset.id = nsset_contact_map.nssetid "
                     "JOIN contact ON nsset_contact_map.contactid = contact.id "
-                "WHERE object_registry.name = $1::text ",
+                "WHERE object_registry.name = $1::text AND email IS NOT NULL ",
                 Database::query_param_list(handle));
     }
     else if (object_type == Fred::Object_Type::domain)
@@ -77,14 +77,14 @@ unsigned long long send_authinfo(
                     "JOIN object_registry ON object.id = object_registry.id "
                     "JOIN domain ON object.id = domain.id "
                     "JOIN contact ON domain.registrant = contact.id "
-                "WHERE object_registry.name = $1::text "
+                "WHERE object_registry.name = $1::text AND email IS NOT NULL "
                 "UNION "
                 "SELECT authinfopw, email FROM object "
                     "JOIN object_registry ON object.id = object_registry.id "
                     "JOIN domain ON object.id = domain.id "
                     "JOIN domain_contact_map dcm ON domain.id = dcm.domainid "
                     "JOIN contact ON dcm.contactid = contact.id "
-                "WHERE object_registry.name = $1::text AND dcm.role=1 ",
+                "WHERE object_registry.name = $1::text AND dcm.role=1 AND email IS NOT NULL ",
                 Database::query_param_list(handle));
     }
     else if (object_type == Fred::Object_Type::keyset)
@@ -95,7 +95,7 @@ unsigned long long send_authinfo(
                     "JOIN keyset ON object.id = keyset.id "
                     "JOIN keyset_contact_map ON keyset.id = keyset_contact_map.keysetid "
                     "JOIN contact ON keyset_contact_map.contactid = contact.id "
-                "WHERE object_registry.name = $1::text ",
+                "WHERE object_registry.name = $1::text AND email IS NOT NULL ",
                 Database::query_param_list(handle));
     }
     if (authinfo_email.size() < 1)
