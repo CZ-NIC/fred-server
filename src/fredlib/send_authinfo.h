@@ -28,7 +28,7 @@ struct NoContactEmail : std::exception
 };
 
 unsigned long long send_authinfo(
-    const unsigned long long id,
+    const unsigned long long public_request_id,
     const std::string& handle,
     Fred::Object_Type::Enum object_type,
     boost::shared_ptr<Mailer::Manager> manager)
@@ -37,14 +37,14 @@ unsigned long long send_authinfo(
     Database::Result request = ctx.get_conn().exec_params(
             "SELECT create_time FROM public_request "
             "WHERE id = $1::bigint ",
-            Database::query_param_list(id));
+            Database::query_param_list(public_request_id));
     if (request.size() < 1)
     {
         throw NoPublicRequest();
     }
 
     Mailer::Parameters email_template_params;
-    email_template_params.insert(Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(id)));
+    email_template_params.insert(Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(public_request_id)));
     email_template_params.insert(Mailer::Parameters::value_type("reqdate", request[0][0]));
     email_template_params.insert(Mailer::Parameters::value_type("type", boost::lexical_cast<std::string>(object_type + 1))); // to be 1-4 instead of 0-3
     email_template_params.insert(Mailer::Parameters::value_type("handle", handle));
