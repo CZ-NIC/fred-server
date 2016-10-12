@@ -219,7 +219,7 @@ unsigned long long PublicRequest::create_authinfo_request_registry_email(
                     Optional< Nullable< std::string > >(),
                     Optional< Nullable< std::string > >(),
                     email_id,
-                    Optional< Nullable< Fred::RegistrarId  > >())
+                    Optional< Nullable< Fred::RegistrarId > >())
                 .exec(locked_object, AuthinfoAuto(), log_request_id);
             ctx.commit_transaction();
             throw;
@@ -240,7 +240,7 @@ unsigned long long PublicRequest::create_authinfo_request_registry_email(
         catch (...)
         {
             LOGGER(PACKAGE).info(boost::format("Request %1% update failed, but email %2% sent") % public_request_id % email_id);
-            //no throw
+            //no throw as main part is completed
         }
         return public_request_id;
     }
@@ -297,24 +297,24 @@ unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
 
 template<typename Exception, typename EmailInterface, typename PostInterface>
 unsigned long long get_id(
-    bool are_states_ok,
+    bool states_are_wrong,
     ConfirmationMethod confirmation_method,
-    const Fred::CreatePublicRequest& c_p_r,
+    const Fred::CreatePublicRequest& request,
     const Fred::PublicRequestsOfObjectLockGuardByObjectId& locked_object,
     const Optional<unsigned long long>& log_request_id)
 {
     unsigned long long request_id;
-    if (are_states_ok)
+    if (states_are_wrong)
     {
         throw Exception();
     }
     if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
     {
-        request_id = c_p_r.exec(locked_object, EmailInterface(), log_request_id);
+        request_id = request.exec(locked_object, EmailInterface(), log_request_id);
     }
     else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
     {
-        request_id = c_p_r.exec(locked_object, PostInterface(), log_request_id);
+        request_id = request.exec(locked_object, PostInterface(), log_request_id);
     }
     else
     {
@@ -337,7 +337,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
         Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
         const Fred::ObjectStatesInfo states(Fred::GetObjectStates(object_id).exec(ctx));
         unsigned long long request_id;
-        Fred::CreatePublicRequest c_p_r = Fred::CreatePublicRequest(
+        Fred::CreatePublicRequest request = Fred::CreatePublicRequest(
                 Optional<std::string>(),
                 Optional<std::string>(),
                 Optional<unsigned long long>());
@@ -346,7 +346,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
             request_id = get_id<ObjectAlreadyBlocked, BlockTransferEmail, BlockTransferPost>(
                     states.presents(Fred::Object_State::server_transfer_prohibited),
                     confirmation_method,
-                    c_p_r,
+                    request,
                     locked_object,
                     log_request_id);
         }
@@ -356,7 +356,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                     (states.presents(Fred::Object_State::server_transfer_prohibited) ||
                      states.presents(Fred::Object_State::server_update_prohibited)),
                     confirmation_method,
-                    c_p_r,
+                    request,
                     locked_object,
                     log_request_id);
         }
@@ -365,7 +365,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
             request_id = get_id<ObjectNotBlocked, UnblockTransferEmail, UnblockTransferPost>(
                     states.absents(Fred::Object_State::server_transfer_prohibited),
                     confirmation_method,
-                    c_p_r,
+                    request,
                     locked_object,
                     log_request_id);
         }
@@ -375,7 +375,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
                     (states.absents(Fred::Object_State::server_transfer_prohibited) ||
                      states.absents(Fred::Object_State::server_update_prohibited)),
                     confirmation_method,
-                    c_p_r,
+                    request,
                     locked_object,
                     log_request_id);
         }
