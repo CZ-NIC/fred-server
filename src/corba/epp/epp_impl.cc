@@ -2592,33 +2592,23 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
     }
 }
 
-/**
- * DomainCheck - retrieve states of domains identified by their FQDNs
- *
- * \param fqdn - identifiers of domains to check
- * \param a - output sequence of check results
- * \param params - parameters of EPP session
- *
- * \return ccReg::Response
- *
- * \throws ccReg::EPP::EppError
- */
 ccReg::Response* ccReg_EPP_i::DomainCheck(
-  const ccReg::Check& fqdn,
-  ccReg::CheckResp_out a,
-  const ccReg::EppParams& params)
+  const ccReg::Check& _domain_fqdns,
+  ccReg::CheckResp_out _domain_check_results,
+  const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
     try {
         /* output data must be ordered exactly the same */
-        const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(fqdn);
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(_domain_fqdns);
+        const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
         const Epp::Domain::DomainCheckResponse domain_check_response = Epp::Domain::domain_check(
             std::set<std::string>(domain_fqdns.begin(), domain_fqdns.end()),
-            session_data.registrar_id,
-            session_data.language,
+            epp_registrar_session_data.registrar_id,
+            epp_registrar_session_data.language,
             server_transaction_handle
         );
 
@@ -2633,7 +2623,7 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
 
         /* No exception shall be thrown from here onwards. */
 
-        a = domain_check_results._retn();
+        _domain_check_results = domain_check_results._retn();
         return return_value._retn();
 
     } catch(const Epp::LocalizedFailResponse& e) {
@@ -3087,39 +3077,28 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
     }
 }
 
-/**
- * DomainTransfer - transfer domain to other registrar
- *
- * \param _fqdn - identifier of domain to transfer
- * \param _auth_info - secret authorization information
- * \param _epp_params - parameters of EPP session
- *
- * \return ccReg::Response
- *
- * \throws ccReg::EPP::EppError
- */
 ccReg::Response* ccReg_EPP_i::DomainTransfer(
-  const char* _fqdn,
-  const char* _auth_info,
+  const char* _domain_fqdn,
+  const char* _auth_info_pw,
   const ccReg::EppParams& _epp_params)
 {
 
-    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
     try {
 
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
         return new ccReg::Response(
             Corba::wrap_response(
                 Epp::Domain::domain_transfer(
-                    Corba::unwrap_string(_fqdn),
-                    Corba::unwrap_string(_auth_info),
+                    Corba::unwrap_string(_domain_fqdn),
+                    Corba::unwrap_string(_auth_info_pw),
                     session_data.registrar_id,
-                    request_params.log_request_id,
+                    epp_request_params.log_request_id,
                     session_data.language,
                     server_transaction_handle,
-                    request_params.client_transaction_id,
+                    epp_request_params.client_transaction_id,
                     disable_epp_notifier_,
                     disable_epp_notifier_cltrid_prefix_
                 ),
@@ -3373,31 +3352,20 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
     }
 }
 
-/**
- * DomainInfo - get information obout domain identified by its FQDN
- *
- * \param fqdn - identifier of domain - fully qualified domain name
- * \param d - output information
- * \param params - parameters of EPP session
- *
- * \return ccReg::Response
- *
- * \throws ccReg::EPP::EppError
- */
 ccReg::Response* ccReg_EPP_i::DomainInfo(
-  const char* fqdn,
-  ccReg::Domain_out d,
-  const ccReg::EppParams& params)
+  const char* _domain_fqdn,
+  ccReg::Domain_out _domain_info,
+  const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
         const Epp::Domain::DomainInfoResponse domain_info_response = Epp::Domain::domain_info(
-            Corba::unwrap_string(fqdn),
-            session_data.registrar_id,
-            session_data.language,
+            Corba::unwrap_string(_domain_fqdn),
+            epp_registrar_session_data.registrar_id,
+            epp_registrar_session_data.language,
             server_transaction_handle
         );
 
@@ -3407,7 +3375,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
 
         /* No exception shall be thrown from here onwards. */
 
-        d = domain_info_result._retn();
+        _domain_info = domain_info_result._retn();
         return return_value._retn();
 
     } catch(const Epp::LocalizedFailResponse& e) {
@@ -3415,31 +3383,21 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     }
 }
 
-/**
- * DomainDelete - delete domain identified by its FQDN
- *
- * \param fqdn - identifier of domain - fully qualified domain name
- * \param params - parameters of EPP session
- *
- * \return ccReg::Response
- *
- * \throws ccReg::EPP::EppError
- */
 ccReg::Response* ccReg_EPP_i::DomainDelete(
-  const char* fqdn,
-  const ccReg::EppParams& params)
+  const char* _domain_fqdn,
+  const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid(params.requestID);
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::Domain::domain_delete(
-            Corba::unwrap_string(fqdn),
-            session_data.registrar_id,
-            session_data.language,
+            Corba::unwrap_string(_domain_fqdn),
+            epp_registrar_session_data.registrar_id,
+            epp_registrar_session_data.language,
             server_transaction_handle,
-            request_params.client_transaction_id,
+            epp_request_params.client_transaction_id,
             disable_epp_notifier_,
             disable_epp_notifier_cltrid_prefix_
         );

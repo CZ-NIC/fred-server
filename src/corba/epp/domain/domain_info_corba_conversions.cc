@@ -22,13 +22,11 @@ static std::string formatTime(const boost::posix_time::ptime& tm) {
     return buffer;
 }
 // FIXME
-static std::string formatDate(const boost::gregorian::date tm) {
+static std::string formatDate(const boost::gregorian::date& tm) {
     char buffer[100];
     convert_rfc3339_date(buffer, sizeof(buffer), boost::gregorian::to_iso_extended_string(tm).c_str());
     return buffer;
 }
-
-// TODO wrap_string_vector_to_string_sequence
 
 } // namespace CorbaConversion::{anonymous}
 
