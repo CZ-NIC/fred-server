@@ -22,11 +22,10 @@ public:
     const Fred::PublicRequestTypeIface& iface() const { return *this; }
 
 private:
-    virtual PublicRequestTypes get_public_request_types_to_cancel_on_update( // TODO specify when behavior is known
+    PublicRequestTypes get_public_request_types_to_cancel_on_update(
         Fred::PublicRequest::Status::Enum _old_status,
         Fred::PublicRequest::Status::Enum _new_status) const
     {
-        //if _new_status == invalid -> apply immediately
         return PublicRequestTypes();
     }
 };
