@@ -27,9 +27,9 @@ DomainCheckResponse domain_check(
 ) {
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(str(boost::format("clid-%1%") % registrar_id));
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % registrar_id));
         Logging::Context logging_ctx3(server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::DomainCheck)));
+        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::DomainCheck)));
 
         Fred::OperationContextCreator ctx;
 

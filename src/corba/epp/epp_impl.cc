@@ -2593,9 +2593,9 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
 }
 
 ccReg::Response* ccReg_EPP_i::DomainCheck(
-  const ccReg::Check& _domain_fqdns,
-  ccReg::CheckResp_out _domain_check_results,
-  const ccReg::EppParams& _epp_params)
+    const ccReg::Check& _domain_fqdns,
+    ccReg::CheckResp_out _domain_check_results,
+    const ccReg::EppParams& _epp_params)
 {
     const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
@@ -3078,9 +3078,9 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
 }
 
 ccReg::Response* ccReg_EPP_i::DomainTransfer(
-  const char* _domain_fqdn,
-  const char* _auth_info_pw,
-  const ccReg::EppParams& _epp_params)
+    const char* _domain_fqdn,
+    const char* _auth_info_pw,
+    const ccReg::EppParams& _epp_params)
 {
 
     const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
@@ -3353,9 +3353,9 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
 }
 
 ccReg::Response* ccReg_EPP_i::DomainInfo(
-  const char* _domain_fqdn,
-  ccReg::Domain_out _domain_info,
-  const ccReg::EppParams& _epp_params)
+    const char* _domain_fqdn,
+    ccReg::Domain_out _domain_info,
+    const ccReg::EppParams& _epp_params)
 {
     const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
@@ -3384,8 +3384,8 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
 }
 
 ccReg::Response* ccReg_EPP_i::DomainDelete(
-  const char* _domain_fqdn,
-  const ccReg::EppParams& _epp_params)
+    const char* _domain_fqdn,
+    const ccReg::EppParams& _epp_params)
 {
     const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();

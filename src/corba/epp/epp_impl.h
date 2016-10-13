@@ -262,9 +262,9 @@ public:
      * \throws ccReg::EPP::EppError
      */
     ccReg::Response* DomainCheck(
-      const ccReg::Check& _domain_fqdns,
-      ccReg::CheckResp_out _domain_check_results,
-      const ccReg::EppParams& _epp_params
+        const ccReg::Check& _domain_fqdns,
+        ccReg::CheckResp_out _domain_check_results,
+        const ccReg::EppParams& _epp_params
     );
 
     /**
@@ -279,9 +279,9 @@ public:
      * \throws ccReg::EPP::EppError
      */
     ccReg::Response* DomainInfo(
-      const char* _domain_fqdn,
-      ccReg::Domain_out _domain_info,
-      const ccReg::EppParams& _epp_params
+        const char* _domain_fqdn,
+        ccReg::Domain_out _domain_info,
+        const ccReg::EppParams& _epp_params
     );
 
     /**
@@ -295,8 +295,8 @@ public:
      * \throws ccReg::EPP::EppError
      */
     ccReg::Response* DomainDelete(
-      const char* _domain_fqdn,
-      const ccReg::EppParams& _epp_params
+        const char* _domain_fqdn,
+        const ccReg::EppParams& _epp_params
     );
 
   // TODO add keyset to domain
@@ -318,9 +318,9 @@ public:
      * \throws ccReg::EPP::EppError
      */
     ccReg::Response* DomainTransfer(
-      const char* _domain_fqdn,
-      const char* _auth_info_pw,
-      const ccReg::EppParams& _epp_params
+        const char* _domain_fqdn,
+        const char* _auth_info_pw,
+        const ccReg::EppParams& _epp_params
     );
 
   // tech check nsset
