@@ -79,7 +79,7 @@ file = @LOCALSTATEDIR@/log/fred.log
 syslog_facility = 1
 
 ###
-### Central registry settings // TODO this should be reworked
+### General registry settings // TODO this should be reworked
 ###
 [registry]
 # $DEPRECATED$ Extra checking for object handle format e.g.
@@ -125,7 +125,7 @@ session_registrar_max = 5
 epp_update_domain_keyset_clear = true
 # Turn on/off domain create/renew operation credit charging
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
-# $DEVELOPMENT$ Turn on/off IDN support
+# $EXPERIMENTAL$ Turn on/off IDN support
 allow_idn = false
 # Turn on/off contact check (semi-automatic) after data change
 epp_update_contact_enqueue_check = false
@@ -136,9 +136,9 @@ epp_update_contact_enqueue_check = false
 [adifd]
 # $DEPRECATED$ Total number of sessions permitted (0 - unlimited)
 session_max = 0
-# $DEPRECATED$ Daphne backend session timeout in seconds
+# $DEPRECATED$ WebAdmin backend session timeout in seconds
 session_timeout = 3600
-# $DEPRECATED$ Daphne backend session garbage interval in seconds
+# $DEPRECATED$ WebAdmin backend session garbage interval in seconds
 session_garbage = 150
 
 ###
@@ -194,7 +194,7 @@ auto_sms_generation = true
 [contact_verification]
 hostname = demo.contactverification.cz
 # Turn on/off the demo mode
-# WARNING: The demo mode uses constant PINs - do NOT use on production!
+# WARNING: The demo mode uses constant PINs. Disable this on production!
 demo_mode = false
 
 ###
