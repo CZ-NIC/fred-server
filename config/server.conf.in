@@ -115,7 +115,7 @@ fileclient_path = @BINDIR@/filemanager_client
 ### RIFD specific settings
 ###
 [rifd]
-# $DEPRECATED$ Total number of sessions permitted (0 - no session)
+# $DEPRECATED$ Total number of sessions permitted
 session_max = 200
 # Session timeout (seconds)
 session_timeout = 300
@@ -134,7 +134,7 @@ epp_update_contact_enqueue_check = false
 ### ADIFD specific settings
 ###
 [adifd]
-# $DEPRECATED$ The total number of sessions permitted (0 - unlimited)
+# $DEPRECATED$ Total number of sessions permitted (0 - unlimited)
 session_max = 0
 # $DEPRECATED$ Daphne backend session timeout in seconds
 session_timeout = 3600
@@ -145,9 +145,10 @@ session_garbage = 150
 ### LOGD specific settings
 ###
 [logd]
-# Path to a file which contains IP addresses of monitoring app to not mix request
-# logging of regular traffic (requests from these IPs are logged to a different partition)
-# Each line in this file should contain only one IP address.
+# Path to a file which contains a list of machines (IP addresses)
+# on which the monitoring app is running, so that requests from these addresses
+# are logged to another partition and not mixed with regular traffic.
+# Each line in this file must contain only one IP address.
 monitoring_hosts_file = @MONITORINGIPS@
 
 ###
@@ -170,8 +171,8 @@ notify_commands = false
 # Turn on/off the demo mode
 # WARNING: The demo mode uses constant PINs - do NOT use on production!
 demo_mode = false
-# If true specific correspondence type is generated synchronously with operation.
-# If false it's done by different process.
+# If true, correspondence is generated within an operation (synchronously)
+# If false, it is generated later by another process (asynchronously)
 auto_email_generation = true
 auto_sms_generation = true
 
