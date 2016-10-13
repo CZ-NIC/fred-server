@@ -8,6 +8,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
 
 #include <string>
 
@@ -15,21 +16,33 @@ namespace CorbaConversion {
 
 namespace {
 
-// FIXME
-static std::string formatTime(const boost::posix_time::ptime& tm) {
-    char buffer[100];
-    convert_rfc3339_timestamp(buffer, sizeof(buffer), boost::posix_time::to_iso_extended_string(tm).c_str());
-    return buffer;
+struct TimeZoneOffset {
+    boost::posix_time::time_duration time_zone_offset_;
+
+    TimeZoneOffset(const boost::posix_time::ptime& _utc_time) {
+        time_zone_offset_ = boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_time) - _utc_time;
+    }
+
+    std::string to_string_signhhmm() {
+        return boost::str(boost::format("%1$+03d:%2$02d")
+            % time_zone_offset_.hours()
+            % boost::date_time::absolute_value(time_zone_offset_.minutes()));
+    }
+};
+
+static std::string formatTimeWithBoost(const boost::posix_time::ptime& utc_ptime) {
+    const boost::posix_time::ptime local_ptime = 
+        boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(utc_ptime);
+    return
+        boost::posix_time::to_iso_extended_string(local_ptime) +
+        TimeZoneOffset(local_ptime).to_string_signhhmm();
 }
-// FIXME
-static std::string formatDate(const boost::gregorian::date& tm) {
-    char buffer[100];
-    convert_rfc3339_date(buffer, sizeof(buffer), boost::gregorian::to_iso_extended_string(tm).c_str());
-    return buffer;
+
+static std::string formatDateWithBoost(const boost::gregorian::date& d) {
+    return boost::gregorian::to_iso_extended_string(d);
 }
 
 } // namespace CorbaConversion::{anonymous}
-
 
 void wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(Fred::ENUMValidationExtension src, ccReg::ExtensionList& dst) {
     return; // TODO
@@ -53,15 +66,15 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     dst.CrID = Corba::wrap_string_to_corba_string(src.creating_registrar_handle);
     dst.UpID = Corba::wrap_string_to_corba_string(src.last_update_registrar_handle.get_value_or(std::string()));
 
-    dst.CrDate = Corba::wrap_string_to_corba_string(formatTime(src.crdate));
+    dst.CrDate = Corba::wrap_string_to_corba_string(formatTimeWithBoost(src.crdate));
     dst.UpDate = Corba::wrap_string_to_corba_string(
         src.last_update.isnull() ? std::string()
-                                 : formatTime(src.last_update.get_value()));
+                                 : formatTimeWithBoost(src.last_update.get_value()));
     dst.TrDate = Corba::wrap_string_to_corba_string(
         src.last_transfer.isnull() ? std::string()
-                                   : formatTime(src.last_transfer.get_value()));
+                                   : formatTimeWithBoost(src.last_transfer.get_value()));
 
-    dst.ExDate = Corba::wrap_string_to_corba_string(formatDate(src.exdate));
+    dst.ExDate = Corba::wrap_string_to_corba_string(formatDateWithBoost(src.exdate));
 
     dst.AuthInfoPw = Corba::wrap_string_to_corba_string(src.auth_info_pw.get_value_or_default());
 
