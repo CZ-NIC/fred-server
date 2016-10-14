@@ -181,13 +181,6 @@ auto_sms_generation = true
 # Interval (days) for limiting the number of sent letters
 #letter_limit_interval = 30
 
-# $DEPRECATED$
-#### Unregistrable handles iterator object scavenger thread configuration
-# - Period between garbage procedure runs in seconds
-#uho_scavenger_thread_period =
-# - Maximum object idle period (timeout) in seconds
-#uho_scavenger_object_max_idle_period =
-
 ###
 ### Contact verification PIFD settings
 ###
