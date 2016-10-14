@@ -2985,439 +2985,50 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    DomainUpdate
- *
- * DESCRIPTION: change of information about domain and save into history
- *
- * PARAMETERS:  fqdn - domain identifier its name
- *              registrant_chg - change of domain holder
- *              authInfo_chg  - change of password
- *              nsset_chg - change of nsset
- *              keyset_chg - change of keyset
- *              admin_add - sequence of added administration contacts
- *              admin_rem - sequence of deleted administration contacts
- *              tmpcontact_rem - sequence of deleted temporary contacts
- *              params - common EPP parametres
- *              ext - ExtensionList
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-ccReg::Response * ccReg_EPP_i::DomainUpdate(
-  const char *fqdn, const char *registrant_chg, const char *authInfo_chg,
-  const char *nsset_chg, const char *keyset_chg,
-  const ccReg::AdminContact & admin_add, const ccReg::AdminContact & admin_rem,
-  const ccReg::AdminContact& tmpcontact_rem, const ccReg::EppParams &params,
-  const ccReg::ExtensionList & ext)
+ccReg::Response* ccReg_EPP_i::DomainUpdate(
+    const char* _domain_fqdn,
+    const char* _registrant_chg,
+    const char* _auth_info_pw_chg,
+    const char* _nsset_chg,
+    const char* _keyset_chg,
+    const ccReg::AdminContact& _admin_contacts_add,
+    const ccReg::AdminContact& _admin_contacts_rem,
+    const ccReg::AdminContact& _tmpcontact_rem,
+    const ccReg::EppParams& _epp_params,
+    const ccReg::ExtensionList& _ext)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+    try {
+        const Epp::RegistrarSessionData epp_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
-    std::string valexdate;
-    ccReg::Disclose publish;
-    int id, nssetid, contactid, adminid, keysetid;
-    int zone;
-    std::vector<int> ac_add, ac_rem, tc_rem;
-    unsigned int i, j;
-    short int code = 0;
+        return new ccReg::Response(
+            Corba::wrap_response(
+                Epp::Domain::domain_update(
+                    Corba::unwrap_string(_domain_fqdn),
+                    Corba::unwrap_string(_registrant_chg),
+                    Corba::unwrap_string(_auth_info_pw_chg),
+                    Corba::unwrap_string(_nsset_chg),
+                    Corba::unwrap_string(_keyset_chg),
+                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contats_add),
+                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contats_rem),
+                    const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list, // TODO wrap
+                    epp_session_data.registrar_id,
+                    epp_request_params.log_request_id.get_value_or(0),
+                    epp_update_domain_enqueue_check_,
+                    epp_session_data.language,
+                    server_transaction_handle,
+                    epp_request_params.client_transaction_id,
+                    disable_epp_notifier_,
+                    disable_epp_notifier_cltrid_prefix_
+                ),
+                server_transaction_handle
+            )
+        );
 
-    EPPAction action(this, params.loginID, EPP_DomainUpdate, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-
-    LOGGER(PACKAGE).notice(boost::format ("DomainUpdate: clientID -> %1% clTRID [%2%] fqdn  [%3%] registrant_chg  [%4%] authInfo_chg [%5%]  nsset_chg [%6%] keyset_chg[%7%] ext.length %8%") %
-            (int ) params.loginID % (const char*)params.clTRID % fqdn % registrant_chg % authInfo_chg % nsset_chg % keyset_chg % (long)ext.length() );
-
-    ac_add.resize(admin_add.length());
-    ac_rem.resize(admin_rem.length());
-    tc_rem.resize(tmpcontact_rem.length());
-
-    // parse enum.Exdate extension
-    extractEnumDomainExtension(valexdate, publish, ext);
-
-    if ( (id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , idn_allowed(action), true, &zone) ) <= 0) {
-        LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-        code=COMMAND_OBJECT_NOT_EXIST;
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
-    else if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) // test registrar autority to the zone
-    {
-        LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-        code = COMMAND_AUTHENTICATION_ERROR;
-    }
-    // if not client of the domain
-    else if ( !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) {
-        LOG( WARNING_LOG, "bad autorization not client of domain [%s]", fqdn );
-        code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                ccReg::registrar_autor, 0,
-                REASON_MSG_REGISTRAR_AUTOR);
-    }
-
-    if (!code) {
-        try {
-            if (!code && (testObjectHasState(action,id,FLAG_serverUpdateProhibited) ||
-                    testObjectHasState(action,id,FLAG_deleteCandidate))) {
-                LOG( WARNING_LOG, "update of object %s is prohibited" , fqdn );
-                code = COMMAND_STATUS_PROHIBITS_OPERATION;
-            }
-        } catch (...) {
-            code = COMMAND_FAILED;
-        }
-    }
-
-    if ( !code) {
-
-        // test  ADD admin-c
-        for (i = 0; i < admin_add.length(); i++) {
-            LOG( NOTICE_LOG , "admin ADD contact %s" , (const char *) admin_add[i] );
-            adminid = getIdOfContact(action.getDB(), admin_add[i], restricted_handles_
-                    , lock_epp_commands_);
-            if (adminid < 0) {
-                LOG(WARNING_LOG, "bad format of contact %s", (const char *)admin_add[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_admin_add, i + 1,
-                        REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-            } else if (adminid == 0) {
-                LOG(WARNING_LOG, "Contact %s not exist", (const char *)admin_add[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_admin_add, i + 1,
-                        REASON_MSG_ADMIN_NOTEXIST);
-            } else {
-                if (action.getDB()->CheckContactMap("domain", id, adminid, 1) ) {
-                    LOG(WARNING_LOG, "Admin Contact [%s] exist in contact map table",
-                            (const char *)admin_add[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_admin_add, i + 1,
-                            REASON_MSG_ADMIN_EXIST);
-                } else {
-                    ac_add[i] = adminid;
-                    for (j = 0; j < i; j ++)
-                        // test  duplicity
-                        if (ac_add[j] == adminid && ac_add[j] > 0) {
-                            ac_add[j] = 0;
-                            LOG( WARNING_LOG, "Contact [%s] duplicity " , (const char *) admin_add[i] );
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::domain_admin_add, i + 1,
-                                    REASON_MSG_DUPLICITY_CONTACT);
-                        }
-                }
-                // admin cannot be added if there is equivalent id in temp-c
-                if (action.getDB()->CheckContactMap("domain", id, adminid, 2)) {
-                    // exception is when in this command there is schedulet remove of thet temp-c
-                    std::string adminHandle = (const char *)admin_add[i];
-                    bool tmpcFound = false;
-                    for (unsigned ti=0; ti<tmpcontact_rem.length(); ti++) {
-                        if (adminHandle == (const char *)tmpcontact_rem[ti]) {
-                            tmpcFound = true;
-                            break;
-                        }
-                    }
-                    if (!tmpcFound) {
-                        LOG(WARNING_LOG, "Admin Contact [%s] exist in contact map table",
-                                (const char *)admin_add[i]);
-                        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                ccReg::domain_admin_add, i + 1,
-                                REASON_MSG_ADMIN_EXIST);
-                    }
-                }
-            }
-        }
-
-        // test REM admin-c
-        for (i = 0; i < admin_rem.length(); i++) {
-            LOG( NOTICE_LOG , "admin REM contact %s" , (const char *) admin_rem[i] );
-            adminid = getIdOfContact(action.getDB(), admin_rem[i], restricted_handles_
-                    , lock_epp_commands_);
-            if (adminid < 0) {
-                LOG(WARNING_LOG, "bad format of contact %s", (const char *)admin_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_admin_rem, i + 1,
-                        REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-            } else if (adminid == 0) {
-                LOG(WARNING_LOG, "Contact %s not exist", (const char *)admin_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_admin_rem, i + 1,
-                        REASON_MSG_ADMIN_NOTEXIST);
-            } else {
-                if ( !action.getDB()->CheckContactMap("domain", id, adminid, 1) ) {
-                    LOG(WARNING_LOG, "Admin Contact [%s] not exist in contact map table",
-                            (const char *)admin_rem[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_admin_rem, i + 1,
-                            REASON_MSG_ADMIN_NOTEXIST);
-                } else {
-                    ac_rem[i] = adminid;
-                    for (j = 0; j < i; j ++) {
-                        // test  duplicity
-                        if (ac_rem[j] == adminid && ac_rem[j] > 0) {
-                            ac_rem[j] = 0;
-                            LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)admin_rem[i]);
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::domain_admin_rem, i,
-                                    REASON_MSG_DUPLICITY_CONTACT);
-                        }
-                    }
-                }
-            }
-        }
-
-        // test REM temp-c
-        for (i = 0; i < tmpcontact_rem.length(); i++) {
-            LOG( NOTICE_LOG , "temp REM contact %s" , (const char *) tmpcontact_rem[i] );
-            adminid = getIdOfContact(action.getDB(), tmpcontact_rem[i], restricted_handles_
-                    , lock_epp_commands_);
-            if (adminid < 0) {
-                LOG(WARNING_LOG, "bad format of contact %s", (const char *)tmpcontact_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_tmpcontact, i + 1,
-                        REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-            } else if (adminid == 0) {
-                LOG(WARNING_LOG, "Contact %s not exist", (const char *)tmpcontact_rem[i]);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_tmpcontact, i + 1,
-                        REASON_MSG_ADMIN_NOTEXIST);
-            } else {
-                if ( !action.getDB()->CheckContactMap("domain", id, adminid, 2) ) {
-                    LOG(WARNING_LOG, "Temp Contact [%s] notexist in contact map table",
-                            (const char *)tmpcontact_rem[i]);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_tmpcontact, i + 1,
-                            REASON_MSG_ADMIN_NOTEXIST);
-                } else {
-
-                    tc_rem[i] = adminid;
-                    for (j = 0; j < i; j ++)
-                        // test  duplicity
-                        if (tc_rem[j] == adminid && ac_rem[j] > 0) {
-                            tc_rem[j] = 0;
-                            LOG(WARNING_LOG, "Contact [%s] duplicity", (const char *)tmpcontact_rem[i]);
-                            code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                                    ccReg::domain_admin_rem, i,
-                                    REASON_MSG_DUPLICITY_CONTACT);
-                        }
-
-                }
-            }
-        }
-
-        if (strlen(nsset_chg) == 0)
-            nssetid = 0; // not change nsset;
-        else {
-            if (nsset_chg[0] == 0x8)
-                nssetid = -1; // backslash escape to  NULL value
-            else {
-                nssetid = getIdOfNSSet(action.getDB(), nsset_chg
-                        , restricted_handles_, lock_epp_commands_);
-                if (nssetid < 0) {
-                    LOG(WARNING_LOG, "bad format of domain nsset [%s]", nsset_chg);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_nsset, 1, REASON_MSG_BAD_FORMAT_NSSET_HANDLE);
-                } else if (nssetid == 0) {
-                    LOG(WARNING_LOG, "domain nsset not exist [%s]", nsset_chg);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_nsset, 1, REASON_MSG_NSSET_NOTEXIST);
-                }
-            }
-        }
-
-        if (strlen(keyset_chg) == 0)
-            keysetid = 0; // not change keyset
-        else {
-            // XXX ungly hack because i dont know how to write 0x8 on console :(
-            // should be removed before going to standard usage
-            if (keyset_chg[0] == 0x8 || keyset_chg[0] == '-')
-                keysetid = -1;
-            else {
-                keysetid = getIdOfKeySet(action.getDB(), keyset_chg
-                            , restricted_handles_, lock_epp_commands_);
-                if (keysetid < 0) {
-                    LOG(WARNING_LOG, "bad format of domain keyset [%s]", keyset_chg);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_keyset, 1, REASON_MSG_KEYSET_NOTEXIST);
-                } else if (keysetid == 0) {
-                    LOG(WARNING_LOG, "domain keyset not exist [%s]", keyset_chg);
-                    code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                            ccReg::domain_keyset, 1, REASON_MSG_KEYSET_NOTEXIST);
-                }
-            }
-        }
-
-
-        if (rifd_epp_update_domain_keyset_clear_ == true) {
-            // if request contains change of nsset and no change to keyset
-            // remove keyset from domain
-            if (nssetid != 0 && keysetid == 0) {
-                keysetid = -1;
-            }
-        }
-
-
-        //  owner of domain
-        if (strlen(registrant_chg) == 0) {
-            contactid = 0; // not change owner
-        } else {
-            contactid = getIdOfContact(action.getDB(), registrant_chg, restricted_handles_
-                    , lock_epp_commands_);
-            if (contactid < 0) {
-                LOG(WARNING_LOG, "bad format of registrar [%s]", registrant_chg);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_registrant, 1, REASON_MSG_BAD_FORMAT_CONTACT_HANDLE);
-            } else if (contactid == 0) {
-                LOG(WARNING_LOG, "domain registrar not exist [%s]", registrant_chg);
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_registrant, 1, REASON_MSG_REGISTRANT_NOTEXIST);
-            }
-
-        }
-        if (valexdate.length() > 0) {
-            // Test for  enum domain
-            if (GetZoneEnum(action.getDB(), zone) ) {
-                if (action.getDB()->TestValExDate(valexdate.c_str(), 
-                            GetZoneValPeriod(action.getDB(), zone),
-                            DefaultValExpInterval() , id) == false) // test validace expirace
-                {
-                    LOG(WARNING_LOG, "DomainUpdate: validity exp date is not valid %s", valexdate.c_str());
-                    code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                            ccReg::domain_ext_valDate, 1, REASON_MSG_VALEXPDATE_NOT_VALID);
-                }
-
-            } else {
-                LOG(WARNING_LOG, "DomainUpdate: can not validity exp date %s", valexdate.c_str());
-                code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                        ccReg::domain_ext_valDate, 1, REASON_MSG_VALEXPDATE_NOT_USED);
-
-            }
-        }
-        if (strlen(registrant_chg) != 0) {
-            try {
-                if (!code && testObjectHasState(action,id,FLAG_serverRegistrantChangeProhibited))
-                {
-                    LOG( WARNING_LOG, "registrant change %s is prohibited" , fqdn );
-                    code = COMMAND_STATUS_PROHIBITS_OPERATION;
-                }
-            } catch (...) {
-                code = COMMAND_FAILED;
-            }
-        }
-        if (code == 0) {
-
-            // begin update
-            if (action.getDB()->ObjectUpdate(id, action.getRegistrar(), authInfo_chg) ) {
-
-                if (nssetid || contactid || keysetid) // update domain table only if change
-                {
-                    // change record of domain
-                    action.getDB()->UPDATE("DOMAIN");
-
-                    if (nssetid > 0)
-                        action.getDB()->SET("nsset", nssetid); // change nssetu
-                    else if (nssetid == -1)
-                        action.getDB()->SETNULL("nsset"); // delete nsset
-
-                    if (keysetid > 0)
-                        action.getDB()->SET("keyset", keysetid); // change keyset
-                    else if (keysetid == -1)
-                        action.getDB()->SETNULL("keyset"); // delete keyset
-
-                    if (contactid)
-                        action.getDB()->SET("registrant", contactid); // change owner
-
-                    action.getDB()->WHEREID(id);
-                    if ( !action.getDB()->EXEC() )
-                        code = COMMAND_FAILED;
-                }
-
-                if (code == 0) {
-
-                    // change validity exdate  extension
-                    if (GetZoneEnum(action.getDB(), zone)) {
-                        if (valexdate.length() > 0 || publish != ccReg::DISCL_EMPTY) {
-                            action.getDB()->UPDATE("enumval");
-                            if (valexdate.length() > 0) {
-                                LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
-                                action.getDB()->SET("ExDate", valexdate.c_str());
-                            }
-                            if (publish == ccReg::DISCL_DISPLAY) {
-                                LOG(NOTICE_LOG, "change publish flag to YES");
-                                action.getDB()->SET("publish", true);
-                            }
-                            if (publish == ccReg::DISCL_HIDE) {
-                                LOG(NOTICE_LOG, "change publish flag to NO");
-                                action.getDB()->SET("publish", false);
-                            }
-                            action.getDB()->WHERE("domainID", id);
-
-                            if ( !action.getDB()->EXEC() )
-                                code = COMMAND_FAILED;
-                        }
-                    }
-
-                    // REM temp-c (must be befor ADD admin-c because of uniqueness)
-                    for (i = 0; i < tmpcontact_rem.length(); i++) {
-                        if ( (adminid = getIdOfContact(action.getDB(), tmpcontact_rem[i],
-                                restricted_handles_, lock_epp_commands_) )) {
-                            LOG( NOTICE_LOG , "delete temp-c-c  -> %d [%s]" , tc_rem[i] , (const char * ) tmpcontact_rem[i] );
-                            if ( !action.getDB()->DeleteFromTableMap("domain", id, tc_rem[i]) ) {
-                                code = COMMAND_FAILED;
-                                break;
-                            }
-                        }
-
-                    }
-
-                    // ADD admin-c
-                    for (i = 0; i < admin_add.length(); i++) {
-
-                        LOG( DEBUG_LOG, "DomainUpdate: add admin Contact %s id %d " , (const char *) admin_add[i] , ac_add[i] );
-                        if ( !action.getDB()->AddContactMap("domain", id, ac_add[i]) ) {
-                            code = COMMAND_FAILED;
-                            break;
-                        }
-
-                    }
-
-                    // REM admin-c
-                    for (i = 0; i < admin_rem.length(); i++) {
-                        if ( (adminid = getIdOfContact(action.getDB(), admin_rem[i]
-                             , restricted_handles_, lock_epp_commands_) )) {
-                            LOG( NOTICE_LOG , "delete admin  -> %d [%s]" , ac_rem[i] , (const char * ) admin_rem[i] );
-                            if ( !action.getDB()->DeleteFromTableMap("domain", id, ac_rem[i]) ) {
-                                code = COMMAND_FAILED;
-                                break;
-                            }
-                        }
-
-                    }
-
-                    // save to the history on the end if is OK
-                    if (code == 0)
-                        if (action.getDB()->SaveDomainHistory(id, params.requestID))
-                            code = COMMAND_OK; // set up successfully
-                }
-            }
-
-            // notifier send messages
-            if (code == COMMAND_OK)
-            {
-                action.set_notification_params(id,Notification::updated, disable_epp_notifier_);
-            }
-
-        }
-
-    }
-
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("DomainUpdate");
-    }
-
-    return action.getRet()._retn();
 }
 
 /***********************************************************************

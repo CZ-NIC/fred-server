@@ -299,8 +299,36 @@ public:
         const ccReg::EppParams& _epp_params
     );
 
-  // TODO add keyset to domain
-  ccReg::Response* DomainUpdate(const char* fqdn, const char* registrant_chg, const char* authInfo_chg, const char* nsset_chg, const char *keyset_chg, const ccReg::AdminContact& admin_add, const ccReg::AdminContact& admin_rem, const ccReg::AdminContact& tmpcontact_rem, const ccReg::EppParams &params, const ccReg::ExtensionList& ext);
+    /**
+     * DomainUpdate - update data of domain identified by its FQDN
+     *
+     * \param _domain_fqdn - identifiers of domains to check
+     * \param _registrant_chg - change of domain holder
+     * \param _authInfo_chg  - change of password
+     * \param _nsset_chg - change of nsset
+     * \param _keyset_chg - change of keyset
+     * \param _admin_add - sequence of added administration contacts
+     * \param _admin_rem - sequence of deleted administration contacts
+     * \param _tmpcontact_rem - OBSOLETE sequence of deleted temporary contacts
+     * \param _params - common EPP parametres
+     * \param _ext - ExtensionList
+     *
+     * \return ccReg::Response
+     *
+     * \throws ccReg::EPP::EppError
+     */
+    ccReg::Response* DomainUpdate(
+        const char* _domain_fqdn,
+        const char* _registrant_chg,
+        const char* _auth_info_pw_chg,
+        const char* _nsset_chg,
+        const char* _keyset_chg,
+        const ccReg::AdminContact& _admin_contacts_add,
+        const ccReg::AdminContact& _admin_contacts_rem,
+        const ccReg::AdminContact& _tmpcontact_rem,
+        const ccReg::EppParams& _epp_params,
+        const ccReg::ExtensionList& _ext
+    );
 
   ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char *keyset, const char* AuthInfoPw, const ccReg::Period_str& period, const ccReg::AdminContact& admin, ccReg::timestamp_out crDate, ccReg::date_out exDate, const ccReg::EppParams &params, const ccReg::ExtensionList& ext);
 
