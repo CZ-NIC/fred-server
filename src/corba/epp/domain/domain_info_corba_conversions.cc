@@ -42,9 +42,18 @@ struct TimeZoneOffset {
     }
 };
 
+/**
+ * Converts and formats time
+ *
+ * @param _utc_ptime time in UTC
+ *
+ * @return time converted to local time zone, with seconds fraction trimmed, formatted as RFC3339 string
+ */
 static std::string formatTimeWithBoost(const boost::posix_time::ptime& _utc_ptime) {
-    const boost::posix_time::ptime local_ptime = 
-        boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_ptime);
+    // _utc_ptime converted to local ptime with seconds fraction trimmed
+    const boost::posix_time::ptime local_ptime =
+        boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(
+            boost::posix_time::ptime(_utc_ptime.date(), boost::posix_time::seconds(_utc_ptime.time_of_day().total_seconds())));
     return
         boost::posix_time::to_iso_extended_string(local_ptime) +
         TimeZoneOffset(local_ptime).to_rfc3339_string();
