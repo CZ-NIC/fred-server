@@ -13,6 +13,8 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/epp/impl/util.h"
 
+#include <boost/date_time/gregorian/greg_date.hpp>
+
 namespace Epp {
 
 namespace Domain {
@@ -28,7 +30,15 @@ unsigned long long domain_delete_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    // TODO checkRegistrarZoneAccess
+    // TODO checkRegistrarZoneAccess (JZ: 15099-epp_domain_create)
+    //boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
+
+    //const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
+    //        Fred::Zone::rem_trailing_dot(_data.fqdn));
+
+    //if (!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
+    //    throw AuthorizationError();
+    //}
 
     try {
         if(Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, fqdn) != Fred::Domain::DomainRegistrability::registered) {

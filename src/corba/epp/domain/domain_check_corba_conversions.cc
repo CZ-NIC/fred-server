@@ -15,7 +15,7 @@ ccReg::CheckAvail wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
     const boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction>& obstruction
 ) {
 
-    if (!obstruction.is_initialized()) {
+    if (!obstruction) {
         return ccReg::NotExist;
     }
 
@@ -55,7 +55,7 @@ ccReg::CheckResp wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruct
 
         result[result_idx].reason =
             Corba::wrap_string_to_corba_string(
-                domain_localized_registration_obstruction.is_initialized() ? domain_localized_registration_obstruction.get().description : ""
+                domain_localized_registration_obstruction ? domain_localized_registration_obstruction.get().description : ""
             );
     }
 
