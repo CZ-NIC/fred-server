@@ -28,6 +28,7 @@
 
 #include "tests/setup/fixtures_utils.h"
 #include "tests/setup/fixtures.h"
+#include "tests/interfaces/public_request/fixture_common.h"
 
 #define BOOST_TEST_NO_MAIN
 

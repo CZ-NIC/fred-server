@@ -25,6 +25,7 @@
 
 #include "tests/setup/fixtures_utils.h"
 #include "tests/setup/fixtures.h"
+#include "tests/interfaces/public_request/fixture_common.h"
 
 #define BOOST_TEST_NO_MAIN
 
@@ -48,23 +49,6 @@ public:
         ctx.commit_transaction();
     }
 };
-
-Database::Result get_db_public_request(
-    const Fred::OperationContext& ctx,
-    const unsigned long long id,
-    const unsigned type,
-    const unsigned status)
-{
-    return ctx.get_conn().exec_params(
-            "SELECT * FROM public_request "
-            "WHERE id=$1::bigint "
-                "AND request_type=$2::smallint "
-                "AND status=$3::smallint "
-                "AND reason IS NULL "
-                "AND email_to_answer IS NULL "
-                "AND registrar_id IS NULL ",
-            Database::query_param_list(id)(type)(status));
-}
 
 void boost_check_fail_blocks(const std::string& handle)
 {
