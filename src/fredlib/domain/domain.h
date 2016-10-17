@@ -76,7 +76,7 @@ DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(OperationContext&
  *
  * \return  domain registrability status.  Does NOT include advanced FQDN syntax check.
  *
- * \throw  ExceptionInvalidFqdn 
+ * \throw  ExceptionInvalidFqdn
  */
 DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(OperationContext& ctx, const std::string& domain_fqdn);
 

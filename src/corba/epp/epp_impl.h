@@ -304,13 +304,13 @@ public:
      *
      * \param _domain_fqdn - identifiers of domains to check
      * \param _registrant_chg - change of domain holder
-     * \param _authInfo_chg  - change of password
+     * \param _auth_info_pw_chg  - change of password
      * \param _nsset_chg - change of nsset
      * \param _keyset_chg - change of keyset
-     * \param _admin_add - sequence of added administration contacts
-     * \param _admin_rem - sequence of deleted administration contacts
-     * \param _tmpcontact_rem - OBSOLETE sequence of deleted temporary contacts
-     * \param _params - common EPP parametres
+     * \param _admin_contacts_add - sequence of added administration contacts
+     * \param _admin_contacts_rem - sequence of deleted administration contacts
+     * \param _tmpcontacts_rem - OBSOLETE sequence of deleted temporary contacts
+     * \param _epp_params - common EPP parametres
      * \param _ext - ExtensionList
      *
      * \return ccReg::Response
@@ -325,7 +325,7 @@ public:
         const char* _keyset_chg,
         const ccReg::AdminContact& _admin_contacts_add,
         const ccReg::AdminContact& _admin_contacts_rem,
-        const ccReg::AdminContact& _tmpcontact_rem,
+        const ccReg::AdminContact& _tmpcontacts_rem,
         const ccReg::EppParams& _epp_params,
         const ccReg::ExtensionList& _ext
     );

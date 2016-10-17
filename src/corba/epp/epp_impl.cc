@@ -94,6 +94,7 @@
 #include "src/epp/domain/domain_transfer.h"
 #include "src/epp/domain/domain_create.h"
 #include "src/epp/domain/domain_renew.h"
+#include "src/epp/domain/domain_update.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_create.h"
 #include "src/epp/keyset/localized_update.h"
@@ -2993,7 +2994,7 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     const char* _keyset_chg,
     const ccReg::AdminContact& _admin_contacts_add,
     const ccReg::AdminContact& _admin_contacts_rem,
-    const ccReg::AdminContact& _tmpcontact_rem,
+    const ccReg::AdminContact& _tmpcontacts_rem,
     const ccReg::EppParams& _epp_params,
     const ccReg::ExtensionList& _ext)
 {
@@ -3002,6 +3003,7 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     try {
         const Epp::RegistrarSessionData epp_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
+        const std::vector<Epp::ENUMValidationExtension> enum_validation_list = Corba::unwrap_enum_validation_extension(_ext);
         return new ccReg::Response(
             Corba::wrap_response(
                 Epp::Domain::domain_update(
@@ -3010,12 +3012,13 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
                     Corba::unwrap_string(_auth_info_pw_chg),
                     Corba::unwrap_string(_nsset_chg),
                     Corba::unwrap_string(_keyset_chg),
-                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contats_add),
-                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contats_rem),
-                    const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list, // TODO wrap
+                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_add),
+                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_rem),
+                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_tmpcontacts_rem),
+                    enum_validation_list,
                     epp_session_data.registrar_id,
                     epp_request_params.log_request_id.get_value_or(0),
-                    epp_update_domain_enqueue_check_,
+                    epp_update_contact_enqueue_check_,
                     epp_session_data.language,
                     server_transaction_handle,
                     epp_request_params.client_transaction_id,

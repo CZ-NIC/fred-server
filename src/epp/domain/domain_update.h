@@ -26,7 +26,7 @@
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
-#include "src/fredlib/domain/enum_validation_extension.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "util/optional_value.h"
 
 #include <string>
@@ -46,6 +46,7 @@ LocalizedSuccessResponse domain_update(
     const std::string& _keyset_chg,
     const std::vector<std::string>& _admin_contacts_add,
     const std::vector<std::string>& _admin_contacts_rem,
+    const std::vector<std::string>& _tmpcontacts_rem,
     const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
     unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id,
@@ -55,7 +56,6 @@ LocalizedSuccessResponse domain_update(
     const std::string& _client_transaction_handle,
     const bool _epp_notification_disabled,
     const std::string& _client_transaction_handles_prefix_not_to_notify);
-
 }
 
 }

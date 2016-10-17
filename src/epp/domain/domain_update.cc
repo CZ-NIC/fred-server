@@ -3,7 +3,6 @@
 #include "src/epp/action.h"
 #include "src/epp/conditionally_enqueue_notification.h"
 #include "src/epp/domain/domain_update_impl.h"
-#include "src/epp/domain/post_domain_update_hooks.h"
 #include "src/epp/exception_aggregate_param_errors.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
@@ -30,6 +29,7 @@ LocalizedSuccessResponse domain_update(
     const std::string& _keyset_chg,
     const std::vector<std::string>& _admin_contacts_add,
     const std::vector<std::string>& _admin_contacts_rem,
+    const std::vector<std::string>& _tmpcontacts_rem,
     const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
     unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id,
@@ -51,12 +51,14 @@ LocalizedSuccessResponse domain_update(
 
         const unsigned long long domain_new_history_id = domain_update_impl(
             ctx,
+            _domain_fqdn,
             _registrant_chg,
             _auth_info_pw_chg,
             _nsset_chg,
             _keyset_chg,
             _admin_contacts_add,
             _admin_contacts_rem,
+            _tmpcontacts_rem,
             _enum_validation_list,
             _registrar_id,
             _logd_request_id

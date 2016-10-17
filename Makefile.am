@@ -1574,10 +1574,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_transfer_impl.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
 		src/epp/contact/disclose.h \
-		src/epp/domain/domain_info.cc \
-		src/epp/domain/domain_info.h \
-		src/epp/domain/domain_info_impl.cc \
-		src/epp/domain/domain_info_impl.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
 		src/epp/domain/domain_check.cc \
@@ -1590,6 +1586,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_delete.h \
 		src/epp/domain/domain_delete_impl.cc \
 		src/epp/domain/domain_delete_impl.h \
+		src/epp/domain/domain_info.cc \
+		src/epp/domain/domain_info.h \
+		src/epp/domain/domain_info_impl.cc \
+		src/epp/domain/domain_info_impl.h \
 		src/epp/domain/domain_transfer.cc \
 		src/epp/domain/domain_transfer.h \
 		src/epp/domain/domain_transfer_impl.cc \
@@ -1606,6 +1606,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_renew.h \
 		src/epp/domain/domain_billing.cc \
 		src/epp/domain/domain_billing.h \
+		src/epp/domain/domain_update.cc \
+		src/epp/domain/domain_update.h \
+		src/epp/domain/domain_update_impl.cc \
+		src/epp/domain/domain_update_impl.h \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \
@@ -2478,6 +2482,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/domain/test_domain_delete_impl.cc \
 		tests/interfaces/epp/domain/test_domain_info_impl.cc \
 		tests/interfaces/epp/domain/test_domain_transfer_impl.cc \
+		tests/interfaces/epp/domain/test_domain_update_impl.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
 		tests/interfaces/epp/keyset/test_create.cc \
