@@ -58,6 +58,7 @@ struct DomainInfoLocalizedOutputData {
     boost::gregorian::date exdate;
     Nullable<std::string> auth_info_pw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
+    // FIXME use Epp::ENUMValidationExtension instaed - JZ: branch 15099-epp_domain_create
     Nullable<Fred::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
 };
