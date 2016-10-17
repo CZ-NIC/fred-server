@@ -42,9 +42,9 @@ port = @NSPORT@
 # CORBA nameservice context
 #   usually ``fred`` - check with ``namectl`` command::
 #
-#   $> namectl list
+#   $> nameclt list
 #   fred.context/
-#   $> namectl list fred.context
+#   $> nameclt list fred.context
 #   EPP.Object
 #   WebWhois.Object
 #   Whois.Object
