@@ -30,7 +30,8 @@ DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(
        OperationContext& ctx,
        const std::string& domain_fqdn)
 {
-    if (Fred::CheckDomain(domain_fqdn).is_invalid_handle(ctx)) {
+    if (Fred::CheckDomain(domain_fqdn).is_bad_length(ctx)
+    || Fred::CheckDomain(domain_fqdn).is_invalid_handle(ctx)) {
         return DomainFqdnSyntaxValidity::invalid;
     }
     return DomainFqdnSyntaxValidity::valid;
