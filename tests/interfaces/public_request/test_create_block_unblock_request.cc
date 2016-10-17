@@ -34,14 +34,15 @@
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 
 BOOST_AUTO_TEST_SUITE(TestLockRequest)
-// TODO unblock fail
+
 struct lock_request_fixture : Test::Fixture::instantiate_db_template
 {
 private:
     Fred::OperationContextCreator ctx;
 
 public:
-    Fred::InfoContactData contact; // TODO cndk for every other case
+    Fred::InfoContactData contact;
+    Registry::PublicRequestImpl::PublicRequest pr;
 
     lock_request_fixture()
     : contact(Test::contact::make(ctx))
@@ -88,9 +89,9 @@ void boost_check_fail_blocks(const std::string& handle)
 }
 
 void make_fake_state_request(
-        Fred::OperationContext& ctx,
-        const unsigned long long id,
-        const bool block_update = false)
+    Fred::OperationContext& ctx,
+    const unsigned long long id,
+    const bool block_update = false)
 {
     if (block_update)
     {
@@ -113,7 +114,6 @@ void make_fake_state_request(
 BOOST_FIXTURE_TEST_CASE(block_unblock_transfer_email, lock_request_fixture) // check for fail blocks
 {
     Fred::OperationContextCreator ctx;
-    Registry::PublicRequestImpl::PublicRequest pr;
     unsigned long long block_transfer = pr.create_block_unblock_request(
             Fred::Object_Type::contact,
             contact.handle,
@@ -144,8 +144,7 @@ BOOST_FIXTURE_TEST_CASE(block_unblock_transfer_email, lock_request_fixture) // c
 BOOST_FIXTURE_TEST_CASE(block_unblock_transfer_and_update_email, lock_request_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Registry::PublicRequestImpl::PublicRequest pr;
-    unsigned long long block_change = pr.create_block_unblock_request(
+    unsigned long long block_update = pr.create_block_unblock_request(
             Fred::Object_Type::contact,
             contact.handle,
             Optional<unsigned long long>(),
@@ -173,7 +172,6 @@ BOOST_FIXTURE_TEST_CASE(block_unblock_transfer_and_update_email, lock_request_fi
 BOOST_FIXTURE_TEST_CASE(block_unblock_transfer_post, lock_request_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Registry::PublicRequestImpl::PublicRequest pr;
     unsigned long long block_transfer = pr.create_block_unblock_request(
             Fred::Object_Type::contact,
             contact.handle,
