@@ -48,12 +48,16 @@ public:
     Fred::InfoNssetData nsset;
     Fred::InfoDomainData domain;
     Fred::InfoKeysetData keyset;
-    const std::string reason;
-    const std::string email;
-    unsigned long long contact_id;
-    unsigned long long nsset_id;
-    unsigned long long domain_id;
-    unsigned long long keyset_id;
+    const std::string reason,
+                      email;
+    unsigned long long email_contact_id,
+                      post_contact_id,
+                       email_nsset_id,
+                      post_nsset_id,
+                       email_domain_id,
+                      post_domain_id,
+                       email_keyset_id,
+                      post_keyset_id;
 
     non_registry_email_fixture()
     : ctx(),
@@ -66,33 +70,61 @@ public:
     {
         ctx.commit_transaction();
         Registry::PublicRequestImpl::PublicRequest pr;
-        contact_id = pr.create_authinfo_request_non_registry_email(
+        email_contact_id = pr.create_authinfo_request_non_registry_email(
                 Fred::Object_Type::contact,
                 contact.handle,
                 reason,
                 Optional<unsigned long long>(),
                 Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
                 email);
-        nsset_id = pr.create_authinfo_request_non_registry_email(
+        post_contact_id = pr.create_authinfo_request_non_registry_email(
+                Fred::Object_Type::contact,
+                contact.handle,
+                reason,
+                Optional<unsigned long long>(),
+                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
+                email);
+        email_nsset_id = pr.create_authinfo_request_non_registry_email(
                 Fred::Object_Type::nsset,
                 nsset.handle,
                 reason,
                 Optional<unsigned long long>(),
                 Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
                 email);
-        domain_id = pr.create_authinfo_request_non_registry_email(
+        post_nsset_id = pr.create_authinfo_request_non_registry_email(
+                Fred::Object_Type::nsset,
+                nsset.handle,
+                reason,
+                Optional<unsigned long long>(),
+                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
+                email);
+        email_domain_id = pr.create_authinfo_request_non_registry_email(
                 Fred::Object_Type::domain,
                 domain.fqdn,
                 reason,
                 Optional<unsigned long long>(),
                 Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
                 email);
-        keyset_id = pr.create_authinfo_request_non_registry_email(
+        post_domain_id = pr.create_authinfo_request_non_registry_email(
+                Fred::Object_Type::domain,
+                domain.fqdn,
+                reason,
+                Optional<unsigned long long>(),
+                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
+                email);
+        email_keyset_id = pr.create_authinfo_request_non_registry_email(
                 Fred::Object_Type::keyset,
                 keyset.handle,
                 reason,
                 Optional<unsigned long long>(),
                 Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
+                email);
+        post_keyset_id = pr.create_authinfo_request_non_registry_email(
+                Fred::Object_Type::keyset,
+                keyset.handle,
+                reason,
+                Optional<unsigned long long>(),
+                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
                 email);
     }
 };
@@ -100,16 +132,22 @@ public:
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_non_registry_email, non_registry_email_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Database::Result request = ctx.get_conn().exec_params(
-            "SELECT * "
-            "FROM public_request "
-            "WHERE id=$1::bigint "
-              "AND request_type=$2::smallint "
-              "AND status=$3::smallint "
-              "AND reason=$4::text "
-              "AND email_to_answer=$5::text "
-              "AND registrar_id IS NULL ",
-            Database::query_param_list(contact_id)(2)(0)(reason)(email));
+    Database::Result request;
+    request = get_db_public_request(ctx, email_contact_id, 2, 0, reason, email);
+    BOOST_CHECK(request.size() == 1);
+    request = get_db_public_request(ctx, post_contact_id, 3, 0, reason, email);
+    BOOST_CHECK(request.size() == 1);
+    request = get_db_public_request(ctx, email_nsset_id, 2, 0, reason, email);
+    BOOST_CHECK(request.size() == 1);
+    request = get_db_public_request(ctx, post_nsset_id, 3, 0, reason, email);
+    BOOST_CHECK(request.size() == 1);
+    request = get_db_public_request(ctx, email_domain_id, 2, 0, reason, email);
+    BOOST_CHECK(request.size() == 1);
+    request = get_db_public_request(ctx, post_domain_id, 3, 0, reason, email);
+    BOOST_CHECK(request.size() == 1);
+    request = get_db_public_request(ctx, email_keyset_id, 2, 0, reason, email);
+    BOOST_CHECK(request.size() == 1);
+    request = get_db_public_request(ctx, post_keyset_id, 3, 0, reason, email);
     BOOST_CHECK(request.size() == 1);
 }
 

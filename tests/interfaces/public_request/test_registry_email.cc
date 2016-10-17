@@ -150,16 +150,7 @@ public:
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Database::Result request = ctx.get_conn().exec_params(
-            "SELECT * "
-            "FROM public_request "
-            "WHERE id=$1::bigint "
-              "AND request_type=$2::smallint "
-              "AND status=$3::smallint "
-              "AND reason=$4::text "
-              "AND email_to_answer IS NULL "
-              "AND registrar_id IS NULL ",
-            Database::query_param_list(contact_id)(1)(0)(reason)); //TODO take request type id from DB
+    Database::Result request = get_db_public_request(ctx, contact_id, 1, 0, reason);
     BOOST_CHECK(request.size() == 1);
 }
 
