@@ -65,9 +65,9 @@ struct DomainInfoOutputData {
  * @returns domain data for given domain FQDN
  */
 DomainInfoOutputData domain_info_impl(
-    Fred::OperationContext& ctx,
-    const std::string& domain_fqdn,
-    unsigned long long registrar_id
+    Fred::OperationContext& _ctx,
+    const std::string& _domain_fqdn,
+    unsigned long long _registrar_id
 );
 
 }

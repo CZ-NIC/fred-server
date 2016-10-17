@@ -33,8 +33,8 @@
 namespace CorbaConversion {
 
     void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
-        const Epp::Domain::DomainInfoLocalizedOutputData& src,
-        ccReg::Domain& dst
+        const Epp::Domain::DomainInfoLocalizedOutputData& _src,
+        ccReg::Domain& _dst
     );
 
 }

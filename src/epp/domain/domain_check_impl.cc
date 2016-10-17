@@ -20,12 +20,11 @@ namespace Domain {
 namespace {
 
 Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstruction_by_fqdn(
-    Fred::OperationContext& ctx,
-    const unsigned long long registrar_id,
-    const std::string domain_fqdn)
+    Fred::OperationContext& _ctx,
+    const std::string _domain_fqdn)
 {
     try {
-        switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, domain_fqdn)) {
+        switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn)) {
 
             case Fred::Domain::DomainRegistrability::registered:
                 return DomainRegistrationObstruction::registered;
@@ -38,7 +37,7 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
 
             case Fred::Domain::DomainRegistrability::available:
                 Fred::Domain::DomainFqdnSyntaxValidity::Enum domain_fqdn_syntax_validity
-                     = Fred::Domain::get_domain_fqdn_syntax_validity(ctx, domain_fqdn);
+                     = Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _domain_fqdn);
 
                 switch (domain_fqdn_syntax_validity) {
                     case Fred::Domain::DomainFqdnSyntaxValidity::invalid:
@@ -60,20 +59,20 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
 } // namespace Epp::Domain::{anonymous}
 
 DomainFqdnToDomainRegistrationObstruction domain_check_impl(
-    Fred::OperationContext& ctx,
-    const std::set<std::string>& domain_fqdns,
-    unsigned long long registrar_id
+    Fred::OperationContext& _ctx,
+    const std::set<std::string>& _domain_fqdns,
+    unsigned long long _registrar_id
 ) {
 
-    const bool registrar_is_authenticated = registrar_id != 0;
+    const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
         throw AuthErrorServerClosingConnection();
     }
 
     DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction;
 
-    BOOST_FOREACH(const std::string &domain_fqdn, domain_fqdns) {
-        domain_fqdn_to_domain_registration_obstruction[domain_fqdn] = domain_get_registration_obstruction_by_fqdn(ctx, registrar_id, domain_fqdn);
+    BOOST_FOREACH(const std::string& domain_fqdn, _domain_fqdns) {
+        domain_fqdn_to_domain_registration_obstruction[domain_fqdn] = domain_get_registration_obstruction_by_fqdn(_ctx, domain_fqdn);
     }
 
     return domain_fqdn_to_domain_registration_obstruction;

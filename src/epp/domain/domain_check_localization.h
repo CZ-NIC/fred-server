@@ -42,9 +42,9 @@ typedef std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > Do
 typedef std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> > DomainFqdnToDomainLocalizedRegistrationObstruction;
 
 DomainFqdnToDomainLocalizedRegistrationObstruction create_domain_fqdn_to_domain_localized_registration_obstruction(
-    Fred::OperationContext &ctx,
-    const DomainFqdnToDomainRegistrationObstruction &check_results,
-    SessionLang::Enum lang);
+    Fred::OperationContext& _ctx,
+    const DomainFqdnToDomainRegistrationObstruction& _check_results,
+    SessionLang::Enum _lang);
 
 }
 

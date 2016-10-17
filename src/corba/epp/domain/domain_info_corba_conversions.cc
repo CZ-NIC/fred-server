@@ -42,9 +42,9 @@ struct TimeZoneOffset {
     }
 };
 
-static std::string formatTimeWithBoost(const boost::posix_time::ptime& utc_ptime) {
+static std::string formatTimeWithBoost(const boost::posix_time::ptime& _utc_ptime) {
     const boost::posix_time::ptime local_ptime = 
-        boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(utc_ptime);
+        boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_ptime);
     return
         boost::posix_time::to_iso_extended_string(local_ptime) +
         TimeZoneOffset(local_ptime).to_rfc3339_string();
@@ -56,60 +56,60 @@ static std::string formatDateWithBoost(const boost::gregorian::date& d) {
 
 } // namespace CorbaConversion::{anonymous}
 
-void wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(Fred::ENUMValidationExtension src, ccReg::ExtensionList& dst) {
+void wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(Fred::ENUMValidationExtension src, ccReg::ExtensionList& _dst) {
     return; // TODO
 }
 
 void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
-    const Epp::Domain::DomainInfoLocalizedOutputData& src,
-    ccReg::Domain& dst
+    const Epp::Domain::DomainInfoLocalizedOutputData& _src,
+    ccReg::Domain& _dst
 ) {
 
-    dst.ROID = Corba::wrap_string_to_corba_string(src.roid);
-    dst.name = Corba::wrap_string_to_corba_string(src.fqdn);
+    _dst.ROID = Corba::wrap_string_to_corba_string(_src.roid);
+    _dst.name = Corba::wrap_string_to_corba_string(_src.fqdn);
 
-    dst.Registrant = Corba::wrap_string_to_corba_string(src.registrant);
-    dst.nsset = Corba::wrap_string_to_corba_string(src.nsset.get_value_or(std::string()));
-    dst.keyset = Corba::wrap_string_to_corba_string(src.keyset.get_value_or(std::string()));
+    _dst.Registrant = Corba::wrap_string_to_corba_string(_src.registrant);
+    _dst.nsset = Corba::wrap_string_to_corba_string(_src.nsset.get_value_or(std::string()));
+    _dst.keyset = Corba::wrap_string_to_corba_string(_src.keyset.get_value_or(std::string()));
 
-    Corba::wrap_Epp_LocalizedStates(src.localized_external_states, dst.stat);
+    Corba::wrap_Epp_LocalizedStates(_src.localized_external_states, _dst.stat);
 
-    dst.ClID = Corba::wrap_string_to_corba_string(src.sponsoring_registrar_handle);
-    dst.CrID = Corba::wrap_string_to_corba_string(src.creating_registrar_handle);
-    dst.UpID = Corba::wrap_string_to_corba_string(src.last_update_registrar_handle.get_value_or(std::string()));
+    _dst.ClID = Corba::wrap_string_to_corba_string(_src.sponsoring_registrar_handle);
+    _dst.CrID = Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);
+    _dst.UpID = Corba::wrap_string_to_corba_string(_src.last_update_registrar_handle.get_value_or(std::string()));
 
-    dst.CrDate = Corba::wrap_string_to_corba_string(formatTimeWithBoost(src.crdate));
-    dst.UpDate = Corba::wrap_string_to_corba_string(
-        src.last_update.isnull() ? std::string()
-                                 : formatTimeWithBoost(src.last_update.get_value()));
-    dst.TrDate = Corba::wrap_string_to_corba_string(
-        src.last_transfer.isnull() ? std::string()
-                                   : formatTimeWithBoost(src.last_transfer.get_value()));
+    _dst.CrDate = Corba::wrap_string_to_corba_string(formatTimeWithBoost(_src.crdate));
+    _dst.UpDate = Corba::wrap_string_to_corba_string(
+        _src.last_update.isnull() ? std::string()
+                                 : formatTimeWithBoost(_src.last_update.get_value()));
+    _dst.TrDate = Corba::wrap_string_to_corba_string(
+        _src.last_transfer.isnull() ? std::string()
+                                   : formatTimeWithBoost(_src.last_transfer.get_value()));
 
-    dst.ExDate = Corba::wrap_string_to_corba_string(formatDateWithBoost(src.exdate));
+    _dst.ExDate = Corba::wrap_string_to_corba_string(formatDateWithBoost(_src.exdate));
 
-    dst.AuthInfoPw = Corba::wrap_string_to_corba_string(src.auth_info_pw.get_value_or_default());
+    _dst.AuthInfoPw = Corba::wrap_string_to_corba_string(_src.auth_info_pw.get_value_or_default());
 
     {
-        //dst.admin = new ccReg::AdminContact();
-        dst.admin.length(src.admin.size());
+        //_dst.admin = new ccReg::AdminContact();
+        _dst.admin.length(_src.admin.size());
         unsigned long dst_index = 0;
-        for(std::set<std::string>::const_iterator admin_ptr = src.admin.begin(); admin_ptr != src.admin.end(); ++admin_ptr) {
-            dst.admin[dst_index] = CorbaConversion::wrap_string(*admin_ptr);
+        for(std::set<std::string>::const_iterator admin_ptr = _src.admin.begin(); admin_ptr != _src.admin.end(); ++admin_ptr) {
+            _dst.admin[dst_index] = CorbaConversion::wrap_string(*admin_ptr);
             ++dst_index;
         }
     }
 
     CorbaConversion::wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(
-            src.ext_enum_domain_validation.get_value_or(Fred::ENUMValidationExtension()),
-            dst.ext);
+            _src.ext_enum_domain_validation.get_value_or(Fred::ENUMValidationExtension()),
+            _dst.ext);
 
     {
-        //dst.tmpcontact = new ccReg::AdminContact();
-        dst.tmpcontact.length(src.tmpcontact.size());
+        //_dst.tmpcontact = new ccReg::AdminContact();
+        _dst.tmpcontact.length(_src.tmpcontact.size());
         unsigned long dst_index = 0;
-        for(std::set<std::string>::const_iterator tmpcontact_ptr = src.tmpcontact.begin(); tmpcontact_ptr != src.tmpcontact.end(); ++tmpcontact_ptr) {
-            dst.tmpcontact[dst_index] = CorbaConversion::wrap_string(*tmpcontact_ptr);
+        for(std::set<std::string>::const_iterator tmpcontact_ptr = _src.tmpcontact.begin(); tmpcontact_ptr != _src.tmpcontact.end(); ++tmpcontact_ptr) {
+            _dst.tmpcontact[dst_index] = CorbaConversion::wrap_string(*tmpcontact_ptr);
             ++dst_index;
         }
     }

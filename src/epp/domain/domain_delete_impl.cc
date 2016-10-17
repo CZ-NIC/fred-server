@@ -20,12 +20,12 @@ namespace Epp {
 namespace Domain {
 
 unsigned long long domain_delete_impl(
-    Fred::OperationContext& ctx,
-    const std::string& fqdn,
-    const unsigned long long registrar_id
+    Fred::OperationContext& _ctx,
+    const std::string& _fqdn,
+    const unsigned long long _registrar_id
 ) {
 
-    const bool registrar_is_authenticated = registrar_id != 0;
+    const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
         throw AuthErrorServerClosingConnection();
     }
@@ -34,14 +34,14 @@ unsigned long long domain_delete_impl(
     //boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
     //const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-    //        Fred::Zone::rem_trailing_dot(_data.fqdn));
+    //        Fred::Zone::rem_trailing_dot(_data._fqdn));
 
     //if (!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
     //    throw AuthorizationError();
     //}
 
     try {
-        if(Fred::Domain::get_domain_registrability_by_domain_fqdn(ctx, fqdn) != Fred::Domain::DomainRegistrability::registered) {
+        if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _fqdn) != Fred::Domain::DomainRegistrability::registered) {
             throw NonexistentHandle();
         }
     }
@@ -53,8 +53,8 @@ unsigned long long domain_delete_impl(
     }
 
     const Fred::InfoRegistrarData session_registrar =
-        Fred::InfoRegistrarById(registrar_id).set_lock().exec(ctx).info_registrar_data;
-    const Fred::InfoDomainData domain_data_before_delete = Fred::InfoDomainByHandle(fqdn).set_lock().exec(ctx).info_domain_data;
+        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
+    const Fred::InfoDomainData domain_data_before_delete = Fred::InfoDomainByHandle(_fqdn).set_lock().exec(_ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_delete.sponsoring_registrar_handle ==
                                           session_registrar.handle);
@@ -67,10 +67,10 @@ unsigned long long domain_delete_impl(
 
     if (!is_system_registrar) {
         // do it before any object state related checks
-        Fred::LockObjectStateRequestLock(domain_data_before_delete.id).exec(ctx);
-        Fred::PerformObjectStateRequest(domain_data_before_delete.id).exec(ctx);
+        Fred::LockObjectStateRequestLock(domain_data_before_delete.id).exec(_ctx);
+        Fred::PerformObjectStateRequest(domain_data_before_delete.id).exec(_ctx);
 
-        const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_delete.id).exec(ctx));
+        const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_delete.id).exec(_ctx));
         if (domain_states.presents(Fred::Object_State::server_update_prohibited) ||
             domain_states.presents(Fred::Object_State::server_delete_prohibited) ||
             domain_states.presents(Fred::Object_State::delete_candidate))
@@ -81,7 +81,7 @@ unsigned long long domain_delete_impl(
 
     try {
 
-        Fred::DeleteDomainByHandle(fqdn).exec(ctx);
+        Fred::DeleteDomainByHandle(_fqdn).exec(_ctx);
 
         return domain_data_before_delete.historyid;
 

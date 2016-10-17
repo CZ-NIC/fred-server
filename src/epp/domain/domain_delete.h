@@ -34,13 +34,13 @@ namespace Epp {
 namespace Domain {
 
 LocalizedSuccessResponse domain_delete(
-    const std::string& fqdn,
-    const unsigned long long registrar_id,
-    const SessionLang::Enum lang,
-    const std::string& server_transaction_handle,
-    const std::string& client_transaction_handle,
-    const bool epp_notification_disabled,
-    const std::string& client_transaction_handles_prefix_not_to_notify
+    const std::string& _fqdn,
+    const unsigned long long _registrar_id,
+    const SessionLang::Enum _lang,
+    const std::string& _server_transaction_handle,
+    const std::string& _client_transaction_handle,
+    const bool _epp_notification_disabled,
+    const std::string& _client_transaction_handles_prefix_not_to_notify
 );
 
 }

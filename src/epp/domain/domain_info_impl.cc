@@ -18,12 +18,12 @@ namespace Epp {
 namespace Domain {
 
 DomainInfoOutputData domain_info_impl(
-    Fred::OperationContext& ctx,
-    const std::string& domain_fqdn,
-    unsigned long long registrar_id
+    Fred::OperationContext& _ctx,
+    const std::string& _domain_fqdn,
+    unsigned long long _registrar_id
 ) {
 
-    const bool registrar_is_authenticated = registrar_id != 0;
+    const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
         throw AuthErrorServerClosingConnection();
     }
@@ -32,7 +32,7 @@ DomainInfoOutputData domain_info_impl(
 
     try {
 
-        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(domain_fqdn).exec(ctx, "UTC").info_domain_data;
+        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(_domain_fqdn).exec(_ctx, "UTC").info_domain_data;
 
         domain_info_output_data.roid = info_domain_data.roid;
         domain_info_output_data.fqdn = info_domain_data.fqdn;
@@ -46,7 +46,7 @@ DomainInfoOutputData domain_info_impl(
 
         {
             typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
-            ObjectStatesData domain_states_data = Fred::GetObjectStates(info_domain_data.id).exec(ctx);
+            ObjectStatesData domain_states_data = Fred::GetObjectStates(info_domain_data.id).exec(_ctx);
             for (ObjectStatesData::const_iterator data_ptr = domain_states_data.begin();
                  data_ptr != domain_states_data.end(); ++data_ptr)
             {

@@ -77,10 +77,10 @@ struct DomainInfoResponse {
 };
 
 DomainInfoResponse domain_info(
-    const std::string& domain_fqdn,
-    unsigned long long registrar_id,
-    SessionLang::Enum lang,
-    const std::string& server_transaction_handle
+    const std::string& _domain_fqdn,
+    unsigned long long _registrar_id,
+    SessionLang::Enum _lang,
+    const std::string& _server_transaction_handle
 );
 
 }

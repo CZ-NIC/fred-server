@@ -46,9 +46,9 @@ namespace Domain {
  * \throws Fred::DeleteDomainByHandle::Exception
  */
 unsigned long long domain_delete_impl(
-    Fred::OperationContext& ctx,
-    const std::string& fqdn,
-    unsigned long long registrar_id
+    Fred::OperationContext& _ctx,
+    const std::string& _fqdn,
+    unsigned long long _registrar_id
 );
 
 }

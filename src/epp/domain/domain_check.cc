@@ -20,25 +20,25 @@ namespace Epp {
 namespace Domain {
 
 DomainCheckResponse domain_check(
-    const std::set<std::string> &domain_fqdns,
-    unsigned long long registrar_id,
-    SessionLang::Enum lang,
-    const std::string &server_transaction_handle
+    const std::set<std::string>& _domain_fqdns,
+    unsigned long long _registrar_id,
+    SessionLang::Enum _lang,
+    const std::string& _server_transaction_handle
 ) {
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % registrar_id));
-        Logging::Context logging_ctx3(server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
+        Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::DomainCheck)));
 
         Fred::OperationContextCreator ctx;
 
-        const DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction = domain_check_impl(ctx, domain_fqdns, registrar_id);
+        const DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction = domain_check_impl(ctx, _domain_fqdns, _registrar_id);
 
         const DomainFqdnToDomainLocalizedRegistrationObstruction domain_fqdn_to_domain_localized_registration_obstruction =
-            create_domain_fqdn_to_domain_localized_registration_obstruction(ctx, domain_fqdn_to_domain_registration_obstruction, lang);
+            create_domain_fqdn_to_domain_localized_registration_obstruction(ctx, domain_fqdn_to_domain_registration_obstruction, _lang);
         const LocalizedSuccessResponse localized_success_response =
-            create_localized_success_response(Response::ok, ctx, lang);
+            create_localized_success_response(Response::ok, ctx, _lang);
 
         return DomainCheckResponse(localized_success_response, domain_fqdn_to_domain_localized_registration_obstruction);
 
@@ -49,7 +49,7 @@ DomainCheckResponse domain_check(
             ctx,
             Response::authentication_error_server_closing_connection,
             std::set<Error>(),
-            lang
+            _lang
         );
     }
     catch (...) {
@@ -58,7 +58,7 @@ DomainCheckResponse domain_check(
             ctx,
             Response::failed,
             std::set<Error>(),
-            lang);
+            _lang);
     }
 
 }

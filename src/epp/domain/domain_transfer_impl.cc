@@ -38,7 +38,7 @@ unsigned long long domain_transfer_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    // TODO checkRegistrarZoneAccess
+    // TODO checkRegistrarZoneAccess (JZ: 15099-epp_domain_create)
     //boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
     //const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,

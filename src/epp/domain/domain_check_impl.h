@@ -42,9 +42,9 @@ namespace Domain {
  * \throws  AuthErrorServerClosingConnection
  */
 DomainFqdnToDomainRegistrationObstruction domain_check_impl(
-    Fred::OperationContext& ctx,
-    const std::set<std::string>& domain_fqdns,
-    unsigned long long registrar_id
+    Fred::OperationContext& _ctx,
+    const std::set<std::string>& _domain_fqdns,
+    unsigned long long _registrar_id
 );
 
 }

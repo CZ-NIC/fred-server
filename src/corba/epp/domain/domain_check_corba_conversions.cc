@@ -35,20 +35,20 @@ ccReg::CheckAvail wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
  * @returns check results in the same order as input handles
  */
 ccReg::CheckResp wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
-    const std::vector<std::string>& domain_fqdns,
-    const Epp::Domain::DomainFqdnToDomainLocalizedRegistrationObstruction& domain_fqdn_to_domain_localized_registration_obstruction
+    const std::vector<std::string>& _domain_fqdns,
+    const Epp::Domain::DomainFqdnToDomainLocalizedRegistrationObstruction& _domain_fqdn_to_domain_localized_registration_obstruction
 ) {
     ccReg::CheckResp result;
-    result.length(domain_fqdns.size());
+    result.length(_domain_fqdns.size());
 
     CORBA::ULong result_idx = 0;
     for(
-        std::vector<std::string>::const_iterator domain_fqdn_ptr = domain_fqdns.begin();
-        domain_fqdn_ptr != domain_fqdns.end();
+        std::vector<std::string>::const_iterator domain_fqdn_ptr = _domain_fqdns.begin();
+        domain_fqdn_ptr != _domain_fqdns.end();
         ++domain_fqdn_ptr, ++result_idx
     ) {
         const boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> domain_localized_registration_obstruction =
-            map_at(domain_fqdn_to_domain_localized_registration_obstruction, *domain_fqdn_ptr);
+            map_at(_domain_fqdn_to_domain_localized_registration_obstruction, *domain_fqdn_ptr);
 
         result[result_idx].avail =
             wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(domain_localized_registration_obstruction);

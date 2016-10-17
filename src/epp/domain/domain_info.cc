@@ -22,22 +22,22 @@ namespace Epp {
 namespace Domain {
 
 DomainInfoResponse domain_info(
-    const std::string& domain_fqdn,
-    const unsigned long long registrar_id,
-    const SessionLang::Enum lang,
-    const std::string& server_transaction_handle
+    const std::string& _domain_fqdn,
+    const unsigned long long _registrar_id,
+    const SessionLang::Enum _lang,
+    const std::string& _server_transaction_handle
 ) {
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % registrar_id));
-        Logging::Context logging_ctx3(server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
+        Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::DomainInfo)));
 
         Fred::OperationContextCreator ctx;
 
-        const DomainInfoOutputData domain_info_output_data = domain_info_impl(ctx, domain_fqdn, registrar_id);
+        const DomainInfoOutputData domain_info_output_data = domain_info_impl(ctx, _domain_fqdn, _registrar_id);
 
-        const std::string callers_registrar_handle = Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
+        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle;
         const bool callers_is_sponsoring_registrar = domain_info_output_data.sponsoring_registrar_handle == callers_registrar_handle;
         const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
 
@@ -49,7 +49,7 @@ DomainInfoResponse domain_info(
         localized_domain_info_output_data.nsset = domain_info_output_data.nsset;
         localized_domain_info_output_data.keyset = domain_info_output_data.keyset;
         localized_domain_info_output_data.localized_external_states =
-            get_localized_object_state(ctx, domain_info_output_data.states, lang);
+            get_localized_object_state(ctx, domain_info_output_data.states, _lang);
         localized_domain_info_output_data.sponsoring_registrar_handle = domain_info_output_data.sponsoring_registrar_handle;
         localized_domain_info_output_data.creating_registrar_handle = domain_info_output_data.creating_registrar_handle;
         localized_domain_info_output_data.last_update_registrar_handle = domain_info_output_data.last_update_registrar_handle;
@@ -64,7 +64,7 @@ DomainInfoResponse domain_info(
         localized_domain_info_output_data.tmpcontact = domain_info_output_data.tmpcontact;
 
         const LocalizedSuccessResponse localized_success_response =
-            create_localized_success_response(Response::ok, ctx, lang);
+            create_localized_success_response(Response::ok, ctx, _lang);
 
         return DomainInfoResponse(
             localized_success_response,
@@ -77,7 +77,7 @@ DomainInfoResponse domain_info(
             ctx,
             Response::authentication_error_server_closing_connection,
             std::set<Error>(),
-            lang
+            _lang
         );
     }
     catch (...) {
@@ -86,7 +86,7 @@ DomainInfoResponse domain_info(
             ctx,
             Response::failed,
             std::set<Error>(),
-            lang);
+            _lang);
     }
 
 }

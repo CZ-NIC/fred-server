@@ -51,10 +51,10 @@ struct DomainCheckResponse {
 };
 
 DomainCheckResponse domain_check(
-    const std::set<std::string>& domain_fqdns,
-    unsigned long long registrar_id,
-    SessionLang::Enum lang,
-    const std::string& server_transaction_handle
+    const std::set<std::string>& _domain_fqdns,
+    unsigned long long _registrar_id,
+    SessionLang::Enum _lang,
+    const std::string& _server_transaction_handle
 );
 
 }
