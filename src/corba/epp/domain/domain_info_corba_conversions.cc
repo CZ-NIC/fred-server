@@ -16,17 +16,29 @@ namespace CorbaConversion {
 
 namespace {
 
+// represents RFC3339 time offset
+// append to boost::posix_time::to_iso_extended_string() to get RFC3339 timestamp
 struct TimeZoneOffset {
-    boost::posix_time::time_duration time_zone_offset_;
+    boost::optional<boost::posix_time::time_duration> time_zone_offset_;
 
     TimeZoneOffset(const boost::posix_time::ptime& _utc_time) {
         time_zone_offset_ = boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_time) - _utc_time;
     }
 
-    std::string to_string_signhhmm() {
-        return boost::str(boost::format("%1$+03d:%2$02d")
-            % time_zone_offset_.hours()
-            % boost::date_time::absolute_value(time_zone_offset_.minutes()));
+    std::string to_rfc3339_string() {
+        if(time_zone_offset_) {
+            if(time_zone_offset_->hours() || time_zone_offset_->minutes()) {
+                return boost::str(boost::format("%1$+03d:%2$02d")
+                    % time_zone_offset_->hours()
+                    % boost::date_time::absolute_value(time_zone_offset_->minutes()));
+            }
+            else {
+                return std::string("Z");
+            }
+        }
+        else {
+            return std::string("-00:00");
+        }
     }
 };
 
@@ -35,7 +47,7 @@ static std::string formatTimeWithBoost(const boost::posix_time::ptime& utc_ptime
         boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(utc_ptime);
     return
         boost::posix_time::to_iso_extended_string(local_ptime) +
-        TimeZoneOffset(local_ptime).to_string_signhhmm();
+        TimeZoneOffset(local_ptime).to_rfc3339_string();
 }
 
 static std::string formatDateWithBoost(const boost::gregorian::date& d) {
