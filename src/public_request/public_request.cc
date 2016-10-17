@@ -353,7 +353,7 @@ unsigned long long PublicRequest::create_block_unblock_request(
         else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
         {
             request_id = get_id<ObjectAlreadyBlocked, BlockChangesEmail, BlockChangesPost>(
-                    (states.presents(Fred::Object_State::server_transfer_prohibited) ||
+                    (states.presents(Fred::Object_State::server_transfer_prohibited) &&
                      states.presents(Fred::Object_State::server_update_prohibited)),
                     confirmation_method,
                     request,
@@ -363,7 +363,8 @@ unsigned long long PublicRequest::create_block_unblock_request(
         else if (lock_request_type == UNBLOCK_TRANSFER)
         {
             request_id = get_id<ObjectNotBlocked, UnblockTransferEmail, UnblockTransferPost>(
-                    states.absents(Fred::Object_State::server_transfer_prohibited),
+                    (states.absents(Fred::Object_State::server_transfer_prohibited) ||
+                     states.presents(Fred::Object_State::server_update_prohibited)),
                     confirmation_method,
                     request,
                     locked_object,
