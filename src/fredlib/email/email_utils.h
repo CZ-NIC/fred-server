@@ -72,7 +72,9 @@ void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const EmailDat
     }
 }
 
-unsigned long long send_joined_addresses_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const EmailData& _data)
+unsigned long long send_joined_addresses_email(
+    boost::shared_ptr<Fred::Mailer::Manager> _mailer,
+    const EmailData& _data)
 {
     std::set<std::string> trimmed_recipient_email_addresses;
     BOOST_FOREACH(const std::string& email, _data.recipient_email_addresses)
