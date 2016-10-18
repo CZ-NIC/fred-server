@@ -295,19 +295,42 @@ unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
     }
 }
 
-template<typename Exception, typename EmailInterface, typename PostInterface>
-unsigned long long get_id(
-    bool states_are_wrong,
+template<typename EmailInterface, typename PostInterface>
+unsigned long long get_block_id(
+    bool states_are_ok,
     ConfirmationMethod confirmation_method,
     const Fred::CreatePublicRequest& request,
     const Fred::PublicRequestsOfObjectLockGuardByObjectId& locked_object,
     const Optional<unsigned long long>& log_request_id)
 {
     unsigned long long request_id;
-    if (states_are_wrong)
+    if (! states_are_ok)
     {
-        throw Exception();
+        throw ObjectAlreadyBlocked();
     }
+    if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
+    {
+        request_id = request.exec(locked_object, EmailInterface(), log_request_id);
+    }
+    else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
+    {
+        request_id = request.exec(locked_object, PostInterface(), log_request_id);
+    }
+    else
+    {
+        throw std::invalid_argument("Registry::PublicRequest::ConfirmationMethod doesn't contain that value");
+    }
+    return request_id;
+}
+
+template<typename EmailInterface, typename PostInterface>
+unsigned long long get_unblock_id(
+    ConfirmationMethod confirmation_method,
+    const Fred::CreatePublicRequest& request,
+    const Fred::PublicRequestsOfObjectLockGuardByObjectId& locked_object,
+    const Optional<unsigned long long>& log_request_id)
+{
+    unsigned long long request_id;
     if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
     {
         request_id = request.exec(locked_object, EmailInterface(), log_request_id);
@@ -343,8 +366,8 @@ unsigned long long PublicRequest::create_block_unblock_request(
                 Optional<unsigned long long>());
         if (lock_request_type == BLOCK_TRANSFER)
         {
-            request_id = get_id<ObjectAlreadyBlocked, BlockTransferEmail, BlockTransferPost>(
-                    states.presents(Fred::Object_State::server_transfer_prohibited),
+            request_id = get_block_id<BlockTransferEmail, BlockTransferPost>(
+                    states.absents(Fred::Object_State::server_transfer_prohibited),
                     confirmation_method,
                     request,
                     locked_object,
@@ -352,9 +375,9 @@ unsigned long long PublicRequest::create_block_unblock_request(
         }
         else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
         {
-            request_id = get_id<ObjectAlreadyBlocked, BlockChangesEmail, BlockChangesPost>(
-                    (states.presents(Fred::Object_State::server_transfer_prohibited) &&
-                     states.presents(Fred::Object_State::server_update_prohibited)),
+            request_id = get_block_id<BlockChangesEmail, BlockChangesPost>(
+                    (states.absents(Fred::Object_State::server_transfer_prohibited) ||
+                     states.absents(Fred::Object_State::server_update_prohibited)),
                     confirmation_method,
                     request,
                     locked_object,
@@ -362,9 +385,15 @@ unsigned long long PublicRequest::create_block_unblock_request(
         }
         else if (lock_request_type == UNBLOCK_TRANSFER)
         {
-            request_id = get_id<ObjectNotBlocked, UnblockTransferEmail, UnblockTransferPost>(
-                    (states.absents(Fred::Object_State::server_transfer_prohibited) ||
-                     states.presents(Fred::Object_State::server_update_prohibited)),
+            if (states.presents(Fred::Object_State::server_update_prohibited))
+            {
+                throw HasDifferentBlock();
+            }
+            else if (states.absents(Fred::Object_State::server_transfer_prohibited))
+            {
+                throw ObjectNotBlocked();
+            }
+            request_id = get_unblock_id<UnblockTransferEmail, UnblockTransferPost>(
                     confirmation_method,
                     request,
                     locked_object,
@@ -372,9 +401,15 @@ unsigned long long PublicRequest::create_block_unblock_request(
         }
         else if (lock_request_type == UNBLOCK_TRANSFER_AND_UPDATE)
         {
-            request_id = get_id<ObjectNotBlocked, UnblockChangesEmail, UnblockChangesPost>(
-                    (states.absents(Fred::Object_State::server_transfer_prohibited) ||
-                     states.absents(Fred::Object_State::server_update_prohibited)),
+            if (states.absents(Fred::Object_State::server_update_prohibited))
+            {
+                if (states.presents(Fred::Object_State::server_transfer_prohibited))
+                {
+                    throw HasDifferentBlock();
+                }
+                throw ObjectNotBlocked();
+            }
+            request_id = get_unblock_id<UnblockChangesEmail, UnblockChangesPost>(
                     confirmation_method,
                     request,
                     locked_object,

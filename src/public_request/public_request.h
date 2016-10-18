@@ -73,6 +73,15 @@ public:
     }
 };
 
+class HasDifferentBlock : std::exception
+{
+public:
+    virtual const char* what() const throw()
+    {
+        return "a different unblock request has to be issued";
+    }
+};
+
 class PublicRequest
 {
 public:
