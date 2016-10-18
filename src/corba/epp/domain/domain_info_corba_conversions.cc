@@ -49,7 +49,7 @@ struct TimeZoneOffset {
  *
  * @return time converted to local time zone, with seconds fraction trimmed, formatted as RFC3339 string
  */
-static std::string formatTimeWithBoost(const boost::posix_time::ptime& _utc_ptime) {
+static std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_ptime) {
     // _utc_ptime converted to local ptime with seconds fraction trimmed
     const boost::posix_time::ptime local_ptime =
         boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(
@@ -59,7 +59,7 @@ static std::string formatTimeWithBoost(const boost::posix_time::ptime& _utc_ptim
         TimeZoneOffset(local_ptime).to_rfc3339_string();
 }
 
-static std::string formatDateWithBoost(const boost::gregorian::date& d) {
+static std::string format_date_to_iso_extended(const boost::gregorian::date& d) {
     return boost::gregorian::to_iso_extended_string(d);
 }
 
@@ -87,15 +87,15 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     _dst.CrID = Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);
     _dst.UpID = Corba::wrap_string_to_corba_string(_src.last_update_registrar_handle.get_value_or(std::string()));
 
-    _dst.CrDate = Corba::wrap_string_to_corba_string(formatTimeWithBoost(_src.crdate));
+    _dst.CrDate = Corba::wrap_string_to_corba_string(format_time_to_rfc3339(_src.crdate));
     _dst.UpDate = Corba::wrap_string_to_corba_string(
         _src.last_update.isnull() ? std::string()
-                                 : formatTimeWithBoost(_src.last_update.get_value()));
+                                 : format_time_to_rfc3339(_src.last_update.get_value()));
     _dst.TrDate = Corba::wrap_string_to_corba_string(
         _src.last_transfer.isnull() ? std::string()
-                                   : formatTimeWithBoost(_src.last_transfer.get_value()));
+                                   : format_time_to_rfc3339(_src.last_transfer.get_value()));
 
-    _dst.ExDate = Corba::wrap_string_to_corba_string(formatDateWithBoost(_src.exdate));
+    _dst.ExDate = Corba::wrap_string_to_corba_string(format_date_to_iso_extended(_src.exdate));
 
     _dst.AuthInfoPw = Corba::wrap_string_to_corba_string(_src.auth_info_pw.get_value_or_default());
 
