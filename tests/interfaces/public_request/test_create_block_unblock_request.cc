@@ -162,7 +162,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fix
             Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
             Registry::PublicRequestImpl::BLOCK_TRANSFER);
     BOOST_REQUIRE_EQUAL(
-            get_db_public_request(ctx, block_transfer, 7, 0).size(),
+            get_db_public_request(ctx, block_transfer, 6, 0).size(),
             1);
 
     make_fake_state_request(ctx, contact.id);
@@ -175,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fix
             Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
             Registry::PublicRequestImpl::BLOCK_TRANSFER_AND_UPDATE);
     BOOST_CHECK_EQUAL(
-            get_db_public_request(Fred::OperationContextCreator(), block_update, 5, 0).size(),
+            get_db_public_request(Fred::OperationContextCreator(), block_update, 4, 0).size(),
             1);
 }
 
