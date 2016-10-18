@@ -2,7 +2,6 @@
 #define PUBLIC_REQUEST_FIXTURE_COMMON_H_
 
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
 
 Database::Result get_db_public_request(
     const Fred::OperationContext& ctx,
