@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 
 BOOST_AUTO_TEST_SUITE(TestNonRegistryEmail)
 
-struct non_registry_email_fixture : Test::Fixture::instantiate_db_template //TODO only EMAIL_WITH_QUALIFIED_CERTIFICATE
+struct non_registry_email_fixture : Test::Fixture::instantiate_db_template
 {
 private:
     Fred::OperationContextCreator ctx;
