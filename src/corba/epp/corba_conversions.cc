@@ -344,7 +344,7 @@ namespace Corba {
 
     }//namespace Corba::{anonymous}
 
-    Optional<std::string> convert_corba_string_change(const char* input) {
+    Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string(const char* input) {
         const std::string safer_input = Corba::unwrap_string(input);
 
         /* XXX Defined by convention. Could probably be substituted by more explicit means in IDL interface. */
