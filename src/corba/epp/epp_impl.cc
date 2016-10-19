@@ -93,6 +93,7 @@
 #include "src/epp/domain/domain_info.h"
 #include "src/epp/domain/domain_transfer.h"
 #include "src/epp/domain/domain_create.h"
+#include "src/epp/domain/domain_renew.h"
 #include "src/epp/keyset/localized_info.h"
 #include "src/epp/keyset/localized_create.h"
 #include "src/epp/keyset/localized_update.h"
@@ -3946,209 +3947,45 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 ccReg::Response *
 ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
         const ccReg::Period_str& period, ccReg::timestamp_out exDate,
-        const ccReg::EppParams &params, const ccReg::ExtensionList & ext)
+        const ccReg::EppParams &_epp_params, const ccReg::ExtensionList & ext)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
+    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    try {
+        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
+        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-    std::string valexdate;
-    ccReg::Disclose publish;
-    int id, zone;
-    int period_count;
-    char periodStr[10];
-    short int code = 0;
+        const Epp::LocalizedRenewDomainResponse response = domain_renew(
+            Epp::DomainRenewInputData(
+                Corba::unwrap_string_from_const_char_ptr(fqdn),
+                Corba::unwrap_string_from_const_char_ptr(curExpDate),
+                Corba::unwrap_domain_registration_period(period),
+                Corba::unwrap_enum_validation_extension(ext)
+            ),
+            session_data.registrar_id,
+            request_params.log_request_id,
+            session_data.language,
+            server_transaction_handle,
+            request_params.client_transaction_id,
+            disable_epp_notifier_,
+            disable_epp_notifier_cltrid_prefix_,
+            rifd_epp_operations_charging_
+        );
 
+        ccReg::timestamp_var exdate = Corba::wrap_string_to_corba_string(
+                boost::gregorian::to_iso_extended_string(response.expiration_date));
+        ccReg::Response_var return_value = new ccReg::Response(
+                Corba::wrap_response(response.ok_response, server_transaction_handle));
 
-    EPPAction action(this, params.loginID, EPP_DomainRenew, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        /* No exception shall be thrown from here onwards. */
 
-    // default
-    exDate = CORBA::string_dup("");
+        exDate = exdate._retn();
+        return return_value._retn();
 
-    LOGGER(PACKAGE).notice(boost::format("DomainRenew: clientID -> %1% clTRID [%2%] fqdn  [%3%] curExpDate [%4%]") % (int ) params.loginID % (const char*)params.clTRID % fqdn % (const char *) curExpDate );
-
-    //  period count
-    if (period.unit == ccReg::unit_year) {
-        period_count = period.count * 12;
-        snprintf(periodStr, sizeof(periodStr), "y%d", period.count);
-    } else if (period.unit == ccReg::unit_month) {
-        period_count = period.count;
-        snprintf(periodStr, sizeof(periodStr), "m%d", period.count);
-    } else
-        period_count = 0; // use default value
-
-    LOG( NOTICE_LOG, "DomainRenew: period count %d unit %d period_count %d string [%s]" , period.count , period.unit , period_count , periodStr);
-
-    // parse enum.ExDate extension
-    extractEnumDomainExtension(valexdate, publish, ext);
-
-    if ((id = getIdOfDomain(action.getDB(), fqdn, lock_epp_commands_
-            , idn_allowed(action), true, &zone) ) <= 0) {
-        LOG( WARNING_LOG, "domain  [%s] NOT_EXIST", fqdn );
-        code=COMMAND_OBJECT_NOT_EXIST;
-    }
-    else  if (action.getDB()->TestRegistrarZone(action.getRegistrar(), zone) == false) {
-        LOG( WARNING_LOG, "Authentication error to zone: %d " , zone );
-        code = COMMAND_AUTHENTICATION_ERROR;
-    }
-    // test curent ExDate
-    // there should be lock here for row with exdate
-    // but there is already lock on object_registry row
-    // (from getIdOfDomain) and so there cannot be any race condition
-    else if (TestExDate(curExpDate, action.getDB()->GetDomainExDate(id)) == false) {
-        LOG( WARNING_LOG, "curExpDate is not same as ExDate" );
-        code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                ccReg::domain_curExpDate, 1,
-                REASON_MSG_CUREXPDATE_NOT_EXPDATE);
-    } else {
-        // set default renew  period from zone params
-        if (period_count == 0) {
-            period_count = GetZoneExPeriodMin(action.getDB(), zone);
-            LOG( NOTICE_LOG, "get default peridod %d month  for zone   %d ", period_count , zone );
-        }
-
-        //  test period
-        switch (TestPeriodyInterval(period_count,
-                    GetZoneExPeriodMin(action.getDB(), zone) , GetZoneExPeriodMax(action.getDB(), zone) ) ) {
-            case 2:
-                LOG( WARNING_LOG, "period %d interval ot of range MAX %d MIN %d" , period_count , GetZoneExPeriodMax(action.getDB(),  zone ) , GetZoneExPeriodMin(action.getDB(),  zone ) );
-                code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                        ccReg::domain_period, 1,
-                        REASON_MSG_PERIOD_RANGE);
-                break;
-            case 1:
-                LOG( WARNING_LOG, "period %d  interval policy error MIN %d" , period_count , GetZoneExPeriodMin(action.getDB(),  zone ) );
-                code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                        ccReg::domain_period, 1,
-                        REASON_MSG_PERIOD_POLICY);
-                break;
-            default:
-                // count new  ExDate
-                if (action.getDB()->CountExDate(id, period_count,
-                            GetZoneExPeriodMax(action.getDB(), zone) ) == false) {
-                    LOG( WARNING_LOG, "period %d ExDate out of range" , period_count );
-                    code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                            ccReg::domain_period, 1,
-                            REASON_MSG_PERIOD_RANGE);
-                }
-                break;
-
-        }
-
-        // test validity Date for enum domain
-        if (valexdate.length() > 0) {
-            // Test for enum domain only
-            if (GetZoneEnum(action.getDB(), zone) ) {
-                if (action.getDB()->TestValExDate(valexdate.c_str(),
-                            GetZoneValPeriod(action.getDB(), zone) , DefaultValExpInterval() , id)
-                        == false) {
-                    LOG(WARNING_LOG, "Validity exp date is not valid %s", valexdate.c_str());
-                    code = action.setErrorReason(COMMAND_PARAMETR_RANGE_ERROR,
-                            ccReg::domain_ext_valDate, 1,
-                            REASON_MSG_VALEXPDATE_NOT_VALID);
-                }
-
-            } else {
-
-                LOG(WARNING_LOG, "Can not validity exp date %s", valexdate.c_str());
-                code = action.setErrorReason(COMMAND_PARAMETR_VALUE_POLICY_ERROR,
-                        ccReg::domain_ext_valDate, 1,
-                        REASON_MSG_VALEXPDATE_NOT_USED);
-
-            }
-        }
-
-        if (code == 0)// if not param error
-        {
-            // test client of the object
-            if ( !action.getDB()->TestObjectClientID(id, action.getRegistrar()) ) {
-                LOG( WARNING_LOG, "bad autorization not client of domain [%s]", fqdn );
-                code = action.setErrorReason(COMMAND_AUTOR_ERROR,
-                        ccReg::registrar_autor, 0,
-                        REASON_MSG_REGISTRAR_AUTOR);
-            }
-            try {
-                if (!code && (
-                            testObjectHasState(action,id,FLAG_serverRenewProhibited) ||
-                            testObjectHasState(action,id,FLAG_deleteCandidate)
-                            )
-                   )
-                {
-                    LOG( WARNING_LOG, "renew of object %s is prohibited" , fqdn );
-                    code = COMMAND_STATUS_PROHIBITS_OPERATION;
-                }
-            } catch (...) {
-                code = COMMAND_FAILED;
-            }
-
-            if (!code) {
-
-                // change validity date for enum domain
-                if (GetZoneEnum(action.getDB(), zone) ) {
-                    if (valexdate.length() > 0 || publish != ccReg::DISCL_EMPTY) {
-                        action.getDB()->UPDATE("enumval");
-                        if (valexdate.length() > 0) {
-                            LOG(NOTICE_LOG, "change valExpDate %s", valexdate.c_str());
-                            action.getDB()->SET("ExDate", valexdate.c_str());
-                        }
-                        if (publish == ccReg::DISCL_DISPLAY) {
-                            LOG(NOTICE_LOG, "change publish flag to YES");
-                            action.getDB()->SET("publish", true);
-                        }
-                        if (publish == ccReg::DISCL_HIDE) {
-                            LOG(NOTICE_LOG, "change publish flag to NO");
-                            action.getDB()->SET("publish", false);
-                        }
-                        action.getDB()->WHERE("domainID", id);
-
-                        if (action.getDB()->EXEC() == false)
-                            code = COMMAND_FAILED;
-                    }
-                }
-
-                if (code == 0) // if is OK OK
-                {
-
-                    // make Renew Domain count new Exdate in
-                    if (action.getDB()->RenewExDate(id, period_count) ) {
-                        //  return new Exdate as local date
-                        CORBA::string_free(exDate);
-                        exDate = CORBA::string_dup(action.getDB()->GetDomainExDate(id) );
-
-                        if(rifd_epp_operations_charging_)
-                        {
-                            std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
-                            if (invMan->chargeDomainRenew(zone, action.getRegistrar(),
-                                        id, Database::Date(std::string(exDate)), period_count) == false ) {
-                                code = COMMAND_BILLING_FAILURE;
-                            } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
-                                code = COMMAND_OK;
-                            }
-                        } else if (action.getDB()->SaveDomainHistory(id, params.requestID)) {
-                            code = COMMAND_OK;
-                        }
-
-                    } else
-                        code = COMMAND_FAILED;
-                }
-            }
-        }
-    }
-    if (code == COMMAND_OK) // run notifier
-    {
-        action.set_notification_params(id,Notification::renewed, disable_epp_notifier_);
-    }
-    // EPP exception
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
+    } catch(const Epp::LocalizedFailResponse& e) {
+        throw Corba::wrap_error(e, server_transaction_handle);
     }
 
-    if (code == 0) {
-        action.failedInternal("DomainRenew");
-    }
 
-    return action.getRet()._retn();
 }
 
 /*************************************************************

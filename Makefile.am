@@ -1600,6 +1600,12 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_enum_validation.h \
 		src/epp/domain/domain_create_impl.cc \
 		src/epp/domain/domain_create_impl.h \
+		src/epp/domain/domain_renew_impl.cc \
+		src/epp/domain/domain_renew_impl.h \
+		src/epp/domain/domain_renew.cc \
+		src/epp/domain/domain_renew.h \
+		src/epp/domain/domain_billing.cc \
+		src/epp/domain/domain_billing.h \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \

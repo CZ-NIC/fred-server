@@ -1,8 +1,9 @@
 #include "src/fredlib/registrar/info_registrar.h"
-#include "src/epp/domain/domain_create.h"
+#include "src/epp/domain/domain_renew.h"
+#include "src/epp/domain/domain_billing.h"
 #include "src/epp/action.h"
 #include "src/epp/conditionally_enqueue_notification.h"
-#include "src/epp/domain/domain_create_impl.h"
+#include "src/epp/domain/domain_renew_impl.h"
 #include "src/epp/domain/domain_billing.h"
 #include "src/epp/exception.h"
 #include "src/epp/exception_aggregate_param_errors.h"
@@ -14,8 +15,8 @@
 
 namespace Epp {
 
-    LocalizedCreateDomainResponse domain_create(
-        const DomainCreateInputData& _data,
+    LocalizedRenewDomainResponse domain_renew(
+        const DomainRenewInputData& _data,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
         const SessionLang::Enum _lang,
@@ -30,12 +31,12 @@ namespace Epp {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::DomainCreate) ) );
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::DomainRenew) ) );
 
         Fred::OperationContextCreator ctx;
 
-        const DomainCreateResult impl_result(
-            domain_create_impl(
+        const DomainRenewResult impl_result(
+            domain_renew_impl(
                 ctx,
                 _data,
                 _registrar_id,
@@ -43,32 +44,25 @@ namespace Epp {
             )
         );
 
-        const LocalizedCreateDomainResponse localized_result(
+        const LocalizedRenewDomainResponse localized_result(
             create_localized_success_response(
                 Response::ok,
                 ctx,
                 _lang
             ),
-            impl_result.crtime,
             impl_result.exdate
         );
 
+        //tmp billing impl
         if(_rifd_epp_operations_charging
                 && Fred::InfoRegistrarById(_registrar_id).exec(ctx)
                     .info_registrar_data.system.get_value_or(false) == false)
         {
-            create_domain_bill_item(
-                _data.fqdn,
-                impl_result.crtime,
-                _registrar_id,
-                impl_result.id,
-                ctx);
-
             renew_domain_bill_item(
                 _data.fqdn,
-                impl_result.crtime,
+                impl_result.curent_time,
                 _registrar_id,
-                impl_result.id,
+                impl_result.domain_id,
                 impl_result.length_of_domain_registration_in_years,
                 impl_result.exdate,
                 ctx);
@@ -77,8 +71,8 @@ namespace Epp {
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
-            Notification::created,
-            impl_result.create_history_id,
+            Notification::renewed,
+            impl_result.domain_history_id,
             _registrar_id,
             _server_transaction_handle,
             _client_transaction_handle,
@@ -112,14 +106,14 @@ namespace Epp {
             std::set<Error>(),
             _lang
         );
-    } catch(const BillingFailure&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::billing_failure,
-            std::set<Error>(),
-            _lang
-        );
+    } catch(const ObjectDoesNotExist& ) {
+            Fred::OperationContextCreator exception_localization_ctx;
+            throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::object_not_exist,
+                std::set<Error>(),
+                _lang
+            );
     } catch(const ParameterValueRangeError& e) {
             Fred::OperationContextCreator exception_localization_ctx;
             throw create_localized_fail_response(
@@ -128,27 +122,19 @@ namespace Epp {
                 e.get(),
                 _lang
             );
-    } catch(const RequiredParameterMissing& ) {
+    } catch(const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parameter_missing,
+            Response::status_prohibits_operation,
             std::set<Error>(),
             _lang
         );
-    } catch(const ParameterValueSyntaxError& e) {
+    } catch(const BillingFailure&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
-            Response::parameter_value_syntax_error,
-            e.get(),
-            _lang
-        );
-    } catch(const ObjectExists&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::object_exist,
+            Response::billing_failure,
             std::set<Error>(),
             _lang
         );

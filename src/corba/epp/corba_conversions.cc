@@ -864,9 +864,9 @@ namespace Corba {
             if (ext[i] >>= enum_ext)
             {
                 ret.push_back(Epp::ENUMValidationExtension(
-                        boost::gregorian::from_string(
+                        boost::gregorian::from_simple_string(
                                 Corba::unwrap_string_from_const_char_ptr(enum_ext->valExDate)),
-                        enum_ext->publish)
+                        enum_ext->publish == ccReg::DISCL_DISPLAY ? true : false)
                 );
             }
             else
