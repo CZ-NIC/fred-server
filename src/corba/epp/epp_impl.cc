@@ -3009,15 +3009,14 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
         const Optional<std::string> keyset_chg       = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_keyset_chg);
 
         const std::vector<Epp::ENUMValidationExtension> enum_validation_list = Corba::unwrap_enum_validation_extension(_ext);
-
         return new ccReg::Response(
             Corba::wrap_response(
                 Epp::Domain::domain_update(
                     Corba::unwrap_string(_domain_fqdn),
-                    Corba::unwrap_string(_registrant_chg),
-                    Corba::unwrap_string(_auth_info_pw_chg),
-                    Corba::unwrap_string(_nsset_chg),
-                    Corba::unwrap_string(_keyset_chg),
+                    registrant_chg,
+                    auth_info_pw_chg,
+                    nsset_chg,
+                    keyset_chg,
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_add),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_rem),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_tmpcontacts_rem),

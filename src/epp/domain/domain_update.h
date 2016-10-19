@@ -40,10 +40,10 @@ namespace Domain {
 
 LocalizedSuccessResponse domain_update(
     const std::string& _domain_fqdn,
-    const std::string& _registrant_chg,
+    const Optional<std::string>& _registrant_chg,
     const Optional<std::string>& _auth_info_pw_chg,
-    const std::string& _nsset_chg,
-    const std::string& _keyset_chg,
+    const Optional<std::string>& _nsset_chg,
+    const Optional<std::string>& _keyset_chg,
     const std::vector<std::string>& _admin_contacts_add,
     const std::vector<std::string>& _admin_contacts_rem,
     const std::vector<std::string>& _tmpcontacts_rem,

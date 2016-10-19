@@ -25,7 +25,7 @@
 #define SRC_EPP_DOMAIN_DOMAIN_UPDATE_IMPL_H
 
 #include "src/epp/contact/contact_update.h"
-#include "src/fredlib/domain/enum_validation_extension.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
@@ -35,26 +35,16 @@ namespace Epp {
 
 namespace Domain {
 
-/**
- * If successful (no exception thrown) state requests of conact are performed. In case of exception behaviour is undefined and transaction should bo rolled back.
- *
- * @returns new contact history id
- *
- * @throws AuthErrorServerClosingConnection
- * @throws NonexistentHandle
- * @throws AuthorizationError
- * @throws ObjectStatusProhibitsOperation in case conatct has serverUpdateProhibited or deleteCandidate status (or request)
- * @throws AggregatedParamErrors
- */
-unsigned long long contact_update_impl(
-    Fred::OperationContext &_ctx,
+unsigned long long domain_update_impl(
+    Fred::OperationContext& _ctx,
     const std::string& _domain_fqdn,
-    const std::string& _registrant_change,
-    const Optional<std::string>& _auth_info_pw_change,
-    const std::string& _nsset_change,
-    const std::string& _keyset_change,
+    const Optional<std::string>& _registrant_chg,
+    const Optional<std::string>& _auth_info_pw_chg,
+    const Optional<std::string>& _nsset_chg,
+    const Optional<std::string>& _keyset_chg,
     const std::vector<std::string>& _admin_contacts_add,
     const std::vector<std::string>& _admin_contacts_rem,
+    const std::vector<std::string>& _tmpcontacts_rem,
     const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
     unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id);
