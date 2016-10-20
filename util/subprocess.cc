@@ -715,17 +715,17 @@ void cmd_process(
         bool _search_path,
         const std::vector< std::string > &_args,
         ImReader &_cmd_stdin_from_child,
-        ImWriter &_cmd_stdout_to_child,
-        ImWriter &_cmd_stderr_to_child)
+        ImWriter &_cmd_stdout_to_parent,
+        ImWriter &_cmd_stderr_to_parent)
 {
     try
     {
         //duplicate readable end of stdin pipe into stdin
         _cmd_stdin_from_child.dup(STDIN_FILENO);
         //duplicate writable end of stdout pipe into stdout
-        _cmd_stdout_to_child.dup(STDOUT_FILENO);
+        _cmd_stdout_to_parent.dup(STDOUT_FILENO);
         //duplicate writable end of stderr pipe into stderr
-        _cmd_stderr_to_child.dup(STDERR_FILENO);
+        _cmd_stderr_to_parent.dup(STDERR_FILENO);
 
         char *argv[1/*cmd*/ + _args.size() + 1/*NULL*/];
         char **argv_ptr = argv;
@@ -774,8 +774,6 @@ int single_threaded_child(
     check_waitpid_functionality();
 
     Pipe cmd_stdin;
-    Pipe cmd_stdout;
-    Pipe cmd_stderr;
 
     SetMySigchldHandler sigchld_tools;
 
@@ -794,14 +792,12 @@ int single_threaded_child(
         try
         {
             ImReader cmd_stdin_from_child(cmd_stdin);
-            ImWriter cmd_stdout_to_child(cmd_stdout);
-            ImWriter cmd_stderr_to_child(cmd_stderr);
             cmd_process(_cmd,
                         _search_path,
                         _args,
                         cmd_stdin_from_child,
-                        cmd_stdout_to_child,
-                        cmd_stderr_to_child);
+                        _cmd_stdout_to_parent,
+                        _cmd_stderr_to_parent);
         }
         catch (...) { }
         ::_exit(EXIT_FAILURE);
@@ -809,13 +805,6 @@ int single_threaded_child(
 
     ImWriter cmd_stdin_from_me(cmd_stdin);
     cmd_stdin_from_me.set_nonblocking();
-    ImReader cmd_stdout_for_me(cmd_stdout);
-    cmd_stdout_for_me.set_nonblocking();
-    ImReader cmd_stderr_for_me(cmd_stderr);
-    cmd_stderr_for_me.set_nonblocking();
-
-    _cmd_stdout_to_parent.set_nonblocking();
-    _cmd_stderr_to_parent.set_nonblocking();
 
     const bool no_data_for_cmd = _stdin_content.empty();
     const char *data = no_data_for_cmd ? NULL : _stdin_content.c_str();
@@ -827,37 +816,19 @@ int single_threaded_child(
 
     const ::sigset_t *const unblocked_sigchld = sigchld_tools.get_unblocked_sigchild_mask();
     bool cmd_is_done = false;
-    std::string cmd_stdout_buf;
-    std::string cmd_stderr_buf;
     int status;
 
-    while (!(cmd_is_done &&
-             cmd_stdout_buf.empty() &&
-             cmd_stderr_buf.empty() &&
-             cmd_stdout_for_me.is_closed() &&
-             cmd_stderr_for_me.is_closed()))
+    while (!cmd_is_done)
     {
-        ::fd_set read_event;
-        FD_ZERO(&read_event);
         ::fd_set write_event;
         FD_ZERO(&write_event);
         int max_fd = -1;
 
         cmd_stdin_from_me.watch(write_event, max_fd);
-        cmd_stdout_for_me.watch(read_event, max_fd);
-        cmd_stderr_for_me.watch(read_event, max_fd);
-        if (!cmd_stdout_buf.empty())
-        {
-            _cmd_stdout_to_parent.watch(write_event, max_fd);
-        }
-        if (!cmd_stderr_buf.empty())
-        {
-            _cmd_stderr_to_parent.watch(write_event, max_fd);
-        }
-        const int size_of_longest_set = (max_fd < 0) ? 0 : max_fd + 1;
+        const int size_of_set = (max_fd < 0) ? 0 : max_fd + 1;
 
         static const int failure = -1;
-        const int number_of_events = ::pselect(size_of_longest_set, &read_event, &write_event, NULL,
+        const int number_of_events = ::pselect(size_of_set, NULL, &write_event, NULL,
                                                timeout_tools.time_to_limit(), unblocked_sigchld);
 
         if (number_of_events == failure)//pselect broken
@@ -894,28 +865,6 @@ int single_threaded_child(
                     cmd_stdin_from_me.close();
                 }
             }
-        }
-
-        if (!cmd_stdout_buf.empty() && _cmd_stdout_to_parent.is_ready(write_event))
-        {
-            const ::size_t wbytes = _cmd_stdout_to_parent.write(cmd_stdout_buf.c_str(), cmd_stdout_buf.length());
-            cmd_stdout_buf.erase(0, wbytes);
-        }
-
-        if (cmd_stdout_for_me.is_ready(read_event))
-        {
-            cmd_stdout_for_me.append(cmd_stdout_buf);
-        }
-
-        if (!cmd_stderr_buf.empty() && _cmd_stderr_to_parent.is_ready(write_event))
-        {
-            const ::size_t wbytes = _cmd_stderr_to_parent.write(cmd_stderr_buf.c_str(), cmd_stderr_buf.length());
-            cmd_stderr_buf.erase(0, wbytes);
-        }
-
-        if (cmd_stderr_for_me.is_ready(read_event))
-        {
-            cmd_stderr_for_me.append(cmd_stderr_buf);
         }
     }
 
