@@ -7,7 +7,7 @@
 
 #include "util/map_at.h"
 
-namespace CorbaConversion {
+namespace Corba {
 
 namespace {
 
@@ -29,7 +29,7 @@ ccReg::CheckAvail wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
     throw std::logic_error("Unexpected Epp::Domain::DomainRegistrationObstruction::Enum value.");
 }
 
-} // namespace CorbaConversion::{anonymous}
+} // namespace Corba::{anonymous}
 
 /**
  * @returns check results in the same order as input handles

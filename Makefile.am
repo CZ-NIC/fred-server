@@ -2388,8 +2388,6 @@ tests_interfaces_test_admin_contact_automerge_LDFLAGS = \
 		$(BOOST_LDFLAGS) \
 		$(AM_LDFLAGS)
 
-#src/corba/libcorbalogger.a
-
 tests_interfaces_test_admin_contact_automerge_LDADD = \
 		src/corba/libcorbadatatypes.a \
 		src/fredlib/libfred.a \
@@ -2469,6 +2467,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_check_impl.cc \
 		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/domain/fixture.h \
 		tests/interfaces/epp/domain/test_domain_check_impl.cc \
 		tests/interfaces/epp/domain/test_domain_delete_impl.cc \
 		tests/interfaces/epp/domain/test_domain_info_impl.cc \

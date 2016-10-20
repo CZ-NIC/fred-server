@@ -31,7 +31,7 @@
 #include "src/epp/domain/domain_check.h"
 #include "src/epp/domain/domain_check_localization.h"
 
-namespace CorbaConversion {
+namespace Corba {
 
     /**
      * @returns data ordered the same way as input fqdns

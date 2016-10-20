@@ -12,7 +12,7 @@
 
 #include <string>
 
-namespace CorbaConversion {
+namespace Corba {
 
 namespace {
 
@@ -63,7 +63,7 @@ static std::string format_date_to_iso_extended(const boost::gregorian::date& d) 
     return boost::gregorian::to_iso_extended_string(d);
 }
 
-} // namespace CorbaConversion::{anonymous}
+} // namespace Corba::{anonymous}
 
 void wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(Fred::ENUMValidationExtension src, ccReg::ExtensionList& _dst) {
     return; // TODO
@@ -99,28 +99,23 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
 
     _dst.AuthInfoPw = Corba::wrap_string_to_corba_string(_src.auth_info_pw.get_value_or_default());
 
-    {
-        //_dst.admin = new ccReg::AdminContact();
-        _dst.admin.length(_src.admin.size());
-        unsigned long dst_index = 0;
-        for(std::set<std::string>::const_iterator admin_ptr = _src.admin.begin(); admin_ptr != _src.admin.end(); ++admin_ptr) {
-            _dst.admin[dst_index] = CorbaConversion::wrap_string(*admin_ptr);
-            ++dst_index;
-        }
+    _dst.admin.length(_src.admin.size());
+    unsigned long dst_admin_index = 0;
+    for(std::set<std::string>::const_iterator admin_ptr = _src.admin.begin(); admin_ptr != _src.admin.end(); ++admin_ptr) {
+        _dst.admin[dst_admin_index] = Corba::wrap_string_to_corba_string(*admin_ptr);
+        ++dst_admin_index;
     }
 
-    CorbaConversion::wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(
-            _src.ext_enum_domain_validation.get_value_or(Fred::ENUMValidationExtension()),
-            _dst.ext);
+    Corba::wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(
+        _src.ext_enum_domain_validation.get_value_or(Fred::ENUMValidationExtension()),
+        _dst.ext
+    );
 
-    {
-        //_dst.tmpcontact = new ccReg::AdminContact();
-        _dst.tmpcontact.length(_src.tmpcontact.size());
-        unsigned long dst_index = 0;
-        for(std::set<std::string>::const_iterator tmpcontact_ptr = _src.tmpcontact.begin(); tmpcontact_ptr != _src.tmpcontact.end(); ++tmpcontact_ptr) {
-            _dst.tmpcontact[dst_index] = CorbaConversion::wrap_string(*tmpcontact_ptr);
-            ++dst_index;
-        }
+    _dst.tmpcontact.length(_src.tmpcontact.size());
+    unsigned long dst_tmpcontact_index = 0;
+    for(std::set<std::string>::const_iterator tmpcontact_ptr = _src.tmpcontact.begin(); tmpcontact_ptr != _src.tmpcontact.end(); ++tmpcontact_ptr) {
+        _dst.tmpcontact[dst_tmpcontact_index] = Corba::wrap_string_to_corba_string(*tmpcontact_ptr);
+        ++dst_tmpcontact_index;
     }
 
     return;

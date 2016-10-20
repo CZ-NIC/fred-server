@@ -2614,7 +2614,7 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
         );
 
         ccReg::CheckResp_var domain_check_results = new ccReg::CheckResp(
-            CorbaConversion::wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
+            Corba::wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
                 domain_fqdns,
                 domain_check_response.domain_fqdn_to_domain_localized_registration_obstruction
             )
@@ -3371,7 +3371,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
         );
 
         ccReg::Domain_var domain_info_result = new ccReg::Domain;
-        CorbaConversion::wrap_Epp_Domain_DomainInfoLocalizedOutputData(domain_info_response.localized_domain_info_output_data, domain_info_result.inout());
+        Corba::wrap_Epp_Domain_DomainInfoLocalizedOutputData(domain_info_response.localized_domain_info_output_data, domain_info_result.inout());
         ccReg::Response_var return_value = new ccReg::Response(Corba::wrap_response(domain_info_response.localized_success_response, server_transaction_handle));
 
         /* No exception shall be thrown from here onwards. */

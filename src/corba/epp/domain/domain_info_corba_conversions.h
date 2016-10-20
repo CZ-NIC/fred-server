@@ -30,7 +30,7 @@
 
 #include "src/epp/domain/domain_info.h"
 
-namespace CorbaConversion {
+namespace Corba {
 
     void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
         const Epp::Domain::DomainInfoLocalizedOutputData& _src,
