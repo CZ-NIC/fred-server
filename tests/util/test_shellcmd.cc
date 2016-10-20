@@ -28,7 +28,6 @@
 #include <queue>
 #include <sys/time.h>
 #include <time.h>
-#include <signal.h>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -64,7 +63,6 @@
 BOOST_AUTO_TEST_SUITE(TestShellCmd)
 
 const std::string server_name = "test-shellcmd";
-
 
 static bool check_std_exception(std::exception const & ex)
 {
@@ -276,22 +274,25 @@ BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_stderr )
 
 BOOST_AUTO_TEST_CASE( test_shellcmd_wrapper_timeout )
 {
-    std::size_t slen =  16;
+    static const std::size_t slen = 16;
+    static const unsigned timeout_one_second = 1;
+    const std::string data(slen, 'u');
 
     BOOST_CHECK_EXCEPTION(SubProcessOutput sub_output1 = ShellCmd(
-        "cat | tr u - ; sleep 2","/bin/bash",1).execute(std::string(slen,'u'))
-        , std::exception
-        , check_std_exception);
+        "cat | tr u - ; sleep 2", "/bin/bash", timeout_one_second).execute(data),
+        std::exception,
+        check_std_exception);
 
     BOOST_CHECK_EXCEPTION(SubProcessOutput sub_output1 = ShellCmd(
-        "sleep 2; cat | tr u - ","/bin/bash",1).execute(std::string(slen,'u'))
-        , std::exception
-        , check_std_exception);
+        "sleep 2; cat | tr u - ", "/bin/bash", timeout_one_second).execute(data),
+        std::exception,
+        check_std_exception);
 }
 
 BOOST_AUTO_TEST_CASE( test_exec_wrapper_timeout )
 {
-    BOOST_CHECK_EXCEPTION(Cmd::Executable("sleep")("20").run_with_path(1),
+    static const unsigned timeout_one_second = 1;
+    BOOST_CHECK_EXCEPTION(Cmd::Executable("sleep")("20").run_with_path(timeout_one_second),
         std::exception, check_std_exception);
 }
 #endif
@@ -327,12 +328,18 @@ class TestThreadedWorker : public ThreadedTestWorker<ResultTest, TestParams>
 public:
     typedef ThreadedTestWorker<ResultTest, TestParams>::ThreadedTestResultQueue queue_type;
 
-    TestThreadedWorker(unsigned number
-             , boost::barrier* sb
-             , std::size_t thread_group_divisor
-             , queue_type* result_queue
-             , TestParams params)
-        : ThreadedTestWorker<ResultTest, TestParams>(number, sb, thread_group_divisor, result_queue, params)
+    TestThreadedWorker(
+            unsigned number_of_threads,
+            boost::barrier* sb,
+            std::size_t thread_group_divisor,
+            queue_type* result_queue,
+            TestParams params)
+    :   ThreadedTestWorker<ResultTest, TestParams>(
+            number_of_threads,
+            sb,
+            thread_group_divisor,
+            result_queue,
+            params)
     { }
 
     ResultTest run(const TestParams &p)
@@ -384,19 +391,48 @@ struct ThreadResult
 
 typedef concurrent_queue<ThreadResult > ThreadResultQueue;
 
+namespace {
+
+class BoostTestMessageGuard
+{
+public:
+    BoostTestMessageGuard()
+    {
+        static const int op_success = 0;
+        const int retval = ::pthread_mutex_lock(&mutex_);
+        if (retval != op_success)
+        {
+            throw std::runtime_error("pthread_mutex_lock() failure: " + std::string(std::strerror(retval)));
+        }
+    }
+    ~BoostTestMessageGuard()
+    {
+        ::pthread_mutex_unlock(&mutex_);
+    }
+private:
+    static ::pthread_mutex_t mutex_;
+};
+
+::pthread_mutex_t BoostTestMessageGuard::mutex_ = PTHREAD_MUTEX_INITIALIZER;
+
+}
+
 //thread functor
 class SimpleTestThreadWorker
 {
 public:
 
-    SimpleTestThreadWorker(unsigned number,unsigned sleep_time
-            , sync_barriers* sb_ptr
-            , ThreadResultQueue* result_queue_ptr = 0, unsigned seed = 0)
-            : number_(number)
-            , sleep_time_(sleep_time)
-            , sb_ptr_(sb_ptr)
-            , rdg_(seed)
-            , rsq_ptr (result_queue_ptr)
+    SimpleTestThreadWorker(
+            unsigned thread_number,
+            unsigned sleep_time,
+            sync_barriers* sb_ptr,
+            ThreadResultQueue *result_queue_ptr = NULL,
+            unsigned seed = 0)
+    :   number_(thread_number),
+        sleep_time_(sleep_time),
+        sb_ptr_(sb_ptr),
+        rdg_(seed),
+        rsq_ptr (result_queue_ptr)
     {}
 
     void operator()()
@@ -427,11 +463,11 @@ public:
 
             //some tests
 
-            for(int i = 0; i < 10 ; ++i)
+            for (int cnt = 0; cnt < 1; ++cnt)
             {
-                SubProcessOutput sub_output;// = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
-
-                sub_output = ShellCmd(" echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk",10).execute();
+                SubProcessOutput sub_output;// = ShellCmd("echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk", 10).execute();
+                static const Cmd::Executable::Seconds timeout = 10;
+                sub_output = ShellCmd("echo kuk | grep kuk | grep -v juk | grep kuk | grep -v juk", timeout).execute();
 
                 if(!sub_output.stderr.empty())
                 {
@@ -449,10 +485,10 @@ public:
 
                 sub_output =
                     Cmd::Data(Cmd::Data(Cmd::Data(Cmd::Data
-                        ("kuk\n").into("grep")("kuk").run_with_path(10).stdout)
-                                 .into("grep")("-v")("juk").run_with_path(10).stdout)
-                                 .into("grep")("kuk").run_with_path(10).stdout)
-                                 .into("grep")("-v")("juk").run_with_path(10);
+                        ("kuk\n").into("grep")("kuk").run_with_path(timeout).stdout)
+                                 .into("grep")("-v")("juk").run_with_path(timeout).stdout)
+                                 .into("grep")("kuk").run_with_path(timeout).stdout)
+                                 .into("grep")("-v")("juk").run_with_path(timeout);
 
                 if (!sub_output.succeeded() || !sub_output.stderr.empty())
                 {
@@ -480,26 +516,28 @@ public:
                     break;
                 }
 #endif
-            }//for i
+            }
 
         }
-        catch(const std::exception& ex)
+        catch (const std::exception& ex)
         {
-            /* WARNING: unsafe usage of BOOST_TEST_MESSAGE; it isn't thread safe */
-            BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_
-                    << " reason: " << ex.what() );
+            const BoostTestMessageGuard guard;
+            BOOST_TEST_MESSAGE("exception 1 in operator() thread number: " << number_ << " reason: " << ex.what());
             res.ret = 134217728;
             res.desc = std::string(ex.what());
         }
-        catch(...)
+        catch (...)
         {
-            /* WARNING: unsafe usage of BOOST_TEST_MESSAGE; it isn't thread safe */
-            BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_ );
+            const BoostTestMessageGuard guard;
+            BOOST_TEST_MESSAGE("exception 2 in operator() thread number: " << number_);
             res.ret = 268435456;
             res.desc = std::string("unknown exception");
         }
 
-        if(rsq_ptr) rsq_ptr->push(res);
+        if (rsq_ptr != NULL)
+        {
+            rsq_ptr->push(res);
+        }
 #if 0
         {
             std::ostringstream out;
@@ -511,7 +549,7 @@ public:
 
 private:
     //need only defaultly constructible members here
-    unsigned    number_;//thred identification
+    unsigned    number_;//thread identification
     unsigned    sleep_time_;//[s]
     sync_barriers* sb_ptr_;
     RandomDataGenerator rdg_;
@@ -521,51 +559,48 @@ private:
 
 BOOST_AUTO_TEST_CASE( test_shellcmd_threaded )
 {
-    //waitpid need default SIGCHLD handler to work
-    sighandler_t sig_chld_h = signal(SIGCHLD, SIG_DFL);
-
     HandleThreadGroupArgs* thread_args_ptr=CfgArgs::instance()->
                    get_handler_ptr_by_type<HandleThreadGroupArgs>();
 
-    std::size_t const thread_number = thread_args_ptr->thread_number;
+    const std::size_t number_of_threads = thread_args_ptr->thread_number;
     ThreadResultQueue result_queue;
 
     //vector of thread functors
     std::vector<SimpleTestThreadWorker> tw_vector;
-    tw_vector.reserve(thread_number);
+    tw_vector.reserve(number_of_threads);
 
     //synchronization barriers instance
-    sync_barriers sb(thread_number);
+    sync_barriers sb(number_of_threads);
 
     //thread container
     boost::thread_group threads;
-    for (unsigned i = 0; i < thread_number; ++i)
+    for (unsigned idx = 0; idx < number_of_threads; ++idx)
     {
-        tw_vector.push_back(SimpleTestThreadWorker(i,3,&sb, &result_queue));
-        threads.create_thread(tw_vector.at(i));
+        static const unsigned default_sleep_time = 3;
+        tw_vector.push_back(SimpleTestThreadWorker(idx, default_sleep_time, &sb, &result_queue));
+        threads.create_thread(tw_vector.at(idx));
     }
 
     threads.join_all();
 
-    BOOST_TEST_MESSAGE( "threads end result_queue.size(): " << result_queue.size() );
+    BOOST_TEST_MESSAGE("threads end result_queue.size(): " << result_queue.size());
 
-    for(unsigned i = 0; i < thread_number; ++i)
+    for (unsigned idx = 0; idx < number_of_threads; ++idx)
     {
         ThreadResult thread_result;
-        if(!result_queue.try_pop(thread_result)) {
+        if (!result_queue.try_pop(thread_result))
+        {
             continue;
         }
 
-        if(thread_result.ret != 0)
+        if (thread_result.ret != 0)
         {
             BOOST_FAIL( thread_result.desc
                     << " thread number: " << thread_result.number
                     << " return code: " << thread_result.ret
                     << " description: " << thread_result.desc);
         }
-    }//for i
-
-    signal(SIGCHLD, sig_chld_h);//restore saved SIGCHLD handler
+    }
 }
 
 //#endif
