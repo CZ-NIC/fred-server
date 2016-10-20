@@ -940,7 +940,7 @@ SubProcessOutput cmd_run(
     SubProcessOutput out;
     std::string cmd_status_buf;
     cmd_status_buf.reserve(sizeof(out.status));
-    bool child_is_done = false;
+    bool child_is_running = true;
     int child_status;
 
     while (true)
@@ -967,10 +967,9 @@ SubProcessOutput cmd_run(
         {
             if (errno == EINTR)//by a signal
             {
-                child_is_done = !is_child_running(child_pid, &child_status);
-                if (child_is_done)
+                if (child_is_running)
                 {
-                    break;
+                    child_is_running = is_child_running(child_pid, &child_status);
                 }
                 continue;
             }
@@ -980,7 +979,10 @@ SubProcessOutput cmd_run(
         const bool time_is_up = (number_of_events == 0);
         if (time_is_up)
         {
-            kill_child(child_pid);
+            if (child_is_running)
+            {
+                kill_child(child_pid);
+            }
             throw std::runtime_error("cmd_run() select failure: unexpected timeout reached");
         }
 
@@ -1000,7 +1002,7 @@ SubProcessOutput cmd_run(
         }
     }
 
-    if (!child_is_done)
+    if (child_is_running)
     {
         while (true)
         {
