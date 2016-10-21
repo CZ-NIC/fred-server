@@ -90,9 +90,6 @@ LocalizedSuccessResponse domain_delete(
             _lang
         );
 
-    } catch(const LocalizedFailResponse&) {
-        throw;
-
     } catch(...) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
