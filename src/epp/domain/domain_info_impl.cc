@@ -73,8 +73,13 @@ DomainInfoOutputData domain_info_impl(
             domain_info_output_data.admin.insert(object_id_handle_pair->handle);
         }
 
-        // TODO convert from Fred::ENUMValidationExtension to Epp::ENUMValidationExtension
-        domain_info_output_data.ext_enum_domain_validation = info_domain_data.enum_domain_validation;
+        domain_info_output_data.ext_enum_domain_validation =
+            info_domain_data.enum_domain_validation.isnull() ? Nullable<Epp::ENUMValidationExtension>()
+                                                             : Epp::ENUMValidationExtension(
+                                                                 info_domain_data.enum_domain_validation.get_value().validation_expiration,
+                                                                 info_domain_data.enum_domain_validation.get_value().publish
+                                                               );
+
 
     } catch (const Fred::InfoDomainByHandle::Exception& e) {
 

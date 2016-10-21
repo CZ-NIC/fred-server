@@ -82,7 +82,15 @@ void check_equal(
         admin.end()
     );
 
-    BOOST_CHECK_EQUAL(domain_info_output_data.ext_enum_domain_validation, info_domain_data.enum_domain_validation);
+    BOOST_CHECK_EQUAL(
+       domain_info_output_data.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()).get_valexdate(),
+       info_domain_data.enum_domain_validation.get_value_or_default().validation_expiration
+   );
+
+    BOOST_CHECK_EQUAL(
+       domain_info_output_data.ext_enum_domain_validation.get_value_or_default().get_publish(),
+       info_domain_data.enum_domain_validation.get_value_or_default().publish
+   );
 
     BOOST_CHECK_EQUAL(domain_info_output_data.tmpcontact.size(), 0);
 }

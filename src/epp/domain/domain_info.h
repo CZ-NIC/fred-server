@@ -24,6 +24,7 @@
 #ifndef SRC_EPP_DOMAIN_DOMAIN_INFO_H
 #define SRC_EPP_DOMAIN_DOMAIN_INFO_H
 
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/localized_response.h"
 #include "src/epp/localized_states.h"
 #include "src/epp/session_lang.h"
@@ -58,8 +59,7 @@ struct DomainInfoLocalizedOutputData {
     boost::gregorian::date exdate;
     Nullable<std::string> auth_info_pw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
-    // FIXME use Epp::ENUMValidationExtension instaed - JZ: branch 15099-epp_domain_create
-    Nullable<Fred::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
+    Nullable<Epp::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
 };
 

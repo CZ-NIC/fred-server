@@ -253,7 +253,7 @@ public:
     /**
      * DomainCheck - retrieve states of domains identified by their FQDNs
      *
-     * \param _domain_fqdns_to_be_checked - identifiers of domains to check
+     * \param _domain_fqdns - identifiers of domains to check
      * \param _domain_check_results - output sequence of check results
      * \param _epp_params - parameters of EPP session
      *

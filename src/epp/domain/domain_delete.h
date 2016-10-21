@@ -34,7 +34,7 @@ namespace Epp {
 namespace Domain {
 
 LocalizedSuccessResponse domain_delete(
-    const std::string& _fqdn,
+    const std::string& _domain_fqdn,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
     const std::string& _server_transaction_handle,

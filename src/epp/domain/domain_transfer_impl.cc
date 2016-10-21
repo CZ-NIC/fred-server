@@ -18,6 +18,9 @@
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/registrar/registrar_zone_access.h"
+#include "src/fredlib/zone/zone.h"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 
@@ -38,15 +41,14 @@ unsigned long long domain_transfer_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    // TODO checkRegistrarZoneAccess (JZ: 15099-epp_domain_create)
-    //boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
+    boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
-    //const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-    //        Fred::Zone::rem_trailing_dot(_data.fqdn));
+    const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
+            Fred::Zone::rem_trailing_dot(_domain_fqdn));
 
-    //if(!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
-    //    throw AuthorizationError();
-    //}
+    if(!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
+        throw AuthorizationError();
+    }
 
     try {
         if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {

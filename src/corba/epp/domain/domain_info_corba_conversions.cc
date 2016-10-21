@@ -2,8 +2,8 @@
 #include "src/corba/epp/domain/domain_info_corba_conversions.h"
 #include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/domain/domain_info.h"
-#include "src/old_utils/util.h" // for convert_rfc3339_timestamp()
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
@@ -65,8 +65,14 @@ static std::string format_date_to_iso_extended(const boost::gregorian::date& d) 
 
 } // namespace Corba::{anonymous}
 
-void wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(Fred::ENUMValidationExtension src, ccReg::ExtensionList& _dst) {
-    return; // TODO
+void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(Epp::ENUMValidationExtension _src, ccReg::ExtensionList& _dst) {
+    ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
+    enumVal->valExDate = Corba::wrap_string_to_corba_string(
+        boost::gregorian::to_iso_extended_string(_src.get_valexdate())
+    );
+    enumVal->publish = _src.get_publish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
+    _dst.length(1);
+    _dst[0] <<= enumVal._retn();
 }
 
 void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
@@ -106,16 +112,10 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
         ++dst_admin_index;
     }
 
-    if(!_src.ext_enum_domain_validation.isnull())
-    {
-        ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
-        enumVal->valExDate = Corba::wrap_string_to_corba_string(
-            boost::gregorian::to_iso_extended_string(
-                    _src.ext_enum_domain_validation.get_value().validation_expiration));
-        enumVal->publish = _src.ext_enum_domain_validation.get_value().publish ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
-        _dst.ext.length(1);
-        _dst.ext[0] <<= enumVal._retn();
-    }
+    Corba::wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(
+        _src.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()),
+        _dst.ext
+    );
 
     _dst.tmpcontact.length(_src.tmpcontact.size());
     unsigned long dst_tmpcontact_index = 0;

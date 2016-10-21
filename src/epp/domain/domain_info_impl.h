@@ -24,6 +24,7 @@
 #ifndef SRC_EPP_DOMAIN_DOMAIN_INFO_IMPL_H
 #define SRC_EPP_DOMAIN_DOMAIN_INFO_IMPL_H
 
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"
@@ -56,8 +57,7 @@ struct DomainInfoOutputData {
     boost::gregorian::date exdate;
     Nullable<std::string> auth_info_pw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
-    // FIXME use Epp::ENUMValidationExtension instaed - JZ: branch 15099-epp_domain_create
-    Nullable<Fred::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
+    Nullable<Epp::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
 };
 
