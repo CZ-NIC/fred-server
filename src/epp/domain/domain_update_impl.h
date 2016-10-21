@@ -47,7 +47,8 @@ unsigned long long domain_update_impl(
     const std::vector<std::string>& _tmpcontacts_rem,
     const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
     unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id);
+    const Optional<unsigned long long>& _logd_request_id,
+    bool _rifd_epp_update_domain_keyset_clear);
 
 }
 

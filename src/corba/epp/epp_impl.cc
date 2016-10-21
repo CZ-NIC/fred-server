@@ -3028,7 +3028,8 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
                     server_transaction_handle,
                     epp_request_params.client_transaction_id,
                     disable_epp_notifier_,
-                    disable_epp_notifier_cltrid_prefix_
+                    disable_epp_notifier_cltrid_prefix_,
+                    rifd_epp_update_domain_keyset_clear_
                 ),
                 server_transaction_handle
             )

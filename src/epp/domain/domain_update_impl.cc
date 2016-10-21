@@ -60,7 +60,8 @@ unsigned long long domain_update_impl(
     const std::vector<std::string>& _tmpcontacts_rem,
     const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
     unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id)
+    const Optional<unsigned long long>& _logd_request_id,
+    bool _rifd_epp_update_domain_keyset_clear)
 {
     const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
@@ -184,7 +185,7 @@ unsigned long long domain_update_impl(
                 Error::of_vector_parameter(
                     Param::domain_admin_add,
                     admin_contact_rem_error_position,
-                    Reason::admin_notexist)); // XXX přidat vhodný důvod chyby - snaha o odebrání existujícího ale nepřipojeného kontaktu
+                    Reason::admin_not_assigned));
         }
         else if (admin_contact_rem_duplicity.insert(boost::algorithm::to_upper_copy(*admin_contact_rem_iter)).second == false)
         {
@@ -206,7 +207,7 @@ unsigned long long domain_update_impl(
             Error::of_vector_parameter(
                 Param::domain_tmpcontact,
                 tmpcontact_rem_error_position,
-                Reason::admin_notexist)); // XXX přidat vhodný důvod chyby - tmpcontacts jsou obsolete
+                Reason::tmpcontacts_obsolete));
     }
 
     if (_nsset_chg.isset()
@@ -252,6 +253,9 @@ unsigned long long domain_update_impl(
         throw parameter_value_policy_error;
     }
 
+    const Optional<std::string>& keyset_chg =
+        (_nsset_chg.isset() && !_keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear) ? "" : _keyset_chg;
+
     // TODO enum
 
     {
@@ -265,7 +269,7 @@ unsigned long long domain_update_impl(
             _registrant_chg, // Optional
             _auth_info_pw_chg, // Optional
             _nsset_chg, // Optional Nullable
-            _keyset_chg, // Optinal Nullable
+            keyset_chg, // Optinal Nullable
             _admin_contacts_add,
             _admin_contacts_rem,
             Optional<boost::gregorian::date>(), // expiration_date

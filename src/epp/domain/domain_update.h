@@ -55,7 +55,8 @@ LocalizedSuccessResponse domain_update(
     const std::string& _server_transaction_handle,
     const std::string& _client_transaction_handle,
     const bool _epp_notification_disabled,
-    const std::string& _client_transaction_handles_prefix_not_to_notify);
+    const std::string& _client_transaction_handles_prefix_not_to_notify,
+    bool _rifd_epp_update_domain_keyset_clear);
 }
 
 }
