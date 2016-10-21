@@ -106,10 +106,16 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
         ++dst_admin_index;
     }
 
-    Corba::wrap_Fred_ENUMValidationExtension_to_ccReg_ExtensionList(
-        _src.ext_enum_domain_validation.get_value_or(Fred::ENUMValidationExtension()),
-        _dst.ext
-    );
+    if(!_src.ext_enum_domain_validation.isnull())
+    {
+        ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
+        enumVal->valExDate = Corba::wrap_string_to_corba_string(
+            boost::gregorian::to_iso_extended_string(
+                    _src.ext_enum_domain_validation.get_value().validation_expiration));
+        enumVal->publish = _src.ext_enum_domain_validation.get_value().publish ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
+        _dst.ext.length(1);
+        _dst.ext[0] <<= enumVal._retn();
+    }
 
     _dst.tmpcontact.length(_src.tmpcontact.size());
     unsigned long dst_tmpcontact_index = 0;
