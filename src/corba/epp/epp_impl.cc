@@ -3007,8 +3007,8 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
         const Optional<std::string> auth_info_pw_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw_chg);
         const Optional<std::string> nsset_chg        = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_nsset_chg);
         const Optional<std::string> keyset_chg       = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_keyset_chg);
-
         const std::vector<Epp::ENUMValidationExtension> enum_validation_list = Corba::unwrap_enum_validation_extension(_ext);
+
         return new ccReg::Response(
             Corba::wrap_response(
                 Epp::Domain::domain_update(

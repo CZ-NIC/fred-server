@@ -1,6 +1,6 @@
 #include "src/epp/disclose_policy.h"
-#include "src/epp/domain/domain_update_impl.h"
 #include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/domain_update_impl.h"
 #include "src/epp/exception_aggregate_param_errors.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
@@ -13,7 +13,6 @@
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/update_domain.h"
-#include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/keyset/handle_state.h"
 #include "src/fredlib/keyset/check_keyset.h"
 #include "src/fredlib/nsset/handle_state.h"
@@ -22,10 +21,13 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/registrar/registrar_zone_access.h"
 #include "util/optional_value.h"
 
 #include <boost/mpl/assert.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
+
+#include <boost/format.hpp> // FIXME remove
 
 namespace Epp {
 
@@ -68,17 +70,56 @@ unsigned long long domain_update_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    // TODO checkRegistrarZoneAccess (JZ: 15099-epp_domain_create)
-    //boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
+    boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
-    //const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-    //        Fred::Zone::rem_trailing_dot(_data.fqdn));
+    const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
+            Fred::Zone::rem_trailing_dot(_domain_fqdn));
 
-    //if (!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
-    //    throw AuthorizationError();
-    //}
+    if (!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
+        throw AuthorizationError();
+    }
 
-    // TODO enum domain
+    ParameterValueRangeError parameter_value_range_error;
+    ParameterValuePolicyError parameter_value_policy_error;
+
+    Optional<boost::gregorian::date> req_enum_valexdate;
+    Optional<bool> enum_publish_flag;
+
+    if(zone_data.is_enum) {
+        if(!_enum_validation_list.empty()) {
+            req_enum_valexdate = _enum_validation_list.rbegin()->get_valexdate();
+            if(req_enum_valexdate.get_value().is_special()) // TODO XXX check valexdate range
+            {
+                parameter_value_range_error.add(Error::of_vector_parameter(
+                    Param::domain_ext_val_date,
+                    boost::numeric_cast<unsigned short>(_enum_validation_list.size()),
+                    Reason::valexpdate_not_valid));
+            }
+            enum_publish_flag = _enum_validation_list.rbegin()->get_publish();
+        }
+        else {
+            // TODO? enum without extension data
+        }
+    }
+    else { // not enum
+        unsigned short enum_validation_list_error_position = 1;
+        for(
+            std::vector<Epp::ENUMValidationExtension>::const_iterator enum_validation_list_item_ptr = _enum_validation_list.begin(); 
+            enum_validation_list_item_ptr != _enum_validation_list.end(); 
+            ++enum_validation_list_item_ptr)
+        {
+            parameter_value_policy_error.add(
+                Error::of_vector_parameter(
+                    Param::domain_ext_val_date,
+                    enum_validation_list_error_position++,
+                    Reason::valexpdate_not_used));
+
+        }
+    }
+
+    if (!parameter_value_range_error.is_empty()) {
+        throw parameter_value_range_error;
+    }
 
     try {
         if (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
@@ -118,8 +159,6 @@ unsigned long long domain_update_impl(
             throw ObjectStatusProhibitsOperation();
         }
     }
-
-    ParameterValuePolicyError parameter_value_policy_error;
 
     std::set<std::string> admin_contact_add_duplicity;
     unsigned short admin_contact_add_error_position = 1;
@@ -256,8 +295,6 @@ unsigned long long domain_update_impl(
     const Optional<std::string>& keyset_chg =
         (_nsset_chg.isset() && !_keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear) ? "" : _keyset_chg;
 
-    // TODO enum
-
     {
 
         const std::string registrar_handle =
@@ -266,16 +303,16 @@ unsigned long long domain_update_impl(
         Fred::UpdateDomain update_domain = Fred::UpdateDomain(
             _domain_fqdn,
             registrar_handle,
-            _registrant_chg, // Optional
-            _auth_info_pw_chg, // Optional
-            _nsset_chg, // Optional Nullable
-            keyset_chg, // Optinal Nullable
+            _registrant_chg,
+            _auth_info_pw_chg,
+            _nsset_chg,
+            keyset_chg,
             _admin_contacts_add,
             _admin_contacts_rem,
             Optional<boost::gregorian::date>(), // expiration_date
-            Optional<boost::gregorian::date>(), // enum_validation_expiration
-            Optional<bool>(), // enum_publish_flag
-            Optional<unsigned long long>() // logd_request_id
+            req_enum_valexdate,
+            enum_publish_flag,
+            _logd_request_id
         );
 
         try {

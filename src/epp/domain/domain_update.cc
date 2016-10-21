@@ -39,7 +39,8 @@ LocalizedSuccessResponse domain_update(
     const std::string& _client_transaction_handle,
     const bool _epp_notification_disabled,
     const std::string& _client_transaction_handles_prefix_not_to_notify,
-    bool _rifd_epp_update_domain_keyset_clear)
+    bool _rifd_epp_update_domain_keyset_clear
+    )
 {
 
     try {
@@ -62,7 +63,8 @@ LocalizedSuccessResponse domain_update(
             _tmpcontacts_rem,
             _enum_validation_list,
             _registrar_id,
-            _logd_request_id
+            _logd_request_id,
+            _rifd_epp_update_domain_keyset_clear
         );
 
         const LocalizedSuccessResponse localized_success_response = create_localized_success_response(Response::ok, ctx, _lang);
@@ -81,7 +83,7 @@ LocalizedSuccessResponse domain_update(
 
         return localized_success_response;
 
-    } catch(const AuthErrorServerClosingConnection& e) {
+    } catch(const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -90,7 +92,7 @@ LocalizedSuccessResponse domain_update(
             _lang
         );
 
-    } catch(const NonexistentHandle& e) {
+    } catch(const NonexistentHandle&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -99,7 +101,7 @@ LocalizedSuccessResponse domain_update(
             _lang
         );
 
-    } catch(const AuthorizationError& e) {
+    } catch(const AuthorizationError&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -108,7 +110,7 @@ LocalizedSuccessResponse domain_update(
             _lang
         );
 
-    } catch(const ObjectStatusProhibitsOperation& e) {
+    } catch(const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
@@ -126,8 +128,14 @@ LocalizedSuccessResponse domain_update(
             _lang
         );
 
-    } catch(const LocalizedFailResponse&) {
-        throw;
+    } catch(const ParameterValueRangeError& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::parameter_value_range_error,
+            e.get(),
+            _lang
+        );
 
     } catch(...) {
         Fred::OperationContextCreator exception_localization_ctx;
