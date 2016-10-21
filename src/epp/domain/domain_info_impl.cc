@@ -83,7 +83,12 @@ DomainInfoOutputData domain_info_impl(
 
     } catch (const Fred::InfoDomainByHandle::Exception& e) {
 
-        throw; // TODO
+        if(e.is_set_unknown_fqdn()) {
+            throw NonexistentHandle();
+        };
+
+        /* in the improbable case that exception is incorrectly set */
+        throw;
 
     }
 

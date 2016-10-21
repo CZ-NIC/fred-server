@@ -72,18 +72,27 @@ DomainInfoResponse domain_info(
         );
     }
     catch (const AuthErrorServerClosingConnection&) {
-        Fred::OperationContextCreator ctx;
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
             Response::authentication_error_server_closing_connection,
             std::set<Error>(),
             _lang
         );
     }
-    catch (...) {
-        Fred::OperationContextCreator ctx;
+    catch (const NonexistentHandle&) {
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
+            Response::object_not_exist,
+            std::set<Error>(),
+            _lang
+        );
+    }
+    catch (...) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
             Response::failed,
             std::set<Error>(),
             _lang);
