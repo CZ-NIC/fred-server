@@ -571,6 +571,18 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
                 dns_k.public_key = it.get_key();
                 ks.dns_keys.push_back(dns_k);
             }
+
+            const std::vector< Fred::ObjectStateData > keyset_states = Fred::GetObjectStates(ikd.id).exec(ctx);
+            ks.statuses.reserve(keyset_states.size());
+            for (std::vector< Fred::ObjectStateData >::const_iterator state_ptr = keyset_states.begin();
+                 state_ptr != keyset_states.end(); ++state_ptr)
+            {
+                if (state_ptr->is_external)
+                {
+                    ks.statuses.push_back(state_ptr->state_name);
+                }
+            }
+
             BOOST_FOREACH(Fred::ObjectIdHandlePair it, ikd.tech_contacts)
             {
                 ks.tech_contacts.push_back(it.handle);
