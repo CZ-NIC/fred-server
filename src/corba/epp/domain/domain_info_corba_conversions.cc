@@ -59,10 +59,6 @@ static std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_p
         TimeZoneOffset(local_ptime).to_rfc3339_string();
 }
 
-static std::string format_date_to_iso_extended(const boost::gregorian::date& d) {
-    return boost::gregorian::to_iso_extended_string(d);
-}
-
 } // namespace Corba::{anonymous}
 
 void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(Epp::ENUMValidationExtension _src, ccReg::ExtensionList& _dst) {
@@ -84,14 +80,14 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     _dst.name = Corba::wrap_string_to_corba_string(_src.fqdn);
 
     _dst.Registrant = Corba::wrap_string_to_corba_string(_src.registrant);
-    _dst.nsset = Corba::wrap_string_to_corba_string(_src.nsset.get_value_or(std::string()));
-    _dst.keyset = Corba::wrap_string_to_corba_string(_src.keyset.get_value_or(std::string()));
+    _dst.nsset = Corba::wrap_string_to_corba_string(_src.nsset.get_value_or_default());
+    _dst.keyset = Corba::wrap_string_to_corba_string(_src.keyset.get_value_or_default());
 
     Corba::wrap_Epp_LocalizedStates(_src.localized_external_states, _dst.stat);
 
     _dst.ClID = Corba::wrap_string_to_corba_string(_src.sponsoring_registrar_handle);
     _dst.CrID = Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);
-    _dst.UpID = Corba::wrap_string_to_corba_string(_src.last_update_registrar_handle.get_value_or(std::string()));
+    _dst.UpID = Corba::wrap_string_to_corba_string(_src.last_update_registrar_handle.get_value_or_default());
 
     _dst.CrDate = Corba::wrap_string_to_corba_string(format_time_to_rfc3339(_src.crdate));
     _dst.UpDate = Corba::wrap_string_to_corba_string(
@@ -101,7 +97,7 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
         _src.last_transfer.isnull() ? std::string()
                                    : format_time_to_rfc3339(_src.last_transfer.get_value()));
 
-    _dst.ExDate = Corba::wrap_string_to_corba_string(format_date_to_iso_extended(_src.exdate));
+    _dst.ExDate = Corba::wrap_string_to_corba_string(boost::gregorian::to_iso_extended_string(_src.exdate));
 
     _dst.AuthInfoPw = Corba::wrap_string_to_corba_string(_src.auth_info_pw.get_value_or_default());
 
@@ -113,7 +109,7 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     }
 
     Corba::wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(
-        _src.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()),
+        _src.ext_enum_domain_validation.get_value_or_default(),
         _dst.ext
     );
 
