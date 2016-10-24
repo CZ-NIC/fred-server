@@ -264,7 +264,14 @@ noinst_HEADERS = \
 		src/mojeid/safe_data_storage.h \
 		src/mojeid/messages/generate.h \
 		src/corba/mojeid/server_i.h \
-		src/corba/mojeid/service_name.h
+		src/corba/mojeid/service_name.h \
+		src/fredlib/nsset/handle_state.h \
+		src/fredlib/keyset/handle_state.h \
+		src/epp/nsset/nsset_dns_host.h \
+		src/epp/nsset/nsset_dns_host_data.h \
+		src/epp/nsset/nsset_handle_state_to_check_result.h \
+		src/epp/nsset/nsset_constants.h \
+		tests/interfaces/epp/nsset/fixture.h
 
 noinst_LIBRARIES = \
 		util/libutil.a \
@@ -1519,7 +1526,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/localization.cc \
 		src/epp/localized_response.h \
 		src/epp/localized_states.h \
-		src/epp/util.h \
 		src/epp/param.h \
 		src/epp/reason.h \
 		src/epp/response.h \
