@@ -27,6 +27,7 @@
 #include "src/epp/contact/contact_update.h"
 #include "src/epp/domain/domain_enum_validation.h"
 #include "src/fredlib/opcontext.h"
+#include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 #include <string>
@@ -40,8 +41,8 @@ unsigned long long domain_update_impl(
     const std::string& _domain_fqdn,
     const Optional<std::string>& _registrant_chg,
     const Optional<std::string>& _auth_info_pw_chg,
-    const Optional<std::string>& _nsset_chg,
-    const Optional<std::string>& _keyset_chg,
+    const Optional<Nullable<std::string> >& _nsset_chg,
+    const Optional<Nullable<std::string> >& _keyset_chg,
     const std::vector<std::string>& _admin_contacts_add,
     const std::vector<std::string>& _admin_contacts_rem,
     const std::vector<std::string>& _tmpcontacts_rem,

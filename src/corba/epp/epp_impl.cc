@@ -35,6 +35,7 @@
 #include "src/corba/connection_releaser.h"
 
 #include "util/optional_value.h"
+#include "util/db/nullable.h"
 #include "src/fredlib/notifier/enqueue_notification.h"
 
 #include "config.h"
@@ -3003,10 +3004,10 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     try {
         const Epp::RegistrarSessionData epp_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
-        const Optional<std::string> registrant_chg   = Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg);
+        const Optional<std::string> registrant_chg = Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg);
         const Optional<std::string> auth_info_pw_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw_chg);
-        const Optional<std::string> nsset_chg        = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_nsset_chg);
-        const Optional<std::string> keyset_chg       = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_keyset_chg);
+        const Optional<Nullable<std::string> > nsset_chg = Corba::unwrap_string_for_change_or_remove_or_clear_to_Optional_Nullable_string(_nsset_chg);
+        const Optional<Nullable<std::string> > keyset_chg = Corba::unwrap_string_for_change_or_remove_or_clear_to_Optional_Nullable_string(_keyset_chg);
         const std::vector<Epp::ENUMValidationExtension> enum_validation_list = Corba::unwrap_enum_validation_extension(_ext);
 
         return new ccReg::Response(

@@ -358,6 +358,20 @@ namespace Corba {
                     :   boost::trim_copy( Corba::unwrap_string(input) );
     }
 
+    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_or_clear_to_Optional_Nullable_string(const char* input) {
+        const std::string safer_input = Corba::unwrap_string(input);
+
+        /* XXX Defined by convention. Could probably be substituted by more explicit means in IDL interface. */
+        const char char_for_value_deleting = '\b';
+
+        return
+            safer_input.empty()
+            ?   Optional<Nullable<std::string> >()
+            :   safer_input.at(0) == char_for_value_deleting
+                    ?   Optional<Nullable<std::string> >(Nullable<std::string>())
+                    :   boost::trim_copy( Corba::unwrap_string(input) );
+    }
+
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)
     {
         dst.name              = convert_contact_update_or_delete_string(src.Name);

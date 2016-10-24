@@ -27,6 +27,7 @@
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "src/epp/domain/domain_enum_validation.h"
+#include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 #include <string>
@@ -42,8 +43,8 @@ LocalizedSuccessResponse domain_update(
     const std::string& _domain_fqdn,
     const Optional<std::string>& _registrant_chg,
     const Optional<std::string>& _auth_info_pw_chg,
-    const Optional<std::string>& _nsset_chg,
-    const Optional<std::string>& _keyset_chg,
+    const Optional<Nullable<std::string> >& _nsset_chg,
+    const Optional<Nullable<std::string> >& _keyset_chg,
     const std::vector<std::string>& _admin_contacts_add,
     const std::vector<std::string>& _admin_contacts_rem,
     const std::vector<std::string>& _tmpcontacts_rem,

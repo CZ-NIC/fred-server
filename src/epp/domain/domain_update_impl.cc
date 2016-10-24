@@ -22,6 +22,7 @@
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
+#include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 #include <boost/mpl/assert.hpp>
@@ -53,8 +54,8 @@ unsigned long long domain_update_impl(
     const std::string& _domain_fqdn,
     const Optional<std::string>& _registrant_chg,
     const Optional<std::string>& _auth_info_pw_chg,
-    const Optional<std::string>& _nsset_chg,
-    const Optional<std::string>& _keyset_chg,
+    const Optional<Nullable<std::string> >& _nsset_chg,
+    const Optional<Nullable<std::string> >& _keyset_chg,
     const std::vector<std::string>& _admin_contacts_add,
     const std::vector<std::string>& _admin_contacts_rem,
     const std::vector<std::string>& _tmpcontacts_rem,
@@ -244,7 +245,8 @@ unsigned long long domain_update_impl(
     }
 
     if (_nsset_chg.isset()
-    && (Fred::Nsset::get_handle_registrability(_ctx, _nsset_chg.get_value())
+    && !_nsset_chg.get_value().isnull()
+    && (Fred::Nsset::get_handle_registrability(_ctx, _nsset_chg.get_value().get_value())
         != Fred::NssetHandleState::Registrability::registered))
     {
         parameter_value_policy_error.add(
@@ -254,7 +256,8 @@ unsigned long long domain_update_impl(
     }
 
     if (_keyset_chg.isset()
-    && (Fred::KeySet::get_handle_registrability(_ctx, _keyset_chg.get_value())
+    && !_keyset_chg.get_value().isnull()
+    && (Fred::KeySet::get_handle_registrability(_ctx, _keyset_chg.get_value().get_value())
         != Fred::KeySet::HandleState::registered))
     {
         parameter_value_policy_error.add(
@@ -263,7 +266,8 @@ unsigned long long domain_update_impl(
                 Reason::keyset_notexist));
     }
 
-    if (_registrant_chg.isset()) {
+    if (_registrant_chg.isset())
+    {
         if (!is_system_registrar) {
             if (domain_states.presents(Fred::Object_State::server_registrant_change_prohibited)) {
                 throw ObjectStatusProhibitsOperation();
@@ -283,11 +287,12 @@ unsigned long long domain_update_impl(
         throw parameter_value_policy_error;
     }
 
-    const Optional<std::string>& keyset_chg =
-        (_nsset_chg.isset() && !_keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear) ? "" : _keyset_chg;
+    const Optional<Nullable<std::string> >& keyset_chg =
+        (_nsset_chg.isset() && !_keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear)
+            ? Optional<Nullable<std::string> >(Nullable<std::string>())
+            : _keyset_chg; // TODO if nsset set, but same as current one?
 
     {
-
         const std::string registrar_handle =
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
 

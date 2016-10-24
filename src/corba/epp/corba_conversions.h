@@ -56,6 +56,8 @@ namespace Corba {
 
     Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string(const char* input);
 
+    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_or_clear_to_Optional_Nullable_string(const char* input);
+
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
