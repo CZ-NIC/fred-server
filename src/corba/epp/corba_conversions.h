@@ -27,6 +27,7 @@
 #include <vector>
 #include <boost/optional.hpp>
 
+#include "src/epp/nsset/nsset_dns_host_input.h"
 #include "src/corba/EPP.hh"
 #include "src/epp/request_params.h"
 #include "src/epp/localized_response.h"
@@ -40,13 +41,12 @@
 #include "src/epp/nsset/nsset_check.h"
 #include "src/epp/nsset/nsset_info.h"
 #include "src/epp/nsset/nsset_delete.h"
-#include "src/epp/nsset/nsset_dns_host_data.h"
 
 namespace Corba {
 
     std::vector<std::string> unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact & in);
 
-    std::vector<Epp::DNShostData> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
+    std::vector<Epp::DNShostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
 
     Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
 

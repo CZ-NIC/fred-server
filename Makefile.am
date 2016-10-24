@@ -267,8 +267,8 @@ noinst_HEADERS = \
 		src/corba/mojeid/service_name.h \
 		src/fredlib/nsset/handle_state.h \
 		src/fredlib/keyset/handle_state.h \
-		src/epp/nsset/nsset_dns_host.h \
-		src/epp/nsset/nsset_dns_host_data.h \
+		src/epp/nsset/nsset_dns_host_output.h \
+		src/epp/nsset/nsset_dns_host_input.h \
 		src/epp/nsset/nsset_handle_state_to_check_result.h \
 		src/epp/nsset/nsset_constants.h \
 		tests/interfaces/epp/nsset/fixture.h

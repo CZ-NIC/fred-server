@@ -150,12 +150,12 @@ struct has_nsset_input_data_set : has_registrar
     : nsset_input_data(Epp::NssetCreateInputData(
             "NSSET1",
             "authInfo123",
-            Util::vector_of<Epp::DNShostData>
-                (Epp::DNShostData("a.ns.nic.cz",
+            Util::vector_of<Epp::DNShostInput>
+                (Epp::DNShostInput("a.ns.nic.cz",
                     Util::vector_of< boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("11.0.0.3"))
                         (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
-                (Epp::DNShostData("c.ns.nic.cz",
+                (Epp::DNShostInput("c.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("11.0.0.4"))
                         (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
@@ -200,12 +200,12 @@ struct has_nsset_with_input_data_set : has_registrar {
     : nsset_input_data(Epp::NssetCreateInputData(
             "NSSET1",
             "authInfo123",
-            Util::vector_of<Epp::DNShostData>
-                (Epp::DNShostData("a.ns.nic.cz",
+            Util::vector_of<Epp::DNShostInput>
+                (Epp::DNShostInput("a.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("11.0.0.3"))
                         (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
-                (Epp::DNShostData("c.ns.nic.cz",
+                (Epp::DNShostInput("c.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("11.0.0.4"))
                         (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns

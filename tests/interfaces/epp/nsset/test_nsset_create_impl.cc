@@ -119,7 +119,7 @@ bool boost_asio_ip_address_predicate (const boost::optional<boost::asio::ip::add
     return (ip1.is_initialized() && ip1.get() == ip2);
 }
 
-bool dnshostdata_dnshost_predicate (const Epp::DNShostData& dnshostdata, const Fred::DnsHost& dnshost)
+bool dnshostdata_dnshost_predicate (const Epp::DNShostInput& dnshostdata, const Fred::DnsHost& dnshost)
 {
     std::vector<boost::asio::ip::address> tmp = dnshost.get_inet_addr();
     return (dnshostdata.fqdn == dnshost.get_fqdn()

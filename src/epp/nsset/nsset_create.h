@@ -25,11 +25,11 @@
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
-#include "src/epp/nsset/nsset_dns_host_data.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "src/epp/nsset/nsset_dns_host_input.h"
 
 namespace Epp {
 
@@ -37,14 +37,14 @@ namespace Epp {
     {
         std::string handle;
         std::string authinfo;
-        std::vector<Epp::DNShostData> dns_hosts;
+        std::vector<Epp::DNShostInput> dns_hosts;
         std::vector<std::string> tech_contacts;
         short tech_check_level;
 
         NssetCreateInputData(
             const std::string& _handle,
             const std::string& _authinfo,
-            const std::vector<Epp::DNShostData>& _dns_hosts,
+            const std::vector<Epp::DNShostInput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
             short _tech_check_level)
         : handle(_handle)

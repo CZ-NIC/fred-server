@@ -1,6 +1,6 @@
 #include "src/epp/nsset/nsset_update_impl.h"
 #include "src/epp/nsset/nsset_impl.h"
-#include "src/epp/nsset/nsset_dns_host_data.h"
+#include "src/epp/nsset/nsset_dns_host_input.h"
 #include "src/epp/nsset/nsset_constants.h"
 
 #include "src/epp/exception.h"
@@ -29,6 +29,7 @@
 #include <boost/foreach.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
+
 
 
 namespace Epp {
@@ -136,7 +137,7 @@ unsigned long long nsset_update_impl(
 
         std::set<std::string> tech_contact_to_remove_duplicity;
         std::set<std::string> nsset_dns_host_fqdn_to_remove;
-        BOOST_FOREACH(const Epp::DNShostData& dns_host_data_to_remove, _data.dns_hosts_rem)
+        BOOST_FOREACH(const Epp::DNShostInput& dns_host_data_to_remove, _data.dns_hosts_rem)
         {
             nsset_dns_host_fqdn_to_remove.insert(boost::algorithm::to_lower_copy(dns_host_data_to_remove.fqdn));
         }
@@ -264,7 +265,7 @@ unsigned long long nsset_update_impl(
     {
         std::vector<std::string> dns_hosts_rem;
         dns_hosts_rem.reserve(_data.dns_hosts_rem.size());
-        BOOST_FOREACH(const Epp::DNShostData& host, _data.dns_hosts_rem)
+        BOOST_FOREACH(const Epp::DNShostInput& host, _data.dns_hosts_rem)
         {
             dns_hosts_rem.push_back(host.fqdn);
         }

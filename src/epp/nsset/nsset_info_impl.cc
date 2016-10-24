@@ -78,7 +78,7 @@ NssetInfoOutputData nsset_info_impl(
             nsset_info_data.update_time,
             nsset_info_data.transfer_time,
             nsset_info_data.authinfopw,
-            make_epp_dnshosts_data(nsset_info_data.dns_hosts),
+            make_epp_dnshosts_output(nsset_info_data.dns_hosts),
             tech_contacts,
             nsset_info_data.tech_check_level.get_value_or(0)
         );
