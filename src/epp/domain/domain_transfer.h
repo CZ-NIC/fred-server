@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef SRC_EPP_DOMAIN_DOMAIN_TRANSFER_H
-#define SRC_EPP_DOMAIN_DOMAIN_TRANSFER_H
+#ifndef DOMAIN_TRANSFER_H_1E8ED6049ECA4195BB9F694B6F2E1A56
+#define DOMAIN_TRANSFER_H_1E8ED6049ECA4195BB9F694B6F2E1A56
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"

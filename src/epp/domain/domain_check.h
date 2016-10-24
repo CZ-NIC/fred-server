@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef SRC_EPP_DOMAIN_DOMAIN_CHECK_H
-#define SRC_EPP_DOMAIN_DOMAIN_CHECK_H
+#ifndef DOMAIN_CHECK_H_465105F022A041DC84D07A0A30AF568C
+#define DOMAIN_CHECK_H_465105F022A041DC84D07A0A30AF568C
 
 #include "src/epp/action.h"
 #include "src/epp/domain/domain_check_localization.h"

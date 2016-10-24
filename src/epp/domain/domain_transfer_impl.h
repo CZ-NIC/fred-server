@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef SRC_EPP_DOMAIN_DOMAIN_TRANSFER_IMPL_H
-#define SRC_EPP_DOMAIN_DOMAIN_TRANSFER_IMPL_H
+#ifndef DOMAIN_TRANSFER_IMPL_H_786BCA1ABC69433C81BFA80A1F916EAE
+#define DOMAIN_TRANSFER_IMPL_H_786BCA1ABC69433C81BFA80A1F916EAE
 
 #include "src/epp/domain/domain_transfer.h"
 #include "src/fredlib/opcontext.h"

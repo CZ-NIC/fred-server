@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef EPP_DOMAIN_CREATE_H_33e5f20dc88945ea98a78a86c31558af
-#define EPP_DOMAIN_CREATE_H_33e5f20dc88945ea98a78a86c31558af
+#ifndef DOMAIN_CREATE_H_B6C01C595C524BD983B8E61AFD2C607A
+#define DOMAIN_CREATE_H_B6C01C595C524BD983B8E61AFD2C607A
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"

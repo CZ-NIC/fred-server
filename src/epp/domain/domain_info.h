@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef SRC_EPP_DOMAIN_DOMAIN_INFO_H
-#define SRC_EPP_DOMAIN_DOMAIN_INFO_H
+#ifndef DOMAIN_INFO_H_9B80EDF973BF4C58B5161B84BEF2DF1C
+#define DOMAIN_INFO_H_9B80EDF973BF4C58B5161B84BEF2DF1C
 
 #include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/localized_response.h"

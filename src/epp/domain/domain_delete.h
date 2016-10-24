@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef SRC_EPP_DOMAIN_DOMAIN_DELETE_H
-#define SRC_EPP_DOMAIN_DOMAIN_DELETE_H
+#ifndef DOMAIN_DELETE_H_C6667D81894D496DBA319233B6153F2E
+#define DOMAIN_DELETE_H_C6667D81894D496DBA319233B6153F2E
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"

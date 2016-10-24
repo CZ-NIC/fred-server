@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef TESTS_INTERFACES_EPP_DOMAIN_FIXTURE_H
-#define TESTS_INTERFACES_EPP_DOMAIN_FIXTURE_H
+#ifndef FIXTURE_H_389DB6E81FF44407AFC3763706918744
+#define FIXTURE_H_389DB6E81FF44407AFC3763706918744
 
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/domain/create_domain.h"

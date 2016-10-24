@@ -46,7 +46,7 @@ public:
     }
 };
 
-} // namespace Epp::{anonymous}
+} // namespace Epp::Domain::{anonymous}
 
 unsigned long long domain_update_impl(
     Fred::OperationContext &_ctx,

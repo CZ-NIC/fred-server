@@ -21,8 +21,8 @@
  *  <++>
  */
 
-#ifndef SRC_EPP_DOMAIN_DOMAIN_INFO_IMPL_H
-#define SRC_EPP_DOMAIN_DOMAIN_INFO_IMPL_H
+#ifndef DOMAIN_INFO_IMPL_H_E77208697C7F4BCDABA7EBED551E872A
+#define DOMAIN_INFO_IMPL_H_E77208697C7F4BCDABA7EBED551E872A
 
 #include "src/epp/domain/domain_enum_validation.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
