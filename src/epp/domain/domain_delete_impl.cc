@@ -33,8 +33,17 @@ unsigned long long domain_delete_impl(
 
     boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
-    const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-            Fred::Zone::rem_trailing_dot(_domain_fqdn));
+    Fred::Zone::Data zone_data;
+    try {
+        zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
+                Fred::Zone::rem_trailing_dot(_domain_fqdn));
+    } catch (const Fred::Zone::Exception& e) {
+        if(e.is_set_unknown_zone_in_fqdn()) {
+            throw NonexistentHandle();
+        }
+        /* in the improbable case that exception is incorrectly set */
+        throw;
+    }
 
     if (!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
         throw AuthorizationError();

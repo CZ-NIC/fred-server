@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_fqdn, HasInfoDomainDataOfNonexiste
             info_domain_data.fqdn,
             info_registrar_data.id
         ),
-        Fred::InfoDomainByHandle::Exception
+        Epp::NonexistentHandle
     );
 }
 
