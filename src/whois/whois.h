@@ -301,9 +301,9 @@ struct DNSKey
     DNSKey() {}
 
     DNSKey(
-        const short& _flags,
-        const short& _protocol,
-        const short& _alg,
+        short _flags,
+        short _protocol,
+        short _alg,
         const std::string& _public_key
     ) :
         flags(_flags),
