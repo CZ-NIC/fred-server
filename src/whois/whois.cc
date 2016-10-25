@@ -358,32 +358,22 @@ static WhoisImpl::NSSet make_nsset_from_info_data(const Fred::InfoNssetData& ind
     nss.handle        = ind.handle;
     nss.last_transfer = ind.transfer_time;
     nss.nservers.reserve(ind.dns_hosts.size());
-    WhoisImpl::NameServer ns;
-    BOOST_FOREACH(Fred::DnsHost it, ind.dns_hosts)
+    BOOST_FOREACH(Fred::DnsHost dns_host, ind.dns_hosts)
     {
-        ns.fqdn = it.get_fqdn();
-        const std::vector<boost::asio::ip::address> ip_addresses = it.get_inet_addr();
-
-        ns.ip_addresses.reserve(ip_addresses.size());
-        BOOST_FOREACH(boost::asio::ip::address addr_it, ip_addresses)
-        {
-            ns.ip_addresses.push_back(addr_it);
-        }
-
-        nss.nservers.push_back(ns);
+        nss.nservers.push_back(WhoisImpl::NameServer(dns_host.get_fqdn(), dns_host.get_inet_addr()));
     }
     nss.sponsoring_registrar = ind.sponsoring_registrar_handle;
-    BOOST_FOREACH(Fred::ObjectIdHandlePair it, ind.tech_contacts)
+    BOOST_FOREACH(Fred::ObjectIdHandlePair id_handle_pair, ind.tech_contacts)
     {
-        nss.tech_contacts.push_back(it.handle);
+        nss.tech_contacts.push_back(id_handle_pair.handle);
     }
     const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(ind.id).exec(ctx);
     nss.statuses.reserve(v_osd.size());
-    BOOST_FOREACH(Fred::ObjectStateData it, v_osd)
+    BOOST_FOREACH(Fred::ObjectStateData nsset_state_data, v_osd)
     {
-        if (it.is_external)
+        if (nsset_state_data.is_external)
         {
-            nss.statuses.push_back(it.state_name);
+            nss.statuses.push_back(nsset_state_data.state_name);
         }
     }
     return nss;
@@ -562,14 +552,12 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
             ks.sponsoring_registrar = ikd.sponsoring_registrar_handle;
             ks.last_transfer        = ikd.transfer_time;
             ks.dns_keys.reserve(ikd.dns_keys.size());
-            DNSKey dns_k;
-            BOOST_FOREACH(Fred::DnsKey it, ikd.dns_keys)
+            BOOST_FOREACH(Fred::DnsKey dns_key, ikd.dns_keys)
             {
-                dns_k.alg        = it.get_alg();
-                dns_k.flags      = it.get_flags();
-                dns_k.protocol   = it.get_protocol();
-                dns_k.public_key = it.get_key();
-                ks.dns_keys.push_back(dns_k);
+                ks.dns_keys.push_back(DNSKey(dns_key.get_flags(),
+                                             dns_key.get_protocol(),
+                                             dns_key.get_alg(),
+                                             dns_key.get_key()));
             }
 
             const std::vector< Fred::ObjectStateData > keyset_states = Fred::GetObjectStates(ikd.id).exec(ctx);
@@ -621,7 +609,6 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
                     .set_limit(limit + 1)
                     .exec(ctx, get_output_timezone());
         KeySetSeq ks_seq;
-        std::vector<Fred::InfoKeysetOutput>::const_iterator it = ks_info.begin(), end;
         if (ks_info.empty())
         {
             if (Fred::ContactHandleState::SyntaxValidity::invalid ==
@@ -631,56 +618,46 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
             }
             throw ObjectNotExists();
         }
-        if (ks_info.size() > limit)
+        ks_seq.limit_exceeded = limit < ks_info.size();
+        const std::size_t ks_seq_size = ks_seq.limit_exceeded ? limit : ks_info.size();
+        ks_seq.content.reserve(ks_seq_size);
+        for (std::size_t idx = 0; idx < ks_seq_size; ++idx)
         {
-            ks_seq.limit_exceeded = true;
-            ks_seq.content.reserve(limit);
-            end = ks_info.begin() + limit;
-        }
-        else
-        {
-            ks_seq.limit_exceeded = false;
-            ks_seq.content.reserve(ks_info.size());
-            end = ks_info.end();
-        }
-        for (; it != end; ++it)
-        {
-            WhoisImpl::KeySet temp;
-            temp.changed = it->info_keyset_data.update_time;
-            temp.created = it->info_keyset_data.creation_time;
+            WhoisImpl::KeySet keyset;
+            const Fred::InfoKeysetData &info_keyset_data = ks_info[idx].info_keyset_data;
+            keyset.changed = info_keyset_data.update_time;
+            keyset.created = info_keyset_data.creation_time;
 
-            temp.dns_keys.reserve(it->info_keyset_data.dns_keys.size());
-            DNSKey tmp_dns;
-            BOOST_FOREACH(Fred::DnsKey it_dns, it->info_keyset_data.dns_keys)
+            keyset.dns_keys.reserve(info_keyset_data.dns_keys.size());
+            BOOST_FOREACH(Fred::DnsKey dns_key, info_keyset_data.dns_keys)
             {
-                tmp_dns.alg        = it_dns.get_alg();
-                tmp_dns.flags      = it_dns.get_flags();
-                tmp_dns.protocol   = it_dns.get_protocol();
-                tmp_dns.public_key = it_dns.get_key();
-                temp.dns_keys.push_back(tmp_dns);
+                keyset.dns_keys.push_back(DNSKey(dns_key.get_flags(),
+                                                 dns_key.get_protocol(),
+                                                 dns_key.get_alg(),
+                                                 dns_key.get_key()));
             }
 
-            temp.handle = it->info_keyset_data.handle;
-            temp.last_transfer = it->info_keyset_data.transfer_time;
-            temp.sponsoring_registrar = it->info_keyset_data.sponsoring_registrar_handle;
+            keyset.handle = info_keyset_data.handle;
+            keyset.last_transfer = info_keyset_data.transfer_time;
+            keyset.sponsoring_registrar = info_keyset_data.sponsoring_registrar_handle;
 
             const std::vector<Fred::ObjectStateData> v_osd =
-                    Fred::GetObjectStates(it->info_keyset_data.id).exec(ctx);
-            temp.statuses.reserve(v_osd.size());
+                    Fred::GetObjectStates(info_keyset_data.id).exec(ctx);
+            keyset.statuses.reserve(v_osd.size());
             BOOST_FOREACH(Fred::ObjectStateData it_osd, v_osd)
             {
                 if (it_osd.is_external)
                 {
-                    temp.statuses.push_back(it_osd.state_name);
+                    keyset.statuses.push_back(it_osd.state_name);
                 }
             }
 
-            temp.tech_contacts.reserve(it->info_keyset_data.tech_contacts.size());
-            BOOST_FOREACH(Fred::ObjectIdHandlePair it_oihp, it->info_keyset_data.tech_contacts)
+            keyset.tech_contacts.reserve(info_keyset_data.tech_contacts.size());
+            BOOST_FOREACH(Fred::ObjectIdHandlePair it_oihp, info_keyset_data.tech_contacts)
             {
-                temp.tech_contacts.push_back(it_oihp.handle);
+                keyset.tech_contacts.push_back(it_oihp.handle);
             }
-            ks_seq.content.push_back(temp);
+            ks_seq.content.push_back(keyset);
         }
         return ks_seq;
     }
@@ -974,12 +951,9 @@ static std::vector<ObjectStatusDesc> get_object_status_descriptions(
 
         std::vector<ObjectStatusDesc> state_seq;
         state_seq.reserve(states.size());
-        ObjectStatusDesc tmp;
-        BOOST_FOREACH(Fred::ObjectStateDescription it, states)
+        BOOST_FOREACH(Fred::ObjectStateDescription state, states)
         {
-            tmp.handle = it.handle;
-            tmp.name = it.description;
-            state_seq.push_back(tmp);
+            state_seq.push_back(ObjectStatusDesc(state.handle, state.description));
         }
         return state_seq;
     }
