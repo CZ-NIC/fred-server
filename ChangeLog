@@ -2,6 +2,14 @@
 
   * epp backend rewrite - nsset and keyset methods
 
+2016-10-13 (2.27.1)
+
+  * whois
+    * fix - contact disclose flags (was uninitialized)
+    * fix - keyset states (was uninitialized)
+    * fix - nsset nameserver ip addresses (accumulation bug)
+    * fix - logging severity
+
 2016-09-07 (2.27.0)
 
   * whois - internal searation of implementation and corba wrapper

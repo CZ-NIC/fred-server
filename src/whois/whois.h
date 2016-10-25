@@ -301,9 +301,9 @@ struct DNSKey
     DNSKey() {}
 
     DNSKey(
-        const short& _flags,
-        const short& _protocol,
-        const short& _alg,
+        short _flags,
+        short _protocol,
+        short _alg,
         const std::string& _public_key
     ) :
         flags(_flags),
@@ -492,63 +492,66 @@ struct ObjectStatusDesc
     {}
 };
 
+struct Exception : std::exception { };
+struct FatalException : Exception { };
+
 /**
  * Object requested by ID was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
-struct ObjectNotExists : std::exception
+struct ObjectNotExists : Exception
 {
-    const char* what() const throw() {return "registry object with specified ID does not exist";}
+    const char* what() const throw() { return "registry object with specified ID does not exist"; }
 };
 
 /**
  * Object requested by handle was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
-struct InvalidHandle : std::exception
+struct InvalidHandle : Exception
 {
-    const char* what() const throw() {return "registry object with specified handle does not exist";}
+    const char* what() const throw() { return "registry object with specified handle does not exist"; }
 };
 
 /**
  * Internal server error.
  * Unexpected failure, requires maintenance.
  */
-struct InternalServerError : std::exception
+struct InternalServerError : FatalException
 {
-    const char* what() const throw() {return "internal server error";}
+    const char* what() const throw() { return "internal server error"; }
 };
 
 /**
  * Label of the object was incorrectly specified.
  */
-struct InvalidLabel : std::exception
+struct InvalidLabel : Exception
 {
-    const char* what() const throw() {return "the label is invalid";}
+    const char* what() const throw() { return "the label is invalid"; }
 };
 
 /**
  * Zone of the domain is not managed by the service.
  */
-struct UnmanagedZone : std::exception
+struct UnmanagedZone : Exception
 {
-    const char* what() const throw() {return "this zone is not managed";}
+    const char* what() const throw() { return "this zone is not managed"; }
 };
 
 /**
  * Domain name contains more labels than allowed for its type.
  */
-struct TooManyLabels : std::exception
+struct TooManyLabels : Exception
 {
-    const char* what() const throw() {return "domain has too many labels";}
+    const char* what() const throw() { return "domain has too many labels"; }
 };
 
 /**
  * Database does not contain the localization of the description of the object.
  */
-struct MissingLocalization : std::exception
+struct MissingLocalization : Exception
 {
-    const char* what() const throw() {return "the localization is missing";}
+    const char* what() const throw() { return "the localization is missing"; }
 };
 
 /**
