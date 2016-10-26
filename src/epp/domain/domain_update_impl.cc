@@ -85,15 +85,64 @@ unsigned long long domain_update_impl(
     Optional<bool> enum_publish_flag;
 
     if(zone_data.is_enum) {
+
         if(!_enum_validation_list.empty()) {
+
             req_enum_valexdate = _enum_validation_list.rbegin()->get_valexdate();
-            if(req_enum_valexdate.get_value().is_special()) // TODO XXX check valexdate range
-            {
-                parameter_value_range_error.add(Error::of_vector_parameter(
-                    Param::domain_ext_val_date,
-                    boost::numeric_cast<unsigned short>(_enum_validation_list.size() - 1),
-                    Reason::valexpdate_not_valid));
+
+            if(req_enum_valexdate.isset()) {
+                if(req_enum_valexdate.get_value().is_special()) // TODO XXX check valexdate range // FIXME isset()
+                {
+                    parameter_value_range_error.add(Error::of_vector_parameter(
+                        Param::domain_ext_val_date,
+                        boost::numeric_cast<unsigned short>(_enum_validation_list.size() - 1),
+                        Reason::valexpdate_not_valid));
+                }
+                else {
+
+                    Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(_domain_fqdn)
+                        .exec(_ctx,"UTC").info_domain_data;
+
+                    const boost::optional<boost::gregorian::date> curr_enum_valexdate
+                        = domain_info_data.enum_domain_validation.isnull()
+                            ? boost::optional<boost::gregorian::date>()
+                            : boost::optional<boost::gregorian::date>(
+                                domain_info_data.enum_domain_validation.get_value().validation_expiration);
+
+                    const boost::gregorian::date max_valexdate = (curr_enum_valexdate.is_initialized() //if curr_enum_valexdate exists
+                        //and in validation continuation window
+                        && current_local_date >= //validation_continuation_begin = current expiration of ENUM validation  - enum_validation_continuation_window
+                            boost::gregorian::from_simple_string(static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
+                                ("SELECT (").param_date(curr_enum_valexdate.value())
+                                (" - val::bigint * ('1 day'::interval))::date ")
+                                ("FROM enum_parameters WHERE name = 'enum_validation_continuation_window'")
+                                )[0][0]))
+                        && current_local_date < curr_enum_valexdate.value())//validation continuation window ends at current validation expiration date
+                            //max_validation_expiration_if_continuation = current expiration of ENUM validation  + enum_validation_period
+                            ? boost::gregorian::from_simple_string(static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
+                                ("SELECT (").param_date(curr_enum_valexdate.value())
+                                (" + ").param_bigint(zone_data.enum_validation_period)(" * ('1 month'::interval))::date ")
+                                )[0][0]))
+                            //max_validation_expiration_if_not_continuation = current_local_date + enum_validation_period
+                            : boost::gregorian::from_simple_string(static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
+                                ("SELECT (").param_date(current_local_date)
+                                (" + ").param_bigint(zone_data.enum_validation_period)(" * ('1 month'::interval))::date ")
+                                )[0][0]));
+
+                    //if req_enum_valexdate is not valid
+                    if(req_enum_valexdate.get_value() <= current_local_date
+                    || req_enum_valexdate.get_value() > max_valexdate)
+                    {
+                        parameter_value_range_error.add(Error::of_vector_parameter(
+                            Param::domain_ext_val_date,
+                            boost::numeric_cast<unsigned short>(_enum_validation_list.size()),
+                            Reason::valexpdate_not_valid));
+                    }
+
+                }
+
             }
+
             enum_publish_flag = _enum_validation_list.rbegin()->get_publish();
         }
         else {
