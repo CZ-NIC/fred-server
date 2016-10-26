@@ -2906,7 +2906,7 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
         const Epp::LocalizedSuccessResponse response = Epp::nsset_update(
                 Epp::NssetUpdateInputData(
                     Corba::unwrap_string_from_const_char_ptr(_handle),
-                    Corba::unwrap_string_for_change_or_remove_or_noop_to_Optional_string(authInfo_chg),
+                    Corba::unwrap_string_for_change_or_remove_to_Optional_string(authInfo_chg),
                     Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_add),
                     Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_rem),
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),
@@ -3005,9 +3005,9 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
         const Epp::RegistrarSessionData epp_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
         const Optional<std::string> registrant_chg = Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg);
-        const Optional<std::string> auth_info_pw_chg = Corba::unwrap_string_for_change_or_remove_or_noop_to_Optional_string(_auth_info_pw_chg);
-        const Optional<Nullable<std::string> > nsset_chg = Corba::unwrap_string_for_change_or_remove_or_clear_to_Optional_Nullable_string(_nsset_chg);
-        const Optional<Nullable<std::string> > keyset_chg = Corba::unwrap_string_for_change_or_remove_or_clear_to_Optional_Nullable_string(_keyset_chg);
+        const Optional<std::string> auth_info_pw_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw_chg);
+        const Optional<Nullable<std::string> > nsset_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_nsset_chg);
+        const Optional<Nullable<std::string> > keyset_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_keyset_chg);
         const std::vector<Epp::ENUMValidationExtension> enum_validation_list = Corba::unwrap_enum_validation_extension(_ext);
 
         return new ccReg::Response(
@@ -3390,7 +3390,7 @@ ccReg_EPP_i::KeySetUpdate(
         const std::string keyset_handle =
             Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const Optional< std::string > auth_info_pw =
-            Corba::unwrap_string_for_change_to_Optional_string(_auth_info_pw);
+            Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw);
         const std::vector< std::string > tech_contacts_add =
             Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add);
         const std::vector< std::string > tech_contacts_rem =

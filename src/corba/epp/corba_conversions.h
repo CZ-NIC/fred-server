@@ -54,9 +54,32 @@ namespace Corba {
 
     Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
 
-    Optional<std::string> unwrap_string_for_change_or_remove_or_noop_to_Optional_string(const char* input);
+    /**
+     * Unwrapper for attributes which can be empty with special meaning
+     *
+     * @param _src string to be unwrapped, should not be NULL
+     *
+     * @return Optional() if input string empty, else unwrapped input
+     */
+    Optional<std::string> unwrap_string_for_change_to_Optional_string(const char* _src);
 
-    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_or_clear_to_Optional_Nullable_string(const char* input);
+    /**
+     * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
+     *
+     * @param _src string to be unwrapped, should not be NULL
+     *
+     * @return Optional() if input string empty, empty string if input contains special control char, unwrapped input in other cases
+     */
+    Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string(const char* _src);
+
+    /**
+     * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
+     *
+     * @param _src string to be unwrapped, should not be NULL
+     *
+     * @return empty string if input string empty, Optinal(Nullable()) if input ocntains special control char, unwrapped input in other cases
+     */
+    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src);
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
@@ -76,9 +99,9 @@ namespace Corba {
 
     Epp::RequestParams unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
 
-    Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src);
+    short unwrap_tech_check_level_create(CORBA::Short level, unsigned int config_nsset_level);
 
-    boost::optional<short> unwrap_tech_check_level(CORBA::Short level);
+    Optional<short> unwrap_tech_check_level_update(CORBA::Short level);
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
