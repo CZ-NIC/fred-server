@@ -51,48 +51,48 @@ std::set<std::string> vector_of_Fred_ObjectIdHandlePair_to_set_of_string(const s
 }
 
 void check_equal(
-    const Epp::Domain::DomainInfoOutputData& domain_info_output_data,
-    const Fred::InfoDomainData& info_domain_data)
+    const Epp::Domain::DomainInfoOutputData& _domain_info_output_data,
+    const Fred::InfoDomainData& _info_domain_data)
 {
-    BOOST_CHECK_EQUAL(domain_info_output_data.roid, info_domain_data.roid);
-    BOOST_CHECK_EQUAL(domain_info_output_data.fqdn, info_domain_data.fqdn);
-    BOOST_CHECK_EQUAL(domain_info_output_data.registrant, info_domain_data.registrant.handle);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.roid, _info_domain_data.roid);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.fqdn, _info_domain_data.fqdn);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.registrant, _info_domain_data.registrant.handle);
     //BOOST_CHECK_EQUAL(
-    //    domain_info_output_data.nsset.isnull() ? "" : domain_info_output_data.nsset.get_value(),
-    //    info_domain_data.nsset.isnull() ? "" : info_domain_data.nsset.get_value().handle
+    //    _domain_info_output_data.nsset.isnull() ? "" : domain_info_output_data.nsset.get_value(),
+    //    _info_domain_data.nsset.isnull() ? "" : _info_domain_data.nsset.get_value().handle
     //);
-    BOOST_CHECK_EQUAL(domain_info_output_data.nsset.get_value_or_default(), info_domain_data.nsset.get_value_or_default().handle);
-    BOOST_CHECK_EQUAL(domain_info_output_data.keyset.get_value_or_default(), info_domain_data.keyset.get_value_or_default().handle);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.nsset.get_value_or_default(), _info_domain_data.nsset.get_value_or_default().handle);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.keyset.get_value_or_default(), _info_domain_data.keyset.get_value_or_default().handle);
     // states
-    BOOST_CHECK_EQUAL(domain_info_output_data.sponsoring_registrar_handle, info_domain_data.sponsoring_registrar_handle);
-    BOOST_CHECK_EQUAL(domain_info_output_data.creating_registrar_handle, info_domain_data.create_registrar_handle);
-    BOOST_CHECK_EQUAL(domain_info_output_data.last_update_registrar_handle, info_domain_data.update_registrar_handle);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.sponsoring_registrar_handle, _info_domain_data.sponsoring_registrar_handle);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.creating_registrar_handle, _info_domain_data.create_registrar_handle);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.last_update_registrar_handle, _info_domain_data.update_registrar_handle);
 
-    BOOST_CHECK_EQUAL(domain_info_output_data.crdate, info_domain_data.creation_time);
-    BOOST_CHECK_EQUAL(domain_info_output_data.last_update, info_domain_data.update_time);
-    BOOST_CHECK_EQUAL(domain_info_output_data.last_transfer, info_domain_data.transfer_time);
-    BOOST_CHECK_EQUAL(domain_info_output_data.exdate, info_domain_data.expiration_date);
-    BOOST_CHECK_EQUAL(domain_info_output_data.auth_info_pw, info_domain_data.authinfopw);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.crdate, _info_domain_data.creation_time);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.last_update, _info_domain_data.update_time);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.last_transfer, _info_domain_data.transfer_time);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.exdate, _info_domain_data.expiration_date);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.auth_info_pw, _info_domain_data.authinfopw);
 
-    std::set<std::string> admin = vector_of_Fred_ObjectIdHandlePair_to_set_of_string(info_domain_data.admin_contacts);
+    std::set<std::string> admin = vector_of_Fred_ObjectIdHandlePair_to_set_of_string(_info_domain_data.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(
-        domain_info_output_data.admin.begin(),
-        domain_info_output_data.admin.end(),
+        _domain_info_output_data.admin.begin(),
+        _domain_info_output_data.admin.end(),
         admin.begin(),
         admin.end()
     );
 
     BOOST_CHECK_EQUAL(
-       domain_info_output_data.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()).get_valexdate(),
-       info_domain_data.enum_domain_validation.get_value_or_default().validation_expiration
+       _domain_info_output_data.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()).get_valexdate(),
+       _info_domain_data.enum_domain_validation.get_value_or_default().validation_expiration
    );
 
     BOOST_CHECK_EQUAL(
-       domain_info_output_data.ext_enum_domain_validation.get_value_or_default().get_publish(),
-       info_domain_data.enum_domain_validation.get_value_or_default().publish
+       _domain_info_output_data.ext_enum_domain_validation.get_value_or_default().get_publish(),
+       _info_domain_data.enum_domain_validation.get_value_or_default().publish
    );
 
-    BOOST_CHECK_EQUAL(domain_info_output_data.tmpcontact.size(), 0);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.tmpcontact.size(), 0);
 }
 
 } // namespace {anonymous}
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, HasInfoDomainData)
     BOOST_CHECK_THROW(
         Epp::Domain::domain_info_impl(
             ctx,
-            info_domain_data.fqdn,
+            info_domain_data_.fqdn,
             0 // invalid registrar_id
         ),
         Epp::AuthErrorServerClosingConnection
@@ -117,8 +117,8 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_fqdn, HasInfoDomainDataOfNonexiste
     BOOST_CHECK_THROW(
         Epp::Domain::domain_info_impl(
             ctx,
-            info_domain_data.fqdn,
-            info_registrar_data.id
+            info_domain_data_.fqdn,
+            info_registrar_data_.id
         ),
         Epp::NonexistentHandle
     );
@@ -130,10 +130,10 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data, HasInfoDomainData)
     check_equal(
         Epp::Domain::domain_info_impl(
             ctx,
-            info_domain_data.fqdn,
-            info_registrar_data.id
+            info_domain_data_.fqdn,
+            info_registrar_data_.id
         ),
-        info_domain_data);
+        info_domain_data_);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

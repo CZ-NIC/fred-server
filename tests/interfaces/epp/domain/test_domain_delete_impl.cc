@@ -36,7 +36,7 @@ BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, HasInfoDomainData)
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
             ctx,
-            info_domain_data.fqdn,
+            info_domain_data_.fqdn,
             0 // invalid registrar_id
         ),
         Epp::AuthErrorServerClosingConnection
@@ -48,8 +48,8 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, HasInfoDomainDataOfNonex
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
             ctx,
-            info_domain_data.fqdn,
-            info_registrar_data.id
+            info_domain_data_.fqdn,
+            info_registrar_data_.id
         ),
         Epp::NonexistentHandle
     );
@@ -60,8 +60,8 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, HasInfoDomainDataAndDiffere
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
             ctx,
-            info_domain_data.fqdn,
-            different_info_registrar_data.id
+            info_domain_data_.fqdn,
+            different_info_registrar_data_.id
         ),
         Epp::AuthorizationError
     );
@@ -72,8 +72,8 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_registrar_without_zone_access, HasInfoDomain
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
             ctx,
-            info_domain_data.fqdn,
-            info_registrar_data.id
+            info_domain_data_.fqdn,
+            info_registrar_data_.id
         ),
         Epp::AuthorizationError
     );
@@ -84,8 +84,8 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status, HasInfoDomainDataWithSer
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
             ctx,
-            info_domain_data.fqdn,
-            info_registrar_data.id
+            info_domain_data_.fqdn,
+            info_registrar_data_.id
         ),
         Epp::ObjectStatusProhibitsOperation
     );
@@ -95,12 +95,12 @@ BOOST_FIXTURE_TEST_CASE(delete_ok, HasInfoDomainData)
 {
     Epp::Domain::domain_delete_impl(
         ctx,
-        info_domain_data.fqdn,
-        info_registrar_data.id
+        info_domain_data_.fqdn,
+        info_registrar_data_.id
     );
 
     BOOST_CHECK_EQUAL(
-        Fred::InfoDomainHistoryById(info_domain_data.id).exec(ctx).rbegin()->info_domain_data.delete_time.isnull(),
+        Fred::InfoDomainHistoryById(info_domain_data_.id).exec(ctx).rbegin()->info_domain_data.delete_time.isnull(),
         false
     );
 }
@@ -109,21 +109,21 @@ BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, HasInfoDomainDataWithServ
 {
     Epp::Domain::domain_delete_impl(
         ctx,
-        info_domain_data.fqdn,
-        info_registrar_data.id
+        info_domain_data_.fqdn,
+        info_registrar_data_.id
     );
 
     /* now object has the state server_transfer_prohibited request itself */
     {
         std::vector<std::string> object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(info_domain_data.id).exec(ctx) ) {
+            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(info_domain_data_.id).exec(ctx) ) {
                 object_states_after.push_back(state.state_name);
             }
         }
 
         BOOST_CHECK(
-            std::find( object_states_after.begin(), object_states_after.end(), status )
+            std::find(object_states_after.begin(), object_states_after.end(), status_)
             !=
             object_states_after.end()
         );

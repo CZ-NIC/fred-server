@@ -38,7 +38,7 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_empty, HasInfoRegistrarData)
         Epp::Domain::domain_check_impl(
             ctx,
             std::set<std::string>(),
-            info_registrar_data.id
+            info_registrar_data_.id
         ).size(),
         0
     );
@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, HasInfoRegistrarData)
         Epp::Domain::domain_check_impl(
             ctx,
             domain_fqdns,
-            info_registrar_data.id
+            info_registrar_data_.id
         ).size(),
         domain_fqdns.size()
     );
@@ -84,7 +84,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasInfoRegistrarData)
         Epp::Domain::domain_check_impl(
             ctx,
             domain_fqdns,
-            info_registrar_data.id
+            info_registrar_data_.id
         );
 
     for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = domain_check_impl_res.begin();
@@ -99,13 +99,13 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, HasInfoDomainDataOfNonexistentD
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
-            (info_domain_data.fqdn).convert_to_container<std::set<std::string> >();
+            (info_domain_data_.fqdn).convert_to_container<std::set<std::string> >();
 
     const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > domain_check_impl_res =
         Epp::Domain::domain_check_impl(
             ctx,
             domain_fqdns,
-            info_registrar_data.id
+            info_registrar_data_.id
         );
 
     for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = domain_check_impl_res.begin();
@@ -120,13 +120,13 @@ BOOST_FIXTURE_TEST_CASE(test_existing, HasInfoDomainData)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
-            (info_domain_data.fqdn).convert_to_container<std::set<std::string> >();
+            (info_domain_data_.fqdn).convert_to_container<std::set<std::string> >();
 
     const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > domain_check_impl_res =
         Epp::Domain::domain_check_impl(
             ctx,
             domain_fqdns,
-            info_registrar_data.id
+            info_registrar_data_.id
         );
 
     for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = domain_check_impl_res.begin();
@@ -137,7 +137,48 @@ BOOST_FIXTURE_TEST_CASE(test_existing, HasInfoDomainData)
     }
 }
 
-// TODO blacklist domain and check blacklisted
+BOOST_FIXTURE_TEST_CASE(test_registered_and_blacklisted, HasInfoDomainDataOfRegisteredBlacklistedDomain)
+{
+    const std::set<std::string> domain_fqdns
+        = boost::assign::list_of
+            (info_domain_data_.fqdn).convert_to_container<std::set<std::string> >();
+
+    const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > domain_check_impl_res =
+        Epp::Domain::domain_check_impl(
+            ctx,
+            domain_fqdns,
+            info_registrar_data_.id
+        );
+
+    for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = domain_check_impl_res.begin();
+        it != domain_check_impl_res.end();
+        ++it
+    ) {
+        BOOST_CHECK(it->second.get_value() == Epp::Domain::DomainRegistrationObstruction::registered);
+    }
+}
+
+//BOOST_FIXTURE_TEST_CASE(test_blacklisted, HasFqdnOfBlacklistedDomain)
+//{
+//    const std::set<std::string> domain_fqdns
+//        = boost::assign::list_of
+//            (blacklisted_domain_fqdn_).convert_to_container<std::set<std::string> >();
+//
+//    const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > domain_check_impl_res =
+//        Epp::Domain::domain_check_impl(
+//            ctx,
+//            domain_fqdns,
+//            info_registrar_data_.id
+//        );
+//
+//    for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = domain_check_impl_res.begin();
+//        it != domain_check_impl_res.end();
+//        ++it
+//    ) {
+//        BOOST_CHECK(it->second.get_value() == Epp::Domain::DomainRegistrationObstruction::blacklisted);
+//    }
+//}
+
 // TODO set and test flags
 
 BOOST_AUTO_TEST_SUITE_END();

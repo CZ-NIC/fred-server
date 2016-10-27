@@ -38,48 +38,48 @@
 #include <boost/exception/diagnostic_information.hpp>
 
 struct HasInfoRegistrarData : virtual Test::autorollbacking_context {
-    Fred::InfoRegistrarData info_registrar_data;
+    Fred::InfoRegistrarData info_registrar_data_;
 
     HasInfoRegistrarData() {
         const std::string registrar_handle = "RARTSIGER1";
         Fred::CreateRegistrar(registrar_handle).exec(ctx);
-        info_registrar_data = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
+        info_registrar_data_ = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
     }
 };
 
 struct HasDifferentInfoRegistrarData : virtual Test::autorollbacking_context {
-    Fred::InfoRegistrarData different_info_registrar_data;
+    Fred::InfoRegistrarData different_info_registrar_data_;
 
     HasDifferentInfoRegistrarData() {
         const std::string different_registrar_handle = "RARTSIGER2";
         Fred::CreateRegistrar(different_registrar_handle).exec(ctx);
-        different_info_registrar_data = Fred::InfoRegistrarByHandle(different_registrar_handle).exec(ctx).info_registrar_data;
+        different_info_registrar_data_ = Fred::InfoRegistrarByHandle(different_registrar_handle).exec(ctx).info_registrar_data;
         ctx.get_conn().exec_params(
             "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
                 "SELECT $1::bigint, z.id, NOW() "
                     "FROM zone z "
                     "WHERE z.fqdn = $2::text",
-            Database::query_param_list(different_info_registrar_data.id)
+            Database::query_param_list(different_info_registrar_data_.id)
             ("cz")
         );
     }
 };
 
 struct HasInfoDomainData : HasInfoRegistrarData {
-    Fred::InfoDomainData info_domain_data;
+    Fred::InfoDomainData info_domain_data_;
 
     HasInfoDomainData() {
         const std::string fqdn = "derf.cz";
         const std::string registrant = "TNARTSIGER1";
-        Fred::CreateContact(registrant, info_registrar_data.handle).exec(ctx);
-        Fred::CreateDomain(fqdn, info_registrar_data.handle, registrant).exec(ctx);
-        info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
+        Fred::CreateContact(registrant, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateDomain(fqdn, info_registrar_data_.handle, registrant).exec(ctx);
+        info_domain_data_ = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
         ctx.get_conn().exec_params(
             "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
                 "SELECT $1::bigint, z.id, NOW() "
                     "FROM zone z "
                     "WHERE z.fqdn = $2::text",
-            Database::query_param_list(info_registrar_data.id)
+            Database::query_param_list(info_registrar_data_.id)
             ("cz")
         );
     }
@@ -88,22 +88,44 @@ struct HasInfoDomainData : HasInfoRegistrarData {
 struct HasInfoDomainDataAndDifferentInfoRegistrarData : HasInfoDomainData, HasDifferentInfoRegistrarData { };
 
 struct HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess : HasInfoRegistrarData {
-    Fred::InfoDomainData info_domain_data;
+    Fred::InfoDomainData info_domain_data_;
 
     HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess() {
         const std::string fqdn = "derf.cz";
         const std::string registrant = "TNARTSIGER1";
-        Fred::CreateContact(registrant, info_registrar_data.handle).exec(ctx);
-        Fred::CreateDomain(fqdn, info_registrar_data.handle, registrant).exec(ctx);
-        info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
+        Fred::CreateContact(registrant, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateDomain(fqdn, info_registrar_data_.handle, registrant).exec(ctx);
+        info_domain_data_ = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
+    }
+};
+
+struct HasFqdnOfBlacklistedDomain : HasInfoRegistrarData {
+    std::string blacklisted_domain_fqdn_;
+    HasFqdnOfBlacklistedDomain() {
+        blacklisted_domain_fqdn_ = std::string("blacklisted-domain.cz");
+        ctx.get_conn().exec_params(
+            "INSERT INTO domain_blacklist (regexp, valid_from, reason) "
+                "VALUES ($1::text, NOW(), '')",
+            Database::query_param_list(blacklisted_domain_fqdn_)
+        );
+    }
+};
+
+struct HasInfoDomainDataOfRegisteredBlacklistedDomain : HasInfoDomainData {
+    HasInfoDomainDataOfRegisteredBlacklistedDomain() {
+        ctx.get_conn().exec_params(
+            "INSERT INTO domain_blacklist (regexp, valid_from, reason) "
+                "VALUES ($1::text, NOW(), '')",
+            Database::query_param_list(info_domain_data_.fqdn)
+        );
     }
 };
 
 struct HasInfoDomainDataWithStatusRequest : HasInfoDomainData {
-    const std::string status;
+    const std::string status_;
 
     HasInfoDomainDataWithStatusRequest(const std::string& _status)
-    : status(_status)
+    : status_(_status)
     {
         ctx.get_conn().exec_params(
             "UPDATE enum_object_states SET manual = 'true'::bool WHERE name = $1::text",
@@ -112,13 +134,13 @@ struct HasInfoDomainDataWithStatusRequest : HasInfoDomainData {
 
         const std::set<std::string> statuses = boost::assign::list_of(_status);
 
-        Fred::CreateObjectStateRequestId(info_domain_data.id, statuses).exec(ctx);
+        Fred::CreateObjectStateRequestId(info_domain_data_.id, statuses).exec(ctx);
 
         // ensure object has only request, not the state itself
         {
             std::vector<std::string> object_states_before;
             {
-                BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(info_domain_data.id).exec(ctx) ) {
+                BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(info_domain_data_.id).exec(ctx) ) {
                     object_states_before.push_back(state.state_name);
                 }
             }
@@ -136,7 +158,7 @@ struct HasObjectWithStatus : HasInfoDomainDataWithStatusRequest {
     HasObjectWithStatus(const std::string& _status)
     : HasInfoDomainDataWithStatusRequest(_status)
     {
-        Fred::PerformObjectStateRequest(info_domain_data.id).exec(ctx);
+        Fred::PerformObjectStateRequest(info_domain_data_.id).exec(ctx);
     }
 };
 
@@ -184,8 +206,8 @@ struct HasInfoDomainDataWithServerUpdateProhibitedRequest : HasInfoDomainDataWit
 
 struct HasInfoDomainDataOfNonexistentDomain : HasInfoDomainData {
     HasInfoDomainDataOfNonexistentDomain() {
-        const std::string nonexistent_fqdn = "nonexistent-domain.cz"; // TODO check it
-        info_domain_data.fqdn = nonexistent_fqdn;
+        const std::string nonexistent_domain_fqdn = "nonexistent-domain.cz";
+        info_domain_data_.fqdn = nonexistent_domain_fqdn;
     }
 };
 
