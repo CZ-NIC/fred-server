@@ -174,7 +174,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, HasInfoDomainDataAndDifferentInfo
         boost::posix_time::time_from_string(
             static_cast<std::string>(
                 ctx.get_conn().exec(
-                    "SELECT now()::timestamp without time zone AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' "
+                    "SELECT NOW()::TIMESTAMP WITHOUT TIME ZONE AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague' "
                 )[0][0]
             )
         )
