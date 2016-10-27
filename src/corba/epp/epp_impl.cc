@@ -129,21 +129,6 @@
 
 char *removeWhitespaces(const char *encoded);
 
-static bool testObjectHasState(
-  DBSharedPtr db, Fred::TID object_id, unsigned state_id)
-{
-  bool returnState;
-  std::stringstream sql;
-  sql << "SELECT COUNT(*) FROM object_state " << "WHERE object_id="
-      << object_id << " AND state_id=" << state_id << " AND valid_to ISNULL";
-  DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
-  if (!db->ExecSelect(sql.str().c_str()))
-    throw Fred::SQL_ERROR();
-  returnState = atoi(db->GetFieldValue(0, 0));
-  return returnState;
-}
-
-
 struct NotificationParams //for enqueue_notification call in ~EPPAction()
 {
     unsigned long long id;
@@ -376,25 +361,6 @@ public:
 
 };
 
-/* Ticket #3197 - wrap/overload for function
- * testObjectHasState(DB *db, Fred::TID object_id, unsigned state_id)
- * to test system registrar (should have no restriction)
- */
-static bool testObjectHasState(EPPAction &action, Fred::TID object_id,
-        unsigned state_id)
-{
-    DBSharedPtr db = action.getDB();
-    if (!db.get()) {
-        throw Fred::SQL_ERROR();
-    }
-    if (db->GetRegistrarSystem(action.getRegistrar())) {
-        return 0;
-    }
-    else {
-        return testObjectHasState(db, object_id, state_id);
-    }
-}
-
 static std::string formatTime(const boost::posix_time::ptime& tm) {
   char buffer[100];
   convert_rfc3339_timestamp(buffer, sizeof(buffer), boost::posix_time::to_iso_extended_string(tm).c_str());
@@ -463,46 +429,6 @@ getIdOfKeySet(DBSharedPtr db, const char *handle, bool restricted_handles
     } catch (...) {}
     return ret;
 }
-
-/// replace GetDomainID
-static long int getIdOfDomain(
-DBSharedPtr db, const char *handle, bool lock_epp_commands
-    , bool allow_idn, bool lock = false, int* zone = NULL)
-{
-  if (lock && !lock_epp_commands) lock = false;
-  std::auto_ptr<Fred::Zone::Manager> zm(
-    Fred::Zone::Manager::create()
-  );
-  std::auto_ptr<Fred::Domain::Manager> dman(
-    Fred::Domain::Manager::create(db,zm.get())
-  );
-  Fred::NameIdPair nameId;
-  long int ret = -1;
-  try {
-    switch (dman->checkAvail(handle, nameId, allow_idn, lock )) {
-      case Fred::Domain::CA_REGISTRED :
-        ret = nameId.id;
-        break;
-      case Fred::Domain::CA_INVALID_HANDLE :
-      case Fred::Domain::CA_BAD_LENGHT :
-      case Fred::Domain::CA_BLACKLIST :
-        ret = -2;
-        break;
-      case Fred::Domain::CA_BAD_ZONE :
-        ret = -1;
-        break;
-      case Fred::Domain::CA_PARENT_REGISTRED :
-      case Fred::Domain::CA_CHILD_REGISTRED :
-      case Fred::Domain::CA_AVAILABLE :
-        ret = 0;
-        break;
-    }
-    const Fred::Zone::Zone *z = zm->findApplicableZone(handle);
-    if (zone && z) *zone = z->getId();
-  } catch (...) {}
-  return ret;
-}
-
 
 /*
  * common function to copy domain data to corba structure
@@ -3390,7 +3316,7 @@ ccReg_EPP_i::KeySetUpdate(
         const std::string keyset_handle =
             Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const Optional< std::string > auth_info_pw =
-            Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw);
+            Corba::unwrap_string_for_change_to_Optional_string(_auth_info_pw);
         const std::vector< std::string > tech_contacts_add =
             Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add);
         const std::vector< std::string > tech_contacts_rem =
