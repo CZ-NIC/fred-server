@@ -57,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, HasInfoRegistrarData)
             ("b1")
             ("c1")
             ("d1")
-            ("e1");
+            ("e1").convert_to_container<std::set<std::string> >();
 
     BOOST_CHECK_EQUAL(
         Epp::Domain::domain_check_impl(
@@ -78,7 +78,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasInfoRegistrarData)
             ("-domain.cz")
             ("domain-.cz")
             ("do--main.cz")
-            ("!domain.cz");
+            ("!domain.cz").convert_to_container<std::set<std::string> >();
 
     const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > domain_check_impl_res =
         Epp::Domain::domain_check_impl(
@@ -99,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, HasInfoDomainDataOfNonexistentD
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
-            (info_domain_data.fqdn);
+            (info_domain_data.fqdn).convert_to_container<std::set<std::string> >();
 
     const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > domain_check_impl_res =
         Epp::Domain::domain_check_impl(
@@ -120,7 +120,7 @@ BOOST_FIXTURE_TEST_CASE(test_existing, HasInfoDomainData)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
-            (info_domain_data.fqdn);
+            (info_domain_data.fqdn).convert_to_container<std::set<std::string> >();
 
     const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > domain_check_impl_res =
         Epp::Domain::domain_check_impl(
