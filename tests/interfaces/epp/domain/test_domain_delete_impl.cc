@@ -67,6 +67,18 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, HasInfoDomainDataAndDiffere
     );
 }
 
+BOOST_FIXTURE_TEST_CASE(delete_fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+{
+    BOOST_CHECK_THROW(
+        Epp::Domain::domain_delete_impl(
+            ctx,
+            info_domain_data.fqdn,
+            info_registrar_data.id
+        ),
+        Epp::AuthorizationError
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
 {
     BOOST_CHECK_THROW(

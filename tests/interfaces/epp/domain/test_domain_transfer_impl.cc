@@ -101,6 +101,20 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_authz_info_error, HasInfoDomainDataAndDiff
     );
 }
 
+BOOST_FIXTURE_TEST_CASE(info_fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+{
+    BOOST_CHECK_THROW(
+        Epp::Domain::domain_transfer_impl(
+            ctx,
+            info_domain_data.fqdn,
+            info_domain_data.authinfopw,
+            info_registrar_data.id, // same registrar but zone access should be checked before this
+            42
+        ),
+        Epp::AuthorizationError
+    );
+}
+
 struct HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData : HasDifferentInfoRegistrarData, HasInfoDomainDataWithServerUpdateProhibitedRequest { };
 
 BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData)

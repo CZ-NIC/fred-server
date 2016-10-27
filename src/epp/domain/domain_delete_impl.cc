@@ -36,7 +36,7 @@ unsigned long long domain_delete_impl(
     Fred::Zone::Data zone_data;
     try {
         zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-                Fred::Zone::rem_trailing_dot(_domain_fqdn));
+            Fred::Zone::rem_trailing_dot(_domain_fqdn));
     } catch (const Fred::Zone::Exception& e) {
         if(e.is_set_unknown_zone_in_fqdn()) {
             throw NonexistentHandle();

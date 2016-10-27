@@ -37,7 +37,7 @@
 
 #include <boost/exception/diagnostic_information.hpp>
 
-struct HasInfoRegistrarData : virtual Test::autocommitting_context {
+struct HasInfoRegistrarData : virtual Test::autorollbacking_context {
     Fred::InfoRegistrarData info_registrar_data;
 
     HasInfoRegistrarData() {
@@ -47,13 +47,21 @@ struct HasInfoRegistrarData : virtual Test::autocommitting_context {
     }
 };
 
-struct HasDifferentInfoRegistrarData : virtual Test::autocommitting_context {
+struct HasDifferentInfoRegistrarData : virtual Test::autorollbacking_context {
     Fred::InfoRegistrarData different_info_registrar_data;
 
     HasDifferentInfoRegistrarData() {
         const std::string different_registrar_handle = "RARTSIGER2";
         Fred::CreateRegistrar(different_registrar_handle).exec(ctx);
         different_info_registrar_data = Fred::InfoRegistrarByHandle(different_registrar_handle).exec(ctx).info_registrar_data;
+        ctx.get_conn().exec_params(
+            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
+                "SELECT $1::bigint, z.id, NOW() "
+                    "FROM zone z "
+                    "WHERE z.fqdn = $2::text",
+            Database::query_param_list(different_info_registrar_data.id)
+            ("cz")
+        );
     }
 };
 
@@ -66,10 +74,30 @@ struct HasInfoDomainData : HasInfoRegistrarData {
         Fred::CreateContact(registrant, info_registrar_data.handle).exec(ctx);
         Fred::CreateDomain(fqdn, info_registrar_data.handle, registrant).exec(ctx);
         info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
+        ctx.get_conn().exec_params(
+            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
+                "SELECT $1::bigint, z.id, NOW() "
+                    "FROM zone z "
+                    "WHERE z.fqdn = $2::text",
+            Database::query_param_list(info_registrar_data.id)
+            ("cz")
+        );
     }
 };
 
 struct HasInfoDomainDataAndDifferentInfoRegistrarData : HasInfoDomainData, HasDifferentInfoRegistrarData { };
+
+struct HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess : HasInfoRegistrarData {
+    Fred::InfoDomainData info_domain_data;
+
+    HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess() {
+        const std::string fqdn = "derf.cz";
+        const std::string registrant = "TNARTSIGER1";
+        Fred::CreateContact(registrant, info_registrar_data.handle).exec(ctx);
+        Fred::CreateDomain(fqdn, info_registrar_data.handle, registrant).exec(ctx);
+        info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
+    }
+};
 
 struct HasInfoDomainDataWithStatusRequest : HasInfoDomainData {
     const std::string status;
