@@ -642,7 +642,10 @@ namespace Corba {
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
-            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            if(in[i] == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
             ret.push_back(std::string(in[i]));
         }
         return ret;
@@ -654,7 +657,10 @@ namespace Corba {
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
-            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            if(in[i] == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
             boost::system::error_code boost_error_code;//invalid ip address is transformed to non-initialized optional
             boost::asio::ip::address ipaddr = boost::asio::ip::address::from_string(in[i],boost_error_code);
             boost::optional<boost::asio::ip::address> optional_ipaddr;
@@ -673,8 +679,11 @@ namespace Corba {
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
-            if(in[i].fqdn == 0) throw std::runtime_error("null char ptr");
-            ret.push_back(Epp::DNShostInput(std::string(in[i].fqdn),
+            if(in[i].fqdn == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
+            ret.push_back(Epp::DNShostData(std::string(in[i].fqdn),
                 unwrap_inet_addr_to_vector_asio_addr(in[i].inet)));
         }
         return ret;
@@ -829,41 +838,33 @@ namespace Corba {
         return result;
     }
 
-    /**
-     * length of domain registration period
-     */
     Epp::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period)
     {
         switch(period.unit)
         {
             case ccReg::unit_month:
                 return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::month);
-                break;
             case ccReg::unit_year:
                 return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::year);
-                break;
         };
         throw std::runtime_error("unwrap_domain_registration_period internal error");
     }
 
-    /**
-     * domain administrative contacts unwrapper
-     */
     std::vector<std::string> unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact & in)
     {
         std::vector<std::string> ret;
         ret.reserve(in.length());
-        for(unsigned long long i = 0 ; i < in.length();++i)
+        for(unsigned long long i = 0; i < in.length(); ++i)
         {
-            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            if(in[i] == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
             ret.push_back(std::string(in[i]));
         }
         return ret;
     }
 
-    /**
-     * ENUM validation list unwrapper
-     */
     std::vector<Epp::ENUMValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext)
     {
         const ccReg::ENUMValidationExtension *enum_ext = 0;

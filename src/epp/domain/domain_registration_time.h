@@ -46,7 +46,10 @@ namespace Epp {
         : length_of_domain_registration(_length_of_domain_registration)
         , unit_of_domain_registration_time(_unit_of_domain_registration_time)
         {
-            if (length_of_domain_registration < 0) throw std::out_of_range("negative time of domain registration");
+            if (length_of_domain_registration < 0)
+            {
+                throw std::out_of_range("negative time of domain registration");
+            }
         }
 
         int get_length_of_domain_registration_in_months() const

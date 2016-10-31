@@ -345,7 +345,7 @@ namespace Fred
 
                     for(std::vector<std::string>::iterator i = admin_contacts_.begin(); i != admin_contacts_.end(); ++i)
                     {
-                        //lock admin contact object_registry row for update and get id
+                        //lock admin contact object_registry row for share and get id
                         unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
                                 ctx, false, *i,"contact",&create_domain_exception,
                                 &Exception::add_unknown_admin_contact_handle);

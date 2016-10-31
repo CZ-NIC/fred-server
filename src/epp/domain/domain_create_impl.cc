@@ -226,7 +226,10 @@ DomainCreateResult domain_create_impl(
     }
 
     //throw accumulated errors
-    if(!parameter_value_policy_error.is_empty()) throw parameter_value_policy_error;
+    if(!parameter_value_policy_error.is_empty())
+    {
+        throw parameter_value_policy_error;
+    }
 
     try {
 

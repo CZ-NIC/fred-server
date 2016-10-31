@@ -229,7 +229,10 @@ DomainRenewResult domain_renew_impl(
     }
 
     //throw accumulated errors
-    if(!param_range_error.is_empty()) throw param_range_error;
+    if(!param_range_error.is_empty())
+    {
+        throw param_range_error;
+    }
 
     try {
         const Optional<bool> enum_publish_flag

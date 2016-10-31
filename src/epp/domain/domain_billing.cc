@@ -68,14 +68,20 @@ namespace Epp
                 = ctx.get_conn().exec_params(price_list_query
                 , Database::query_param_list(domain_create_timestamp_utc)(zone_id)("CreateDomain"));
 
-            if(operation_price_list_result.size() != 1) throw std::runtime_error("operation not found");
+            if(operation_price_list_result.size() != 1)
+            {
+                throw std::runtime_error("operation not found");
+            }
 
             bool enable_postpaid_operation = operation_price_list_result[0][0];
             unsigned long long operation_id = operation_price_list_result[0][1];
             Decimal price_list_price = std::string(operation_price_list_result[0][2]);
             Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
 
-            if(price_list_quantity == Decimal("0")) throw std::runtime_error("price_list_quantity == 0");
+            if(price_list_quantity == Decimal("0"))
+            {
+                throw std::runtime_error("price_list_quantity == 0");
+            }
 
             Decimal price =  price_list_price * Decimal("1") / price_list_quantity;//count_price
 
@@ -84,12 +90,18 @@ namespace Epp
                 = ctx.get_conn().exec_params(lock_registrar_credit_query
                 , Database::query_param_list(sponsoring_registrar_id)(zone_id));
 
-            if(locked_registrar_credit_result.size() != 1) throw std::runtime_error("unable to get registrar_credit");
+            if(locked_registrar_credit_result.size() != 1)
+            {
+                throw std::runtime_error("unable to get registrar_credit");
+            }
 
             unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
             Decimal registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
 
-            if(price != Decimal("0") && registrar_credit_balance < price && !enable_postpaid_operation) throw std::runtime_error("insufficient balance");
+            if(price != Decimal("0") && registrar_credit_balance < price && !enable_postpaid_operation)
+            {
+                throw std::runtime_error("insufficient balance");
+            }
 
             // save info about debt into credit
             Database::Result registrar_credit_transaction_result
@@ -143,14 +155,20 @@ namespace Epp
                 = ctx.get_conn().exec_params(price_list_query
                 , Database::query_param_list(domain_renew_timestamp_utc)(zone_id)("RenewDomain"));
 
-            if(operation_price_list_result.size() != 1) throw std::runtime_error("operation not found");
+            if(operation_price_list_result.size() != 1)
+            {
+                throw std::runtime_error("operation not found");
+            }
 
             bool enable_postpaid_operation = operation_price_list_result[0][0];
             unsigned long long operation_id = operation_price_list_result[0][1];
             Decimal price_list_price = std::string(operation_price_list_result[0][2]);
             Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
 
-            if(price_list_quantity == Decimal("0")) throw std::runtime_error("price_list_quantity == 0");
+            if(price_list_quantity == Decimal("0"))
+            {
+                throw std::runtime_error("price_list_quantity == 0");
+            }
 
             Decimal price =  price_list_price
                 * Decimal(boost::lexical_cast<std::string>(length_of_domain_registration_in_years))
@@ -164,12 +182,18 @@ namespace Epp
                 = ctx.get_conn().exec_params(lock_registrar_credit_query
                 , Database::query_param_list(sponsoring_registrar_id)(zone_id));
 
-            if(locked_registrar_credit_result.size() != 1) throw std::runtime_error("unable to get registrar_credit");
+            if(locked_registrar_credit_result.size() != 1)
+            {
+                throw std::runtime_error("unable to get registrar_credit");
+            }
 
             unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
             Decimal registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
 
-            if(price != Decimal("0") && registrar_credit_balance < price && !enable_postpaid_operation) throw std::runtime_error("insufficient balance");
+            if(price != Decimal("0") && registrar_credit_balance < price && !enable_postpaid_operation)
+            {
+                throw std::runtime_error("insufficient balance");
+            }
 
             // save info about debt into credit
             Database::Result registrar_credit_transaction_result

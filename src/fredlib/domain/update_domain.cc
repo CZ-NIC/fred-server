@@ -256,7 +256,7 @@ namespace Fred
                 }
                 else
                 {
-                    //lock nsset object_registry row for update and get id
+                    //lock nsset object_registry row for share and get id
                     unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
                             ctx, false,new_nsset_value.get_value(),"nsset",&update_domain_exception,
                             &Exception::set_unknown_nsset_handle);
@@ -276,7 +276,7 @@ namespace Fred
                 }
                 else
                 {
-                    //lock keyset object_registry row for update and get id
+                    //lock keyset object_registry row for share and get id
                     unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
                             ctx, false, new_keyset_value.get_value(),"keyset",&update_domain_exception,
                             &Exception::set_unknown_keyset_handle);
@@ -289,7 +289,7 @@ namespace Fred
 
             if(registrant_.isset())//change registrant
             {
-                //lock object_registry row for update
+                //lock object_registry row for share
                 unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
                         ctx, false,registrant_.get_value(),"contact",&update_domain_exception,
                         &Exception::set_unknown_registrant_handle);
@@ -338,7 +338,7 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = add_admin_contact_.begin(); i != add_admin_contact_.end(); ++i)
             {
-                //lock object_registry row for update and get id
+                //lock object_registry row for share and get id
 
                 unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
                         ctx, false, *i,"contact",&update_domain_exception,
@@ -384,7 +384,7 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = rem_admin_contact_.begin(); i != rem_admin_contact_.end(); ++i)
             {
-                //lock object_registry row for update and get id
+                //lock object_registry row for share and get id
 
                 unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
                         ctx, false, *i,"contact",&update_domain_exception,

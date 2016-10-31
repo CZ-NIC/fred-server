@@ -156,7 +156,7 @@ namespace Fred
 
                 for(std::vector<std::string>::iterator i = add_tech_contact_.begin(); i != add_tech_contact_.end(); ++i)
                 {
-                    //lock object_registry row for update
+                    //lock object_registry row for share
                     unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
                             ctx, false, *i,"contact",&update_keyset_exception,
                             &Exception::add_unknown_technical_contact_handle);
