@@ -254,7 +254,7 @@ DomainCreateResult domain_create_impl(
             ?  Optional<bool>(_data.enum_validation_list.rbegin()->get_publish())
             : Optional<bool>());
 
-        Fred::CreateDomain::Result result = Fred::CreateDomain(
+        const Fred::CreateDomain::Result result = Fred::CreateDomain(
             _data.fqdn,
             registrar_handle,
             _data.registrant,
