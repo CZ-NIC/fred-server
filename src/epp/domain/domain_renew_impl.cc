@@ -151,7 +151,7 @@ DomainRenewResult domain_renew_impl(
     if(!zone_data.is_enum && !_data.enum_validation_list.empty())
     {
         ParameterValuePolicyError ex;
-        for(unsigned i = 1; i <= _data.enum_validation_list.size(); ++i )
+        for(unsigned i = 0; i < _data.enum_validation_list.size(); ++i )
         {
             ex.add(Error::of_vector_parameter(
                     Param::domain_ext_val_date,
@@ -200,7 +200,7 @@ DomainRenewResult domain_renew_impl(
         {
             param_range_error.add(Error::of_vector_parameter(
                 Param::domain_ext_val_date,
-                boost::numeric_cast<unsigned short>(_data.enum_validation_list.size()),
+                boost::numeric_cast<unsigned short>(_data.enum_validation_list.size() - 1),
                 Reason::valexpdate_not_valid));
         }
     }

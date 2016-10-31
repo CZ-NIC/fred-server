@@ -135,7 +135,7 @@ unsigned long long domain_update_impl(
                     {
                         parameter_value_range_error.add(Error::of_vector_parameter(
                             Param::domain_ext_val_date,
-                            boost::numeric_cast<unsigned short>(_enum_validation_list.size()),
+                            boost::numeric_cast<unsigned short>(_enum_validation_list.size() - 1),
                             Reason::valexpdate_not_valid));
                     }
 

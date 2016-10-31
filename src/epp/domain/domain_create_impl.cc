@@ -169,7 +169,7 @@ DomainCreateResult domain_create_impl(
     //check no ENUM validation date in case of non ENUM domain
     if(!zone_data.is_enum && !_data.enum_validation_list.empty())
     {
-        for(unsigned i = 1; i <= _data.enum_validation_list.size(); ++i )
+        for(unsigned i = 0; i < _data.enum_validation_list.size(); ++i )
         {
             parameter_value_policy_error.add(
                 Error::of_vector_parameter(
@@ -195,7 +195,7 @@ DomainCreateResult domain_create_impl(
         {
             throw ParameterValueRangeError().add(Error::of_vector_parameter(
                 Param::domain_ext_val_date,
-                boost::numeric_cast<unsigned short>(_data.enum_validation_list.size()),
+                boost::numeric_cast<unsigned short>(_data.enum_validation_list.size() - 1),
                 Reason::valexpdate_not_valid));
         }
     }
@@ -210,7 +210,7 @@ DomainCreateResult domain_create_impl(
             parameter_value_policy_error.add(
                 Error::of_vector_parameter(
                     Param::domain_admin,
-                    boost::numeric_cast<unsigned short>(i+1),
+                    boost::numeric_cast<unsigned short>(i),
                     Reason::admin_notexist));
         }
         else
@@ -219,7 +219,7 @@ DomainCreateResult domain_create_impl(
                     _data.admin_contacts.at(i))).second == false)
             {
                 parameter_value_policy_error.add(Error::of_vector_parameter(Param::domain_admin,
-                    boost::numeric_cast<unsigned short>(i+1),
+                    boost::numeric_cast<unsigned short>(i),
                     Reason::duplicated_contact));
             }
         }
