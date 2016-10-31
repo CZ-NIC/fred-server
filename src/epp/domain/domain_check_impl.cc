@@ -36,10 +36,8 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
                 return DomainRegistrationObstruction::zone_not_in_registry;
 
             case Fred::Domain::DomainRegistrability::available:
-                Fred::Domain::DomainFqdnSyntaxValidity::Enum domain_fqdn_syntax_validity
-                     = Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _domain_fqdn);
 
-                switch (domain_fqdn_syntax_validity) {
+                switch (Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _domain_fqdn)) {
                     case Fred::Domain::DomainFqdnSyntaxValidity::invalid:
                         return DomainRegistrationObstruction::invalid_fqdn;
                     case Fred::Domain::DomainFqdnSyntaxValidity::valid:
