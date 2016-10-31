@@ -42,10 +42,11 @@ namespace Fred
     unsigned long long get_object_type_id(OperationContext& ctx, const std::string& obj_type);
 
     /**
-    * Gets object id by handle or fqdn and object type name and locks for update.
+    * Gets object id by handle or fqdn and object type name and locks object_registry row for update or for share.
     * @param EXCEPTION is type of exception used for reporting when object is not found, deducible from type of @ref ex_ptr parameter
     * @param EXCEPTION_OBJECT_HANDLE_SETTER is EXCEPTION member function pointer used to report unknown object handle
     * @param ctx contains reference to database and logging interface
+    * @param lock_for_update if true then locks for update if false then locks for share
     * @param object_handle is handle or fqdn to look for
     * @param object_type is name from enum_object_type, if not found throws InternallError
     * @param ex_ptr is  pointer to given exception instance to be set (don't throw except for object_type), if ex_ptr is 0, new exception instance is created, set and thrown
@@ -57,17 +58,20 @@ namespace Fred
     */
     template <class EXCEPTION, typename EXCEPTION_OBJECT_HANDLE_SETTER>
     unsigned long long get_object_id_by_handle_and_type_with_lock(OperationContext& ctx
+            , const bool lock_for_update
             , const std::string& object_handle, const std::string& object_type
             , EXCEPTION* ex_ptr, EXCEPTION_OBJECT_HANDLE_SETTER ex_handle_setter)
     {
         get_object_type_id(ctx, object_type);
 
-        Database::Result object_id_res = ctx.get_conn().exec_params(
+        Database::Result object_id_res = ctx.get_conn().exec_params(std::string(
         "SELECT oreg.id FROM object_registry oreg "
         " JOIN enum_object_type eot ON eot.id = oreg.type AND eot.name = $2::text "
         " WHERE oreg.name = CASE WHEN $2::text = 'domain'::text THEN LOWER($1::text) "
-        " ELSE UPPER($1::text) END AND oreg.erdate IS NULL "
-        " FOR UPDATE OF oreg"
+        " ELSE UPPER($1::text) END AND oreg.erdate IS NULL ")
+        + (lock_for_update
+           ? std::string(" FOR UPDATE OF oreg")
+           : std::string(" FOR SHARE OF oreg"))
         , Database::query_param_list(object_handle)(object_type));
 
         if(object_id_res.size() == 0)

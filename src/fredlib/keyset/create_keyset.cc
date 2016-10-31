@@ -154,7 +154,7 @@ namespace Fred
                     {
                         //lock object_registry row for update and get id
                         unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
-                                _ctx, *i,
+                                _ctx, false, *i,
                                 Conversion::Enums::to_db_handle(Object_Type::contact),
                                 &create_keyset_exception,
                                 &Exception::add_unknown_technical_contact_handle);

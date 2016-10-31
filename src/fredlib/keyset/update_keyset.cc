@@ -114,7 +114,7 @@ namespace Fred
 
             //lock row and get keyset_id
             unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
-                    ctx,handle_,"keyset",static_cast<Exception*>(0),
+                    ctx, true, handle_,"keyset",static_cast<Exception*>(0),
                     &Exception::set_unknown_keyset_handle);
 
             Exception update_keyset_exception;
@@ -158,7 +158,7 @@ namespace Fred
                 {
                     //lock object_registry row for update
                     unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
-                            ctx,*i,"contact",&update_keyset_exception,
+                            ctx, false, *i,"contact",&update_keyset_exception,
                             &Exception::add_unknown_technical_contact_handle);
                     if(tech_contact_id == 0) continue;
 
@@ -204,7 +204,7 @@ namespace Fred
                 for(std::vector<std::string>::iterator i = rem_tech_contact_.begin(); i != rem_tech_contact_.end(); ++i)
                 {
                     unsigned long long tech_contact_id = get_object_id_by_handle_and_type_with_lock(
-                            ctx,*i,"contact",&update_keyset_exception,
+                            ctx, false,*i,"contact",&update_keyset_exception,
                             &Exception::add_unknown_technical_contact_handle);
                     if(tech_contact_id == 0) continue;
 

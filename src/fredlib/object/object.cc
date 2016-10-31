@@ -196,7 +196,7 @@ namespace Fred
 
             //get object id with lock
             unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
-                ctx,handle_,obj_type_,&update_object_exception,
+                ctx, true, handle_,obj_type_,&update_object_exception,
                 &Exception::set_unknown_object_handle);
 
             Database::QueryParams params;//query params
@@ -344,6 +344,7 @@ namespace Fred
 
             unsigned long long object_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,
+                true,
                 handle_,
                 obj_type_,
                 static_cast<Exception*>(NULL),
