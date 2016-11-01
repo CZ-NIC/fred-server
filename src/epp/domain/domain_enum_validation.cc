@@ -23,7 +23,7 @@ bool is_new_enum_domain_validation_expiration_date_invalid(
         const boost::gregorian::date& new_valexdate,//local date
         const boost::gregorian::date& current_local_date ,
         const unsigned enum_validation_period,//in months
-        const boost::optional<boost::gregorian::date> current_valexdate, //if not set, ENUM domain is not currently validated
+        const boost::optional<boost::gregorian::date>& current_valexdate, //if not set, ENUM domain is not currently validated
         Fred::OperationContext& _ctx
         )
     {
