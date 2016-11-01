@@ -1598,6 +1598,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_create.h \
 		src/epp/domain/domain_registration_time.h \
 		src/epp/domain/domain_enum_validation.h \
+		src/epp/domain/domain_enum_validation.cc \
 		src/epp/domain/domain_create_impl.cc \
 		src/epp/domain/domain_create_impl.h \
 		src/epp/domain/domain_renew_impl.cc \
