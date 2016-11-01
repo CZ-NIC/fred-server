@@ -58,7 +58,6 @@ namespace Epp
             unsigned long long created_domain_id,
             Fred::OperationContext& ctx)
     {
-        //exception in find_zone_in_fqdn is not BillingFailure
         unsigned long long zone_id = Fred::Zone::find_zone_in_fqdn(
                 ctx, Fred::Zone::rem_trailing_dot(fqdn)).id;
         try
