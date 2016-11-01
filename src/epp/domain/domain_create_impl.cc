@@ -184,14 +184,9 @@ DomainCreateResult domain_create_impl(
     {
         const boost::gregorian::date new_valexdate = _data.enum_validation_list.rbegin()->get_valexdate();
 
-        //current_local_date + enum_validation_period,boost date arithmetics does not conform to rounding rules
-        const boost::gregorian::date max_validation_date = boost::gregorian::from_simple_string(
-                static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
-                ("SELECT (").param_date(current_local_date)
-                (" + ").param_bigint(zone_data.enum_validation_period)(" * ('1 month'::interval))::date ")
-                )[0][0]));
-
-        if(new_valexdate <= current_local_date || new_valexdate > max_validation_date)
+        if(is_new_enum_domain_validation_expiration_date_invalid(
+            new_valexdate, current_local_date, zone_data.enum_validation_period,
+            boost::optional<boost::gregorian::date>(), _ctx))
         {
             throw ParameterValueRangeError().add(Error::of_vector_parameter(
                 Param::domain_ext_val_date,
