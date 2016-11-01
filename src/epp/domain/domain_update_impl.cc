@@ -73,7 +73,6 @@ unsigned long long domain_update_impl(
 
     const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
             Fred::Zone::rem_trailing_dot(_domain_fqdn));
-
     if (!Fred::registrar_zone_access(_registrar_id, zone_data.id, current_local_date, _ctx)) {
         throw AuthorizationError();
     }
@@ -81,8 +80,8 @@ unsigned long long domain_update_impl(
     ParameterValueRangeError parameter_value_range_error;
     ParameterValuePolicyError parameter_value_policy_error;
 
-    boost::gregorian::date req_enum_valexdate;
-    bool enum_publish_flag;
+    Optional<boost::gregorian::date> req_enum_valexdate;
+    Optional<bool> enum_publish_flag;
 
     if(zone_data.is_enum) {
 
@@ -90,7 +89,7 @@ unsigned long long domain_update_impl(
 
             req_enum_valexdate = _enum_validation_list.rbegin()->get_valexdate();
 
-            if(req_enum_valexdate.is_special())
+            if(req_enum_valexdate.get_value().is_special())
             {
                 parameter_value_range_error.add(Error::of_vector_parameter(
                     Param::domain_ext_val_date,
@@ -109,8 +108,11 @@ unsigned long long domain_update_impl(
                             domain_info_data.enum_domain_validation.get_value().validation_expiration);
 
                 if(is_new_enum_domain_validation_expiration_date_invalid(
-                    req_enum_valexdate, current_local_date, zone_data.enum_validation_period,
-                    curr_enum_valexdate, _ctx))
+                    req_enum_valexdate.get_value(),
+                    current_local_date,
+                    zone_data.enum_validation_period,
+                    curr_enum_valexdate,
+                    _ctx))
                 {
                     parameter_value_range_error.add(Error::of_vector_parameter(
                         Param::domain_ext_val_date,
@@ -120,9 +122,6 @@ unsigned long long domain_update_impl(
             }
 
             enum_publish_flag = _enum_validation_list.rbegin()->get_publish();
-        }
-        else {
-            // TODO? enum without extension data
         }
     }
     else { // not enum
@@ -235,7 +234,7 @@ unsigned long long domain_update_impl(
                     Reason::admin_notexist));
         }
         else if (
-            std::find_if (
+            std::find_if(
                 domain_data_before_update.admin_contacts.begin(),
                 domain_data_before_update.admin_contacts.end(),
                 MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_rem_iter)
@@ -317,50 +316,48 @@ unsigned long long domain_update_impl(
             ? Optional<Nullable<std::string> >(Nullable<std::string>())
             : _keyset_chg; // TODO if nsset set, but same as current one?
 
-    {
-        const std::string registrar_handle =
-            Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
+    const std::string registrar_handle =
+        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
 
-        Fred::UpdateDomain update_domain = Fred::UpdateDomain(
-            _domain_fqdn,
-            registrar_handle,
-            _registrant_chg,
-            _auth_info_pw_chg,
-            _nsset_chg,
-            keyset_chg,
-            _admin_contacts_add,
-            _admin_contacts_rem,
-            Optional<boost::gregorian::date>(), // expiration_date
-            req_enum_valexdate,
-            enum_publish_flag,
-            _logd_request_id
-        );
+    Fred::UpdateDomain update_domain = Fred::UpdateDomain(
+        _domain_fqdn,
+        registrar_handle,
+        _registrant_chg,
+        _auth_info_pw_chg,
+        _nsset_chg,
+        keyset_chg,
+        _admin_contacts_add,
+        _admin_contacts_rem,
+        Optional<boost::gregorian::date>(), // expiration_date
+        req_enum_valexdate,
+        enum_publish_flag,
+        _logd_request_id
+    );
 
-        try {
-            const unsigned long long domain_new_history_id = update_domain.exec(_ctx);
-            return domain_new_history_id;
+    try {
+        const unsigned long long domain_new_history_id = update_domain.exec(_ctx);
+        return domain_new_history_id;
 
+    }
+    catch(const Fred::UpdateDomain::Exception& e) {
+
+        if (e.is_set_unknown_domain_fqdn()) {
+            throw NonexistentHandle();
         }
-        catch(const Fred::UpdateDomain::Exception& e) {
 
-            if (e.is_set_unknown_domain_fqdn()) {
-                throw NonexistentHandle();
-            }
-
-            if (e.is_set_unknown_registrar_handle()) {
-                // TODO
-            }
-
-
-            if (e.is_set_invalid_expiration_date()) {
-                // TODO
-            }
-
-            // add_unassigned_admin_contact_handle()
-
-            /* in the improbable case that exception is incorrectly set */
-            throw;
+        if (e.is_set_unknown_registrar_handle()) {
+            // TODO
         }
+
+
+        if (e.is_set_invalid_expiration_date()) {
+            // TODO
+        }
+
+        // add_unassigned_admin_contact_handle()
+
+        /* in the improbable case that exception is incorrectly set */
+        throw;
     }
 
 }
