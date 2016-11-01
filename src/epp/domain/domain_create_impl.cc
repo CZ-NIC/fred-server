@@ -44,12 +44,12 @@ DomainCreateResult domain_create_impl(
     ParameterValuePolicyError parameter_value_policy_error;
 
     //start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
-    boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
         static_cast<std::string>(_ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
 
     //warning: timestamp conversion using local system timezone
-    boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
-    boost::gregorian::date current_local_date = current_local_time.date();
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
 
     //check registrar logged in
     if(_registrar_id == 0) {

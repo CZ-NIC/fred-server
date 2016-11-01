@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -21,6 +21,10 @@
  *  registrar zone access
  */
 
+#ifndef REGISTRAR_ZONE_ACCESS_H_2753b3b14fbc4ef09d5b28192fb7e0bf
+#define REGISTRAR_ZONE_ACCESS_H_2753b3b14fbc4ef09d5b28192fb7e0bf
+
+
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "src/fredlib/opcontext.h"
 
@@ -34,4 +38,4 @@ namespace Fred
             boost::gregorian::date _local_today, OperationContext& ctx);
 }//namespace Fred
 
-
+#endif

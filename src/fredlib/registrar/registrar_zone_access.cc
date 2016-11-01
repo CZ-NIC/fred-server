@@ -21,8 +21,6 @@
  *  registrar zone access
  */
 
-#ifndef REGISTRAR_ZONE_ACCESS_H_
-#define REGISTRAR_ZONE_ACCESS_H_
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "src/fredlib/opcontext.h"
@@ -50,4 +48,4 @@ namespace Fred
     }
 }//namespace Fred
 
-#endif//REGISTRAR_ZONE_ACCESS_H_
+
