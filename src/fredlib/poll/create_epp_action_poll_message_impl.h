@@ -1,5 +1,5 @@
-#ifndef CREATE_EPP_ACTION_POLL_MESSAGE_H_215465531212_
-#define CREATE_EPP_ACTION_POLL_MESSAGE_H_215465531212_
+#ifndef CREATE_EPP_ACTION_POLL_MESSAGE_IMPL_H_92CDA257099444809C84250555C6178C
+#define CREATE_EPP_ACTION_POLL_MESSAGE_IMPL_H_92CDA257099444809C84250555C6178C
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
@@ -80,4 +80,3 @@ class CreateEppActionPollMessage : public Util::Printable
 
 
 #endif
-

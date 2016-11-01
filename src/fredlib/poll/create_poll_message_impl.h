@@ -1,5 +1,5 @@
-#ifndef CREATE_POLL_MESSAGE_H__
-#define CREATE_POLL_MESSAGE_H__
+#ifndef CREATE_POLL_MESSAGE_IMPL_H_559BD86E3E2A4935AB9789E1B329C326
+#define CREATE_POLL_MESSAGE_IMPL_H_559BD86E3E2A4935AB9789E1B329C326
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/opexception.h"
@@ -53,5 +53,4 @@ private:
 }
 
 
-#endif /*CREATE_POLL_MESSAGE_H__*/
-
+#endif
