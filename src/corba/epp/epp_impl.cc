@@ -120,15 +120,6 @@
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "util/util.h"
 
-#define FLAG_serverDeleteProhibited 1
-#define FLAG_serverRenewProhibited 2
-#define FLAG_serverTransferProhibited 3
-#define FLAG_serverUpdateProhibited 4
-#define FLAG_serverRegistrantChangeProhibited 18
-#define FLAG_deleteCandidate 17
-
-char *removeWhitespaces(const char *encoded);
-
 struct NotificationParams //for enqueue_notification call in ~EPPAction()
 {
     unsigned long long id;
@@ -147,7 +138,6 @@ struct NotificationParams //for enqueue_notification call in ~EPPAction()
     , disable_epp_notifier(_disable_epp_notifier)
     {}
 };
-
 
 class EPPAction
 {

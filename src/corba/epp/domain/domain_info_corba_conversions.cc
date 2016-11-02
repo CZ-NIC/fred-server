@@ -49,7 +49,7 @@ struct TimeZoneOffset {
  *
  * @return time converted to local time zone, with seconds fraction trimmed, formatted as RFC3339 string
  */
-static std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_ptime) {
+std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_ptime) {
     // _utc_ptime converted to local ptime with seconds fraction trimmed
     const boost::posix_time::ptime local_ptime =
         boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(
@@ -59,9 +59,7 @@ static std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_p
         TimeZoneOffset(local_ptime).to_rfc3339_string();
 }
 
-} // namespace Corba::{anonymous}
-
-void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(Epp::ENUMValidationExtension _src, ccReg::ExtensionList& _dst) {
+void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(const Epp::ENUMValidationExtension& _src, ccReg::ExtensionList& _dst) {
     ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
     enumVal->valExDate = Corba::wrap_string_to_corba_string(
         boost::gregorian::to_iso_extended_string(_src.get_valexdate())
@@ -70,6 +68,8 @@ void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(Epp::ENUMValidation
     _dst.length(1);
     _dst[0] <<= enumVal._retn();
 }
+
+} // namespace Corba::{anonymous}
 
 void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     const Epp::Domain::DomainInfoLocalizedOutputData& _src,
@@ -120,7 +120,6 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
         ++dst_tmpcontact_index;
     }
 
-    return;
 }
 
 }
