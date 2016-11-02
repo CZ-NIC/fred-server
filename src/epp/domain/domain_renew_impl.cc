@@ -57,11 +57,11 @@ DomainRenewResult domain_renew_impl(
     const Fred::Domain::DomainRegistrability::Enum domain_registrability
         = Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _data.fqdn);
 
-    //check fqdn have known zone
+    //check fqdn has known zone
     if(domain_registrability == Fred::Domain::DomainRegistrability::zone_not_in_registry)
     {
         throw ParameterValuePolicyError().add(Error::of_scalar_parameter(
-            Param::domain_fqdn, Reason::not_applicable_domain));//invalid zone, unable to continue
+            Param::domain_fqdn, Reason::not_applicable_domain));
     }
 
     //get zone data
