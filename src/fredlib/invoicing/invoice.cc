@@ -280,48 +280,6 @@ public:
       return true;
   }
 
-  virtual bool chargeDomainCreate(
-          const Database::ID &zone,
-          const Database::ID &registrar,
-          const Database::ID &objectId,
-          const Database::Date &exDate,
-          const int &units_count)//in months
-  {
-      TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainCreate()");
-      // new implementation
-      if(objectId == 0) throw std::runtime_error("chargeDomainCreate: objectId == 0");
-      return charge_operation_auto_price("CreateDomain"//const std::string& operation
-                , zone//unsigned long long zone_id
-                , registrar//unsigned long long registrar_id
-                , objectId//unsigned long long object_id
-                , boost::posix_time::microsec_clock::universal_time()//boost::posix_time::ptime crdate
-                , exDate.get() - boost::gregorian::months(units_count)//boost::gregorian::date date_from
-                , boost::gregorian::date()//boost::gregorian::date date_to
-                , Decimal(boost::lexical_cast<std::string>(1))// quantity
-                );
-  }
-
-  virtual bool chargeDomainRenew(
-          const Database::ID &zone,
-          const Database::ID &registrar,
-          const Database::ID &objectId,
-          const Database::Date &exDate,
-          const int &units_count)//in months
-  {
-      TRACE("[CALL] Fred::Invoicing::Manager::chargeDomainRenew()");
-      // new implementation
-      if(objectId == 0) throw std::runtime_error("chargeDomainRenew: objectId == 0");
-      return charge_operation_auto_price("RenewDomain"//const std::string& operation
-                , zone//unsigned long long zone_id
-                , registrar//unsigned long long registrar_id
-                , objectId//unsigned long long object_id
-                , boost::posix_time::microsec_clock::universal_time()//boost::posix_time::ptime crdate
-                , exDate.get() - boost::gregorian::months(units_count)//boost::gregorian::date date_from
-                , exDate.get()//boost::gregorian::date date_to
-                , Decimal(boost::lexical_cast<std::string>(units_count))/Decimal("12") //unsigned long quantity - for renew in years
-                );
-  }
-
   /// charge registrar for requests over limit in request_fee_parameters
   // poll_msg_period_to specifies end of period for which it should be charged,
   //     it's the first day in month in case of charging for the previous month

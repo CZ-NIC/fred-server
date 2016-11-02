@@ -337,20 +337,6 @@ public:
             , boost::gregorian::date date_to //local date
             , Decimal quantity) = 0;
 
-  virtual bool chargeDomainCreate(
-          const Database::ID &zone,
-          const Database::ID &registrar,
-          const Database::ID &objectId,
-          const Database::Date &exDate,
-          const int &units_count) = 0;
-
-  virtual bool chargeDomainRenew(
-          const Database::ID &zone,
-          const Database::ID &registrar,
-          const Database::ID &objectId,
-          const Database::Date &exDate,
-          const int &units_count) = 0;
-
   virtual bool chargeRequestFee(
           const Database::ID &registrar_id,
           date poll_msg_period_to) = 0;
