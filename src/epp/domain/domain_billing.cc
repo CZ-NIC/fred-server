@@ -28,30 +28,6 @@
 
 namespace Epp
 {
-    const std::string price_list_query
-        =   "SELECT enable_postpaid_operation, operation_id, price, quantity"
-            " FROM price_list pl "
-                " JOIN enum_operation eo ON pl.operation_id = eo.id "
-                " JOIN zone z ON z.id = pl.zone_id "
-            " WHERE pl.valid_from < $1::timestamp "
-                  " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
-            " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
-            " ORDER BY pl.valid_from DESC "
-            " LIMIT 1 ";
-
-    const std::string lock_registrar_credit_query
-        = "SELECT id, credit "
-            " FROM registrar_credit "
-            " WHERE registrar_id = $1::bigint "
-                " AND zone_id = $2::bigint "
-        " FOR UPDATE ";
-
-    const std::string insert_registrar_credit_query
-        = "INSERT INTO registrar_credit_transaction "
-            " (id, balance_change, registrar_credit_id) "
-            " VALUES (DEFAULT, $1::numeric , $2::bigint) "
-        " RETURNING id ";
-
     void create_domain_bill_item(const std::string& fqdn,
             const boost::posix_time::ptime& domain_create_timestamp_utc,
             unsigned long long sponsoring_registrar_id,
@@ -64,7 +40,16 @@ namespace Epp
         {
             //get_operation_payment_settings
             Database::Result operation_price_list_result
-                = ctx.get_conn().exec_params(price_list_query
+                = ctx.get_conn().exec_params(
+                    "SELECT enable_postpaid_operation, operation_id, price, quantity"
+                    " FROM price_list pl "
+                        " JOIN enum_operation eo ON pl.operation_id = eo.id "
+                        " JOIN zone z ON z.id = pl.zone_id "
+                    " WHERE pl.valid_from < $1::timestamp "
+                          " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
+                    " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
+                    " ORDER BY pl.valid_from DESC "
+                    " LIMIT 1 "
                 , Database::query_param_list(domain_create_timestamp_utc)(zone_id)("CreateDomain"));
 
             if(operation_price_list_result.size() != 1)
@@ -86,7 +71,12 @@ namespace Epp
 
             //get_registrar_credit - lock record in registrar_credit table for registrar and zone
             Database::Result locked_registrar_credit_result
-                = ctx.get_conn().exec_params(lock_registrar_credit_query
+                = ctx.get_conn().exec_params(
+                    "SELECT id, credit "
+                        " FROM registrar_credit "
+                        " WHERE registrar_id = $1::bigint "
+                            " AND zone_id = $2::bigint "
+                    " FOR UPDATE "
                 , Database::query_param_list(sponsoring_registrar_id)(zone_id));
 
             if(locked_registrar_credit_result.size() != 1)
@@ -104,7 +94,11 @@ namespace Epp
 
             // save info about debt into credit
             Database::Result registrar_credit_transaction_result
-                = ctx.get_conn().exec_params(insert_registrar_credit_query
+                = ctx.get_conn().exec_params(
+                    "INSERT INTO registrar_credit_transaction "
+                        " (id, balance_change, registrar_credit_id) "
+                        " VALUES (DEFAULT, $1::numeric , $2::bigint) "
+                    " RETURNING id "
                 , Database::query_param_list(Decimal("0") - price)(registrar_credit_id));
 
             if(registrar_credit_transaction_result.size() != 1)
@@ -151,7 +145,16 @@ namespace Epp
         {
             //get_operation_payment_settings
             Database::Result operation_price_list_result
-                = ctx.get_conn().exec_params(price_list_query
+                = ctx.get_conn().exec_params(
+                    "SELECT enable_postpaid_operation, operation_id, price, quantity"
+                    " FROM price_list pl "
+                        " JOIN enum_operation eo ON pl.operation_id = eo.id "
+                        " JOIN zone z ON z.id = pl.zone_id "
+                    " WHERE pl.valid_from < $1::timestamp "
+                        " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
+                    " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
+                    " ORDER BY pl.valid_from DESC "
+                    " LIMIT 1 "
                 , Database::query_param_list(domain_renew_timestamp_utc)(zone_id)("RenewDomain"));
 
             if(operation_price_list_result.size() != 1)
@@ -178,7 +181,12 @@ namespace Epp
 
             //get_registrar_credit - lock record in registrar_credit table for registrar and zone
             Database::Result locked_registrar_credit_result
-                = ctx.get_conn().exec_params(lock_registrar_credit_query
+                = ctx.get_conn().exec_params(
+                    "SELECT id, credit "
+                        " FROM registrar_credit "
+                        " WHERE registrar_id = $1::bigint "
+                            " AND zone_id = $2::bigint "
+                    " FOR UPDATE "
                 , Database::query_param_list(sponsoring_registrar_id)(zone_id));
 
             if(locked_registrar_credit_result.size() != 1)
@@ -196,7 +204,11 @@ namespace Epp
 
             // save info about debt into credit
             Database::Result registrar_credit_transaction_result
-                = ctx.get_conn().exec_params(insert_registrar_credit_query
+                = ctx.get_conn().exec_params(
+                    "INSERT INTO registrar_credit_transaction "
+                        " (id, balance_change, registrar_credit_id) "
+                        " VALUES (DEFAULT, $1::numeric , $2::bigint) "
+                    " RETURNING id "
                 , Database::query_param_list(Decimal("0") - price)(registrar_credit_id));
 
             if(registrar_credit_transaction_result.size() != 1)
