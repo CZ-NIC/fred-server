@@ -45,16 +45,14 @@ namespace Epp
                     " FROM price_list pl "
                         " JOIN enum_operation eo ON pl.operation_id = eo.id "
                         " JOIN zone z ON z.id = pl.zone_id "
-                    " WHERE pl.valid_from < $1::timestamp "
+                    " WHERE pl.valid_from <= $1::timestamp "
                           " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
                     " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
-                    " ORDER BY pl.valid_from DESC "
-                    " LIMIT 1 "
                 , Database::query_param_list(domain_create_timestamp_utc)(zone_id)("CreateDomain"));
 
             if(operation_price_list_result.size() != 1)
             {
-                throw std::runtime_error("operation not found");
+                throw std::runtime_error("price_list result");
             }
 
             bool enable_postpaid_operation = operation_price_list_result[0][0];
@@ -150,16 +148,14 @@ namespace Epp
                     " FROM price_list pl "
                         " JOIN enum_operation eo ON pl.operation_id = eo.id "
                         " JOIN zone z ON z.id = pl.zone_id "
-                    " WHERE pl.valid_from < $1::timestamp "
+                    " WHERE pl.valid_from <= $1::timestamp "
                         " AND (pl.valid_to is NULL OR pl.valid_to > $1::timestamp ) "
                     " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
-                    " ORDER BY pl.valid_from DESC "
-                    " LIMIT 1 "
                 , Database::query_param_list(domain_renew_timestamp_utc)(zone_id)("RenewDomain"));
 
             if(operation_price_list_result.size() != 1)
             {
-                throw std::runtime_error("operation not found");
+                throw std::runtime_error("price_list result");
             }
 
             bool enable_postpaid_operation = operation_price_list_result[0][0];
