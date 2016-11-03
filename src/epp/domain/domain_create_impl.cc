@@ -92,7 +92,7 @@ DomainCreateResult domain_create_impl(
             Fred::Zone::rem_trailing_dot(_data.fqdn));
 
     //check registrar zone access permission
-    if(!Fred::registrar_zone_access(_registrar_id, zone_data.id,
+    if(!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id,
             current_local_date, _ctx))
     {
         throw AuthorizationError();

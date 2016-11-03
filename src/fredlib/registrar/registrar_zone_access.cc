@@ -32,7 +32,7 @@ namespace Fred
     /**
      * check if registrar have allowed access to the zone
      */
-    bool registrar_zone_access(unsigned long long registrar_id,
+    bool is_zone_accessible_by_registrar(unsigned long long registrar_id,
             unsigned long long zone_id,
             boost::gregorian::date _local_today, OperationContext& ctx)
     {

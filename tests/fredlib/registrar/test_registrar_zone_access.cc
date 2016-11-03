@@ -188,8 +188,8 @@ BOOST_AUTO_TEST_CASE(registrar_zone_access)
 {
     Fred::OperationContextCreator ctx;
     Fred::Zone::Data zone_cz = Fred::Zone::get_zone(ctx, "cz");
-    BOOST_CHECK(!Fred::registrar_zone_access(test_registrar_data_1.id, zone_cz.id, boost::posix_time::microsec_clock::local_time().date(), ctx));
-    BOOST_CHECK(Fred::registrar_zone_access(test_registrar_data_2.id, zone_cz.id, boost::posix_time::microsec_clock::local_time().date(), ctx));
+    BOOST_CHECK(!Fred::is_zone_accessible_by_registrar(test_registrar_data_1.id, zone_cz.id, boost::posix_time::microsec_clock::local_time().date(), ctx));
+    BOOST_CHECK(Fred::is_zone_accessible_by_registrar(test_registrar_data_2.id, zone_cz.id, boost::posix_time::microsec_clock::local_time().date(), ctx));
 }
 
 BOOST_AUTO_TEST_SUITE_END();
