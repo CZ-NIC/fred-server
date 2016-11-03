@@ -155,6 +155,8 @@ struct test_registrar_zone_access_fixture : virtual public Test::Fixture::instan
                 "SELECT id FROM registrar WHERE handle = ")
                     .param_text(test_registrar_data_2.handle))[0]["id"]);
 
+        ctx.get_conn().exec("TRUNCATE zone CASCADE");
+
         unsigned long long zone_id = static_cast<unsigned long long>(ctx.get_conn().exec(
                 "INSERT INTO zone (fqdn, ex_period_min, ex_period_max, val_period, dots_max, enum_zone, warning_letter) "
                 "VALUES ('cz', 12, 120, 0, 1, FALSE, TRUE) RETURNING id"
