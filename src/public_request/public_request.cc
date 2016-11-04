@@ -8,8 +8,16 @@
 #include "src/fredlib/send_authinfo.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_type_iface.h"
+#include "src/fredlib/public_request/public_request_lock_guard.h"
+#include "src/fredlib/public_request/info_public_request.h"
+#include "util/types/stringify.h"
+#include "util/db/query_param.h"
 
 #include <boost/format.hpp>
+
+#include <stdexcept>
+#include <sstream>
+#include <string>
 
 namespace Registry
 {

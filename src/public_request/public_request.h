@@ -25,16 +25,17 @@
 #define PUBLIC_REQUEST_H_75462367
 
 #include "src/fredlib/object/object_type.h"
-
-#include "util/optional_value.h"
+#include "src/fredlib/documents.h"
 #include "src/fredlib/mailer.h"
+#include "util/optional_value.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
 
 namespace Registry
 {

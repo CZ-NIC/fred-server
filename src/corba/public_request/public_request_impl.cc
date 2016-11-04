@@ -1,20 +1,23 @@
-#include "src/corba/public_request/public_request_impl.h"
-#include "src/corba/util/corba_conversions_string.h"
 #include "src/public_request/public_request.h"
 #include "src/fredlib/object/get_present_object_id.h"
 #include "src/fredlib/public_request/create_public_request.h"
 #include "src/fredlib/mailer.h"
-#include "src/corba/mailer_manager.h"
-
-#include "src/corba/NullableTypes.hh"
+#include "src/fredlib/documents.h"
 #include "src/corba/PublicRequest.hh"
-
-#include "util/optional_value.h"
-#include "util/cfg/config_handler_decl.h"
+#include "src/corba/NullableTypes.hh"
+#include "src/corba/public_request/public_request_impl.h"
+#include "src/corba/mailer_manager.h"
+#include "src/corba/util/corba_conversions_string.h"
 #include "util/corba_wrapper_decl.h"
+#include "util/optional_value.h"
+#include "util/cfg/handle_registry_args.h"
+#include "util/cfg/config_handler_decl.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+
+#include <map>
+#include <stdexcept>
 
 namespace Fred { struct NoContactEmail { virtual const char* what() const throw(); }; }
 
