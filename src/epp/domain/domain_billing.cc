@@ -34,11 +34,11 @@ namespace Epp
             unsigned long long created_domain_id,
             Fred::OperationContext& ctx)
     {
-        unsigned long long zone_id = Fred::Zone::find_zone_in_fqdn(
+        const unsigned long long zone_id = Fred::Zone::find_zone_in_fqdn(
                 ctx, Fred::Zone::rem_trailing_dot(fqdn)).id;
 
         //get_operation_payment_settings
-        Database::Result operation_price_list_result
+        const Database::Result operation_price_list_result
             = ctx.get_conn().exec_params(
                 "SELECT enable_postpaid_operation, operation_id, price, quantity"
                 " FROM price_list pl "
@@ -55,10 +55,10 @@ namespace Epp
             throw std::runtime_error("price_list result");
         }
 
-        bool enable_postpaid_operation = operation_price_list_result[0][0];
-        unsigned long long operation_id = operation_price_list_result[0][1];
-        Decimal price_list_price = std::string(operation_price_list_result[0][2]);
-        Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
+        const bool enable_postpaid_operation = static_cast<bool>(operation_price_list_result[0][0]);
+        const unsigned long long operation_id = static_cast<unsigned long long>(operation_price_list_result[0][1]);
+        const Decimal price_list_price = static_cast<std::string>(operation_price_list_result[0][2]);
+        const Decimal  price_list_quantity = static_cast<std::string>(operation_price_list_result[0][3]);
 
         if(price_list_quantity == Decimal("0"))
         {
@@ -66,7 +66,7 @@ namespace Epp
             throw std::runtime_error("price_list_quantity == 0");
         }
 
-        Decimal price =  price_list_price * Decimal("1") / price_list_quantity;//count_price
+        const Decimal price =  price_list_price * Decimal("1") / price_list_quantity;//count_price
 
         //get_registrar_credit - lock record in registrar_credit table for registrar and zone
         Database::Result locked_registrar_credit_result
@@ -84,8 +84,8 @@ namespace Epp
             throw std::runtime_error("unable to get registrar_credit");
         }
 
-        unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
-        Decimal registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
+        const unsigned long long registrar_credit_id = static_cast<unsigned long long>(locked_registrar_credit_result[0][0]);
+        const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][1]);
 
         if(price != Decimal("0") && registrar_credit_balance < price && !enable_postpaid_operation)
         {
@@ -93,7 +93,7 @@ namespace Epp
         }
 
         // save info about debt into credit
-        Database::Result registrar_credit_transaction_result
+        const Database::Result registrar_credit_transaction_result
             = ctx.get_conn().exec_params(
                 "INSERT INTO registrar_credit_transaction "
                     " (id, balance_change, registrar_credit_id) "
@@ -107,7 +107,7 @@ namespace Epp
             throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
         }
 
-        unsigned long long registrar_credit_transaction_id = registrar_credit_transaction_result[0][0];
+        const unsigned long long registrar_credit_transaction_id = static_cast<unsigned long long>(registrar_credit_transaction_result[0][0]);
 
         // new record to invoice_operation
         ctx.get_conn().exec_params(
@@ -136,7 +136,7 @@ namespace Epp
         Fred::OperationContext& ctx)
     {
         //exception in find_zone_in_fqdn is not BillingFailure
-        unsigned long long zone_id = Fred::Zone::find_zone_in_fqdn(
+        const unsigned long long zone_id = Fred::Zone::find_zone_in_fqdn(
                 ctx, Fred::Zone::rem_trailing_dot(fqdn)).id;
 
         //get_operation_payment_settings
@@ -157,10 +157,10 @@ namespace Epp
             throw std::runtime_error("price_list result");
         }
 
-        bool enable_postpaid_operation = operation_price_list_result[0][0];
-        unsigned long long operation_id = operation_price_list_result[0][1];
-        Decimal price_list_price = std::string(operation_price_list_result[0][2]);
-        Decimal  price_list_quantity = std::string(operation_price_list_result[0][3]);
+        const bool enable_postpaid_operation = static_cast<bool>(operation_price_list_result[0][0]);
+        const unsigned long long operation_id = static_cast<unsigned long long>(operation_price_list_result[0][1]);
+        const Decimal price_list_price = static_cast<std::string>(operation_price_list_result[0][2]);
+        const Decimal  price_list_quantity = static_cast<std::string>(operation_price_list_result[0][3]);
 
         if(price_list_quantity == Decimal("0"))
         {
@@ -168,7 +168,7 @@ namespace Epp
             throw std::runtime_error("price_list_quantity == 0");
         }
 
-        Decimal price =  price_list_price
+        const Decimal price =  price_list_price
             * Decimal(boost::lexical_cast<std::string>(length_of_domain_registration_in_years))
             / price_list_quantity;//count_price
 
@@ -200,7 +200,7 @@ namespace Epp
         }
 
         // save info about debt into credit
-        Database::Result registrar_credit_transaction_result
+        const Database::Result registrar_credit_transaction_result
             = ctx.get_conn().exec_params(
                 "INSERT INTO registrar_credit_transaction "
                     " (id, balance_change, registrar_credit_id) "
@@ -214,7 +214,7 @@ namespace Epp
             throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
         }
 
-        unsigned long long registrar_credit_transaction_id = registrar_credit_transaction_result[0][0];
+        const unsigned long long registrar_credit_transaction_id = static_cast<unsigned long long>(registrar_credit_transaction_result[0][0]);
 
         // new record to invoice_operation
         ctx.get_conn().exec_params(
