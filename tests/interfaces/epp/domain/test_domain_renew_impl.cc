@@ -26,6 +26,9 @@
 
 #include "src/epp/domain/domain_renew.h"
 
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
@@ -67,8 +70,22 @@ BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
         42
     );
 
-    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain2_renew_input_data.value().fqdn).exec(ctx).info_domain_data;
-    BOOST_CHECK(info_data.expiration_date == renew_result.exdate);
+    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain2_renew_input_data.value().fqdn).exec(ctx, "UTC").info_domain_data;
+
+    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
+            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '2 year'::interval)::date")[0][0]));
+
+    BOOST_TEST_MESSAGE(std::string("info_data.expiration_date: ") << info_data.expiration_date << std::string(" expected_expiration_date_utc: ") << expected_expiration_date_utc);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
+
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime expected_expiration_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+            boost::posix_time::ptime(expected_expiration_date_utc));
+    const boost::gregorian::date expected_expiration_local_date = expected_expiration_local_time.date();
+
+    BOOST_TEST_MESSAGE(std::string("renew_result.exdate: ") << renew_result.exdate << std::string(" expected_expiration_local_date: ") << expected_expiration_local_date);
+    BOOST_CHECK(renew_result.exdate == expected_expiration_local_date);
+
 
 }
 

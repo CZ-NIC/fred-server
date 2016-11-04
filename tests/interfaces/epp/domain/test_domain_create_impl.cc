@@ -67,8 +67,16 @@ BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
         42 /* TODO */
     );
 
-    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx).info_domain_data;
+    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
+
+    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
+            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '1 year'::interval)::date")[0][0]));
+
     BOOST_CHECK(info_data.fqdn == domain1_create_input_data.fqdn);
+
+    BOOST_TEST_MESSAGE(std::string("info_data.expiration_date: ") << info_data.expiration_date << std::string(" expected_expiration_date_utc: ") << expected_expiration_date_utc);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
+
 
 }
 
