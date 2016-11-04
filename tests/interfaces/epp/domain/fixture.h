@@ -27,15 +27,20 @@
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/keyset/create_keyset.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "tests/interfaces/epp/util.h"
+#include "src/epp/domain/domain_create.h"
+#include "src/epp/domain/domain_renew.h"
 #include "tests/setup/fixtures.h"
 
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/optional/optional.hpp>
 
 struct HasInfoRegistrarData : virtual Test::autorollbacking_context {
     Fred::InfoRegistrarData info_registrar_data_;
@@ -210,5 +215,93 @@ struct HasInfoDomainDataOfNonexistentDomain : HasInfoDomainData {
         info_domain_data_.fqdn = nonexistent_domain_fqdn;
     }
 };
+
+struct HasDomainData : HasInfoRegistrarData {
+    const std::string contact1;
+    const std::string contact2;
+    const std::string contact3;
+    const std::string contact4;
+    const std::string contact5;
+
+    const std::string nsset1;
+    const std::string nsset2;
+
+    const std::string keyset1;
+    const std::string keyset2;
+
+    const std::string fqdn1;
+    const std::string fqdn2;
+
+    Epp::DomainCreateInputData domain1_create_input_data;
+    Epp::DomainCreateInputData domain2_create_input_data;
+
+
+    Epp::DomainRenewInputData domain1_renew_input_data;
+
+    boost::optional<Epp::DomainRenewInputData> domain2_renew_input_data;
+
+
+    HasDomainData()
+    : contact1("TESTCONTACT1")
+    , contact2("TESTCONTACT2")
+    , contact3("TESTCONTACT3")
+    , contact4("TESTCONTACT4")
+    , contact5("TESTCONTACT5")
+
+    , nsset1("TESTNSSET1")
+    , nsset2("TESTNSSET2")
+
+    , keyset1("TESTKEYSET1")
+    , keyset2("TESTKEYSET2")
+
+    , fqdn1("testdomain1.cz")
+    , fqdn2("testdomain2.cz")
+
+    , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, "transferheslo",
+        Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
+        Util::vector_of<std::string>(contact2)(contact3),
+        std::vector<Epp::ENUMValidationExtension>())
+
+    , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, "transferheslo",
+            Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
+            Util::vector_of<std::string>(contact2)(contact3),
+            std::vector<Epp::ENUMValidationExtension>())
+
+    , domain1_renew_input_data(fqdn1, std::string(""),
+            Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
+            std::vector<Epp::ENUMValidationExtension>())
+
+    {
+        Fred::CreateContact(contact1, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateContact(contact2, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateContact(contact3, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateContact(contact4, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateContact(contact5, info_registrar_data_.handle).exec(ctx);
+
+        Fred::CreateNsset(nsset1, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateNsset(nsset2, info_registrar_data_.handle).exec(ctx);
+
+        Fred::CreateKeyset(keyset1, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateKeyset(keyset2, info_registrar_data_.handle).exec(ctx);
+
+        Fred::CreateDomain(fqdn2, info_registrar_data_.handle, contact1)
+        .set_admin_contacts(Util::vector_of<std::string>(contact2)(contact3))
+        .set_nsset(nsset1).set_keyset(keyset1).exec(ctx);
+
+        domain2_renew_input_data = Epp::DomainRenewInputData(fqdn2,
+                boost::gregorian::to_iso_extended_string(Fred::InfoDomainByHandle(fqdn2).exec(ctx).info_domain_data.expiration_date),
+                Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),std::vector<Epp::ENUMValidationExtension>());
+
+        ctx.get_conn().exec_params(
+            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
+                "SELECT $1::bigint, z.id, NOW() "
+                    "FROM zone z "
+                    "WHERE z.fqdn = $2::text",
+            Database::query_param_list(info_registrar_data_.id)
+            ("cz")
+        );
+    }
+};
+
 
 #endif
