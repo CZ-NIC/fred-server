@@ -69,7 +69,7 @@ inline Optional<unsigned long long> unwrap_ulonglong_optional_from_nullable(Null
     catch (const Fred::NoContactEmail& e)
     {
         LOGGER(PACKAGE).error(e.what());
-        throw Registry::PublicRequest::INVALID_EMAIL(); // same as for nonreg?
+        throw Registry::PublicRequest::INVALID_EMAIL();
     }
     catch (const Fred::UnknownObject& e)
     {

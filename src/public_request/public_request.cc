@@ -492,9 +492,9 @@ Buffer PublicRequest::create_public_request_pdf(
         << "<public_request>"
         << "<type>" << post_types.at(request_info.get_type()) << "</type>"
         << "<handle type='"
-        << static_cast<unsigned>(type_name[0][0]) //(p->getObjectSize() ? p->getObject(0).type : 0) // object_registry.type
+        << static_cast<unsigned>(type_name[0][0])
         << "'>"
-        << static_cast<std::string>(type_name[0][1]) // object_registry.name
+        << static_cast<std::string>(type_name[0][1])
         << "</handle>"
         << "<date>"
         << stringify(request_info.get_create_time().date())
