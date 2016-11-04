@@ -224,5 +224,79 @@ Registry::PublicRequestImpl::LockRequestType unwrap_lock_request_type(LockReques
     return result;
 } // create_block_unblock_request
 
+// Registry::PublicRequest::Buffer_var wrap_Buffer(const Registry::PublicRequestImpl::Buffer& src)
+// {
+//     Registry::PublicRequest::Buffer_var result(new Registry::PublicRequest::Buffer());
+//     try
+//     {
+//         result->value.length(src.value.size());
+//         if (! src.value.empty())
+//         {
+//             std::memcpy(result->value.get_buffer(), src.value.c_str(), src.value.size());
+//         }
+//     }
+//     catch (...)
+//     {
+//         throw std::invalid_argument("cannot allocate requested amount of memory");
+//     }
+//     return result._retn();
+// }
+
+Registry::PublicRequestImpl::Language unwrap_language(Language lang)
+{
+    switch (lang)
+    {
+        case CS:
+            return Registry::PublicRequestImpl::CS;
+        case EN:
+            return Registry::PublicRequestImpl::EN;
+        default:
+            throw std::invalid_argument("language code not found");
+    }
+}
+
+Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Language lang)
+{
+    Registry::PublicRequest::Buffer* result;
+    try
+    {
+        HandleRegistryArgs* args = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
+        boost::shared_ptr<Fred::Document::Manager> manager(
+                Fred::Document::Manager::create(
+                    args->docgen_path,          // doc2pdf
+                    args->docgen_template_path, // templates
+                    args->fileclient_path,      // pyfred fileclient
+                    CorbaContainer::get_instance()->getNS()->getHostName()));
+        const std::string& impl_result =
+            pimpl_->create_public_request_pdf(public_request_id, unwrap_language(lang), manager).value;
+        result = new Registry::PublicRequest::Buffer();
+        result->value.length(impl_result.size());
+        if (! impl_result.empty())
+        {
+            std::memcpy(result->value.get_buffer(), impl_result.c_str(), impl_result.size());
+        }
+    }
+    catch (const Registry::PublicRequestImpl::ObjectNotFound& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::OBJECT_NOT_FOUND();
+    }
+    catch (const std::out_of_range& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::INVALID_PUBLIC_REQUEST_TYPE();
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
+    }
+    catch (...)
+    {
+        throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
+    }
+    return result;
+}
+
 } // Registry
 } // PublicRequest

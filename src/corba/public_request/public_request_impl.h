@@ -66,6 +66,8 @@ public:
         ConfirmationMethod confirmation_method,
         LockRequestType lock_request_type);
 
+    Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Language lang);
+
 private:
     const std::auto_ptr<Registry::PublicRequestImpl::PublicRequest> pimpl_;
 
