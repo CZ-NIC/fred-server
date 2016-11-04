@@ -56,7 +56,17 @@ enum LockRequestType
     UNBLOCK_TRANSFER_AND_UPDATE
 };
 
-class ObjectAlreadyBlocked : std::exception
+enum Language
+{
+    CS, EN
+};
+
+struct Buffer
+{
+    std::string value;
+};
+
+struct ObjectAlreadyBlocked : std::exception
 {
 public:
     virtual const char* what() const throw()
