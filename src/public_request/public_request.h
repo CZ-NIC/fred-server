@@ -68,25 +68,22 @@ struct Buffer
 
 struct ObjectAlreadyBlocked : std::exception
 {
-public:
     virtual const char* what() const throw()
     {
         return "object is already blocked";
     }
 };
 
-class ObjectNotBlocked : std::exception
+struct ObjectNotBlocked : std::exception
 {
-public:
     virtual const char* what() const throw()
     {
         return "object is not blocked";
     }
 };
 
-class HasDifferentBlock : std::exception
+struct HasDifferentBlock : std::exception
 {
-public:
     virtual const char* what() const throw()
     {
         return "a different unblock request has to be issued";
