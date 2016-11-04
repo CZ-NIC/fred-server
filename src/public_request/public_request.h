@@ -90,6 +90,14 @@ struct HasDifferentBlock : std::exception
     }
 };
 
+struct ObjectNotFound : std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "registry object with specified ID does not exist";
+    }
+};
+
 class PublicRequest
 {
 public:
