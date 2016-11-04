@@ -50,7 +50,7 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn, HasDomainData)
         Epp::domain_renew_impl(
             ctx,
             domain1_renew_input_data,
-            0,
+            info_registrar_data_.id,
             42
         ),
         Epp::ObjectDoesNotExist
