@@ -1356,60 +1356,82 @@ namespace Fred
 	}//updateZoneNsById
 
 
-      virtual void addPrice(
-              int zoneId,
-              const std::string& operation,
-              const Database::DateTime &validFrom,
-              const Database::DateTime &validTo,
-              const Money &price,
-              int period
-              , const bool enable_postpaid_operation)
-      {
-            try
+    virtual void addPrice(
+            int zone_id,
+            const std::string& operation,
+            const Database::DateTime &valid_from,
+            const Database::DateTime &valid_to,
+            const Money &price,
+            int quantity,
+            bool postpaid_operation_enabled)
+    {
+        struct AddPriceFailure:std::runtime_error { AddPriceFailure(const std::string &msg):std::runtime_error(msg) { } };
+        try
+        {
+            Database::Connection conn = Database::Manager::acquire();
+            Database::Transaction tx(conn);
+
+            const Database::Result res_op = conn.exec_params(
+                    "SELECT id FROM enum_operation WHERE operation=$1::TEXT", Database::query_param_list(operation));
+            if (res_op.size() != 1)
             {
-                Database::Connection conn = Database::Manager::acquire();
-                Database::Transaction tx(conn);
+                throw AddPriceFailure("operation not found");
+            }
+            const unsigned operation_id = static_cast< unsigned >(res_op[0][0]);
 
-                Database::Result res_op = conn.exec_params(
-                        "SELECT id FROM enum_operation WHERE operation=$1::text"
-                        , Database::query_param_list(operation));
-                if(res_op.size() != 1) throw std::runtime_error("addPrice: operation not found");
-                int operationId = res_op[0][0];
-
-                Database::Result update_result = conn.exec_params(
-                    "UPDATE price_list SET valid_to=$1::timestamp "
-                    " WHERE id = (SELECT id FROM price_list WHERE zone_id=$2::integer AND operation_id=$3::integer "
-                    " AND valid_from <= $1::timestamp AND  valid_from <= current_timestamp "
-                    " AND (valid_to IS NULL or valid_to>current_timestamp) ORDER BY valid_from DESC LIMIT 1) "
-                    " RETURNING id"
-                    , Database::query_param_list(validFrom.iso_str())(zoneId)(operationId));
-                if (update_result.size() > 1)
-                {
-                    throw std::runtime_error("update price_list.valid_to failed");
-                }
-
-                tx.commit();
-
-            	ModelPriceList pl;
-            	pl.setZoneId(zoneId);
-            	pl.setOperationId(operationId);
-            	if(!validFrom.get().is_not_a_date_time())
-            	    pl.setValidFrom(validFrom);
-            	if(!validTo.get().is_not_a_date_time())
-            	    pl.setValidTo(validTo);
-            	pl.setPrice(price.get_string());
-            	pl.setQuantity(period);
-            	pl.setEnablePostpaidOperation(enable_postpaid_operation);
-            	pl.insert();
-
-            }//try
-            catch (...)
+            const Database::Result update_result = conn.exec_params(
+                "UPDATE price_list SET valid_to=$1::TIMESTAMP "
+                "WHERE zone_id=$2::INTEGER AND "
+                      "operation_id=$3::INTEGER AND "
+                      "valid_from<$1::TIMESTAMP AND ($1::TIMESTAMP<valid_to OR valid_to IS NULL) "
+                "RETURNING 0",//each updated row represents one row in result
+                Database::query_param_list(valid_from.iso_str())//$1::TIMESTAMP
+                                          (zone_id)             //$2::INTEGER
+                                          (operation_id));      //$3::INTEGER
+            if (1 < update_result.size())
             {
-                LOGGER(PACKAGE).error("addPrice: an error has occured");
-                throw;
-            }//catch (...)
+                throw AddPriceFailure("too many rows updated");
+            }
 
-      }//addPrice
+            const Database::Result insert_result = conn.exec_params(
+                "INSERT INTO price_list (zone_id,operation_id,valid_from,valid_to,"
+                                        "price,quantity,enable_postpaid_operation) "
+                "VALUES($1::INTEGER,$2::INTEGER,$3::TIMESTAMP,$4::TIMESTAMP,"
+                       "$5::NUMERIC(10,2),$6::INTEGER,$7::BOOLEAN) "
+                    "RETURNING 0",//each updated row represents one row in result
+                Database::query_param_list(zone_id)                          //$1::INTEGER
+                                          (operation_id)                     //$2::INTEGER
+                                          (valid_from.iso_str())             //$3::TIMESTAMP
+                                          (valid_to.get().is_not_a_date_time()
+                                           ? Database::QPNull
+                                           : valid_to.iso_str())             //$4::TIMESTAMP
+                                          (price)                            //$5::NUMERIC(10,2)
+                                          (quantity)                         //$6::INTEGER
+                                          (postpaid_operation_enabled));     //$7::BOOLEAN
+            if (insert_result.size() != 1)
+            {
+                throw AddPriceFailure("INSERT failure");
+            }
+
+            tx.commit();
+        }
+        catch (const AddPriceFailure &e)
+        {
+            LOGGER(PACKAGE).error(std::string("addPrice: ") + e.what());
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            LOGGER(PACKAGE).error(std::string("addPrice: ") + e.what());
+            throw;
+        }
+        catch (...)
+        {
+            LOGGER(PACKAGE).error("addPrice: an error has occurred");
+            throw;
+        }
+
+    }//addPrice
 
       virtual void addPrice(
               const std::string &zone,
