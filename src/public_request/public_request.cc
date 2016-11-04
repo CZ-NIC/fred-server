@@ -438,5 +438,81 @@ unsigned long long PublicRequest::create_block_unblock_request(
     }
 } // create_block_unblock_request
 
+Buffer PublicRequest::create_public_request_pdf(
+    unsigned long long public_request_id,
+    Language lang,
+    boost::shared_ptr<Fred::Document::Manager> manager)
+{
+    std::stringstream outstr;
+    std::string lang_code;
+    switch (lang)
+    {
+        case CS:
+            lang_code = "cs";
+            break;
+        case EN:
+            lang_code = "en";
+            break;
+        default:
+            throw std::invalid_argument("language code not found");
+    }
+    std::auto_ptr<Fred::Document::Generator> g(
+            manager.get()->createOutputGenerator(
+                Fred::Document::GT_PUBLIC_REQUEST_PDF,
+                outstr,
+                lang_code));
+
+    Fred::OperationContextCreator ctx;
+    Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
+    Fred::PublicRequestInfo request_info = Fred::InfoPublicRequest().exec(ctx, locked_request);
+
+    std::map<std::string, short> post_types;
+    post_types["authinfo_post_pif"] = 1;
+    post_types["block_transfer_post_pif"] = 2;
+    post_types["unblock_transfer_post_pif"] = 3;
+    post_types["block_changes_post_pif"] = 4;
+    post_types["unblock_changes_post_pif"] = 5;
+    Database::Result type_name = ctx.get_conn().exec_params(
+            "SELECT oreg.type, oreg.name "
+            "FROM public_request pr "
+                "JOIN public_request_objects_map prom "
+                    "ON prom.request_id = pr.id "
+                "JOIN enum_public_request_type eprt "
+                    "ON eprt.id = pr.request_type "
+                "JOIN object_registry oreg "
+                    "ON oreg.id = prom.object_id "
+            "WHERE pr.id = $1::bigint ",
+            Database::query_param_list(public_request_id));
+    if (type_name.size() != 1)
+    {
+        throw ObjectNotFound();
+    }
+    g->getInput() << "<?xml version='1.0' encoding='utf-8'?>"
+        << "<enum_whois>"
+        << "<public_request>"
+        << "<type>" << post_types.at(request_info.get_type()) << "</type>"
+        << "<handle type='"
+        << static_cast<unsigned>(type_name[0][0]) //(p->getObjectSize() ? p->getObject(0).type : 0) // object_registry.type
+        << "'>"
+        << static_cast<std::string>(type_name[0][1]) // object_registry.name
+        << "</handle>"
+        << "<date>"
+        << stringify(request_info.get_create_time().date())
+        << "</date>"
+        << "<id>"
+        << public_request_id
+        << "</id>"
+        << "<replymail>"
+        << request_info.get_email_to_answer().get_value_or("")
+        << "</replymail>"
+        << "</public_request>"
+        << "</enum_whois>";
+    g->closeInput();
+
+    Buffer result;
+    result.value = outstr.str();
+    return result;
+} // create_public_request_pdf
+
 } // namespace Registry
 } // namespace PublicRequestImpl

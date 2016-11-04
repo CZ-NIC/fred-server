@@ -107,6 +107,11 @@ public:
         const Optional<unsigned long long>& log_request_id,
         ConfirmationMethod confirmation_method,
         LockRequestType lock_request_type);
+
+    Buffer create_public_request_pdf(
+        unsigned long long public_request_id,
+        Language lang,
+        boost::shared_ptr<Fred::Document::Manager> manager);
 };
 
 } // namespace PublicRequestImpl
