@@ -2314,9 +2314,8 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
     try {
         /* output data must be ordered exactly the same */
-        const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(_domain_fqdns);
-        const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
+        const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(_domain_fqdns);
 
         const Epp::Domain::DomainCheckResponse domain_check_response = Epp::Domain::domain_check(
             std::set<std::string>(domain_fqdns.begin(), domain_fqdns.end()),
@@ -2920,24 +2919,18 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     try {
         const Epp::RegistrarSessionData epp_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
-        const Optional<std::string> registrant_chg = Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg);
-        const Optional<std::string> auth_info_pw_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw_chg);
-        const Optional<Nullable<std::string> > nsset_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_nsset_chg);
-        const Optional<Nullable<std::string> > keyset_chg = Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_keyset_chg);
-        const std::vector<Epp::ENUMValidationExtension> enum_validation_list = Corba::unwrap_enum_validation_extension(_ext);
-
         return new ccReg::Response(
             Corba::wrap_response(
                 Epp::Domain::domain_update(
                     Corba::unwrap_string(_domain_fqdn),
-                    registrant_chg,
-                    auth_info_pw_chg,
-                    nsset_chg,
-                    keyset_chg,
+                    Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg),
+                    Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw_chg),
+                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_nsset_chg),
+                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_keyset_chg),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_add),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_rem),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_tmpcontacts_rem),
-                    enum_validation_list,
+                    Corba::unwrap_enum_validation_extension(_ext),
                     epp_session_data.registrar_id,
                     epp_request_params.log_request_id.get_value_or(0),
                     epp_update_contact_enqueue_check_,
