@@ -197,6 +197,11 @@ Registry::PublicRequestImpl::LockRequestType unwrap_lock_request_type(LockReques
         LOGGER(PACKAGE).error(e.what());
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
+    catch (const Registry::PublicRequestImpl::HasDifferentBlock& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw Registry::PublicRequest::HAS_DIFFERENT_BLOCK();
+    }
     catch (const Registry::PublicRequestImpl::ObjectAlreadyBlocked& e)
     {
         LOGGER(PACKAGE).error(e.what());
