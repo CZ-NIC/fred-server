@@ -59,14 +59,16 @@ std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_ptime) {
         TimeZoneOffset(local_ptime).to_rfc3339_string();
 }
 
-void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(const Epp::ENUMValidationExtension& _src, ccReg::ExtensionList& _dst) {
-    ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
-    enumVal->valExDate = Corba::wrap_string_to_corba_string(
-        boost::gregorian::to_iso_extended_string(_src.get_valexdate())
-    );
-    enumVal->publish = _src.get_publish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
-    _dst.length(1);
-    _dst[0] <<= enumVal._retn();
+void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(const Nullable<Epp::ENUMValidationExtension>& _src, ccReg::ExtensionList& _dst) {
+    if(!_src.isnull()) {
+        ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
+        enumVal->valExDate = Corba::wrap_string_to_corba_string(
+            boost::gregorian::to_iso_extended_string(_src.get_value().get_valexdate())
+        );
+        enumVal->publish = _src.get_value().get_publish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
+        _dst.length(1);
+        _dst[0] <<= enumVal._retn();
+    }
 }
 
 } // namespace Corba::{anonymous}
@@ -109,7 +111,7 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     }
 
     Corba::wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(
-        _src.ext_enum_domain_validation.get_value_or_default(),
+        _src.ext_enum_domain_validation,
         _dst.ext
     );
 

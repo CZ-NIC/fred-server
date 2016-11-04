@@ -74,12 +74,12 @@ void check_equal(
     BOOST_CHECK_EQUAL(_domain_info_output_data.exdate, _info_domain_data.expiration_date);
     BOOST_CHECK_EQUAL(_domain_info_output_data.auth_info_pw, _info_domain_data.authinfopw);
 
-    std::set<std::string> admin = vector_of_Fred_ObjectIdHandlePair_to_set_of_string(_info_domain_data.admin_contacts);
+    std::set<std::string> info_domain_data_admin_contacts = vector_of_Fred_ObjectIdHandlePair_to_set_of_string(_info_domain_data.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         _domain_info_output_data.admin.begin(),
         _domain_info_output_data.admin.end(),
-        admin.begin(),
-        admin.end()
+        info_domain_data_admin_contacts.begin(),
+        info_domain_data_admin_contacts.end()
     );
 
     BOOST_CHECK_EQUAL(

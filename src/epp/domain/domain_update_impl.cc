@@ -50,7 +50,7 @@ public:
 } // namespace Epp::Domain::{anonymous}
 
 unsigned long long domain_update_impl(
-    Fred::OperationContext &_ctx,
+    Fred::OperationContext& _ctx,
     const std::string& _domain_fqdn,
     const Optional<std::string>& _registrant_chg,
     const Optional<std::string>& _auth_info_pw_chg,
