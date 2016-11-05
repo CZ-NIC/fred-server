@@ -31,7 +31,7 @@
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(DomainTransferImpl)
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, HasInfoDomainData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_transfer_impl(
@@ -45,7 +45,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, HasInf
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, HasInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoRegistrarData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_transfer_impl(
@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, HasInfoRegistrarData)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(fail_not_eligible_for_transfer, HasInfoDomainData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_transfer_impl(
@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, HasInfoDomainDa
     );
 }
 
-//BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited)
+//BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status1, HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited)
 //{
 //    BOOST_CHECK_THROW(
 //        Epp::Domain::domain_transfer_impl(
@@ -87,7 +87,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, HasInfoDomainDa
 //    );
 //}
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_authz_info_error, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_authz_info_error, HasInfoDomainDataAndDifferentInfoRegistrarData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_transfer_impl(
@@ -117,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_registrar_without_zone_access, HasInfoDomainDa
 
 struct HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData : HasDifferentInfoRegistrarData, HasInfoDomainDataWithServerUpdateProhibitedRequest { };
 
-BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData)
 {
     Epp::Domain::domain_transfer_impl(
         ctx,
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, HasInfoDomainDataWit
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainDataAndDifferentInfoRegistrarData)
 {
     const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(info_domain_data_.fqdn).exec(ctx).info_domain_data;
 

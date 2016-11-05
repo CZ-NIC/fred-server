@@ -100,7 +100,7 @@ void check_equal(
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(DomainInfoImpl)
 
-BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(invalid_registrar_id, HasInfoDomainData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_info_impl(
@@ -112,7 +112,7 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, HasInfoDomainData)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_fqdn, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn, HasInfoDomainDataOfNonexistentDomain)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_info_impl(
@@ -125,7 +125,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_fqdn, HasInfoDomainDataOfNonexiste
 }
 
 
-BOOST_FIXTURE_TEST_CASE(info_ok_full_data, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainData)
 {
     check_equal(
         Epp::Domain::domain_info_impl(

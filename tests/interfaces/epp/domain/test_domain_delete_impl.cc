@@ -31,7 +31,7 @@
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(DomainDeleteImpl)
 
-BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(invalid_registrar_id, HasInfoDomainData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
@@ -43,7 +43,7 @@ BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, HasInfoDomainData)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoDomainDataOfNonexistentDomain)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, HasInfoDomainDataOfNonex
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, HasInfoDomainDataAndDiffere
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
@@ -79,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_registrar_without_zone_access, HasInfoDomain
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
+BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
@@ -91,7 +91,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status, HasInfoDomainDataWithSer
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_ok, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainData)
 {
     Epp::Domain::domain_delete_impl(
         ctx,
@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(delete_ok, HasInfoDomainData)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, HasInfoDomainDataWithServerTransferProhibited)
+BOOST_FIXTURE_TEST_CASE(ok_states_are_upgraded, HasInfoDomainDataWithServerTransferProhibited)
 {
     Epp::Domain::domain_delete_impl(
         ctx,

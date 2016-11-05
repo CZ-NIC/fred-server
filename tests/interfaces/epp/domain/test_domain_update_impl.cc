@@ -30,6 +30,8 @@
 
 #include <boost/mpl/assert.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test_suite.hpp>
+#include <boost/test/auto_unit_test.hpp>
 
 #include <limits>
 #include <map>
@@ -40,7 +42,7 @@
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(DomainUpdateImpl)
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_invalid_registrar_id, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(invalid_registrar_id, HasInfoDomainData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_update_impl(
@@ -62,7 +64,7 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_invalid_registrar_id, HasInfoDomainDa
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_nonexistent_handle, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoDomainDataOfNonexistentDomain)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_update_impl(
@@ -84,7 +86,7 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_nonexistent_handle, HasInfoDomai
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_update_impl(
@@ -106,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_wrong_registrar, HasInfoDomainDa
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_update_impl(
@@ -128,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_registrar_without_zone_access, H
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
+BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_update_impl(
@@ -150,7 +152,7 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_fail_prohibiting_status, HasInfoDomai
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_invalid_handle, HasInfoDomainDataOfDomainWithInvalidFqdn)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_handle, HasInfoDomainDataOfDomainWithInvalidFqdn)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_update_impl(
@@ -172,7 +174,7 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_invalid_handle, HasInfoDomainDataOfDo
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_nsset_change_should_clear_keyset, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(nsset_change_should_clear_keyset, HasInfoDomainData)
 {
     const Optional<Nullable<std::string> > nsset_chg = Optional<Nullable<std::string> >(Nullable<std::string>());
     const bool rifd_epp_update_domain_keyset_clear = true;
@@ -197,7 +199,7 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_nsset_change_should_clear_keyset, Has
     BOOST_CHECK_EQUAL(Fred::InfoDomainById(info_domain_data_.id).exec(ctx, "UTC").info_domain_data.keyset.isnull(), rifd_epp_update_domain_keyset_clear);
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_nsset_change_should_not_clear_keyset, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(nsset_change_should_not_clear_keyset, HasInfoDomainData)
 {
     const Optional<Nullable<std::string> > nsset_chg = Optional<Nullable<std::string> >(Nullable<std::string>());
     const bool rifd_epp_update_domain_keyset_clear = false;
@@ -218,14 +220,15 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_nsset_change_should_not_clear_keyset,
         rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
     );
 
-    BOOST_CHECK(Fred::InfoDomainById(info_domain_data_.id).exec(ctx, "UTC").info_domain_data.nsset.isnull());
-    BOOST_CHECK_EQUAL(Fred::InfoDomainById(info_domain_data_.id).exec(ctx, "UTC").info_domain_data.keyset.isnull(), rifd_epp_update_domain_keyset_clear);
+    Fred::InfoDomainData info_domain_data = Fred::InfoDomainById(info_domain_data_.id).exec(ctx, "UTC").info_domain_data;
+
+    BOOST_CHECK(info_domain_data.nsset.isnull());
+    BOOST_CHECK_EQUAL(info_domain_data.keyset.isnull(), rifd_epp_update_domain_keyset_clear);
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_tmpcontacts_not_empty, HasDataForDomainUpdate)
+BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_not_empty, HasDataForDomainUpdate)
 {
-    BOOST_CHECK_EQUAL(tmpcontacts_rem.size(), 1);
-    const bool rifd_epp_update_domain_keyset_clear = false;
+    BOOST_REQUIRE(tmpcontacts_rem.size() == 1);
 
     BOOST_CHECK_THROW(
         Epp::Domain::domain_update_impl(
@@ -241,16 +244,16 @@ BOOST_FIXTURE_TEST_CASE(test_domain_update_tmpcontacts_not_empty, HasDataForDoma
             std::vector<Epp::ENUMValidationExtension>(), // enum_validation_list
             info_registrar_data_.id, // registrar_id
             Optional<unsigned long long>(), // logd_request_id
-            rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
+            true // rifd_epp_update_domain_keyset_clear
         ),
         Epp::ParameterValuePolicyError
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_domain_update_full, HasDataForDomainUpdate)
+BOOST_FIXTURE_TEST_CASE(ok, HasDataForDomainUpdate)
 {
-    BOOST_CHECK_EQUAL(admin_contacts_add.size(), 2);
-    BOOST_CHECK_EQUAL(admin_contacts_rem.size(), 1);
+    BOOST_REQUIRE(admin_contacts_add.size() == 2);
+    BOOST_REQUIRE(admin_contacts_rem.size() == 1);
     const bool rifd_epp_update_domain_keyset_clear = false;
 
     Epp::Domain::domain_update_impl(
