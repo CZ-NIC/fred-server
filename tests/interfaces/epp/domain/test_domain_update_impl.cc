@@ -226,11 +226,15 @@ BOOST_FIXTURE_TEST_CASE(nsset_change_should_not_clear_keyset, HasInfoDomainData)
     BOOST_CHECK_EQUAL(info_domain_data.keyset.isnull(), rifd_epp_update_domain_keyset_clear);
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_not_empty, HasDataForDomainUpdate)
-{
-    BOOST_REQUIRE(tmpcontacts_rem.size() == 1);
+bool tmpcontacts_rem_not_empty_exception_check(const Epp::ParameterValuePolicyError& e) {
+   return !e.is_empty();
+}
 
-    BOOST_CHECK_THROW(
+BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForDomainUpdate)
+{
+    BOOST_REQUIRE(!tmpcontacts_rem.empty());
+
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::domain_update_impl(
             ctx,
             info_domain_data_.fqdn,
@@ -246,7 +250,8 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_not_empty, HasDataForDomainUpdate)
             Optional<unsigned long long>(), // logd_request_id
             true // rifd_epp_update_domain_keyset_clear
         ),
-        Epp::ParameterValuePolicyError
+        Epp::ParameterValuePolicyError,
+        tmpcontacts_rem_not_empty_exception_check
     );
 }
 
