@@ -351,14 +351,14 @@ struct HasInfoDomainDataOfDomainWithInvalidFqdn : HasInfoDomainData {
 };
 
 struct HasDataForDomainUpdate : HasInfoDomainData {
-    Optional<std::string> registrant_chg;
-    Optional<std::string> auth_info_pw_chg;
-    Optional<Nullable<std::string> > nsset_chg;
-    Optional<Nullable<std::string> > keyset_chg;
-    std::vector<std::string> admin_contacts_add;
-    std::vector<std::string> admin_contacts_rem;
-    std::vector<std::string> tmpcontacts_rem;
-    std::vector<Epp::ENUMValidationExtension> enum_validation_list;
+    Optional<std::string> registrant_chg_;
+    Optional<std::string> auth_info_pw_chg_;
+    Optional<Nullable<std::string> > nsset_chg_;
+    Optional<Nullable<std::string> > keyset_chg_;
+    std::vector<std::string> admin_contacts_add_;
+    std::vector<std::string> admin_contacts_rem_;
+    std::vector<std::string> tmpcontacts_rem_;
+    std::vector<Epp::ENUMValidationExtension> enum_validation_list_;
 
     HasDataForDomainUpdate() {
         namespace ip = boost::asio::ip;
@@ -391,19 +391,19 @@ struct HasDataForDomainUpdate : HasInfoDomainData {
         const std::string auth_info_pw = "authinfo";
 
 
-        registrant_chg = Optional<std::string>(registrant_handle);
-        auth_info_pw_chg = Optional<std::string>(auth_info_pw);
+        registrant_chg_ = Optional<std::string>(registrant_handle);
+        auth_info_pw_chg_ = Optional<std::string>(auth_info_pw);
 
-        nsset_chg = Optional<Nullable<std::string> >(nsset_handle);
-        keyset_chg = Optional<Nullable<std::string> >(keyset_handle);
+        nsset_chg_ = Optional<Nullable<std::string> >(nsset_handle);
+        keyset_chg_ = Optional<Nullable<std::string> >(keyset_handle);
 
-        admin_contacts_add = Util::vector_of<std::string>
+        admin_contacts_add_ = Util::vector_of<std::string>
             (admin_handle2)
             (admin_handle3);
 
-        admin_contacts_rem = vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(info_domain_data_.admin_contacts);
+        admin_contacts_rem_ = vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(info_domain_data_.admin_contacts);
 
-        tmpcontacts_rem = Util::vector_of<std::string>
+        tmpcontacts_rem_ = Util::vector_of<std::string>
             ("WHATEVER");
 
     }

@@ -232,7 +232,7 @@ bool tmpcontacts_rem_not_empty_exception_check(const Epp::ParameterValuePolicyEr
 
 BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForDomainUpdate)
 {
-    BOOST_REQUIRE(!tmpcontacts_rem.empty());
+    BOOST_REQUIRE(!tmpcontacts_rem_.empty());
 
     BOOST_CHECK_EXCEPTION(
         Epp::Domain::domain_update_impl(
@@ -244,7 +244,7 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForDomainUpdate)
             Optional<Nullable<std::string> >(), // keyset_chg
             std::vector<std::string>(), // admin_contacts_add
             std::vector<std::string>(), // admin_contacts_rem
-            tmpcontacts_rem, // tmpcontacts_rem
+            tmpcontacts_rem_, // tmpcontacts_rem
             std::vector<Epp::ENUMValidationExtension>(), // enum_validation_list
             info_registrar_data_.id, // registrar_id
             Optional<unsigned long long>(), // logd_request_id
@@ -257,21 +257,21 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForDomainUpdate)
 
 BOOST_FIXTURE_TEST_CASE(ok, HasDataForDomainUpdate)
 {
-    BOOST_REQUIRE(admin_contacts_add.size() == 2);
-    BOOST_REQUIRE(admin_contacts_rem.size() == 1);
+    BOOST_REQUIRE(admin_contacts_add_.size() == 2);
+    BOOST_REQUIRE(admin_contacts_rem_.size() == 1);
     const bool rifd_epp_update_domain_keyset_clear = false;
 
     Epp::Domain::domain_update_impl(
         ctx,
         info_domain_data_.fqdn,
-        registrant_chg, // registrant_chg
-        auth_info_pw_chg, // auth_info_pw_chg
-        nsset_chg, // nsset_chg
-        keyset_chg, // keyset_chg
-        admin_contacts_add, // admin_contacts_add
-        admin_contacts_rem, // admin_contacts_rem
+        registrant_chg_, // registrant_chg
+        auth_info_pw_chg_, // auth_info_pw_chg
+        nsset_chg_, // nsset_chg
+        keyset_chg_, // keyset_chg
+        admin_contacts_add_, // admin_contacts_add
+        admin_contacts_rem_, // admin_contacts_rem
         std::vector<std::string>(), // tmpcontacts_rem
-        enum_validation_list, // enum_validation_list
+        enum_validation_list_, // enum_validation_list
         info_registrar_data_.id, // registrar_id
         Optional<unsigned long long>(), // logd_request_id
         rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
@@ -282,10 +282,10 @@ BOOST_FIXTURE_TEST_CASE(ok, HasDataForDomainUpdate)
     BOOST_CHECK_EQUAL(info_domain_data.roid, info_domain_data_.roid);
     BOOST_CHECK_EQUAL(info_domain_data.fqdn, info_domain_data_.fqdn);
 
-    BOOST_CHECK_EQUAL(info_domain_data.registrant.handle, registrant_chg);
+    BOOST_CHECK_EQUAL(info_domain_data.registrant.handle, registrant_chg_);
 
-    BOOST_CHECK_EQUAL(info_domain_data.nsset.get_value_or_default().handle, nsset_chg.get_value_or_default());
-    BOOST_CHECK_EQUAL(info_domain_data.keyset.get_value_or_default().handle, keyset_chg.get_value_or_default());
+    BOOST_CHECK_EQUAL(info_domain_data.nsset.get_value_or_default().handle, nsset_chg_.get_value_or_default());
+    BOOST_CHECK_EQUAL(info_domain_data.keyset.get_value_or_default().handle, keyset_chg_.get_value_or_default());
     // states
     BOOST_CHECK_EQUAL(info_domain_data.sponsoring_registrar_handle, info_domain_data_.sponsoring_registrar_handle);
     BOOST_CHECK_EQUAL(info_domain_data.create_registrar_handle, info_domain_data_.create_registrar_handle);
@@ -296,14 +296,14 @@ BOOST_FIXTURE_TEST_CASE(ok, HasDataForDomainUpdate)
     //BOOST_CHECK_EQUAL(info_domain_data.last_update, info_domain_data_.update_time);
     BOOST_CHECK_EQUAL(info_domain_data.transfer_time, info_domain_data_.transfer_time);
     BOOST_CHECK_EQUAL(info_domain_data.expiration_date, info_domain_data_.expiration_date);
-    BOOST_CHECK_EQUAL(info_domain_data.authinfopw, auth_info_pw_chg);
+    BOOST_CHECK_EQUAL(info_domain_data.authinfopw, auth_info_pw_chg_);
 
     std::vector<std::string> info_domain_data_admin_contacts = vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(info_domain_data.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         info_domain_data_admin_contacts.begin(),
         info_domain_data_admin_contacts.end(),
-        admin_contacts_add.begin(),
-        admin_contacts_add.end()
+        admin_contacts_add_.begin(),
+        admin_contacts_add_.end()
     );
 
     BOOST_CHECK_EQUAL(
