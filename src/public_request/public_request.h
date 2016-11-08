@@ -64,6 +64,11 @@ enum Language
 struct Buffer
 {
     std::string value;
+
+    Buffer() {}
+
+    Buffer(const std::string& s)
+    : value(s) {}
 };
 
 struct ObjectAlreadyBlocked : std::exception
