@@ -499,31 +499,26 @@ Buffer PublicRequest::create_public_request_pdf(
     {
         throw ObjectNotFound();
     }
+    std::auto_ptr<Fred::Document::Generator> g(
+            manager.get()->createOutputGenerator(
+                Fred::Document::GT_PUBLIC_REQUEST_PDF,
+                outstr,
+                lang_code));
     g->getInput() << "<?xml version='1.0' encoding='utf-8'?>"
         << "<enum_whois>"
         << "<public_request>"
-        << "<type>" << post_types.at(request_info.get_type()) << "</type>"
-        << "<handle type='"
-        << static_cast<unsigned>(type_name[0][0])
-        << "'>"
-        << static_cast<std::string>(type_name[0][1])
-        << "</handle>"
-        << "<date>"
-        << stringify(request_info.get_create_time().date())
-        << "</date>"
-        << "<id>"
-        << public_request_id
-        << "</id>"
-        << "<replymail>"
-        << request_info.get_email_to_answer().get_value_or("")
-        << "</replymail>"
+            << "<type>" << post_type << "</type>"
+            << "<handle type='" << static_cast<unsigned>(type_name[0][0]) << "'>"
+            << static_cast<std::string>(type_name[0][1])
+            << "</handle>"
+            << "<date>" << create_time << "</date>"
+            << "<id>" << public_request_id << "</id>"
+            << "<replymail>" << email_to_answer << "</replymail>"
         << "</public_request>"
         << "</enum_whois>";
     g->closeInput();
 
-    Buffer result;
-    result.value = outstr.str();
-    return result;
+    return Buffer(outstr.str());
 } // create_public_request_pdf
 
 } // namespace Registry
