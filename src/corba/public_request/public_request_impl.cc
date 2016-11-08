@@ -281,7 +281,7 @@ Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, 
         LOGGER(PACKAGE).error(e.what());
         throw Registry::PublicRequest::OBJECT_NOT_FOUND();
     }
-    catch (const std::out_of_range& e)
+    catch (const Registry::PublicRequestImpl::InvalidPublicRequestType& e)
     {
         LOGGER(PACKAGE).error(e.what());
         throw Registry::PublicRequest::INVALID_PUBLIC_REQUEST_TYPE();

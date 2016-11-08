@@ -456,15 +456,6 @@ Buffer PublicRequest::create_public_request_pdf(
         default:
             throw std::invalid_argument("language code not found");
     }
-    std::auto_ptr<Fred::Document::Generator> g(
-            manager.get()->createOutputGenerator(
-                Fred::Document::GT_PUBLIC_REQUEST_PDF,
-                outstr,
-                lang_code));
-
-    Fred::OperationContextCreator ctx;
-    Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
-    Fred::PublicRequestInfo request_info = Fred::InfoPublicRequest().exec(ctx, locked_request);
 
     std::map<std::string, short> post_types;
     post_types["authinfo_post_pif"] = 1;
@@ -472,6 +463,27 @@ Buffer PublicRequest::create_public_request_pdf(
     post_types["unblock_transfer_post_pif"] = 3;
     post_types["block_changes_post_pif"] = 4;
     post_types["unblock_changes_post_pif"] = 5;
+
+    Fred::OperationContextCreator ctx;
+    std::string create_time, email_to_answer;
+    unsigned long long post_type;
+    try
+    {
+        Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
+        Fred::PublicRequestInfo request_info = Fred::InfoPublicRequest().exec(ctx, locked_request);
+        post_type = post_types.at(request_info.get_type());
+        create_time = stringify(request_info.get_create_time().date());
+        email_to_answer = request_info.get_email_to_answer().get_value_or("");
+    }
+    catch (const Fred::PublicRequestLockGuardById::Exception&)
+    {
+        throw ObjectNotFound();
+    }
+    catch (const std::out_of_range&)
+    {
+        throw InvalidPublicRequestType();
+    }
+
     Database::Result type_name = ctx.get_conn().exec_params(
             "SELECT oreg.type, oreg.name "
             "FROM public_request pr "

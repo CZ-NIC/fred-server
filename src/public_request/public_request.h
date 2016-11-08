@@ -98,6 +98,14 @@ struct ObjectNotFound : std::exception
     }
 };
 
+struct InvalidPublicRequestType : std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "public request is not of post type";
+    }
+};
+
 class PublicRequest
 {
 public:
