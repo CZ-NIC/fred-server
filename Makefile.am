@@ -2754,6 +2754,7 @@ tests_interfaces_test_public_request_SOURCES = \
 		tests/interfaces/public_request/test_registry_email.cc \
 		tests/interfaces/public_request/test_non_registry_email.cc \
 		tests/interfaces/public_request/test_create_block_unblock_request.cc \
+		tests/interfaces/public_request/test_create_public_request_pdf.cc \
 		tests/interfaces/public_request/fixture_common.cc \
 		tests/setup/fixtures.h \
 		tests/setup/fixtures.cc \
