@@ -263,9 +263,9 @@ Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, 
         HandleRegistryArgs* args = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
         boost::shared_ptr<Fred::Document::Manager> manager(
                 Fred::Document::Manager::create(
-                    args->docgen_path,          // doc2pdf
-                    args->docgen_template_path, // templates
-                    args->fileclient_path,      // pyfred fileclient
+                    args->docgen_path,
+                    args->docgen_template_path,
+                    args->fileclient_path,
                     CorbaContainer::get_instance()->getNS()->getHostName()));
         const std::string& impl_result =
             pimpl_->create_public_request_pdf(public_request_id, unwrap_language(lang), manager).value;
