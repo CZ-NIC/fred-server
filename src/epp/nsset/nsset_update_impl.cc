@@ -261,6 +261,12 @@ unsigned long long nsset_update_impl(
         if(!ex.is_empty()) throw ex;
     }
 
+    if(_data.tech_check_level.isset()
+        && _data.tech_check_level.get_value() > max_nsset_tech_check_level)
+    {
+        throw ParameterValueRangeError();
+    }
+
     // update itself
     {
         std::vector<std::string> dns_hosts_rem;

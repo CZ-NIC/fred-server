@@ -102,6 +102,15 @@ LocalizedSuccessResponse nsset_update(
             _lang
         );
 
+    } catch(const ParameterValueRangeError& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::parameter_value_range_error,
+            e.get(),
+            _lang
+        );
+
     } catch(const LocalizedFailResponse&) {
         throw;
 

@@ -164,6 +164,10 @@ NssetCreateResult nsset_create_impl(
         if(!ex.is_empty()) throw ex;
     }
 
+    if(_data.tech_check_level > max_nsset_tech_check_level) {
+        throw ParameterValueRangeError();
+    }
+
     try {
         const Fred::CreateNsset::Result create_data = Fred::CreateNsset(
             _data.handle,
