@@ -20,7 +20,6 @@
 #include <boost/mpl/assert.hpp>
 #include <boost/integer_traits.hpp>
 #include <boost/optional.hpp>
-#include "src/epp/nsset/nsset_dns_host_input.h"
 
 namespace Corba {
 
