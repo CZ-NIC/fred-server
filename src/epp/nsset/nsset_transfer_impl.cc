@@ -83,7 +83,7 @@ unsigned long long nsset_transfer_impl(
         throw NonexistentHandle();
 
     } catch (const Fred::IncorrectAuthInfoPw&) {
-        throw AuthorizationError();
+        throw AuthorizationInformationError();
 
     } catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
         throw ObjectNotEligibleForTransfer();
