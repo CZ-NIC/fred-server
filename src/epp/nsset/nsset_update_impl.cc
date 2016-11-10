@@ -261,8 +261,8 @@ unsigned long long nsset_update_impl(
         if(!ex.is_empty()) throw ex;
     }
 
-    if(_data.tech_check_level.isset()
-        && _data.tech_check_level.get_value() > max_nsset_tech_check_level)
+    if(_data.tech_check_level
+        && _data.tech_check_level.value() > max_nsset_tech_check_level)
     {
         throw ParameterValueRangeError();
     }
@@ -283,7 +283,7 @@ unsigned long long nsset_update_impl(
             dns_hosts_rem,
             _data.tech_contacts_add,
             _data.tech_contacts_rem,
-            _data.tech_check_level,
+            _data.tech_check_level ? Optional<short>(_data.tech_check_level.value()) : Optional<short>(),
             _logd_request_id
         );
 

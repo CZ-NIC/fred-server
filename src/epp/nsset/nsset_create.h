@@ -23,13 +23,15 @@
 #ifndef EPP_NSSET_CREATE_H_93fafc41e1964ca8b97cdbfc6f28b1fa
 #define EPP_NSSET_CREATE_H_93fafc41e1964ca8b97cdbfc6f28b1fa
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
+#include "src/epp/nsset/nsset_dns_host_input.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include "src/epp/nsset/nsset_dns_host_input.h"
 
 namespace Epp {
 
@@ -39,20 +41,30 @@ namespace Epp {
         std::string authinfo;
         std::vector<Epp::DNShostInput> dns_hosts;
         std::vector<std::string> tech_contacts;
-        short tech_check_level;
+        boost::optional<short> input_tech_check_level;
+        unsigned int config_default_nsset_tech_check_level;
 
         NssetCreateInputData(
             const std::string& _handle,
             const std::string& _authinfo,
             const std::vector<Epp::DNShostInput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
-            short _tech_check_level)
+            const boost::optional<short>& _input_tech_check_level,
+            const unsigned int _config_default_nsset_tech_check_level)
         : handle(_handle)
         , authinfo(_authinfo)
         , dns_hosts(_dns_hosts)
         , tech_contacts(_tech_contacts)
-        , tech_check_level(_tech_check_level)
+        , input_tech_check_level(_input_tech_check_level)
+        , config_default_nsset_tech_check_level(_config_default_nsset_tech_check_level)
         {}
+
+        short get_nsset_tech_check_level() const
+        {
+            return input_tech_check_level
+                ? input_tech_check_level.value()
+                : boost::numeric_cast<short>(config_default_nsset_tech_check_level);
+        }
     };
 
 

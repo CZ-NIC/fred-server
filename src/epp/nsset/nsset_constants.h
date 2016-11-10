@@ -29,6 +29,7 @@ const unsigned max_nsset_tech_contacts = 10;
 const unsigned min_nsset_dns_hosts = 2;
 const unsigned max_nsset_dns_hosts = 9;
 const int max_nsset_tech_check_level = 10;
+const int min_nsset_tech_check_level = 0;
 }
 
 #endif

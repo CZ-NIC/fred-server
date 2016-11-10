@@ -49,7 +49,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        Optional<short>()
+        boost::optional<short>()
     );
 
     BOOST_CHECK_THROW(
@@ -75,7 +75,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        Optional<short>()
+        boost::optional<short>()
     );
 
     BOOST_CHECK_THROW(
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        Optional<short>()
+        boost::optional<short>()
     );
 
     BOOST_CHECK_THROW(
@@ -121,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        Optional<short>()
+        boost::optional<short>()
     );
 
     BOOST_CHECK_THROW(
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        Optional<short>()
+        boost::optional<short>()
     );
 
 
@@ -168,7 +168,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        Optional<short>()
+        boost::optional<short>()
     );
     BOOST_CHECK_THROW(
         Epp::nsset_update_impl(
@@ -326,9 +326,9 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
         }
     }
 
-    if(update_data.tech_check_level.isset())
+    if(update_data.tech_check_level)
     {
-        BOOST_CHECK_EQUAL( update_data.tech_check_level.get_value() , info_data.tech_check_level.get_value_or_default());
+        BOOST_CHECK_EQUAL( update_data.tech_check_level.value() , info_data.tech_check_level.get_value_or_default());
     }
 
 }

@@ -129,20 +129,11 @@ namespace Corba {
         return result;
     }
 
-    Optional<short> unwrap_tech_check_level_update(CORBA::Short level)
+    boost::optional<short> unwrap_tech_check_level(CORBA::Short level)
     {
         return level < 0
-            ? Optional<short>()
-            : Optional<short>(boost::numeric_cast<short>(level));
-    }
-
-    short unwrap_tech_check_level_create(CORBA::Short level, unsigned int config_nsset_level)
-    {
-        return level < 0
-                ? (config_nsset_level < 0
-                    ? 0
-                    : config_nsset_level)
-                : boost::numeric_cast<short>(level);
+            ? boost::optional<short>()
+            : boost::optional<short>(boost::numeric_cast<short>(level));
     }
 
     struct ExceptionInvalidIdentType {};
