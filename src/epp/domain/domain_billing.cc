@@ -87,7 +87,9 @@ namespace Epp
         const unsigned long long registrar_credit_id = static_cast<unsigned long long>(locked_registrar_credit_result[0][0]);
         const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][1]);
 
-        if(price != Decimal("0") && registrar_credit_balance < price && !enable_postpaid_operation)
+        if((price != Decimal("0"))
+        && (registrar_credit_balance < price)
+        && (!enable_postpaid_operation))
         {
             throw BillingFailure();
         }
@@ -140,7 +142,7 @@ namespace Epp
                 ctx, Fred::Zone::rem_trailing_dot(fqdn)).id;
 
         //get_operation_payment_settings
-        Database::Result operation_price_list_result
+        const Database::Result operation_price_list_result
             = ctx.get_conn().exec_params(
                 "SELECT enable_postpaid_operation, operation_id, price, quantity"
                 " FROM price_list pl "
@@ -170,13 +172,13 @@ namespace Epp
 
         const Decimal price =  price_list_price
             * Decimal(boost::lexical_cast<std::string>(length_of_domain_registration_in_years))
-            / price_list_quantity;//count_price
+            / price_list_quantity;
 
         ctx.get_log().debug(boost::format("price_list_price: %1% price_list_quantity: %2% price: %3%")
         % price_list_price.get_string() % price_list_quantity.get_string() % price.get_string());
 
         //get_registrar_credit - lock record in registrar_credit table for registrar and zone
-        Database::Result locked_registrar_credit_result
+        const Database::Result locked_registrar_credit_result
             = ctx.get_conn().exec_params(
                 "SELECT id, credit "
                     " FROM registrar_credit "
@@ -191,10 +193,12 @@ namespace Epp
             throw std::runtime_error("unable to get registrar_credit");
         }
 
-        unsigned long long registrar_credit_id = locked_registrar_credit_result[0][0];
-        Decimal registrar_credit_balance = std::string(locked_registrar_credit_result[0][1]);
+        const unsigned long long registrar_credit_id = static_cast<unsigned long long>(locked_registrar_credit_result[0][0]);
+        const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][1]);
 
-        if(price != Decimal("0") && registrar_credit_balance < price && !enable_postpaid_operation)
+        if((price != Decimal("0"))
+        && (registrar_credit_balance < price)
+        && (!enable_postpaid_operation))
         {
             throw BillingFailure();
         }
