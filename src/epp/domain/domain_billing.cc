@@ -69,7 +69,7 @@ namespace Epp
         const Decimal price =  price_list_price * Decimal("1") / price_list_quantity;//count_price
 
         //get_registrar_credit - lock record in registrar_credit table for registrar and zone
-        Database::Result locked_registrar_credit_result
+        const Database::Result locked_registrar_credit_result
             = ctx.get_conn().exec_params(
                 "SELECT id, credit "
                     " FROM registrar_credit "
