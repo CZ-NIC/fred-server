@@ -105,8 +105,8 @@ struct has_nsset_with_external_and_nonexternal_states : has_nsset {
     std::set<std::string> nonexternal_states;
 
     has_nsset_with_external_and_nonexternal_states() {
-        external_states = boost::assign::list_of("serverDeleteProhibited")("serverUpdateProhibited");
-        nonexternal_states = boost::assign::list_of("deleteCandidate");
+        external_states = boost::assign::list_of("serverDeleteProhibited")("serverUpdateProhibited").convert_to_container<std::set<std::string> >();
+        nonexternal_states = boost::assign::list_of("deleteCandidate").convert_to_container<std::set<std::string> >();
 
         ctx.get_conn().exec_params(
             "UPDATE enum_object_states "
