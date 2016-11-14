@@ -25,7 +25,6 @@
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
-#include "src/epp/nsset/nsset_dns_host.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
@@ -33,6 +32,7 @@
 #include <vector>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/asio/ip/address.hpp>
+#include "src/epp/nsset/nsset_dns_host_output.h"
 
 namespace Epp {
 
@@ -48,7 +48,7 @@ struct LocalizedNssetInfoOutputData {
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
     Nullable<std::string> auth_info_pw;
-    std::vector<DNShost> dns_host;
+    std::vector<DNShostOutput> dns_host;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
 
@@ -63,7 +63,7 @@ struct LocalizedNssetInfoOutputData {
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
         const Nullable<std::string>& _auth_info_pw,
-        const std::vector<DNShost>& _dns_host,
+        const std::vector<DNShostOutput>& _dns_host,
         const std::vector<std::string>& _tech_contacts,
         short _tech_check_level
     ) :

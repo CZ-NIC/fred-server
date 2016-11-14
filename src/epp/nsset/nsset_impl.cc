@@ -58,36 +58,25 @@ namespace Epp {
     }
 
 
-    std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<Epp::DNShostData>& data)
+    std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<Epp::DNShostInput>& data)
     {
         std::vector<Fred::DnsHost> dns_hosts;
         dns_hosts.reserve(data.size());
-        BOOST_FOREACH(const Epp::DNShostData& host, data)
+        BOOST_FOREACH(const Epp::DNShostInput& host, data)
         {
             dns_hosts.push_back(Fred::DnsHost(host.fqdn, make_ipaddrs(host.inet_addr)));
         }
         return dns_hosts;
     }
 
-    std::vector<Epp::DNShost> make_epp_dns_hosts(const std::vector<Epp::DNShostData>& data)
+    std::vector<Epp::DNShostOutput> make_epp_dnshosts_output(const std::vector<Fred::DnsHost>& data)
     {
-        std::vector<Epp::DNShost> dns_hosts;
-        dns_hosts.reserve(data.size());
-        BOOST_FOREACH(const Epp::DNShostData& host, data)
-        {
-            dns_hosts.push_back(Epp::DNShost(host.fqdn, make_ipaddrs(host.inet_addr)));
-        }
-        return dns_hosts;
-    }
-
-    std::vector<Epp::DNShostData> make_epp_dnshosts_data(const std::vector<Fred::DnsHost>& data)
-    {
-        std::vector<Epp::DNShostData> ret;
+        std::vector<Epp::DNShostOutput> ret;
         ret.reserve(data.size());
         BOOST_FOREACH(const Fred::DnsHost& dnshost, data)
         {
-            ret.push_back(Epp::DNShostData(dnshost.get_fqdn(),
-                make_optional_ipaddrs(dnshost.get_inet_addr())));
+            ret.push_back(Epp::DNShostOutput(dnshost.get_fqdn(),
+                dnshost.get_inet_addr()));
         }
         return ret;
     }

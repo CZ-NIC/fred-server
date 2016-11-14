@@ -107,7 +107,7 @@ LocalizedInfoNssetResponse nsset_info(
                 payload.last_update,
                 payload.last_transfer,
                 payload.auth_info_pw,
-                make_epp_dns_hosts(payload.dns_hosts),
+                payload.dns_hosts,
                 payload.tech_contacts,
                 payload.tech_check_level
             )

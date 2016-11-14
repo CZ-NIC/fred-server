@@ -25,28 +25,29 @@
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
-#include "src/epp/nsset/nsset_dns_host_data.h"
+#include "src/epp/nsset/nsset_dns_host_input.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
 #include <string>
+
 
 namespace Epp {
 
 struct NssetUpdateInputData {
     std::string handle;
     Optional<std::string> authinfo;
-    std::vector<Epp::DNShostData> dns_hosts_add;
-    std::vector<Epp::DNShostData> dns_hosts_rem;
+    std::vector<Epp::DNShostInput> dns_hosts_add;
+    std::vector<Epp::DNShostInput> dns_hosts_rem;
     std::vector<std::string> tech_contacts_add;
     std::vector<std::string> tech_contacts_rem;
     Optional<short> tech_check_level;
 
     NssetUpdateInputData(
-        const std::string&            _handle,
-        const Optional<std::string>&  _authinfo,
-        const std::vector<Epp::DNShostData>& _dns_hosts_add,
-        const std::vector<Epp::DNShostData>& _dns_hosts_rem,
+        const std::string& _handle,
+        const Optional<std::string>& _authinfo,
+        const std::vector<Epp::DNShostInput>& _dns_hosts_add,
+        const std::vector<Epp::DNShostInput>& _dns_hosts_rem,
         const std::vector<std::string>& _tech_contacts_add,
         const std::vector<std::string>& _tech_contacts_rem,
         const Optional<short>& _tech_check_level

@@ -4,8 +4,6 @@
 #include "src/epp/error.h"
 #include "src/epp/param.h"
 #include "src/epp/contact/contact_create.h"
-#include "src/epp/nsset/nsset_dns_host_data.h"
-
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
 
@@ -566,7 +564,7 @@ namespace Corba {
             result.dns.length( _input.dns_host.size() );
             unsigned long i = 0;
             for(
-                std::vector<Epp::DNShost>::const_iterator it = _input.dns_host.begin();
+                std::vector<Epp::DNShostOutput>::const_iterator it = _input.dns_host.begin();
                 it != _input.dns_host.end();
                 ++it, ++i
             ) {
@@ -663,14 +661,14 @@ namespace Corba {
         return ret;
     }
 
-    std::vector<Epp::DNShostData> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in)
+    std::vector<Epp::DNShostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in)
     {
-        std::vector<Epp::DNShostData> ret;
+        std::vector<Epp::DNShostInput> ret;
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
             if(in[i].fqdn == 0) throw std::runtime_error("null char ptr");
-            ret.push_back(Epp::DNShostData(std::string(in[i].fqdn),
+            ret.push_back(Epp::DNShostInput(std::string(in[i].fqdn),
                 unwrap_inet_addr_to_vector_asio_addr(in[i].inet)));
         }
         return ret;

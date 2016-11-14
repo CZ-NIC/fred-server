@@ -24,7 +24,6 @@
 #define EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
 
 #include "src/epp/session_lang.h"
-#include "src/epp/nsset/nsset_dns_host_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
@@ -32,6 +31,7 @@
 #include <vector>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/asio/ip/address.hpp>
+#include "src/epp/nsset/nsset_dns_host_output.h"
 
 namespace Epp {
 
@@ -46,7 +46,7 @@ struct NssetInfoOutputData {
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
     std::string auth_info_pw;
-    std::vector<DNShostData> dns_hosts;
+    std::vector<DNShostOutput> dns_hosts;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
 
@@ -62,7 +62,7 @@ struct NssetInfoOutputData {
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
         const std::string& _auth_info_pw,
-        const std::vector<DNShostData>& _dns_hosts,
+        const std::vector<DNShostOutput>& _dns_hosts,
         const std::vector<std::string>& _tech_contacts,
         short _tech_check_level
     ) :
