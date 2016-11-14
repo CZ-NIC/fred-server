@@ -970,6 +970,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/nsset/copy_history_impl.cc \
 		src/fredlib/keyset/check_keyset.cc \
 		src/fredlib/keyset/check_keyset.h \
+		src/fredlib/keyset/check_dns_key.cc \
+		src/fredlib/keyset/check_dns_key.h \
 		src/fredlib/keyset/copy_history_impl.h \
 		src/fredlib/keyset/copy_history_impl.cc \
 		src/fredlib/object/check_handle.cc \
