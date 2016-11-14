@@ -162,6 +162,7 @@ struct has_nsset_input_data_set : has_registrar
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
+            3,
             3
         ))
     {
@@ -212,6 +213,7 @@ struct has_nsset_with_input_data_set : has_registrar {
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
+            3,
             3
         ))
     {
@@ -246,7 +248,7 @@ struct has_nsset_with_input_data_set : has_registrar {
                 )
             .set_authinfo(nsset_input_data.authinfo)
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))
-            .set_tech_check_level(nsset_input_data.tech_check_level)
+            .set_tech_check_level(nsset_input_data.input_tech_check_level.value())
             .exec(ctx);
         nsset = Fred::InfoNssetByHandle(nsset_input_data.handle).exec(ctx).info_nsset_data;
 

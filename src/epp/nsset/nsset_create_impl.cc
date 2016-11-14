@@ -164,12 +164,17 @@ NssetCreateResult nsset_create_impl(
         if(!ex.is_empty()) throw ex;
     }
 
+    if(_data.get_nsset_tech_check_level() > max_nsset_tech_check_level
+        || _data.get_nsset_tech_check_level() < min_nsset_tech_check_level) {
+        throw ParameterValueRangeError();
+    }
+
     try {
         const Fred::CreateNsset::Result create_data = Fred::CreateNsset(
             _data.handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
             _data.authinfo,
-            _data.tech_check_level,
+            _data.get_nsset_tech_check_level(),
             make_fred_dns_hosts(_data.dns_hosts),
             _data.tech_contacts,
             _logd_request_id

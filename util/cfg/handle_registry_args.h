@@ -29,7 +29,10 @@
 #include <string>
 #include <vector>
 
+#include "src/epp/nsset/nsset_constants.h"
+
 #include <boost/program_options.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 #include "faked_args.h"
 #include "handle_args.h"
@@ -99,6 +102,12 @@ public:
         disable_epp_notifier = vm["registry.disable_epp_notifier"].as<bool>();
         lock_epp_commands = vm["registry.lock_epp_commands"].as<bool>();
         nsset_level = vm["registry.nsset_level"].as<unsigned int>();
+
+        if(nsset_level > boost::numeric_cast<unsigned int>(Epp::max_nsset_tech_check_level))
+        {
+            throw std::runtime_error("configured default nsset_level out of range");
+        }
+
         docgen_domain_count_limit = vm["registry.docgen_domain_count_limit"].as<unsigned int>();
         docgen_path = (vm.count("registry.docgen_path") == 0
                 ? std::string() : vm["registry.docgen_path"].as<std::string>());

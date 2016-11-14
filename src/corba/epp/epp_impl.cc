@@ -3280,7 +3280,8 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                 Corba::unwrap_string_from_const_char_ptr(authInfoPw),
                 Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns),
                 Corba::unwrap_ccreg_techcontacts_to_vector_string(tech),
-                Corba::unwrap_tech_check_level_create(level, this->nsset_level_)
+                Corba::unwrap_tech_check_level(level),
+                this->nsset_level_
             ),
             session_data.registrar_id,
             request_params.log_request_id,
@@ -3341,7 +3342,7 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
                     Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_rem),
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_rem),
-                    Corba::unwrap_tech_check_level_update(level)
+                    Corba::unwrap_tech_check_level(level)
                 ),
             session_data.registrar_id,
             request_params.log_request_id,

@@ -72,9 +72,7 @@ namespace Corba {
 
     Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src);
 
-    short unwrap_tech_check_level_create(CORBA::Short level, unsigned int config_nsset_level);
-
-    Optional<short> unwrap_tech_check_level_update(CORBA::Short level);
+    boost::optional<short> unwrap_tech_check_level(CORBA::Short level);
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 

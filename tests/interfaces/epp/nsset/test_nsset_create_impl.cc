@@ -144,7 +144,7 @@ void check_equal(const Epp::NssetCreateInputData& create_data, const Fred::InfoN
     BOOST_CHECK(std::equal (create_data.tech_contacts.begin(), create_data.tech_contacts.end(),
             info_data.tech_contacts.begin(), handle_oidhpair_predicate));
 
-    BOOST_CHECK_EQUAL( create_data.tech_check_level , info_data.tech_check_level.get_value_or_default());
+    BOOST_CHECK_EQUAL( create_data.get_nsset_tech_check_level() , info_data.tech_check_level.get_value_or_default());
 }
 
 BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_nsset_input_data_set)

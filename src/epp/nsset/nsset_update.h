@@ -23,16 +23,18 @@
 #ifndef EPP_NSSET_UPDATE_H_355cb09807ee4a0c89f950e8121a512a
 #define EPP_NSSET_UPDATE_H_355cb09807ee4a0c89f950e8121a512a
 
+#include <string>
+#include <boost/optional.hpp>
+
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
 #include "src/epp/nsset/nsset_dns_host_input.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-#include <string>
-
 
 namespace Epp {
+
 
 struct NssetUpdateInputData {
     std::string handle;
@@ -41,7 +43,7 @@ struct NssetUpdateInputData {
     std::vector<Epp::DNShostInput> dns_hosts_rem;
     std::vector<std::string> tech_contacts_add;
     std::vector<std::string> tech_contacts_rem;
-    Optional<short> tech_check_level;
+    boost::optional<short> tech_check_level;
 
     NssetUpdateInputData(
         const std::string& _handle,
@@ -50,7 +52,7 @@ struct NssetUpdateInputData {
         const std::vector<Epp::DNShostInput>& _dns_hosts_rem,
         const std::vector<std::string>& _tech_contacts_add,
         const std::vector<std::string>& _tech_contacts_rem,
-        const Optional<short>& _tech_check_level
+        const boost::optional<short>& _tech_check_level
     ) :
         handle(_handle),
         authinfo(_authinfo),
