@@ -79,7 +79,7 @@ namespace Fred
                         "FROM domain_blacklist "
                         "WHERE LOWER(regexp)=LOWER($1::text) AND "
                               "($2::timestamp<valid_to OR valid_to IS NULL) AND "
-                              "valid_from<$3::timestamp",
+                              "valid_from<=$3::timestamp",
                         Database::query_param_list(_domain)
                             (_valid_from.get_value())(_valid_to.get_value()));
                 }
@@ -100,7 +100,7 @@ namespace Fred
                         "FROM domain_blacklist "
                         "WHERE LOWER(regexp)=LOWER($1::text) AND "
                               "(CURRENT_TIMESTAMP<valid_to OR valid_to IS NULL) AND "
-                              "valid_from<$2::timestamp",
+                              "valid_from<=$2::timestamp",
                         Database::query_param_list(_domain)
                             (_valid_to.get_value()));
                 }

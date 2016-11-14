@@ -180,7 +180,7 @@ namespace Fred
             //check blacklist regexp for match with fqdn
             Database::Result bl_res  = ctx.get_conn().exec_params(
                 "SELECT id FROM domain_blacklist b "
-                "WHERE $1::text ~ b.regexp AND NOW()>b.valid_from "
+                "WHERE $1::text ~ b.regexp AND NOW()>=b.valid_from "
                 "AND (b.valid_to ISNULL OR NOW()<b.valid_to) "
             , Database::query_param_list(no_root_dot_fqdn));
             if(bl_res.size() > 0)//positively blacklisted
