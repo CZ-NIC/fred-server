@@ -1611,6 +1611,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_update.h \
 		src/epp/domain/domain_update_impl.cc \
 		src/epp/domain/domain_update_impl.h \
+		src/epp/domain/domain_registration_obstruction.h \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \
