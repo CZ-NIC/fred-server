@@ -51,7 +51,7 @@ struct ContactCreateInputData
     std::string VAT;
     std::string ident;
     Nullable< ContactChange::IdentType::Enum > identtype;
-    std::string authinfo;
+    boost::optional<std::string> authinfo;
     boost::optional< ContactDisclose > disclose;
 };
 
