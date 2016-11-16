@@ -96,7 +96,7 @@ LocalizedSuccessResponse transfer(
         Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
             ctx,
-            Response::authorization_error,
+            Response::authorization_information_error,
             std::set< Error >(),
             _lang);
     }

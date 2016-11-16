@@ -25,26 +25,26 @@ Success check_keyset_handle(const std::string &_keyset_handle,
                             Fred::OperationContext &_ctx,
                             ParameterErrors &_param_errors)
 {
-    switch (Fred::KeySet::get_handle_registrability(_ctx, _keyset_handle))
+    switch (Fred::KeySet::get_handle_syntax_validity(_keyset_handle))
     {
-        case Fred::KeySet::HandleState::registered:
-            _param_errors.add_scalar_parameter_error(Param::keyset_handle, Reason::existing);
-            return false;
-        case Fred::KeySet::HandleState::in_protection_period:
-            _param_errors.add_scalar_parameter_error(Param::keyset_handle, Reason::protected_period);
-            return false;
-        case Fred::KeySet::HandleState::available:
-            switch (Fred::KeySet::get_handle_syntax_validity(_keyset_handle))
+        case Fred::KeySet::HandleState::valid:
+            switch (Fred::KeySet::get_handle_registrability(_ctx, _keyset_handle))
             {
-                case Fred::KeySet::HandleState::valid:
-                    return true;
-                case Fred::KeySet::HandleState::invalid:
-                    _param_errors.add_scalar_parameter_error(Param::keyset_handle, Reason::bad_format_keyset_handle);
+                case Fred::KeySet::HandleState::registered:
+                    _param_errors.add_scalar_parameter_error(Param::keyset_handle, Reason::existing);
                     return false;
+                case Fred::KeySet::HandleState::in_protection_period:
+                    _param_errors.add_scalar_parameter_error(Param::keyset_handle, Reason::protected_period);
+                    return false;
+                case Fred::KeySet::HandleState::available:
+                    return true;
             }
-            throw std::runtime_error("unexpected keyset handle syntax validity value");
+            throw std::runtime_error("unexpected keyset handle registrability value");
+        case Fred::KeySet::HandleState::invalid:
+            _param_errors.add_scalar_parameter_error(Param::keyset_handle, Reason::bad_format_keyset_handle);
+            return false;
     }
-    throw std::runtime_error("unexpected keyset handle registrability value");
+    throw std::runtime_error("unexpected keyset handle syntax validity value");
 }
 
 Success check_tech_contacts(const std::vector< std::string > &_tech_contacts,
