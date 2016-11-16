@@ -38,7 +38,7 @@ namespace Epp {
     struct NssetCreateInputData
     {
         std::string handle;
-        std::string authinfo;
+        boost::optional<std::string> authinfo;
         std::vector<Epp::DNShostInput> dns_hosts;
         std::vector<std::string> tech_contacts;
         boost::optional<short> input_tech_check_level;
@@ -46,7 +46,7 @@ namespace Epp {
 
         NssetCreateInputData(
             const std::string& _handle,
-            const std::string& _authinfo,
+            const boost::optional<std::string>& _authinfo,
             const std::vector<Epp::DNShostInput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
             const boost::optional<short>& _input_tech_check_level,
