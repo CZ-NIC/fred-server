@@ -224,24 +224,6 @@ Registry::PublicRequestImpl::LockRequestType unwrap_lock_request_type(LockReques
     return result;
 } // create_block_unblock_request
 
-// Registry::PublicRequest::Buffer_var wrap_Buffer(const Registry::PublicRequestImpl::Buffer& src)
-// {
-//     Registry::PublicRequest::Buffer_var result(new Registry::PublicRequest::Buffer());
-//     try
-//     {
-//         result->value.length(src.value.size());
-//         if (! src.value.empty())
-//         {
-//             std::memcpy(result->value.get_buffer(), src.value.c_str(), src.value.size());
-//         }
-//     }
-//     catch (...)
-//     {
-//         throw std::invalid_argument("cannot allocate requested amount of memory");
-//     }
-//     return result._retn();
-// }
-
 Registry::PublicRequestImpl::Language unwrap_language(Language lang)
 {
     switch (lang)
