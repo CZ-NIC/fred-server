@@ -239,7 +239,7 @@ Registry::PublicRequestImpl::Language unwrap_language(Language lang)
 
 Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Language lang)
 {
-    Registry::PublicRequest::Buffer* result;
+    Registry::PublicRequest::Buffer_var result;
     try
     {
         HandleRegistryArgs* args = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
@@ -277,7 +277,7 @@ Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, 
     {
         throw Registry::PublicRequest::INTERNAL_SERVER_ERROR();
     }
-    return result;
+    return result._retn();
 }
 
 } // Registry
