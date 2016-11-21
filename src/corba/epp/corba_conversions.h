@@ -41,10 +41,8 @@
 #include "src/epp/nsset/nsset_check.h"
 #include "src/epp/nsset/nsset_info.h"
 #include "src/epp/nsset/nsset_delete.h"
-#include "src/epp/nsset/nsset_dns_host_data.h"
 #include "src/epp/domain/domain_registration_time.h"
 #include "src/epp/domain/domain_enum_validation.h"
-
 
 namespace Corba {
 
@@ -99,9 +97,10 @@ namespace Corba {
 
     Epp::RequestParams unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
 
-    short unwrap_tech_check_level_create(CORBA::Short level, unsigned int config_nsset_level);
+    Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src);
 
-    Optional<short> unwrap_tech_check_level_update(CORBA::Short level);
+    boost::optional<short> unwrap_tech_check_level(CORBA::Short level);
+
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
