@@ -88,6 +88,7 @@ AX_BOOST_DATE_TIME
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_REGEX
 AX_BOOST_FILESYSTEM
+AX_BOOST_RANDOM
 
 #libcurl.a
 #checking for some function with C linkage (viz readelf -a /usr/lib/libcurl | less)

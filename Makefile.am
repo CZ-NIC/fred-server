@@ -1666,6 +1666,7 @@ src_corba_fred_rifd_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
@@ -1797,6 +1798,7 @@ src_corba_fred_adifd_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
@@ -1853,6 +1855,7 @@ src_corba_fred_pifd_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
@@ -1892,6 +1895,7 @@ src_corba_fred_logd_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(XML2_LIBS) \
@@ -1934,6 +1938,7 @@ src_corba_messages_fred_msgd_LDADD = \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB)
@@ -1984,6 +1989,7 @@ src_corba_mojeid_fred_mifd_LDADD = \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(POSTGRESQL_LIB) \
@@ -2038,6 +2044,7 @@ src_corba_domain_browser_fred_dbifd_LDADD = \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB)
@@ -2160,6 +2167,7 @@ src_cli_admin_fred_admin_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(XML2_LIBS) \
@@ -2207,6 +2215,7 @@ tools_logd_migration_migrate_log_LDADD = \
 		$(LIBIDN_LIBS) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_SYSTEM_LIB)
 #
 # tools/logd_migration
@@ -2234,6 +2243,7 @@ tools_contact_migration_mojeid_contact_address_import_LDADD = \
 		$(LIBIDN_LIBS) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_SYSTEM_LIB)
 
 
@@ -2257,6 +2267,7 @@ tools_contact_migration_mojeid_contact_ssn_fix_LDADD = \
 		$(LIBIDN_LIBS) \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_SYSTEM_LIB)
 #
 # tools/contact_migration
@@ -2309,6 +2320,7 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(POSTGRESQL_LIB) \
@@ -2361,6 +2373,7 @@ tests_interfaces_test_admin_contact_automerge_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -2394,6 +2407,7 @@ tests_interfaces_test_admin_notification_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -2450,6 +2464,7 @@ tests_interfaces_test_epp_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(POSTGRESQL_LIB) \
@@ -2511,6 +2526,7 @@ tests_interfaces_test_whois_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -2639,6 +2655,7 @@ tests_test_server_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_CFLAGS) \
@@ -2720,6 +2737,7 @@ tests_test_blocking_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
@@ -2856,6 +2874,7 @@ tests_test_fredlib_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(BOOST_SYSTEM_LIB) \
@@ -2897,6 +2916,7 @@ tests_test_optys_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_FILESYSTEM_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(BOOST_SYSTEM_LIB) \
@@ -2937,6 +2957,7 @@ tests_test_corba_conversion_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_FILESYSTEM_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
 		$(BOOST_SYSTEM_LIB) \
@@ -2962,6 +2983,7 @@ tests_test_exception_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \

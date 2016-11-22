@@ -17,7 +17,7 @@
  */
 
 #include <boost/test/unit_test.hpp>
-
+#include <set>
 #include "src/fredlib/object/generate_authinfo_password.h"
 
 BOOST_AUTO_TEST_SUITE(TestGenerateAuthInfoPassword)
@@ -31,22 +31,28 @@ BOOST_AUTO_TEST_CASE(test_no_exception)
 
 BOOST_AUTO_TEST_CASE(test_variability_naive)
 {
-    /* This test could fail because of probability (bad luck). But 1000 idential password in a row should not happen often so better check it. */
-
-    const Fred::GeneratedAuthInfoPassword first = Fred::generate_authinfo_pw();
-
-    bool all_password_are_the_same = true;
-
-    for(unsigned i = 0; i < 1000; ++i) {
+    /* This test can fail because of probability (bad luck).*/
+    std::set<std::string> gen_authinfo_pw_duplicity;
+    for(unsigned i = 0; i < 100; ++i) {//check that generated passwords are unique(no guarantee)
         const Fred::GeneratedAuthInfoPassword temp = Fred::generate_authinfo_pw();
-        if(first.password_ != temp.password_) {
-            all_password_are_the_same = false;
-            break;
-        }
-
+        BOOST_CHECK(gen_authinfo_pw_duplicity.insert(temp.password_).second);
     }
+}
 
-    BOOST_CHECK( !all_password_are_the_same );
+BOOST_AUTO_TEST_CASE(test_gen_authinfo_len)
+{
+    const int authinfo_pw_length = 8;
+    for(unsigned i = 0; i < 1000; ++i) {
+        BOOST_CHECK(Fred::generate_authinfo_pw().password_.length() == authinfo_pw_length);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_gen_authinfo_chars)
+{
+    for(unsigned i = 0; i < 1000; ++i) {
+        BOOST_CHECK(Fred::generate_authinfo_pw().password_.find_first_not_of(
+            Fred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();
