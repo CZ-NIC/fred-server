@@ -1,23 +1,56 @@
 #include "src/admin/contact/merge_contact_auto_procedure.h"
 #include "src/admin/contact/merge_contact.h"
 #include "src/admin/contact/merge_contact_reporting.h"
-#include "src/fredlib/contact/merge_contact.h"
 #include "src/fredlib/contact/find_contact_duplicates.h"
 #include "src/fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/fredlib/contact/merge_contact.h"
 #include "util/util.h"
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
+
 #include <algorithm>
 #include <sstream>
 
-
 namespace Admin {
 
+namespace {
 
+std::set<std::string> set_diff(const std::set<std::string>& _set, const std::set<std::string>& _subset) {
+    std::set<std::string> result;
+    std::set_difference(
+        _set.begin(), _set.end(),
+        _subset.begin(), _subset.end(),
+        std::insert_iterator<std::set<std::string> >(result, result.begin())
+    );
+    return result;
+}
 
-    std::vector<Fred::MergeContactNotificationEmailWithAddr> email_notification(Fred::Mailer::Manager& mm
-        , const std::vector<Fred::MergeContactEmailNotificationInput>& email_notification_input_vector)
+boost::optional<std::string> get_system_registrar_handle(Fred::OperationContext& ctx) {
+    const Database::Result db_result = ctx.get_conn().exec(
+        "SELECT handle FROM registrar WHERE system is True"
+    );
+    return db_result.size() > 0
+        ?
+        static_cast<std::string>(db_result[0][0])
+        :
+        boost::optional<std::string>();
+}
+
+bool registrar_exists(Fred::OperationContext& ctx, std::string _registrar_handle) {
+    const Database::Result db_result = ctx.get_conn().exec_params(
+        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
+        , Database::query_param_list(_registrar_handle)
+    );
+    return db_result.size() != 0;
+}
+
+} // namespace Admin::{anonymous}
+
+std::vector<Fred::MergeContactNotificationEmailWithAddr> email_notification(
+    Fred::Mailer::Manager& mm,
+    const std::vector<Fred::MergeContactEmailNotificationInput>& email_notification_input_vector
+)
 {
     Fred::OperationContextCreator enctx;
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notif_emails
@@ -36,7 +69,7 @@ namespace Admin {
 
         params["dst_contact_handle"] = ci->email_data.dst_contact_handle;
 
-        counter = 0;//reset counter
+        counter = 0;
         for (std::vector<std::string>::const_iterator listci = ci->email_data.domain_registrant_list.begin()
                 ; listci != ci->email_data.domain_registrant_list.end() ; ++listci)
         {
@@ -45,7 +78,7 @@ namespace Admin {
             params[list_key.str()] = *listci;
         }
 
-        counter = 0;//reset counter
+        counter = 0;
         for (std::vector<std::string>::const_iterator listci = ci->email_data.domain_admin_list.begin()
                 ; listci != ci->email_data.domain_admin_list.end() ; ++listci)
         {
@@ -54,7 +87,7 @@ namespace Admin {
             params[list_key.str()] = *listci;
         }
 
-        counter = 0;//reset counter
+        counter = 0;
         for (std::vector<std::string>::const_iterator listci = ci->email_data.nsset_tech_list.begin()
                 ; listci != ci->email_data.nsset_tech_list.end() ; ++listci)
         {
@@ -63,7 +96,7 @@ namespace Admin {
             params[list_key.str()] = *listci;
         }
 
-        counter = 0;//reset counter
+        counter = 0;
         for (std::vector<std::string>::const_iterator listci = ci->email_data.keyset_tech_list.begin()
                 ; listci != ci->email_data.keyset_tech_list.end() ; ++listci)
         {
@@ -72,7 +105,7 @@ namespace Admin {
             params[list_key.str()] = *listci;
         }
 
-        counter = 0;//reset counter
+        counter = 0;
         for (std::vector<std::string>::const_iterator listci = ci->email_data.removed_list.begin()
                 ; listci != ci->email_data.removed_list.end() ; ++listci)
         {
@@ -84,10 +117,10 @@ namespace Admin {
         try
         {
             mm.sendEmail(
-                "",// default sender
+                "", // default sender
                 params["email"],
-                "",// default subject
-                "merge_contacts_auto",//mail template
+                "", // default subject
+                "merge_contacts_auto", // mail template
                 params,handles,attach);
         }
         catch(std::exception& ex)
@@ -100,75 +133,38 @@ namespace Admin {
     return notif_emails;
 }
 
-
-
-struct MergeContactDryRunInfo
-{
-    std::set<std::string> fake_deleted;
-    std::set<std::string> any_search_excluded;
-
-    MergeContactDryRunInfo()
-        : fake_deleted(),
-          any_search_excluded()
-    {
-    }
-
-    void add_fake_deleted(const std::string &_handle)
-    {
-        fake_deleted.insert(fake_deleted.end(), _handle);
-    }
-
-    void add_search_excluded(const std::string &_handle)
-    {
-        any_search_excluded.insert(any_search_excluded.end(), _handle);
-    }
-
-    std::set<std::string> remove_fake_deleted_from_set(const std::set<std::string> &_set)
-    {
-        std::set<std::string> result;
-        std::set_difference(_set.begin(), _set.end(), fake_deleted.begin(), fake_deleted.end(),
-                std::insert_iterator<std::set<std::string> >(result, result.begin()));
-        return result;
-    }
-};
-
-
-
 MergeContactAutoProcedure::MergeContactAutoProcedure(
-        Fred::Mailer::Manager& mm,
-        Fred::Logger::LoggerClient &_logger_client,
-        const std::string& _registrar)
+    Fred::Mailer::Manager& mm,
+    Fred::Logger::LoggerClient& _logger_client,
+    const std::string& _registrar)
     : mm_(mm)
     , logger_client_(_logger_client)
     , registrar_(_registrar)
-{
-}
-
+{ }
 
 MergeContactAutoProcedure::MergeContactAutoProcedure(
-        Fred::Mailer::Manager& mm,
-        Fred::Logger::LoggerClient &_logger_client,
-        const std::string& _registrar,
-        const Optional<bool> &_dry_run,
-        const Optional<unsigned short> &_verbose)
+    Fred::Mailer::Manager& mm,
+    Fred::Logger::LoggerClient& _logger_client,
+    const std::string& _registrar,
+    const Optional<bool>& _dry_run,
+    const Optional<unsigned short>& _verbose)
     : mm_(mm),
       logger_client_(_logger_client),
       registrar_(_registrar),
       dry_run_(_dry_run),
       verbose_(_verbose)
-{
-}
+{ }
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_dry_run(
-        const Optional<bool> &_dry_run)
+    const Optional<bool>& _dry_run
+)
 {
     dry_run_ = _dry_run;
     return *this;
 }
 
-
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_selection_filter_order(
-        const std::vector<Fred::ContactSelectionFilterType> &_selection_filter_order)
+    const std::vector<Fred::ContactSelectionFilterType>& _selection_filter_order)
 {
     /* XXX: this throws - should do better error reporting */
     FactoryHaveSupersetOfKeysChecker<Fred::ContactSelectionFilterFactory>(_selection_filter_order).check();
@@ -178,7 +174,7 @@ MergeContactAutoProcedure& MergeContactAutoProcedure::set_selection_filter_order
 
 
 MergeContactAutoProcedure& MergeContactAutoProcedure::set_verbose(
-        const Optional<unsigned short> &_verbose)
+    const Optional<unsigned short>& _verbose)
 {
     verbose_ = _verbose;
     return *this;
@@ -211,201 +207,181 @@ unsigned short MergeContactAutoProcedure::get_verbose_level() const
     if (verbose_.isset()) {
         return verbose_.get_value();
     }
-    if (this->is_set_dry_run()) {
+    if (is_set_dry_run()) {
         return 3;
     }
     return 0;
 }
 
-
-std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedure::exec(std::ostream &_output_stream)
+Fred::MergeContactOutput MergeContactAutoProcedure::merge_contact(
+    const std::string& src_contact_,
+    const std::string& dst_contact_,
+    const std::string& system_registrar_
+)
 {
+    Admin::MergeContact merge_op = Admin::MergeContact(src_contact_, dst_contact_, system_registrar_);
+
+    if (is_set_dry_run()) {
+        dry_run_info_.add_search_excluded(src_contact_);
+        dry_run_info_.add_search_excluded(dst_contact_);
+        return merge_op.exec_dry_run();
+    }
+
+    return merge_op.exec(logger_client_);
+}
+
+std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedure::exec(std::ostream& _output_stream)
+{
+    Fred::OperationContextCreator ctx;
+
     std::vector<Fred::MergeContactNotificationEmailWithAddr> ret_email_notifications;
-    Fred::OperationContextCreator octx;
-    /* get system registrar - XXX: should be a parameter?? */
-    Database::Result system_registrar_result = octx.get_conn().exec(
-            "SELECT handle FROM registrar WHERE system is True");
-    if (system_registrar_result.size() == 0) {
+
+    const boost::optional<std::string> system_registrar = get_system_registrar_handle(ctx);
+    if (!system_registrar) {
         throw std::runtime_error("no system registrar found");
     }
 
-    //check registrar
-    Database::Result registrar_res = octx.get_conn().exec_params(
-        "SELECT id FROM registrar WHERE handle = UPPER($1::text)"
-        , Database::query_param_list(registrar_));
-
-    if(registrar_res.size() == 0)//registrar not found
-    {
-        throw std::runtime_error(std::string("registrar: '")
-            + registrar_ +"' not found");
+    if (!registrar_exists(ctx, registrar_)) {
+        throw std::runtime_error(std::string("registrar: '") + registrar_ + "' not found");
     }
 
-    std::string system_registrar = static_cast<std::string>(system_registrar_result[0][0]);
+    const std::vector<Fred::ContactSelectionFilterType> selection_filter =
+        !selection_filter_order_.empty()
+        ? selection_filter_order_
+        : get_default_selection_filter_order();
 
-    /* filter for best contact selection */
-    std::vector<Fred::ContactSelectionFilterType> selection_filter = selection_filter_order_;
-    if (selection_filter_order_.empty()) {
-        selection_filter = this->get_default_selection_filter_order();
-    }
-
-    MergeContactDryRunInfo dry_run_info;
-    MergeContactSummaryInfo summary_info;
-    MergeContactOperationSummary all_merge_operation_info;
     OutputIndenter indenter(2, 0, ' ');
-    std::ostream &out_stream = _output_stream;
 
-    if (this->get_verbose_level() > 0) {
-        out_stream << format_header(str(boost::format("REGISTRAR: %1%")
-            % registrar_), indenter);
+    if (get_verbose_level() > 0) {
+        _output_stream << format_header(str(boost::format("REGISTRAR: %1%") % registrar_), indenter);
     }
 
+    std::set<std::string> duplicate_contacts;
+    std::set<std::string> invalid_contacts;
 
+    while (true) {
 
-    /* find any contact duplicates set (optionally for specific registrar only) */
-    std::set<std::string> any_dup_set = Fred::Contact::FindContactDuplicates().set_registrar(Optional<std::string>(registrar_)).exec(octx);
-    std::set<std::string> skip_invalid_contact_set;
+        duplicate_contacts = Fred::Contact::FindContactDuplicates()
+            .set_registrar(Optional<std::string>(registrar_))
+            .set_exclude_contacts(invalid_contacts)
+            .exec(ctx);
 
-    while (any_dup_set.size() >= 2)
-    {
-        /* one specific contact set merges scope */
-        summary_info.inc_merge_set();
+        if(is_set_dry_run()) {
+            duplicate_contacts = set_diff(duplicate_contacts, dry_run_info_.any_search_excluded);
+        }
+
+        if (duplicate_contacts.size() < 2) break;
+
+        summary_info_.inc_merge_set();
         MergeContactOperationSummary merge_set_operation_info;
-
         std::vector<Fred::MergeContactEmailNotificationInput> email_notification_input_vector;
-        std::set<std::string> dup_set = any_dup_set;
 
-        do
-        {
-            /* one contact merge scope */
-            summary_info.inc_merge_operation();
-            MergeContactOperationSummary merge_operation_info;
+        boost::optional<Fred::MergeContactSelectionOutput> dst_contact;
 
-            octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
-                    % boost::algorithm::join(dup_set, ", "));
+        while (duplicate_contacts.size()) {
 
-            //skip invalid contacts
-            {
-                octx.get_log().debug(boost::format("skip invalid contacts set: { %1% }")
-                        % boost::algorithm::join(skip_invalid_contact_set, ", "));
+            if (!dst_contact) {
+                dst_contact = Fred::MergeContactSelection(
+                                  std::vector<std::string>(duplicate_contacts.begin(), duplicate_contacts.end()),
+                                  selection_filter
+                              ).exec(ctx);
 
-                std::set<std::string> tmp_dup_set;
-                    std::set_difference(dup_set.begin(), dup_set.end(),skip_invalid_contact_set.begin(), skip_invalid_contact_set.end(),
-                        std::insert_iterator<std::set<std::string> >(tmp_dup_set, tmp_dup_set.begin()));
-                    dup_set = tmp_dup_set;
+                if(!dst_contact) {
+                    throw std::runtime_error("dst_contact not identified\n");
+                }
+
+                ctx.get_log().debug(boost::format("contact duplicates set: { %1% }") % boost::algorithm::join(duplicate_contacts, ", "));
+
+                ctx.get_log().debug(boost::format("winner handle: %1%") % dst_contact.value().handle);
+
+                duplicate_contacts.erase(dst_contact.value().handle);
+
             }
 
-            if(dup_set.size() <= 1) break;
+            if(duplicate_contacts.size() < 1) break;
 
-            octx.get_log().debug(boost::format("contact duplicates set: { %1% }")
-                    % boost::algorithm::join(dup_set, ", "));
+            const std::string src_contact = *(duplicate_contacts.begin());
 
+            try {
+                MergeContactOperationSummary merge_operation_info;
 
-            /* compute best handle to merge all others onto */
-            Fred::MergeContactSelectionOutput contact_select = Fred::MergeContactSelection(
-                    std::vector<std::string>(dup_set.begin(), dup_set.end()), selection_filter).exec(octx);
-            std::string winner_handle = contact_select.handle;
-            octx.get_log().debug(boost::format("winner handle: %1%") % winner_handle);
+                summary_info_.inc_merge_operation();
 
-            /* remove winner contact from set */
-            dup_set.erase(winner_handle);
-            /* merge first one */
-            std::string pick_one = *(dup_set.begin());
+                const Fred::MergeContactOutput merge_data =
+                    merge_contact(src_contact, dst_contact.value().handle, system_registrar.value());
 
-            Fred::MergeContactOutput merge_data;
-            Admin::MergeContact merge_op = Admin::MergeContact(pick_one, winner_handle, system_registrar);
-
-            try
-            {
-                if (this->is_set_dry_run())
-                {
-                    merge_data = merge_op.exec_dry_run();
-
-                    dry_run_info.add_fake_deleted(pick_one);
-                    dry_run_info.add_search_excluded(winner_handle);
-                    /* do not commit */
-                }
-                else
-                {
-                    /* MERGE ONE CONTACT */
-                    merge_data = merge_op.exec(logger_client_);
-                    /* save output for later email notification */
+                if(!is_set_dry_run()) {
                     email_notification_input_vector.push_back(
-                            Fred::MergeContactEmailNotificationInput(pick_one, winner_handle, merge_data));
+                        Fred::MergeContactEmailNotificationInput(src_contact, dst_contact.value().handle, merge_data)
+                    );
                 }
 
-                //output only if no exception is thrown before
-                if (this->get_verbose_level() > 0) {
+                if (get_verbose_level() > 0) {
                     merge_operation_info.add_merge_output(merge_data);
                     merge_set_operation_info.add_merge_output(merge_data);
-                    all_merge_operation_info.add_merge_output(merge_data);
+                    all_merge_operation_info_.add_merge_output(merge_data);
                 }
 
-                if (this->get_verbose_level() > 2) {
-                    out_stream << format_merge_contact_output(merge_data, pick_one, winner_handle, summary_info, indenter);
-                    out_stream << merge_operation_info.format(indenter.dive());
+                if (get_verbose_level() > 2) {
+                    _output_stream << format_merge_contact_output(merge_data, src_contact, dst_contact.value().handle, summary_info_, indenter);
+                    _output_stream << merge_operation_info.format(indenter.dive());
                 }
-
             }
             catch(const Fred::MergeContact::Exception& ex)
             {
-                if(ex.is_set_src_contact_invalid())
-                {
-                    skip_invalid_contact_set.insert(ex.get_src_contact_invalid());
+                bool exception_handled = false;
+
+                if (ex.is_set_src_contact_invalid()) {
+                    invalid_contacts.insert(ex.get_src_contact_invalid());
+                    exception_handled = true;
+                    summary_info_.inc_invalid_contacts();
                 }
 
-                if(ex.is_set_object_blocked())//linked object of src contact blocked, skip src contact
-                {
-                    skip_invalid_contact_set.insert(pick_one);
+                if (ex.is_set_object_blocked()) { // object linked to src contact blocked, skip src contact
+                    invalid_contacts.insert(src_contact);
+                    exception_handled = true;
+                    summary_info_.inc_linked_contacts();
                 }
 
-                if(ex.is_set_dst_contact_invalid())
-                {
-                    skip_invalid_contact_set.insert(ex.get_dst_contact_invalid());
+                if (ex.is_set_dst_contact_invalid()) {
+                    invalid_contacts.insert(ex.get_dst_contact_invalid());
+                    dst_contact = boost::optional<Fred::MergeContactSelectionOutput>(); // invalidate dst_contact
+                    exception_handled = true;
+                    summary_info_.inc_invalid_contacts();
                 }
 
-                if(!(ex.is_set_src_contact_invalid()
-                    || ex.is_set_object_blocked()
-                    || ex.is_set_dst_contact_invalid()))
-                {
+                if (!exception_handled) {
                     throw;
                 }
             }
 
-            /* find contact duplicates for winner contact - if nothing changed in registry data this
-             * would be the same list as in previous step but without the merged one */
-            dup_set = Fred::Contact::FindContactDuplicates().set_specific_contact(winner_handle).exec(octx);
-            if (this->is_set_dry_run())
-            {
-                dup_set = dry_run_info.remove_fake_deleted_from_set(dup_set);
-            }
-        }
-        while (dup_set.size() >= 2);
+            ctx.get_log().debug(boost::format("skip invalid contacts set: { %1% }") % boost::algorithm::join(invalid_contacts, ", "));
 
-        if (this->get_verbose_level() > 1) {
-            out_stream << format_header(str(boost::format("[-/%1%/-] MERGE SET SUMMARY")
-                        % summary_info.merge_set_counter), indenter);
-            out_stream << merge_set_operation_info.format(indenter);
+            duplicate_contacts = set_diff(duplicate_contacts, invalid_contacts);
+
+            duplicate_contacts.erase(src_contact); // remove if not already removed as invalid
+
         }
 
-        Fred::Contact::FindContactDuplicates new_dup_search = Fred::Contact::FindContactDuplicates()
-            .set_registrar(Optional<std::string>(registrar_)).set_exclude_contacts(skip_invalid_contact_set);
-        if (this->is_set_dry_run()) {
-            new_dup_search.set_exclude_contacts(dry_run_info.any_search_excluded);
+        if (get_verbose_level() > 1) {
+            _output_stream << format_header(str(boost::format("[-/%1%/-] MERGE SET SUMMARY")
+                        % summary_info_.merge_sets_total), indenter);
+            _output_stream << merge_set_operation_info.format(indenter);
         }
-        else {
-            /* send email notifications */
+
+        if (!is_set_dry_run()) {
             ret_email_notifications = email_notification(mm_, email_notification_input_vector);
         }
-        any_dup_set = new_dup_search.exec(octx);
+
     }
 
-    if (this->get_verbose_level() > 0) {
-        out_stream << format_header(str(boost::format("[%1%/%2%/-] PROCEDURE RUN SUMMARY")
-                    % summary_info.merge_counter % summary_info.merge_set_counter), indenter);
-        out_stream << all_merge_operation_info.format(indenter);
+    if (get_verbose_level() > 0) {
+        _output_stream << format_header(str(boost::format("[%1%/%2%/-] PROCEDURE RUN SUMMARY")
+                    % summary_info_.merge_operations_total % summary_info_.merge_sets_total), indenter);
+        _output_stream << all_merge_operation_info_.format(indenter);
     }
-    if (!this->is_set_dry_run()) {
-        octx.commit_transaction();
+    if (!is_set_dry_run()) {
+        ctx.commit_transaction();
     }
     return ret_email_notifications;
 }

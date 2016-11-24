@@ -6,16 +6,31 @@
  *  contact merge auto procedure
  */
 
-#include <ostream>
-#include "util/optional_value.h"
+#include "src/admin/contact/merge_contact_reporting.h"
+#include "src/fredlib/contact/merge_contact_email_notification_data.h"
+#include "src/fredlib/contact/merge_contact_selection.h"
 #include "src/fredlib/logger_client.h"
 #include "src/fredlib/mailer.h"
-#include "src/fredlib/contact/merge_contact_selection.h"
-#include "src/fredlib/contact/merge_contact_email_notification_data.h"
+#include "util/optional_value.h"
 
-
+#include <ostream>
 
 namespace Admin {
+
+struct MergeContactDryRunInfo
+{
+    std::set<std::string> any_search_excluded;
+
+    MergeContactDryRunInfo()
+        : any_search_excluded()
+    { }
+
+    void add_search_excluded(const std::string&_handle)
+    {
+        any_search_excluded.insert(any_search_excluded.end(), _handle);
+    }
+
+};
 
 /**
  * Contact duplicates merge procedure.
@@ -74,20 +89,28 @@ private:
 
     std::vector<Fred::ContactSelectionFilterType> get_default_selection_filter_order() const;
 
+    Fred::MergeContactOutput merge_contact(
+        const std::string& src_contact_,
+        const std::string& dst_contact_,
+        const std::string& system_registrar
+    );
+
     unsigned short get_verbose_level() const;
 
     Fred::Mailer::Manager& mm_;
-    Fred::Logger::LoggerClient &logger_client_;
+    Fred::Logger::LoggerClient& logger_client_;
 
     std::string registrar_;
     Optional<bool> dry_run_;
     std::vector<Fred::ContactSelectionFilterType> selection_filter_order_;
     Optional<unsigned short> verbose_;
-};
 
+    MergeContactDryRunInfo dry_run_info_;
+    MergeContactSummaryInfo summary_info_;
+    MergeContactOperationSummary all_merge_operation_info_;
+
+};
 
 }
 
-
 #endif /*MERGE_CONTACT_AUTO_PROC_H__*/
-

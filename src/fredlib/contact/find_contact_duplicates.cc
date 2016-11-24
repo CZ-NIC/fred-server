@@ -11,26 +11,26 @@ FindContactDuplicates::FindContactDuplicates()
 {
 }
 
-FindContactDuplicates& FindContactDuplicates::set_registrar(const Optional<std::string>& registrar_handle)
+FindContactDuplicates& FindContactDuplicates::set_registrar(const Optional<std::string>& _registrar_handle)
 {
-    registrar_handle_ = registrar_handle;
+    registrar_handle_ = _registrar_handle;
     return *this;
 }
 
-FindContactDuplicates& FindContactDuplicates::set_exclude_contacts(const std::set<std::string> &exclude_contacts)
+FindContactDuplicates& FindContactDuplicates::set_exclude_contacts(const std::set<std::string>& _exclude_contacts)
 {
-    exclude_contacts_ = exclude_contacts;
+    exclude_contacts_ = _exclude_contacts;
     return *this;
 }
 
 //find set of duplicate contacts that contains given specific_contact_handle
-FindContactDuplicates& FindContactDuplicates::set_specific_contact(const std::string& specific_contact_handle)
+FindContactDuplicates& FindContactDuplicates::set_specific_contact(const std::string& _specific_contact_handle)
 {
-    specific_contact_handle_ = specific_contact_handle;
+    specific_contact_handle_ = _specific_contact_handle;
     return *this;
 }
 
-std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
+std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext& _ctx)
 {
     std::set<std::string> result;
     if(!specific_contact_handle_.isset())
@@ -75,7 +75,8 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
             " c.discloseemail,"
             " c.disclosevat,"
             " c.discloseident,"
-            " c.disclosenotifyemail"
+            " c.disclosenotifyemail,"
+            " c.warning_letter"
             " HAVING array_upper(array_accum(oreg.name), 1) > 1";
         if (!exclude_contacts_.empty()) {
             std::vector<std::string> array_params;
@@ -91,7 +92,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
         }
         dup_sql << " LIMIT 1) as dup_q";
 
-        Database::Result dup_result = ctx.get_conn().exec_params(dup_sql.str(), dup_params);
+        Database::Result dup_result = _ctx.get_conn().exec_params(dup_sql.str(), dup_params);
 
         for (Database::Result::size_type i = 0; i < dup_result.size(); i++) {
             result.insert(static_cast<std::string>(dup_result[i][0]));
@@ -135,9 +136,10 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
             " AND csearch.disclosevat = cother.disclosevat"
             " AND csearch.discloseident = cother.discloseident"
             " AND csearch.disclosenotifyemail = cother.disclosenotifyemail"
+            " AND csearch.warning_letter = cother.warning_letter"
             " AND csearch.clid = cother.clid";
 
-        Database::Result dup_result = ctx.get_conn().exec_params(
+        Database::Result dup_result = _ctx.get_conn().exec_params(
                 dup_sql, Database::query_param_list(specific_contact_handle_.get_value()));
 
         if (dup_result.size() == 1 && static_cast<std::string>(dup_result[0][0]) == specific_contact_handle_.get_value()) {
@@ -154,4 +156,3 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
 
 }
 }
-
