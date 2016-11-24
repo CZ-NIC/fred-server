@@ -70,6 +70,7 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_syntax, HasDomainData)
             info_registrar_data_.id,
             42
         );
+        BOOST_ERROR("exception expected");
     }
     catch(const Epp::ParameterValueSyntaxError& ex)
     {
