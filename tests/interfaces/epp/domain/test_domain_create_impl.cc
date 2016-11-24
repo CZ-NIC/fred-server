@@ -31,12 +31,17 @@
 
 #include <vector>
 #include <string>
-#include <set>
+#include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(DomainCreateImpl)
+
+bool handle_oidhpair_predicate (const std::string& handle, const Fred::ObjectIdHandlePair& pair)
+{
+  return (handle == pair.handle);
+}
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, HasDomainData)
 {
@@ -91,20 +96,14 @@ BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 
     BOOST_TEST_MESSAGE(std::string("info_data.admin_contacts.size(): ")<< info_data.admin_contacts.size());
 
-    std::set<std::string> info_admin_contacts;
-    Fred::ObjectIdHandlePair ac;
-    BOOST_FOREACH(ac, info_data.admin_contacts)
-    {
-        info_admin_contacts.insert(ac.handle);
-        BOOST_TEST_MESSAGE(std::string("info_admin_contacts.insert ") + ac.handle);
-    }
-
-    std::set<std::string>create_admin_contacts(domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end());
     BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(0));
     BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(1));
 
     BOOST_CHECK(info_data.admin_contacts.size() == domain1_create_input_data.admin_contacts.size());
-    BOOST_CHECK(info_admin_contacts == create_admin_contacts);
+    BOOST_CHECK(std::equal (domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end(),
+            info_data.admin_contacts.begin(), handle_oidhpair_predicate));
+
+
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 
 }
