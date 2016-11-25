@@ -64,6 +64,17 @@ struct HasInfoRegistrarData : virtual Test::autorollbacking_context {
     }
 };
 
+struct HasRegistrarNotInZone : virtual Test::autorollbacking_context {
+    Fred::InfoRegistrarData registrar_data_not_in_zone_;
+
+    HasRegistrarNotInZone() {
+        const std::string registrar_handle = "REGNOZONE";
+        Fred::CreateRegistrar(registrar_handle).exec(ctx);
+        registrar_data_not_in_zone_ = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
+    }
+};
+
+
 struct HasDifferentInfoRegistrarData : virtual Test::autorollbacking_context {
     Fred::InfoRegistrarData different_info_registrar_data_;
 
@@ -342,6 +353,8 @@ struct HasDomainData : HasInfoRegistrarData {
     }
 };
 
+
+struct HasDomainDataAndRegistrar : HasDomainData, HasRegistrarNotInZone {};
 
 struct HasInfoDomainDataOfDomainWithInvalidFqdn : HasInfoDomainData {
     HasInfoDomainDataOfDomainWithInvalidFqdn() {

@@ -149,10 +149,8 @@ BOOST_FIXTURE_TEST_CASE(create_fqdn_blacklisted, HasDomainData)
     }
 }
 
-
 BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, HasDomainData)
 {
-
     BOOST_CHECK_THROW(
         Epp::domain_create_impl(
             ctx,
@@ -161,6 +159,19 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, HasDomainData)
             42 /* TODO */
         ),
         Epp::ObjectExists
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(create_fail_registrar_zone_access, HasDomainDataAndRegistrar)
+{
+    BOOST_CHECK_THROW(
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            registrar_data_not_in_zone_.id,
+            42 /* TODO */
+        ),
+        Epp::AuthorizationError
     );
 }
 
