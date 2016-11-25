@@ -116,6 +116,38 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_zone, HasDomainData)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(create_fqdn_blacklisted, HasDomainData)
+{
+    ctx.get_conn().exec_params(
+        "INSERT INTO domain_blacklist (regexp,reason,valid_from,valid_to)"
+        " VALUES ($1::text,$2::text,CURRENT_TIMESTAMP,NULL)",
+            Database::query_param_list(domain1_create_input_data.fqdn)("test"));
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::blacklisted_domain);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
 
 
 BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, HasDomainData)
