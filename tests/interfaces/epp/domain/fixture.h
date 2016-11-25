@@ -307,12 +307,12 @@ struct HasDomainData : HasInfoRegistrarData {
     , fqdn1("testdomain1.cz")
     , fqdn2("testdomain2.cz")
 
-    , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, "transferheslo",
+    , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, boost::optional<std::string>("transferheslo"),
         Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
         Util::vector_of<std::string>(contact2)(contact3),
         std::vector<Epp::ENUMValidationExtension>())
 
-    , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, "transferheslo",
+    , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, boost::optional<std::string>("transferheslo"),
             Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
             Util::vector_of<std::string>(contact2)(contact3),
             std::vector<Epp::ENUMValidationExtension>())

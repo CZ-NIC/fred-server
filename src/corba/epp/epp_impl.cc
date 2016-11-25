@@ -2991,13 +2991,17 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
+        const std::string authinfo = Corba::unwrap_string_from_const_char_ptr(AuthInfoPw);
+
         const Epp::LocalizedCreateDomainResponse response = domain_create(
             Epp::DomainCreateInputData(
                 Corba::unwrap_string_from_const_char_ptr(fqdn),
                 Corba::unwrap_string_from_const_char_ptr(Registrant),
                 Corba::unwrap_string_from_const_char_ptr(nsset),
                 Corba::unwrap_string_from_const_char_ptr(keyset),
-                Corba::unwrap_string_from_const_char_ptr(AuthInfoPw),
+                authinfo.empty()
+                    ? boost::optional<std::string>()
+                    : boost::optional<std::string>(authinfo),
                 Corba::unwrap_domain_registration_period(period),
                 Corba::unwrap_ccreg_admincontacts_to_vector_string(admin),
                 Corba::unwrap_enum_validation_extension(ext)

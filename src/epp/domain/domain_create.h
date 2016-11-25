@@ -32,6 +32,7 @@
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 namespace Epp {
 
@@ -41,7 +42,7 @@ namespace Epp {
         std::string registrant;
         std::string nsset;
         std::string keyset;
-        std::string authinfo;
+        boost::optional<std::string> authinfo;
         DomainRegistrationTime period;
         std::vector<std::string> admin_contacts;
         std::vector<Epp::ENUMValidationExtension> enum_validation_list;
@@ -52,7 +53,7 @@ namespace Epp {
             const std::string& _registrant,
             const std::string& _nsset,
             const std::string& _keyset,
-            const std::string& _authinfo,
+            const boost::optional<std::string>& _authinfo,
             const DomainRegistrationTime& _period,
             const std::vector<std::string>& _admin_contacts,
             const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list)

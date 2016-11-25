@@ -253,7 +253,7 @@ DomainCreateResult domain_create_impl(
             _data.fqdn,
             registrar_handle,
             _data.registrant,
-            _data.authinfo,
+            _data.authinfo ? Optional<std::string>(_data.authinfo.value()) : Optional<std::string>(),
             _data.nsset.empty()
                 ? Optional<Nullable<std::string> >()
                 : Optional<Nullable<std::string> >(_data.nsset),
