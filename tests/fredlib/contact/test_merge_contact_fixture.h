@@ -423,9 +423,28 @@ namespace MergeContactFixture
             BOOST_TEST_MESSAGE(handle);
             try
             {
-                contact_info.insert(std::make_pair(handle
-                    , Test::exec(Test::CreateX_factory<Fred::CreateContact>()
-                    .make(registrar_handle, Optional<std::string>(handle))
+                Fred::ContactAddress contact_address = 
+                        Fred::ContactAddress(
+                            Optional<std::string>(),
+                            Fred::Contact::PlaceAddress(
+                                "Test"+s_idtag+" St1",
+                                Optional< std::string >("Test"+s_idtag+" St2"),
+                                Optional< std::string >("Test"+s_idtag+" St3"),
+                                "Praha "+s_idtag,
+                                Optional< std::string >(""),
+                                "12000",
+                                "CZ"
+                            )
+                        );
+
+                Fred::ContactAddressList contact_address_list;
+                contact_address_list[Fred::ContactAddressType::MAILING] = contact_address;
+                contact_address_list[Fred::ContactAddressType::BILLING] = contact_address;
+                contact_address_list[Fred::ContactAddressType::SHIPPING] = contact_address;
+                contact_address_list[Fred::ContactAddressType::SHIPPING_2] = contact_address;
+                contact_address_list[Fred::ContactAddressType::SHIPPING_3] = contact_address;
+
+                Fred::CreateContact::Result create_contact_result = Fred::CreateContact(handle, registrar_handle)
                     .set_name("Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag)
                     .set_organization("")
                     .set_place(Fred::Contact::PlaceAddress(
@@ -452,7 +471,20 @@ namespace MergeContactFixture
                     .set_disclosevat(false)
                     .set_discloseident(false)
                     .set_disclosenotifyemail(false)
-                    ,ctx)));
+                    .set_addresses(contact_address_list)
+                    .exec(ctx);
+
+                Fred::UpdateContactById(create_contact_result.create_object_result.object_id, registrar_handle)
+                    .set_domain_expiration_letter_flag((idtag % 2) == 0)
+                    .exec(ctx);
+
+                contact_info.insert(
+                    std::make_pair(
+                        handle,
+                        Fred::InfoContactById(create_contact_result.create_object_result.object_id).exec(ctx).info_contact_data
+                    )
+                );
+
             }
             catch(...)
             {
@@ -490,36 +522,69 @@ namespace MergeContactFixture
 
             try
             {
-            contact_info.insert(std::make_pair(handle
-                , Test::exec(Test::CreateX_factory<Fred::CreateContact>()
-                .make(registrar_handle, Optional<std::string>(handle))
-                .set_name("Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag)
-                .set_organization("Org"+s_grpidtag+" s.r.o")
-                .set_place(Fred::Contact::PlaceAddress(
-                    "Test"+s_grpidtag+" St1",
-                    Optional< std::string >("Test"+s_grpidtag+" St2"),
-                    Optional< std::string >("Test"+s_grpidtag+" St3"),
-                    "Praha "+s_grpidtag,
-                    Optional< std::string >(""),
-                    "1"+s_grpidtag+"000",
-                    "Czech Republic"))
-                .set_telephone("11111111"+s_grpidtag)
-                .set_fax("11111111"+s_grpidtag)
-                .set_email("testeml"+s_grpidtag+"@nic.cz")
-                .set_notifyemail("testnotifyeml"+s_grpidtag+"@nic.cz")
-                .set_vat("111111111"+s_grpidtag)
-                .set_ssn("11111111"+s_grpidtag)
-                .set_ssntype("OP")
-                .set_disclosename(true)
-                .set_discloseorganization(true)
-                .set_discloseaddress(true)
-                .set_disclosetelephone(true)
-                .set_disclosefax(true)
-                .set_discloseemail(true)
-                .set_disclosevat(false)
-                .set_discloseident(false)
-                .set_disclosenotifyemail(false)
-                ,ctx)));
+
+                Fred::ContactAddress contact_address =
+                        Fred::ContactAddress(
+                            Optional<std::string>(),
+                            Fred::Contact::PlaceAddress(
+                                "Test"+s_grpidtag+" St1",
+                                Optional< std::string >("Test"+s_grpidtag+" St2"),
+                                Optional< std::string >("Test"+s_grpidtag+" St3"),
+                                "Praha "+s_grpidtag,
+                                Optional< std::string >(""),
+                                "1"+s_grpidtag+"000",
+                                "CZ"
+                            )
+                        );
+
+                Fred::ContactAddressList contact_address_list;
+                contact_address_list[Fred::ContactAddressType::MAILING] = contact_address;
+                contact_address_list[Fred::ContactAddressType::BILLING] = contact_address;
+                contact_address_list[Fred::ContactAddressType::SHIPPING] = contact_address;
+                contact_address_list[Fred::ContactAddressType::SHIPPING_2] = contact_address;
+                contact_address_list[Fred::ContactAddressType::SHIPPING_3] = contact_address;
+
+                Fred::CreateContact::Result create_contact_result = Fred::CreateContact(handle, registrar_handle)
+                    .set_name("Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag)
+                    .set_organization("Org"+s_grpidtag+" s.r.o")
+                    .set_place(Fred::Contact::PlaceAddress(
+                        "Test"+s_grpidtag+" St1",
+                        Optional< std::string >("Test"+s_grpidtag+" St2"),
+                        Optional< std::string >("Test"+s_grpidtag+" St3"),
+                        "Praha "+s_grpidtag,
+                        Optional< std::string >(""),
+                        "1"+s_grpidtag+"000",
+                        "Czech Republic"))
+                    .set_telephone("11111111"+s_grpidtag)
+                    .set_fax("11111111"+s_grpidtag)
+                    .set_email("testeml"+s_grpidtag+"@nic.cz")
+                    .set_notifyemail("testnotifyeml"+s_grpidtag+"@nic.cz")
+                    .set_vat("111111111"+s_grpidtag)
+                    .set_ssn("11111111"+s_grpidtag)
+                    .set_ssntype("OP")
+                    .set_disclosename(true)
+                    .set_discloseorganization(true)
+                    .set_discloseaddress(true)
+                    .set_disclosetelephone(true)
+                    .set_disclosefax(true)
+                    .set_discloseemail(true)
+                    .set_disclosevat(false)
+                    .set_discloseident(false)
+                    .set_disclosenotifyemail(false)
+                    .set_addresses(contact_address_list)
+                    .exec(ctx);
+
+                Fred::UpdateContactById(create_contact_result.create_object_result.object_id, registrar_handle)
+                    .set_domain_expiration_letter_flag((grpidtag % 2) == 0)
+                    .exec(ctx);
+
+                contact_info.insert(
+                    std::make_pair(
+                        handle,
+                        Fred::InfoContactById(create_contact_result.create_object_result.object_id).exec(ctx).info_contact_data
+                    )
+                );
+
             }
             catch(...)
             {
