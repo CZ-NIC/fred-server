@@ -175,6 +175,68 @@ BOOST_FIXTURE_TEST_CASE(create_fail_registrar_zone_access, HasDomainDataAndRegis
     );
 }
 
+BOOST_FIXTURE_TEST_CASE(create_invalid_nsset, HasDomainData)
+{
+    domain1_create_input_data.nsset = domain1_create_input_data.nsset + std::string("NONEXISTING");
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.nsset ") << domain1_create_input_data.nsset);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_nsset);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::nsset_notexist);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(create_invalid_keyset, HasDomainData)
+{
+    domain1_create_input_data.keyset = domain1_create_input_data.keyset + std::string("NONEXISTING");
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.keyset ") << domain1_create_input_data.keyset);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_keyset);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::keyset_notexist);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+
+
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 {
     Epp::domain_create_impl(
