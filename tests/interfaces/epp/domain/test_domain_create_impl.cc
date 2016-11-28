@@ -295,6 +295,88 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrant, HasDomainData)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(create_invalid_period_negative, HasDomainData)
+{
+    domain1_create_input_data.period = Epp::DomainRegistrationTime(-12,Epp::DomainRegistrationTime::Unit::month);
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(create_invalid_period_toolong, HasDomainData)
+{
+    domain1_create_input_data.period = Epp::DomainRegistrationTime(132,Epp::DomainRegistrationTime::Unit::month);
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(create_invalid_period_modulo, HasDomainData)
+{
+    domain1_create_input_data.period = Epp::DomainRegistrationTime(25,Epp::DomainRegistrationTime::Unit::month);
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 {
     Epp::domain_create_impl(
