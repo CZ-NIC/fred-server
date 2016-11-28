@@ -129,7 +129,7 @@ NssetCreateResult nsset_create_impl(
                 {
                     ex.add(Error::of_vector_parameter(Param::nsset_dns_name,
                         boost::numeric_cast<unsigned short>(i),
-                        Reason::dns_name_exist));
+                        Reason::duplicated_dns_name));
                 }
             }
 
