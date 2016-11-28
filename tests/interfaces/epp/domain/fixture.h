@@ -350,6 +350,15 @@ struct HasDomainData : HasInfoRegistrarData {
             Database::query_param_list(info_registrar_data_.id)
             ("cz")
         );
+
+        ctx.get_conn().exec_params(
+            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
+                "SELECT $1::bigint, z.id, NOW() "
+                    "FROM zone z "
+                    "WHERE z.fqdn = $2::text",
+            Database::query_param_list(info_registrar_data_.id)
+            ("0.2.4.e164.arpa")
+        );
     }
 };
 
