@@ -116,12 +116,18 @@ DomainCreateResult domain_create_impl(
                     Param::domain_keyset,Reason::keyset_notexist));
     }
 
-    //check registrant contact exists
-    if(_data.registrant.empty()
-    || (Fred::Contact::get_handle_registrability(_ctx,_data.registrant)
-        != Fred::ContactHandleState::Registrability::registered))
+    //check registrant contact set
+    if(_data.registrant.empty())
     {
         throw RequiredSpecificParameterMissing().add(Error::of_scalar_parameter(
+                Param::domain_registrant,Reason::registrant_notexist));
+    }
+
+    //check registrant contact exists
+    if((Fred::Contact::get_handle_registrability(_ctx,_data.registrant)
+        != Fred::ContactHandleState::Registrability::registered))
+    {
+        parameter_value_policy_error.add(Error::of_scalar_parameter(
                 Param::domain_registrant,Reason::registrant_notexist));
     }
 
