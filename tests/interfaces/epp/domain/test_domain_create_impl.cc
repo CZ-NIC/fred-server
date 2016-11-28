@@ -235,7 +235,35 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_keyset, HasDomainData)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(create_invalid_registrant, HasDomainData)
+{
+    domain1_create_input_data.registrant = domain1_create_input_data.registrant + std::string("NONEXISTING");
 
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.registrant ") << domain1_create_input_data.registrant);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_registrant);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::registrant_notexist);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
 
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 {
