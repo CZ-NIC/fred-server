@@ -392,6 +392,24 @@ BOOST_FIXTURE_TEST_CASE(create_empty_valexdate_enum, HasDomainData)
     );
 }
 
+
+BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, HasDomainData)
+{
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension());
+
+    BOOST_CHECK_THROW(
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42 /* TODO */
+        ),
+        Epp::RequiredParameterMissing
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE(create_nonempty_valexdate_nonenum, HasDomainData)
 {
     domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
