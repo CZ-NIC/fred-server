@@ -355,14 +355,14 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
     //non verbose test data
-    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail1;
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email1;
     std::map<std::string, Fred::InfoContactDiff> contact_changes1;
     std::map<std::string, Fred::InfoNssetDiff> nsset_changes1;
     std::map<std::string, Fred::InfoKeysetDiff> keyset_changes1;
     std::map<std::string, Fred::InfoDomainDiff> domain_changes1;
 
     //verbose test data
-    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail2;
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email2;
     std::map<std::string, Fred::InfoContactDiff> contact_changes2;
     std::map<std::string, Fred::InfoNssetDiff> nsset_changes2;
     std::map<std::string, Fred::InfoKeysetDiff> keyset_changes2;
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
     {
         auto_proc_fixture fixture("_1");
 
-        nemail1 = Admin::MergeContactAutoProcedure(
+        notification_email1 = Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             fixture.registrar_mc_1_handle)
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
     {
         auto_proc_fixture fixture("_2");
 
-        nemail2 = Admin::MergeContactAutoProcedure(
+        notification_email2 = Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             fixture.registrar_mc_1_handle)
@@ -412,10 +412,10 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
     }
 
   //comparison
-  for(unsigned i = 0 ; i < nemail1.size(); ++i)
+  for(unsigned i = 0 ; i < notification_email1.size(); ++i)
   {
-      BOOST_CHECK(nemail1.at(i).notification_email_addr == nemail2.at(i).notification_email_addr);
-      BOOST_CHECK(nemail1.at(i).email_data.to_string() == nemail2.at(i).email_data.to_string());
+      BOOST_CHECK(notification_email1.at(i).notification_email_addr == notification_email2.at(i).notification_email_addr);
+      BOOST_CHECK(notification_email1.at(i).email_data.to_string() == notification_email2.at(i).email_data.to_string());
   }
 
   for(std::map<std::string, Fred::InfoContactDiff>::const_iterator ci = contact_changes1.begin(); ci != contact_changes1.end(); ++ci)

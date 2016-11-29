@@ -16,11 +16,11 @@ class FindContactDuplicates
 public:
     FindContactDuplicates();
 
-    FindContactDuplicates& set_registrar(const Optional<std::string>&_registrar_handle);
-    FindContactDuplicates& set_exclude_contacts(const std::set<std::string> &_exclude_contacts);
+    FindContactDuplicates& set_registrar(const Optional<std::string>& _registrar_handle);
+    FindContactDuplicates& set_exclude_contacts(const std::set<std::string>& _exclude_contacts);
     FindContactDuplicates& set_specific_contact(const std::string& _dest_contact_handle);
 
-    std::set<std::string> exec(Fred::OperationContext &_ctx);
+    std::set<std::string> exec(Fred::OperationContext& _ctx);
 
 private:
     Optional<std::string> registrar_handle_;
