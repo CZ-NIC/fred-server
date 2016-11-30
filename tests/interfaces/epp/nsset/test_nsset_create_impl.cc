@@ -134,7 +134,7 @@ bool handle_oidhpair_predicate (const std::string& handle, const Fred::ObjectIdH
 void check_equal(const Epp::NssetCreateInputData& create_data, const Fred::InfoNssetData& info_data)
 {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( create_data.handle ), info_data.handle );
-    BOOST_CHECK_EQUAL( create_data.authinfo, info_data.authinfopw );
+    BOOST_CHECK_EQUAL( create_data.authinfo.value(), info_data.authinfopw );
 
     BOOST_CHECK_EQUAL(create_data.dns_hosts.size(), info_data.dns_hosts.size());
     BOOST_CHECK(std::equal (create_data.dns_hosts.begin(), create_data.dns_hosts.end(),

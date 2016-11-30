@@ -149,7 +149,7 @@ struct has_nsset_input_data_set : has_registrar
     has_nsset_input_data_set()
     : nsset_input_data(Epp::NssetCreateInputData(
             "NSSET1",
-            "authInfo123",
+            boost::optional<std::string>("authInfo123"),
             Util::vector_of<Epp::DNShostInput>
                 (Epp::DNShostInput("a.ns.nic.cz",
                     Util::vector_of< boost::optional<boost::asio::ip::address> >
@@ -200,7 +200,7 @@ struct has_nsset_with_input_data_set : has_registrar {
     has_nsset_with_input_data_set()
     : nsset_input_data(Epp::NssetCreateInputData(
             "NSSET1",
-            "authInfo123",
+            boost::optional<std::string>("authInfo123"),
             Util::vector_of<Epp::DNShostInput>
                 (Epp::DNShostInput("a.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
@@ -246,7 +246,7 @@ struct has_nsset_with_input_data_set : has_registrar {
                 (Fred::DnsHost(nsset_input_data.dns_hosts.at(0).fqdn, Epp::make_ipaddrs(nsset_input_data.dns_hosts.at(0).inet_addr) )) //add_dns
                 (Fred::DnsHost(nsset_input_data.dns_hosts.at(1).fqdn, Epp::make_ipaddrs(nsset_input_data.dns_hosts.at(1).inet_addr) )) //add_dns
                 )
-            .set_authinfo(nsset_input_data.authinfo)
+            .set_authinfo(nsset_input_data.authinfo.value_or(std::string()))
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))
             .set_tech_check_level(nsset_input_data.input_tech_check_level.value())
             .exec(ctx);
