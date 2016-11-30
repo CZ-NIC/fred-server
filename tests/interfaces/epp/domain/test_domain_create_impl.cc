@@ -543,6 +543,59 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_7m, HasDomainData)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(create_nonexistent_admin, HasDomainData)
+{
+    domain1_create_input_data.admin_contacts.push_back(*domain1_create_input_data.admin_contacts.rbegin() + std::string("NONEXISTING"));
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_admin);
+        BOOST_CHECK(ex.get().rbegin()->position == 3);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::admin_notexist);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, HasDomainData)
+{
+    domain1_create_input_data.admin_contacts.push_back(*domain1_create_input_data.admin_contacts.rbegin());
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_admin);
+        BOOST_CHECK(ex.get().rbegin()->position == 3);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::duplicated_contact);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
 
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 {
