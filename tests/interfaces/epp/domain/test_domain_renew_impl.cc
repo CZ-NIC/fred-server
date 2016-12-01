@@ -126,6 +126,110 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_curexpdate, HasDomainData)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(renew_neg_period, HasDomainData)
+{
+    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(-12,Epp::DomainRegistrationTime::Unit::month);
+
+    try{
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_small_period, HasDomainData)
+{
+    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::month);
+
+    try{
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_big_period, HasDomainData)
+{
+    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(132,Epp::DomainRegistrationTime::Unit::month);
+
+    try{
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_modulo_period, HasDomainData)
+{
+    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(25,Epp::DomainRegistrationTime::Unit::month);
+
+    try{
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
 BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
 {
     Epp::DomainRenewResult renew_result =
