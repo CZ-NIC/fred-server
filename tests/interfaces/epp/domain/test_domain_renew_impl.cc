@@ -20,6 +20,7 @@
  *  @file
  */
 
+#include "src/epp/domain/domain_create_impl.h"
 #include "src/epp/domain/domain_renew_impl.h"
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
@@ -229,6 +230,115 @@ BOOST_FIXTURE_TEST_CASE(renew_modulo_period, HasDomainData)
         BOOST_ERROR("unexpected exception type");
     }
 }
+
+BOOST_FIXTURE_TEST_CASE(renew_empty_valexdate_enum, HasDomainData)
+{
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
+
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(10), false));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42
+    );
+
+    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+
+    BOOST_CHECK_NO_THROW(
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        )
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_special_valexdate_enum, HasDomainData)
+{
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
+
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(10), false));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42
+    );
+
+    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension());
+
+    try
+    {
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
+        BOOST_CHECK(ex.get().rbegin()->position == 1);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_nonempty_valexdate_nonenum, HasDomainData)
+{
+    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+        Epp::ENUMValidationExtension());
+
+    try{
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
+        BOOST_CHECK(ex.get().rbegin()->position == 1);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_used);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+
+
+
 
 BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
 {
