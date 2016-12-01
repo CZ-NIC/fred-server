@@ -99,6 +99,33 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn, HasDomainData)
     );
 }
 
+BOOST_FIXTURE_TEST_CASE(renew_invalid_curexpdate, HasDomainData)
+{
+    domain2_renew_input_data.value().current_exdate = boost::gregorian::to_iso_extended_string(
+    boost::gregorian::from_simple_string(domain2_renew_input_data.value().current_exdate) + boost::gregorian::days(1));
+
+    try{
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_cur_exp_date);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::curexpdate_not_expdate);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
 BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
 {
     Epp::DomainRenewResult renew_result =
