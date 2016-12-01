@@ -27,7 +27,7 @@
 #include "src/epp/domain/domain_create.h"
 
 #include "src/fredlib/object/object_id_handle_pair.h"
-
+#include "src/fredlib/object/generate_authinfo_password.h"
 
 #include <vector>
 #include <string>
@@ -595,6 +595,81 @@ BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, HasDomainData)
     {
         BOOST_ERROR("unexpected exception type");
     }
+}
+
+BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)
+{
+    domain1_create_input_data.authinfo = boost::optional<std::string>(std::string(""));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42 /* TODO */
+    );
+
+    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
+    BOOST_TEST_MESSAGE(info_data.to_string());
+
+
+    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
+            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '1 year'::interval)::date")[0][0]));
+
+    BOOST_CHECK(info_data.fqdn == domain1_create_input_data.fqdn);
+    BOOST_CHECK(info_data.registrant.handle == domain1_create_input_data.registrant);
+    BOOST_CHECK(info_data.nsset.get_value().handle == domain1_create_input_data.nsset);
+    BOOST_CHECK(info_data.keyset.get_value().handle == domain1_create_input_data.keyset);
+    BOOST_CHECK(info_data.authinfopw.length() == 8);
+    BOOST_CHECK(info_data.authinfopw.find_first_not_of(Fred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
+
+    BOOST_TEST_MESSAGE(std::string("info_data.admin_contacts.size(): ")<< info_data.admin_contacts.size());
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(0));
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(1));
+
+    BOOST_CHECK(info_data.admin_contacts.size() == domain1_create_input_data.admin_contacts.size());
+    BOOST_CHECK(std::equal (domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end(),
+            info_data.admin_contacts.begin(), handle_oidhpair_predicate));
+
+    BOOST_CHECK(info_data.enum_domain_validation.isnull());
+}
+
+BOOST_FIXTURE_TEST_CASE(create_authinfo_not_set, HasDomainData)
+{
+    domain1_create_input_data.authinfo = boost::optional<std::string>();
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42 /* TODO */
+    );
+
+    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
+    BOOST_TEST_MESSAGE(info_data.to_string());
+
+    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
+            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '1 year'::interval)::date")[0][0]));
+
+    BOOST_CHECK(info_data.fqdn == domain1_create_input_data.fqdn);
+    BOOST_CHECK(info_data.registrant.handle == domain1_create_input_data.registrant);
+    BOOST_CHECK(info_data.nsset.get_value().handle == domain1_create_input_data.nsset);
+    BOOST_CHECK(info_data.keyset.get_value().handle == domain1_create_input_data.keyset);
+    BOOST_CHECK(info_data.authinfopw.length() == 8);
+    BOOST_CHECK(info_data.authinfopw.find_first_not_of(Fred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
+
+    BOOST_TEST_MESSAGE(std::string("info_data.admin_contacts.size(): ")<< info_data.admin_contacts.size());
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(0));
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(1));
+
+    BOOST_CHECK(info_data.admin_contacts.size() == domain1_create_input_data.admin_contacts.size());
+    BOOST_CHECK(std::equal (domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end(),
+            info_data.admin_contacts.begin(), handle_oidhpair_predicate));
+
+    BOOST_CHECK(info_data.enum_domain_validation.isnull());
 }
 
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
