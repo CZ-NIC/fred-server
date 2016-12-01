@@ -47,6 +47,45 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_registrar_id, HasDomainData)
     );
 }
 
+BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn_zone, HasDomainData)
+{
+    domain2_renew_input_data.value().fqdn = domain2_renew_input_data.value().fqdn + std::string("c");
+
+    try{
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+    }
+    catch(const Epp::ParameterValuePolicyError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::not_applicable_domain);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_fail_registrar_zone_access, HasDomainDataAndRegistrar)
+{
+    BOOST_CHECK_THROW(
+            Epp::domain_renew_impl(
+                ctx,
+                domain2_renew_input_data.value(),
+                registrar_data_not_in_zone_.id,
+                42
+            ),
+        Epp::AuthorizationError
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn, HasDomainData)
 {
     BOOST_CHECK_THROW(
@@ -85,8 +124,6 @@ BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
 
     BOOST_TEST_MESSAGE(std::string("renew_result.exdate: ") << renew_result.exdate << std::string(" expected_expiration_local_date: ") << expected_expiration_local_date);
     BOOST_CHECK(renew_result.exdate == expected_expiration_local_date);
-
-
 }
 
 BOOST_AUTO_TEST_SUITE_END();
