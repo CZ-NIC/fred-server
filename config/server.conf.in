@@ -1,130 +1,198 @@
-# FRED server sample configuration
+################################################################################
+#                      FRED server configuration file                          #
+################################################################################
+#
 # New version for use with boost::program_option library
 # This file should be in @PREFIX@/etc/fred/server.conf
 
-##
-# DATABASE
-##
+################################################################################
+## Common settings
+################################################################################
+# These settings are common to all CORBA servers.
 
+###
+### Database connection settings
+###
 [database]
+# Host name of the machine on which the database server is running
+# or the directory for the Unix-domain socket (starting with ``/``)
 host = @DBHOST@
+# TCP port or the Unix-domain socket file extension
+# on which the database server is listening for connections
 port = @DBPORT@
+# Name of the database intended for the domain registry, usually "fred"
 name = @DBNAME@
+# Connect to the database as this user instead of the default
+# The user must have appropriate permissions.
 user = @DBUSER@
+# Password for authentication by the database server (if required)
 password = @DBPASS@
+# Maximum wait for connection (seconds, integer), 0 or empty - wait indefinitely
+# Not recommended to use timeout < 2 seconds
 timeout = 2
 
-
-##
-# CORBA NAMESERVICE
-##
-
+###
+### CORBA naming service settings
+###
 [nameservice]
+# CORBA nameservice host
 host = @NSHOST@
+# CORBA nameservice port
 port = @NSPORT@
+# CORBA nameservice context
+#   usually ``fred`` - check with ``namectl`` command::
+#
+#   $> nameclt list
+#   fred.context/
+#   $> nameclt list fred.context
+#   EPP.Object
+#   WebWhois.Object
+#   Whois.Object
+#   ...
+#
 context = @NSCONTEXT@
 
-##
-# LOGGING
-#
-# supported log types:
-#   0 ... console
-#   1 ... file    (parameter `file' for filename (with path) where to log)
-#   2 ... syslog  (parameter `syslog_facility' for syslog local settings) 
-#
-#
-# supported log levels:
-#   0 ... LL_EMERG
-#   1 ... LL_ALERT
-#   2 ... LL_CRIT
-#   3 ... LL_ERR
-#   4 ... LL_WARNING
-#   5 ... LL_NOTICE
-#   6 ... LL_INFO
-#   7 ... LL_DEBUG
-#   8 ... LL_TRACE (special level for really detailed output)
-##
-
+###
+### Process logging settings
+###
 [log]
+# Supported log types:
+# * 0 - console (not for production use)
+# * 1 - file (not for production use, see parameter ``file`` for filename (with path) where to log)
+# * 2 - syslog  (see parameter ``syslog_facility`` for syslog local settings)
+#
 type = 1
+# Log level
+# * 0 ... LL_EMERG
+# * 1 ... LL_ALERT
+# * 2 ... LL_CRIT
+# * 3 ... LL_ERR
+# * 4 ... LL_WARNING
+# * 5 ... LL_NOTICE
+# * 6 ... LL_INFO
+# * 7 ... LL_DEBUG
+# * 8 ... LL_TRACE (special level for really detailed output)
 level = 8
+# Specify log file (for log type = 1)
 file = @LOCALSTATEDIR@/log/fred.log
+# Specify syslog facility (for log type = 2)
 syslog_facility = 1
 
-##
-# GENERAL REGISTRY settings
-##
-
+###
+### General registry settings // TODO this should be reworked
+###
 [registry]
+# $DEPRECATED$ Extra checking for object handle format e.g.
+#   * CID: prefix for contacts
+#   * NSSID: prefix for nssets
+#   * KEYID: prefix for keysets
 restricted_handles = false
+# Email notification for EPP commands (create/update/delete/transfer)
+# // TODO should be moved to [rifd] section
 disable_epp_notifier = false
+# $DEPRECATED$ Locking on database level - must be turned on!
 lock_epp_commands = true
+# Default report level for create_nsset command
 nsset_level = 3
 
+# Path to fred-doc2pdf utility
 docgen_path = @BINDIR@/fred-doc2pdf
+# Path to doc2pdf templates
 docgen_template_path = @DATAROOTDIR@/fred-doc2pdf/
+# Domain expiration letters - the limit of list length per letter
 docgen_domain_count_limit = 100
 
+# Path to filemanager_client
 fileclient_path = @BINDIR@/filemanager_client
 
 
-##
-# RIFD specific settings
-##
+################################################################################
+## Daemon-specific settings
+################################################################################
+#
 
+###
+### RIFD specific settings
+###
 [rifd]
+# $DEPRECATED$ Total number of sessions permitted
 session_max = 200
+# Session timeout (seconds)
 session_timeout = 300
+# Maximum of concurrent sessions per registrar
 session_registrar_max = 5
-# clear keyset when update domain command is changing nsset
+# Clear keyset when update domain command is changing nsset
 epp_update_domain_keyset_clear = true
+# Turn on/off domain create/renew operation credit charging
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
+# $EXPERIMENTAL$ Turn on/off IDN support
 allow_idn = false
+# Turn on/off contact check (semi-automatic) after data change
 epp_update_contact_enqueue_check = false
 
-##
-# ADIFD specific settings
-##
-
+###
+### ADIFD specific settings
+###
 [adifd]
+# $DEPRECATED$ Total number of sessions permitted (0 - unlimited)
 session_max = 0
+# $DEPRECATED$ WebAdmin backend session timeout in seconds
 session_timeout = 3600
+# $DEPRECATED$ WebAdmin backend session garbage interval in seconds
 session_garbage = 150
 
-## 
-# LOGD specific settings
-##
-
+###
+### LOGD specific settings
+###
 [logd]
+# Path to a file which contains a list of machines (IP addresses)
+# on which the monitoring app is running, so that requests from these addresses
+# are logged to another partition and not mixed with regular traffic.
+# Each line in this file must contain only one IP address.
 monitoring_hosts_file = @MONITORINGIPS@
 
+###
+### SMS sender settings (CZ.NIC-specific for now)
+###
 [sms]
 command = LOGIN=login PASSWORD=pass sms_send.bash
 
 
-##
-# MIFD specific settings
-##
+###
+### MIFD specific settings
+###
 [mojeid]
+# The handle of registrar for this service
 registrar_handle = REG-MOJEID
+# Hostname (e-mail template parameter)
 hostname = demo.mojeid.cz
+# Email notification for contact commands (create/update/transfer)
 notify_commands = false
-# demo_mode = true - uses constant PINs (do not use on production)
+# Turn on/off the demo mode
+# WARNING: The demo mode uses constant PINs - do NOT use on production!
 demo_mode = false
+# If true, correspondence is generated within an operation (synchronously)
+# If false, it is generated later by another process (asynchronously)
 auto_email_generation = true
 auto_sms_generation = true
 
-##
-# contact verification PIFD settings
-##
+# Maximum number of letters sent to one contact in the specified interval
+#letter_limit_count = 6
+# Interval (days) for limiting the number of sent letters
+#letter_limit_interval = 30
+
+###
+### Contact verification PIFD settings
+###
 [contact_verification]
 hostname = demo.contactverification.cz
-# demo_mode = true - uses constant PINs (do not use on production)
+# Turn on/off the demo mode
+# WARNING: The demo mode uses constant PINs. Disable this on production!
 demo_mode = false
 
-##
-# domain browser server settings
-##
+###
+### DBIFD specific settings
+###
 [domain_browser]
 list_domains_limit=5000
 list_nssets_limit=5000

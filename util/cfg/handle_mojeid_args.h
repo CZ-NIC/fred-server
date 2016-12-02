@@ -48,8 +48,6 @@ public:
     std::string hostname;
     bool demo_mode;
     bool notify_commands;
-    boost::posix_time::time_duration uho_scavenger_thread_period;
-    boost::posix_time::time_duration uho_scavenger_object_max_idle_period;
     unsigned letter_limit_count;
     unsigned letter_limit_interval;
     bool auto_sms_generation;
@@ -75,14 +73,6 @@ public:
                 ("mojeid.notify_commands",
                  po::value<bool>()->default_value(false),
                  "turn command notifier on/off")
-                ("mojeid.uho_scavenger_thread_period",
-                 po::value<int>()->default_value(30),
-                 "unregistrable handles iterator object scavenger thread configuration"
-                 " - period between garbage procedure runs in seconds")
-                ("mojeid.uho_scavenger_object_max_idle_period",
-                 po::value<int>()->default_value(300),
-                 "unregistrable handles iterator object scavenger thread configuration"
-                 " - maximal object idle period (timeout) in seconds")
                 ("mojeid.letter_limit_count",
                  po::value<unsigned>()->default_value(6),
                  "maximum number of letters sent by one contact in a letter_limit_interval days")
@@ -108,10 +98,6 @@ public:
         hostname = vm["mojeid.hostname"].as<std::string>();
         demo_mode = vm["mojeid.demo_mode"].as<bool>();
         notify_commands = vm["mojeid.notify_commands"].as<bool>();
-        uho_scavenger_thread_period = boost::posix_time::seconds(
-                vm["mojeid.uho_scavenger_thread_period"].as<int>());
-        uho_scavenger_object_max_idle_period = boost::posix_time::seconds(
-                vm["mojeid.uho_scavenger_object_max_idle_period"].as<int>());
         letter_limit_count    = vm["mojeid.letter_limit_count"   ].as<unsigned>();
         letter_limit_interval = vm["mojeid.letter_limit_interval"].as<unsigned>();
         auto_sms_generation   = vm["mojeid.auto_sms_generation"].as< bool >();
