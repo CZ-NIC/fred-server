@@ -676,7 +676,10 @@ namespace Corba {
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
-            if(in[i].fqdn == 0) throw std::runtime_error("null char ptr");
+            if(in[i].fqdn == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
             ret.push_back(Epp::DNShostInput(std::string(in[i].fqdn),
                 unwrap_inet_addr_to_vector_asio_addr(in[i].inet)));
         }
