@@ -25,6 +25,9 @@
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
+#include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/object_state/object_state_name.h"
+
 #include "src/epp/domain/domain_renew.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -336,8 +339,51 @@ BOOST_FIXTURE_TEST_CASE(renew_nonempty_valexdate_nonenum, HasDomainData)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(renew_status_prohibited, HasDomainData)
+{
+    Database::Result res_id = ctx.get_conn().exec_params(
+        "INSERT INTO object_state_request (object_id, state_id)"
+        "  VALUES ("
+        "    (SELECT id FROM object_registry WHERE name = $1::text),"
+        "    (SELECT id FROM enum_object_states WHERE name = $2::text))"
+        "  RETURNING object_id",
+        Database::query_param_list
+            (domain2_renew_input_data.value().fqdn)
+            (Fred::ObjectState::SERVER_RENEW_PROHIBITED));
+    Fred::PerformObjectStateRequest(static_cast<unsigned long long>(res_id[0][0])).exec(ctx);
 
+    BOOST_CHECK_THROW(
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42)
+            , Epp::ObjectStatusProhibitsOperation
+        );
+}
 
+BOOST_FIXTURE_TEST_CASE(renew_status_delete, HasDomainData)
+{
+    Database::Result res_id = ctx.get_conn().exec_params(
+        "INSERT INTO object_state_request (object_id, state_id)"
+        "  VALUES ("
+        "    (SELECT id FROM object_registry WHERE name = $1::text),"
+        "    (SELECT id FROM enum_object_states WHERE name = $2::text))"
+        "  RETURNING object_id",
+        Database::query_param_list
+            (domain2_renew_input_data.value().fqdn)
+            (Fred::ObjectState::DELETE_CANDIDATE));
+    Fred::PerformObjectStateRequest(static_cast<unsigned long long>(res_id[0][0])).exec(ctx);
+
+    BOOST_CHECK_THROW(
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42)
+            , Epp::ObjectStatusProhibitsOperation
+        );
+}
 
 
 BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
