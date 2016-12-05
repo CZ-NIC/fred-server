@@ -133,6 +133,7 @@ ContactCreateResult contact_create_impl(
             should_item_be_disclosed< ContactDisclose::Item::vat          >(_data.disclose),
             should_item_be_disclosed< ContactDisclose::Item::ident        >(_data.disclose),
             should_item_be_disclosed< ContactDisclose::Item::notify_email >(_data.disclose),
+            Optional< Nullable< bool > >(),
             _logd_request_id);
         const Fred::CreateContact::Result create_data = create_contact_op.exec(_ctx, "UTC");
 

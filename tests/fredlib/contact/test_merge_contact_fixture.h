@@ -444,7 +444,9 @@ namespace MergeContactFixture
                 contact_address_list[Fred::ContactAddressType::SHIPPING_2] = contact_address;
                 contact_address_list[Fred::ContactAddressType::SHIPPING_3] = contact_address;
 
-                Fred::CreateContact::Result create_contact_result = Fred::CreateContact(handle, registrar_handle)
+                contact_info.insert(std::make_pair(handle
+                    , Test::exec(Test::CreateX_factory<Fred::CreateContact>()
+                    .make(registrar_handle, Optional<std::string>(handle))
                     .set_name("Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag+" Name"+s_idtag+s_idtag)
                     .set_organization("")
                     .set_place(Fred::Contact::PlaceAddress(
@@ -471,19 +473,9 @@ namespace MergeContactFixture
                     .set_disclosevat(false)
                     .set_discloseident(false)
                     .set_disclosenotifyemail(false)
+                    .set_domain_expiration_warning_letter_enabled((idtag % 2) == 0)
                     .set_addresses(contact_address_list)
-                    .exec(ctx);
-
-                Fred::UpdateContactById(create_contact_result.create_object_result.object_id, registrar_handle)
-                    .set_domain_expiration_letter_flag((idtag % 2) == 0)
-                    .exec(ctx);
-
-                contact_info.insert(
-                    std::make_pair(
-                        handle,
-                        Fred::InfoContactById(create_contact_result.create_object_result.object_id).exec(ctx).info_contact_data
-                    )
-                );
+                    , ctx)));
 
             }
             catch(...)
@@ -544,7 +536,9 @@ namespace MergeContactFixture
                 contact_address_list[Fred::ContactAddressType::SHIPPING_2] = contact_address;
                 contact_address_list[Fred::ContactAddressType::SHIPPING_3] = contact_address;
 
-                Fred::CreateContact::Result create_contact_result = Fred::CreateContact(handle, registrar_handle)
+                contact_info.insert(std::make_pair(handle
+                    , Test::exec(Test::CreateX_factory<Fred::CreateContact>()
+                    .make(registrar_handle, Optional<std::string>(handle))
                     .set_name("Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag+" Name"+s_grpidtag)
                     .set_organization("Org"+s_grpidtag+" s.r.o")
                     .set_place(Fred::Contact::PlaceAddress(
@@ -572,18 +566,8 @@ namespace MergeContactFixture
                     .set_discloseident(false)
                     .set_disclosenotifyemail(false)
                     .set_addresses(contact_address_list)
-                    .exec(ctx);
-
-                Fred::UpdateContactById(create_contact_result.create_object_result.object_id, registrar_handle)
-                    .set_domain_expiration_letter_flag((grpidtag % 2) == 0)
-                    .exec(ctx);
-
-                contact_info.insert(
-                    std::make_pair(
-                        handle,
-                        Fred::InfoContactById(create_contact_result.create_object_result.object_id).exec(ctx).info_contact_data
-                    )
-                );
+                    .set_domain_expiration_warning_letter_enabled((grpidtag % 2) == 0)
+                    , ctx)));
 
             }
             catch(...)

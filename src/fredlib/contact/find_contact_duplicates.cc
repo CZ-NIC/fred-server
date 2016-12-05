@@ -3,6 +3,8 @@
 
 #include <boost/algorithm/string/join.hpp>
 
+#include <string>
+
 
 namespace Fred {
 namespace Contact {
@@ -27,37 +29,36 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext& _ctx)
 {
     std::set<std::string> result;
     Database::QueryParams dup_params;
+    std::vector<std::string> contact_address_types = Util::vector_of<std::string>
+            ("MAILING")
+            ("BILLING")
+            ("SHIPPING")
+            ("SHIPPING_2")
+            ("SHIPPING_3");
     std::stringstream dup_sql;
     dup_sql << "SELECT unnest(dup_set)"
-        " FROM (SELECT array_accum(oreg.name) as dup_set,"
-        " (SELECT row("
-           " trim(both ' ' from ca.company_name),"
-           " trim(both ' ' from ca.street1),"
-           " trim(both ' ' from ca.street2),"
-           " trim(both ' ' from ca.street3),"
-           " trim(both ' ' from ca.city),"
-           " trim(both ' ' from ca.stateorprovince),"
-           " trim(both ' ' from ca.postalcode),"
-           " trim(both ' ' from ca.country)"
-         " )"
-         " FROM contact_address ca"
-        " WHERE ca.type = 'MAILING'"
-          " AND ca.contactid = c.id"
-        " ) as mailing_addr,"
-        " (SELECT row("
-             "  trim(both ' ' from ca.company_name),"
-             "  trim(both ' ' from ca.street1),"
-             "  trim(both ' ' from ca.street2),"
-             "  trim(both ' ' from ca.street3),"
-             "  trim(both ' ' from ca.city),"
-             "  trim(both ' ' from ca.stateorprovince),"
-             "  trim(both ' ' from ca.postalcode),"
-             "  trim(both ' ' from ca.country)"
-           " )"
-          " FROM contact_address ca"
-         " WHERE ca.type = 'SHIPPING'"
-           " AND ca.contactid = c.id"
-        " ) as shipping_addr"
+        " FROM (SELECT array_accum(oreg.name) as dup_set,";
+        for (std::vector<std::string>::const_iterator contact_address_type = contact_address_types.begin();
+            contact_address_type != contact_address_types.end();
+            ++contact_address_type)
+        {
+            dup_sql << \
+            " (SELECT row("
+               " trim(both ' ' from ca.company_name),"
+               " trim(both ' ' from ca.street1),"
+               " trim(both ' ' from ca.street2),"
+               " trim(both ' ' from ca.street3),"
+               " trim(both ' ' from ca.city),"
+               " trim(both ' ' from ca.stateorprovince),"
+               " trim(both ' ' from ca.postalcode),"
+               " trim(both ' ' from ca.country)"
+               " )"
+              " FROM contact_address ca"
+             " WHERE ca.type = '" << *contact_address_type << "'"
+               " AND ca.contactid = c.id"
+            " ) as " << *contact_address_type << "_addr" << (contact_address_type != contact_address_types.end() - 1 ? "," : "");
+        }
+    dup_sql << \
         " FROM object_registry oreg"
         " JOIN contact c ON c.id = oreg.id"
         " JOIN object o ON o.id = c.id"
@@ -95,9 +96,15 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext& _ctx)
         " c.disclosevat,"
         " c.discloseident,"
         " c.disclosenotifyemail,"
-        " c.warning_letter,"
-        " mailing_addr,"
-        " shipping_addr"
+        " c.warning_letter,";
+    for (std::vector<std::string>::const_iterator contact_address_type = contact_address_types.begin();
+        contact_address_type != contact_address_types.end();
+        ++contact_address_type)
+    {
+        dup_sql << \
+        " " << *contact_address_type << "_addr" << (contact_address_type != contact_address_types.end() - 1 ? "," : "");
+    }
+    dup_sql << \
         " HAVING array_upper(array_accum(oreg.name), 1) > 1";
     if (!exclude_contacts_.empty()) {
         std::vector<std::string> array_params;

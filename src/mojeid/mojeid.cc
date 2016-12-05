@@ -2283,7 +2283,7 @@ void MojeIDImpl::cancel_account_prepare(
 
         {
             Fred::UpdateContactById update_contact_op(_contact_id, mojeid_registrar_handle_);
-            update_contact_op.unset_domain_expiration_letter_flag()
+            update_contact_op.unset_domain_expiration_warning_letter_enabled()
                              .reset_address< Fred::ContactAddressType::MAILING >()
                              .reset_address< Fred::ContactAddressType::BILLING >()
                              .reset_address< Fred::ContactAddressType::SHIPPING >()
