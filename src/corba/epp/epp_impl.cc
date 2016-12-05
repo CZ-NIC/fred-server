@@ -2585,8 +2585,8 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
         return new ccReg::Response(
             Corba::wrap_response(
                 Epp::Domain::domain_transfer(
-                    Corba::unwrap_string(_domain_fqdn),
-                    Corba::unwrap_string(_auth_info_pw),
+                    Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
+                    Corba::unwrap_string_from_const_char_ptr(_auth_info_pw),
                     session_data.registrar_id,
                     epp_request_params.log_request_id,
                     session_data.language,
@@ -2856,7 +2856,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
         const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
         const Epp::Domain::DomainInfoResponse domain_info_response = Epp::Domain::domain_info(
-            Corba::unwrap_string(_domain_fqdn),
+            Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
             epp_registrar_session_data.registrar_id,
             epp_registrar_session_data.language,
             server_transaction_handle
@@ -2886,7 +2886,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
         const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
         const Epp::LocalizedSuccessResponse response = Epp::Domain::domain_delete(
-            Corba::unwrap_string(_domain_fqdn),
+            Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
             epp_registrar_session_data.registrar_id,
             epp_registrar_session_data.language,
             server_transaction_handle,
@@ -2922,7 +2922,7 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
         return new ccReg::Response(
             Corba::wrap_response(
                 Epp::Domain::domain_update(
-                    Corba::unwrap_string(_domain_fqdn),
+                    Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
                     Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg),
                     Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw_chg),
                     Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_nsset_chg),

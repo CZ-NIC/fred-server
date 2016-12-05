@@ -101,7 +101,7 @@ BOOST_FIXTURE_TEST_CASE(fail_authz_info_error, HasInfoDomainDataAndDifferentInfo
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(info_fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_transfer_impl(
