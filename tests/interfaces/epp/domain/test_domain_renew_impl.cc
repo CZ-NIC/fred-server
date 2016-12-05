@@ -312,6 +312,222 @@ BOOST_FIXTURE_TEST_CASE(renew_special_valexdate_enum, HasDomainData)
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(renew_yesterday_enum_valexdate, HasDomainData)
+{
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
+
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(10), false));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42
+    );
+
+    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date - boost::gregorian::days(1), false));
+
+    try
+    {
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
+        BOOST_CHECK(ex.get().rbegin()->position == 1);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_today_enum_valexdate, HasDomainData)
+{
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
+
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(10), false));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42
+    );
+
+    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date, false));
+
+    try
+    {
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
+        BOOST_CHECK(ex.get().rbegin()->position == 1);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_tomorrow_enum_valexdate, HasDomainData)
+{
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
+
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(10), false));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42
+    );
+
+    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+        Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(1), false));
+
+    BOOST_CHECK_NO_THROW(
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        ));
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_max_enum_valexdate, HasDomainData)
+{
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
+
+    const boost::gregorian::date max_valexdate_renew = boost::gregorian::from_simple_string(
+        static_cast<std::string>(ctx.get_conn().exec_params(
+            "SELECT $1::date + '6 month'::interval",
+            Database::query_param_list(current_local_date + boost::gregorian::days(10)))[0][0]));
+
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(10), false));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42
+    );
+
+    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+        Epp::ENUMValidationExtension(max_valexdate_renew, false));
+
+    BOOST_CHECK_NO_THROW(
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        ));
+}
+
+BOOST_FIXTURE_TEST_CASE(renew_long_enum_valexdate, HasDomainData)
+{
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+    static_cast<std::string>(ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
+
+    const boost::gregorian::date max_valexdate_renew = boost::gregorian::from_simple_string(
+        static_cast<std::string>(ctx.get_conn().exec_params(
+            "SELECT $1::date + '6 month'::interval",
+            Database::query_param_list(current_local_date + boost::gregorian::days(10)))[0][0]));
+
+    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(10), false));
+
+    Epp::domain_create_impl(
+        ctx,
+        domain1_create_input_data,
+        info_registrar_data_.id,
+        42
+    );
+
+    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+        Epp::ENUMValidationExtension(max_valexdate_renew + boost::gregorian::days(1), false));
+
+    try
+    {
+        Epp::domain_renew_impl(
+            ctx,
+            domain2_renew_input_data.value(),
+            info_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValueRangeError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
+        BOOST_CHECK(ex.get().rbegin()->position == 1);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+
 BOOST_FIXTURE_TEST_CASE(renew_nonempty_valexdate_nonenum, HasDomainData)
 {
     domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
