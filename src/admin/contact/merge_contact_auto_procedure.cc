@@ -214,16 +214,16 @@ unsigned short MergeContactAutoProcedure::get_verbose_level() const
 }
 
 Fred::MergeContactOutput MergeContactAutoProcedure::merge_contact(
-    const std::string& src_contact_,
-    const std::string& dst_contact_,
-    const std::string& system_registrar_
+    const std::string& _src_contact,
+    const std::string& _dst_contact,
+    const std::string& _system_registrar
 )
 {
-    Admin::MergeContact merge_op = Admin::MergeContact(src_contact_, dst_contact_, system_registrar_);
+    Admin::MergeContact merge_op = Admin::MergeContact(_src_contact, _dst_contact, _system_registrar);
 
     if (is_set_dry_run()) {
-        dry_run_info_.add_search_excluded(src_contact_);
-        dry_run_info_.add_search_excluded(dst_contact_);
+        dry_run_info_.add_search_excluded(_src_contact);
+        dry_run_info_.add_search_excluded(_dst_contact);
         return merge_op.exec_dry_run();
     }
 
@@ -253,7 +253,7 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
     OutputIndenter indenter(2, 0, ' ');
 
     if (get_verbose_level() > 0) {
-        _output_stream << format_header(str(boost::format("REGISTRAR: %1%") % registrar_), indenter);
+        _output_stream << format_header(boost::str(boost::format("REGISTRAR: %1%") % registrar_), indenter);
     }
 
     std::set<std::string> duplicate_contacts;
@@ -364,8 +364,9 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
         }
 
         if (get_verbose_level() > 1) {
-            _output_stream << format_header(str(boost::format("[-/%1%/-] MERGE SET SUMMARY")
-                        % summary_info_.merge_sets_total), indenter);
+            _output_stream << format_header(
+                boost::str(boost::format("[-/%1%/-] MERGE SET SUMMARY") % summary_info_.merge_sets_total),
+                indenter);
             _output_stream << merge_set_operation_info.format(indenter);
         }
 
@@ -376,8 +377,9 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
     }
 
     if (get_verbose_level() > 0) {
-        _output_stream << format_header(str(boost::format("[%1%/%2%/-] PROCEDURE RUN SUMMARY")
-                    % summary_info_.merge_operations_total % summary_info_.merge_sets_total), indenter);
+        _output_stream << format_header(
+            boost::str(boost::format("[%1%/%2%/-] PROCEDURE RUN SUMMARY") % summary_info_.merge_operations_total % summary_info_.merge_sets_total),
+            indenter);
         _output_stream << all_merge_operation_info_.format(indenter);
     }
     if (!is_set_dry_run()) {

@@ -90,9 +90,9 @@ private:
     std::vector<Fred::ContactSelectionFilterType> get_default_selection_filter_order() const;
 
     Fred::MergeContactOutput merge_contact(
-        const std::string& src_contact_,
-        const std::string& dst_contact_,
-        const std::string& system_registrar
+        const std::string& _src_contact,
+        const std::string& _dst_contact,
+        const std::string& _system_registrar
     );
 
     unsigned short get_verbose_level() const;
