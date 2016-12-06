@@ -41,7 +41,7 @@ private:
   std::string database; // connection string to database
   MailerManager *mm;
   Database::Manager *dbman;
-  
+
   NameService *ns;
 
   //conf
@@ -129,7 +129,7 @@ public:
 
   // send    exception ServerIntError
   void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID");
-  // EPP exception 
+  // EPP exception
   void EppError(short errCode, const char *errMsg, const char *svTRID,
     ccReg::Errors_var& errors);
 
@@ -172,7 +172,7 @@ public:
   int DefaultValExpInterval()
   {
     return 14;
-  } //  protected period for expiration validity of enum domain 
+  } //  protected period for expiration validity of enum domain
   // for disclose flags
   bool get_DISCLOSE(bool db);
   char update_DISCLOSE(bool d, ccReg::Disclose flag);
@@ -356,12 +356,12 @@ public:
   // tech check nsset
   ccReg::Response* nssetTest(const char* handle, CORBA::Short level, const ccReg::Lists& fqdns, const ccReg::EppParams &params);
 
-  //common function for transfer object 
+  //common function for transfer object
   ccReg::Response* ObjectTransfer(short act, const char*table, const char *fname, const char *name, const char* authInfo, const ccReg::EppParams &params);
 
-  // 
+  //
   ccReg::Response* domainSendAuthInfo(const char* fqdn, const ccReg::EppParams &params);
-  
+
   ccReg::Response* contactSendAuthInfo(const char* handle, const ccReg::EppParams &params);
 
   ccReg::Response* nssetSendAuthInfo(const char* handle, const ccReg::EppParams &params);

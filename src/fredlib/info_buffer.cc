@@ -63,7 +63,7 @@ namespace Fred
      public:
       ChunkImpl(DBSharedPtr db, TID registrar, unsigned size) throw (SQL_ERROR)
       {
-        // select total number of records (count) in result and actual pointer 
+        // select total number of records (count) in result and actual pointer
         // to result (current)
         std::stringstream sql;
         sql << "SELECT COUNT(DISTINCT eibc.id), MAX(eib.current) "
@@ -97,8 +97,8 @@ namespace Fred
             << "WHERE eibc.object_id=obr.id "
             << "AND eibc.registrar_id=" << registrar << " "
             << "AND eibc.id>" << current << " "
-            << "AND eibc.id<=" << current + chunkSize 
-            << " ORDER BY eibc.id ASC";   
+            << "AND eibc.id<=" << current + chunkSize
+            << " ORDER BY eibc.id ASC";
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
         for (int i=0; i<db->GetSelectRows(); i++)
           bufferList.push_back(db->GetFieldValue(i,0));
@@ -121,12 +121,12 @@ namespace Fred
       DBSharedPtr db;
       Domain::Manager *dm;
       Contact::Manager *cm;
-      NSSet::Manager *nm;
-      KeySet::Manager *km;
+      Nsset::Manager *nm;
+      Keyset::Manager *km;
      public:
       ManagerImpl(
         DBSharedPtr  _db, Domain::Manager *_dm,
-        NSSet::Manager *_nm, Contact::Manager *_cm, KeySet::Manager *_km
+        Nsset::Manager *_nm, Contact::Manager *_cm, Keyset::Manager *_km
       ) : db(_db), dm(_dm), cm(_cm), nm(_nm), km(_km)
       {}
 
@@ -163,7 +163,7 @@ namespace Fred
         TID registrar, Type infotype, const std::string& request
       ) throw (SQL_ERROR, INVALID_REGISTRAR)
       {
-    	if (!registrar) throw INVALID_REGISTRAR();
+        if (!registrar) throw INVALID_REGISTRAR();
         // init list of object specific temporary tables using their
         // managers
         std::auto_ptr<Fred::ObjectList> list;
@@ -180,7 +180,7 @@ namespace Fred
             {
               list.reset(dm->createList());
               LIST_DOWNCAST_AND_CHECK(Fred::Domain::List)
-              LIST_DOWNCAST_CALL(setNSSetHandleFilter(request))
+              LIST_DOWNCAST_CALL(setNssetHandleFilter(request))
             }
             break;
 
@@ -195,7 +195,7 @@ namespace Fred
               list->fillTempTable(false);
               LIST_DOWNCAST_CALL(setRegistrantHandleFilter(""))
               LIST_DOWNCAST_CALL(setAdminHandleFilter(request))
-              
+
               list->fillTempTable(false);
               LIST_DOWNCAST_CALL(setAdminHandleFilter(""));
               LIST_DOWNCAST_CALL(setTempHandleFilter(request))
@@ -206,14 +206,14 @@ namespace Fred
             {
               list.reset(dm->createList());
               LIST_DOWNCAST_AND_CHECK(Fred::Domain::List)
-              LIST_DOWNCAST_CALL(setKeySetHandleFilter(request))
+              LIST_DOWNCAST_CALL(setKeysetHandleFilter(request))
             }
             break;
 
           case T_LIST_NSSETS:
             {
               list.reset(nm->createList());
-              LIST_DOWNCAST_AND_CHECK(Fred::NSSet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Nsset::List)
               LIST_DOWNCAST_CALL(setRegistrarFilter(registrar))
             }
             break;
@@ -221,7 +221,7 @@ namespace Fred
           case T_LIST_KEYSETS:
             {
               list.reset(km->createList());
-              LIST_DOWNCAST_AND_CHECK(Fred::KeySet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Keyset::List)
               LIST_DOWNCAST_CALL(setRegistrarFilter(registrar))
             }
             break;
@@ -229,7 +229,7 @@ namespace Fred
           case T_NSSETS_BY_CONTACT:
             {
               list.reset(nm->createList());
-              LIST_DOWNCAST_AND_CHECK(Fred::NSSet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Nsset::List)
               LIST_DOWNCAST_CALL(setAdminFilter(request))
             }
             break;
@@ -237,7 +237,7 @@ namespace Fred
           case T_KEYSETS_BY_CONTACT:
             {
               list.reset(km->createList());
-              LIST_DOWNCAST_AND_CHECK(Fred::KeySet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Keyset::List)
               LIST_DOWNCAST_CALL(setAdminFilter(request))
             }
             break;
@@ -245,7 +245,7 @@ namespace Fred
           case T_NSSETS_BY_NS:
             {
               list.reset(nm->createList());
-              LIST_DOWNCAST_AND_CHECK(Fred::NSSet::List)
+              LIST_DOWNCAST_AND_CHECK(Fred::Nsset::List)
               LIST_DOWNCAST_CALL(setHostNameFilter(request))
             }
             break;
@@ -283,7 +283,7 @@ namespace Fred
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
         // create temporary sequence for numbering of result.
         // numbering is then used in streaming download.
-        // it should disappier at the and of block  
+        // it should disappier at the and of block
         TempSequence seq(db);
         // copy content of temporary table into result table
         sql.str("");
@@ -291,7 +291,7 @@ namespace Fred
             << "SELECT NEXTVAL('tmp_seq_epp_info_buffer_content'), "
             << registrar << ", t.id "
             << "FROM "
-            << "(SELECT tmp.id FROM " << list->getTempTableName() << " tmp, " 
+            << "(SELECT tmp.id FROM " << list->getTempTableName() << " tmp, "
             << "object_registry obr "
             << "WHERE tmp.id=obr.id ORDER BY obr.name ASC) t";
         if (!db->ExecSQL(sql.str().c_str())) throw SQL_ERROR();
@@ -304,7 +304,7 @@ namespace Fred
         if (db->GetSelectRows() == 1)
           result = atol(db->GetFieldValue(0,0));
         db->FreeSelect();
-        return result;    
+        return result;
       }
       virtual Chunk *getChunk(const std::string &registrar, unsigned int size)
           throw (SQL_ERROR, INVALID_REGISTRAR)
@@ -328,11 +328,11 @@ namespace Fred
         throw (SQL_ERROR, INVALID_REGISTRAR)
       {
         if (!registrar) throw INVALID_REGISTRAR();
-        return new ChunkImpl(db,registrar,size); 
+        return new ChunkImpl(db,registrar,size);
       }
     };
     Manager *Manager::create(
-        DBSharedPtr db, Domain::Manager *dm, NSSet::Manager *nm, Contact::Manager *cm, KeySet::Manager *km
+        DBSharedPtr db, Domain::Manager *dm, Nsset::Manager *nm, Contact::Manager *cm, Keyset::Manager *km
     )
     {
       return new ManagerImpl(db,dm,nm,cm, km);

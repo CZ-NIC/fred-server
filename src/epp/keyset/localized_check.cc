@@ -10,7 +10,7 @@
 #include <set>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 namespace {
@@ -89,7 +89,7 @@ HandlesCheck::Results localize_check_results(
     return localized_result;
 }
 
-}//namespace Epp::KeySet::{anonymous}
+}//namespace Epp::Keyset::{anonymous}
 
 HandlesCheck check(
     const std::set< std::string > &_keyset_handles,
@@ -100,7 +100,7 @@ HandlesCheck check(
     Logging::Context logging_ctx("rifd");
     Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
     Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeySetCheck)));
+    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetCheck)));
 
     try {
         Fred::OperationContextCreator ctx;
@@ -114,7 +114,7 @@ HandlesCheck check(
                 _lang);
         }
 
-        const std::map< std::string, Nullable< KeySet::HandleCheckResult::Enum > > keyset_check_results =
+        const std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check_results =
             keyset_check(ctx, _keyset_handles);
 
         return HandlesCheck(create_localized_success_response(Response::ok, ctx, _lang),
@@ -135,6 +135,6 @@ HandlesCheck check(
     }
 }
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp

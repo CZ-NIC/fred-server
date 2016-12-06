@@ -614,8 +614,8 @@ struct Locking_public_request_fixture
         request_manager.reset(Fred::PublicRequest::Manager::create(
                     registry_manager->getDomainManager(),
                     registry_manager->getContactManager(),
-                    registry_manager->getNSSetManager(),
-                    registry_manager->getKeySetManager(),
+                    registry_manager->getNssetManager(),
+                    registry_manager->getKeysetManager(),
                     mailer_manager.get(),
                     doc_manager.get(),
                     registry_manager->getMessageManager()));

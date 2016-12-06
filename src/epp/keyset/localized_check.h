@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef LOCALIZED_CHECK_H_1797E6168918A3D95558AB336DF4C982//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LOCALIZED_CHECK_H_1797E6168918A3D95558AB336DF4C982
+#ifndef LOCALIZED_CHECK_H_5B155FDF407D4AE3BE7089DC48B3C04E
+#define LOCALIZED_CHECK_H_5B155FDF407D4AE3BE7089DC48B3C04E
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
@@ -29,7 +29,7 @@
 #include "util/db/nullable.h"
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 struct HandlesCheck
@@ -56,9 +56,9 @@ HandlesCheck check(
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp
 
 
-#endif//LOCALIZED_CHECK_H_1797E6168918A3D95558AB336DF4C982
+#endif

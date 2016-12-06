@@ -1,5 +1,5 @@
-#ifndef NSSET_H_
-#define NSSET_H_
+#ifndef NSSET_H_B3B1A2D33F034B18B09C10B43D2A0540
+#define NSSET_H_B3B1A2D33F034B18B09C10B43D2A0540
 
 #include <string>
 #include <vector>
@@ -10,11 +10,11 @@
 #include "src/model/model_filters.h"
 #include "src/old_utils/dbsql.h"
 
-/// forward declared parameter type 
+/// forward declared parameter type
 class DB;
 
 namespace Fred {
-namespace NSSet {
+namespace Nsset {
 
 /// member identification (i.e. for sorting)
 enum MemberType {
@@ -41,15 +41,15 @@ public:
 
   virtual const std::vector<std::string>& getAddrList() const = 0;
   // comparison operators
-  virtual bool operator==(const Host& _other) const = 0; 
+  virtual bool operator==(const Host& _other) const = 0;
   virtual bool operator!=(const Host& _other) const = 0;
 };
 
 
-class NSSet : virtual public Fred::Object {
+class Nsset : virtual public Fred::Object {
 public:
   /// public destructor
-  virtual ~NSSet() {
+  virtual ~Nsset() {
   }
   /// return nsset handle
   virtual const std::string& getHandle() const = 0;
@@ -76,7 +76,7 @@ public:
   virtual ~List() {
   }
   /// get detail of loaded nsset
-  virtual NSSet *getNSSet(unsigned idx) const = 0;
+  virtual Nsset *getNsset(unsigned idx) const = 0;
   /// set filter for handle
   virtual void setHandleFilter(const std::string& handle) = 0;
   /// set filter for nameserver hostname
@@ -99,12 +99,12 @@ public:
 /// main entry class
 class Manager {
 public:
-  /// destructor 
+  /// destructor
   virtual ~Manager() {
   }
   /// return list of nssets
   virtual List *createList() = 0;
-  /// type for check 
+  /// type for check
   enum CheckAvailType {
     /// handle cannot be contact
     CA_INVALID_HANDLE,
@@ -124,14 +124,14 @@ public:
                  bool lock = false) const throw (SQL_ERROR) = 0;
   /// check FQDN of host, should be hidden and not exported in manager API
   /** \return 0=OK, 1=invalid name, 2=glue and invalid zone */
-      virtual unsigned checkHostname(const std::string& hostname, 
-      															 bool glue, 
+      virtual unsigned checkHostname(const std::string& hostname,
+      															 bool glue,
       															 bool allowIDN = false) const = 0;
   /// factory method
   static Manager *create(DBSharedPtr db, Zone::Manager *zman, bool restrictedHandle);
 };
 
-} // namespace NSSet
+} // namespace Nsset
 } // namespace Fred
 
 #endif /* NSSET_H_ */

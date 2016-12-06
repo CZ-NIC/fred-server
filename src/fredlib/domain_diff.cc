@@ -55,8 +55,8 @@ void _diff_domain(Fred::ChangesMap &_changes,
     compare_and_fill(_changes, "domain.publish", _prev->getPublish(), _act->getPublish());
     compare_and_fill(_changes, "domain.val_ex_date", _prev->getValExDate(), _act->getValExDate());
     compare_and_fill(_changes, "domain.registrant", _prev->getRegistrantHandle(), _act->getRegistrantHandle());
-    compare_and_fill(_changes, "domain.nsset", _prev->getNSSetHandle(), _act->getNSSetHandle());
-    compare_and_fill(_changes, "domain.keyset", _prev->getKeySetHandle(), _act->getKeySetHandle());
+    compare_and_fill(_changes, "domain.nsset", _prev->getNssetHandle(), _act->getNssetHandle());
+    compare_and_fill(_changes, "domain.keyset", _prev->getKeysetHandle(), _act->getKeysetHandle());
     compare_and_fill_admin_contacts(_changes, "domain", _prev, _act);
     compare_and_fill_temp_contacts(_changes, "domain", _prev, _act);
 }

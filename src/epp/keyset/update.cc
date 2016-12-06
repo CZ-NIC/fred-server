@@ -126,7 +126,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
 
     Success check_result = true;
 
-    if (KeySet::max_number_of_tech_contacts < _tech_contacts_add.size()) {
+    if (Keyset::max_number_of_tech_contacts < _tech_contacts_add.size()) {
         _param_errors.add_scalar_parameter_error(Param::keyset_tech, Reason::techadmin_limit);
         check_result = false;
     }
@@ -212,11 +212,11 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
     const unsigned short number_of_tech_contacts =   current_tech_contacts.size()
                                                    +    _tech_contacts_add.size()
                                                    -    _tech_contacts_rem.size();
-    if (number_of_tech_contacts < KeySet::min_number_of_tech_contacts) {
+    if (number_of_tech_contacts < Keyset::min_number_of_tech_contacts) {
         _param_errors.add_scalar_parameter_error(Param::keyset_tech_rem, Reason::can_not_remove_tech);
         return false;
     }
-    if (KeySet::max_number_of_tech_contacts < number_of_tech_contacts) {
+    if (Keyset::max_number_of_tech_contacts < number_of_tech_contacts) {
         _param_errors.add_scalar_parameter_error(Param::keyset_tech, Reason::techadmin_limit);
         return false;
     }
@@ -225,13 +225,13 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
 }
 
 template < unsigned MIN_NUMBER_OF_DS_RECORDS, unsigned MAX_NUMBER_OF_DS_RECORDS >
-Success check_ds_records(const std::vector< KeySet::DsRecord >&, const std::vector< KeySet::DsRecord >&,
+Success check_ds_records(const std::vector< Keyset::DsRecord >&, const std::vector< Keyset::DsRecord >&,
                          const Fred::InfoKeysetData&, Fred::OperationContext&, ParameterErrors&);
 
 //specialization for requirement of no DS records
 template < >
-Success check_ds_records< 0, 0 >(const std::vector< KeySet::DsRecord > &_ds_records_add,
-                                 const std::vector< KeySet::DsRecord > &_ds_records_rem,
+Success check_ds_records< 0, 0 >(const std::vector< Keyset::DsRecord > &_ds_records_add,
+                                 const std::vector< Keyset::DsRecord > &_ds_records_rem,
                                  const Fred::InfoKeysetData&, Fred::OperationContext&,
                                  ParameterErrors &_param_errors)
 {
@@ -242,14 +242,14 @@ Success check_ds_records< 0, 0 >(const std::vector< KeySet::DsRecord > &_ds_reco
     return false;
 }
 
-typedef std::set< KeySet::DnsKey > DnsKeys;
+typedef std::set< Keyset::DnsKey > DnsKeys;
 DnsKeys get_dns_keys(const std::vector< Fred::DnsKey > &_dns_keys)
 {
     DnsKeys result;
     for (std::vector< Fred::DnsKey >::const_iterator dns_key_ptr = _dns_keys.begin();
          dns_key_ptr != _dns_keys.end(); ++dns_key_ptr)
     {
-        result.insert(KeySet::DnsKey(dns_key_ptr->get_flags(),
+        result.insert(Keyset::DnsKey(dns_key_ptr->get_flags(),
                                      dns_key_ptr->get_protocol(),
                                      dns_key_ptr->get_alg(),
                                      dns_key_ptr->get_key()));
@@ -257,8 +257,8 @@ DnsKeys get_dns_keys(const std::vector< Fred::DnsKey > &_dns_keys)
     return result;
 }
 
-Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
-                       const std::vector< KeySet::DnsKey > &_dns_keys_rem,
+Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
+                       const std::vector< Keyset::DnsKey > &_dns_keys_rem,
                        const Fred::InfoKeysetData &_keyset_data,
                        Fred::OperationContext &_ctx,
                        ParameterErrors &_param_errors)
@@ -269,7 +269,7 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
 
     Success check_result = true;
 
-    if (KeySet::max_number_of_dns_keys < _dns_keys_add.size()) {
+    if (Keyset::max_number_of_dns_keys < _dns_keys_add.size()) {
         _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::dnskey_limit);
         check_result = false;
     }
@@ -287,10 +287,10 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
     }
 
     KeySet::DnsKey::AlgValidator alg_validator(_ctx);
-    typedef std::map< KeySet::DnsKey, unsigned short > DnsKeyIndex;
+    typedef std::map< Keyset::DnsKey, unsigned short > DnsKeyIndex;
     DnsKeyIndex unique_dns_keys;
     unsigned short idx = 0;
-    for (std::vector< KeySet::DnsKey >::const_iterator dns_key_ptr = _dns_keys_add.begin();
+    for (std::vector< Keyset::DnsKey >::const_iterator dns_key_ptr = _dns_keys_add.begin();
          dns_key_ptr != _dns_keys_add.end(); ++dns_key_ptr, ++idx)
     {
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(*dns_key_ptr);
@@ -340,13 +340,13 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
 
         switch (dns_key_ptr->check_key())
         {
-            case KeySet::DnsKey::CheckKey::ok:
+            case Keyset::DnsKey::CheckKey::ok:
                 break;
-            case KeySet::DnsKey::CheckKey::bad_char:
+            case Keyset::DnsKey::CheckKey::bad_char:
                 _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_key_char);
                 check_result = false;
                 break;
-            case KeySet::DnsKey::CheckKey::bad_length:
+            case Keyset::DnsKey::CheckKey::bad_length:
                 _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_key_len);
                 check_result = false;
                 break;
@@ -355,7 +355,7 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
 
     unique_dns_keys.clear();
     idx = 0;
-    for (std::vector< KeySet::DnsKey >::const_iterator dns_key_ptr = _dns_keys_rem.begin();
+    for (std::vector< Keyset::DnsKey >::const_iterator dns_key_ptr = _dns_keys_rem.begin();
          dns_key_ptr != _dns_keys_rem.end(); ++dns_key_ptr, ++idx)
     {
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(*dns_key_ptr);
@@ -385,11 +385,11 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
         return false;
     }
     const unsigned short number_of_dns_keys = current_dns_keys.size() + _dns_keys_add.size() - _dns_keys_rem.size();
-    if (number_of_dns_keys < KeySet::min_number_of_dns_keys) {
+    if (number_of_dns_keys < Keyset::min_number_of_dns_keys) {
         _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::no_dnskey_dsrecord);
         return false;
     }
-    if (KeySet::max_number_of_dns_keys < number_of_dns_keys) {
+    if (Keyset::max_number_of_dns_keys < number_of_dns_keys) {
         _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::dnskey_limit);
         return false;
     }
@@ -397,10 +397,10 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys_add,
     return true;
 }
 
-std::vector< Fred::DnsKey > to_fred(const std::vector< KeySet::DnsKey > &_dns_keys)
+std::vector< Fred::DnsKey > to_fred(const std::vector< Keyset::DnsKey > &_dns_keys)
 {
     std::vector< Fred::DnsKey > result;
-    for (std::vector< KeySet::DnsKey >::const_iterator dns_key_ptr = _dns_keys.begin();
+    for (std::vector< Keyset::DnsKey >::const_iterator dns_key_ptr = _dns_keys.begin();
          dns_key_ptr != _dns_keys.end(); ++dns_key_ptr)
     {
         result.push_back(Fred::DnsKey(dns_key_ptr->get_flags(),
@@ -419,10 +419,10 @@ KeysetUpdateResult keyset_update(
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts_add,
     const std::vector< std::string > &_tech_contacts_rem,
-    const std::vector< KeySet::DsRecord > &_ds_records_add,
-    const std::vector< KeySet::DsRecord > &_ds_records_rem,
-    const std::vector< KeySet::DnsKey > &_dns_keys_add,
-    const std::vector< KeySet::DnsKey > &_dns_keys_rem,
+    const std::vector< Keyset::DsRecord > &_ds_records_add,
+    const std::vector< Keyset::DsRecord > &_ds_records_rem,
+    const std::vector< Keyset::DnsKey > &_dns_keys_add,
+    const std::vector< Keyset::DnsKey > &_dns_keys_rem,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id)
 {
@@ -444,8 +444,8 @@ KeysetUpdateResult keyset_update(
             _ctx.get_log().info("check_tech_contacts failure");
         }
 
-        if (!check_ds_records< KeySet::min_number_of_ds_records,
-                               KeySet::max_number_of_ds_records >(_ds_records_add, _ds_records_rem,
+        if (!check_ds_records< Keyset::min_number_of_ds_records,
+                               Keyset::max_number_of_ds_records >(_ds_records_add, _ds_records_rem,
                                                                   keyset_data, _ctx, param_errors))
         {
             _ctx.get_log().info("check_ds_records failure");
@@ -476,7 +476,7 @@ KeysetUpdateResult keyset_update(
         if (!_tech_contacts_rem.empty()) {
             const Fred::InfoKeysetData keyset_data =
                 Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx).info_keyset_data;
-            if (keyset_data.tech_contacts.size() < KeySet::min_number_of_tech_contacts) {
+            if (keyset_data.tech_contacts.size() < Keyset::min_number_of_tech_contacts) {
                 throw ParameterErrors().add_scalar_parameter_error(Param::keyset_tech_rem,
                                                                    Reason::can_not_remove_tech);
             }

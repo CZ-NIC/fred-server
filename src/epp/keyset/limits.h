@@ -20,11 +20,11 @@
  *  @file
  */
 
-#ifndef LIMITS_H_6FBC5448A8637E00488EEB81C6607506//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LIMITS_H_6FBC5448A8637E00488EEB81C6607506
+#ifndef LIMITS_H_0C5D2850727C4534B1BAFFFAE9BD13FD
+#define LIMITS_H_0C5D2850727C4534B1BAFFFAE9BD13FD
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 
 //allowed values from interval <min, max>
 const unsigned min_number_of_tech_contacts =  1;
@@ -38,7 +38,7 @@ const unsigned max_number_of_dns_keys = 10;
 const unsigned min_number_of_ds_records = 0;
 const unsigned max_number_of_ds_records = 0;
 
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//LIMITS_H_6FBC5448A8637E00488EEB81C6607506
+#endif

@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef UPDATE_H_F6F5CDB8DC705D56B4BF34AE50A1CF49//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define UPDATE_H_F6F5CDB8DC705D56B4BF34AE50A1CF49
+#ifndef UPDATE_H_6824E4BD1A024181B0112B319CFC0EE5
+#define UPDATE_H_6824E4BD1A024181B0112B319CFC0EE5
 
 #include "src/fredlib/opcontext.h"
 #include "src/epp/keyset/info_data.h"
@@ -47,13 +47,13 @@ KeysetUpdateResult keyset_update(
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts_add,
     const std::vector< std::string > &_tech_contacts_rem,
-    const std::vector< KeySet::DsRecord > &_ds_records_add,
-    const std::vector< KeySet::DsRecord > &_ds_records_rem,
-    const std::vector< KeySet::DnsKey > &_dns_keys_add,
-    const std::vector< KeySet::DnsKey > &_dns_keys_rem,
+    const std::vector< Keyset::DsRecord > &_ds_records_add,
+    const std::vector< Keyset::DsRecord > &_ds_records_rem,
+    const std::vector< Keyset::DnsKey > &_dns_keys_add,
+    const std::vector< Keyset::DnsKey > &_dns_keys_rem,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
 }
 
-#endif//UPDATE_H_F6F5CDB8DC705D56B4BF34AE50A1CF49
+#endif

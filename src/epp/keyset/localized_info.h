@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef LOCALIZED_INFO_H_30CFD670609F21298BB96EE14BB345B0//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LOCALIZED_INFO_H_30CFD670609F21298BB96EE14BB345B0
+#ifndef LOCALIZED_INFO_H_4876797E94674738A17B9CB48CA94A7A
+#define LOCALIZED_INFO_H_4876797E94674738A17B9CB48CA94A7A
 
 #include "src/epp/keyset/info_data.h"
 #include "src/epp/localized_states.h"
@@ -30,17 +30,17 @@
 #include "src/fredlib/object/object_state.h"
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 struct InfoData
 {
-    std::string handle; ///< KeySet handle
-    std::string roid; ///< KeySet identifier - repository ID
+    std::string handle; ///< Keyset handle
+    std::string roid; ///< Keyset identifier - repository ID
     std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
     std::string creating_registrar_handle; ///< Registrar identifier, which created contact
     Nullable< std::string > last_update_registrar_handle; ///< Registrar identifier, which realized changes
-    LocalizedStates states; ///< KeySet states list
+    LocalizedStates states; ///< Keyset states list
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable< boost::posix_time::ptime > last_update; ///< Date and time of last change
     Nullable< boost::posix_time::ptime > last_transfer; ///< Date and time of last transfer
@@ -66,8 +66,8 @@ InfoResult info(
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//LOCALIZED_INFO_H_30CFD670609F21298BB96EE14BB345B0
+#endif

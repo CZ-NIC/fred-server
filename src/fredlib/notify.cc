@@ -36,7 +36,7 @@ namespace Fred
 {
   namespace Notify
   {
-    
+
     // id of parameter "expiration_dns_protection_period"
     const int EP_OUTZONE = 4;
     // id of parameter "expiration_registration_protection_period"
@@ -48,8 +48,8 @@ namespace Fred
       DBSharedPtr db;
       Mailer::Manager *mm;
       Contact::Manager *cm;
-      NSSet::Manager *nm;
-      KeySet::Manager *km;
+      Nsset::Manager *nm;
+      Keyset::Manager *km;
       Domain::Manager *dm;
       Document::Manager *docm;
       Registrar::Manager *rm;
@@ -60,8 +60,8 @@ namespace Fred
         DBSharedPtr _db,
         Mailer::Manager *_mm,
         Contact::Manager *_cm,
-        NSSet::Manager *_nm,
-        KeySet::Manager *_km,
+        Nsset::Manager *_nm,
+        Keyset::Manager *_km,
         Domain::Manager *_dm,
         Document::Manager *_docm,
         Registrar::Manager *_rm,
@@ -161,7 +161,7 @@ namespace Fred
             "AND n.crdate BETWEEN d.exdate AND os.valid_from";
         return getEmailList(sql);
       }
-      std::string getNSSetTechEmailsHistory(TID nsset)
+      std::string getNssetTechEmailsHistory(TID nsset)
       {
         std::stringstream sql;
         sql << "SELECT ch.email "
@@ -173,7 +173,7 @@ namespace Fred
             << "WHERE nobr.id = " << nsset;
         return getEmailList(sql);
       }
-      std::string getNSSetTechEmails(TID nsset)
+      std::string getNssetTechEmails(TID nsset)
       {
         std::stringstream sql;
         sql << "SELECT c.email "
@@ -181,7 +181,7 @@ namespace Fred
             << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << nsset;
         return getEmailList(sql);
       }
-      std::string getKeySetTechEmailsHistory(TID keyset)
+      std::string getKeysetTechEmailsHistory(TID keyset)
       {
         std::stringstream sql;
         sql << "SELECT ch.email "
@@ -193,7 +193,7 @@ namespace Fred
             << "WHERE kobr.id = " << keyset;
         return getEmailList(sql);
       }
-      std::string getKeySetTechEmails(TID keyset)
+      std::string getKeysetTechEmails(TID keyset)
       {
           std::stringstream sql;
           sql << "SELECT c.email "
@@ -369,7 +369,7 @@ namespace Fred
         params["checkdate"] = to_iso_extended_string(date(day_clock::local_day()));
         params["domain"] = d->getFQDN();
         params["owner"] = d->getRegistrantHandle();
-        params["nsset"] = d->getNSSetHandle();
+        params["nsset"] = d->getNssetHandle();
         if (!d->getValExDate().is_special())
         {
           params["valdate"] = to_iso_extended_string(d->getValExDate());
@@ -518,10 +518,10 @@ namespace Fred
              case 2: // nsset
               fillSimpleObjectParams(i->obj_id,params);
               if (useHistory) {
-                emails = getNSSetTechEmailsHistory(i->obj_id);
+                emails = getNssetTechEmailsHistory(i->obj_id);
               }
               else {
-                emails = getNSSetTechEmails(i->obj_id);
+                emails = getNssetTechEmails(i->obj_id);
               }
               break;
              case 3: // domain
@@ -564,10 +564,10 @@ namespace Fred
              case 4: // keyset
               fillSimpleObjectParams(i->obj_id,params);
               if (useHistory) {
-                emails = getKeySetTechEmailsHistory(i->obj_id);
+                emails = getKeysetTechEmailsHistory(i->obj_id);
               }
               else {
-                emails = getKeySetTechEmails(i->obj_id);
+                emails = getKeysetTechEmails(i->obj_id);
               }
               break;
             }
@@ -898,7 +898,7 @@ public:
                     << "<country>" << XML_DB_OUT(k,9) << "</country>"
                     << "<actual_date>" << XML_DB_OUT(k,2) << "</actual_date>"
                     << "<termination_date>" << XML_DB_OUT(k,3) << "</termination_date>";
-                } 
+                }
                 gen->getInput()
                 << "<expiring_domain>"
                 << "<domain>" << XML_DB_OUT(k,0) << "</domain>"
@@ -909,7 +909,7 @@ public:
                 // has to be called here so it applies to NEWLY CREATED object in if above
                 gen->addStateId(res[k][12]);
 
-                prev_distinction = distinction; 
+                prev_distinction = distinction;
                 item_count++;
           }
           if(res.size() > 0) {
@@ -941,8 +941,8 @@ public:
       DBSharedPtr db,
       Mailer::Manager *mm,
       Contact::Manager *cm,
-      NSSet::Manager *nm,
-      KeySet::Manager *km,
+      Nsset::Manager *nm,
+      Keyset::Manager *km,
       Domain::Manager *dm,
       Document::Manager *docm,
       Registrar::Manager *rm,

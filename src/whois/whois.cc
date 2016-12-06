@@ -584,7 +584,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
         {
             if (e.is_set_unknown_handle())
             {
-                if (Fred::KeySet::get_handle_syntax_validity(handle) == Fred::KeySet::HandleState::invalid)
+                if (Fred::Keyset::get_handle_syntax_validity(handle) == Fred::Keyset::HandleState::invalid)
                 {
                     throw InvalidHandle();
                 }
@@ -919,7 +919,7 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle, unsigned
                     .exec(ctx, get_output_timezone());
         if (domain_info.empty())
         {
-            if (Fred::KeySet::get_handle_syntax_validity(handle) == Fred::KeySet::HandleState::invalid)
+            if (Fred::Keyset::get_handle_syntax_validity(handle) == Fred::Keyset::HandleState::invalid)
             {
                 throw InvalidHandle();
             }

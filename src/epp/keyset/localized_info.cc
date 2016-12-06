@@ -8,7 +8,7 @@
 #include <boost/format.hpp>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 InfoResult info(
@@ -20,7 +20,7 @@ InfoResult info(
     Logging::Context logging_ctx1("rifd");
     Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
     Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeySetInfo)));
+    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetInfo)));
 
     try {
         Fred::OperationContextCreator ctx;
@@ -58,6 +58,6 @@ InfoResult info(
     }
 }
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp

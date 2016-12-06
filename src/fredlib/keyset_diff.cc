@@ -1,18 +1,18 @@
 #include "keyset_diff.h"
 
 namespace Fred {
-namespace KeySet {
+namespace Keyset {
 
 
-std::auto_ptr<const KeySet> get_keyset_by_hid(Manager *_m,
+std::auto_ptr<const Keyset> get_keyset_by_hid(Manager *_m,
                                 const unsigned long long &_hid)
 {
-    return get_object_by_hid<KeySet, Manager, List, Database::Filters::KeySetHistoryImpl>(_m, _hid);
+    return get_object_by_hid<Keyset, Manager, List, Database::Filters::KeySetHistoryImpl>(_m, _hid);
 }
 
 
 
-std::string dsrecord_to_simple_string(const Fred::KeySet::DSRecord *_ds)
+std::string dsrecord_to_simple_string(const Fred::Keyset::DSRecord *_ds)
 {
   std::string ret;
 
@@ -28,7 +28,7 @@ std::string dsrecord_to_simple_string(const Fred::KeySet::DSRecord *_ds)
 
 
 
-std::string dnskey_to_simple_string(const Fred::KeySet::DNSKey *_dns)
+std::string dnskey_to_simple_string(const Fred::Keyset::DNSKey *_dns)
 {
   std::string ret;
 
@@ -44,8 +44,8 @@ std::string dnskey_to_simple_string(const Fred::KeySet::DNSKey *_dns)
 
 
 void _diff_keyset(Fred::ChangesMap &_changes,
-                  const KeySet *_prev,
-                  const KeySet *_act)
+                  const Keyset *_prev,
+                  const Keyset *_act)
 {
     if (_prev == _act)
         return;
@@ -100,8 +100,8 @@ Fred::ChangesMap diff(Manager *_m,
                       const unsigned long long &_prev_hid,
                       const unsigned long long &_act_hid)
 {
-    std::auto_ptr<const KeySet> prev_c = get_keyset_by_hid(_m, _prev_hid);
-    std::auto_ptr<const KeySet> act_c = get_keyset_by_hid(_m, _act_hid);
+    std::auto_ptr<const Keyset> prev_c = get_keyset_by_hid(_m, _prev_hid);
+    std::auto_ptr<const Keyset> act_c = get_keyset_by_hid(_m, _act_hid);
 
     return diff(prev_c.get(), act_c.get());
 }
@@ -116,8 +116,8 @@ Fred::ChangesMap diff_last_history(Manager *_m, const unsigned long long &_id)
 
 
 
-Fred::ChangesMap diff(const KeySet *_prev,
-                      const KeySet *_act)
+Fred::ChangesMap diff(const Keyset *_prev,
+                      const Keyset *_act)
 {
     ChangesMap changes;
     _diff_keyset(changes, _prev, _act);

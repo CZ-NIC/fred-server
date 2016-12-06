@@ -45,7 +45,7 @@ KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
             for (FredDnsKeys::const_iterator data_ptr = data.dns_keys.begin();
                  data_ptr != data.dns_keys.end(); ++data_ptr)
             {
-                result.dns_keys.insert(KeySet::DnsKey(data_ptr->get_flags(),
+                result.dns_keys.insert(Keyset::DnsKey(data_ptr->get_flags(),
                                                       data_ptr->get_protocol(),
                                                       data_ptr->get_alg(),
                                                       data_ptr->get_key()));

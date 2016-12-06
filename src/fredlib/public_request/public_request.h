@@ -1,5 +1,5 @@
-#ifndef PUBLIC_REQUEST_H_
-#define PUBLIC_REQUEST_H_
+#ifndef PUBLIC_REQUEST_H_A27169BA172F4A6183749481E04C91EB
+#define PUBLIC_REQUEST_H_A27169BA172F4A6183749481E04C91EB
 
 #include <exception>
 #include <string>
@@ -62,7 +62,7 @@ struct ObjectChanged : public std::runtime_error
 };
 
 
-/// Member identification (i.e. for sorting) 
+/// Member identification (i.e. for sorting)
 enum MemberType {
   MT_CRDATE, ///< create date
   MT_RDATE,  ///< resolve date
@@ -78,10 +78,10 @@ typedef std::string Type;
 enum Status_PR { // suffix to fix name clash with public_request_status.h status struct
   PRS_NEW,       ///< Request was created and waiting for autorization 
   PRS_ANSWERED,  ///< Email with answer was sent
-  PRS_INVALID    ///< Time passed without authorization   
+  PRS_INVALID    ///< Time passed without authorization
 };
 
-std::string Status2Str(Status_PR _status); 
+std::string Status2Str(Status _status); 
 /// Object types
 enum ObjectType {
   OT_UNKNOWN = 0,
@@ -164,7 +164,7 @@ public:
   virtual void fillTemplateParams(Mailer::Parameters& params) const = 0;
   /// return list of destination email addresses for answer email
   virtual std::string getEmails() const = 0;
-  /// send email with answer 
+  /// send email with answer
   virtual TID sendEmail() const = 0;
   /// process request (or just close in case of invalid flag)
   virtual void process(bool invalid, bool check,
@@ -202,11 +202,11 @@ class List : virtual public Fred::CommonList {
 public:
   virtual ~List() {
   }
-  
+
   virtual const char* getTempTableName() const = 0;
   virtual PublicRequest* get(unsigned _idx) const = 0;
   virtual void reload(Database::Filters::Union& _filter) = 0;
-  
+
   /// from CommonList; propably will be removed in future
   virtual void makeQuery(bool, bool, std::stringstream&) const = 0;
   virtual void reload() = 0;
@@ -218,11 +218,11 @@ class Manager {
 public:
   virtual ~Manager() {
   }
-  
+
   static Manager* create(Domain::Manager    *_domain_manager,
                          Contact::Manager   *_contact_manager,
-                         NSSet::Manager     *_nsset_manager,
-                         KeySet::Manager    *_keyset_manager,
+                         Nsset::Manager     *_nsset_manager,
+                         Keyset::Manager    *_keyset_manager,
                          Mailer::Manager    *_mailer_manager,
                          Document::Manager  *_doc_manager,
                          Messages::ManagerPtr _messages_manager);
@@ -233,16 +233,16 @@ public:
 
   virtual List* createList() const = 0;
   virtual List* loadRequest(Database::ID id) const = 0;
-  virtual void getPdf(Database::ID _id, 
-                      const std::string& _lang, 
+  virtual void getPdf(Database::ID _id,
+                      const std::string& _lang,
                       std::ostream& _output) const = 0;
-  
+
   virtual PublicRequest* createRequest(Type _type) const = 0;
 
   virtual void processRequest(Database::ID _id,
                               bool _invalidate,
                               bool _check,
-                              const unsigned long long &_request_id = 0) const = 0; 
+                              const unsigned long long &_request_id = 0) const = 0;
 
   virtual unsigned long long processAuthRequest(
           const std::string &_identification,

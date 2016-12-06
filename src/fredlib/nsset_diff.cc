@@ -1,18 +1,18 @@
 #include "nsset_diff.h"
 
 namespace Fred {
-namespace NSSet {
+namespace Nsset {
 
 
-std::auto_ptr<const NSSet> get_nsset_by_hid(Manager *_m,
+std::auto_ptr<const Nsset> get_nsset_by_hid(Manager *_m,
                               const unsigned long long &_hid)
 {
-    return get_object_by_hid<NSSet, Manager, List, Database::Filters::NSSetHistoryImpl>(_m, _hid);
+    return get_object_by_hid<Nsset, Manager, List, Database::Filters::NSSetHistoryImpl>(_m, _hid);
 }
 
 
 
-std::string nsset_host_to_simple_string(const Fred::NSSet::Host *_host)
+std::string nsset_host_to_simple_string(const Fred::Nsset::Host *_host)
 {
   std::string ret;
   unsigned int addr_size = _host->getAddrCount();
@@ -34,8 +34,8 @@ std::string nsset_host_to_simple_string(const Fred::NSSet::Host *_host)
 
 
 void _diff_nsset(Fred::ChangesMap &_changes,
-                 const NSSet *_prev,
-                 const NSSet *_act)
+                 const Nsset *_prev,
+                 const Nsset *_act)
 {
     if (_prev == _act)
         return;
@@ -74,8 +74,8 @@ Fred::ChangesMap diff(Manager *_m,
                       const unsigned long long &_prev_hid,
                       const unsigned long long &_act_hid)
 {
-    std::auto_ptr<const NSSet> prev_c = get_nsset_by_hid(_m, _prev_hid);
-    std::auto_ptr<const NSSet> act_c = get_nsset_by_hid(_m, _act_hid);
+    std::auto_ptr<const Nsset> prev_c = get_nsset_by_hid(_m, _prev_hid);
+    std::auto_ptr<const Nsset> act_c = get_nsset_by_hid(_m, _act_hid);
 
     return diff(prev_c.get(), act_c.get());
 }
@@ -90,8 +90,8 @@ Fred::ChangesMap diff_last_history(Manager *_m, const unsigned long long &_id)
 
 
 
-Fred::ChangesMap diff(const NSSet *_prev,
-                      const NSSet *_act)
+Fred::ChangesMap diff(const Nsset *_prev,
+                      const Nsset *_act)
 {
     ChangesMap changes;
     _diff_nsset(changes, _prev, _act);

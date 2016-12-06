@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef CHECK_H_62795D72C8FB7ACA38CE9C700EB7B637//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CHECK_H_62795D72C8FB7ACA38CE9C700EB7B637
+#ifndef CHECK_H_77E030FA23F9496E9F8EBD0232BA82E0
+#define CHECK_H_77E030FA23F9496E9F8EBD0232BA82E0
 
 #include "src/epp/keyset/handle_check_result.h"
 #include "src/fredlib/opcontext.h"
@@ -36,10 +36,10 @@ namespace Epp {
 /**
  * @returns check results for given contact handles
  */
-std::map< std::string, Nullable< KeySet::HandleCheckResult::Enum > > keyset_check(
+std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check(
     Fred::OperationContext &_ctx,
     const std::set< std::string > &_keyset_handles);
 
 }
 
-#endif//CHECK_H_62795D72C8FB7ACA38CE9C700EB7B637
+#endif

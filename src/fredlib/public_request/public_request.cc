@@ -177,8 +177,8 @@ class ManagerImpl : virtual public Manager {
 private:
   Domain::Manager   *domain_manager_;
   Contact::Manager  *contact_manager_;
-  NSSet::Manager    *nsset_manager_;
-  KeySet::Manager   *keyset_manager_;
+  Nsset::Manager    *nsset_manager_;
+  Keyset::Manager   *keyset_manager_;
   Mailer::Manager   *mailer_manager_;
   Document::Manager *doc_manager_;
   Messages::ManagerPtr messages_manager;
@@ -189,8 +189,8 @@ private:
 public:
   ManagerImpl(Domain::Manager   *_domain_manager,
               Contact::Manager  *_contact_manager,
-              NSSet::Manager    *_nsset_manager,
-              KeySet::Manager   *_keyset_manager,
+              Nsset::Manager    *_nsset_manager,
+              Keyset::Manager   *_keyset_manager,
               Mailer::Manager   *_mailer_manager,
               Document::Manager *_doc_manager,
               Messages::ManagerPtr _messages_manager)
@@ -432,8 +432,8 @@ public:
 
 Manager* Manager::create(Domain::Manager    *_domain_manager,
                          Contact::Manager   *_contact_manager,
-                         NSSet::Manager     *_nsset_manager,
-                         KeySet::Manager    *_keyset_manager,
+                         Nsset::Manager     *_nsset_manager,
+                         Keyset::Manager    *_keyset_manager,
                          Mailer::Manager    *_mailer_manager,
                          Document::Manager  *_doc_manager,
                          Messages::ManagerPtr _messages_manager)

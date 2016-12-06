@@ -32,7 +32,7 @@
 #define NSSET_REGEX "[a-zA-Z0-9_:.-]{1,63}"
 
 namespace Fred {
-namespace NSSet {
+namespace Nsset {
 static boost::regex format(NSSET_REGEX);
 static boost::regex formatRestricted(NSSET_REGEX_RESTRICTED);
 
@@ -42,15 +42,15 @@ class HostImpl : public virtual Host {
   std::string name;
   std::string nameIDN;
 public:
-  HostImpl(const std::string& _name, Zone::Manager *zm) : 
-  		name(_name), nameIDN(zm->punycode_to_utf8(name)) {
-  }
+  HostImpl(const std::string& _name, Zone::Manager *zm) :
+      name(_name), nameIDN(zm->punycode_to_utf8(name)) {
+      }
   virtual const std::string getName() const {
-		return name;
-  }      
+      return name;
+  }
   virtual const std::string getNameIDN() const {
-		return nameIDN;
-	}
+      return nameIDN;
+  }
 
   /// must not be reference because of find_if algo (ref. to ref. problem)
   bool hasName(std::string _name) const {
@@ -78,10 +78,10 @@ public:
   }
 
   const std::vector<std::string>& getAddrList() const {
-    return addrList; 
+    return addrList;
   }
 };
-class NSSetImpl : public ObjectImpl, public virtual NSSet {
+class NssetImpl : public ObjectImpl, public virtual Nsset {
   struct AdminInfo {
     TID id;
     std::string handle;
@@ -104,15 +104,15 @@ class NSSetImpl : public ObjectImpl, public virtual NSSet {
   unsigned checkLevel;
   Zone::Manager *zm;
 public:
-  NSSetImpl(TID _id, const Database::ID& _history_id, const std::string& _handle, TID _registrar,
+  NssetImpl(TID _id, const Database::ID& _history_id, const std::string& _handle, TID _registrar,
       const std::string& _registrarHandle, ptime _crDate, ptime _trDate,
       ptime _upDate, ptime _erDate, TID _createRegistrar,
       const std::string& _createRegistrarHandle, TID _updateRegistrar,
       const std::string& _updateRegistrarHandle, const std::string& _authPw,
       const std::string& _roid, unsigned _checkLevel, Zone::Manager *_zm) :
-    ObjectImpl(_id, _history_id, _crDate, _trDate, _upDate, _erDate, _registrar, 
-               _registrarHandle, _createRegistrar, _createRegistrarHandle, 
-               _updateRegistrar, _updateRegistrarHandle, 
+    ObjectImpl(_id, _history_id, _crDate, _trDate, _upDate, _erDate, _registrar,
+               _registrarHandle, _createRegistrar, _createRegistrarHandle,
+               _updateRegistrar, _updateRegistrarHandle,
                _authPw, _roid), handle(_handle), checkLevel(_checkLevel),
                zm(_zm) {
   }
@@ -172,10 +172,10 @@ public:
 };
 
 
-COMPARE_CLASS_IMPL(NSSetImpl, Handle)
-COMPARE_CLASS_IMPL(NSSetImpl, CreateDate)
-COMPARE_CLASS_IMPL(NSSetImpl, DeleteDate)
-COMPARE_CLASS_IMPL(NSSetImpl, RegistrarHandle)
+COMPARE_CLASS_IMPL(NssetImpl, Handle)
+COMPARE_CLASS_IMPL(NssetImpl, CreateDate)
+COMPARE_CLASS_IMPL(NssetImpl, DeleteDate)
+COMPARE_CLASS_IMPL(NssetImpl, RegistrarHandle)
 
 
 class ListImpl : public virtual List, public ObjectListImpl {
@@ -188,8 +188,8 @@ public:
   ListImpl(DBSharedPtr _db, Zone::Manager *_zm) :
     ObjectListImpl(_db), zm(_zm) {
   }
-  NSSet *getNSSet(unsigned idx) const {
-    return dynamic_cast<NSSet *>(get(idx));
+  Nsset *getNsset(unsigned idx) const {
+    return dynamic_cast<Nsset *>(get(idx));
   }
   void setHandleFilter(const std::string& _handle) {
     handle = _handle;
@@ -292,7 +292,7 @@ public:
     db->FreeSelect();
     sql.str("");
     clear();
-    bool useTempTable = nonHandleFilterSet || handle.empty(); 
+    bool useTempTable = nonHandleFilterSet || handle.empty();
     if (useTempTable)
       fillTempTable(true);
     sql << "SELECT " << "obr.id,obr.name," << "o.clid,"
@@ -303,13 +303,13 @@ public:
         << "WHERE tmp.id=n.id AND n.id=o.id AND obr.id=o.id ";
     if (!useTempTable) {
       sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=2 "; 
+          << "AND tmp.erdate ISNULL AND tmp.type=2 ";
     }
     sql << "ORDER BY tmp.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      data_.push_back(new NSSetImpl(
+      data_.push_back(new NssetImpl(
           STR_TO_ID(db->GetFieldValue(i,0)), // nsset id
           (Database::ID)(0), // history_id
           db->GetFieldValue(i,1), // nsset handle
@@ -319,7 +319,7 @@ public:
           MAKE_TIME(i,4), // registrar trdate
           MAKE_TIME(i,5), // registrar update
           ptime(not_a_date_time),
-          STR_TO_ID(db->GetFieldValue(i,6)), // crid 
+          STR_TO_ID(db->GetFieldValue(i,6)), // crid
           registrars[STR_TO_ID(db->GetFieldValue(i,6))], // crid handle
           STR_TO_ID(db->GetFieldValue(i,7)), // upid
           registrars[STR_TO_ID(db->GetFieldValue(i,7))], // upid handle
@@ -335,20 +335,20 @@ public:
       return;
     resetIDSequence();
     sql.str("");
-    sql << "SELECT n.nssetid, cor.name " << "FROM " 
+    sql << "SELECT n.nssetid, cor.name " << "FROM "
         << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "nsset_contact_map n, object_registry cor "
         << "WHERE tmp.id=n.nssetid AND n.contactid = cor.id ";
     if (!useTempTable) {
       sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=2 "; 
+          << "AND tmp.erdate ISNULL AND tmp.type=2 ";
     }
     sql << "ORDER BY tmp.id, cor.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      NSSetImpl *ns =
-          dynamic_cast<NSSetImpl *>(findIDSequence(STR_TO_ID(db->GetFieldValue(
+      NssetImpl *ns =
+          dynamic_cast<NssetImpl *>(findIDSequence(STR_TO_ID(db->GetFieldValue(
               i, 0)) ));
       if (!ns)
         throw SQL_ERROR();
@@ -363,14 +363,14 @@ public:
         << "WHERE tmp.id=h.nssetid ";
     if (!useTempTable) {
       sql << "AND tmp.name=UPPER('" << db->Escape2(handle) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=2 "; 
+          << "AND tmp.erdate ISNULL AND tmp.type=2 ";
     }
     sql << "ORDER BY tmp.id, h.id, him.id ";
     if (!db->ExecSelect(sql.str().c_str()))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
-      NSSetImpl *ns =
-          dynamic_cast<NSSetImpl *>(findIDSequence(STR_TO_ID(db->GetFieldValue(
+      NssetImpl *ns =
+          dynamic_cast<NssetImpl *>(findIDSequence(STR_TO_ID(db->GetFieldValue(
               i, 0)) ));
       if (!ns)
         throw SQL_ERROR();
@@ -381,7 +381,7 @@ public:
     ObjectListImpl::reload(useTempTable ? NULL : handle.c_str(),2);
   }
   virtual void reload(Database::Filters::Union &uf) {
-    TRACE("[CALL] NSSet::ListImpl::reload()");
+    TRACE("[CALL] Nsset::ListImpl::reload()");
     clear();
     uf.clearQueries();
 
@@ -395,7 +395,7 @@ public:
       Database::Filters::NSSet *df = dynamic_cast<Database::Filters::NSSetHistoryImpl* >(fit->get());
       if (!df)
         continue;
-      
+
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect(new Database::Column("historyid", df->joinNSSetTable(), "DISTINCT"));
       uf.addQuery(tmp);
@@ -405,7 +405,7 @@ public:
       LOGGER(PACKAGE).error("wrong filter passed for reload!");
       return;
     }
-    
+
     id_query.limit(load_limit_);
     uf.serialize(id_query);
 
@@ -468,7 +468,7 @@ public:
         unsigned           check_level      = *(++col);
 
         data_.push_back(
-            new NSSetImpl(
+            new NssetImpl(
                 nid,
                 history_id,
                 handle,
@@ -488,10 +488,10 @@ public:
                 zm
             ));
       }
-      
+
       if (data_.empty())
         return;
-      
+
       resetHistoryIDSequence();
       Database::SelectQuery contacts_query;
       contacts_query.select() << "tmp.id, t_1.nssetid, t_2.id, t_2.name";
@@ -502,7 +502,7 @@ public:
                             << "JOIN nsset_contact_map_history t_1 ON (tmp.id = t_1.historyid) "
                             << "JOIN object_registry t_2 ON (t_1.contactid = t_2.id)";
       contacts_query.order_by() << "t_1.nssetid, tmp.id ";
-      
+
       Database::Result r_contacts = conn.exec(contacts_query);
       for (Database::Result::Iterator it = r_contacts.begin(); it != r_contacts.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
@@ -511,12 +511,12 @@ public:
                                         (++col);//Database::ID nsset_id
         Database::ID contact_id      = *(++col);
         std::string  contact_handle  = *(++col);
-        
-        NSSetImpl *nsset_ptr = dynamic_cast<NSSetImpl *>(findHistoryIDSequence(nsset_historyid));
+
+        NssetImpl *nsset_ptr = dynamic_cast<NssetImpl *>(findHistoryIDSequence(nsset_historyid));
         if (nsset_ptr)
           nsset_ptr->addAdminHandle(contact_id, contact_handle);
       }
-      
+
       resetHistoryIDSequence();
       Database::SelectQuery hosts_query;
       hosts_query.select() << "tmp.id, t_1.nssetid, t_1.fqdn, t_2.ipaddr";
@@ -527,7 +527,7 @@ public:
                          << "JOIN host_history t_1 ON (tmp.id = t_1.historyid) "
                          << "LEFT JOIN host_ipaddr_map_history t_2 ON (t_1.historyid = t_2.historyid AND t_1.id = t_2.hostid)";
       hosts_query.order_by() << "t_1.nssetid, tmp.id, t_1.fqdn, t_2.ipaddr";
-      
+
       Database::Result r_hosts = conn.exec(hosts_query);
       for (Database::Result::Iterator it = r_hosts.begin(); it != r_hosts.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
@@ -536,14 +536,14 @@ public:
                                         (++col);//Database::ID nsset_id
         std::string  host_fqdn       = *(++col);
         std::string  host_ip         = *(++col);
-        
-        NSSetImpl *nsset_ptr = dynamic_cast<NSSetImpl *>(findHistoryIDSequence(nsset_historyid));
+
+        NssetImpl *nsset_ptr = dynamic_cast<NssetImpl *>(findHistoryIDSequence(nsset_historyid));
         if (nsset_ptr) {
           HostImpl* host_ptr = nsset_ptr->addHost(host_fqdn);
           host_ptr->addAddr(host_ip);
         }
       }
-      
+
       bool history = false;
       if (uf.settings()) {
         history = uf.settings()->get("filter.history") == "on";
@@ -551,7 +551,7 @@ public:
 
       /// load object state
       ObjectListImpl::reload(history);
-      /* checks if row number result load limit is active and set flag */ 
+      /* checks if row number result load limit is active and set flag */
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
@@ -580,7 +580,7 @@ public:
   virtual const char *getTempTableName() const {
     return "tmp_nsset_filter_result";
   }
-  
+
   /// sort by column
   virtual void sort(MemberType _member, bool _asc) {
     switch (_member) {
@@ -670,9 +670,9 @@ public:
       return CA_PROTECTED;
     return CA_FREE;
   }
-  virtual unsigned checkHostname(const std::string& hostname, 
-   															 bool glue, 
-   															 bool allowIDN) const {
+  virtual unsigned checkHostname(const std::string& hostname,
+    bool glue, bool allowIDN) const
+  {
     try {
       // 255 - 2 = 253 (difference between wire and textual representation of fqdn)
       // fix for #9673, we don't care about possible trailing dot here because it
@@ -681,7 +681,7 @@ public:
       // parse hostname (will throw exception on invalid)
       Zone::DomainName name;
       zm->parseDomainName(hostname,name,allowIDN);
-      // if glue is specified, hostname must be under one of managed zones 
+      // if glue is specified, hostname must be under one of managed zones
       if (glue && !zm->findApplicableZone(hostname)) return 2;
       // if glue is not specified, hostname must be under any valid zone
       if (!glue && !zm->checkTLD(name)) return 1;

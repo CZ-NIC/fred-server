@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef LOCALIZED_TRANSFER_H_572D2366689E3FF76A7E80D269879AD9//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LOCALIZED_TRANSFER_H_572D2366689E3FF76A7E80D269879AD9
+#ifndef LOCALIZED_TRANSFER_H_E833535E411A4601982C1B7539430418
+#define LOCALIZED_TRANSFER_H_E833535E411A4601982C1B7539430418
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
@@ -31,7 +31,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 LocalizedSuccessResponse transfer(
@@ -45,8 +45,8 @@ LocalizedSuccessResponse transfer(
     bool _epp_notification_disabled,
     const std::string &_client_transaction_handles_prefix_not_to_nofify);
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//LOCALIZED_TRANSFER_H_572D2366689E3FF76A7E80D269879AD9
+#endif

@@ -125,14 +125,14 @@ std::vector< Fred::InfoContactData > ContactProvider::create_contacts(unsigned n
 
 ObjectsProvider::ObjectsProvider()
 :   RegistrarProvider(),
-    ContactProvider(Epp::KeySet::max_number_of_tech_contacts,
+    ContactProvider(Epp::Keyset::max_number_of_tech_contacts,
                     static_cast< const RegistrarProvider& >(*this))
 {
 }
 
 template < >
-std::string ObjectsProvider::get_keyset_handle< Fred::KeySet::HandleState::available,
-                                                Fred::KeySet::HandleState::valid >(Fred::OperationContext &ctx)
+std::string ObjectsProvider::get_keyset_handle< Fred::Keyset::HandleState::available,
+                                                Fred::Keyset::HandleState::valid >(Fred::OperationContext &ctx)
 {
     for (unsigned cnt = 0; true; ++cnt) {
         std::string handle = "KEYSET";
@@ -141,7 +141,7 @@ std::string ObjectsProvider::get_keyset_handle< Fred::KeySet::HandleState::avail
             out << "-" << cnt;
             handle += out.str();
         }
-        if (Fred::KeySet::get_handle_registrability(ctx, handle) == Fred::KeySet::HandleState::available) {
+        if (Fred::Keyset::get_handle_registrability(ctx, handle) == Fred::Keyset::HandleState::available) {
             return handle;
         }
     }

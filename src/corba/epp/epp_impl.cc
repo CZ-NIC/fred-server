@@ -377,44 +377,44 @@ DBSharedPtr db, const char *handle, bool restricted_handles
   return ret;
 }
 
-/// replace GetNSSetID
-static long int getIdOfNSSet(
+/// replace GetNssetID
+static long int getIdOfNsset(
 DBSharedPtr db, const char *handle, bool restricted_handles
     , bool lock_epp_commands, bool lock = false)
 {
   if (lock && !lock_epp_commands) lock = false;
   std::auto_ptr<Fred::Zone::Manager>
       zman(Fred::Zone::Manager::create() );
-  std::auto_ptr<Fred::NSSet::Manager> man(Fred::NSSet::Manager::create(
+  std::auto_ptr<Fred::Nsset::Manager> man(Fred::Nsset::Manager::create(
       db, zman.get(), restricted_handles) );
-  Fred::NSSet::Manager::CheckAvailType caType;
+  Fred::Nsset::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
     Fred::NameIdPair nameId;
     caType = man->checkAvail(handle,nameId,lock);
     ret = nameId.id;
-    if (caType == Fred::NSSet::Manager::CA_INVALID_HANDLE)
+    if (caType == Fred::Nsset::Manager::CA_INVALID_HANDLE)
     ret = -1;
   } catch (...) {}
   return ret;
 }
 
-/// replace GetKeySetID
+/// replace GetKeysetID
 static long int
-getIdOfKeySet(DBSharedPtr db, const char *handle, bool restricted_handles
+getIdOfKeyset(DBSharedPtr db, const char *handle, bool restricted_handles
     , bool lock_epp_commands, bool lock = false)
 {
     if (lock && !lock_epp_commands)
         lock = false;
-    std::auto_ptr<Fred::KeySet::Manager> man(
-            Fred::KeySet::Manager::create(db, restricted_handles));
-    Fred::KeySet::Manager::CheckAvailType caType;
+    std::auto_ptr<Fred::Keyset::Manager> man(
+            Fred::Keyset::Manager::create(db, restricted_handles));
+    Fred::Keyset::Manager::CheckAvailType caType;
     long int ret = -1;
     try {
         Fred::NameIdPair nameId;
         caType = man->checkAvail(handle, nameId, lock);
         ret = nameId.id;
-        if (caType == Fred::KeySet::Manager::CA_INVALID_HANDLE)
+        if (caType == Fred::Keyset::Manager::CA_INVALID_HANDLE)
             ret = -1;
     } catch (...) {}
     return ret;
@@ -476,8 +476,8 @@ void corba_domain_data_copy(
     }
   }
   // fill domain specific data
-  d->nsset = CORBA::string_dup(dom->getNSSetHandle().c_str());
-  d->keyset = CORBA::string_dup(dom->getKeySetHandle().c_str());
+  d->nsset = CORBA::string_dup(dom->getNssetHandle().c_str());
+  d->keyset = CORBA::string_dup(dom->getKeysetHandle().c_str());
   d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
   // registrant and contacts are disabled for other registrars
   // in case of enum domain
@@ -519,7 +519,7 @@ void corba_nsset_data_copy(
         EPPAction &a,
         const Fred::Manager * const regMan,
         ccReg::NSSet *n,
-        const Fred::NSSet::NSSet * const nss)
+        const Fred::Nsset::Nsset * const nss)
 {
   // fill common object data
   n->ROID = CORBA::string_dup(nss->getROID().c_str());
@@ -564,7 +564,7 @@ void corba_nsset_data_copy(
     n->tech[i] = CORBA::string_dup(nss->getAdminByIdx(i).c_str());
   n->dns.length(nss->getHostCount());
   for (unsigned i=0; i<nss->getHostCount(); i++) {
-    const Fred::NSSet::Host *h = nss->getHostByIdx(i);
+    const Fred::Nsset::Host *h = nss->getHostByIdx(i);
     n->dns[i].fqdn = CORBA::string_dup(h->getName().c_str());
     n->dns[i].inet.length(h->getAddrCount());
     for (unsigned j=0; j<h->getAddrCount(); j++)
@@ -585,7 +585,7 @@ void corba_keyset_data_copy(
         EPPAction &a,
         const Fred::Manager * const regMan,
         ccReg::KeySet *k,
-        const Fred::KeySet::KeySet * const kss)
+        const Fred::Keyset::Keyset * const kss)
 {
     //fill common object data
     k->ROID = CORBA::string_dup(kss->getROID().c_str());
@@ -636,7 +636,7 @@ void corba_keyset_data_copy(
     // dsrecord
     k->dsrec.length(kss->getDSRecordCount());
     for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
-        const Fred::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
+        const Fred::Keyset::DSRecord *dsr = kss->getDSRecordByIdx(i);
         k->dsrec[i].keyTag = dsr->getKeyTag();
         k->dsrec[i].alg = dsr->getAlg();
         k->dsrec[i].digestType = dsr->getDigestType();
@@ -647,7 +647,7 @@ void corba_keyset_data_copy(
     // dnskey record
     k->dnsk.length(kss->getDNSKeyCount());
     for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
-        const Fred::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
+        const Fred::Keyset::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
         k->dnsk[i].flags = dnsk->getFlags();
         k->dnsk[i].protocol = dnsk->getProtocol();
         k->dnsk[i].alg = dnsk->getAlg();
@@ -1889,12 +1889,12 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
 
         std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
         rmgr->initStates();
-        std::auto_ptr<const Fred::NSSet::NSSet> old_data = Fred::get_object_by_hid<
-            Fred::NSSet::NSSet, Fred::NSSet::Manager, Fred::NSSet::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNSSetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::NSSet::NSSet> new_data = Fred::get_object_by_hid<
-            Fred::NSSet::NSSet, Fred::NSSet::Manager, Fred::NSSet::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNSSetManager(), static_cast<unsigned long long>(hids[0][1]));
+        std::auto_ptr<const Fred::Nsset::Nsset> old_data = Fred::get_object_by_hid<
+            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
+                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::Nsset::Nsset> new_data = Fred::get_object_by_hid<
+            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
+                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][1]));
 
         corba_nsset_data_copy(a, rmgr.get(), _old_data, old_data.get());
         corba_nsset_data_copy(a, rmgr.get(), _new_data, new_data.get());
@@ -1909,7 +1909,7 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
     {
         LOGGER(PACKAGE).error("unknown error");
     }
-    this->ServerInternalError(">> PollRequestGetUpdateNSSetDetails - failed internal");
+    this->ServerInternalError(">> PollRequestGetUpdateNssetDetails - failed internal");
 }
 
 
@@ -1959,12 +1959,12 @@ ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
 
         std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
         rmgr->initStates();
-        std::auto_ptr<const Fred::KeySet::KeySet> old_data = Fred::get_object_by_hid<
-            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::KeySet::KeySet> new_data = Fred::get_object_by_hid<
-            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][1]));
+        std::auto_ptr<const Fred::Keyset::Keyset> old_data = Fred::get_object_by_hid<
+            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::Keyset::Keyset> new_data = Fred::get_object_by_hid<
+            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][1]));
 
         corba_keyset_data_copy(a, rmgr.get(), _old_data, old_data.get());
         corba_keyset_data_copy(a, rmgr.get(), _new_data, new_data.get());
@@ -1979,7 +1979,7 @@ ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
     {
         LOGGER(PACKAGE).error("unknown error");
     }
-    this->ServerInternalError(">> PollRequestGetUpdateKeySetDetails - failed internal");
+    this->ServerInternalError(">> PollRequestGetUpdateKeysetDetails - failed internal");
 }
 
 
@@ -2343,14 +2343,14 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::vector< std::string > handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::KeySet::Localized::HandlesCheck localized_response = Epp::KeySet::Localized::check(
+        const Epp::Keyset::Localized::HandlesCheck localized_response = Epp::Keyset::Localized::check(
             std::set< std::string >(handles_to_be_checked.begin(), handles_to_be_checked.end()),
             session_data.registrar_id,
             session_data.language,
             server_transaction_handle);
 
         ccReg::CheckResp_var check_results = new ccReg::CheckResp;
-        Corba::wrap_Epp_KeySet_Localized_HandlesCheck_Results(handles_to_be_checked, localized_response.results, check_results);
+        Corba::wrap_Epp_Keyset_Localized_HandlesCheck_Results(handles_to_be_checked, localized_response.results, check_results);
 
         ccReg::Response_var return_value =
             new ccReg::Response(Corba::wrap_response(localized_response.ok_response, server_transaction_handle));
@@ -2606,7 +2606,7 @@ ccReg_EPP_i::KeySetTransfer(
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const std::string auth_info = Corba::unwrap_string_from_const_char_ptr(_auth_info);
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::Localized::transfer(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::transfer(
             keyset_handle,
             auth_info,
             session_data.registrar_id,
@@ -2632,14 +2632,14 @@ ccReg_EPP_i::KeySetTransfer(
 
 /***********************************************************************
  *
- * FUNCTION:    NSSetInfo
+ * FUNCTION:    NssetInfo
  *
  * DESCRIPTION: returns detailed information about nsset and
  *              subservient DNS hosts
  *              empty value if contact doesn't exist
  *
  * PARAMETERS:  handle - identifier of contact
- *        OUT:  n - structure of NSSet detailed description
+ *        OUT:  n - structure of Nsset detailed description
  *              params - common EPP parametres
  *
  * RETURNED:    svTRID and errCode
@@ -2680,10 +2680,10 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
 
 /***********************************************************************
  *
- * FUNCTION:    NSSetDelete
+ * FUNCTION:    NssetDelete
  *
- * DESCRIPTION: deleting NSSet and saving it into history
- *              NSSet can be only deleted by registrar who created it
+ * DESCRIPTION: deleting Nsset and saving it into history
+ *              Nsset can be only deleted by registrar who created it
  *              or those who administers it
  *              nsset cannot be deleted if there is link into domain table
  * PARAMETERS:  handle - nsset identifier
@@ -2720,9 +2720,9 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
 
 /***********************************************************************
  *
- * FUNCTION:    NSSetCreate
+ * FUNCTION:    NssetCreate
  *
- * DESCRIPTION: creation NSSet and subservient DNS hosts
+ * DESCRIPTION: creation Nsset and subservient DNS hosts
  *
  * PARAMETERS:  handle - nsset identifier
  *              authInfoPw - authentication
@@ -2781,9 +2781,9 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
 
 /***********************************************************************
  *
- * FUNCTION:    NSSetUpdate
+ * FUNCTION:    NssetUpdate
  *
- * DESCRIPTION: change of NSSet and subservient DNS hosts and technical contacts
+ * DESCRIPTION: change of Nsset and subservient DNS hosts and technical contacts
  *              and saving changes into history
  * PARAMETERS:  handle - nsset identifier
  *              authInfo_chg - authentication change
@@ -3090,7 +3090,7 @@ ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
 
 /*************************************************************
  *
- * Function:    KeySetInfo
+ * Function:    KeysetInfo
  *
  *************************************************************/
 ccReg::Response*
@@ -3106,14 +3106,14 @@ ccReg_EPP_i::KeySetInfo(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::KeySet::Localized::InfoResult info_result =
-            Epp::KeySet::Localized::info(keyset_handle,
+        const Epp::Keyset::Localized::InfoResult info_result =
+            Epp::Keyset::Localized::info(keyset_handle,
                                          session_data.registrar_id,
                                          session_data.language,
                                          server_transaction_handle);
 
         ccReg::KeySet_var keyset = new ccReg::KeySet;
-        Corba::wrap_Epp_KeySet_Localized_InfoData(info_result.data, keyset);
+        Corba::wrap_Epp_Keyset_Localized_InfoData(info_result.data, keyset);
 
         ccReg::Response_var return_value = new ccReg::Response;
         Corba::wrap_Epp_LocalizedSuccessResponse(info_result.response,
@@ -3131,7 +3131,7 @@ ccReg_EPP_i::KeySetInfo(
 
 /*************************************************************
  *
- * Function:    KeySetDelete
+ * Function:    KeysetDelete
  *
  *************************************************************/
 
@@ -3147,7 +3147,7 @@ ccReg_EPP_i::KeySetDelete(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::localized_delete(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::localized_delete(
             keyset_handle,
             session_data.registrar_id,
             session_data.language,
@@ -3208,7 +3208,7 @@ testDNSKeyDuplicity(ccReg::DNSKey_str first, ccReg::DNSKey_str second)
 
 /*************************************************************
  *
- * Function:    KeySetCreate
+ * Function:    KeysetCreate
  *
  *************************************************************/
 ccReg::Response *
@@ -3235,12 +3235,12 @@ ccReg_EPP_i::KeySetCreate(
                                                                                 : auth_info_pw_value;
         const std::vector< std::string > tech_contacts =
             Corba::unwrap_TechContact_to_vector_string(_tech_contacts);
-        const std::vector< Epp::KeySet::DsRecord > ds_records =
-            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(_ds_records);
-        const std::vector< Epp::KeySet::DnsKey > dns_keys =
-            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(_dns_keys);
+        const std::vector< Epp::Keyset::DsRecord > ds_records =
+            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records);
+        const std::vector< Epp::Keyset::DnsKey > dns_keys =
+            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys);
 
-        const Epp::KeySet::Localized::ResponseOfCreate response = Epp::KeySet::Localized::create(
+        const Epp::Keyset::Localized::ResponseOfCreate response = Epp::Keyset::Localized::create(
             keyset_handle,
             auth_info_pw,
             tech_contacts,
@@ -3271,7 +3271,7 @@ ccReg_EPP_i::KeySetCreate(
 
 /*************************************************************
  *
- * Function:    KeySetUpdate
+ * Function:    KeysetUpdate
  *
  *************************************************************/
 ccReg::Response *
@@ -3300,16 +3300,16 @@ ccReg_EPP_i::KeySetUpdate(
             Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add);
         const std::vector< std::string > tech_contacts_rem =
             Corba::unwrap_TechContact_to_vector_string(_tech_contacts_rem);
-        const std::vector< Epp::KeySet::DsRecord > ds_records_add =
-            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(_ds_records_add);
-        const std::vector< Epp::KeySet::DsRecord > ds_records_rem =
-            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(_ds_records_rem);
-        const std::vector< Epp::KeySet::DnsKey > dns_keys_add =
-            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(_dns_keys_add);
-        const std::vector< Epp::KeySet::DnsKey > dns_keys_rem =
-            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(_dns_keys_rem);
+        const std::vector< Epp::Keyset::DsRecord > ds_records_add =
+            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records_add);
+        const std::vector< Epp::Keyset::DsRecord > ds_records_rem =
+            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records_rem);
+        const std::vector< Epp::Keyset::DnsKey > dns_keys_add =
+            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_add);
+        const std::vector< Epp::Keyset::DnsKey > dns_keys_rem =
+            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_rem);
 
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::Localized::update(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::update(
             keyset_handle,
             auth_info_pw,
             tech_contacts_add,
@@ -3360,13 +3360,13 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
         case EPP_ListContact:
             type=1;
             break;
-        case EPP_ListNSset:
+        case EPP_ListNsset:
             type=2;
             break;
         case EPP_ListDomain:
             type=3;
             break;
-        case EPP_ListKeySet:
+        case EPP_ListKeyset:
             type=4;
             break;
         default:
@@ -3419,7 +3419,7 @@ ccReg::Response* ccReg_EPP_i::NSSetList(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return FullList( EPP_ListNSset , "NSSET" , "HANDLE" , nssets , params);
+  return FullList( EPP_ListNsset , "NSSET" , "HANDLE" , nssets , params);
 }
 
 ccReg::Response* ccReg_EPP_i::DomainList(
@@ -3443,7 +3443,7 @@ ccReg_EPP_i::KeySetList(
   ConnectionReleaser releaser;
 
     return FullList(
-            EPP_ListKeySet, "KEYSET", "HANDLE", keysets, params);
+            EPP_ListKeyset, "KEYSET", "HANDLE", keysets, params);
 }
 
 // function for run nsset tests
@@ -3470,9 +3470,9 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   if ( (regID = GetRegistrarID(params.loginID) ))
     {
 
-      if ( (DBsql->BeginAction(params.loginID, EPP_NSsetTest, static_cast<const char*>(params.clTRID), params.XML, params.requestID) )) {
+      if ( (DBsql->BeginAction(params.loginID, EPP_NssetTest, static_cast<const char*>(params.clTRID), params.XML, params.requestID) )) {
 
-        if ( (nssetid = getIdOfNSSet(DBsql, handle
+        if ( (nssetid = getIdOfNsset(DBsql, handle
                 , restricted_handles_, lock_epp_commands_) > 0 ))// TODO   ret->code =  SetReasonNSSetHandle( errors  , nssetid , GetRegistrarLang( clientID ) );
         {
           std::stringstream strid;
@@ -3511,7 +3511,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
           GetRegistrarLang(params.loginID) ) );
 
       if (internalError)
-        ServerInternalError("NSSetTest");
+        ServerInternalError("NssetTest");
     }
 
   return ret._retn();
@@ -3550,8 +3550,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
             } else if (id == 0)
                 code=COMMAND_OBJECT_NOT_EXIST;
             break;
-        case EPP_NSSetSendAuthInfo:
-            if ( (id = getIdOfNSSet(action.getDB(), name, restricted_handles_
+        case EPP_NssetSendAuthInfo:
+            if ( (id = getIdOfNsset(action.getDB(), name, restricted_handles_
                     , lock_epp_commands_) ) < 0) {
                 LOG(WARNING_LOG, "bad format of nsset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -3588,8 +3588,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
             }
 
             break;
-        case EPP_KeySetSendAuthInfo:
-            if ((id = getIdOfKeySet(action.getDB(), name, restricted_handles_
+        case EPP_KeysetSendAuthInfo:
+            if ((id = getIdOfKeyset(action.getDB(), name, restricted_handles_
                         , lock_epp_commands_)) < 0) {
                 LOG(WARNING_LOG, "bad format of keyset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -3612,8 +3612,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                 Fred::PublicRequest::Manager::create(
                     regMan->getDomainManager(),
                     regMan->getContactManager(),
-                    regMan->getNSSetManager(),
-                    regMan->getKeySetManager(),
+                    regMan->getNssetManager(),
+                    regMan->getKeysetManager(),
                     mm,
                     doc_manager.get(),
                     regMan->getMessageManager()
@@ -3683,7 +3683,7 @@ ccReg::Response* ccReg_EPP_i::nssetSendAuthInfo(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return ObjectSendAuthInfo( EPP_NSSetSendAuthInfo , "NSSET" , "handle" , handle , params);
+  return ObjectSendAuthInfo( EPP_NssetSendAuthInfo , "NSSET" , "handle" , handle , params);
 }
 
 ccReg::Response *
@@ -3697,7 +3697,7 @@ ccReg_EPP_i::keysetSendAuthInfo(
   ConnectionReleaser releaser;
 
     return ObjectSendAuthInfo(
-            EPP_KeySetSendAuthInfo, "KEYSET",
+            EPP_KeysetSendAuthInfo, "KEYSET",
             "handle", handle, params);
 }
 
@@ -3726,13 +3726,13 @@ ccReg::Response* ccReg_EPP_i::info(
     std::auto_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
-    std::auto_ptr<Fred::NSSet::Manager> nssMan(
-        Fred::NSSet::Manager::create(
+    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+        Fred::Nsset::Manager::create(
             a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
+    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+            Fred::Keyset::Manager::create(
                 a.getDB(), restricted_handles_
                 )
             );
@@ -3797,13 +3797,13 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
     std::auto_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
-    std::auto_ptr<Fred::NSSet::Manager> nssMan(
-        Fred::NSSet::Manager::create(
+    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+        Fred::Nsset::Manager::create(
             a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
+    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+            Fred::Keyset::Manager::create(
                 a.getDB(), restricted_handles_
                 )
             );

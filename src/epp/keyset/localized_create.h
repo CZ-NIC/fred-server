@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef LOCALIZED_CREATE_H_EEDF9037B0165261D8B46CD964387EE6//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LOCALIZED_CREATE_H_EEDF9037B0165261D8B46CD964387EE6
+#ifndef LOCALIZED_CREATE_H_EF1A2FF0807E4519A5C161A23079C0B1
+#define LOCALIZED_CREATE_H_EF1A2FF0807E4519A5C161A23079C0B1
 
 #include "src/epp/keyset/ds_record.h"
 #include "src/epp/keyset/dns_key.h"
@@ -32,7 +32,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 struct ResponseOfCreate
@@ -50,8 +50,8 @@ ResponseOfCreate create(
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts,
-    const std::vector< KeySet::DsRecord > &_ds_records,
-    const std::vector< KeySet::DnsKey > &_dns_keys,
+    const std::vector< Keyset::DsRecord > &_ds_records,
+    const std::vector< Keyset::DnsKey > &_dns_keys,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id,
     SessionLang::Enum _lang,
@@ -60,8 +60,8 @@ ResponseOfCreate create(
     bool _epp_notification_disabled,
     const std::string &_dont_notify_client_transaction_handles_with_this_prefix);
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//LOCALIZED_CREATE_H_EEDF9037B0165261D8B46CD964387EE6
+#endif

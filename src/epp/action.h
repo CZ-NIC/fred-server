@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef EPP_ACTION_H_545454453137
-#define EPP_ACTION_H_545454453137
+#ifndef ACTION_H_634CD0147D514718B0DBCC0FF3579D8C
+#define ACTION_H_634CD0147D514718B0DBCC0FF3579D8C
 
 namespace Epp {
 
@@ -40,12 +40,12 @@ struct Action {
         ContactCreate =      204,
         ContactTransfer =    205,
 
-        NSsetCheck =         400,
-        NSsetInfo =          401,
-        NSsetDelete =        402,
-        NSsetUpdate =        403,
-        NSsetCreate =        404,
-        NSsetTransfer =      405,
+        NssetCheck =         400,
+        NssetInfo =          401,
+        NssetDelete =        402,
+        NssetUpdate =        403,
+        NssetCreate =        404,
+        NssetTransfer =      405,
 
         DomainCheck =        500,
         DomainInfo =         501,
@@ -56,28 +56,28 @@ struct Action {
         DomainRenew =        506,
         DomainTrade =        507,
 
-        KeySetCheck =        600,
-        KeySetInfo =         601,
-        KeySetDelete =       602,
-        KeySetUpdate =       603,
-        KeySetCreate =       604,
-        KeySetTransfer =     605,
+        KeysetCheck =        600,
+        KeysetInfo =         601,
+        KeysetDelete =       602,
+        KeysetUpdate =       603,
+        KeysetCreate =       604,
+        KeysetTransfer =     605,
 
         UnknowAction =      1000,
 
         ListContact =       1002,
-        ListNSset =         1004,
+        ListNsset =         1004,
         ListDomain =        1005,
-        ListKeySet =        1006,
+        ListKeyset =        1006,
 
         ClientCredit =      1010,
 
-        NSsetTest =         1012,
+        NssetTest =         1012,
 
         ContactSendAuthInfo =   1101,
-        NSSetSendAuthInfo =     1102,
+        NssetSendAuthInfo =     1102,
         DomainSendAuthInfo =    1103,
-        KeySetSendAuthInfo =    1106,
+        KeysetSendAuthInfo =    1106,
 
         Info =                  1104,
         GetInfoResults =        1105

@@ -11,7 +11,7 @@
 #include "util/log/context.h"
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 namespace {
@@ -47,17 +47,17 @@ Presents insert_vector_parameter_error_if_presents(const ParameterErrors &_src,
     return false;
 }
 
-}//namespace Epp::KeySet::Localized::{anonymous}
+}//namespace Epp::Keyset::Localized::{anonymous}
 
 LocalizedSuccessResponse update(
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts_add,
     const std::vector< std::string > &_tech_contacts_rem,
-    const std::vector< KeySet::DsRecord > &_ds_records_add,
-    const std::vector< KeySet::DsRecord > &_ds_records_rem,
-    const std::vector< KeySet::DnsKey > &_dns_keys_add,
-    const std::vector< KeySet::DnsKey > &_dns_keys_rem,
+    const std::vector< Keyset::DsRecord > &_ds_records_add,
+    const std::vector< Keyset::DsRecord > &_ds_records_rem,
+    const std::vector< Keyset::DnsKey > &_dns_keys_add,
+    const std::vector< Keyset::DnsKey > &_dns_keys_rem,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id,
     SessionLang::Enum _lang,
@@ -70,7 +70,7 @@ LocalizedSuccessResponse update(
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeySetUpdate)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetUpdate)));
 
         Fred::OperationContextCreator ctx;
 
@@ -199,6 +199,6 @@ LocalizedSuccessResponse update(
     }
 }
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp

@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef INFO_DATA_H_ECB1C74D6310A59EBF2086241AA09E20//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define INFO_DATA_H_ECB1C74D6310A59EBF2086241AA09E20
+#ifndef INFO_DATA_H_99C5A4AE07C844B28DD9D0E8149A27A3
+#define INFO_DATA_H_99C5A4AE07C844B28DD9D0E8149A27A3
 
 #include "src/epp/keyset/ds_record.h"
 #include "src/epp/keyset/dns_key.h"
@@ -37,16 +37,16 @@ namespace Epp {
 struct KeysetInfoData
 {
     typedef std::set< Fred::Object_State::Enum > States;
-    typedef std::set< KeySet::DsRecord > DsRecords;
-    typedef std::set< KeySet::DnsKey > DnsKeys;
+    typedef std::set< Keyset::DsRecord > DsRecords;
+    typedef std::set< Keyset::DnsKey > DnsKeys;
     typedef std::set< std::string > TechContacts;
 
-    std::string handle; ///< KeySet handle
-    std::string roid; ///< KeySet identifier - repository ID
+    std::string handle; ///< Keyset handle
+    std::string roid; ///< Keyset identifier - repository ID
     std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
     std::string creating_registrar_handle; ///< Registrar identifier, which created contact
     Nullable< std::string > last_update_registrar_handle; ///< Registrar identifier, which realized changes
-    States states; ///< KeySet states list
+    States states; ///< Keyset states list
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable< boost::posix_time::ptime > last_update; ///< Date and time of last change
     Nullable< boost::posix_time::ptime > last_transfer; ///< Date and time of last transfer
@@ -58,4 +58,4 @@ struct KeysetInfoData
 
 }//namespace Epp
 
-#endif//INFO_DATA_H_ECB1C74D6310A59EBF2086241AA09E20
+#endif

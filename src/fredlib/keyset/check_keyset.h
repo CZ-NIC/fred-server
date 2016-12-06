@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef CHECK_KEYSET_H_741E2B9DDFAC8B4EC8F797F6DD42603C//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CHECK_KEYSET_H_741E2B9DDFAC8B4EC8F797F6DD42603C
+#ifndef CHECK_KEYSET_H_2978916EE20C45F98D9C16CA2D424FE4
+#define CHECK_KEYSET_H_2978916EE20C45F98D9C16CA2D424FE4
 
 #include "src/fredlib/keyset/handle_state.h"
 #include "src/fredlib/opcontext.h"
@@ -29,14 +29,14 @@
 #include <string>
 
 namespace Fred {
-namespace KeySet {
+namespace Keyset {
 
 HandleState::SyntaxValidity get_handle_syntax_validity(const std::string &_keyset_handle);
 
 HandleState::Registrability get_handle_registrability(OperationContext &_ctx,
                                                       const std::string &_keyset_handle);
 
-}//namespace Fred::KeySet
+}//namespace Fred::Keyset
 }//namespace Fred
 
-#endif//CHECK_KEYSET_H_741E2B9DDFAC8B4EC8F797F6DD42603C
+#endif

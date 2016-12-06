@@ -20,14 +20,14 @@
  *  @file
  */
 
-#ifndef HANDLE_CHECK_RESULT_H_50B9A40CBF46B69CAACE2F8D2D34D68E//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define HANDLE_CHECK_RESULT_H_50B9A40CBF46B69CAACE2F8D2D34D68E
+#ifndef HANDLE_CHECK_RESULT_H_F73D97BD86BC43568A68AD4CB1E21377
+#define HANDLE_CHECK_RESULT_H_F73D97BD86BC43568A68AD4CB1E21377
 
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 
 struct HandleCheckResult
 {
@@ -54,7 +54,7 @@ inline Reason::Enum to_reason(const HandleCheckResult::Enum value)
     throw MissingLocalizedDescription();
 }
 
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//HANDLE_CHECK_RESULT_H_50B9A40CBF46B69CAACE2F8D2D34D68E
+#endif

@@ -92,7 +92,7 @@ public:
   DomainImpl(TID _id, const Database::ID& _history_id, const std::string& _fqdn, TID _zone, TID _nsset,
              const std::string& _nssetHandle, TID _registrant,
              const std::string& _registrantHandle,
-             const std::string& _registrantName, 
+             const std::string& _registrantName,
              const std::string& _registrantOrganization,
              const std::string& _registrantPhone,
              TID _registrar,
@@ -102,17 +102,17 @@ public:
              const std::string& _updateRegistrarHandle,
              const std::string& _authPw, const std::string& _roid,
              const date& _exDate, const date& _valExDate, unsigned _zoneStatus,
-             const ptime& _zoneStatusTime, const ptime& _outZoneDate, const ptime& _cancelDate, 
+             const ptime& _zoneStatusTime, const ptime& _outZoneDate, const ptime& _cancelDate,
              Zone::Manager *zm, TID _keyset, const std::string &_keysetHandle) :
     ObjectImpl(_id, _history_id, _crDate, _trDate, _upDate, _erDate, _registrar,
                _registrarHandle, _createRegistrar, _createRegistrarHandle,
                _updateRegistrar, _updateRegistrarHandle, _authPw, _roid),
         fqdn(_fqdn), fqdnIDN(zm->punycode_to_utf8(fqdn)), zone(_zone), nsset(_nsset), nssetHandle(_nssetHandle),
-        registrant(_registrant), registrantHandle(_registrantHandle), 
+        registrant(_registrant), registrantHandle(_registrantHandle),
         registrantName(_registrantName), registrantOrganization(_registrantOrganization),
         registrantPhone(_registrantPhone),exDate(_exDate),
         valExDate(_valExDate), publish(false), zoneStatus(_zoneStatus),
-        zoneStatusTime(_zoneStatusTime), 
+        zoneStatusTime(_zoneStatusTime),
         outZoneDate(_outZoneDate), cancelDate(_cancelDate),
         keyset(_keyset), keysetHandle(_keysetHandle) {
   }
@@ -123,31 +123,31 @@ public:
     return getFQDN();
   }
   virtual const std::string& getFQDNIDN() const {
-		return fqdnIDN;
-	}
+    return fqdnIDN;
+  }
   virtual TID getZoneId() const {
     return zone;
   }
-  virtual const std::string& getNSSetHandle() const {
+  virtual const std::string& getNssetHandle() const {
     return nssetHandle;
   }
-  virtual TID getNSSetId() const {
+  virtual TID getNssetId() const {
     return nsset;
   }
-  virtual void setNSSetId(TID nsset) {
+  virtual void setNssetId(TID nsset) {
     // check existance and set handle
     this->nsset = nsset;
     modified_ = true;
   }
-  virtual const std::string &getKeySetHandle() const
+  virtual const std::string &getKeysetHandle() const
   {
       return keysetHandle;
   }
-  virtual TID getKeySetId() const
+  virtual TID getKeysetId() const
   {
       return keyset;
   }
-  virtual void setKeySetId(TID keyset)
+  virtual void setKeysetId(TID keyset)
   {
       this->keyset = keyset;
       modified_ = true;
@@ -319,11 +319,11 @@ public:
       tempList.push_back(AdminInfo(id, handle, name, organization, phone));
   }
   /// add nsset handle - for domain intialization
-  void addNSSetHandle(const std::string& handle) {
+  void addNssetHandle(const std::string& handle) {
     nssetHandle = handle;
   }
   ///add keyset handle - for domain initialization
-  void addKeySetHandle(const std::string &handle)
+  void addKeysetHandle(const std::string &handle)
   {
       keysetHandle = handle;
   }
@@ -467,23 +467,23 @@ public:
     setFilterModified();
     nonHandleFilterSet = true;
   }
-  virtual void setNSSetFilter(TID _nssetId) {
+  virtual void setNssetFilter(TID _nssetId) {
     nsset = _nssetId;
     setFilterModified();
     nonHandleFilterSet = true;
   }
-  virtual void setNSSetHandleFilter(const std::string& _nssetHandle) {
+  virtual void setNssetHandleFilter(const std::string& _nssetHandle) {
     nssetHandle = _nssetHandle;
     setFilterModified();
     nonHandleFilterSet = true;
   }
-  virtual void setKeySetFilter(TID _keysetId)
+  virtual void setKeysetFilter(TID _keysetId)
   {
       keyset = _keysetId;
       setFilterModified();
       nonHandleFilterSet = true;
   }
-  virtual void setKeySetHandleFilter(const std::string &_keysetHandle)
+  virtual void setKeysetHandleFilter(const std::string &_keysetHandle)
   {
       keysetHandle = _keysetHandle;
       setFilterModified();
@@ -684,7 +684,7 @@ public:
           dynamic_cast<Database::Filters::DomainHistoryImpl*>(fit->get());
       if (!df)
         continue;
-      
+
       Database::SelectQuery *tmp = new Database::SelectQuery();
       tmp->addSelect(new Database::Column("historyid", df->joinDomainTable(), "DISTINCT"));
       uf.addQuery(tmp);
@@ -694,7 +694,7 @@ public:
       LOGGER(PACKAGE).error("wrong filter passed for reload!");
       return;
     }
-    
+
     id_query.limit(load_limit_);
     uf.serialize(id_query);
 
@@ -726,12 +726,12 @@ public:
     object_info_query.order_by() << "tmp.id";
 
     try {
-        Database::Connection conn = Database::Manager::acquire();  
-      
+        Database::Connection conn = Database::Manager::acquire();
+
       Database::Query create_tmp_table("SELECT create_tmp_table('" + std::string(getTempTableName()) + "')");
       conn.exec(create_tmp_table);
       conn.exec(tmp_table_query);
-      
+
       // TODO: use this and rewrite conn to conn_ specified in CommonListImpl
       // fillTempTable(tmp_table_query);
 
@@ -741,7 +741,7 @@ public:
       for (Database::Result::Iterator it = r_registrars.begin(); it != r_registrars.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
 
-        Database::ID id      = *col; 
+        Database::ID id      = *col;
         std::string handle   = *(++col);
         registrars_table[id] = handle;
       }
@@ -890,10 +890,10 @@ public:
 
         DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
         if (domain_ptr)
-          domain_ptr->addNSSetHandle(nsset_handle);
+          domain_ptr->addNssetHandle(nsset_handle);
       }
 
-      /// load keyset info 
+      /// load keyset info
       resetHistoryIDSequence();
       Database::SelectQuery keysets_query;
 
@@ -914,7 +914,7 @@ public:
 
           DomainImpl *domain_ptr = dynamic_cast<DomainImpl *>(findHistoryIDSequence(domain_historyid));
           if (domain_ptr)
-              domain_ptr->addKeySetHandle(keyset_handle);
+              domain_ptr->addKeysetHandle(keyset_handle);
       }
 
       /// load validation (for enum domains)
@@ -924,7 +924,7 @@ public:
       validation_query.from() << getTempTableName() << " tmp "
                               << "JOIN enumval_history t_1 ON (tmp.id = t_1.historyid)";
       validation_query.order_by() << "tmp.id";
-        
+
       Database::Result r_validation = conn.exec(validation_query);
       Database::Result::Iterator it = r_validation.begin();
       for (; it != r_validation.end(); ++it) {
@@ -949,7 +949,7 @@ public:
 
       /// load object state
       ObjectListImpl::reload(history);
-      /* checks if row number result load limit is active and set flag */ 
+      /* checks if row number result load limit is active and set flag */
       CommonListImpl::reload();
     }
     catch (Database::Exception& ex) {
@@ -979,7 +979,7 @@ public:
     }
     db->FreeSelect();
     clear();
-    bool useTempTable = nonHandleFilterSet || fqdn.empty(); 
+    bool useTempTable = nonHandleFilterSet || fqdn.empty();
     if (useTempTable)
       fillTempTable(true);
     // load domain data
@@ -1004,7 +1004,7 @@ public:
         << "(((d.exdate + (SELECT val || ' day' FROM enum_parameters WHERE id = 6)::interval)::timestamp + (SELECT val || ' hours' FROM enum_parameters WHERE name = 'regular_day_procedure_period')::interval) AT TIME ZONE (SELECT val FROM enum_parameters WHERE name = 'regular_day_procedure_zone'))::timestamp as canceldate, "
     // keyset id and keyset handle
         << "d.keyset, '' "
-        << "FROM " 
+        << "FROM "
         << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "contact c, object_registry cor, " << "object_registry obr, "
         << "object o, " << "domain d "
@@ -1012,7 +1012,7 @@ public:
         << "AND c.id=cor.id " << "AND obr.id=o.id ";
     if (!useTempTable) {
       sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+          << "AND tmp.erdate ISNULL AND tmp.type=3 ";
     }
     sql << "ORDER BY tmp.id ";
     if (!db->ExecSelect(sql.str().c_str()))
@@ -1069,7 +1069,7 @@ public:
         << "WHERE tmp.id=dcm.domainid and dcm.contactid=obr.id ";
     if (!useTempTable) {
       sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+          << "AND tmp.erdate ISNULL AND tmp.type=3 ";
     }
     sql << "ORDER BY tmp.id";
     if (!db->ExecSelect(sql.str().c_str()))
@@ -1088,13 +1088,13 @@ public:
     // add nsset handles (instead of LEFT JOIN)
     resetIDSequence();
     sql.str("");
-    sql << "SELECT " << "tmp.id, nor.name " << "FROM " 
+    sql << "SELECT " << "tmp.id, nor.name " << "FROM "
         << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "domain d, object_registry nor "
         << "WHERE tmp.id=d.id AND d.nsset=nor.id ";
     if (!useTempTable) {
       sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+          << "AND tmp.erdate ISNULL AND tmp.type=3 ";
     }
     sql << "ORDER BY tmp.id";
     if (!db->ExecSelect(sql.str().c_str()))
@@ -1104,10 +1104,10 @@ public:
               i, 0))));
       if (!dom)
         throw SQL_ERROR();
-      dom->addNSSetHandle(db->GetFieldValue(i, 1) );
+      dom->addNssetHandle(db->GetFieldValue(i, 1) );
     }
     db->FreeSelect();
-    
+
     // add keyset handles
     resetIDSequence();
     sql.str("");
@@ -1127,19 +1127,19 @@ public:
                             i, 0))));
         if (!dom)
             throw SQL_ERROR();
-        dom->addKeySetHandle(db->GetFieldValue(i, 1));
+        dom->addKeysetHandle(db->GetFieldValue(i, 1));
     }
     db->FreeSelect();
 
     // add validation (for enum domains)
     resetIDSequence();
     sql.str("");
-    sql << "SELECT " << "tmp.id, ev.exdate, ev.publish " << "FROM " 
+    sql << "SELECT " << "tmp.id, ev.exdate, ev.publish " << "FROM "
         << (useTempTable ? getTempTableName() : "object_registry ") << " tmp, "
         << "enumval ev " << "WHERE tmp.id=ev.domainid ";
     if (!useTempTable) {
       sql << "AND tmp.name=LOWER('" << db->Escape2(fqdn) << "') "
-          << "AND tmp.erdate ISNULL AND tmp.type=3 "; 
+          << "AND tmp.erdate ISNULL AND tmp.type=3 ";
     }
     sql << "ORDER BY tmp.id";
     if (!db->ExecSelect(sql.str().c_str()))
@@ -1251,15 +1251,14 @@ class ManagerImpl : virtual public Manager {
   std::auto_ptr<Blacklist> blacklist; ///< black list manager
 public:
   ManagerImpl(DBSharedPtr _db, Zone::Manager *_zm) :
-			db(_db), zm(_zm), blacklist(Blacklist::create(_db)) {
-	}
-  CheckAvailType checkHandle(const std::string& fqdn, 
-  													 bool allowIDN) const {
+      db(_db), zm(_zm), blacklist(Blacklist::create(_db)) { }
+  CheckAvailType checkHandle(const std::string& fqdn,
+      bool allowIDN) const {
     Zone::DomainName domain; // parsed domain name
     try { zm->parseDomainName(fqdn,domain,allowIDN); }
     catch (Zone::INVALID_DOMAIN_NAME) {return CA_INVALID_HANDLE;}
     const Zone::Zone *z = zm->findApplicableZone(fqdn);
-    // TLD domain allowed only if zone.fqdn='' is in zone list 
+    // TLD domain allowed only if zone.fqdn='' is in zone list
     if (!z && domain.size() == 1)
       return CA_INVALID_HANDLE;
     if (!z)
@@ -1268,7 +1267,7 @@ public:
       return CA_BAD_LENGHT;
     return CA_AVAILABLE;
   }
-  /// interface method implementation  
+  /// interface method implementation
   CheckAvailType checkAvail(const std::string& _fqdn,
                             NameIdPair& conflictFqdn,
                             bool allowIDN,
@@ -1329,15 +1328,15 @@ public:
   /// interface method implementation
   unsigned long getSignedDomainCount(const std::string & _fqdn) const
   {
-	std::stringstream sql;
-	unsigned long ret = 0;
-	sql << "SELECT count(*) FROM domain d "
-			"JOIN zone z ON (d.zone = z.id) AND z.fqdn = LOWER('" << db->Escape2(_fqdn) << "') "
-		<< "WHERE d.keyset IS NOT NULL";
-	if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
-	  ret = atol(db->GetFieldValue( 0, 0));
-	db->FreeSelect();
-	return ret;
+    std::stringstream sql;
+    unsigned long ret = 0;
+    sql << "SELECT count(*) FROM domain d "
+        "JOIN zone z ON (d.zone = z.id) AND z.fqdn = LOWER('" << db->Escape2(_fqdn) << "') "
+      << "WHERE d.keyset IS NOT NULL";
+    if (db->ExecSelect(sql.str().c_str()) && db->GetSelectRows() == 1)
+      ret = atol(db->GetFieldValue( 0, 0));
+    db->FreeSelect();
+    return ret;
   }
   /// interface method implementation
   unsigned long getEnumNumberCount() const {

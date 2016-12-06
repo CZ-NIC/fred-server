@@ -32,7 +32,7 @@
 #define KEYSET_REGEX "[a-zA-Z0-9_:.-]{1,63}"
 
 namespace Fred {
-namespace KeySet {
+namespace Keyset {
 
 static boost::regex format(KEYSET_REGEX);
 static boost::regex formatRestricted(KEYSET_REGEX_RESTRICTED);
@@ -147,7 +147,7 @@ public:
     }
 };
 
-class KeySetImpl : public ObjectImpl, public virtual KeySet {
+class KeysetImpl : public ObjectImpl, public virtual Keyset {
     struct AdminInfo {
       TID id;
       std::string handle;
@@ -173,7 +173,7 @@ class KeySetImpl : public ObjectImpl, public virtual KeySet {
 
 public:
 
-    KeySetImpl(TID _id, const Database::ID &_history_id, const std::string& _handle, TID _registrar,
+    KeysetImpl(TID _id, const Database::ID &_history_id, const std::string& _handle, TID _registrar,
             const std::string& _registrarHandle, const ptime &_crDate, const ptime &_trDate,
             const ptime &_upDate, const ptime &_erDate, TID _createRegistrar,
             const std::string& _createRegistrarHandle, TID _updateRegistrar,
@@ -279,10 +279,10 @@ public:
     }
 };
 
-COMPARE_CLASS_IMPL(KeySetImpl, Handle)
-COMPARE_CLASS_IMPL(KeySetImpl, CreateDate)
-COMPARE_CLASS_IMPL(KeySetImpl, DeleteDate)
-COMPARE_CLASS_IMPL(KeySetImpl, RegistrarHandle)
+COMPARE_CLASS_IMPL(KeysetImpl, Handle)
+COMPARE_CLASS_IMPL(KeysetImpl, CreateDate)
+COMPARE_CLASS_IMPL(KeysetImpl, DeleteDate)
+COMPARE_CLASS_IMPL(KeysetImpl, RegistrarHandle)
 
 class ListImpl: public virtual List, public ObjectListImpl {
     std::string     m_handle;
@@ -291,9 +291,9 @@ public:
     ListImpl(DBSharedPtr _db): ObjectListImpl(_db)
     {
     }
-    KeySet *getKeySet(unsigned int index) const
+    Keyset *getKeyset(unsigned int index) const
     {
-        return dynamic_cast<KeySetImpl *>(get(index));
+        return dynamic_cast<KeysetImpl *>(get(index));
     }
     void setHandleFilter(const std::string &handle)
     {
@@ -412,7 +412,7 @@ ListImpl::reload() throw (SQL_ERROR)
         throw SQL_ERROR();
     for (unsigned int i = 0; i < (unsigned int)db->GetSelectRows(); i++) {
         data_.push_back(
-                new KeySetImpl(
+                new KeysetImpl(
                     STR_TO_ID(db->GetFieldValue(i, 0)),     // keyset id
                     Database::ID(0),                        // dummy history_id
                     db->GetFieldValue(i, 1),                // keyset handle
@@ -448,8 +448,8 @@ ListImpl::reload() throw (SQL_ERROR)
     if (!db->ExecSelect(sql.str().c_str()))
         throw SQL_ERROR();
     for (unsigned int i = 0; i < (unsigned int)db->GetSelectRows(); i++) {
-        KeySetImpl *ks =
-            dynamic_cast<KeySetImpl *>(findIDSequence(STR_TO_ID(db->GetFieldValue(i, 0))));
+        KeysetImpl *ks =
+            dynamic_cast<KeysetImpl *>(findIDSequence(STR_TO_ID(db->GetFieldValue(i, 0))));
         if (!ks)
             throw SQL_ERROR();
         ks->addAdminHandle(0 /* dummy id - for history */, db->GetFieldValue(i, 1));
@@ -468,8 +468,8 @@ ListImpl::reload() throw (SQL_ERROR)
     if (!db->ExecSelect(sql.str().c_str()))
         throw SQL_ERROR();
     for (unsigned int i = 0; i < (unsigned int)db->GetSelectRows(); i++) {
-        KeySetImpl *ks =
-            dynamic_cast<KeySetImpl *>(findIDSequence(STR_TO_ID(
+        KeysetImpl *ks =
+            dynamic_cast<KeysetImpl *>(findIDSequence(STR_TO_ID(
                             db->GetFieldValue(i, 0))));
         if (!ks)
             throw SQL_ERROR();
@@ -499,8 +499,8 @@ ListImpl::reload() throw (SQL_ERROR)
     if (!db->ExecSelect(sql.str().c_str()))
         throw SQL_ERROR();
     for (unsigned int i = 0; i < (unsigned int)db->GetSelectRows(); i++) {
-        KeySetImpl *ks =
-            dynamic_cast<KeySetImpl *>(findIDSequence(STR_TO_ID(
+        KeysetImpl *ks =
+            dynamic_cast<KeysetImpl *>(findIDSequence(STR_TO_ID(
                             db->GetFieldValue(i, 0))));
         if (!ks)
             throw SQL_ERROR();
@@ -518,7 +518,7 @@ ListImpl::reload() throw (SQL_ERROR)
 void
 ListImpl::reload(Database::Filters::Union &uf)
 {
-    TRACE("[CALL] KeySet::ListImpl::reload(Database::Filters::Union &)");
+    TRACE("[CALL] Keyset::ListImpl::reload(Database::Filters::Union &)");
     clear();
     uf.clearQueries();
 
@@ -614,7 +614,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             std::string roid                = *(++col);
 
             data_.push_back(
-                    new KeySetImpl(
+                    new KeysetImpl(
                         kid,
                         history_id,
                         handle,
@@ -658,7 +658,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             Database::ID contact_id         = *(++col);
             std::string  contact_handle     = *(++col);
 
-            KeySetImpl *keyset_ptr = dynamic_cast<KeySetImpl *>(findHistoryIDSequence(keyset_historyid));
+            KeysetImpl *keyset_ptr = dynamic_cast<KeysetImpl *>(findHistoryIDSequence(keyset_historyid));
             if (keyset_ptr)
                 keyset_ptr->addAdminHandle(contact_id, contact_handle);
         }
@@ -687,7 +687,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             std::string digest          = *(++col);
             unsigned int maxsiglife     = *(++col);
 
-            KeySetImpl *keyset_ptr = dynamic_cast<KeySetImpl *>(findHistoryIDSequence(keyset_historyid));
+            KeysetImpl *keyset_ptr = dynamic_cast<KeysetImpl *>(findHistoryIDSequence(keyset_historyid));
             if (keyset_ptr) {
                 // LOGGER(PACKAGE).debug(boost::format("dsrec: id: %1% digest: %2%") %
                         // dsrecord_id % digest);
@@ -724,7 +724,7 @@ ListImpl::reload(Database::Filters::Union &uf)
             unsigned int alg               = *(++col);
             std::string  key               = *(++col);
 
-            KeySetImpl *keyset_ptr = dynamic_cast<KeySetImpl *>(findHistoryIDSequence(keyset_historyid));
+            KeysetImpl *keyset_ptr = dynamic_cast<KeysetImpl *>(findHistoryIDSequence(keyset_historyid));
             if (keyset_ptr) {
                 // LOGGER(PACKAGE).debug(boost::format("dsrec: id: %1% digest: %2%") %
                         // dsrecord_id % digest);
@@ -735,7 +735,7 @@ ListImpl::reload(Database::Filters::Union &uf)
                                                  key));
             }
         }
-        
+
 
         bool history = false;
         if (uf.settings()) {
@@ -895,5 +895,5 @@ Manager *Manager::create(DBSharedPtr db, bool restrictedHandle)
     return new ManagerImpl(db, restrictedHandle);
 }
 
-} // namespace KeySet
+} // namespace Keyset
 } // namespace Fred

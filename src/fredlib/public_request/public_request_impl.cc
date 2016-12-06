@@ -40,11 +40,11 @@ std::string ObjectType2Str(ObjectType type)
         case OT_CONTACT:
             return "Contact";
         case OT_NSSET:
-            return "NSSet";
+            return "Nsset";
         case OT_DOMAIN:
             return "Domain";
         case OT_KEYSET:
-            return "KeySet";
+            return "Keyset";
         default:
             return "Type unknown";
     }
@@ -60,7 +60,7 @@ void insertNewStateRequest(
 }
 
 
-/* 
+/*
  * check if object states interfere with requested states
  */
 bool queryBlockRequest(
@@ -200,7 +200,7 @@ bool object_was_changed_since_request_create(const unsigned long long _request_i
     }
     return false;
 }
-   
+
 
 
 PublicRequestImpl::PublicRequestImpl()

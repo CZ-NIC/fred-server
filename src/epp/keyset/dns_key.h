@@ -21,8 +21,8 @@
  *  keyset dns key
  */
 
-#ifndef DNS_KEY_H_3FB42F6AC9528E34ECA037A8A6EBB999//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define DNS_KEY_H_3FB42F6AC9528E34ECA037A8A6EBB999
+#ifndef DNS_KEY_H_C09AC6C027EE4158BD3BFE2C58D9F3AF
+#define DNS_KEY_H_C09AC6C027EE4158BD3BFE2C58D9F3AF
 
 #include "src/fredlib/opcontext.h"
 
@@ -32,7 +32,7 @@
 #include <map>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 
 /**
  * Container for DNSKEY record data as specified in RFC4034.
@@ -191,7 +191,7 @@ private:
     std::string key_;        ///< the public key field in base64 encoding
 }; //class DnsKey
 
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//DNS_KEY_H_3FB42F6AC9528E34ECA037A8A6EBB999
+#endif

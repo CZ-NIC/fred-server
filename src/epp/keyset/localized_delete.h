@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef LOCALIZED_DELETE_H_E4664FD6EE4EE9317CFF960AF46C7E62//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LOCALIZED_DELETE_H_E4664FD6EE4EE9317CFF960AF46C7E62
+#ifndef LOCALIZED_DELETE_H_088328F5B95F4D4E95064F51D37D616D
+#define LOCALIZED_DELETE_H_088328F5B95F4D4E95064F51D37D616D
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
@@ -29,7 +29,7 @@
 #include <string>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 
 LocalizedSuccessResponse localized_delete(
     const std::string &_keyset_handle,
@@ -43,4 +43,4 @@ LocalizedSuccessResponse localized_delete(
 }//namespace Epp::KeySet
 }//namespace Epp
 
-#endif//LOCALIZED_DELETE_H_E4664FD6EE4EE9317CFF960AF46C7E62
+#endif

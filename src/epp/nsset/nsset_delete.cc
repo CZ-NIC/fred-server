@@ -25,7 +25,7 @@ LocalizedSuccessResponse nsset_delete(
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::NSsetDelete)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::NssetDelete)));
 
         Fred::OperationContextCreator ctx;
 

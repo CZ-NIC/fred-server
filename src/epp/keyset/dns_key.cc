@@ -2,7 +2,7 @@
 #include "src/fredlib/keyset/check_dns_key.h"
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 
 namespace {
 
@@ -96,7 +96,7 @@ bool is_base64_insignificant_allowed_character(char c)
     return ::isspace(c);
 }
 
-}//namespace Epp::KeySet::{anonymous}
+}//namespace Epp::Keyset::{anonymous}
 
 //DNS key item flags has only 3 allowed values: 0, 256, 257
 bool DnsKey::is_flags_correct()const
@@ -162,5 +162,5 @@ DnsKey::CheckKey::Result DnsKey::check_key()const
                           : CheckKey::bad_length;
 }
 
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset
 }//namespace Epp

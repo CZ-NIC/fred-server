@@ -1,5 +1,5 @@
-#ifndef KEYSET_H_
-#define KEYSET_H_
+#ifndef KEYSET_H_215FBA3573974F59BDEE7E3802EF20F7
+#define KEYSET_H_215FBA3573974F59BDEE7E3802EF20F7
 
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@
 class DB;
 
 namespace Fred {
-namespace KeySet {
+namespace Keyset {
 
 /// member identification (i.e. for sorting)
 enum MemberType {
@@ -23,7 +23,7 @@ enum MemberType {
     MT_REGISTRAR_HANDLE, ///< registrar handle
 };
 
-class KeySet;
+class Keyset;
 
 class DSRecord {
 public:
@@ -42,7 +42,7 @@ public:
     /// return record's time to live
     virtual const unsigned int &getMaxSigLife() const = 0;
     // comparison operators
-    virtual bool operator==(const DSRecord& _other) const = 0; 
+    virtual bool operator==(const DSRecord& _other) const = 0;
     virtual bool operator!=(const DSRecord& _other) const = 0;
 };
 
@@ -65,10 +65,10 @@ public:
     virtual bool operator!=(const DNSKey& _other) const = 0;
 };
 
-class KeySet: virtual public Fred::Object {
+class Keyset: virtual public Fred::Object {
 public:
     /// public d-tor
-    virtual ~KeySet() {}
+    virtual ~Keyset() {}
     /// return keyset handle
     virtual const std::string &getHandle() const = 0;
     /// return count of admin contacts
@@ -94,13 +94,13 @@ class List: virtual public ObjectList {
 public:
     virtual ~List() {}
     /// get details of loaded keyset
-    virtual KeySet *getKeySet(unsigned int index) const = 0;
+    virtual Keyset *getKeyset(unsigned int index) const = 0;
     /// set filter for handle
     virtual void setHandleFilter(const std::string &handle) = 0;
     /// set filter for tech admin
     virtual void setAdminFilter(const std::string &handle) = 0;
     /// reload list with current filter
-    virtual void reload() throw (SQL_ERROR) = 0; 
+    virtual void reload() throw (SQL_ERROR) = 0;
     /// reload list with current filter
     virtual void reload(Database::Filters::Union &uf) = 0;
     /// clear filter data
@@ -140,10 +140,7 @@ public:
     static Manager *create(DBSharedPtr db, bool restrictedHandle);
 };
 
-} // namespace KeySet
+} // namespace Keyset
 } // namespace Fred
 
-
-
-
-#endif // KEYSET_H_
+#endif

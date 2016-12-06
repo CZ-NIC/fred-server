@@ -87,15 +87,15 @@ namespace Corba {
 
     std::vector< std::string > unwrap_TechContact_to_vector_string(const ccReg::TechContact &_tech_contacts);
 
-    std::vector< Epp::KeySet::DsRecord > unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(
+    std::vector< Epp::Keyset::DsRecord > unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(
         const ccReg::DSRecord &_ds_records);
 
-    void unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str &_src, Epp::KeySet::DsRecord &_dst);
+    void unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str &_src, Epp::Keyset::DsRecord &_dst);
 
-    std::vector< Epp::KeySet::DnsKey > unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(
+    std::vector< Epp::Keyset::DnsKey > unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(
         const ccReg::DNSKey &_dns_keys);
 
-    void unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str &_src, Epp::KeySet::DnsKey &_dst);
+    void unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str &_src, Epp::Keyset::DnsKey &_dst);
 
     Epp::RequestParams unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
 
@@ -125,16 +125,16 @@ namespace Corba {
     /**
      * @returns data ordered the same way as input handles
      */
-    void wrap_Epp_KeySet_Localized_HandlesCheck_Results(
+    void wrap_Epp_Keyset_Localized_HandlesCheck_Results(
         const std::vector< std::string > &handles,
-        const Epp::KeySet::Localized::HandlesCheck::Results &check_results,
+        const Epp::Keyset::Localized::HandlesCheck::Results &check_results,
         ccReg::CheckResp &dst);
 
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst);
 
     void wrap_Epp_KeysetInfoData_TechContacts(const Epp::KeysetInfoData::TechContacts &_src, ccReg::TechContact &_dst);
 
-    void wrap_Epp_KeySet_Localized_InfoData(const Epp::KeySet::Localized::InfoData &_src, ccReg::KeySet &_dst);
+    void wrap_Epp_Keyset_Localized_InfoData(const Epp::Keyset::Localized::InfoData &_src, ccReg::KeySet &_dst);
 
     /**
      * @returns data ordered the same way as input nsset_handles

@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef CREATE_H_81A29A35F62E4C92373D668458E7619E//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CREATE_H_81A29A35F62E4C92373D668458E7619E
+#ifndef CREATE_H_661BCE6BBB3B4991A6CBDED2B156C5AE
+#define CREATE_H_661BCE6BBB3B4991A6CBDED2B156C5AE
 
 #include "src/fredlib/opcontext.h"
 #include "src/epp/keyset/info_data.h"
@@ -47,11 +47,11 @@ KeysetCreateResult keyset_create(
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts,
-    const std::vector< KeySet::DsRecord > &_ds_records,
-    const std::vector< KeySet::DnsKey > &_dns_keys,
+    const std::vector< Keyset::DsRecord > &_ds_records,
+    const std::vector< Keyset::DnsKey > &_dns_keys,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
 }
 
-#endif//CREATE_H_81A29A35F62E4C92373D668458E7619E
+#endif

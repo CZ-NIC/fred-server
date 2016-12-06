@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef FIXTURE_H_9B8B417BFEDF100B23D6A39540F8D033//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define FIXTURE_H_9B8B417BFEDF100B23D6A39540F8D033
+#ifndef FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
+#define FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
@@ -68,12 +68,12 @@ class ObjectsProvider:private Fixture::instantiate_db_template,
 public:
     ObjectsProvider();
     ~ObjectsProvider() { }
-    template < Fred::KeySet::HandleState::Registrability REGISTRABILITY,
-               Fred::KeySet::HandleState::SyntaxValidity VALIDITY >
+    template < Fred::Keyset::HandleState::Registrability REGISTRABILITY,
+               Fred::Keyset::HandleState::SyntaxValidity VALIDITY >
     static std::string get_keyset_handle(Fred::OperationContext&);
 };
 
 
 }//namespace Test
 
-#endif//FIXTURE_H_9B8B417BFEDF100B23D6A39540F8D033
+#endif

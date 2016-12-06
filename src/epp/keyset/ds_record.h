@@ -21,13 +21,13 @@
  *  ds record
  */
 
-#ifndef DS_RECORD_H_200ACB51AB6DE287AE088DAE4D198918//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define DS_RECORD_H_200ACB51AB6DE287AE088DAE4D198918
+#ifndef DS_RECORD_H_BD42642FAB5A4153B45827E3BDEB2805
+#define DS_RECORD_H_BD42642FAB5A4153B45827E3BDEB2805
 
 #include <string>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 
 /**
  * Container for DS record data.
@@ -136,7 +136,7 @@ private:
 }; //class DsRecord
 
 
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//DS_RECORD_H_200ACB51AB6DE287AE088DAE4D198918
+#endif

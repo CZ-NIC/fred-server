@@ -97,36 +97,36 @@ std::string get_registrar_handle(const Test::ObjectsProvider &objects_provider)
     return get_registrar< REGISTRAR >(objects_provider).handle;
 }
 
-struct KeySetCreateData
+struct KeysetCreateData
 {
     std::string keyset_handle;
     unsigned long long registrar_id;
     std::string registrar_handle;
     Optional< std::string > auth_info_pw;
     std::vector< std::string > tech_contacts;
-    std::vector< Epp::KeySet::DsRecord > ds_records;
-    std::vector< Epp::KeySet::DnsKey > dns_keys;
+    std::vector< Epp::Keyset::DsRecord > ds_records;
+    std::vector< Epp::Keyset::DnsKey > dns_keys;
 };
 
 template < Registrar::Enum REGISTRAR >
-KeySetCreateData create_successfully_by(const Test::ObjectsProvider &objects_provider)
+KeysetCreateData create_successfully_by(const Test::ObjectsProvider &objects_provider)
 {
     try {
         Fred::OperationContextCreator ctx;
-        KeySetCreateData data;
+        KeysetCreateData data;
         data.registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
         BOOST_REQUIRE(0 < data.registrar_id);
-        data.keyset_handle = objects_provider.get_keyset_handle< Fred::KeySet::HandleState::available,
-                                                                 Fred::KeySet::HandleState::valid >(ctx);
+        data.keyset_handle = objects_provider.get_keyset_handle< Fred::Keyset::HandleState::available,
+                                                                 Fred::Keyset::HandleState::valid >(ctx);
         data.registrar_handle = get_registrar_handle< REGISTRAR >(objects_provider);
-        static const unsigned number_of_contacts = (1 + Epp::KeySet::max_number_of_tech_contacts) / 2;
+        static const unsigned number_of_contacts = (1 + Epp::Keyset::max_number_of_tech_contacts) / 2;
         data.tech_contacts.reserve(number_of_contacts);
         for (unsigned idx = 0; idx < number_of_contacts; ++idx) {
             data.tech_contacts.push_back(objects_provider.get_contact(idx).handle);
         }
         static const unsigned long long logd_request_id = 12345;
-        data.dns_keys.push_back(Epp::KeySet::DnsKey(0, 3, 8, "bla="));
-        BOOST_CHECK(is_nondecreasing(Epp::KeySet::min_number_of_dns_keys, data.dns_keys.size(), Epp::KeySet::max_number_of_dns_keys));
+        data.dns_keys.push_back(Epp::Keyset::DnsKey(0, 3, 8, "bla="));
+        BOOST_CHECK(is_nondecreasing(Epp::Keyset::min_number_of_dns_keys, data.dns_keys.size(), Epp::Keyset::max_number_of_dns_keys));
         const Epp::KeysetCreateResult result = Epp::keyset_create(
             ctx,
             data.keyset_handle,
@@ -162,7 +162,7 @@ KeySetCreateData create_successfully_by(const Test::ObjectsProvider &objects_pro
     }
 }
 
-void check_created_keyset(const KeySetCreateData &data)
+void check_created_keyset(const KeysetCreateData &data)
 {
     try {
         Fred::OperationContextCreator ctx;
@@ -185,7 +185,7 @@ void check_created_keyset(const KeySetCreateData &data)
         BOOST_CHECK(data.ds_records.empty());
         BOOST_CHECK(info_data.dns_keys.size() == data.dns_keys.size());
         BOOST_CHECK(!info_data.dns_keys.empty());
-        for (std::vector< Epp::KeySet::DnsKey >::const_iterator dns_key_ptr = data.dns_keys.begin();
+        for (std::vector< Epp::Keyset::DnsKey >::const_iterator dns_key_ptr = data.dns_keys.begin();
              dns_key_ptr != data.dns_keys.end(); ++dns_key_ptr)
         {
             BOOST_CHECK(info_data.dns_keys.count(*dns_key_ptr) == 1);
@@ -202,7 +202,7 @@ void check_created_keyset(const KeySetCreateData &data)
     }
 }
 
-void create_by_invalid_registrar(const KeySetCreateData &data)
+void create_by_invalid_registrar(const KeysetCreateData &data)
 {
     Fred::OperationContextCreator ctx;
     static const unsigned long long invalid_registrar_id = 0;
@@ -238,12 +238,12 @@ bool equal(const Epp::ParameterErrors &a, const Epp::ParameterErrors &b)
 }
 
 template < Registrar::Enum REGISTRAR >
-void create_with_correct_data_but_registered_handle_by(const KeySetCreateData &data,
+void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &data,
                                                        const Test::ObjectsProvider &objects_provider)
 {
     Fred::OperationContextCreator ctx;
-    BOOST_REQUIRE(Fred::KeySet::get_handle_registrability(ctx, data.keyset_handle) ==
-                  Fred::KeySet::HandleState::registered);
+    BOOST_REQUIRE(Fred::Keyset::get_handle_registrability(ctx, data.keyset_handle) ==
+                  Fred::Keyset::HandleState::registered);
     static const unsigned long long logd_request_id = 12346;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     try {
@@ -266,10 +266,10 @@ void create_with_correct_data_but_registered_handle_by(const KeySetCreateData &d
 }
 
 template < Registrar::Enum REGISTRAR >
-KeySetCreateData create_protected_period_by(const Test::ObjectsProvider &objects_provider)
+KeysetCreateData create_protected_period_by(const Test::ObjectsProvider &objects_provider)
 {
     try {
-        const KeySetCreateData data = Keyset::create_successfully_by< REGISTRAR >(objects_provider);
+        const KeysetCreateData data = Keyset::create_successfully_by< REGISTRAR >(objects_provider);
         check_created_keyset(data);
         Fred::OperationContextCreator ctx;
         const unsigned long long delete_result = Epp::keyset_delete(
@@ -305,17 +305,17 @@ KeySetCreateData create_protected_period_by(const Test::ObjectsProvider &objects
 void check_protected_period_keyset(const std::string &keyset_handle)
 {
     try {
-        
+
         Fred::OperationContextCreator ctx;
         std::set< std::string > handles;
         handles.insert(keyset_handle);
-        const std::map< std::string, Nullable< Epp::KeySet::HandleCheckResult::Enum > > check_result =
+        const std::map< std::string, Nullable< Epp::Keyset::HandleCheckResult::Enum > > check_result =
             Epp::keyset_check(ctx, handles);
         ctx.commit_transaction();
         BOOST_REQUIRE(check_result.size() == 1);
         BOOST_REQUIRE(check_result.count(keyset_handle) == 1);
         BOOST_REQUIRE(!check_result.find(keyset_handle)->second.isnull());
-        BOOST_CHECK(check_result.find(keyset_handle)->second.get_value() == Epp::KeySet::HandleCheckResult::protected_handle);
+        BOOST_CHECK(check_result.find(keyset_handle)->second.get_value() == Epp::Keyset::HandleCheckResult::protected_handle);
         return;
     }
     catch (const std::exception &e) {
@@ -329,12 +329,12 @@ void check_protected_period_keyset(const std::string &keyset_handle)
 }
 
 template < Registrar::Enum REGISTRAR >
-void create_with_correct_data_but_protected_handle_by(const KeySetCreateData &data,
+void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &data,
                                                       const Test::ObjectsProvider &objects_provider)
 {
     Fred::OperationContextCreator ctx;
-    BOOST_REQUIRE(Fred::KeySet::get_handle_registrability(ctx, data.keyset_handle) ==
-                  Fred::KeySet::HandleState::in_protection_period);
+    BOOST_REQUIRE(Fred::Keyset::get_handle_registrability(ctx, data.keyset_handle) ==
+                  Fred::Keyset::HandleState::in_protection_period);
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     try {
@@ -357,12 +357,12 @@ void create_with_correct_data_but_protected_handle_by(const KeySetCreateData &da
 }
 
 template < Registrar::Enum REGISTRAR >
-void create_with_correct_data_but_invalid_handle_by(const KeySetCreateData &data,
+void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data,
                                                     const Test::ObjectsProvider &objects_provider)
 {
     const std::string invalid_keyset_handle = data.keyset_handle + "-";
-    BOOST_REQUIRE(Fred::KeySet::get_handle_syntax_validity(invalid_keyset_handle) ==
-                  Fred::KeySet::HandleState::invalid);
+    BOOST_REQUIRE(Fred::Keyset::get_handle_syntax_validity(invalid_keyset_handle) ==
+                  Fred::Keyset::HandleState::invalid);
     Fred::OperationContextCreator ctx;
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
@@ -389,19 +389,19 @@ void create_with_correct_data_but_invalid_handle_by(const KeySetCreateData &data
 
 BOOST_FIXTURE_TEST_CASE(create, Test::ObjectsProvider)
 {
-    const KeySetCreateData data_a = Keyset::create_successfully_by< Registrar::A >(*this);
+    const KeysetCreateData data_a = Keyset::create_successfully_by< Registrar::A >(*this);
     check_created_keyset(data_a);
 
-    const KeySetCreateData data_b = Keyset::create_successfully_by< Registrar::B >(*this);
+    const KeysetCreateData data_b = Keyset::create_successfully_by< Registrar::B >(*this);
     check_created_keyset(data_b);
 
-    const KeySetCreateData data_sys = Keyset::create_successfully_by< Registrar::SYS >(*this);
+    const KeysetCreateData data_sys = Keyset::create_successfully_by< Registrar::SYS >(*this);
     check_created_keyset(data_sys);
 
     create_by_invalid_registrar(data_a);
     create_by_invalid_registrar(data_b);
     create_by_invalid_registrar(data_sys);
-    create_by_invalid_registrar(KeySetCreateData());
+    create_by_invalid_registrar(KeysetCreateData());
 
     create_with_correct_data_but_registered_handle_by< Registrar::A >(data_a, *this);
     create_with_correct_data_but_registered_handle_by< Registrar::B >(data_a, *this);
@@ -413,11 +413,11 @@ BOOST_FIXTURE_TEST_CASE(create, Test::ObjectsProvider)
     create_with_correct_data_but_registered_handle_by< Registrar::B >(data_sys, *this);
     create_with_correct_data_but_registered_handle_by< Registrar::SYS >(data_sys, *this);
 
-    const KeySetCreateData protected_data_a = Keyset::create_protected_period_by< Registrar::A >(*this);
+    const KeysetCreateData protected_data_a = Keyset::create_protected_period_by< Registrar::A >(*this);
     check_protected_period_keyset(protected_data_a.keyset_handle);
-    const KeySetCreateData protected_data_b = Keyset::create_protected_period_by< Registrar::B >(*this);
+    const KeysetCreateData protected_data_b = Keyset::create_protected_period_by< Registrar::B >(*this);
     check_protected_period_keyset(protected_data_b.keyset_handle);
-    const KeySetCreateData protected_data_sys = Keyset::create_protected_period_by< Registrar::SYS >(*this);
+    const KeysetCreateData protected_data_sys = Keyset::create_protected_period_by< Registrar::SYS >(*this);
     check_protected_period_keyset(protected_data_sys.keyset_handle);
 
     create_with_correct_data_but_protected_handle_by< Registrar::A >(protected_data_a, *this);

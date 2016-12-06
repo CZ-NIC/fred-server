@@ -1,5 +1,5 @@
-#ifndef _WHOIS_IMPL_H_
-#define _WHOIS_IMPL_H_
+#ifndef WHOIS_IMPL_H_65FAB81BA55942308A1648E27C426A25
+#define WHOIS_IMPL_H_65FAB81BA55942308A1648E27C426A25
 
 #include <memory>
 #include <string>
@@ -23,8 +23,8 @@ private:
                      Fred::Registrar::Registrar *reg);
 
   void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);
-  void fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n);
-  void fillKeySet(ccReg::KeySetDetail* cn, Fred::KeySet::KeySet* n);
+  void fillNSSet(ccReg::NSSetDetail* cn, Fred::Nsset::Nsset* n);
+  void fillKeySet(ccReg::KeySetDetail* cn, Fred::Keyset::Keyset* n);
   void fillDomain(ccReg::DomainDetail* cd, Fred::Domain::Domain* d);
 
 public:
@@ -58,4 +58,4 @@ public:
 
 };//class ccReg_Whois_i
 
-#endif //WHOIS_IMPL_H
+#endif

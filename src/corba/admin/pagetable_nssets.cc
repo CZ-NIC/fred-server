@@ -1,6 +1,6 @@
 #include "pagetable_nssets.h"
 
-ccReg_NSSets_i::ccReg_NSSets_i(Fred::NSSet::List *_nl, const Settings *_ptr) : nl(_nl) {
+ccReg_NSSets_i::ccReg_NSSets_i(Fred::Nsset::List *_nl, const Settings *_ptr) : nl(_nl) {
   uf.settings(_ptr);
 }
 
@@ -37,7 +37,7 @@ ccReg_NSSets_i::getRow(CORBA::UShort row)
 {
   Logging::Context ctx(base_context_);
 
-  const Fred::NSSet::NSSet *n = nl->getNSSet(row);
+  const Fred::Nsset::Nsset *n = nl->getNsset(row);
   if (!n) throw Registry::Table::INVALID_ROW();
   Registry::TableRow *tr = new Registry::TableRow;
   tr->length(4);
@@ -62,16 +62,16 @@ ccReg_NSSets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
   
   switch (column) {
     case 0:
-      nl->sort(Fred::NSSet::MT_HANDLE, dir);
+      nl->sort(Fred::Nsset::MT_HANDLE, dir);
       break;
     case 1:
-      nl->sort(Fred::NSSet::MT_CRDATE, dir);
+      nl->sort(Fred::Nsset::MT_CRDATE, dir);
       break;
     case 2:
-      nl->sort(Fred::NSSet::MT_ERDATE, dir);
+      nl->sort(Fred::Nsset::MT_ERDATE, dir);
       break;
     case 3:
-      nl->sort(Fred::NSSet::MT_REGISTRAR_HANDLE, dir);
+      nl->sort(Fred::Nsset::MT_REGISTRAR_HANDLE, dir);
       break;
   }
 }
@@ -82,7 +82,7 @@ ccReg_NSSets_i::getRowId(CORBA::UShort row)
 {
   Logging::Context ctx(base_context_);
 
-  const Fred::NSSet::NSSet *n = nl->getNSSet(row);
+  const Fred::Nsset::Nsset *n = nl->getNsset(row);
   if (!n) throw Registry::Table::INVALID_ROW();
   return n->getId();
 }
@@ -175,12 +175,12 @@ ccReg_NSSets_i::saveFilter(const char* _name) {
   tmp_filter_manager->save(Fred::Filter::FT_NSSET, _name, uf);
 }
 
-Fred::NSSet::NSSet* ccReg_NSSets_i::findId(ccReg::TID _id) {
+Fred::Nsset::Nsset* ccReg_NSSets_i::findId(ccReg::TID _id) {
   Logging::Context ctx(base_context_);
 
   try {
-    Fred::NSSet::NSSet *nsset =
-        dynamic_cast<Fred::NSSet::NSSet*> (nl->findId(_id));
+    Fred::Nsset::Nsset *nsset =
+        dynamic_cast<Fred::Nsset::Nsset*> (nl->findId(_id));
     if (nsset) {
       return nsset;
     }

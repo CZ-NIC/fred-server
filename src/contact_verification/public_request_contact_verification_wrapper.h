@@ -1,5 +1,5 @@
-#ifndef CONTACT_IDENTIFICATION_H_
-#define CONTACT_IDENTIFICATION_H_
+#ifndef PUBLIC_REQUEST_CONTACT_VERIFICATION_WRAPPER_H_D15FD91D5AA44D7685F6EBC7E5655607
+#define PUBLIC_REQUEST_CONTACT_VERIFICATION_WRAPPER_H_D15FD91D5AA44D7685F6EBC7E5655607
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_registry_args.h"
@@ -51,8 +51,8 @@ public:
         request_manager_.reset(Fred::PublicRequest::Manager::create(
                     registry_manager_->getDomainManager(),
                     registry_manager_->getContactManager(),
-                    registry_manager_->getNSSetManager(),
-                    registry_manager_->getKeySetManager(),
+                    registry_manager_->getNssetManager(),
+                    registry_manager_->getKeysetManager(),
                     mailer_manager_.get(),
                     doc_manager_.get(),
                     registry_manager_->getMessageManager()));

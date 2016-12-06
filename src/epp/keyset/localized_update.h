@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef LOCALIZED_UPDATE_H_912BBDE4BA483FE70E9248924B1824BD//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define LOCALIZED_UPDATE_H_912BBDE4BA483FE70E9248924B1824BD
+#ifndef LOCALIZED_UPDATE_H_B5ACACE3D6594CA7BA517C2C333CD9D3
+#define LOCALIZED_UPDATE_H_B5ACACE3D6594CA7BA517C2C333CD9D3
 
 #include "src/epp/keyset/ds_record.h"
 #include "src/epp/keyset/dns_key.h"
@@ -32,7 +32,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
-namespace KeySet {
+namespace Keyset {
 namespace Localized {
 
 LocalizedSuccessResponse update(
@@ -40,10 +40,10 @@ LocalizedSuccessResponse update(
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts_add,
     const std::vector< std::string > &_tech_contacts_rem,
-    const std::vector< KeySet::DsRecord > &_ds_records_add,
-    const std::vector< KeySet::DsRecord > &_ds_records_rem,
-    const std::vector< KeySet::DnsKey > &_dns_keys_add,
-    const std::vector< KeySet::DnsKey > &_dns_keys_rem,
+    const std::vector< Keyset::DsRecord > &_ds_records_add,
+    const std::vector< Keyset::DsRecord > &_ds_records_rem,
+    const std::vector< Keyset::DnsKey > &_dns_keys_add,
+    const std::vector< Keyset::DnsKey > &_dns_keys_rem,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id,
     SessionLang::Enum _lang,
@@ -52,8 +52,8 @@ LocalizedSuccessResponse update(
     bool _epp_notification_disabled,
     const std::string &_dont_notify_client_transaction_handles_with_this_prefix);
 
-}//namespace Epp::KeySet::Localized
-}//namespace Epp::KeySet
+}//namespace Epp::Keyset::Localized
+}//namespace Epp::Keyset
 }//namespace Epp
 
-#endif//LOCALIZED_UPDATE_H_912BBDE4BA483FE70E9248924B1824BD
+#endif
