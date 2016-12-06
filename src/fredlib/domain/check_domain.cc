@@ -224,9 +224,9 @@ namespace Fred
             if(zone.is_enum)
             {
                 Database::Result conflicting_fqdn_res  = ctx.get_conn().exec_params(
-                    "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
-                    " WHERE eot.name='domain' AND o.erdate ISNULL ""AND (($1::text LIKE '%.'|| o.name) "
-                    " OR (o.name LIKE '%.'||$1::text) OR o.name=LOWER($1::text)) LIMIT 1"
+                    "SELECT o.name, o.id FROM object_registry o WHERE o.type=get_object_type_id('domain'::text) "
+                    "AND o.erdate ISNULL ""AND (($1::text LIKE '%.'|| o.name) "
+                    "OR (o.name LIKE '%.'||$1::text) OR o.name=LOWER($1::text)) LIMIT 1"
                 , Database::query_param_list(no_root_dot_fqdn));
                 if(conflicting_fqdn_res.size() > 0)//have conflicting_fqdn
                 {
@@ -237,8 +237,8 @@ namespace Fred
             else
             {//is not ENUM
                 Database::Result conflicting_fqdn_res  = ctx.get_conn().exec_params(
-                    "SELECT o.name, o.id FROM object_registry o JOIN enum_object_type eot on o.type = eot.id "
-                    " WHERE eot.name='domain' AND o.erdate ISNULL AND o.name=LOWER($1::text) LIMIT 1"
+                    "SELECT o.name, o.id FROM object_registry o WHERE o.type=get_object_type_id('domain'::text) "
+                    "AND o.erdate ISNULL AND o.name=LOWER($1::text) LIMIT 1"
                 , Database::query_param_list(no_root_dot_fqdn));
                 if(conflicting_fqdn_res.size() > 0)//have conflicting_fqdn
                 {

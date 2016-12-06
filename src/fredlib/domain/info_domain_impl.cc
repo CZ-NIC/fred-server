@@ -162,7 +162,7 @@ namespace Fred
             info_domain_query(" LEFT JOIN  enumval ev ON ev.domainid = dt.id");
         }
 
-        info_domain_query(" WHERE dobr.type = (SELECT id FROM enum_object_type eot WHERE eot.name='domain'::text) ");
+        info_domain_query(" WHERE dobr.type = get_object_type_id('domain'::text) ");
 
         if(info_domain_id_filter_cte_.isset())
         {

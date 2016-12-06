@@ -183,8 +183,8 @@ namespace Fred
                 "SELECT oreg.id, z.enum_zone FROM domain d "
                 " JOIN zone z ON z.id = d.zone "
                 " JOIN object_registry oreg ON d.id = oreg.id "
-                " JOIN enum_object_type eot ON oreg.type = eot.id AND eot.name = 'domain' "
-                " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
+                " WHERE oreg.type = get_object_type_id('domain'::text) "
+                " AND oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
                 " FOR UPDATE OF oreg"
                 , Database::query_param_list(no_root_dot_fqdn));
 
