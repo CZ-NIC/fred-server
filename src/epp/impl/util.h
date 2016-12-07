@@ -20,13 +20,13 @@
  *  @file
  */
 
-#ifndef EPP_UTIL_H_873559873922
-#define EPP_UTIL_H_873559873922
+#ifndef UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
+#define UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/contact/info_contact_data.h"
 #include "util/optional_value.h"
-#include "src/epp/contact/contact_info.h"
+#include "src/epp/contact/info_contact_localized.h"
 #include "src/admin/contact/verification/contact_states/enum.h"
 
 #include <string>

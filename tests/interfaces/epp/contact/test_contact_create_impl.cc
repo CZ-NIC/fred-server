@@ -23,8 +23,8 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/contact/fixture.h"
 
-#include "src/epp/disclose_policy.h"
-#include "src/epp/contact/contact_create_impl.h"
+#include "src/epp/impl/disclose_policy.h"
+#include "src/epp/contact/create_contact.h"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>

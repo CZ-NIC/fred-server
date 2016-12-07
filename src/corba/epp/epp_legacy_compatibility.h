@@ -20,10 +20,10 @@
  *  @file
  */
 
-#ifndef SRC_CORBA_EPP_EPP_LEGACY_COMPATIBILITY_H_7876341150341530
-#define SRC_CORBA_EPP_EPP_LEGACY_COMPATIBILITY_H_7876341150341530
+#ifndef EPP_LEGACY_COMPATIBILITY_H_2E719054B59248C196A1A2D17DF40DF9
+#define EPP_LEGACY_COMPATIBILITY_H_2E719054B59248C196A1A2D17DF40DF9
 
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/corba/epp/epp_session.h"
 #include "util/optional_value.h"
 

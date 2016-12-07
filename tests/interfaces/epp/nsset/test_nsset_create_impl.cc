@@ -30,8 +30,8 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
-#include "src/epp/nsset/nsset_create_impl.h"
-#include "src/epp/nsset/nsset_impl.h"
+#include "src/epp/nsset/create_nsset.h"
+#include "src/epp/nsset/impl/nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetCreateImpl)

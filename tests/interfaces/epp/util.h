@@ -26,8 +26,8 @@
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 
-#include "src/epp/exception.h"
-#include "src/epp/exception_aggregate_param_errors.h"
+#include "src/epp/impl/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/error.h"
 
 #include <boost/test/test_tools.hpp>

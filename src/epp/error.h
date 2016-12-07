@@ -23,8 +23,8 @@
 #ifndef EPP_ERROR_9347842721087
 #define EPP_ERROR_9347842721087
 
-#include "src/epp/reason.h"
-#include "src/epp/param.h"
+#include "src/epp/impl/reason.h"
+#include "src/epp/impl/param.h"
 
 namespace Epp {
 

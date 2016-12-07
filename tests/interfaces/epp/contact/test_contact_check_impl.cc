@@ -27,7 +27,7 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/contact/fixture.h"
 
-#include "src/epp/contact/contact_check_impl.h"
+#include "src/epp/contact/check_contact.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_FIXTURE_TEST_SUITE(ContactCheckImpl, Test::autocommitting_context)

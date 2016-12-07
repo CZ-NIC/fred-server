@@ -28,7 +28,7 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
-#include "src/epp/nsset/nsset_update_impl.h"
+#include "src/epp/nsset/update_nsset.h"
 #include "util/map_at.h"
 
 #include <map>

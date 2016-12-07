@@ -21,12 +21,12 @@
  */
 
 #include "tests/interfaces/epp/keyset/fixture.h"
-#include "src/epp/parameter_errors.h"
-#include "src/epp/keyset/create.h"
-#include "src/epp/keyset/delete.h"
-#include "src/epp/keyset/check.h"
-#include "src/epp/keyset/info.h"
-#include "src/epp/keyset/limits.h"
+#include "src/epp/impl/parameter_errors.h"
+#include "src/epp/keyset/create_keyset.h"
+#include "src/epp/keyset/delete_keyset.h"
+#include "src/epp/keyset/check_keyset.h"
+#include "src/epp/keyset/info_keyset.h"
+#include "src/epp/keyset/impl/limits.h"
 #include "src/fredlib/registrar/create_registrar.h"
 
 #include <sstream>

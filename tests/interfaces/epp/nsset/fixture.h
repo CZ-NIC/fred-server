@@ -30,9 +30,9 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
-#include "src/epp/nsset/nsset_create.h"
-#include "src/epp/nsset/nsset_update.h"
-#include "src/epp/nsset/nsset_impl.h"
+#include "src/epp/nsset/create_nsset_localized.h"
+#include "src/epp/nsset/update_nsset_localized.h"
+#include "src/epp/nsset/impl/nsset.h"
 
 struct has_registrar : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData registrar;

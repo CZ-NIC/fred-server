@@ -21,15 +21,15 @@
  *  basic server config
  */
 
-#ifndef HANDLE_REGISTRY_ARGS_H_
-#define HANDLE_REGISTRY_ARGS_H_
+#ifndef HANDLE_REGISTRY_ARGS_H_C9FB23EA2AC143618F9E646C106DE78B
+#define HANDLE_REGISTRY_ARGS_H_C9FB23EA2AC143618F9E646C106DE78B
 
 #include <iostream>
 #include <exception>
 #include <string>
 #include <vector>
 
-#include "src/epp/nsset/nsset_constants.h"
+#include "src/epp/nsset/impl/nsset_constants.h"
 
 #include <boost/program_options.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -175,4 +175,4 @@ public:
         {return HandleRegistryArgs::disable_epp_notifier_cltrid_prefix;}
 };//class HandleRegistryArgsGrp
 
-#endif //HANDLE_REGISTRY_ARGS_H_
+#endif

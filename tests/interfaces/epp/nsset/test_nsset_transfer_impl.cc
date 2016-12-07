@@ -27,7 +27,7 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
-#include "src/epp/nsset/nsset_transfer_impl.h"
+#include "src/epp/nsset/transfer_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetTransferImpl)

@@ -26,7 +26,7 @@
 #include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/setup/fixtures.h"
 
-#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
 
 #include "src/corba/mailer_manager.h"
 #include "src/fredlib/notifier/process_one_notification_request.h"

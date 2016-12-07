@@ -1,12 +1,11 @@
 #include "src/corba/epp/corba_conversions.h"
 
 #include "src/corba/EPP.hh"
-#include "src/epp/error.h"
-#include "src/epp/param.h"
-#include "src/epp/contact/contact_create.h"
-
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/epp/contact/create_contact_localized.h"
+#include "src/epp/error.h"
+#include "src/epp/impl/param.h"
 
 #include "util/corba_conversion.h"
 #include "util/db/nullable.h"
@@ -14,14 +13,15 @@
 #include "util/optional_value.h"
 #include "src/old_utils/util.h" // for convert_rfc3339_timestamp()
 
-#include <string>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include <boost/numeric/conversion/cast.hpp>
-#include <boost/mpl/assert.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/integer_traits.hpp>
+#include <boost/mpl/assert.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/optional.hpp>
+
+#include <string>
 
 namespace Corba {
 

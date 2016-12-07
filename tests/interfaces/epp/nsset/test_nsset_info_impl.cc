@@ -26,11 +26,11 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/optional.hpp>
 
-#include "src/epp/nsset/nsset_dns_host_output.h"
+#include "src/epp/nsset/impl/nsset_dns_host_output.h"
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
-#include "src/epp/nsset/nsset_info_impl.h"
+#include "src/epp/nsset/info_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetInfoImpl)

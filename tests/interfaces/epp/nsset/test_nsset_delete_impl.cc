@@ -27,7 +27,7 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
-#include "src/epp/nsset/nsset_delete_impl.h"
+#include "src/epp/nsset/delete_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(NssetDeleteImpl)

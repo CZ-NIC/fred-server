@@ -27,7 +27,7 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
-#include "src/epp/nsset/nsset_check_impl.h"
+#include "src/epp/nsset/check_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_FIXTURE_TEST_SUITE(NssetCheckImpl, Test::autocommitting_context)

@@ -23,8 +23,8 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/contact/fixture.h"
 
-#include "src/epp/disclose_policy.h"
-#include "src/epp/contact/contact_update_impl.h"
+#include "src/epp/impl/disclose_policy.h"
+#include "src/epp/contact/update_contact.h"
 
 #include <set>
 #include <boost/test/unit_test.hpp>
