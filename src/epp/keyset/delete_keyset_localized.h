@@ -31,7 +31,7 @@
 namespace Epp {
 namespace Keyset {
 
-LocalizedSuccessResponse localized_delete(
+LocalizedSuccessResponse delete_keyset_localized(
     const std::string &_keyset_handle,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
@@ -40,7 +40,7 @@ LocalizedSuccessResponse localized_delete(
     bool _epp_notification_disabled,
     const std::string &_client_transaction_handles_prefix_not_to_nofify);
 
-}//namespace Epp::KeySet
-}//namespace Epp
+} // namespace Epp::KeySet
+} // namespace Epp
 
 #endif

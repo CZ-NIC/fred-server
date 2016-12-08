@@ -20,38 +20,35 @@
  *  @file
  */
 
-#ifndef NSSET_DNS_HOST_INPUT_H_7057A77A81DA43B38725BD668BF8015A
-#define NSSET_DNS_HOST_INPUT_H_7057A77A81DA43B38725BD668BF8015A
-
-#include "src/epp/impl/session_lang.h"
-#include "src/fredlib/opcontext.h"
-#include "util/db/nullable.h"
+#ifndef DNS_HOST_OUTPUT_H_AF9BB4F2EDD64A929920CF34924B88BA
+#define DNS_HOST_OUTPUT_H_AF9BB4F2EDD64A929920CF34924B88BA
 
 #include <string>
 #include <vector>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/asio/ip/address.hpp>
-#include <boost/optional.hpp>
 
 namespace Epp {
+namespace Nsset {
 
     /**
-     * DNS host data.
+     * DNS host output data for nsset info.
      */
-    struct DNShostInput {
+    struct DnsHostOutput {
         std::string fqdn;/**< nameserver host name*/
-        std::vector<boost::optional<boost::asio::ip::address> > inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host, non-initialized if value is invalid*/
+        std::vector<boost::asio::ip::address> inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
 
         /**
          * Constructor initializing all attributes.
          * @param _fqdn nameserver name
-         * @param _inet_addr addresses of the nameserver, non-initialized if value is invalid
+         * @param _inet_addr addresses of the nameserver
          */
-        DNShostInput(const std::string& _fqdn, const std::vector<boost::optional<boost::asio::ip::address> >& _inet_addr)
+        DnsHostOutput(const std::string& _fqdn, const std::vector<boost::asio::ip::address>& _inet_addr)
         : fqdn(_fqdn)
         , inet_addr(_inet_addr)
         {}
     };
-}
+
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

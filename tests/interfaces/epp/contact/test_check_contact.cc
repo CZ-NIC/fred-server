@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_result_size_empty)
     Fred::OperationContextCreator ctx;
 
     BOOST_CHECK_EQUAL(
-        Epp::contact_check_impl(
+        Epp::Contact::check_contact(
             ctx,
             std::set<std::string>()
         ).size(),
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_result_size_nonempty)
     Fred::OperationContextCreator ctx;
 
     BOOST_CHECK_EQUAL(
-        Epp::contact_check_impl(
+        Epp::Contact::check_contact(
             ctx,
             contact_handles
         ).size(),
@@ -86,17 +86,17 @@ BOOST_AUTO_TEST_CASE(test_invalid_handle)
 
     Fred::OperationContextCreator ctx;
 
-    const std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> > check_res =
-        Epp::contact_check_impl(
+    const std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Contact::check_contact(
             ctx,
             contact_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
-        BOOST_CHECK(it->second.get_value() == Epp::ContactHandleRegistrationObstruction::invalid_handle);
+        BOOST_CHECK(it->second.get_value() == Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle);
     }
 }
 
@@ -120,17 +120,17 @@ struct has_protected_handles : has_registrar {
 
 BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
 {
-    const std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> > check_res =
-        Epp::contact_check_impl(
+    const std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Contact::check_contact(
             ctx,
             protected_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
-        BOOST_CHECK(it->second.get_value() == Epp::ContactHandleRegistrationObstruction::protected_handle);
+        BOOST_CHECK(it->second.get_value() == Epp::Contact::ContactHandleRegistrationObstruction::protected_handle);
     }
 }
 
@@ -148,13 +148,13 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, Test::autocommitting_context)
 
     Fred::OperationContextCreator ctx;
 
-    const std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> > check_res =
-        Epp::contact_check_impl(
+    const std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Contact::check_contact(
             ctx,
             contact_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
@@ -181,17 +181,17 @@ struct has_existing_contacts : has_registrar {
 
 BOOST_FIXTURE_TEST_CASE(test_existing, has_existing_contacts)
 {
-    const std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> > check_res =
-        Epp::contact_check_impl(
+    const std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Contact::check_contact(
             ctx,
             existing_contact_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
-        BOOST_CHECK(it->second.get_value() == Epp::ContactHandleRegistrationObstruction::registered_handle);
+        BOOST_CHECK(it->second.get_value() == Epp::Contact::ContactHandleRegistrationObstruction::registered_handle);
     }
 }
 

@@ -28,6 +28,7 @@
 #include "src/fredlib/opcontext.h"
 
 namespace Epp {
+namespace Contact {
 
 /**
  * If successful (no exception thrown) state requests of conact are performed. In case of exception behaviour is undefined and transaction should bo rolled back.
@@ -39,12 +40,13 @@ namespace Epp {
  * @throws AuthorizationError
  * @throws ObjectStatusProhibitsOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
-unsigned long long contact_delete_impl(
+unsigned long long delete_contact(
     Fred::OperationContext& _ctx,
     const std::string& _handle,
     unsigned long long _registrar_id
 );
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

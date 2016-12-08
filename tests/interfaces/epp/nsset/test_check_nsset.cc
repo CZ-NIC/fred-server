@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_result_size_empty)
     Fred::OperationContextCreator ctx;
 
     BOOST_CHECK_EQUAL(
-        Epp::nsset_check_impl(
+        Epp::Nsset::check_nsset(
             ctx,
             std::set<std::string>()
         ).size(),
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_result_size_nonempty)
     Fred::OperationContextCreator ctx;
 
     BOOST_CHECK_EQUAL(
-        Epp::nsset_check_impl(
+        Epp::Nsset::check_nsset(
             ctx,
             nsset_handles
         ).size(),
@@ -86,17 +86,17 @@ BOOST_AUTO_TEST_CASE(test_invalid_handle)
 
     Fred::OperationContextCreator ctx;
 
-    const std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> > check_res =
-        Epp::nsset_check_impl(
+    const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Nsset::check_nsset(
             ctx,
             nsset_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
-        BOOST_CHECK(it->second.get_value() == Epp::NssetHandleRegistrationObstruction::invalid_handle);
+        BOOST_CHECK(it->second.get_value() == Epp::Nsset::NssetHandleRegistrationObstruction::invalid_handle);
     }
 }
 
@@ -120,17 +120,17 @@ struct has_protected_handles : has_registrar {
 
 BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
 {
-    const std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> > check_res =
-        Epp::nsset_check_impl(
+    const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Nsset::check_nsset(
             ctx,
             protected_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
-        BOOST_CHECK(it->second.get_value() == Epp::NssetHandleRegistrationObstruction::protected_handle);
+        BOOST_CHECK(it->second.get_value() == Epp::Nsset::NssetHandleRegistrationObstruction::protected_handle);
     }
 }
 
@@ -148,13 +148,13 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, Test::autocommitting_context)
 
     Fred::OperationContextCreator ctx;
 
-    const std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> > check_res =
-        Epp::nsset_check_impl(
+    const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Nsset::check_nsset(
             ctx,
             nsset_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
@@ -181,17 +181,17 @@ struct has_existing_nssets : has_registrar {
 
 BOOST_FIXTURE_TEST_CASE(test_existing, has_existing_nssets)
 {
-    const std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> > check_res =
-        Epp::nsset_check_impl(
+    const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
+        Epp::Nsset::check_nsset(
             ctx,
             existing_nsset_handles
         );
 
-    for(std::map<std::string, Nullable<Epp::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+    for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
         ++it
     ) {
-        BOOST_CHECK(it->second.get_value() == Epp::NssetHandleRegistrationObstruction::registered_handle);
+        BOOST_CHECK(it->second.get_value() == Epp::Nsset::NssetHandleRegistrationObstruction::registered_handle);
     }
 }
 

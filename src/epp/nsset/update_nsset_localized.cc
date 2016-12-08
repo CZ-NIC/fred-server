@@ -13,9 +13,10 @@
 #include <string>
 
 namespace Epp {
+namespace Nsset {
 
-LocalizedSuccessResponse nsset_update(
-    const NssetUpdateInputData& _data,
+LocalizedSuccessResponse update_nsset_localized(
+    const UpdateNssetInputData& _data,
     const unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id,
     const bool _epp_update_nsset_enqueue_check,
@@ -30,11 +31,11 @@ LocalizedSuccessResponse nsset_update(
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>( Action::NssetUpdate)));
+        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::UpdateNsset)));
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long new_history_id = nsset_update_impl(
+        const unsigned long long new_history_id = update_nsset(
             ctx,
             _data,
             _registrar_id,
@@ -125,4 +126,5 @@ LocalizedSuccessResponse nsset_update(
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

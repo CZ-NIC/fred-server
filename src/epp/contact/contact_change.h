@@ -21,8 +21,8 @@
  *  header of EPP ContactChange class
  */
 
-#ifndef CHANGE_CONTACT_H_F9639164FA754E32B776A1D8DCBDD85D
-#define CHANGE_CONTACT_H_F9639164FA754E32B776A1D8DCBDD85D
+#ifndef CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
+#define CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
 
 #include "src/epp/contact/contact_disclose.h"
 #include "util/db/nullable.h"
@@ -32,6 +32,7 @@
 #include <boost/optional.hpp>
 
 namespace Epp {
+namespace Contact {
 
 struct ContactChange
 {
@@ -79,6 +80,7 @@ struct ContactChange
     static T get_value(const boost::optional< T > &_value);
 };
 
-}//namespace Epp
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

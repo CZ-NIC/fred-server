@@ -17,8 +17,9 @@
 #include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
+namespace Keyset {
 
-unsigned long long keyset_transfer(
+unsigned long long transfer_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     const std::string &_authinfopw,
@@ -82,4 +83,5 @@ unsigned long long keyset_transfer(
     }
 }
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp

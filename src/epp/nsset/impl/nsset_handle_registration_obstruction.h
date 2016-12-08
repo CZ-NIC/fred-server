@@ -30,8 +30,8 @@
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/reason.h"
 
-namespace Epp
-{
+namespace Epp {
+namespace Nsset {
 
     struct NssetHandleRegistrationObstruction
     {
@@ -57,6 +57,7 @@ namespace Epp
         }
     };
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

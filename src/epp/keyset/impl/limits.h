@@ -38,7 +38,7 @@ const unsigned max_number_of_dns_keys = 10;
 const unsigned min_number_of_ds_records = 0;
 const unsigned max_number_of_ds_records = 0;
 
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

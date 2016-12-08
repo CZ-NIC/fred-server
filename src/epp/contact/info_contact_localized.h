@@ -36,10 +36,11 @@
 #include <boost/optional.hpp>
 
 namespace Epp {
+namespace Contact {
 
-struct LocalizedContactInfoOutputData
+struct InfoContactLocalizedOutputData
 {
-    LocalizedContactInfoOutputData(const boost::optional< ContactDisclose > &disclose);
+    InfoContactLocalizedOutputData(const boost::optional< ContactDisclose > &disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -80,20 +81,21 @@ struct LocalizedContactInfoOutputData
     boost::optional< ContactDisclose > disclose;
 };
 
-struct LocalizedInfoContactResponse
+struct InfoContactLocalizedResponse
 {
-    LocalizedInfoContactResponse(const LocalizedSuccessResponse &_ok_response,
-                                 const LocalizedContactInfoOutputData &_payload);
+    InfoContactLocalizedResponse(const LocalizedSuccessResponse &_ok_response,
+                                 const InfoContactLocalizedOutputData &_payload);
     const LocalizedSuccessResponse ok_response;
-    const LocalizedContactInfoOutputData payload;
+    const InfoContactLocalizedOutputData payload;
 };
 
-LocalizedInfoContactResponse contact_info(
+InfoContactLocalizedResponse info_contact_localized(
     const std::string &_handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

@@ -30,10 +30,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Contact {
 
-struct ContactCreateResult
+struct CreateContactResult
 {
-    ContactCreateResult(unsigned long long _contact_id,
+    CreateContactResult(unsigned long long _contact_id,
                         unsigned long long _create_history_id,
                         const boost::posix_time::ptime &_contact_crdate)
     :   id(_contact_id),
@@ -51,13 +52,14 @@ struct ContactCreateResult
  * @throws ObjectExists
  * @throws AggregatedParamErrors
  */
-ContactCreateResult contact_create_impl(
+CreateContactResult create_contact(
     Fred::OperationContext &_ctx,
     const std::string &_contact_handle,
-    const ContactCreateInputData &_data,
+    const CreateContactInputData &_data,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

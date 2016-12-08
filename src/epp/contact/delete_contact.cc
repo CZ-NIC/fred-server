@@ -12,8 +12,9 @@
 #include "src/epp/impl/util.h"
 
 namespace Epp {
+namespace Contact {
 
-unsigned long long contact_delete_impl(
+unsigned long long delete_contact(
     Fred::OperationContext& _ctx,
     const std::string& _handle,
     const unsigned long long _registrar_id
@@ -80,4 +81,5 @@ unsigned long long contact_delete_impl(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

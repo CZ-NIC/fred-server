@@ -12,6 +12,7 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 
 namespace Epp {
+namespace Keyset {
 
 namespace {
 
@@ -22,7 +23,7 @@ bool presents(const std::set< Fred::Object_State::Enum > &_state, Fred::Object_S
 
 }
 
-unsigned long long keyset_delete(
+unsigned long long delete_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     unsigned long long _registrar_id)
@@ -91,4 +92,5 @@ unsigned long long keyset_delete(
     }
 }
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp

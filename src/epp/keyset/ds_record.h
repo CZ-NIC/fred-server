@@ -136,7 +136,7 @@ private:
 }; //class DsRecord
 
 
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

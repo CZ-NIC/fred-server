@@ -28,6 +28,7 @@
 #include "src/epp/contact/transfer_contact_localized.h"
 
 namespace Epp {
+namespace Contact {
 
 /**
  * If successful (no exception thrown) state requests of conact are performed. In case of exception behaviour is undefined and transaction should bo rolled back.
@@ -40,7 +41,7 @@ namespace Epp {
  * @throws ObjectStatusProhibitsOperation
  * @throws AuthorizationError in case invalid _authinfopw is given
  */
-unsigned long long contact_transfer_impl(
+unsigned long long transfer_contact(
     Fred::OperationContext& _ctx,
     const std::string& _contact_handle,
     const std::string& _authinfopw,
@@ -48,6 +49,7 @@ unsigned long long contact_transfer_impl(
     const Optional<unsigned long long>& _logd_request_id
 );
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

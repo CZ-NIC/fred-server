@@ -8,13 +8,14 @@
 #include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
+namespace Keyset {
 
-KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
+InfoKeysetData info_keyset(Fred::OperationContext &_ctx,
                            const std::string &_keyset_handle,
                            unsigned long long _registrar_id)
 {
     try {
-        KeysetInfoData result;
+        InfoKeysetData result;
         static const char *const utc_timezone = "UTC";
         const Fred::InfoKeysetData data = Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx, utc_timezone).info_keyset_data;
         result.handle = data.handle;
@@ -69,4 +70,5 @@ KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
     }
 }
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp

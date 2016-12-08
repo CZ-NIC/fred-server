@@ -32,12 +32,12 @@
 #include <vector>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/asio/ip/address.hpp>
-#include "src/epp/nsset/impl/nsset_dns_host_output.h"
+#include "src/epp/nsset/impl/dns_host_output.h"
 
 namespace Epp {
+namespace Nsset {
 
-
-struct LocalizedNssetInfoOutputData {
+struct InfoNssetLocalizedOutputData {
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -48,11 +48,11 @@ struct LocalizedNssetInfoOutputData {
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
     Nullable<std::string> auth_info_pw;
-    std::vector<DNShostOutput> dns_host;
+    std::vector<DnsHostOutput> dns_host;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
 
-    LocalizedNssetInfoOutputData(
+    InfoNssetLocalizedOutputData(
         const std::string& _handle,
         const std::string& _roid,
         const std::string& _sponsoring_registrar_handle,
@@ -63,7 +63,7 @@ struct LocalizedNssetInfoOutputData {
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
         const Nullable<std::string>& _auth_info_pw,
-        const std::vector<DNShostOutput>& _dns_host,
+        const std::vector<DnsHostOutput>& _dns_host,
         const std::vector<std::string>& _tech_contacts,
         short _tech_check_level
     ) :
@@ -83,26 +83,27 @@ struct LocalizedNssetInfoOutputData {
     { }
 };
 
-struct LocalizedInfoNssetResponse {
+struct InfoNssetLocalizedResponse {
     const LocalizedSuccessResponse ok_response;
-    const LocalizedNssetInfoOutputData payload;
+    const InfoNssetLocalizedOutputData payload;
 
-    LocalizedInfoNssetResponse(
+    InfoNssetLocalizedResponse(
         const LocalizedSuccessResponse& _ok_response,
-        const LocalizedNssetInfoOutputData& _payload
+        const InfoNssetLocalizedOutputData& _payload
     ) :
         ok_response(_ok_response),
         payload(_payload)
     { }
 };
 
-LocalizedInfoNssetResponse nsset_info(
+InfoNssetLocalizedResponse info_nsset_localized(
     const std::string& _handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string& _server_transaction_handle
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

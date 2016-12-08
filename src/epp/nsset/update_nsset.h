@@ -27,6 +27,7 @@
 #include "src/epp/nsset/update_nsset_localized.h"
 
 namespace Epp {
+namespace Nsset {
 
 /**
  * If successful, no exception thrown. In case of exception behaviour is undefined and transaction should be rolled back.
@@ -39,13 +40,14 @@ namespace Epp {
  * @throws ObjectStatusProhibitsOperation in case nsset has serverUpdateProhibited or deleteCandidate status (or request)
  * @throws AggregatedParamErrors
  */
-unsigned long long nsset_update_impl(
+unsigned long long update_nsset(
     Fred::OperationContext& _ctx,
-    const NssetUpdateInputData& _data,
+    const UpdateNssetInputData& _data,
     unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

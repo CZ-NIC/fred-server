@@ -19,8 +19,9 @@
 #include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
+namespace Contact {
 
-unsigned long long contact_transfer_impl(
+unsigned long long transfer_contact(
     Fred::OperationContext& _ctx,
     const std::string& _contact_handle,
     const std::string& _authinfopw,
@@ -79,4 +80,5 @@ unsigned long long contact_transfer_impl(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

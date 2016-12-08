@@ -11,12 +11,13 @@
 #include <stdexcept>
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
 typedef std::map< ContactHandleRegistrationObstruction::Enum, std::string > ObstructionToDescription;
 typedef std::map< std::string, Nullable< ContactHandleRegistrationObstruction::Enum > > HandleToObstruction;
-typedef std::map< std::string, boost::optional< LocalizedContactHandleRegistrationObstruction > > HandleToLocalizedObstruction;
+typedef std::map< std::string, boost::optional< ContactHandleLocalizedRegistrationObstruction > > HandleToLocalizedObstruction;
 typedef std::map< unsigned, ContactHandleRegistrationObstruction::Enum > DescriptionIdToObstruction;
 
 std::string get_column_for_language(SessionLang::Enum _lang)
@@ -73,12 +74,12 @@ ObstructionToDescription get_localized_description_of_obstructions(
     return result;
 }
 
-boost::optional< LocalizedContactHandleRegistrationObstruction > get_localized_obstruction(
+boost::optional< ContactHandleLocalizedRegistrationObstruction > get_localized_obstruction(
     const Nullable< ContactHandleRegistrationObstruction::Enum > &_check_result,
     const ObstructionToDescription &_localized_descriptions)
 {
     if (_check_result.isnull()) {
-        return boost::optional< LocalizedContactHandleRegistrationObstruction >();
+        return boost::optional< ContactHandleLocalizedRegistrationObstruction >();
     }
     const ContactHandleRegistrationObstruction::Enum obstruction = _check_result.get_value();
     const ObstructionToDescription::const_iterator localized_description_ptr =
@@ -87,7 +88,7 @@ boost::optional< LocalizedContactHandleRegistrationObstruction > get_localized_o
         throw MissingLocalizedDescription();
     }
     const std::string description = localized_description_ptr->second;
-    return LocalizedContactHandleRegistrationObstruction(obstruction, description);
+    return ContactHandleLocalizedRegistrationObstruction(obstruction, description);
 }
 
 HandleToLocalizedObstruction create_localized_check_response(
@@ -125,7 +126,7 @@ HandleToLocalizedObstruction create_localized_check_response(
 
 }//namespace Epp::{anonymous}
 
-LocalizedCheckContactResponse contact_check(
+CheckContactLocalizedResponse check_contact_localized(
     const std::set<std::string>& _contact_handles,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
@@ -135,7 +136,7 @@ LocalizedCheckContactResponse contact_check(
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactCheck) ) );
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckContact) ) );
 
         if (_registrar_id == 0) {
             Fred::OperationContextCreator exception_localization_ctx;
@@ -150,13 +151,13 @@ LocalizedCheckContactResponse contact_check(
         /* different than other methods - implementation is not throwing any specific exceptions so there's no need for exception translation */
         Fred::OperationContextCreator ctx;
 
-        const HandleToObstruction impl_result = contact_check_impl(ctx, _contact_handles);
+        const HandleToObstruction impl_result = check_contact(ctx, _contact_handles);
         const HandleToLocalizedObstruction localized_check_response =
             create_localized_check_response(ctx, impl_result, _lang);
         const LocalizedSuccessResponse ok_response =
             create_localized_success_response(Response::ok, ctx, _lang);
 
-        return LocalizedCheckContactResponse(ok_response, localized_check_response);
+        return CheckContactLocalizedResponse(ok_response, localized_check_response);
 
     }
     catch (const LocalizedFailResponse&) {
@@ -172,4 +173,5 @@ LocalizedCheckContactResponse contact_check(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

@@ -2,6 +2,7 @@
 #include "src/fredlib/keyset/check_keyset.h"
 
 namespace Epp {
+namespace Keyset {
 
 namespace {
 
@@ -33,7 +34,7 @@ Nullable< Keyset::HandleCheckResult::Enum > keyset_handle_state_to_check_result(
 
 }//namespace Epp::{anonymous}
 
-std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check(
+std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > check_keyset(
     Fred::OperationContext &_ctx,
     const std::set< std::string > &_keyset_handles)
 {
@@ -53,4 +54,5 @@ std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_chec
     return result;
 }
 
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp

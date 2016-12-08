@@ -24,14 +24,15 @@
 #define UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
 
 #include "src/fredlib/opcontext.h"
-#include "src/epp/keyset/impl/keyset_info_data.h"
+#include "src/epp/keyset/impl/info_keyset_data.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Keyset {
 
-struct KeysetUpdateResult
+struct UpdateKeysetResult
 {
     unsigned long long id;
     unsigned long long update_history_id;
@@ -41,7 +42,7 @@ struct KeysetUpdateResult
  * @throws ObjectStatusProhibitsOperation
  * @throws ParameterErrors
  */
-KeysetUpdateResult keyset_update(
+UpdateKeysetResult update_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
@@ -54,6 +55,7 @@ KeysetUpdateResult keyset_update(
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

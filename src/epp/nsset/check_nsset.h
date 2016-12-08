@@ -31,15 +31,17 @@
 #include <string>
 
 namespace Epp {
+namespace Nsset {
 
 /**
  * @returns check results for given nsset handles
  */
-std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > nsset_check_impl(
+std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
     Fred::OperationContext& _ctx,
     const std::set<std::string>& _nsset_handles
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

@@ -2,6 +2,7 @@
 #include <boost/foreach.hpp>
 
 namespace Epp {
+namespace Nsset {
 
     bool is_prohibited_ip_addr(
         const boost::optional<boost::asio::ip::address>& ipaddr,
@@ -58,26 +59,28 @@ namespace Epp {
     }
 
 
-    std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<Epp::DNShostInput>& data)
+    std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<DnsHostInput>& data)
     {
         std::vector<Fred::DnsHost> dns_hosts;
         dns_hosts.reserve(data.size());
-        BOOST_FOREACH(const Epp::DNShostInput& host, data)
+        BOOST_FOREACH(const DnsHostInput& host, data)
         {
             dns_hosts.push_back(Fred::DnsHost(host.fqdn, make_ipaddrs(host.inet_addr)));
         }
         return dns_hosts;
     }
 
-    std::vector<Epp::DNShostOutput> make_epp_dnshosts_output(const std::vector<Fred::DnsHost>& data)
+    std::vector<DnsHostOutput> make_epp_dnshosts_output(const std::vector<Fred::DnsHost>& data)
     {
-        std::vector<Epp::DNShostOutput> ret;
+        std::vector<DnsHostOutput> ret;
         ret.reserve(data.size());
         BOOST_FOREACH(const Fred::DnsHost& dnshost, data)
         {
-            ret.push_back(Epp::DNShostOutput(dnshost.get_fqdn(),
+            ret.push_back(DnsHostOutput(dnshost.get_fqdn(),
                 dnshost.get_inet_addr()));
         }
         return ret;
     }
-}
+
+} // namespace Epp::Nsset
+} // namespace Epp

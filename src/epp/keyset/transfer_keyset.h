@@ -27,6 +27,7 @@
 #include "util/optional_value.h"
 
 namespace Epp {
+namespace Keyset {
 
 /**
  * If successful (no exception thrown) state requests of keyset are performed. In case of exception
@@ -40,13 +41,14 @@ namespace Epp {
  * @throws ObjectStatusProhibitsOperation
  * @throws AutorError in case invalid _authinfopw is given
  */
-unsigned long long keyset_transfer(
+unsigned long long transfer_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     const std::string &_authinfopw,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

@@ -41,13 +41,14 @@ BOOST_AUTO_TEST_SUITE(NssetUpdateImpl)
 
 BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 {
+
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    const Epp::NssetUpdateInputData data(
+    const Epp::Nsset::UpdateNssetInputData data(
         nsset.handle + "*?!",
         Optional<std::string>(),
-        std::vector<Epp::DNShostInput>(),
-        std::vector<Epp::DNShostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
         boost::optional<short>(),
@@ -56,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
     );
 
     BOOST_CHECK_THROW(
-        Epp::nsset_update_impl(
+        Epp::Nsset::update_nsset(
             ctx,
             data,
             0,  // <== !!!
@@ -73,11 +74,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
 {
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    const Epp::NssetUpdateInputData data(
+    const Epp::Nsset::UpdateNssetInputData data(
         nsset.handle + "abc",
         Optional<std::string>(),
-        std::vector<Epp::DNShostInput>(),
-        std::vector<Epp::DNShostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
         boost::optional<short>(),
@@ -86,7 +87,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
     );
 
     BOOST_CHECK_THROW(
-        Epp::nsset_update_impl(
+        Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
@@ -100,11 +101,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
 {
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    const Epp::NssetUpdateInputData data(
+    const Epp::Nsset::UpdateNssetInputData data(
         nsset.handle,
         Optional<std::string>(),
-        std::vector<Epp::DNShostInput>(),
-        std::vector<Epp::DNShostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
         boost::optional<short>(),
@@ -113,7 +114,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
     );
 
     BOOST_CHECK_THROW(
-        Epp::nsset_update_impl(
+        Epp::Nsset::update_nsset(
             ctx,
             data,
             the_different_registrar.id,
@@ -127,11 +128,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
 {
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    const Epp::NssetUpdateInputData data(
+    const Epp::Nsset::UpdateNssetInputData data(
         nsset.handle,
         Optional<std::string>(),
-        std::vector<Epp::DNShostInput>(),
-        std::vector<Epp::DNShostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
         boost::optional<short>(),
@@ -140,7 +141,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
     );
 
     BOOST_CHECK_THROW(
-        Epp::nsset_update_impl(
+        Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
@@ -154,11 +155,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
 {
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    const Epp::NssetUpdateInputData data(
+    const Epp::Nsset::UpdateNssetInputData data(
         nsset.handle,
         Optional<std::string>(),
-        std::vector<Epp::DNShostInput>(),
-        std::vector<Epp::DNShostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
         boost::optional<short>(),
@@ -168,7 +169,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
 
 
     BOOST_CHECK_THROW(
-        Epp::nsset_update_impl(
+        Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
@@ -182,11 +183,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
 {
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    const Epp::NssetUpdateInputData data(
+    const Epp::Nsset::UpdateNssetInputData data(
         nsset.handle,
         Optional<std::string>(),
-        std::vector<Epp::DNShostInput>(),
-        std::vector<Epp::DNShostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
+        std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
         boost::optional<short>(),
@@ -194,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
         nsset_max_hosts
     );
     BOOST_CHECK_THROW(
-        Epp::nsset_update_impl(
+        Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
@@ -221,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
 }
 
 
-void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
+void check_after_update_data(const Epp::Nsset::UpdateNssetInputData& update_data,
         const Fred::InfoNssetData& info_data //info after update
         )
 {
@@ -283,7 +284,7 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
     {
         //removed DNS names converted and sorted
         std::vector<std::string> update_dns_host_names_rem;
-        BOOST_FOREACH(const Epp::DNShostInput& dnshost, update_data.dns_hosts_rem)
+        BOOST_FOREACH(const Epp::Nsset::DnsHostInput& dnshost, update_data.dns_hosts_rem)
         {
             update_dns_host_names_rem.push_back(dnshost.fqdn);
         }
@@ -291,7 +292,7 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
 
         //added DNS host names converted and sorted
         std::vector<std::string> update_dns_host_names_add;
-        BOOST_FOREACH(const Epp::DNShostInput& dnshost, update_data.dns_hosts_add)
+        BOOST_FOREACH(const Epp::Nsset::DnsHostInput& dnshost, update_data.dns_hosts_add)
         {
             update_dns_host_names_add.push_back(dnshost.fqdn);
         }
@@ -339,7 +340,7 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
             info_dns_host_ip_set_by_fqdn[info_dnshost.get_fqdn()] = ipaddrs;
         }
         //check that all added ips are in the info data
-        BOOST_FOREACH(const Epp::DNShostInput& added_dnshost, update_data.dns_hosts_add)
+        BOOST_FOREACH(const Epp::Nsset::DnsHostInput& added_dnshost, update_data.dns_hosts_add)
         {
             std::set<boost::asio::ip::address> info_ipaddrs = map_at(info_dns_host_ip_set_by_fqdn, added_dnshost.fqdn);
             BOOST_FOREACH(const boost::optional<boost::asio::ip::address>& ipaddr, added_dnshost.inet_addr)
@@ -361,20 +362,20 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 {
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    Epp::NssetUpdateInputData data(
+    Epp::Nsset::UpdateNssetInputData data(
             nsset.handle,
             "authInfo1234",
-            Util::vector_of<Epp::DNShostInput>
-                (Epp::DNShostInput("a.ns.nic.cz",
+            Util::vector_of<Epp::Nsset::DnsHostInput>
+                (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("11.0.0.3"))
                         (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
-                (Epp::DNShostInput("b.ns.nic.cz",
+                (Epp::Nsset::DnsHostInput("b.ns.nic.cz",
                     Util::vector_of<boost::optional<boost::asio::ip::address> >
                         (boost::asio::ip::address::from_string("11.2.0.4"))
                         (boost::asio::ip::address::from_string("11.3.1.4")))), //add_dns
-            Util::vector_of<Epp::DNShostInput>
-                (Epp::DNShostInput("a.ns.nic.cz",
+            Util::vector_of<Epp::Nsset::DnsHostInput>
+                (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
                     std::vector<boost::optional<boost::asio::ip::address> >())), //rem_dns
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT4")
@@ -389,7 +390,7 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 
     try
     {
-    Epp::nsset_update_impl(
+    Epp::Nsset::update_nsset(
         ctx,
         data,
         registrar.id,
@@ -419,11 +420,11 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
 {
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
-    Epp::NssetUpdateInputData data(
+    Epp::Nsset::UpdateNssetInputData data(
             nsset.handle,
             "authInfo1234",
-            std::vector<Epp::DNShostInput>(), //add_dns
-            std::vector<Epp::DNShostInput>(), //rem_dns
+            std::vector<Epp::Nsset::DnsHostInput>(), //add_dns
+            std::vector<Epp::Nsset::DnsHostInput>(), //rem_dns
             std::vector<std::string>(),//0
             std::vector<std::string>(),
             3,
@@ -431,7 +432,7 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
             nsset_max_hosts
         );
 
-    Epp::nsset_update_impl(
+    Epp::Nsset::update_nsset(
         ctx,
         data,
         registrar.id,

@@ -28,30 +28,29 @@
 
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
-#include "src/epp/nsset/impl/nsset_dns_host_input.h"
+#include "src/epp/nsset/impl/dns_host_input.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-
 namespace Epp {
+namespace Nsset {
 
-
-struct NssetUpdateInputData {
+struct UpdateNssetInputData {
     std::string handle;
     Optional<std::string> authinfo;
-    std::vector<Epp::DNShostInput> dns_hosts_add;
-    std::vector<Epp::DNShostInput> dns_hosts_rem;
+    std::vector<DnsHostInput> dns_hosts_add;
+    std::vector<DnsHostInput> dns_hosts_rem;
     std::vector<std::string> tech_contacts_add;
     std::vector<std::string> tech_contacts_rem;
     boost::optional<short> tech_check_level;
     unsigned int config_nsset_min_hosts;
     unsigned int config_nsset_max_hosts;
 
-    NssetUpdateInputData(
+    UpdateNssetInputData(
         const std::string& _handle,
         const Optional<std::string>& _authinfo,
-        const std::vector<Epp::DNShostInput>& _dns_hosts_add,
-        const std::vector<Epp::DNShostInput>& _dns_hosts_rem,
+        const std::vector<DnsHostInput>& _dns_hosts_add,
+        const std::vector<DnsHostInput>& _dns_hosts_rem,
         const std::vector<std::string>& _tech_contacts_add,
         const std::vector<std::string>& _tech_contacts_rem,
         const boost::optional<short>& _tech_check_level,
@@ -70,10 +69,8 @@ struct NssetUpdateInputData {
     { }
 };
 
-
-
-LocalizedSuccessResponse nsset_update(
-    const NssetUpdateInputData& _data,
+LocalizedSuccessResponse update_nsset_localized(
+    const UpdateNssetInputData& _data,
     unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id,
     bool _epp_update_nsset_enqueue_check,
@@ -84,6 +81,7 @@ LocalizedSuccessResponse nsset_update(
     const std::string& _client_transaction_handles_prefix_not_to_nofify
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

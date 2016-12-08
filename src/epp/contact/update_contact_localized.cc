@@ -2,6 +2,7 @@
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/update_contact.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
@@ -15,8 +16,9 @@
 #include <string>
 
 namespace Epp {
+namespace Contact {
 
-LocalizedSuccessResponse contact_update(
+LocalizedSuccessResponse update_contact_localized(
     const std::string &_contact_handle,
     const ContactChange &_data,
     unsigned long long _registrar_id,
@@ -33,7 +35,7 @@ LocalizedSuccessResponse contact_update(
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactUpdate)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::UpdateContact)));
 
         if (_data.disclose.is_initialized()) {
             _data.disclose->check_validity();
@@ -41,7 +43,7 @@ LocalizedSuccessResponse contact_update(
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long new_history_id = contact_update_impl(
+        const unsigned long long new_history_id = update_contact(
             ctx,
             _contact_handle,
             _data,
@@ -150,4 +152,5 @@ LocalizedSuccessResponse contact_update(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

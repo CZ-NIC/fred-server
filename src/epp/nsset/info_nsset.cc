@@ -36,6 +36,7 @@
 #include <algorithm>
 
 namespace Epp {
+namespace Nsset {
 
 static std::set<std::string> convert_object_states(const std::vector<Fred::ObjectStateData>& _object_states) {
     std::set<std::string> result;
@@ -47,7 +48,7 @@ static std::set<std::string> convert_object_states(const std::vector<Fred::Objec
     return result;
 }
 
-NssetInfoOutputData nsset_info_impl(
+InfoNssetOutputData info_nsset(
     Fred::OperationContext& _ctx,
     const std::string& _handle,
     const SessionLang::Enum _object_state_description_lang,
@@ -67,7 +68,7 @@ NssetInfoOutputData nsset_info_impl(
             tech_contacts.push_back(tech_contact.handle);
         }
 
-        return NssetInfoOutputData(
+        return InfoNssetOutputData(
             nsset_info_data.handle,
             nsset_info_data.roid,
             nsset_info_data.sponsoring_registrar_handle,
@@ -94,4 +95,5 @@ NssetInfoOutputData nsset_info_impl(
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

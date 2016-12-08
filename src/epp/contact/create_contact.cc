@@ -1,3 +1,4 @@
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact.h"
 #include "src/epp/impl/disclose_policy.h"
 
@@ -13,6 +14,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
@@ -39,15 +41,15 @@ Optional< std::string > to_db_handle(const Nullable< ContactChange::IdentType::E
         case ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV("").get_type();
         case ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY("").get_type();
     }
-    throw std::runtime_error("Invalid Epp::ContactChange::IdentType::Enum value.");
+    throw std::runtime_error("Invalid Epp::Contact::ContactChange::IdentType::Enum value.");
 }
 
 }//namespace Epp::{anonymous}
 
-ContactCreateResult contact_create_impl(
+CreateContactResult create_contact(
     Fred::OperationContext &_ctx,
     const std::string &_contact_handle,
-    const ContactCreateInputData &_data,
+    const CreateContactInputData &_data,
     const unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id)
 {
@@ -137,7 +139,7 @@ ContactCreateResult contact_create_impl(
             _logd_request_id);
         const Fred::CreateContact::Result create_data = create_contact_op.exec(_ctx, "UTC");
 
-        return ContactCreateResult(
+        return CreateContactResult(
             create_data.create_object_result.object_id,
             create_data.create_object_result.history_id,
             create_data.creation_time
@@ -169,4 +171,5 @@ ContactCreateResult contact_create_impl(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

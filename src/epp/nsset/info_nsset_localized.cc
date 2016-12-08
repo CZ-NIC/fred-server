@@ -43,8 +43,9 @@
 #include <boost/foreach.hpp>
 
 namespace Epp {
+namespace Nsset {
 
-LocalizedInfoNssetResponse nsset_info(
+InfoNssetLocalizedResponse info_nsset_localized(
     const std::string& _handle,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
@@ -53,14 +54,14 @@ LocalizedInfoNssetResponse nsset_info(
     Logging::Context logging_ctx1("rifd");
     Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
     Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>( Action::NssetInfo)));
+    Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoNsset)));
 
     /* since no changes are comitted this transaction is reused for everything */
 
     Fred::OperationContextCreator ctx;
 
     try {
-        NssetInfoOutputData payload = nsset_info_impl(ctx, _handle, _lang, _registrar_id);
+        InfoNssetOutputData payload = info_nsset(ctx, _handle, _lang, _registrar_id);
 
         /* show object authinfo only to sponsoring registrar */
         if(payload.sponsoring_registrar_handle != Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle) {
@@ -94,9 +95,9 @@ LocalizedInfoNssetResponse nsset_info(
             payload.states.insert("ok");
         }
 
-        return LocalizedInfoNssetResponse(
+        return InfoNssetLocalizedResponse(
             create_localized_success_response(Response::ok, ctx, _lang),
-            LocalizedNssetInfoOutputData(
+            InfoNssetLocalizedOutputData(
                 payload.handle,
                 payload.roid,
                 payload.sponsoring_registrar_handle,
@@ -131,4 +132,5 @@ LocalizedInfoNssetResponse nsset_info(
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

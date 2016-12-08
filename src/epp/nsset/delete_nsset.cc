@@ -12,8 +12,9 @@
 #include "src/epp/impl/util.h"
 
 namespace Epp {
+namespace Nsset {
 
-unsigned long long nsset_delete_impl(
+unsigned long long delete_nsset(
     Fred::OperationContext& _ctx,
     const std::string& _handle,
     const unsigned long long _registrar_id
@@ -86,4 +87,5 @@ unsigned long long nsset_delete_impl(
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

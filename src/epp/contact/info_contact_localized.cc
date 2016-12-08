@@ -18,6 +18,7 @@
 #include <boost/foreach.hpp>
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
@@ -45,20 +46,20 @@ private:
 
 }//namespace Epp::{anonymous}
 
-LocalizedContactInfoOutputData::LocalizedContactInfoOutputData(const boost::optional< ContactDisclose > &_disclose)
+InfoContactLocalizedOutputData::InfoContactLocalizedOutputData(const boost::optional< ContactDisclose > &_disclose)
 :   disclose(_disclose)
 {
 }
 
-LocalizedInfoContactResponse::LocalizedInfoContactResponse(
+InfoContactLocalizedResponse::InfoContactLocalizedResponse(
     const LocalizedSuccessResponse &_ok_response,
-    const LocalizedContactInfoOutputData &_payload)
+    const InfoContactLocalizedOutputData &_payload)
 :   ok_response(_ok_response),
     payload(_payload)
 {
 }
 
-LocalizedInfoContactResponse contact_info(
+InfoContactLocalizedResponse info_contact_localized(
     const std::string &_handle,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
@@ -68,17 +69,17 @@ LocalizedInfoContactResponse contact_info(
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactInfo)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoContact)));
 
         Fred::OperationContextCreator ctx;
 
-        const ContactInfoOutputData info = contact_info_impl(ctx, _handle, _lang, _registrar_id);
+        const InfoContactOutputData info = info_contact(ctx, _handle, _lang, _registrar_id);
 
         const std::string callers_registrar_handle = Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle;
         const bool callers_is_sponsoring_registrar = info.sponsoring_registrar_handle == callers_registrar_handle;
         const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
 
-        LocalizedContactInfoOutputData output_data(info.disclose);
+        InfoContactLocalizedOutputData output_data(info.disclose);
         output_data.handle                       = info.handle;
         output_data.roid                         = info.roid;
         output_data.sponsoring_registrar_handle  = info.sponsoring_registrar_handle;
@@ -122,23 +123,23 @@ LocalizedInfoContactResponse contact_info(
             output_data.ident         = info.personal_id->get();
             if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_OP("").get_type())
             {
-                output_data.identtype = LocalizedContactInfoOutputData::IdentType::op;
+                output_data.identtype = InfoContactLocalizedOutputData::IdentType::op;
             }
             else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_PASS("").get_type())
             {
-                output_data.identtype = LocalizedContactInfoOutputData::IdentType::pass;
+                output_data.identtype = InfoContactLocalizedOutputData::IdentType::pass;
             }
             else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_ICO("").get_type())
             {
-                output_data.identtype = LocalizedContactInfoOutputData::IdentType::ico;
+                output_data.identtype = InfoContactLocalizedOutputData::IdentType::ico;
             }
             else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_MPSV("").get_type())
             {
-                output_data.identtype = LocalizedContactInfoOutputData::IdentType::mpsv;
+                output_data.identtype = InfoContactLocalizedOutputData::IdentType::mpsv;
             }
             else if (info.personal_id->get_type() == Fred::PersonalIdUnion::get_BIRTHDAY("").get_type())
             {
-                output_data.identtype = LocalizedContactInfoOutputData::IdentType::birthday;
+                output_data.identtype = InfoContactLocalizedOutputData::IdentType::birthday;
             }
             else
             {
@@ -147,7 +148,7 @@ LocalizedInfoContactResponse contact_info(
         }
         output_data.auth_info_pw      = authinfo_has_to_be_hidden ? Nullable< std::string >() : info.auth_info_pw;
 
-        return LocalizedInfoContactResponse(
+        return InfoContactLocalizedResponse(
             create_localized_success_response(Response::ok, ctx, _lang),
             output_data);
 
@@ -183,4 +184,5 @@ LocalizedInfoContactResponse contact_info(
     }
 }
 
-}//namespace Epp
+} // namespace Epp::Contact
+} // namespace Epp

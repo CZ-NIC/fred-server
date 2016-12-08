@@ -27,10 +27,11 @@
 #include <vector>
 #include <boost/optional.hpp>
 
-#include "src/epp/nsset/impl/nsset_dns_host_input.h"
+#include "src/epp/nsset/impl/dns_host_input.h"
 #include "src/corba/EPP.hh"
 #include "src/epp/impl/request_params.h"
 #include "src/epp/impl/response_localized.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/contact/update_contact_localized.h"
@@ -48,9 +49,9 @@ namespace Corba {
 
     std::vector<std::string> unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact & in);
 
-    std::vector<Epp::DNShostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
+    std::vector<Epp::Nsset::DnsHostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
 
-    Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
+    Epp::Contact::CreateContactInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
 
     /**
      * Unwrapper for attributes which can be empty with special meaning
@@ -81,7 +82,7 @@ namespace Corba {
      */
     Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(const char* _src);
 
-    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
+    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::Contact::ContactChange &dst);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
 
@@ -110,16 +111,16 @@ namespace Corba {
 
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
 
-    void wrap_LocalizedContactInfoOutputData(const Epp::LocalizedContactInfoOutputData &src, ccReg::Contact &dst);
+    void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData &src, ccReg::Contact &dst);
 
-    ccReg::NSSet wrap_localized_info_nsset(const Epp::LocalizedNssetInfoOutputData& _input );
+    ccReg::NSSet wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input );
 
     /**
      * @returns data ordered the same way as input contact_handles
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > >& contact_handle_check_results
+        const std::map<std::string, boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction > >& contact_handle_check_results
     );
 
     /**
@@ -132,7 +133,7 @@ namespace Corba {
 
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst);
 
-    void wrap_Epp_KeysetInfoData_TechContacts(const Epp::KeysetInfoData::TechContacts &_src, ccReg::TechContact &_dst);
+    void wrap_Epp_InfoKeysetData_TechContacts(const Epp::Keyset::InfoKeysetData::TechContacts &_src, ccReg::TechContact &_dst);
 
     void wrap_Epp_Keyset_Localized_InfoData(const Epp::Keyset::Localized::InfoData &_src, ccReg::KeySet &_dst);
 
@@ -141,7 +142,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& nsset_handles,
-        const std::map<std::string, boost::optional<Epp::LocalizedNssetHandleRegistrationObstruction> >& nsset_handle_check_results
+        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction> >& nsset_handle_check_results
     );
 
     /**

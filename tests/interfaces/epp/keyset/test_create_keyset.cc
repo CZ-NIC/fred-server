@@ -127,7 +127,7 @@ KeysetCreateData create_successfully_by(const Test::ObjectsProvider &objects_pro
         static const unsigned long long logd_request_id = 12345;
         data.dns_keys.push_back(Epp::Keyset::DnsKey(0, 3, 8, "bla="));
         BOOST_CHECK(is_nondecreasing(Epp::Keyset::min_number_of_dns_keys, data.dns_keys.size(), Epp::Keyset::max_number_of_dns_keys));
-        const Epp::KeysetCreateResult result = Epp::keyset_create(
+        const Epp::Keyset::CreateKeysetResult result = Epp::Keyset::create_keyset(
             ctx,
             data.keyset_handle,
             data.auth_info_pw,
@@ -166,7 +166,7 @@ void check_created_keyset(const KeysetCreateData &data)
 {
     try {
         Fred::OperationContextCreator ctx;
-        const Epp::KeysetInfoData info_data = Epp::keyset_info(ctx, data.keyset_handle, data.registrar_id);
+        const Epp::Keyset::InfoKeysetData info_data = Epp::Keyset::info_keyset(ctx, data.keyset_handle, data.registrar_id);
         ctx.commit_transaction();
         BOOST_CHECK(info_data.handle == data.keyset_handle);
         BOOST_CHECK(info_data.creating_registrar_handle == data.registrar_handle);
@@ -208,7 +208,7 @@ void create_by_invalid_registrar(const KeysetCreateData &data)
     static const unsigned long long invalid_registrar_id = 0;
     static const unsigned long long logd_request_id = 12346;
     BOOST_CHECK_THROW(
-        Epp::keyset_create(
+        Epp::Keyset::create_keyset(
             ctx,
             data.keyset_handle,
             data.auth_info_pw,
@@ -247,7 +247,7 @@ void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &d
     static const unsigned long long logd_request_id = 12346;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     try {
-        Epp::keyset_create(
+        Epp::Keyset::create_keyset(
             ctx,
             data.keyset_handle,
             data.auth_info_pw,
@@ -272,7 +272,7 @@ KeysetCreateData create_protected_period_by(const Test::ObjectsProvider &objects
         const KeysetCreateData data = Keyset::create_successfully_by< REGISTRAR >(objects_provider);
         check_created_keyset(data);
         Fred::OperationContextCreator ctx;
-        const unsigned long long delete_result = Epp::keyset_delete(
+        const unsigned long long delete_result = Epp::Keyset::delete_keyset(
             ctx,
             data.keyset_handle,
             data.registrar_id);
@@ -310,7 +310,7 @@ void check_protected_period_keyset(const std::string &keyset_handle)
         std::set< std::string > handles;
         handles.insert(keyset_handle);
         const std::map< std::string, Nullable< Epp::Keyset::HandleCheckResult::Enum > > check_result =
-            Epp::keyset_check(ctx, handles);
+            Epp::Keyset::check_keyset(ctx, handles);
         ctx.commit_transaction();
         BOOST_REQUIRE(check_result.size() == 1);
         BOOST_REQUIRE(check_result.count(keyset_handle) == 1);
@@ -338,7 +338,7 @@ void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &da
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     try {
-        Epp::keyset_create(
+        Epp::Keyset::create_keyset(
             ctx,
             data.keyset_handle,
             data.auth_info_pw,
@@ -367,7 +367,7 @@ void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     try {
-        Epp::keyset_create(
+        Epp::Keyset::create_keyset(
             ctx,
             invalid_keyset_handle,
             data.auth_info_pw,

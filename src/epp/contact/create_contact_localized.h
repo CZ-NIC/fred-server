@@ -23,7 +23,7 @@
 #ifndef CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
 #define CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
 
-#include "src/epp/contact/impl/change_contact.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "util/db/nullable.h"
@@ -33,10 +33,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Contact {
 
-struct ContactCreateInputData
+struct CreateContactInputData
 {
-    ContactCreateInputData(const ContactChange &src);
+    CreateContactInputData(const ContactChange &src);
     std::string name;
     std::string organization;
     std::vector< std::string > streets;
@@ -55,11 +56,11 @@ struct ContactCreateInputData
     boost::optional< ContactDisclose > disclose;
 };
 
-struct LocalizedCreateContactResponse {
+struct CreateContactLocalizedResponse {
     const LocalizedSuccessResponse ok_response;
     const boost::posix_time::ptime crdate;
 
-    LocalizedCreateContactResponse(
+    CreateContactLocalizedResponse(
         const LocalizedSuccessResponse& _ok_response,
         const boost::posix_time::ptime& _crdate
     ) :
@@ -68,9 +69,9 @@ struct LocalizedCreateContactResponse {
     { }
 };
 
-LocalizedCreateContactResponse contact_create(
+CreateContactLocalizedResponse create_contact_localized(
     const std::string &_contact_handle,
-    const ContactCreateInputData &_data,
+    const CreateContactInputData &_data,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id,
     SessionLang::Enum _lang,
@@ -79,6 +80,7 @@ LocalizedCreateContactResponse contact_create(
     const bool _epp_notification_disabled,
     const std::string &_dont_notify_client_transaction_handles_with_this_prefix);
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

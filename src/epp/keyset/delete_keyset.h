@@ -28,6 +28,7 @@
 #include <string>
 
 namespace Epp {
+namespace Keyset {
 
 /**
  * If successful (no exception thrown) state requests of keyset are performed. In case of exception
@@ -40,11 +41,12 @@ namespace Epp {
  * @throws AutorError
  * @throws ObjectStatusProhibitsOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
-unsigned long long keyset_delete(
+unsigned long long delete_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     unsigned long long _registrar_id);
 
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

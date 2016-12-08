@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef KEYSET_INFO_DATA_H_6DAA3872181549BF9B6CBFEEE1993689
-#define KEYSET_INFO_DATA_H_6DAA3872181549BF9B6CBFEEE1993689
+#ifndef INFO_KEYSET_DATA_H_22BCA2CEF9D4405C8BE709B0EA5107C5
+#define INFO_KEYSET_DATA_H_22BCA2CEF9D4405C8BE709B0EA5107C5
 
 #include "src/epp/keyset/ds_record.h"
 #include "src/epp/keyset/impl/dns_key.h"
@@ -33,8 +33,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Keyset {
 
-struct KeysetInfoData
+struct InfoKeysetData
 {
     typedef std::set< Fred::Object_State::Enum > States;
     typedef std::set< Keyset::DsRecord > DsRecords;
@@ -56,6 +57,7 @@ struct KeysetInfoData
     TechContacts tech_contacts; ///< List of technical contacts identifier
 };
 
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

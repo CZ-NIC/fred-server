@@ -34,7 +34,7 @@
 namespace {
 
 template < Epp::ContactDisclose::Item::Enum ITEM >
-bool to_disclose(const Epp::ContactInfoOutputData &epp_data)
+bool to_disclose(const Epp::Contact::InfoContactOutputData &epp_data)
 {
     if (!epp_data.disclose.is_initialized()) {
         return Epp::is_the_default_policy_to_disclose();
@@ -42,7 +42,7 @@ bool to_disclose(const Epp::ContactInfoOutputData &epp_data)
     return epp_data.disclose->should_be_disclosed< ITEM >(Epp::is_the_default_policy_to_disclose());
 }
 
-void check_equal(const Epp::ContactInfoOutputData &epp_data, const Fred::InfoContactData &fred_data)
+void check_equal(const Epp::Contact::InfoContactOutputData &epp_data, const Fred::InfoContactData &fred_data)
 {
     BOOST_CHECK_EQUAL(boost::to_upper_copy(epp_data.handle),        fred_data.handle);
     BOOST_CHECK_EQUAL(epp_data.name.get_value_or_default(),         fred_data.name.get_value_or_default());
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_SUITE(ContactInfoImpl)
 BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_contact)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_info_impl(
+        Epp::Contact::info_contact(
             ctx,
             contact.handle,
             Epp::SessionLang::en,
@@ -99,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_contact)
 BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_contact)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_info_impl(
+        Epp::Contact::info_contact(
             ctx,
             contact.handle + "SOMEobscureSTRING",
             Epp::SessionLang::en,
@@ -113,7 +113,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_contact)
 BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_contact)
 {
     check_equal(
-        Epp::contact_info_impl(ctx, contact.handle, Epp::SessionLang::en, registrar.id),
+        Epp::Contact::info_contact(ctx, contact.handle, Epp::SessionLang::en, registrar.id),
         contact);
 }
 

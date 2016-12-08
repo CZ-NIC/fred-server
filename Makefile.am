@@ -240,7 +240,7 @@ noinst_HEADERS = \
 		src/epp/impl/response_localized.h \
 		src/epp/impl/exception.h \
 		src/epp/impl/session_lang.h \
-		src/epp/contact/impl/change_contact.h \
+		src/epp/contact/contact_change.h \
 		src/epp/impl/get_registrar_session_data.h \
 		src/corba/epp/epp_legacy_compatibility.h \
 		src/epp/impl/registrar_session_data.h \
@@ -272,8 +272,8 @@ noinst_HEADERS = \
 		src/corba/mojeid/service_name.h \
 		src/fredlib/nsset/handle_state.h \
 		src/fredlib/keyset/handle_state.h \
-		src/epp/nsset/impl/nsset_dns_host_output.h \
-		src/epp/nsset/impl/nsset_dns_host_input.h \
+		src/epp/nsset/impl/dns_host_output.h \
+		src/epp/nsset/impl/dns_host_input.h \
 		src/epp/nsset/impl/nsset_handle_state_to_check_result.h \
 		src/epp/nsset/impl/nsset_constants.h \
 		tests/interfaces/epp/nsset/fixture.h
@@ -1569,7 +1569,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/create_contact_localized.h \
 		src/epp/contact/create_contact.cc \
 		src/epp/contact/create_contact.h \
-		src/epp/contact/impl/change_contact.cc \
+		src/epp/contact/contact_change.cc \
 		src/epp/contact/update_contact_localized.cc \
 		src/epp/contact/update_contact_localized.h \
 		src/epp/contact/update_contact.cc \
@@ -1633,7 +1633,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/impl/dns_key.cc \
 		src/epp/keyset/impl/dns_key.h \
 		src/epp/keyset/ds_record.h \
-		src/epp/keyset/impl/keyset_info_data.h \
+		src/epp/keyset/impl/info_keyset_data.h \
 		src/epp/keyset/info_keyset.cc \
 		src/epp/keyset/info_keyset.h \
 		src/epp/keyset/info_keyset_localized.cc \
@@ -2498,12 +2498,12 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
 		tests/interfaces/epp/contact/fixture.h \
-		tests/interfaces/epp/contact/test_contact_create_impl.cc \
-		tests/interfaces/epp/contact/test_contact_delete_impl.cc \
-		tests/interfaces/epp/contact/test_contact_info_impl.cc \
-		tests/interfaces/epp/contact/test_contact_update_impl.cc \
-		tests/interfaces/epp/contact/test_contact_check_impl.cc \
-		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
+		tests/interfaces/epp/contact/test_create_contact.cc \
+		tests/interfaces/epp/contact/test_delete_contact.cc \
+		tests/interfaces/epp/contact/test_info_contact.cc \
+		tests/interfaces/epp/contact/test_update_contact.cc \
+		tests/interfaces/epp/contact/test_check_contact.cc \
+		tests/interfaces/epp/contact/test_transfer_contact.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
 		tests/interfaces/epp/domain/fixture.h \
 		tests/interfaces/epp/domain/fixture.cc \
@@ -2517,13 +2517,13 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/domain/test_domain_billing_impl.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
-		tests/interfaces/epp/keyset/test_create.cc \
-		tests/interfaces/epp/nsset/test_nsset_check_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_info_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_delete_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_create_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_update_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_transfer_impl.cc \
+		tests/interfaces/epp/keyset/test_create_keyset.cc \
+		tests/interfaces/epp/nsset/test_check_nsset.cc \
+		tests/interfaces/epp/nsset/test_info_nsset.cc \
+		tests/interfaces/epp/nsset/test_delete_nsset.cc \
+		tests/interfaces/epp/nsset/test_create_nsset.cc \
+		tests/interfaces/epp/nsset/test_update_nsset.cc \
+		tests/interfaces/epp/nsset/test_transfer_nsset.cc \
 		util/corba_conversion.h \
 		util/corba_conversion.cc \
 		tests/setup/fixtures_utils.h \

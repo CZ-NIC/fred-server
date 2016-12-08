@@ -23,7 +23,7 @@
 #ifndef INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 #define INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 
-#include "src/epp/keyset/impl/keyset_info_data.h"
+#include "src/epp/keyset/impl/info_keyset_data.h"
 #include "src/epp/impl/states_localized.h"
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
@@ -45,9 +45,9 @@ struct InfoData
     Nullable< boost::posix_time::ptime > last_update; ///< Date and time of last change
     Nullable< boost::posix_time::ptime > last_transfer; ///< Date and time of last transfer
     Nullable< std::string > auth_info_pw; ///< Password for keyset transfer
-    KeysetInfoData::DsRecords ds_records; ///< List of ds records
-    KeysetInfoData::DnsKeys dns_keys; ///< List of dnskeys
-    KeysetInfoData::TechContacts tech_contacts; ///< List of technical contacts identifier
+    InfoKeysetData::DsRecords ds_records; ///< List of ds records
+    InfoKeysetData::DnsKeys dns_keys; ///< List of dnskeys
+    InfoKeysetData::TechContacts tech_contacts; ///< List of technical contacts identifier
 };
 
 struct InfoResult
@@ -60,14 +60,14 @@ struct InfoResult
     LocalizedSuccessResponse response;
 };
 
-InfoResult info(
+InfoResult info_keyset_localized(
     const std::string &_keyset_handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

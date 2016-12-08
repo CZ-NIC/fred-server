@@ -31,11 +31,12 @@
 #include <vector>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/asio/ip/address.hpp>
-#include "src/epp/nsset/impl/nsset_dns_host_output.h"
+#include "src/epp/nsset/impl/dns_host_output.h"
 
 namespace Epp {
+namespace Nsset {
 
-struct NssetInfoOutputData {
+struct InfoNssetOutputData {
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -46,12 +47,12 @@ struct NssetInfoOutputData {
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
     std::string auth_info_pw;
-    std::vector<DNShostOutput> dns_hosts;
+    std::vector<DnsHostOutput> dns_hosts;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
 
 
-    NssetInfoOutputData(
+    InfoNssetOutputData(
         const std::string& _handle,
         const std::string& _roid,
         const std::string& _sponsoring_registrar_handle,
@@ -62,7 +63,7 @@ struct NssetInfoOutputData {
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
         const std::string& _auth_info_pw,
-        const std::vector<DNShostOutput>& _dns_hosts,
+        const std::vector<DnsHostOutput>& _dns_hosts,
         const std::vector<std::string>& _tech_contacts,
         short _tech_check_level
     ) :
@@ -86,13 +87,14 @@ struct NssetInfoOutputData {
  * @throws ExceptionAuthErrorServerClosingConnection
  * @throws ExceptionNonexistentHandle
  */
-NssetInfoOutputData nsset_info_impl(
+InfoNssetOutputData info_nsset(
     Fred::OperationContext& _ctx,
     const std::string& _handle,
     SessionLang::Enum _object_state_description_lang,
     unsigned long long _session_registrar_id
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

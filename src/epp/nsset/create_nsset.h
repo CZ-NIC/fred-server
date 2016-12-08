@@ -30,14 +30,15 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Nsset {
 
-struct NssetCreateResult {
+struct CreateNssetResult {
     const unsigned long long id;
     const unsigned long long create_history_id;
     // TODO guarantee non-special
     const boost::posix_time::ptime crdate;
 
-    NssetCreateResult(
+    CreateNssetResult(
         unsigned long long _nsset_id,
         unsigned long long _create_history_id,
         const boost::posix_time::ptime& _nsset_crdate
@@ -53,13 +54,14 @@ struct NssetCreateResult {
  * @throws ObjectExists
  * @throws AggregatedParamErrors
  */
-NssetCreateResult nsset_create_impl(
+CreateNssetResult create_nsset(
     Fred::OperationContext& _ctx,
-    const NssetCreateInputData& _data,
+    const CreateNssetInputData& _data,
     unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

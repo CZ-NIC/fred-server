@@ -50,15 +50,15 @@ struct HandlesCheck
     Results results;
 };
 
-HandlesCheck check(
+HandlesCheck check_keyset_localized(
     const std::set< std::string > &_keyset_handles,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string &_server_transaction_handle);
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp
 
 
 #endif

@@ -49,7 +49,7 @@ Presents insert_vector_parameter_error_if_presents(const ParameterErrors &_src,
 
 }//namespace Epp::Keyset::Localized::{anonymous}
 
-LocalizedSuccessResponse update(
+LocalizedSuccessResponse update_keyset_localized(
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts_add,
@@ -70,11 +70,11 @@ LocalizedSuccessResponse update(
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetUpdate)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::UpdateKeyset)));
 
         Fred::OperationContextCreator ctx;
 
-        const KeysetUpdateResult result = keyset_update(ctx, _keyset_handle,
+        const UpdateKeysetResult result = update_keyset(ctx, _keyset_handle,
                                                              _auth_info_pw,
                                                              _tech_contacts_add,
                                                              _tech_contacts_rem,
@@ -199,6 +199,6 @@ LocalizedSuccessResponse update(
     }
 }
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp

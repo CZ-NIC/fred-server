@@ -31,15 +31,17 @@
 #include <string>
 
 namespace Epp {
+namespace Contact {
 
 /**
  * @returns check results for given contact handles
  */
-std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > contact_check_impl(
+std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > check_contact(
     Fred::OperationContext& _ctx,
     const std::set<std::string>& _contact_handles
 );
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

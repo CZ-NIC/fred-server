@@ -27,23 +27,24 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
-#include "src/epp/nsset/impl/nsset_dns_host_input.h"
-#include "src/epp/nsset/impl/nsset_dns_host_output.h"
+#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/nsset/impl/dns_host_output.h"
 #include "src/fredlib/nsset/nsset_dns_host.h"
 #include "src/epp/error.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/zone/zone.h"
 
 namespace Epp {
+namespace Nsset {
 
     bool is_prohibited_ip_addr(const boost::optional<boost::asio::ip::address>& ipaddr, Fred::OperationContext& ctx);
     std::vector<boost::asio::ip::address> make_ipaddrs(const std::vector<boost::optional<boost::asio::ip::address> >& inet_addr);
-    std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<Epp::DNShostInput>& data);
-    std::vector<Epp::DNShostOutput> make_epp_dnshosts_output(const std::vector<Fred::DnsHost>& data);
+    std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<DnsHostInput>& data);
+    std::vector<DnsHostOutput> make_epp_dnshosts_output(const std::vector<Fred::DnsHost>& data);
 
     //check that nameserver fqdn is in zone managed by registry to allow presence of nameserver IP addresses viz rfc1035#section-3.3.11
     template <class EXCEPTION> void check_disallowed_glue_ipaddrs(
-        const Epp::DNShostInput& nsdata, std::size_t current_nsset_ipaddr_position, EXCEPTION& ex, Fred::OperationContext& _ctx)
+        const DnsHostInput& nsdata, std::size_t current_nsset_ipaddr_position, EXCEPTION& ex, Fred::OperationContext& _ctx)
     {
         if(nsdata.inet_addr.size() > 0)
         {
@@ -73,6 +74,7 @@ namespace Epp {
         }
     }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

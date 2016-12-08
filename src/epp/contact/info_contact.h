@@ -35,10 +35,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Contact {
 
-struct ContactInfoOutputData
+struct InfoContactOutputData
 {
-    ContactInfoOutputData(const boost::optional< ContactDisclose > &_disclose);
+    InfoContactOutputData(const boost::optional< ContactDisclose > &_disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -71,12 +72,13 @@ struct ContactInfoOutputData
  * @throws ExceptionAuthErrorServerClosingConnection
  * @throws ExceptionNonexistentHandle
  */
-ContactInfoOutputData contact_info_impl(
+InfoContactOutputData info_contact(
     Fred::OperationContext &_ctx,
     const std::string &_handle,
     SessionLang::Enum _object_state_description_lang,
     unsigned long long _session_registrar_id);
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

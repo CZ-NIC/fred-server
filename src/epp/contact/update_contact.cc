@@ -1,5 +1,6 @@
-#include "src/epp/impl/disclose_policy.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/update_contact.h"
+#include "src/epp/impl/disclose_policy.h"
 
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
@@ -16,6 +17,7 @@
 #include <boost/mpl/assert.hpp>
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
@@ -376,7 +378,7 @@ struct Ident
             case ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV(value);
             case ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY(value);
         }
-        throw std::runtime_error("Invalid Epp::ContactChange::IdentType::Enum value.");
+        throw std::runtime_error("Invalid Epp::Contact::ContactChange::IdentType::Enum value.");
     }
 
     const boost::optional< Nullable< std::string > > ident_value_;
@@ -385,7 +387,7 @@ struct Ident
 
 }//namespace Epp::{anonymous}
 
-unsigned long long contact_update_impl(
+unsigned long long update_contact(
     Fred::OperationContext &_ctx,
     const std::string &_contact_handle,
     const ContactChange &_change,
@@ -540,4 +542,5 @@ unsigned long long contact_update_impl(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

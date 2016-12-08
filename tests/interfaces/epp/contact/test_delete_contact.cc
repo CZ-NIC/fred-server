@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE(ContactDeleteImpl)
 BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_contact)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             0
@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_contact)
 BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, has_contact)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             "SOMEobscureString",
             registrar.id
@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, has_contact)
 BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_contact_and_a_different_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             the_different_registrar.id
@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_contact_and_a_different
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, has_contact_with_server_update_prohibited)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
@@ -89,7 +89,7 @@ struct has_contact_with_server_delete_prohibited : has_contact_with_status {
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, has_contact_with_delete_candidate)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
@@ -107,7 +107,7 @@ struct has_contact_owning_domain : has_contact {
 BOOST_FIXTURE_TEST_CASE(delete_fail_owning_domain, has_contact_owning_domain)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
@@ -130,7 +130,7 @@ struct has_contact_owning_domain_and_another_admin_contact : has_contact {
 BOOST_FIXTURE_TEST_CASE(delete_fail_administrating_domain, has_contact_owning_domain_and_another_admin_contact)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
@@ -150,7 +150,7 @@ struct has_contact_administrating_nsset : has_contact {
 BOOST_FIXTURE_TEST_CASE(delete_fail_linked_nsset, has_contact_administrating_nsset)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
@@ -170,7 +170,7 @@ struct has_contact_administrating_keyset : has_contact {
 BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, has_contact_administrating_keyset)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_delete_impl(
+        Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
@@ -181,7 +181,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, has_contact_administrating_ke
 
 BOOST_FIXTURE_TEST_CASE(delete_ok, has_contact)
 {
-    Epp::contact_delete_impl(
+    Epp::Contact::delete_contact(
         ctx,
         contact.handle,
         registrar.id
@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(delete_ok, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, has_contact_with_server_transfer_prohibited_request)
 {
-    Epp::contact_delete_impl(
+    Epp::Contact::delete_contact(
         ctx,
         contact.handle,
         registrar.id

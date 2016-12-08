@@ -22,8 +22,9 @@
 #include <boost/foreach.hpp>
 
 namespace Epp {
+namespace Nsset {
 
-unsigned long long nsset_transfer_impl(
+unsigned long long transfer_nsset(
     Fred::OperationContext& _ctx,
     const std::string& _nsset_handle,
     const std::string& _authinfopw,
@@ -90,4 +91,5 @@ unsigned long long nsset_transfer_impl(
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

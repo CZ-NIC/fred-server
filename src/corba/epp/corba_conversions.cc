@@ -3,6 +3,7 @@
 #include "src/corba/EPP.hh"
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/error.h"
 #include "src/epp/impl/param.h"
@@ -324,16 +325,16 @@ namespace Corba {
         throw std::runtime_error("Invalid DiscloseFlag value;");
     }
 
-    Nullable< Epp::ContactChange::IdentType::Enum > unwrap_identtyp(ccReg::identtyp type)
+    Nullable< Epp::Contact::ContactChange::IdentType::Enum > unwrap_identtyp(ccReg::identtyp type)
     {
         switch (type)
         {
-            case ccReg::EMPTY:    return Nullable< Epp::ContactChange::IdentType::Enum >();
-            case ccReg::OP:       return Epp::ContactChange::IdentType::op;
-            case ccReg::PASS:     return Epp::ContactChange::IdentType::pass;
-            case ccReg::ICO:      return Epp::ContactChange::IdentType::ico;
-            case ccReg::MPSV:     return Epp::ContactChange::IdentType::mpsv;
-            case ccReg::BIRTHDAY: return Epp::ContactChange::IdentType::birthday;
+            case ccReg::EMPTY:    return Nullable< Epp::Contact::ContactChange::IdentType::Enum >();
+            case ccReg::OP:       return Epp::Contact::ContactChange::IdentType::op;
+            case ccReg::PASS:     return Epp::Contact::ContactChange::IdentType::pass;
+            case ccReg::ICO:      return Epp::Contact::ContactChange::IdentType::ico;
+            case ccReg::MPSV:     return Epp::Contact::ContactChange::IdentType::mpsv;
+            case ccReg::BIRTHDAY: return Epp::Contact::ContactChange::IdentType::birthday;
         }
         throw std::runtime_error("Invalid identtyp value.");
     }
@@ -405,7 +406,7 @@ namespace Corba {
                 : unwrapped_src;
     }
 
-    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)
+    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::Contact::ContactChange &dst)
     {
         dst.name              = convert_contact_update_or_delete_string(src.Name);
         dst.organization      = convert_contact_update_or_delete_string(src.Organization);
@@ -435,20 +436,20 @@ namespace Corba {
         return wrap_int< CORBA::Boolean >(src.presents< ITEM >());
     }
 
-    ccReg::identtyp wrap_identtyp(const Nullable< Epp::LocalizedContactInfoOutputData::IdentType::Enum > &type)
+    ccReg::identtyp wrap_identtyp(const Nullable< Epp::Contact::InfoContactLocalizedOutputData::IdentType::Enum > &type)
     {
         if (type.isnull()) {
             return ccReg::EMPTY;
         }
         switch (type.get_value())
         {
-            case Epp::LocalizedContactInfoOutputData::IdentType::op:       return ccReg::OP;
-            case Epp::LocalizedContactInfoOutputData::IdentType::pass:     return ccReg::PASS;
-            case Epp::LocalizedContactInfoOutputData::IdentType::ico:      return ccReg::ICO;
-            case Epp::LocalizedContactInfoOutputData::IdentType::mpsv:     return ccReg::MPSV;
-            case Epp::LocalizedContactInfoOutputData::IdentType::birthday: return ccReg::BIRTHDAY;
+            case Epp::Contact::InfoContactLocalizedOutputData::IdentType::op:       return ccReg::OP;
+            case Epp::Contact::InfoContactLocalizedOutputData::IdentType::pass:     return ccReg::PASS;
+            case Epp::Contact::InfoContactLocalizedOutputData::IdentType::ico:      return ccReg::ICO;
+            case Epp::Contact::InfoContactLocalizedOutputData::IdentType::mpsv:     return ccReg::MPSV;
+            case Epp::Contact::InfoContactLocalizedOutputData::IdentType::birthday: return ccReg::BIRTHDAY;
         }
-        throw std::runtime_error("Invalid Epp::LocalizedContactInfoOutputData::IdentType::Enum value.");
+        throw std::runtime_error("Invalid Epp::Contact::InfoContactLocalizedOutputData::IdentType::Enum value.");
     }
 
     CORBA::String_var wrap_boost_posix_time_ptime_to_string(const boost::posix_time::ptime &_src)
@@ -472,7 +473,7 @@ namespace Corba {
 
     }//namespace Corba::{anonymous}
 
-    void wrap_LocalizedContactInfoOutputData(const Epp::LocalizedContactInfoOutputData &src, ccReg::Contact &dst)
+    void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData &src, ccReg::Contact &dst)
     {
         dst.handle = wrap_string_to_corba_string(src.handle);
         dst.ROID = wrap_string_to_corba_string(src.roid);
@@ -558,7 +559,7 @@ namespace Corba {
     }
 
 
-    ccReg::NSSet wrap_localized_info_nsset(const Epp::LocalizedNssetInfoOutputData& _input ) {
+    ccReg::NSSet wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input ) {
         ccReg::NSSet result;
 
         result.handle = wrap_string_to_corba_string( _input.handle );
@@ -593,7 +594,7 @@ namespace Corba {
             result.dns.length( _input.dns_host.size() );
             unsigned long i = 0;
             for(
-                std::vector<Epp::DNShostOutput>::const_iterator it = _input.dns_host.begin();
+                std::vector<Epp::Nsset::DnsHostOutput>::const_iterator it = _input.dns_host.begin();
                 it != _input.dns_host.end();
                 ++it, ++i
             ) {
@@ -629,31 +630,31 @@ namespace Corba {
         return result;
     }
 
-    static ccReg::CheckAvail wrap_contact_handle_check_result(const boost::optional< Epp::LocalizedContactHandleRegistrationObstruction >& _obstruction) {
+    static ccReg::CheckAvail wrap_contact_handle_check_result(const boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction >& _obstruction) {
         if (!_obstruction.is_initialized()) {
             return ccReg::NotExist;
         }
 
         switch (_obstruction.get().state)
         {
-            case Epp::ContactHandleRegistrationObstruction::invalid_handle      : return ccReg::BadFormat;
-            case Epp::ContactHandleRegistrationObstruction::protected_handle    : return ccReg::DelPeriod; // XXX oh my
-            case Epp::ContactHandleRegistrationObstruction::registered_handle   : return ccReg::Exist;
+            case Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle      : return ccReg::BadFormat;
+            case Epp::Contact::ContactHandleRegistrationObstruction::protected_handle    : return ccReg::DelPeriod; // XXX oh my
+            case Epp::Contact::ContactHandleRegistrationObstruction::registered_handle   : return ccReg::Exist;
         }
 
         throw std::runtime_error("unknown_contact_state");
     }
 
-    static ccReg::CheckAvail wrap_nsset_handle_check_result(const boost::optional<Epp::LocalizedNssetHandleRegistrationObstruction>& _obstruction) {
+    static ccReg::CheckAvail wrap_nsset_handle_check_result(const boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction>& _obstruction) {
 
         if(!_obstruction.is_initialized()) {
             return ccReg::NotExist;
         }
 
         switch( _obstruction.get().state ) {
-            case Epp::NssetHandleRegistrationObstruction::invalid_handle      : return ccReg::BadFormat;
-            case Epp::NssetHandleRegistrationObstruction::protected_handle    : return ccReg::DelPeriod; // XXX oh my
-            case Epp::NssetHandleRegistrationObstruction::registered_handle   : return ccReg::Exist;
+            case Epp::Nsset::NssetHandleRegistrationObstruction::invalid_handle      : return ccReg::BadFormat;
+            case Epp::Nsset::NssetHandleRegistrationObstruction::protected_handle    : return ccReg::DelPeriod; // XXX oh my
+            case Epp::Nsset::NssetHandleRegistrationObstruction::registered_handle   : return ccReg::Exist;
         }
 
         throw std::runtime_error("unknown_nsset_state");
@@ -696,17 +697,22 @@ namespace Corba {
         return ret;
     }
 
-    std::vector<Epp::DNShostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in)
+    std::vector<Epp::Nsset::DnsHostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in)
     {
-        std::vector<Epp::DNShostInput> ret;
+        std::vector<Epp::Nsset::DnsHostInput> ret;
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
+<<<<<<< HEAD
             if(in[i].fqdn == 0)
             {
                 throw std::runtime_error("null char ptr");
             }
             ret.push_back(Epp::DNShostInput(std::string(in[i].fqdn),
+=======
+            if(in[i].fqdn == 0) throw std::runtime_error("null char ptr");
+            ret.push_back(Epp::Nsset::DnsHostInput(std::string(in[i].fqdn),
+>>>>>>> e98497f... Ticket #17427 - EPP: move files, change namespaces, rename everything...
                 unwrap_inet_addr_to_vector_asio_addr(in[i].inet)));
         }
         return ret;
@@ -717,7 +723,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string, boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > > &contact_handle_check_results
+        const std::map<std::string, boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction > > &contact_handle_check_results
     ) {
         ccReg::CheckResp result;
         result.length(contact_handles.size());
@@ -728,7 +734,7 @@ namespace Corba {
             it != contact_handles.end();
             ++it, ++i
         ) {
-            const boost::optional< Epp::LocalizedContactHandleRegistrationObstruction > check_result = map_at(contact_handle_check_results, *it);
+            const boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction > check_result = map_at(contact_handle_check_results, *it);
 
             result[i].avail = wrap_contact_handle_check_result(check_result);
             result[i].reason = wrap_string_to_corba_string(check_result.is_initialized() ? check_result.get().description : "");
@@ -794,11 +800,11 @@ namespace Corba {
         }
     }
 
-    static void wrap_Epp_KeysetInfoData_DnsKeys(const Epp::KeysetInfoData::DnsKeys &_src, ccReg::DNSKey &_dst)
+    static void wrap_Epp_InfoKeysetData_DnsKeys(const Epp::Keyset::InfoKeysetData::DnsKeys &_src, ccReg::DNSKey &_dst)
     {
         _dst.length(_src.size());
         ::size_t idx = 0;
-        for (Epp::KeysetInfoData::DnsKeys::const_iterator data_ptr = _src.begin();
+        for (Epp::Keyset::InfoKeysetData::DnsKeys::const_iterator data_ptr = _src.begin();
              data_ptr != _src.end(); ++data_ptr, ++idx)
         {
             CorbaConversion::wrap_int(data_ptr->get_flags(),    _dst[idx].flags);
@@ -808,11 +814,11 @@ namespace Corba {
         }
     }
 
-    void wrap_Epp_KeysetInfoData_TechContacts(const Epp::KeysetInfoData::TechContacts &_src, ccReg::TechContact &_dst)
+    void wrap_Epp_InfoKeysetData_TechContacts(const Epp::Keyset::InfoKeysetData::TechContacts &_src, ccReg::TechContact &_dst)
     {
         _dst.length(_src.size());
         ::size_t idx = 0;
-        for (Epp::KeysetInfoData::TechContacts::const_iterator data_ptr = _src.begin();
+        for (Epp::Keyset::InfoKeysetData::TechContacts::const_iterator data_ptr = _src.begin();
              data_ptr != _src.end(); ++data_ptr, ++idx)
         {
             _dst[idx] = data_ptr->c_str();
@@ -832,8 +838,8 @@ namespace Corba {
         _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);
         _dst.AuthInfoPw = wrap_Nullable_string_to_string(_src.auth_info_pw);
         _dst.dsrec.length(0); // has to be empty
-        wrap_Epp_KeysetInfoData_DnsKeys(_src.dns_keys, _dst.dnsk);
-        wrap_Epp_KeysetInfoData_TechContacts(_src.tech_contacts, _dst.tech);
+        wrap_Epp_InfoKeysetData_DnsKeys(_src.dns_keys, _dst.dnsk);
+        wrap_Epp_InfoKeysetData_TechContacts(_src.tech_contacts, _dst.tech);
     }
 
     /**
@@ -841,7 +847,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& nsset_handles,
-        const std::map<std::string, boost::optional<Epp::LocalizedNssetHandleRegistrationObstruction> >& nsset_handle_check_results
+        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction> >& nsset_handle_check_results
     ) {
         ccReg::CheckResp result;
         result.length( nsset_handles.size() );
@@ -852,7 +858,7 @@ namespace Corba {
             it != nsset_handles.end();
             ++it, ++i
         ) {
-            const boost::optional<Epp::LocalizedNssetHandleRegistrationObstruction> check_result = map_at(nsset_handle_check_results, *it);
+            const boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction> check_result = map_at(nsset_handle_check_results, *it);
 
             result[i].avail = wrap_nsset_handle_check_result( check_result );
             result[i].reason = Corba::wrap_string_to_corba_string( !check_result.is_initialized() ? "" : check_result.get().description );

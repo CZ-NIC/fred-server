@@ -23,10 +23,12 @@
 #ifndef UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
 #define UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
 
-#include "src/fredlib/opcontext.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/update_contact_localized.h"
+#include "src/fredlib/opcontext.h"
 
 namespace Epp {
+namespace Contact {
 
 /**
  * If successful (no exception thrown) state requests of conact are performed. In case of exception behaviour is undefined and transaction should bo rolled back.
@@ -39,13 +41,14 @@ namespace Epp {
  * @throws ObjectStatusProhibitsOperation in case conatct has serverUpdateProhibited or deleteCandidate status (or request)
  * @throws AggregatedParamErrors
  */
-unsigned long long contact_update_impl(
+unsigned long long update_contact(
     Fred::OperationContext &_ctx,
     const std::string &_contact_handle,
     const ContactChange &_data,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

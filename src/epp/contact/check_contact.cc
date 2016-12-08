@@ -6,8 +6,9 @@
 #include <boost/foreach.hpp>
 
 namespace Epp {
+namespace Contact {
 
-std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > contact_check_impl(
+std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > check_contact(
     Fred::OperationContext& _ctx,
     const std::set<std::string>& _contact_handles
 ) {
@@ -24,4 +25,5 @@ std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > con
     return result;
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

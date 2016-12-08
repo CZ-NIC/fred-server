@@ -11,9 +11,10 @@
 #include "util/log/context.h"
 
 namespace Epp {
+namespace Nsset {
 
-    LocalizedCreateNssetResponse nsset_create(
-        const NssetCreateInputData& _data,
+    CreateNssetLocalizedResponse create_nsset_localized(
+        const CreateNssetInputData& _data,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
         const SessionLang::Enum _lang,
@@ -27,12 +28,12 @@ namespace Epp {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>( Action::NssetCreate) ) );
+        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>( Action::CreateNsset) ) );
 
         Fred::OperationContextCreator ctx;
 
-        const NssetCreateResult impl_result(
-            nsset_create_impl(
+        const CreateNssetResult impl_result(
+            create_nsset(
                 ctx,
                 _data,
                 _registrar_id,
@@ -40,7 +41,7 @@ namespace Epp {
             )
         );
 
-        const LocalizedCreateNssetResponse localized_result(
+        const CreateNssetLocalizedResponse localized_result(
             create_localized_success_response(
                 Response::ok,
                 ctx,
@@ -135,4 +136,5 @@ namespace Epp {
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

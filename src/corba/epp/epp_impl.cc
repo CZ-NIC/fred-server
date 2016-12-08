@@ -2233,7 +2233,7 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        const Epp::LocalizedCheckContactResponse response = Epp::contact_check(
+        const Epp::Contact::CheckContactLocalizedResponse response = Epp::Contact::check_contact_localized(
             std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
             session_data.registrar_id,
             session_data.language,
@@ -2270,7 +2270,7 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        const Epp::LocalizedCheckNssetResponse response = Epp::nsset_check(
+        const Epp::Nsset::CheckNssetLocalizedResponse response = Epp::Nsset::check_nsset_localized(
                     std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
                     session_data.registrar_id,
                     session_data.language,
@@ -2346,7 +2346,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::vector< std::string > handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::Keyset::Localized::HandlesCheck localized_response = Epp::Keyset::Localized::check(
+        const Epp::Keyset::Localized::HandlesCheck localized_response = Epp::Keyset::Localized::check_keyset_localized(
             std::set< std::string >(handles_to_be_checked.begin(), handles_to_be_checked.end()),
             session_data.registrar_id,
             session_data.language,
@@ -2380,7 +2380,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
             Corba::unwrap_EppParams(_epp_params).session_id
         );
 
-        const Epp::LocalizedInfoContactResponse response = Epp::contact_info(
+        const Epp::Contact::InfoContactLocalizedResponse response = Epp::Contact::info_contact_localized(
             Corba::unwrap_string(_handle),
             session_data.registrar_id,
             session_data.language,
@@ -2388,7 +2388,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
         );
 
         ccReg::Contact_var info_result = new ccReg::Contact;
-        Corba::wrap_LocalizedContactInfoOutputData(response.payload, info_result.inout());
+        Corba::wrap_InfoContactLocalizedOutputData(response.payload, info_result.inout());
         ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
@@ -2410,7 +2410,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        const Epp::LocalizedSuccessResponse response = Epp::contact_delete(
+        const Epp::LocalizedSuccessResponse response = Epp::Contact::delete_contact_localized(
             Corba::unwrap_string(_handle),
             session_data.registrar_id,
             session_data.language,
@@ -2437,9 +2437,9 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        Epp::ContactChange contact_update_data;
+        Epp::Contact::ContactChange contact_update_data;
         Corba::unwrap_ContactChange(_data_change, contact_update_data);
-        const Epp::LocalizedSuccessResponse response = Epp::contact_update(
+        const Epp::LocalizedSuccessResponse response = Epp::Contact::update_contact_localized(
             Corba::unwrap_string(_handle),
             contact_update_data,
             session_data.registrar_id,
@@ -2469,9 +2469,9 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        Epp::ContactChange contact_create_data;
+        Epp::Contact::ContactChange contact_create_data;
         Corba::unwrap_ContactChange(_contact_data, contact_create_data);
-        const Epp::LocalizedCreateContactResponse response = contact_create(
+        const Epp::Contact::CreateContactLocalizedResponse response = Epp::Contact::create_contact_localized(
             Corba::unwrap_string(_handle),
             contact_create_data,
             session_data.registrar_id,
@@ -2510,7 +2510,7 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
 
         return new ccReg::Response(
             Corba::wrap_response(
-                contact_transfer(
+                Epp::Contact::transfer_contact_localized(
                     Corba::unwrap_string(_handle),
                     Corba::unwrap_string(_auth_info),
                     session_data.registrar_id,
@@ -2541,7 +2541,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
 
         return new ccReg::Response(
             Corba::wrap_response(
-                nsset_transfer(
+                Epp::Nsset::transfer_nsset_localized(
                     Corba::unwrap_string(_handle),
                     Corba::unwrap_string(_auth_info),
                     session_data.registrar_id,
@@ -2609,7 +2609,7 @@ ccReg_EPP_i::KeySetTransfer(
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const std::string auth_info = Corba::unwrap_string_from_const_char_ptr(_auth_info);
-        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::transfer(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::transfer_keyset_localized(
             keyset_handle,
             auth_info,
             session_data.registrar_id,
@@ -2661,7 +2661,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
             Corba::unwrap_EppParams(_epp_params).session_id
         );
 
-        const Epp::LocalizedInfoNssetResponse response = Epp::nsset_info(
+        const Epp::Nsset::InfoNssetLocalizedResponse response = Epp::Nsset::info_nsset_localized(
             Corba::unwrap_string(_handle),
             session_data.registrar_id,
             session_data.language,
@@ -2704,7 +2704,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        const Epp::LocalizedSuccessResponse response = Epp::nsset_delete(
+        const Epp::LocalizedSuccessResponse response = Epp::Nsset::delete_nsset_localized(
             Corba::unwrap_string(_handle),
             session_data.registrar_id,
             session_data.language,
@@ -2749,8 +2749,8 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        const Epp::LocalizedCreateNssetResponse response = nsset_create(
-            Epp::NssetCreateInputData(
+        const Epp::Nsset::CreateNssetLocalizedResponse response = Epp::Nsset::create_nsset_localized(
+            Epp::Nsset::CreateNssetInputData(
                 Corba::unwrap_string_from_const_char_ptr(_handle),
                 Corba::unwrap_string_from_const_char_ptr(authInfoPw),
                 Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns),
@@ -2811,8 +2811,8 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
     try {
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
-        const Epp::LocalizedSuccessResponse response = Epp::nsset_update(
-                Epp::NssetUpdateInputData(
+        const Epp::LocalizedSuccessResponse response = Epp::Nsset::update_nsset_localized(
+                Epp::Nsset::UpdateNssetInputData(
                     Corba::unwrap_string_from_const_char_ptr(_handle),
                     Corba::unwrap_string_for_change_or_remove_to_Optional_string(authInfo_chg),
                     Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_add),
@@ -3110,10 +3110,10 @@ ccReg_EPP_i::KeySetInfo(
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const Epp::Keyset::Localized::InfoResult info_result =
-            Epp::Keyset::Localized::info(keyset_handle,
-                                         session_data.registrar_id,
-                                         session_data.language,
-                                         server_transaction_handle);
+            Epp::Keyset::Localized::info_keyset_localized(keyset_handle,
+                                                          session_data.registrar_id,
+                                                          session_data.language,
+                                                          server_transaction_handle);
 
         ccReg::KeySet_var keyset = new ccReg::KeySet;
         Corba::wrap_Epp_Keyset_Localized_InfoData(info_result.data, keyset);
@@ -3150,7 +3150,7 @@ ccReg_EPP_i::KeySetDelete(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::LocalizedSuccessResponse response = Epp::Keyset::localized_delete(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::delete_keyset_localized(
             keyset_handle,
             session_data.registrar_id,
             session_data.language,
@@ -3243,7 +3243,7 @@ ccReg_EPP_i::KeySetCreate(
         const std::vector< Epp::Keyset::DnsKey > dns_keys =
             Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys);
 
-        const Epp::Keyset::Localized::ResponseOfCreate response = Epp::Keyset::Localized::create(
+        const Epp::Keyset::Localized::ResponseOfCreate response = Epp::Keyset::Localized::create_keyset_localized(
             keyset_handle,
             auth_info_pw,
             tech_contacts,
@@ -3312,7 +3312,7 @@ ccReg_EPP_i::KeySetUpdate(
         const std::vector< Epp::Keyset::DnsKey > dns_keys_rem =
             Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_rem);
 
-        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::update(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::update_keyset_localized(
             keyset_handle,
             auth_info_pw,
             tech_contacts_add,

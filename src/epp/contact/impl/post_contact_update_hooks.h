@@ -29,6 +29,7 @@
 #include <string>
 
 namespace Epp {
+namespace Contact {
 
     void post_contact_update_hooks(
         Fred::OperationContext& _ctx,
@@ -36,6 +37,8 @@ namespace Epp {
         const Optional<unsigned long long>& _logd_requst_id,
         bool _epp_update_contact_enqueue_check
     );
-}
+
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

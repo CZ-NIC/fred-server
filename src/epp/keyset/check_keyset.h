@@ -32,14 +32,16 @@
 #include <string>
 
 namespace Epp {
+namespace Keyset {
 
 /**
  * @returns check results for given contact handles
  */
-std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check(
+std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > check_keyset(
     Fred::OperationContext &_ctx,
     const std::set< std::string > &_keyset_handles);
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

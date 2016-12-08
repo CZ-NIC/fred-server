@@ -29,6 +29,7 @@
 #include <set>
 
 namespace Epp {
+namespace Contact {
 
 struct ContactHandleRegistrationObstruction
 {
@@ -54,6 +55,7 @@ struct ContactHandleRegistrationObstruction
     }
 };
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

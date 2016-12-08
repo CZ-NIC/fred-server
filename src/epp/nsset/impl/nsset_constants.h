@@ -24,10 +24,13 @@
 #define NSSET_CONSTANTS_H_30216F5F90764F32A8BE0F704CCC45E1
 
 namespace Epp {
+namespace Nsset {
 
 const unsigned max_nsset_tech_contacts = 10;
 const int max_nsset_tech_check_level = 10;
 const int min_nsset_tech_check_level = 0;
-}
+
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

@@ -28,6 +28,7 @@
 #include "src/epp/nsset/transfer_nsset_localized.h"
 
 namespace Epp {
+namespace Nsset {
 
 /**
  * If successful (no exception thrown) state requests of nsset are performed. In case of exception behaviour is undefined and transaction should be rolled back.
@@ -40,7 +41,7 @@ namespace Epp {
  * @throws ObjectStatusProhibitsOperation
  * @throws AuthorizationError in case invalid _authinfopw is given
  */
-unsigned long long nsset_transfer_impl(
+unsigned long long transfer_nsset(
     Fred::OperationContext& _ctx,
     const std::string& _nsset_handle,
     const std::string& _authinfopw,
@@ -48,6 +49,7 @@ unsigned long long nsset_transfer_impl(
     const Optional<unsigned long long>& _logd_request_id
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

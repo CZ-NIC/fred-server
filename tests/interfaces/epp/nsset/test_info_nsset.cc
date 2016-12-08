@@ -26,7 +26,7 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/optional.hpp>
 
-#include "src/epp/nsset/impl/nsset_dns_host_output.h"
+#include "src/epp/nsset/impl/dns_host_output.h"
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(NssetInfoImpl)
 BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_info_impl(
+        Epp::Nsset::info_nsset(
             ctx,
             nsset.handle,
             Epp::SessionLang::en,
@@ -51,7 +51,7 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
 BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_info_impl(
+        Epp::Nsset::info_nsset(
             ctx,
             nsset.handle + "SOMEobscureSTRING",
             Epp::SessionLang::en,
@@ -61,7 +61,7 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
     );
 }
 
-static void check_equal(const Epp::NssetInfoOutputData& nsset_data, const Fred::InfoNssetData& info_data) {
+static void check_equal(const Epp::Nsset::InfoNssetOutputData& nsset_data, const Fred::InfoNssetData& info_data) {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( nsset_data.handle ), info_data.handle );
 
     BOOST_CHECK_EQUAL( nsset_data.auth_info_pw, info_data.authinfopw );
@@ -90,7 +90,7 @@ static void check_equal(const Epp::NssetInfoOutputData& nsset_data, const Fred::
 BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_nsset_with_all_data_set)
 {
     check_equal(
-        Epp::nsset_info_impl(
+        Epp::Nsset::info_nsset(
             ctx,
             nsset.handle,
             Epp::SessionLang::en,

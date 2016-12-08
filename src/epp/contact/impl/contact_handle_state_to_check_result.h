@@ -31,6 +31,7 @@
 #include "util/db/nullable.h"
 
 namespace Epp {
+namespace Contact {
 
 inline Nullable< ContactHandleRegistrationObstruction::Enum > contact_handle_state_to_check_result(
     Fred::ContactHandleState::SyntaxValidity::Enum _handle_validity,
@@ -55,6 +56,7 @@ inline Nullable< ContactHandleRegistrationObstruction::Enum > contact_handle_sta
     throw std::runtime_error("Invalid Fred::ContactHandleState::Registrability::Enum value.");
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

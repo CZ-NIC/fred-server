@@ -23,18 +23,20 @@
 #ifndef INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 #define INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 
-#include "src/epp/keyset/impl/keyset_info_data.h"
+#include "src/epp/keyset/impl/info_keyset_data.h"
 #include "src/fredlib/opcontext.h"
 
 namespace Epp {
+namespace Keyset {
 
 /**
  * @throws NonexistentHandle
  */
-KeysetInfoData keyset_info(Fred::OperationContext &_ctx,
+InfoKeysetData info_keyset(Fred::OperationContext &_ctx,
                            const std::string &_keyset_handle,
                            unsigned long long _registrar_id);
 
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

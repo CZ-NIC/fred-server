@@ -31,8 +31,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Nsset {
 
-LocalizedSuccessResponse nsset_transfer(
+LocalizedSuccessResponse transfer_nsset_localized(
     const std::string& _nsset_handle,
     const std::string& _authinfopw,
     unsigned long long _registrar_id,
@@ -44,6 +45,7 @@ LocalizedSuccessResponse nsset_transfer(
     const std::string& _client_transaction_handles_prefix_not_to_nofify
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

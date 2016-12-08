@@ -11,7 +11,7 @@ namespace Epp {
 namespace Keyset {
 namespace Localized {
 
-InfoResult info(
+InfoResult info_keyset_localized(
     const std::string &_keyset_handle,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
@@ -20,11 +20,11 @@ InfoResult info(
     Logging::Context logging_ctx1("rifd");
     Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
     Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetInfo)));
+    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::InfoKeyset)));
 
     try {
         Fred::OperationContextCreator ctx;
-        const KeysetInfoData keyset_info_data = keyset_info(ctx, _keyset_handle, _registrar_id);
+        const InfoKeysetData keyset_info_data = info_keyset(ctx, _keyset_handle, _registrar_id);
         InfoData data;
         data.handle = keyset_info_data.handle;
         data.roid = keyset_info_data.roid;
@@ -58,6 +58,6 @@ InfoResult info(
     }
 }
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp

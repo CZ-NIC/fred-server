@@ -1,6 +1,7 @@
-#include "src/epp/contact/impl/change_contact.h"
+#include "src/epp/contact/contact_change.h"
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
@@ -87,4 +88,5 @@ bool ContactChange::does_value_mean< ContactChange::Value::not_to_touch,
 template
 std::string ContactChange::get_value< std::string >(const boost::optional< std::string >&);
 
-}//namespace Epp
+} // namespace Epp::Contact
+} // namespace Epp

@@ -12,6 +12,7 @@
 #include <fredlib/contact.h>
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
@@ -125,4 +126,5 @@ void post_contact_update_hooks(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

@@ -10,8 +10,9 @@
 #include "util/log/context.h"
 
 namespace Epp {
+namespace Contact {
 
-LocalizedSuccessResponse contact_transfer(
+LocalizedSuccessResponse transfer_contact_localized(
     const std::string& _contact_handle,
     const std::string& _authinfopw,
     const unsigned long long _registrar_id,
@@ -27,11 +28,11 @@ LocalizedSuccessResponse contact_transfer(
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactUpdate)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::UpdateContact)));
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long post_transfer_history_id = contact_transfer_impl(
+        const unsigned long long post_transfer_history_id = transfer_contact(
             ctx,
             _contact_handle,
             _authinfopw,
@@ -116,4 +117,5 @@ LocalizedSuccessResponse contact_transfer(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

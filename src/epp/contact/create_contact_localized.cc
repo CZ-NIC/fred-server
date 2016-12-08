@@ -1,3 +1,4 @@
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact_localized.h"
 
 #include "src/epp/impl/action.h"
@@ -11,6 +12,7 @@
 #include "util/log/context.h"
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
@@ -39,7 +41,7 @@ std::vector< std::string > convert(const std::vector< boost::optional< Nullable<
 
 }//namespace Epp::{anonymous}
 
-ContactCreateInputData::ContactCreateInputData(const ContactChange &src)
+CreateContactInputData::CreateContactInputData(const ContactChange &src)
 :   name(convert(src.name)),
     organization(convert(src.organization)),
     streets(convert(src.streets)),
@@ -65,9 +67,9 @@ ContactCreateInputData::ContactCreateInputData(const ContactChange &src)
     }
 }
 
-LocalizedCreateContactResponse contact_create(
+CreateContactLocalizedResponse create_contact_localized(
     const std::string &_contact_handle,
-    const ContactCreateInputData &_data,
+    const CreateContactInputData &_data,
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id,
     SessionLang::Enum _lang,
@@ -80,17 +82,17 @@ LocalizedCreateContactResponse contact_create(
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::ContactCreate) ) );
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::CreateContact) ) );
 
         Fred::OperationContextCreator ctx;
 
-        const ContactCreateResult impl_result(contact_create_impl(ctx,
-                                                                  _contact_handle,
-                                                                  _data,
-                                                                  _registrar_id,
-                                                                  _logd_request_id));
+        const CreateContactResult impl_result(create_contact(ctx,
+                                                             _contact_handle,
+                                                             _data,
+                                                             _registrar_id,
+                                                             _logd_request_id));
 
-        const LocalizedCreateContactResponse localized_result(
+        const CreateContactLocalizedResponse localized_result(
             create_localized_success_response(Response::ok, ctx, _lang),
             impl_result.crdate);
 
@@ -160,4 +162,5 @@ LocalizedCreateContactResponse contact_create(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

@@ -23,6 +23,7 @@
 #include <set>
 
 namespace Epp {
+namespace Keyset {
 
 namespace {
 
@@ -413,7 +414,7 @@ std::vector< Fred::DnsKey > to_fred(const std::vector< Keyset::DnsKey > &_dns_ke
 
 }//namespace Epp::{anonymous}
 
-KeysetUpdateResult keyset_update(
+UpdateKeysetResult update_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
@@ -431,7 +432,7 @@ KeysetUpdateResult keyset_update(
         throw AuthErrorServerClosingConnection();
     }
 
-    KeysetUpdateResult result;
+    UpdateKeysetResult result;
     std::string callers_registrar_handle;
     {
         const Fred::InfoKeysetData keyset_data = check_keyset_handle(_keyset_handle,
@@ -510,4 +511,5 @@ KeysetUpdateResult keyset_update(
     }
 }
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp

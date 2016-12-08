@@ -34,7 +34,7 @@ namespace Epp {
 namespace Keyset {
 namespace Localized {
 
-LocalizedSuccessResponse transfer(
+LocalizedSuccessResponse transfer_keyset_localized(
     const std::string& _keyset_handle,
     const std::string& _authinfopw,
     unsigned long long _registrar_id,
@@ -45,8 +45,8 @@ LocalizedSuccessResponse transfer(
     bool _epp_notification_disabled,
     const std::string &_client_transaction_handles_prefix_not_to_nofify);
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

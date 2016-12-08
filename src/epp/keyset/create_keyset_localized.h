@@ -46,7 +46,7 @@ struct ResponseOfCreate
     boost::posix_time::ptime crdate;
 };
 
-ResponseOfCreate create(
+ResponseOfCreate create_keyset_localized(
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts,
@@ -60,8 +60,8 @@ ResponseOfCreate create(
     bool _epp_notification_disabled,
     const std::string &_dont_notify_client_transaction_handles_with_this_prefix);
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

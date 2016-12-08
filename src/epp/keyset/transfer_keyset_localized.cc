@@ -14,7 +14,7 @@ namespace Epp {
 namespace Keyset {
 namespace Localized {
 
-LocalizedSuccessResponse transfer(
+LocalizedSuccessResponse transfer_keyset_localized(
     const std::string& _keyset_handle,
     const std::string& _authinfopw,
     unsigned long long _registrar_id,
@@ -29,11 +29,11 @@ LocalizedSuccessResponse transfer(
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetTransfer)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::TransferKeyset)));
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long post_transfer_history_id = keyset_transfer(
+        const unsigned long long post_transfer_history_id = transfer_keyset(
             ctx,
             _keyset_handle,
             _authinfopw,
@@ -113,6 +113,6 @@ LocalizedSuccessResponse transfer(
     }
 }
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp

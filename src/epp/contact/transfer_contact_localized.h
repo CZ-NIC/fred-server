@@ -31,8 +31,9 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Contact {
 
-LocalizedSuccessResponse contact_transfer(
+LocalizedSuccessResponse transfer_contact_localized(
     const std::string& _contact_handle,
     const std::string& _authinfopw,
     unsigned long long _registrar_id,
@@ -44,6 +45,7 @@ LocalizedSuccessResponse contact_transfer(
     const std::string& _client_transaction_handles_prefix_not_to_notify
 );
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

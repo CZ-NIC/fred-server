@@ -16,6 +16,7 @@
 #include <map>
 
 namespace Epp {
+namespace Keyset {
 
 namespace {
 
@@ -197,7 +198,7 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys,
 
 }//namespace Epp::{anonymous}
 
-KeysetCreateResult keyset_create(
+CreateKeysetResult create_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
@@ -251,7 +252,7 @@ KeysetCreateResult keyset_create(
             dns_keys,
             _tech_contacts).exec(_ctx, _logd_request_id, "UTC");
 
-        KeysetCreateResult result;
+        CreateKeysetResult result;
         result.id = op_result.create_object_result.object_id,
         result.create_history_id = op_result.create_object_result.history_id,
         result.crdate = op_result.creation_time;
@@ -275,4 +276,5 @@ KeysetCreateResult keyset_create(
     }
 }
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp

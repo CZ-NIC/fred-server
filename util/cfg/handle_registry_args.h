@@ -111,7 +111,7 @@ public:
         lock_epp_commands = vm["registry.lock_epp_commands"].as<bool>();
         nsset_level = vm["registry.nsset_level"].as<unsigned int>();
 
-        if(nsset_level > boost::numeric_cast<unsigned int>(Epp::max_nsset_tech_check_level))
+        if(nsset_level > boost::numeric_cast<unsigned int>(Epp::Nsset::max_nsset_tech_check_level))
         {
             throw std::runtime_error("configured default nsset_level out of range");
         }

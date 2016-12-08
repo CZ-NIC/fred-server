@@ -91,7 +91,7 @@ HandlesCheck::Results localize_check_results(
 
 }//namespace Epp::Keyset::{anonymous}
 
-HandlesCheck check(
+HandlesCheck check_keyset_localized(
     const std::set< std::string > &_keyset_handles,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
@@ -100,7 +100,7 @@ HandlesCheck check(
     Logging::Context logging_ctx("rifd");
     Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
     Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetCheck)));
+    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::CheckKeyset)));
 
     try {
         Fred::OperationContextCreator ctx;
@@ -115,7 +115,7 @@ HandlesCheck check(
         }
 
         const std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check_results =
-            keyset_check(ctx, _keyset_handles);
+            check_keyset(ctx, _keyset_handles);
 
         return HandlesCheck(create_localized_success_response(Response::ok, ctx, _lang),
                             localize_check_results(ctx, keyset_check_results, _lang));
@@ -135,6 +135,6 @@ HandlesCheck check(
     }
 }
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp

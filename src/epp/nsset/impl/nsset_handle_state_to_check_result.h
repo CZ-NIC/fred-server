@@ -31,6 +31,7 @@
 #include "util/db/nullable.h"
 
 namespace Epp {
+namespace Nsset {
 
 inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_check_result(
     const Fred::NssetHandleState::SyntaxValidity::Enum _handle_validity,
@@ -59,6 +60,7 @@ inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_
     throw std::runtime_error("invalid NssetHandleState");
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

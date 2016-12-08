@@ -29,8 +29,9 @@
 #include <string>
 
 namespace Epp {
+namespace Contact {
 
-LocalizedSuccessResponse contact_delete(
+LocalizedSuccessResponse delete_contact_localized(
     const std::string& _handle,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
@@ -40,6 +41,7 @@ LocalizedSuccessResponse contact_delete(
     const std::string& _client_transaction_handles_prefix_not_to_notify
 );
 
-}
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

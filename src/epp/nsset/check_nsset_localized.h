@@ -33,12 +33,13 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Nsset {
 
-struct LocalizedNssetHandleRegistrationObstruction {
+struct NssetHandleLocalizedRegistrationObstruction {
     const NssetHandleRegistrationObstruction::Enum state;
     const std::string description;
 
-    LocalizedNssetHandleRegistrationObstruction(
+    NssetHandleLocalizedRegistrationObstruction(
         const NssetHandleRegistrationObstruction::Enum _state,
         const std::string& _description
     ) :
@@ -47,26 +48,27 @@ struct LocalizedNssetHandleRegistrationObstruction {
     { }
 };
 
-struct LocalizedCheckNssetResponse {
+struct CheckNssetLocalizedResponse {
     const LocalizedSuccessResponse ok_response;
-    const std::map<std::string, boost::optional<LocalizedNssetHandleRegistrationObstruction> > nsset_statuses;
+    const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > nsset_statuses;
 
-    LocalizedCheckNssetResponse(
+    CheckNssetLocalizedResponse(
         const LocalizedSuccessResponse& _ok_response,
-        const std::map<std::string, boost::optional<LocalizedNssetHandleRegistrationObstruction> >& _nsset_statuses
+        const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> >& _nsset_statuses
     ) :
         ok_response(_ok_response),
         nsset_statuses(_nsset_statuses)
     { }
 };
 
-LocalizedCheckNssetResponse nsset_check(
+CheckNssetLocalizedResponse check_nsset_localized(
     const std::set<std::string>& _nsset_handles,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string& _server_transaction_handle
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

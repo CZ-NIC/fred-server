@@ -52,7 +52,7 @@ boost::optional< Epp::ContactDisclose > set_all_disclose_flags(bool to_disclose)
     return disclose;
 }
 
-void set_correct_contact_data(Epp::ContactChange &contact_data)
+void set_correct_contact_data(Epp::Contact::ContactChange &contact_data)
 {
     contact_data.name              = "Jan Novak Jr.";
     contact_data.organization      = "";
@@ -71,13 +71,13 @@ void set_correct_contact_data(Epp::ContactChange &contact_data)
     contact_data.notify_email      = "jan.notify@novak.novak";
     contact_data.vat               = "MyVATstring";
     contact_data.ident             = "";
-    contact_data.ident_type        = Nullable< Epp::ContactChange::IdentType::Enum >();
+    contact_data.ident_type        = Nullable< Epp::Contact::ContactChange::IdentType::Enum >();
     contact_data.auth_info_pw      = "authInfo123";
     contact_data.disclose          = set_all_disclose_flags(true);
 }
 
 template < Epp::ContactDisclose::Item::Enum ITEM >
-bool to_disclose(const Epp::ContactCreateInputData &_data)
+bool to_disclose(const Epp::Contact::CreateContactInputData &_data)
 {
     if (!_data.disclose.is_initialized()) {
         return Epp::is_the_default_policy_to_disclose();
@@ -85,20 +85,20 @@ bool to_disclose(const Epp::ContactCreateInputData &_data)
     return _data.disclose->should_be_disclosed< ITEM >(Epp::is_the_default_policy_to_disclose());
 }
 
-std::string ident_type_to_string(Epp::ContactChange::IdentType::Enum type)
+std::string ident_type_to_string(Epp::Contact::ContactChange::IdentType::Enum type)
 {
     switch (type)
     {
-        case Epp::ContactChange::IdentType::op:       return Fred::PersonalIdUnion::get_OP("").get_type();
-        case Epp::ContactChange::IdentType::pass:     return Fred::PersonalIdUnion::get_PASS("").get_type();
-        case Epp::ContactChange::IdentType::ico:      return Fred::PersonalIdUnion::get_ICO("").get_type();
-        case Epp::ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV("").get_type();
-        case Epp::ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY("").get_type();
+        case Epp::Contact::ContactChange::IdentType::op:       return Fred::PersonalIdUnion::get_OP("").get_type();
+        case Epp::Contact::ContactChange::IdentType::pass:     return Fred::PersonalIdUnion::get_PASS("").get_type();
+        case Epp::Contact::ContactChange::IdentType::ico:      return Fred::PersonalIdUnion::get_ICO("").get_type();
+        case Epp::Contact::ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV("").get_type();
+        case Epp::Contact::ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY("").get_type();
     }
-    throw std::runtime_error("Invalid Epp::ContactChange::IdentType::Enum value.");
+    throw std::runtime_error("Invalid Epp::Contact::ContactChange::IdentType::Enum value.");
 }
 
-void check_equal(const Epp::ContactCreateInputData &create_data, const Fred::InfoContactData &info_data)
+void check_equal(const Epp::Contact::CreateContactInputData &create_data, const Fred::InfoContactData &info_data)
 {
     BOOST_CHECK_EQUAL(create_data.name,              info_data.name.get_value_or_default() );
     BOOST_CHECK_EQUAL(create_data.organization,      info_data.organization.get_value_or_default() );
@@ -144,11 +144,11 @@ BOOST_AUTO_TEST_SUITE(ContactCreateImpl)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
 {
-    Epp::ContactChange contact_data;
+    Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_create_impl(
+        Epp::Contact::create_contact(
             ctx,
             "contacthandle",
             contact_data,
@@ -161,11 +161,11 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
 {
-    Epp::ContactChange contact_data;
+    Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_create_impl(
+        Epp::Contact::create_contact(
             ctx,
             "contacthandle1?" /* <== !!! */,
             contact_data,
@@ -178,11 +178,11 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
 {
-    Epp::ContactChange contact_data;
+    Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_create_impl(
+        Epp::Contact::create_contact(
             ctx,
             contact.handle,
             contact_data,
@@ -199,11 +199,11 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
         Fred::DeleteContactByHandle(contact.handle).exec(ctx);
     }
 
-    Epp::ContactChange contact_data;
+    Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
 
     try {
-        Epp::contact_create_impl(
+        Epp::Contact::create_contact(
             ctx,
             contact.handle,
             contact_data,
@@ -217,12 +217,12 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
 {
-    Epp::ContactChange contact_data;
+    Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
     contact_data.country_code      = "1Z9"; /* <- !!! */
 
     try{
-        Epp::contact_create_impl(
+        Epp::Contact::create_contact(
             ctx,
             "contacthandle1",
             contact_data,
@@ -236,11 +236,11 @@ BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
 
 BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
 {
-    Epp::ContactChange contact_data;
+    Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
     const std::string contact_handle = "contacthandle1";
 
-    const Epp::ContactCreateResult result = Epp::contact_create_impl(
+    const Epp::Contact::CreateContactResult result = Epp::Contact::create_contact(
         ctx,
         contact_handle,
         contact_data,

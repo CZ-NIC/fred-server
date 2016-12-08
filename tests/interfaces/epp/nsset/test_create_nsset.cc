@@ -39,13 +39,13 @@ BOOST_AUTO_TEST_SUITE(NssetCreateImpl)
 BOOST_FIXTURE_TEST_CASE( test_case_uninitialized_ip_prohibited, has_registrar )
 {
     boost::optional<boost::asio::ip::address> ip;
-    BOOST_REQUIRE(Epp::is_prohibited_ip_addr(ip,ctx));
+    BOOST_REQUIRE(Epp::Nsset::is_prohibited_ip_addr(ip,ctx));
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_nsset_input_data_set)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_create_impl(
+        Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
             0 /* <== !!! */,
@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_nsset_input_data_set)
 {
     nsset_input_data.handle +="?";
     try {
-        Epp::nsset_create_impl(
+        Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
             registrar.id,
@@ -74,7 +74,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_nsset_with_input_data_
 {
 
     BOOST_CHECK_THROW(
-        Epp::nsset_create_impl(
+        Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
             registrar.id,
@@ -91,7 +91,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_
     }
 
     try {
-        Epp::nsset_create_impl(
+        Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
             registrar.id,
@@ -119,7 +119,7 @@ bool boost_asio_ip_address_predicate (const boost::optional<boost::asio::ip::add
     return (ip1.is_initialized() && ip1.get() == ip2);
 }
 
-bool dnshostdata_dnshost_predicate (const Epp::DNShostInput& dnshostdata, const Fred::DnsHost& dnshost)
+bool dnshostdata_dnshost_predicate (const Epp::Nsset::DnsHostInput& dnshostdata, const Fred::DnsHost& dnshost)
 {
     std::vector<boost::asio::ip::address> tmp = dnshost.get_inet_addr();
     return (dnshostdata.fqdn == dnshost.get_fqdn()
@@ -131,7 +131,7 @@ bool handle_oidhpair_predicate (const std::string& handle, const Fred::ObjectIdH
   return (handle == pair.handle);
 }
 
-void check_equal(const Epp::NssetCreateInputData& create_data, const Fred::InfoNssetData& info_data)
+void check_equal(const Epp::Nsset::CreateNssetInputData& create_data, const Fred::InfoNssetData& info_data)
 {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( create_data.handle ), info_data.handle );
     BOOST_CHECK_EQUAL( *create_data.authinfo, info_data.authinfopw );
@@ -149,7 +149,7 @@ void check_equal(const Epp::NssetCreateInputData& create_data, const Fred::InfoN
 
 BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_nsset_input_data_set)
 {
-    const Epp::NssetCreateResult result = Epp::nsset_create_impl(
+    const Epp::Nsset::CreateNssetResult result = Epp::Nsset::create_nsset(
         ctx,
         nsset_input_data,
         registrar.id,

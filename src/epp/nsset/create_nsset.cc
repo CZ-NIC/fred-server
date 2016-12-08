@@ -1,5 +1,5 @@
 #include "src/epp/nsset/create_nsset.h"
-#include "src/epp/nsset/impl/nsset_dns_host_input.h"
+#include "src/epp/nsset/impl/dns_host_input.h"
 #include "src/epp/nsset/impl/nsset.h"
 #include "src/epp/error.h"
 #include "src/epp/impl/exception.h"
@@ -28,10 +28,11 @@
 #include <boost/asio/ip/address.hpp>
 
 namespace Epp {
+namespace Nsset {
 
-NssetCreateResult nsset_create_impl(
+CreateNssetResult create_nsset(
     Fred::OperationContext& _ctx,
-    const NssetCreateInputData& _data,
+    const CreateNssetInputData& _data,
     const unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id
 ) {
@@ -183,7 +184,7 @@ NssetCreateResult nsset_create_impl(
             "UTC"
         );
 
-        return NssetCreateResult(
+        return CreateNssetResult(
             create_data.create_object_result.object_id,
             create_data.create_object_result.history_id,
             create_data.creation_time
@@ -205,4 +206,5 @@ NssetCreateResult nsset_create_impl(
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

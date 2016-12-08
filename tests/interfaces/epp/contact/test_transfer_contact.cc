@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE(ContactTransferImpl)
 BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_contact)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_transfer_impl(
+        Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
@@ -49,7 +49,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_co
 BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_transfer_impl(
+        Epp::Contact::transfer_contact(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
             "abc-it-doesnt-matter-operation-should-fail-even-sooner",
@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
 BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, has_contact)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_transfer_impl(
+        Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
@@ -89,7 +89,7 @@ struct has_contact_with_server_transfer_prohibited_and_another_registrar : has_c
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_contact_with_server_transfer_prohibited_and_another_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_transfer_impl(
+        Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
@@ -105,7 +105,7 @@ struct has_contact_with_server_delete_prohibited_and_another_registrar : has_con
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_contact_with_server_delete_prohibited_and_another_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_transfer_impl(
+        Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
@@ -121,7 +121,7 @@ struct has_contact_and_another_registrar : has_contact, has_another_registrar { 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, has_contact_and_another_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::contact_transfer_impl(
+        Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             "thisisdifferent" + contact.authinfopw,
@@ -136,7 +136,7 @@ struct has_contact_with_server_update_prohibited_request_and_another_registrar :
 
 BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, has_contact_with_server_update_prohibited_request_and_another_registrar)
 {
-    Epp::contact_transfer_impl(
+    Epp::Contact::transfer_contact(
         ctx,
         contact.handle,
         contact.authinfopw,
@@ -165,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_contact_and_another_registrar
 {
     const Fred::InfoContactData contact_data_before = Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data;
 
-    Epp::contact_transfer_impl(
+    Epp::Contact::transfer_contact(
         ctx,
         contact.handle,
         contact.authinfopw,

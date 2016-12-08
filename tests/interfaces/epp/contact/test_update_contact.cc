@@ -50,14 +50,14 @@ Epp::ContactDisclose get_all_items(bool to_disclose = true)
 }
 
 template < Epp::ContactDisclose::Item::Enum ITEM >
-bool updated(const Epp::ContactChange &_update, bool _before)
+bool updated(const Epp::Contact::ContactChange &_update, bool _before)
 {
     return _update.disclose.is_initialized()
            ? _update.disclose->should_be_disclosed< ITEM >(Epp::is_the_default_policy_to_disclose())
            : _before;
 }
 
-void set_correct_data(Epp::ContactChange &data)
+void set_correct_data(Epp::Contact::ContactChange &data)
 {
     data.name              = "Jan Novak";
     data.organization      = "Firma, a. s.";
@@ -72,7 +72,7 @@ void set_correct_data(Epp::ContactChange &data)
     data.country_code      = "CZ";
 }
 
-void set_correct_data_2(Epp::ContactChange &data)
+void set_correct_data_2(Epp::Contact::ContactChange &data)
 {
     set_correct_data(data);
     data.organization = "";
@@ -82,7 +82,7 @@ void set_correct_data_2(Epp::ContactChange &data)
     data.notify_email = "jan.notify@novak.novak";
     data.vat          = "MyVATstring";
     data.ident        = "CZ0123456789";
-    data.ident_type   = Epp::ContactChange::IdentType::op;
+    data.ident_type   = Epp::Contact::ContactChange::IdentType::op;
     data.auth_info_pw = "a6tg85jk57yu97";
     data.disclose     = get_all_items();
 }
@@ -90,8 +90,8 @@ void set_correct_data_2(Epp::ContactChange &data)
 std::string get_new_value(const boost::optional< std::string > &change,
                           const std::string &before)
 {
-    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_set >(change)) {
-        return Epp::ContactChange::get_value(change);
+    if (Epp::Contact::ContactChange::does_value_mean< Epp::Contact::ContactChange::Value::to_set >(change)) {
+        return Epp::Contact::ContactChange::get_value(change);
     }
     return before;
 }
@@ -99,10 +99,10 @@ std::string get_new_value(const boost::optional< std::string > &change,
 std::string get_new_value(const boost::optional< Nullable< std::string > > &change,
                           const std::string &before)
 {
-    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_set >(change)) {
-        return Epp::ContactChange::get_value(change);
+    if (Epp::Contact::ContactChange::does_value_mean< Epp::Contact::ContactChange::Value::to_set >(change)) {
+        return Epp::Contact::ContactChange::get_value(change);
     }
-    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_delete >(change)) {
+    if (Epp::Contact::ContactChange::does_value_mean< Epp::Contact::ContactChange::Value::to_delete >(change)) {
         return std::string();
     }
     return before;
@@ -111,10 +111,10 @@ std::string get_new_value(const boost::optional< Nullable< std::string > > &chan
 Optional< std::string > get_new_value(const boost::optional< Nullable< std::string > > &change,
                                       const Optional< std::string > &before)
 {
-    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_set >(change)) {
-        return Epp::ContactChange::get_value(change);
+    if (Epp::Contact::ContactChange::does_value_mean< Epp::Contact::ContactChange::Value::to_set >(change)) {
+        return Epp::Contact::ContactChange::get_value(change);
     }
-    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_delete >(change)) {
+    if (Epp::Contact::ContactChange::does_value_mean< Epp::Contact::ContactChange::Value::to_delete >(change)) {
         return Optional< std::string >();
     }
     return before;
@@ -123,26 +123,26 @@ Optional< std::string > get_new_value(const boost::optional< Nullable< std::stri
 Nullable< std::string > get_new_value(const boost::optional< Nullable< std::string > > &change,
                                       const Nullable< std::string > &before)
 {
-    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_set >(change)) {
-        return Epp::ContactChange::get_value(change);
+    if (Epp::Contact::ContactChange::does_value_mean< Epp::Contact::ContactChange::Value::to_set >(change)) {
+        return Epp::Contact::ContactChange::get_value(change);
     }
-    if (Epp::ContactChange::does_value_mean< Epp::ContactChange::Value::to_delete >(change)) {
+    if (Epp::Contact::ContactChange::does_value_mean< Epp::Contact::ContactChange::Value::to_delete >(change)) {
         return Nullable< std::string >();
     }
     return before;
 }
 
-std::string ident_type_to_string(Epp::ContactChange::IdentType::Enum type)
+std::string ident_type_to_string(Epp::Contact::ContactChange::IdentType::Enum type)
 {
     switch (type)
     {
-        case Epp::ContactChange::IdentType::op:       return Fred::PersonalIdUnion::get_OP("").get_type();
-        case Epp::ContactChange::IdentType::pass:     return Fred::PersonalIdUnion::get_PASS("").get_type();
-        case Epp::ContactChange::IdentType::ico:      return Fred::PersonalIdUnion::get_ICO("").get_type();
-        case Epp::ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV("").get_type();
-        case Epp::ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY("").get_type();
+        case Epp::Contact::ContactChange::IdentType::op:       return Fred::PersonalIdUnion::get_OP("").get_type();
+        case Epp::Contact::ContactChange::IdentType::pass:     return Fred::PersonalIdUnion::get_PASS("").get_type();
+        case Epp::Contact::ContactChange::IdentType::ico:      return Fred::PersonalIdUnion::get_ICO("").get_type();
+        case Epp::Contact::ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV("").get_type();
+        case Epp::Contact::ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY("").get_type();
     }
-    throw std::runtime_error("Invalid Epp::ContactChange::IdentType::Enum value.");
+    throw std::runtime_error("Invalid Epp::Contact::ContactChange::IdentType::Enum value.");
 }
 
 }//namespace {anonymous}
@@ -152,11 +152,11 @@ BOOST_AUTO_TEST_SUITE(ContactUpdateImpl)
 
 BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data(data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
+        Epp::Contact::update_contact(
             ctx,
             contact.handle + "*?!",
             data,
@@ -169,11 +169,11 @@ BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data(data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
+        Epp::Contact::update_contact(
             ctx,
             contact.handle + "abc",
             data,
@@ -186,11 +186,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different_registrar)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data(data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
+        Epp::Contact::update_contact(
             ctx,
             contact.handle,
             data,
@@ -203,11 +203,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server_update_prohibited)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data(data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
+        Epp::Contact::update_contact(
             ctx,
             contact.handle,
             data,
@@ -220,11 +220,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete_candidate)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data(data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
+        Epp::Contact::update_contact(
             ctx,
             contact.handle,
             data,
@@ -237,11 +237,11 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_contact_with_delete_candidate_request)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data_2(data);
 
     BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
+        Epp::Contact::update_contact(
             ctx,
             contact.handle,
             data,
@@ -267,7 +267,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_contact_with
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data(data);
     data.organization = "Spol s r. o.";
     data.country_code = "X123Z"; /* <- !!! */
@@ -275,7 +275,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
 
     try {
         try {
-            Epp::contact_update_impl(
+            Epp::Contact::update_contact(
                 ctx,
                 contact.handle,
                 data,
@@ -292,13 +292,13 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data(data);
     data.organization = "";
     data.disclose  = get_all_items(false);  /* address <- !!! */
 
     BOOST_CHECK_THROW(
-        Epp::contact_update_impl(
+        Epp::Contact::update_contact(
             ctx,
             contact.handle,
             data,
@@ -311,7 +311,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
 
 static void check_equal(
     const Fred::InfoContactData& info_before,
-    const Epp::ContactChange& update,
+    const Epp::Contact::ContactChange& update,
     const Fred::InfoContactData& info_after)
 {
     BOOST_CHECK_EQUAL(boost::to_upper_copy(info_after.handle), info_before.handle);
@@ -366,10 +366,10 @@ static void check_equal(
 
 BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data_2(data);
 
-    Epp::contact_update_impl(
+    Epp::Contact::update_contact(
         ctx,
         contact.handle,
         data,
@@ -382,10 +382,10 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
 
 BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_contact_with_server_transfer_prohibited_request)
 {
-    Epp::ContactChange data;
+    Epp::Contact::ContactChange data;
     set_correct_data_2(data);
 
-    Epp::contact_update_impl(
+    Epp::Contact::update_contact(
         ctx,
         contact.handle,
         data,

@@ -12,6 +12,7 @@
 #include <boost/foreach.hpp>
 
 namespace Epp {
+namespace Contact {
 
 namespace {
 
@@ -110,12 +111,12 @@ boost::optional< Fred::PersonalIdUnion > get_personal_id(const Nullable< std::st
 
 }//namespace Epp::{anonymous}
 
-ContactInfoOutputData::ContactInfoOutputData(const boost::optional< ContactDisclose > &_disclose)
+InfoContactOutputData::InfoContactOutputData(const boost::optional< ContactDisclose > &_disclose)
 :   disclose(_disclose)
 {
 }
 
-ContactInfoOutputData contact_info_impl(
+InfoContactOutputData info_contact(
     Fred::OperationContext &_ctx,
     const std::string &_handle,
     const SessionLang::Enum _object_state_description_lang,
@@ -129,7 +130,7 @@ ContactInfoOutputData contact_info_impl(
     try {
         const Fred::InfoContactData info = Fred::InfoContactByHandle(_handle).exec(_ctx, "UTC").info_contact_data;
 
-        ContactInfoOutputData output_data(get_discloseflags(info));
+        InfoContactOutputData output_data(get_discloseflags(info));
         output_data.handle            = info.handle;
         output_data.roid              = info.roid;
         output_data.sponsoring_registrar_handle  = info.sponsoring_registrar_handle;
@@ -188,4 +189,5 @@ ContactInfoOutputData contact_info_impl(
     }
 }
 
-}
+} // namespace Epp::Contact
+} // namespace Epp

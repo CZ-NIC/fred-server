@@ -49,7 +49,7 @@ Presents insert_vector_parameter_error_if_presents(const ParameterErrors &_src,
 
 }//namespace Epp::Keyset::Localized::{anonymous}
 
-ResponseOfCreate create(
+ResponseOfCreate create_keyset_localized(
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
     const std::vector< std::string > &_tech_contacts,
@@ -67,11 +67,11 @@ ResponseOfCreate create(
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::KeysetCreate)));
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::CreateKeyset)));
 
         Fred::OperationContextCreator ctx;
 
-        const KeysetCreateResult result = keyset_create(ctx, _keyset_handle,
+        const CreateKeysetResult result = create_keyset(ctx, _keyset_handle,
                                                              _auth_info_pw,
                                                              _tech_contacts,
                                                              _ds_records,
@@ -160,6 +160,6 @@ ResponseOfCreate create(
     }
 }
 
-}//namespace Epp::Keyset::Localized
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset::Localized
+} // namespace Epp::Keyset
+} // namespace Epp

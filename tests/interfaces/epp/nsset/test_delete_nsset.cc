@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE(NssetDeleteImpl)
 BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_nsset)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_delete_impl(
+        Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
             0
@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_nsset)
 BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, has_nsset)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_delete_impl(
+        Epp::Nsset::delete_nsset(
             ctx,
             "SOMEobscureString",
             registrar.id
@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, has_nsset)
 BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_nsset_and_a_different_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_delete_impl(
+        Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
             the_different_registrar.id
@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_nsset_and_a_different_r
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, has_nsset_with_server_update_prohibited)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_delete_impl(
+        Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
             registrar.id
@@ -89,7 +89,7 @@ struct has_nsset_with_server_delete_prohibited : has_nsset_with_status {
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, has_nsset_with_delete_candidate)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_delete_impl(
+        Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
             registrar.id
@@ -106,7 +106,7 @@ struct has_nsset_linked_to_domain : has_nsset_with_all_data_set {
 BOOST_FIXTURE_TEST_CASE(delete_fail_linked_domain, has_nsset_linked_to_domain)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_delete_impl(
+        Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
             registrar.id
@@ -117,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_linked_domain, has_nsset_linked_to_domain)
 
 BOOST_FIXTURE_TEST_CASE(delete_ok, has_nsset)
 {
-    Epp::nsset_delete_impl(
+    Epp::Nsset::delete_nsset(
         ctx,
         nsset.handle,
         registrar.id
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(delete_ok, has_nsset)
 
 BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, has_nsset_with_server_transfer_prohibited_request)
 {
-    Epp::nsset_delete_impl(
+    Epp::Nsset::delete_nsset(
         ctx,
         nsset.handle,
         registrar.id

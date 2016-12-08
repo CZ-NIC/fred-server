@@ -28,9 +28,9 @@
 #include <boost/foreach.hpp>
 
 namespace Epp {
+namespace Nsset {
 
-
-std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > nsset_check_impl(
+std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
     Fred::OperationContext& _ctx,
     const std::set<std::string>& _nsset_handles
 ) {
@@ -46,4 +46,5 @@ std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > nsset
     return result;
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp

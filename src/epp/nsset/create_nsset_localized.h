@@ -29,28 +29,28 @@
 
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
-#include "src/epp/nsset/impl/nsset_dns_host_input.h"
+#include "src/epp/nsset/impl/dns_host_input.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-
 namespace Epp {
+namespace Nsset {
 
-    struct NssetCreateInputData
+    struct CreateNssetInputData
     {
         std::string handle;
         boost::optional<std::string> authinfo;
-        std::vector<Epp::DNShostInput> dns_hosts;
+        std::vector<DnsHostInput> dns_hosts;
         std::vector<std::string> tech_contacts;
         boost::optional<short> input_tech_check_level;
         unsigned int config_default_nsset_tech_check_level;
         unsigned int config_nsset_min_hosts;
         unsigned int config_nsset_max_hosts;
 
-        NssetCreateInputData(
+        CreateNssetInputData(
             const std::string& _handle,
             const boost::optional<std::string>& _authinfo,
-            const std::vector<Epp::DNShostInput>& _dns_hosts,
+            const std::vector<DnsHostInput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
             const boost::optional<short>& _input_tech_check_level,
             const unsigned int _config_default_nsset_tech_check_level,
@@ -75,11 +75,11 @@ namespace Epp {
     };
 
 
-struct LocalizedCreateNssetResponse {
+struct CreateNssetLocalizedResponse {
     const LocalizedSuccessResponse ok_response;
     const boost::posix_time::ptime crdate;
 
-    LocalizedCreateNssetResponse(
+    CreateNssetLocalizedResponse(
         const LocalizedSuccessResponse& _ok_response,
         const boost::posix_time::ptime& _crdate
     ) :
@@ -88,8 +88,8 @@ struct LocalizedCreateNssetResponse {
     { }
 };
 
-LocalizedCreateNssetResponse nsset_create(
-    const NssetCreateInputData& _data,
+CreateNssetLocalizedResponse create_nsset_localized(
+    const CreateNssetInputData& _data,
     unsigned long long _registrar_id,
     const Optional<unsigned long long>& _logd_request_id,
     SessionLang::Enum _lang,
@@ -99,6 +99,7 @@ LocalizedCreateNssetResponse nsset_create(
     const std::string& _dont_notify_client_transaction_handles_with_this_prefix
 );
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

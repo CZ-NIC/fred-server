@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE(NssetTransferImpl)
 BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_nsset)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_transfer_impl(
+        Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
@@ -49,7 +49,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_ns
 BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_transfer_impl(
+        Epp::Nsset::transfer_nsset(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
             "abc-it-doesnt-matter-operation-should-fail-even-sooner",
@@ -63,7 +63,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
 BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, has_nsset)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_transfer_impl(
+        Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
@@ -89,7 +89,7 @@ struct has_nsset_with_server_transfer_prohibited_and_another_registrar : has_nss
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_nsset_with_server_transfer_prohibited_and_another_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_transfer_impl(
+        Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
@@ -105,7 +105,7 @@ struct has_nsset_with_server_delete_prohibited_and_another_registrar : has_nsset
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_nsset_with_server_delete_prohibited_and_another_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_transfer_impl(
+        Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
@@ -121,7 +121,7 @@ struct has_nsset_and_another_registrar : has_nsset, has_another_registrar { };
 BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfo_error, has_nsset_and_another_registrar)
 {
     BOOST_CHECK_THROW(
-        Epp::nsset_transfer_impl(
+        Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             "thisisdifferent" + nsset.authinfopw,
@@ -136,7 +136,7 @@ struct has_nsset_with_server_update_prohibited_request_and_another_registrar : h
 
 BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, has_nsset_with_server_update_prohibited_request_and_another_registrar)
 {
-    Epp::nsset_transfer_impl(
+    Epp::Nsset::transfer_nsset(
         ctx,
         nsset.handle,
         nsset.authinfopw,
@@ -165,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_nsset_and_another_registrar)
 {
     const Fred::InfoNssetData nsset_data_before = Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data;
 
-    Epp::nsset_transfer_impl(
+    Epp::Nsset::transfer_nsset(
         ctx,
         nsset.handle,
         nsset.authinfopw,

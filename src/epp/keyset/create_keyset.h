@@ -24,14 +24,15 @@
 #define CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 
 #include "src/fredlib/opcontext.h"
-#include "src/epp/keyset/impl/keyset_info_data.h"
+#include "src/epp/keyset/impl/info_keyset_data.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Keyset {
 
-struct KeysetCreateResult
+struct CreateKeysetResult
 {
     unsigned long long id;
     unsigned long long create_history_id;
@@ -42,7 +43,7 @@ struct KeysetCreateResult
  * @throws AuthErrorServerClosingConnection
  * @throws ParameterErrors
  */
-KeysetCreateResult keyset_create(
+CreateKeysetResult create_keyset(
     Fred::OperationContext &_ctx,
     const std::string &_keyset_handle,
     const Optional< std::string > &_auth_info_pw,
@@ -52,6 +53,7 @@ KeysetCreateResult keyset_create(
     unsigned long long _registrar_id,
     const Optional< unsigned long long > &_logd_request_id);
 
-}
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

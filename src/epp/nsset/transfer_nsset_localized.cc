@@ -10,8 +10,9 @@
 #include "util/log/context.h"
 
 namespace Epp {
+namespace Nsset {
 
-LocalizedSuccessResponse nsset_transfer(
+LocalizedSuccessResponse transfer_nsset_localized(
     const std::string& _nsset_handle,
     const std::string& _authinfopw,
     const unsigned long long _registrar_id,
@@ -27,11 +28,11 @@ LocalizedSuccessResponse nsset_transfer(
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>( Action::NssetTransfer)));
+        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::TransferNsset)));
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long post_transfer_history_id = nsset_transfer_impl(
+        const unsigned long long post_transfer_history_id = transfer_nsset(
             ctx,
             _nsset_handle,
             _authinfopw,
@@ -116,4 +117,5 @@ LocalizedSuccessResponse nsset_transfer(
     }
 }
 
-}
+} // namespace Epp::Nsset
+} // namespace Epp
