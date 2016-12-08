@@ -15,6 +15,10 @@
 
 #include "src/fredlib/contact/check_contact.h"
 
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/object_state/lock_object_state_request_lock.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
+
 #include <map>
 #include <set>
 
@@ -30,9 +34,9 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
     try {
         const Fred::InfoRegistrarData callers_registrar =
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
-        const Fred::InfoKeysetData result =
+        const Fred::InfoKeysetData keyset_data =
             Fred::InfoKeysetByHandle(_keyset_handle).set_lock().exec(_ctx).info_keyset_data;
-        const bool is_sponsoring_registrar = (result.sponsoring_registrar_handle == callers_registrar.handle);
+        const bool is_sponsoring_registrar = (keyset_data.sponsoring_registrar_handle == callers_registrar.handle);
         const bool is_system_registrar = callers_registrar.system.get_value_or(false);
         const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
         if (!is_operation_permitted) {
@@ -42,7 +46,9 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
             throw param_errors;
         }
         if (!is_system_registrar) {
-            const Fred::ObjectStatesInfo keyset_states(Fred::GetObjectStates(result.id).exec(_ctx));
+            Fred::LockObjectStateRequestLock(keyset_data.id).exec(_ctx);
+            Fred::PerformObjectStateRequest(keyset_data.id).exec(_ctx);
+            const Fred::ObjectStatesInfo keyset_states(Fred::GetObjectStates(keyset_data.id).exec(_ctx));
             if (keyset_states.presents(Fred::Object_State::server_update_prohibited) ||
                 keyset_states.presents(Fred::Object_State::delete_candidate))
             {
@@ -50,7 +56,7 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
             }
         }
         _callers_registrar_handle = callers_registrar.handle;
-        return result;
+        return keyset_data;
     }
     catch (const Fred::InfoKeysetByHandle::Exception &e) {
         if (e.is_set_unknown_handle()) {
