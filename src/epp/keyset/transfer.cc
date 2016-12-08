@@ -58,10 +58,6 @@ unsigned long long keyset_transfer(
             throw ObjectStatusProhibitsOperation();
         }
 
-        if (keyset_data.authinfopw != _authinfopw) {
-            throw AuthorizationError();
-        }
-
         return Fred::TransferKeyset(
                    keyset_data.id,
                    session_registrar_handle,
