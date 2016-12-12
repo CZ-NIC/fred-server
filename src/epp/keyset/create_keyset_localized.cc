@@ -80,7 +80,7 @@ ResponseOfCreate create_keyset_localized(
                                                              _logd_request_id);
 
         const ResponseOfCreate localized_result(
-            create_localized_success_response(Response::ok, ctx, _lang),
+            create_localized_success_response(ctx, Response::ok, _lang),
             result.crdate);
 
         ctx.commit_transaction();

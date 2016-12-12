@@ -126,8 +126,8 @@ LocalizedFailResponse create_localized_fail_response(
 }
 
 LocalizedSuccessResponse create_localized_success_response(
-    const Response::Enum& _response,
     Fred::OperationContext& _ctx,
+    const Response::Enum& _response,
     const SessionLang::Enum _lang
 ) {
     return LocalizedSuccessResponse(

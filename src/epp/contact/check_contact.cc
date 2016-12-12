@@ -10,8 +10,14 @@ namespace Contact {
 
 std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > check_contact(
     Fred::OperationContext& _ctx,
-    const std::set<std::string>& _contact_handles
+    const std::set<std::string>& _contact_handles,
+    unsigned long long _registrar_id
 ) {
+    const unsigned long long invalid_registrar_id = 0;
+    if (_registrar_id == invalid_registrar_id) {
+        throw AuthErrorServerClosingConnection();
+    }
+
     std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > result;
 
     BOOST_FOREACH(const std::string& handle, _contact_handles) {

@@ -32,7 +32,7 @@ LocalizedSuccessResponse delete_keyset_localized(
 
         const unsigned long long last_history_id_before_delete = delete_keyset(ctx, _keyset_handle, _registrar_id);
 
-        const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
+        const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
 
         ctx.commit_transaction();
 

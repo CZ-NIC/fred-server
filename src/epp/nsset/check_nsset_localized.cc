@@ -20,7 +20,6 @@
  *  @file
  */
 
-
 #include "src/epp/nsset/check_nsset_localized.h"
 
 #include "src/epp/impl/action.h"
@@ -41,6 +40,8 @@
 
 namespace Epp {
 namespace Nsset {
+
+namespace {
 
 /**
  * @returns untyped postgres array
@@ -121,7 +122,7 @@ static std::map<NssetHandleRegistrationObstruction::Enum, std::string> get_local
     return result;
 }
 
-static std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > create_localized_check_response(
+static std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > localize_check_nsset_results(
     Fred::OperationContext& _ctx,
     const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> >& _check_results,
     const SessionLang::Enum _lang
@@ -154,40 +155,71 @@ static std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObs
     return result;
 }
 
+} // namespace Epp::Nsset::{anonymous}
+
 CheckNssetLocalizedResponse check_nsset_localized(
     const std::set<std::string>& _nsset_handles,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
     const std::string& _server_transaction_handle
 ) {
-    Logging::Context logging_ctx("rifd");
-    Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
-    Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::CheckNsset) ) );
+    try {
+        Logging::Context logging_ctx("rifd");
+        Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
+        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::CheckNsset)));
 
-    if( _registrar_id == 0 ) {
+        Fred::OperationContextCreator ctx;
+
+        const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset_results =
+            check_nsset(
+                    ctx,
+                    _nsset_handles,
+                    _registrar_id);
+
+        const LocalizedSuccessResponse ok_response =
+           create_localized_success_response(
+                   ctx,
+                   Response::ok,
+                   _lang);
+
+        const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > localized_check_nsset_results =
+           localize_check_nsset_results(
+                   ctx,
+                   check_nsset_results,
+                   _lang);
+
+        return CheckNssetLocalizedResponse(
+                ok_response,
+                localized_check_nsset_results);
+    }
+    catch (const AuthErrorServerClosingConnection) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::authentication_error_server_closing_connection,
-            std::set<Error>(),
-            _lang
-        );
+                exception_localization_ctx,
+                Response::authentication_error_server_closing_connection,
+                std::set<Error>(),
+                _lang);
+    }
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("check_nsset_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::failed,
+                std::set< Error >(),
+                _lang);
+    }
+    catch (...) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in check_nsset_localized function");
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::failed,
+                std::set< Error >(),
+                _lang);
     }
 
-    /* different than other methods - implementation is not throwing any specific exceptions so there's no need for exception translation */
-    Fred::OperationContextCreator ctx;
-
-    const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > impl_result = check_nsset(ctx, _nsset_handles);
-
-    return CheckNssetLocalizedResponse(
-       create_localized_success_response(
-           Response::ok,
-           ctx,
-           _lang
-       ),
-       create_localized_check_response( ctx, impl_result, _lang )
-    );
 }
 
 } // namespace Epp::Nsset

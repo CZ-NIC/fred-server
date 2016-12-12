@@ -32,8 +32,14 @@ namespace Nsset {
 
 std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
     Fred::OperationContext& _ctx,
-    const std::set<std::string>& _nsset_handles
+    const std::set<std::string>& _nsset_handles,
+    unsigned long long _registrar_id
 ) {
+    const unsigned long long invalid_registrar_id = 0;
+    if (_registrar_id == invalid_registrar_id) {
+        throw AuthErrorServerClosingConnection();
+    }
+
     std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > result;
 
     BOOST_FOREACH(const std::string& handle, _nsset_handles) {

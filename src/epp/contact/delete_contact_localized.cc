@@ -36,7 +36,7 @@ LocalizedSuccessResponse delete_contact_localized(
             _registrar_id
         );
 
-        const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
+        const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
 
         ctx.commit_transaction();
 

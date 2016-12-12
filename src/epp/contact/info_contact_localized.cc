@@ -149,7 +149,7 @@ InfoContactLocalizedResponse info_contact_localized(
         output_data.auth_info_pw      = authinfo_has_to_be_hidden ? Nullable< std::string >() : info.auth_info_pw;
 
         return InfoContactLocalizedResponse(
-            create_localized_success_response(Response::ok, ctx, _lang),
+            create_localized_success_response(ctx, Response::ok, _lang),
             output_data);
 
     } catch (const AuthErrorServerClosingConnection& e) {

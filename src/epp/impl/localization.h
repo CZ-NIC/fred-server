@@ -36,8 +36,8 @@
 namespace Epp {
 
 LocalizedSuccessResponse create_localized_success_response(
-    const Response::Enum& _response,
     Fred::OperationContext& _ctx,
+    const Response::Enum& _response,
     SessionLang::Enum _lang
 );
 

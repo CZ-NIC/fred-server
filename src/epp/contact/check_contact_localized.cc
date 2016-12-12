@@ -91,7 +91,7 @@ boost::optional< ContactHandleLocalizedRegistrationObstruction > get_localized_o
     return ContactHandleLocalizedRegistrationObstruction(obstruction, description);
 }
 
-HandleToLocalizedObstruction create_localized_check_response(
+HandleToLocalizedObstruction localize_check_contact_results(
     Fred::OperationContext &_ctx,
     const HandleToObstruction &_check_results,
     SessionLang::Enum _lang)
@@ -136,35 +136,53 @@ CheckContactLocalizedResponse check_contact_localized(
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckContact) ) );
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckContact)));
 
-        if (_registrar_id == 0) {
-            Fred::OperationContextCreator exception_localization_ctx;
-            throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang
-            );
-        }
-
-        /* different than other methods - implementation is not throwing any specific exceptions so there's no need for exception translation */
         Fred::OperationContextCreator ctx;
 
-        const HandleToObstruction impl_result = check_contact(ctx, _contact_handles);
-        const HandleToLocalizedObstruction localized_check_response =
-            create_localized_check_response(ctx, impl_result, _lang);
-        const LocalizedSuccessResponse ok_response =
-            create_localized_success_response(Response::ok, ctx, _lang);
+        const HandleToObstruction check_contact_results =
+            check_contact(
+                    ctx,
+                    _contact_handles,
+                    _registrar_id);
 
-        return CheckContactLocalizedResponse(ok_response, localized_check_response);
+        const LocalizedSuccessResponse ok_response =
+            create_localized_success_response(
+                    ctx,
+                    Response::ok,
+                    _lang);
+
+        const HandleToLocalizedObstruction localized_check_contact_results =
+            localize_check_contact_results(
+                    ctx,
+                    check_contact_results,
+                    _lang);
+
+        return CheckContactLocalizedResponse(
+                ok_response,
+                localized_check_contact_results);
 
     }
-    catch (const LocalizedFailResponse&) {
-        throw;
+    catch (const AuthErrorServerClosingConnection&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::authentication_error_server_closing_connection,
+            std::set<Error>(),
+            _lang);
+    }
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("check_contact_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::failed,
+            std::set<Error>(),
+            _lang);
     }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in check_contact_localized function");
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::failed,

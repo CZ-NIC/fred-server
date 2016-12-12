@@ -42,7 +42,7 @@ LocalizedSuccessResponse update_nsset_localized(
             _logd_request_id
         );
 
-        const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
+        const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
 
         ctx.commit_transaction();
 

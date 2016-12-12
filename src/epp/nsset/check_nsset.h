@@ -38,7 +38,8 @@ namespace Nsset {
  */
 std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
     Fred::OperationContext& _ctx,
-    const std::set<std::string>& _nsset_handles
+    const std::set<std::string>& _nsset_handles,
+    unsigned long long _registrar_id
 );
 
 } // namespace Epp::Nsset

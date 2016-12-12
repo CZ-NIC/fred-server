@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef HANDLE_CHECK_RESULT_H_F73D97BD86BC43568A68AD4CB1E21377
-#define HANDLE_CHECK_RESULT_H_F73D97BD86BC43568A68AD4CB1E21377
+#ifndef KEYSET_HANDLE_REGISTRATION_OBSTRUCTION_H_07D209223EC644388C037073F58ED928
+#define KEYSET_HANDLE_REGISTRATION_OBSTRUCTION_H_07D209223EC644388C037073F58ED928
 
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/reason.h"
@@ -29,7 +29,7 @@
 namespace Epp {
 namespace Keyset {
 
-struct HandleCheckResult
+struct KeysetHandleRegistrationObstructin
 {
     enum Enum
     {
@@ -42,13 +42,13 @@ struct HandleCheckResult
 /**
  * @throws MissingLocalizedDescription
  */
-inline Reason::Enum to_reason(const HandleCheckResult::Enum value)
+inline Reason::Enum to_reason(const KeysetHandleRegistrationObstructin::Enum value)
 {
     switch (value)
     {
-        case HandleCheckResult::invalid_handle   : return Reason::invalid_handle;
-        case HandleCheckResult::registered_handle: return Reason::existing;
-        case HandleCheckResult::protected_handle : return Reason::protected_period;
+        case KeysetHandleRegistrationObstructin::invalid_handle:    return Reason::invalid_handle;
+        case KeysetHandleRegistrationObstructin::registered_handle: return Reason::existing;
+        case KeysetHandleRegistrationObstructin::protected_handle:  return Reason::protected_period;
     }
 
     throw MissingLocalizedDescription();

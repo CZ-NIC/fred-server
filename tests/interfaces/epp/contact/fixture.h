@@ -30,6 +30,10 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
+struct has_invalid_registrar_id : virtual Test::autocomitting_context {
+    static const unsigned long long invalid_registrar_id = 0;
+};
+
 struct has_registrar : virtual Test::autocommitting_context {
     Fred::InfoRegistrarData registrar;
 

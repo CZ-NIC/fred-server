@@ -38,7 +38,8 @@ namespace Contact {
  */
 std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > check_contact(
     Fred::OperationContext& _ctx,
-    const std::set<std::string>& _contact_handles
+    const std::set<std::string>& _contact_handles,
+    unsigned long long _registrar_id
 );
 
 } // namespace Epp::Contact

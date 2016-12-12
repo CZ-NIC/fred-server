@@ -37,7 +37,7 @@ LocalizedSuccessResponse transfer_keyset_localized(
             _registrar_id,
             _logd_request_id);
 
-        const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
+        const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
 
         ctx.commit_transaction();
 

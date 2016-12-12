@@ -96,7 +96,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
         }
 
         return InfoNssetLocalizedResponse(
-            create_localized_success_response(Response::ok, ctx, _lang),
+            create_localized_success_response(ctx, Response::ok, _lang),
             InfoNssetLocalizedOutputData(
                 payload.handle,
                 payload.roid,

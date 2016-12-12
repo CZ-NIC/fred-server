@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <http://www.gnu.or/licenses/>.
  */
 
 /**
@@ -32,20 +32,35 @@
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_FIXTURE_TEST_SUITE(NssetCheckImpl, Test::autocommitting_context)
 
-BOOST_AUTO_TEST_CASE(test_result_size_empty)
+BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, has_invalid_registrar_id)
+{
+    BOOST_CHECK_THROW(
+        Fred::OperationContextCreator ctx;
+
+        Epp::Nsset::check_nsset(
+            ctx,
+            std::set<std::string>(),
+            invalid_registrar_id
+        ),
+        Epp::AuthErrorServerClosingConnection
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(test_result_size_empty, has_registrar)
 {
     Fred::OperationContextCreator ctx;
 
     BOOST_CHECK_EQUAL(
         Epp::Nsset::check_nsset(
             ctx,
-            std::set<std::string>()
+            std::set<std::string>(),
+            registrar.id
         ).size(),
         0
     );
 }
 
-BOOST_AUTO_TEST_CASE(test_result_size_nonempty)
+BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, has_registrar)
 {
     const std::set<std::string> nsset_handles
         = boost::assign::list_of
@@ -65,13 +80,14 @@ BOOST_AUTO_TEST_CASE(test_result_size_nonempty)
     BOOST_CHECK_EQUAL(
         Epp::Nsset::check_nsset(
             ctx,
-            nsset_handles
+            nsset_handles,
+            registrar.id
         ).size(),
         nsset_handles.size()
     );
 }
 
-BOOST_AUTO_TEST_CASE(test_invalid_handle)
+BOOST_FIXTURE_TEST_CASE(test_invalid_handle, has_registrar)
 {
     const std::set<std::string> nsset_handles
         = boost::assign::list_of
@@ -89,7 +105,8 @@ BOOST_AUTO_TEST_CASE(test_invalid_handle)
     const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
         Epp::Nsset::check_nsset(
             ctx,
-            nsset_handles
+            nsset_handles,
+            registrar.id
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -123,7 +140,8 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
     const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
         Epp::Nsset::check_nsset(
             ctx,
-            protected_handles
+            protected_handles,
+            registrar.id
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -134,7 +152,7 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, Test::autocommitting_context)
+BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, has_registrar)
 {
     const std::set<std::string> nsset_handles
         = boost::assign::list_of
@@ -151,7 +169,8 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, Test::autocommitting_context)
     const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
         Epp::Nsset::check_nsset(
             ctx,
-            nsset_handles
+            nsset_handles,
+            registrar.id
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -184,7 +203,8 @@ BOOST_FIXTURE_TEST_CASE(test_existing, has_existing_nssets)
     const std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> > check_res =
         Epp::Nsset::check_nsset(
             ctx,
-            existing_nsset_handles
+            existing_nsset_handles,
+            registrar.id
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();

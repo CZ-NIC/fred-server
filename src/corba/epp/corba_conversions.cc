@@ -744,7 +744,7 @@ namespace Corba {
     }
 
     static ccReg::CheckAvail wrap_keyset_handle_check_result(
-        const Nullable< Epp::Keyset::Localized::HandlesCheck::Result > &_check_result)
+        const Nullable< Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Result > &_check_result)
     {
         if (_check_result.isnull()) {
             return ccReg::NotExist;
@@ -752,17 +752,17 @@ namespace Corba {
 
         switch (_check_result.get_value().state)
         {
-            case Epp::Keyset::HandleCheckResult::invalid_handle   : return ccReg::BadFormat;
-            case Epp::Keyset::HandleCheckResult::protected_handle : return ccReg::DelPeriod;
-            case Epp::Keyset::HandleCheckResult::registered_handle: return ccReg::Exist;
+            case Epp::Keyset::KeysetHandleRegistrationObstructin::invalid_handle   : return ccReg::BadFormat;
+            case Epp::Keyset::KeysetHandleRegistrationObstructin::protected_handle : return ccReg::DelPeriod;
+            case Epp::Keyset::KeysetHandleRegistrationObstructin::registered_handle: return ccReg::Exist;
         }
 
         throw std::runtime_error("unknown keyset handle check result");
     }
 
-    void wrap_Epp_Keyset_Localized_HandlesCheck_Results(
+    void wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
         const std::vector< std::string > &handles,
-        const Epp::Keyset::Localized::HandlesCheck::Results &check_results,
+        const Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results &check_results,
         ccReg::CheckResp &dst)
     {
         dst.length(handles.size());
@@ -771,7 +771,7 @@ namespace Corba {
         ::size_t idx = 0;
         for (Handles::const_iterator handle_ptr = handles.begin(); handle_ptr != handles.end(); ++handle_ptr, ++idx)
         {
-            typedef Epp::Keyset::Localized::HandlesCheck::Results CheckResults;
+            typedef Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results CheckResults;
             const CheckResults::const_iterator result_ptr = check_results.find(*handle_ptr);
             if (result_ptr == check_results.end()) {
                 throw std::out_of_range("handle " + (*handle_ptr) + " not found");

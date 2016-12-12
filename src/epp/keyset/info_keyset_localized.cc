@@ -39,7 +39,7 @@ InfoResult info_keyset_localized(
         data.ds_records = keyset_info_data.ds_records;
         data.dns_keys = keyset_info_data.dns_keys;
         data.tech_contacts = keyset_info_data.tech_contacts;
-        const InfoResult result(data, create_localized_success_response(Response::ok, ctx, _lang));
+        const InfoResult result(data, create_localized_success_response(ctx, Response::ok, _lang));
         ctx.commit_transaction();
         return result;
     }

@@ -23,7 +23,7 @@
 #ifndef CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
 #define CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
 
-#include "src/epp/keyset/impl/handle_check_result.h"
+#include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
@@ -37,9 +37,11 @@ namespace Keyset {
 /**
  * @returns check results for given contact handles
  */
-std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > check_keyset(
-    Fred::OperationContext &_ctx,
-    const std::set< std::string > &_keyset_handles);
+std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > > check_keyset(
+    Fred::OperationContext& _ctx,
+    const std::set< std::string >& _keyset_handles,
+    unsigned long long _registrar_id
+);
 
 } // namespace Epp::Keyset
 } // namespace Epp

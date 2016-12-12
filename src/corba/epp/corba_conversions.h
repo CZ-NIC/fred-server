@@ -126,9 +126,9 @@ namespace Corba {
     /**
      * @returns data ordered the same way as input handles
      */
-    void wrap_Epp_Keyset_Localized_HandlesCheck_Results(
+    void wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
         const std::vector< std::string > &handles,
-        const Epp::Keyset::Localized::HandlesCheck::Results &check_results,
+        const Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results &check_results,
         ccReg::CheckResp &dst);
 
     void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst);

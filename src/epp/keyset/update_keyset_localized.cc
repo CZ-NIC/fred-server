@@ -86,7 +86,7 @@ LocalizedSuccessResponse update_keyset_localized(
                                                              _logd_request_id);
 
         const LocalizedSuccessResponse localized_result =
-            create_localized_success_response(Response::ok, ctx, _lang);
+            create_localized_success_response(ctx, Response::ok, _lang);
 
         ctx.commit_transaction();
 

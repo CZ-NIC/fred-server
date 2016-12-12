@@ -1,3 +1,25 @@
+/*
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file
+ */
+
 #include "src/epp/keyset/check_keyset.h"
 #include "src/epp/keyset/check_keyset_localized.h"
 
@@ -15,14 +37,14 @@ namespace Localized {
 
 namespace {
 
-typedef std::map< std::string, Nullable< HandleCheckResult::Enum > > RawResults;
+typedef std::map< std::string, Nullable< KeysetHandleRegistrationObstructin::Enum > > RawResults;
 
-HandlesCheck::Results localize_check_results(
-    Fred::OperationContext &_ctx,
-    const std::map< std::string, Nullable< HandleCheckResult::Enum > > &_keyset_check_results,
+CheckKeysetLocalizedResponse::Results localize_check_keyset_results(
+    Fred::OperationContext& _ctx,
+    const std::map< std::string, Nullable< KeysetHandleRegistrationObstructin::Enum > >& _keyset_check_results,
     SessionLang::Enum _lang)
 {
-    typedef std::map< std::string, Nullable< HandleCheckResult::Enum > > RawResult;
+    typedef std::map< std::string, Nullable< KeysetHandleRegistrationObstructin::Enum > > RawResult;
     typedef std::map< Reason::Enum, std::string > ReasonDescription;
     ReasonDescription reason_description;
     {
@@ -72,13 +94,13 @@ HandlesCheck::Results localize_check_results(
             }
         }
     }
-    HandlesCheck::Results localized_result;
+    CheckKeysetLocalizedResponse::Results localized_result;
     for (RawResults::const_iterator result_ptr = _keyset_check_results.begin();
          result_ptr != _keyset_check_results.end(); ++result_ptr)
     {
-        Nullable< HandlesCheck::Result > result;
+        Nullable< CheckKeysetLocalizedResponse::Result > result;
         if (!result_ptr->second.isnull()) {
-            HandlesCheck::Result data;
+            CheckKeysetLocalizedResponse::Result data;
             data.state = result_ptr->second.get_value();
             const Reason::Enum reason = to_reason(data.state);
             data.description = reason_description[reason];
@@ -91,47 +113,67 @@ HandlesCheck::Results localize_check_results(
 
 }//namespace Epp::Keyset::{anonymous}
 
-HandlesCheck check_keyset_localized(
-    const std::set< std::string > &_keyset_handles,
+CheckKeysetLocalizedResponse check_keyset_localized(
+    const std::set< std::string >& _keyset_handles,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
-    const std::string &_server_transaction_handle)
+    const std::string& _server_transaction_handle)
 {
-    Logging::Context logging_ctx("rifd");
-    Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
-    Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::CheckKeyset)));
-
     try {
+        Logging::Context logging_ctx("rifd");
+        Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
+        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::CheckKeyset)));
+
         Fred::OperationContextCreator ctx;
 
-        static const unsigned long long invalid_registrar_id = 0;
-        if (_registrar_id == invalid_registrar_id) {
-            throw create_localized_fail_response(
-                ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-        }
+        const std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > > check_keyset_results =
+            check_keyset(
+                    ctx,
+                    _keyset_handles,
+                    _registrar_id);
 
-        const std::map< std::string, Nullable< Keyset::HandleCheckResult::Enum > > keyset_check_results =
-            check_keyset(ctx, _keyset_handles);
+        const LocalizedSuccessResponse ok_response =
+            create_localized_success_response(
+                    ctx,
+                    Response::ok,
+                    _lang);
 
-        return HandlesCheck(create_localized_success_response(Response::ok, ctx, _lang),
-                            localize_check_results(ctx, keyset_check_results, _lang));
+        const CheckKeysetLocalizedResponse::Results localized_check_keyset_results =
+            localize_check_keyset_results(
+                    ctx,
+                    check_keyset_results,
+                    _lang);
+
+        return CheckKeysetLocalizedResponse(
+                ok_response,
+                localized_check_keyset_results);
     }
-    catch (const LocalizedFailResponse&) {
-        throw;
+    catch (const AuthErrorServerClosingConnection&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::authentication_error_server_closing_connection,
+            std::set<Error>(),
+            _lang);
     }
-    catch (const std::exception &e) {
-        Fred::OperationContextCreator ctx;
-        ctx.get_log().info(std::string("get_localized_check failure: ") + e.what());
-        throw create_localized_fail_response(ctx, Response::failed, std::set< Error >(), _lang);
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("check_keyset_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::failed,
+            std::set< Error >(),
+            _lang);
     }
     catch (...) {
-        Fred::OperationContextCreator ctx;
-        ctx.get_log().info("unexpected exception in get_localized_check function");
-        throw create_localized_fail_response(ctx, Response::failed, std::set< Error >(), _lang);
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in check_keyset_localized function");
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::failed,
+            std::set< Error >(),
+            _lang);
     }
 }
 

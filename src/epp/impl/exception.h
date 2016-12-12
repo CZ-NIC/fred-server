@@ -25,22 +25,23 @@
 
 #include <exception>
 
+#include "src/epp/impl/epp_exception.h"
+
 namespace Epp {
 
     struct Exception:std::exception { };
 
     struct AuthErrorServerClosingConnection   :Exception { const char* what() const throw() { return "authentication error: server is closing connection"; } };
-    struct ZoneAuthorizationError             :Exception { const char* what() const throw() { return "registrar zone authorization error"; } };
-    struct AuthorizationError                 :Exception { const char* what() const throw() { return "authorization error"; } };
+    //struct AuthorizationError                 :Exception { const char* what() const throw() { return "authorization error"; } };
     struct AuthorizationInformationError      :Exception { const char* what() const throw() { return "authorization information error"; } };
     struct InvalidSessionLang                 :Exception { const char* what() const throw() { return "invalid session language"; } };
     struct NonexistentHandle                  :Exception { const char* what() const throw() { return "nonexistent handle"; } };
     struct InvalidHandle                      :Exception { const char* what() const throw() { return "invalid handle"; } };
-    struct ObjectExists                       :Exception { const char* what() const throw() { return "object exists"; } };
+    //struct ObjectExists                       :Exception { const char* what() const throw() { return "object exists"; } };
     struct ObjectDoesNotExist                 :Exception { const char* what() const throw() { return "object does not exist"; } };
     struct ObjectNotEligibleForTransfer       :Exception { const char* what() const throw() { return "object not eligible for transfer"; } };
-    struct ObjectStatusProhibitsOperation     :Exception { const char* what() const throw() { return "object status prohibits operation"; } };
-    struct ObjectAssociationProhibitsOperation:Exception { const char* what() const throw() { return "object association prohibits operation"; } };
+    //struct ObjectStatusProhibitsOperation     :Exception { const char* what() const throw() { return "object status prohibits operation"; } };
+    //struct ObjectAssociationProhibitsOperation:Exception { const char* what() const throw() { return "object association prohibits operation"; } };
     struct SsnTypeWithoutSsn                  :Exception { const char* what() const throw() { return "ssntype without ssn"; } };
     struct SsnWithoutSsnType                  :Exception { const char* what() const throw() { return "ssn without ssntype"; } };
 
@@ -48,10 +49,8 @@ namespace Epp {
     struct InvalidResponseValue               :Exception { const char* what() const throw() { return "invalid Response::Enum value"; } };
     struct InvalidReasonValue                 :Exception { const char* what() const throw() { return "invalid Reason::Enum value"; } };
 
-    struct RequiredParameterMissing : Exception { const char* what() const throw() { return "Required parameter missing"; } };
+    //struct RequiredParameterMissing : Exception { const char* what() const throw() { return "Required parameter missing"; } };
     struct BillingFailure : Exception { const char* what() const throw() { return "Billing failure"; } };
-
-
 
     /* localized descriptions */
     struct LocalizedDescriptionException:Exception { };

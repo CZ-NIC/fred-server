@@ -25,24 +25,24 @@
 
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
-#include "src/epp/keyset/impl/handle_check_result.h"
+#include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
 #include "util/db/nullable.h"
 
 namespace Epp {
 namespace Keyset {
 namespace Localized {
 
-struct HandlesCheck
+struct CheckKeysetLocalizedResponse
 {
     struct Result
     {
-        HandleCheckResult::Enum state;
+        KeysetHandleRegistrationObstructin::Enum state;
         std::string description;
     };
 
     typedef std::map< std::string, Nullable< Result > > Results;
 
-    HandlesCheck(const LocalizedSuccessResponse &_response, const Results &_results)
+    CheckKeysetLocalizedResponse(const LocalizedSuccessResponse &_response, const Results &_results)
     :   ok_response(_response),
         results(_results) { }
 
@@ -50,7 +50,7 @@ struct HandlesCheck
     Results results;
 };
 
-HandlesCheck check_keyset_localized(
+CheckKeysetLocalizedResponse check_keyset_localized(
     const std::set< std::string > &_keyset_handles,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,

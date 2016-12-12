@@ -1649,7 +1649,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/impl/limits.h \
 		src/epp/keyset/check_keyset.cc \
 		src/epp/keyset/check_keyset.h \
-		src/epp/keyset/impl/handle_check_result.h \
+		src/epp/keyset/impl/keyset_handle_registration_obstruction.h \
 		src/epp/keyset/check_keyset_localized.cc \
 		src/epp/keyset/check_keyset_localized.h \
 		src/epp/keyset/delete_keyset.cc \
