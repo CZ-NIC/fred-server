@@ -72,7 +72,7 @@ LocalizedSuccessResponse localized_delete(
             throw create_localized_fail_response(
                 ctx,
                 Response::authorization_error,
-                std::set< Error >(),
+                errors,
                 _lang);
         }
         throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
