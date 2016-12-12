@@ -5,8 +5,6 @@
 #include "src/epp/contact/transfer_contact.h"
 #include "src/epp/impl/localization.h"
 
-#include "src/fredlib/poll/create_transfer_contact_poll_message.h"
-
 #include "util/log/context.h"
 
 namespace Epp {
@@ -41,8 +39,6 @@ LocalizedSuccessResponse transfer_contact_localized(
         );
 
         const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
-
-        Fred::Poll::CreateTransferContactPollMessage(post_transfer_history_id).exec(ctx);
 
         ctx.commit_transaction();
 

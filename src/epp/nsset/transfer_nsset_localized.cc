@@ -5,8 +5,6 @@
 #include "src/epp/nsset/transfer_nsset.h"
 #include "src/epp/impl/localization.h"
 
-#include "src/fredlib/poll/create_transfer_nsset_poll_message.h"
-
 #include "util/log/context.h"
 
 namespace Epp {
@@ -41,8 +39,6 @@ LocalizedSuccessResponse transfer_nsset_localized(
         );
 
         const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
-
-        Fred::Poll::CreateTransferNssetPollMessage(post_transfer_history_id).exec(ctx);
 
         ctx.commit_transaction();
 

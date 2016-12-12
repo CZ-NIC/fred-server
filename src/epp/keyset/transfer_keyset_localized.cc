@@ -5,9 +5,6 @@
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/localization.h"
 
-#include "src/fredlib/poll/message_types.h"
-#include "src/fredlib/poll/create_epp_action_poll_message_impl.h"
-
 #include "util/log/context.h"
 
 namespace Epp {
@@ -41,10 +38,6 @@ LocalizedSuccessResponse transfer_keyset_localized(
             _logd_request_id);
 
         const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
-
-        Fred::Poll::CreateEppActionPollMessage(post_transfer_history_id,
-                                               Fred::Poll::keyset,
-                                               Fred::Poll::TRANSFER_KEYSET).exec(ctx);
 
         ctx.commit_transaction();
 

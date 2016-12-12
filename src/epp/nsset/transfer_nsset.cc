@@ -17,6 +17,7 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/poll/create_transfer_nsset_poll_message.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
 #include <boost/foreach.hpp>
@@ -29,10 +30,10 @@ unsigned long long transfer_nsset(
     const std::string& _nsset_handle,
     const std::string& _authinfopw,
     const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-) {
-
-    if( _registrar_id == 0 ) {
+    const Optional<unsigned long long>& _logd_request_id)
+{
+    static const unsigned long long invalid_registrar_id = 0;
+    if (_registrar_id == invalid_registrar_id) {
         throw AuthErrorServerClosingConnection();
     }
 
@@ -60,10 +61,10 @@ unsigned long long transfer_nsset(
     Fred::LockObjectStateRequestLock(nsset_data.id).exec(_ctx);
     Fred::PerformObjectStateRequest(nsset_data.id).exec(_ctx);
 
-    if( Fred::ObjectHasState(nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(_ctx)
-        ||
-        Fred::ObjectHasState(nsset_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
-    ) {
+    // FIXME use Fred::Object_State instead
+    if(Fred::ObjectHasState(nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(_ctx) ||
+        Fred::ObjectHasState(nsset_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
+    {
         throw ObjectStatusProhibitsOperation();
     }
 
@@ -72,21 +73,30 @@ unsigned long long transfer_nsset(
     }
 
     try {
-        return
+        unsigned long long post_transfer_history_id =
             Fred::TransferNsset(
-                nsset_data.id,
-                session_registrar_handle,
-                _authinfopw,
-                _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>()
-            ).exec(_ctx);
+                    nsset_data.id,
+                    session_registrar_handle,
+                    _authinfopw,
+                    _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>())
+            .exec(_ctx);
 
-    } catch (const Fred::UnknownNssetId&) {
+        // FIXME use
+        //Fred::Poll::CreateEppActionPollMessage(post_transfer_history_id,
+        //                                       Fred::Poll::nsset,
+        //                                       Fred::Poll::TRANSFER_NSSET).exec(_ctx);
+        Fred::Poll::CreateTransferNssetPollMessage(post_transfer_history_id).exec(_ctx);
+
+        return post_transfer_history_id;
+
+    }
+    catch (const Fred::UnknownNssetId&) {
         throw NonexistentHandle();
-
-    } catch (const Fred::IncorrectAuthInfoPw&) {
+    }
+    catch (const Fred::IncorrectAuthInfoPw&) {
         throw AuthorizationInformationError();
-
-    } catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
+    }
+    catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
         throw ObjectNotEligibleForTransfer();
     }
 }
