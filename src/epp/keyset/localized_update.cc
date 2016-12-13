@@ -178,10 +178,10 @@ LocalizedSuccessResponse update(
         }
 
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey,   Reason::no_dnskey_dsrecord, errors)) {
-            throw create_localized_fail_response(ctx, Response::failed, errors, _lang);
+            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
         }
         if (insert_scalar_parameter_error_if_presents(e, Param::keyset_tech_rem, Reason::can_not_remove_tech, errors)) {
-            throw create_localized_fail_response(ctx, Response::failed, errors, _lang);
+            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
         }
 
         throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
