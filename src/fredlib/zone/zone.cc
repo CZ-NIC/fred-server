@@ -37,7 +37,8 @@ namespace Zone {
     Data get_zone(OperationContext& ctx, const std::string& zone_name)
     {
         Database::Result zone_res = ctx.get_conn().exec_params(
-            "SELECT id, enum_zone, fqdn, dots_max, ex_period_min, ex_period_max FROM zone WHERE fqdn=lower($1::text) FOR SHARE"
+            "SELECT id, enum_zone, fqdn, dots_max, ex_period_min, ex_period_max, val_period"
+            " FROM zone WHERE fqdn=lower($1::text) FOR SHARE"
             , Database::query_param_list(zone_name));
 
         if(zone_res.size() == 1)
@@ -48,6 +49,7 @@ namespace Zone {
                 , static_cast<unsigned>(zone_res[0][3])//dots_max
                 , static_cast<unsigned>(zone_res[0][4])//ex_period_min
                 , static_cast<unsigned>(zone_res[0][5])//ex_period_max
+                , static_cast<unsigned>(zone_res[0][6])//val_period
                 );
         }
         throw std::runtime_error("not found");

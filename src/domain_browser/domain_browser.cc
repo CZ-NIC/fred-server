@@ -276,7 +276,7 @@ namespace Registry
             Fred::OperationContextCreator ctx;
             try
             {
-                return Fred::get_object_id_by_handle_and_type_with_lock(ctx,handle, "contact",
+                return Fred::get_object_id_by_handle_and_type_with_lock(ctx, true,handle, "contact",
                     static_cast<ObjectNotExistsWithDummyHandleSetter*>(NULL),
                     &ObjectNotExistsWithDummyHandleSetter::set_handle);
             }

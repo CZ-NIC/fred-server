@@ -72,6 +72,7 @@ namespace Fred
         {
             unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
                 ctx,
+                true,
                 handle_,
                 "keyset",
                 static_cast<Exception*>(NULL),

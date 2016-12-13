@@ -4,6 +4,7 @@
 #include "src/epp/error.h"
 #include "src/epp/param.h"
 #include "src/epp/contact/contact_create.h"
+
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
 
@@ -16,6 +17,7 @@
 #include <string>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/integer_traits.hpp>
@@ -58,7 +60,6 @@ namespace Corba {
         for(CORBA::ULong idx = 0; idx < _tech_contacts.length(); ++idx) {
             result.push_back(unwrap_string_from_const_char_ptr(_tech_contacts[idx]));
         }
-
         return result;
     }
 
@@ -339,18 +340,43 @@ namespace Corba {
 
     }//namespace Corba::{anonymous}
 
-    Optional<std::string> convert_corba_string_change(const char* input) {
-        const std::string safer_input = Corba::unwrap_string(input);
-
-        /* XXX Defined by convention. Could probably be substituted by more explicit means in IDL interface. */
-        const char char_for_value_deleting = '\b';
+    Optional<std::string> unwrap_string_for_change_to_Optional_string(const char* _src) {
+        const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
 
         return
-            safer_input.empty()
-            ?   Optional<std::string>()
-            :   safer_input.at(0) == char_for_value_deleting
-                    ?   ""
-                    :   boost::trim_copy( Corba::unwrap_string(input) );
+            unwrapped_src.empty()
+            ? Optional<std::string>() // do not set
+            : boost::trim_copy(unwrapped_src);
+    }
+
+    Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string(const char* _src) {
+        const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
+
+        /* Defined by convention. Could be substituted by more explicit means in IDL interface
+         * (like using _add and _rem elements, not just _chg for all operations). */
+        static const char char_for_value_deleting = '\b';
+
+        return
+            unwrapped_src.empty()
+            ? Optional<std::string>() // do not set
+            : unwrapped_src.at(0) == char_for_value_deleting
+                ? std::string() // set empty
+                : boost::trim_copy(unwrapped_src);
+    }
+
+    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src) {
+        const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
+
+        /* Defined by convention. Could be substituted by more explicit means in IDL interface
+         * (like using _add and _rem elements, not just _chg for all operations). */
+        static const char char_for_value_deleting = '\b';
+
+        return
+            unwrapped_src.empty()
+            ? Optional<Nullable<std::string> >() // do not set
+            : unwrapped_src.at(0) == char_for_value_deleting
+                ? Optional<Nullable<std::string> >(Nullable<std::string>()) // set NULL
+                : boost::trim_copy(unwrapped_src);
     }
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)
@@ -373,20 +399,6 @@ namespace Corba {
         dst.ident_type        = unwrap_identtyp(src.identtype);
         dst.auth_info_pw      = convert_contact_update_or_delete_string(src.AuthInfoPw);
         dst.disclose          = unwrap_ContactChange_to_ContactDisclose(src);
-    }
-
-    Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src)
-    {
-        /* XXX Defined by convention. Could probably be substituted by more explicit means in IDL interface. */
-        static const char char_for_value_deleting = '\b';
-        switch (_src[0])
-        {
-            case '\0'://empty string => don't change
-                return Optional< std::string >();
-            case char_for_value_deleting://string starts with '\b' => has to be deleted
-                return std::string();
-        }
-        return boost::trim_copy(unwrap_string(_src));
     }
 
     namespace {
@@ -627,7 +639,10 @@ namespace Corba {
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
-            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            if(in[i] == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
             ret.push_back(std::string(in[i]));
         }
         return ret;
@@ -639,7 +654,10 @@ namespace Corba {
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
-            if(in[i] == 0) throw std::runtime_error("null char ptr");
+            if(in[i] == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
             boost::system::error_code boost_error_code;//invalid ip address is transformed to non-initialized optional
             boost::asio::ip::address ipaddr = boost::asio::ip::address::from_string(in[i],boost_error_code);
             boost::optional<boost::asio::ip::address> optional_ipaddr;
@@ -658,7 +676,10 @@ namespace Corba {
         ret.reserve(in.length());
         for(unsigned long long i = 0 ; i < in.length();++i)
         {
-            if(in[i].fqdn == 0) throw std::runtime_error("null char ptr");
+            if(in[i].fqdn == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
             ret.push_back(Epp::DNShostInput(std::string(in[i].fqdn),
                 unwrap_inet_addr_to_vector_asio_addr(in[i].inet)));
         }
@@ -812,6 +833,56 @@ namespace Corba {
         }
 
         return result;
+    }
+
+    Epp::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period)
+    {
+        switch(period.unit)
+        {
+            case ccReg::unit_month:
+                return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::month);
+            case ccReg::unit_year:
+                return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::year);
+        };
+        throw std::runtime_error("unwrap_domain_registration_period internal error");
+    }
+
+    std::vector<std::string> unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact & in)
+    {
+        std::vector<std::string> ret;
+        ret.reserve(in.length());
+        for(unsigned long long i = 0; i < in.length(); ++i)
+        {
+            if(in[i] == 0)
+            {
+                throw std::runtime_error("null char ptr");
+            }
+            ret.push_back(std::string(in[i]));
+        }
+        return ret;
+    }
+
+    std::vector<Epp::ENUMValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext)
+    {
+        const ccReg::ENUMValidationExtension *enum_ext = 0;
+        std::vector<Epp::ENUMValidationExtension> ret;
+        ret.reserve(ext.length());
+        for(unsigned i = 0; i < ext.length(); ++i)
+        {
+            if (ext[i] >>= enum_ext)
+            {
+                ret.push_back(Epp::ENUMValidationExtension(
+                        boost::gregorian::from_simple_string(
+                                Corba::unwrap_string_from_const_char_ptr(enum_ext->valExDate)),
+                        enum_ext->publish == ccReg::DISCL_DISPLAY)
+                );
+            }
+            else
+            {
+                throw std::runtime_error("unknown extension found when extracting domain enum extension");
+            }
+        }
+        return ret;
     }
 }
 

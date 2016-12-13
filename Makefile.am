@@ -254,6 +254,7 @@ noinst_HEADERS = \
 		src/fredlib/public_request/info_public_request_auth.h \
 		tests/interfaces/epp/util.h \
 		tests/interfaces/epp/contact/fixture.h \
+		tests/interfaces/epp/domain/fixture.h \
 		src/corba/mojeid/mojeid_corba_conversion.h \
 		src/mojeid/mojeid_impl_data.h \
 		src/mojeid/mojeid_public_request.h \
@@ -830,6 +831,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc \
 		src/fredlib/domain/transfer_domain.h \
 		src/fredlib/domain/transfer_domain.cc \
+		src/fredlib/domain/domain.h \
+		src/fredlib/domain/domain.cc \
 		src/fredlib/nsset/update_nsset.h \
 		src/fredlib/nsset/update_nsset.cc \
 		src/fredlib/nsset/info_nsset.h \
@@ -906,6 +909,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_transfer_contact_poll_message.cc \
 		src/fredlib/poll/create_transfer_nsset_poll_message.h \
 		src/fredlib/poll/create_transfer_nsset_poll_message.cc \
+		src/fredlib/poll/create_transfer_domain_poll_message.h \
+		src/fredlib/poll/create_transfer_domain_poll_message.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/copy_history_impl.h \
 		src/fredlib/contact/copy_history_impl.cc \
@@ -982,6 +987,7 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/info_registrar_diff.cc \
 		src/fredlib/registrar/info_registrar_diff.h \
 		src/fredlib/registrar/registrar_zone_access.h \
+		src/fredlib/registrar/registrar_zone_access.cc \
 		src/fredlib/registrar/create_registrar.cc \
 		src/fredlib/registrar/create_registrar.h \
 		src/fredlib/registrar/info_registrar_impl.cc \
@@ -1465,6 +1471,7 @@ src_corba_admin_libadmin_impl_a_SOURCES = \
 #
 # src/corba/admin/libadmin_impl.a
 
+
 # src/corba/whois/libwhois_impl.a
 #
 src_corba_whois_libwhois_impl_a_SOURCES = \
@@ -1504,6 +1511,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
 		src/fredlib/contact_verification/cancel_contact_verification.h \
 		src/fredlib/contact_verification/contact_verification_state.cc \
+		src/fredlib/domain/domain.h \
+		src/fredlib/domain/domain.cc \
 		src/corba/epp/epp_session.h \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
@@ -1519,6 +1528,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/action.h \
 		src/corba/epp/reason.h \
 		src/corba/epp/response.h \
+		src/corba/epp/domain/domain_check_corba_conversions.h \
+		src/corba/epp/domain/domain_check_corba_conversions.cc \
+		src/corba/epp/domain/domain_info_corba_conversions.h \
+		src/corba/epp/domain/domain_info_corba_conversions.cc \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
 		src/epp/disclose_policy.h \
@@ -1563,6 +1576,42 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/disclose.h \
 		src/epp/contact/post_contact_update_hooks.cc \
 		src/epp/contact/post_contact_update_hooks.h \
+		src/epp/domain/domain_check.cc \
+		src/epp/domain/domain_check.h \
+		src/epp/domain/domain_check_impl.cc \
+		src/epp/domain/domain_check_impl.h \
+		src/epp/domain/domain_check_localization.cc \
+		src/epp/domain/domain_check_localization.h \
+		src/epp/domain/domain_delete.cc \
+		src/epp/domain/domain_delete.h \
+		src/epp/domain/domain_delete_impl.cc \
+		src/epp/domain/domain_delete_impl.h \
+		src/epp/domain/domain_info.cc \
+		src/epp/domain/domain_info.h \
+		src/epp/domain/domain_info_impl.cc \
+		src/epp/domain/domain_info_impl.h \
+		src/epp/domain/domain_transfer.cc \
+		src/epp/domain/domain_transfer.h \
+		src/epp/domain/domain_transfer_impl.cc \
+		src/epp/domain/domain_transfer_impl.h \
+		src/epp/domain/domain_create.cc \
+		src/epp/domain/domain_create.h \
+		src/epp/domain/domain_registration_time.h \
+		src/epp/domain/domain_enum_validation.h \
+		src/epp/domain/domain_enum_validation.cc \
+		src/epp/domain/domain_create_impl.cc \
+		src/epp/domain/domain_create_impl.h \
+		src/epp/domain/domain_renew_impl.cc \
+		src/epp/domain/domain_renew_impl.h \
+		src/epp/domain/domain_renew.cc \
+		src/epp/domain/domain_renew.h \
+		src/epp/domain/domain_billing.cc \
+		src/epp/domain/domain_billing.h \
+		src/epp/domain/domain_update.cc \
+		src/epp/domain/domain_update.h \
+		src/epp/domain/domain_update_impl.cc \
+		src/epp/domain/domain_update_impl.h \
+		src/epp/domain/domain_registration_obstruction.h \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \
@@ -1622,7 +1671,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/nsset_impl.h \
 		util/corba_conversion.h \
 		util/corba_conversion.cc
-
 
 #
 # src/corba/epp/libepp_impl.a
@@ -2352,8 +2400,6 @@ tests_interfaces_test_admin_contact_automerge_LDFLAGS = \
 		$(BOOST_LDFLAGS) \
 		$(AM_LDFLAGS)
 
-#src/corba/libcorbalogger.a
-
 tests_interfaces_test_admin_contact_automerge_LDADD = \
 		src/corba/libcorbadatatypes.a \
 		src/fredlib/libfred.a \
@@ -2433,6 +2479,15 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_check_impl.cc \
 		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/domain/fixture.h \
+		tests/interfaces/epp/domain/fixture.cc \
+		tests/interfaces/epp/domain/test_domain_check_impl.cc \
+		tests/interfaces/epp/domain/test_domain_delete_impl.cc \
+		tests/interfaces/epp/domain/test_domain_info_impl.cc \
+		tests/interfaces/epp/domain/test_domain_transfer_impl.cc \
+		tests/interfaces/epp/domain/test_domain_update_impl.cc \
+		tests/interfaces/epp/domain/test_domain_create_impl.cc \
+		tests/interfaces/epp/domain/test_domain_renew_impl.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
 		tests/interfaces/epp/keyset/test_create.cc \
@@ -2753,6 +2808,7 @@ tests_test_blocking_LDADD = \
 #
 tests_test_fredlib_SOURCES = \
 		tests/fredlib/main.cc \
+		tests/fredlib/registrar/test_registrar_zone_access.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \
 		tests/fredlib/registrar/test_create_registrar.cc \
 		tests/fredlib/contact/test_delete_contact.cc \

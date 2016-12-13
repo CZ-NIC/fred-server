@@ -71,6 +71,7 @@ namespace Fred
         {
             unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
                 _ctx,
+                true,
                 handle_,
                 "nsset",
                 static_cast<Exception*>(NULL),

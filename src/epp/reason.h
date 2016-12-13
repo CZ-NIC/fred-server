@@ -93,7 +93,9 @@ struct Reason
         dnskey_notexist             = 60,
         duplicated_dnskey           = 61,
         no_dnskey_dsrecord          = 62,
-        duplicated_dns_name         = 63
+        duplicated_dns_name         = 63,
+        admin_not_assigned          = 64,
+        tmpcontacts_obsolete        = 65
     };
     static bool is_valid(Enum value)
     {
@@ -162,6 +164,8 @@ struct Reason
             case duplicated_dnskey:
             case no_dnskey_dsrecord:
             case duplicated_dns_name:
+            case admin_not_assigned:
+            case tmpcontacts_obsolete:
                 return true;
         }
         return false;

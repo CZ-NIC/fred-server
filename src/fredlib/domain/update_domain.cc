@@ -183,8 +183,8 @@ namespace Fred
                 "SELECT oreg.id, z.enum_zone FROM domain d "
                 " JOIN zone z ON z.id = d.zone "
                 " JOIN object_registry oreg ON d.id = oreg.id "
-                " JOIN enum_object_type eot ON oreg.type = eot.id AND eot.name = 'domain' "
-                " WHERE oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
+                " WHERE oreg.type = get_object_type_id('domain'::text) "
+                " AND oreg.name = LOWER($1::text) AND oreg.erdate IS NULL "
                 " FOR UPDATE OF oreg"
                 , Database::query_param_list(no_root_dot_fqdn));
 
@@ -256,9 +256,9 @@ namespace Fred
                 }
                 else
                 {
-                    //lock nsset object_registry row for update and get id
+                    //lock nsset object_registry row for share and get id
                     unsigned long long nsset_id = get_object_id_by_handle_and_type_with_lock(
-                            ctx,new_nsset_value.get_value(),"nsset",&update_domain_exception,
+                            ctx, false,new_nsset_value.get_value(),"nsset",&update_domain_exception,
                             &Exception::set_unknown_nsset_handle);
 
                     params.push_back(nsset_id); //nsset update
@@ -276,9 +276,9 @@ namespace Fred
                 }
                 else
                 {
-                    //lock keyset object_registry row for update and get id
+                    //lock keyset object_registry row for share and get id
                     unsigned long long keyset_id = get_object_id_by_handle_and_type_with_lock(
-                            ctx,new_keyset_value.get_value(),"keyset",&update_domain_exception,
+                            ctx, false, new_keyset_value.get_value(),"keyset",&update_domain_exception,
                             &Exception::set_unknown_keyset_handle);
 
                     params.push_back(keyset_id); //keyset update
@@ -289,9 +289,9 @@ namespace Fred
 
             if(registrant_.isset())//change registrant
             {
-                //lock object_registry row for update
+                //lock object_registry row for share
                 unsigned long long registrant_id = get_object_id_by_handle_and_type_with_lock(
-                        ctx,registrant_.get_value(),"contact",&update_domain_exception,
+                        ctx, false,registrant_.get_value(),"contact",&update_domain_exception,
                         &Exception::set_unknown_registrant_handle);
 
                 params.push_back(registrant_id);
@@ -338,10 +338,10 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = add_admin_contact_.begin(); i != add_admin_contact_.end(); ++i)
             {
-                //lock object_registry row for update and get id
+                //lock object_registry row for share and get id
 
                 unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
-                        ctx,*i,"contact",&update_domain_exception,
+                        ctx, false, *i,"contact",&update_domain_exception,
                         &Exception::add_unknown_admin_contact_handle);
                 if(admin_contact_id == 0) continue;
 
@@ -384,10 +384,10 @@ namespace Fred
 
             for(std::vector<std::string>::iterator i = rem_admin_contact_.begin(); i != rem_admin_contact_.end(); ++i)
             {
-                //lock object_registry row for update and get id
+                //lock object_registry row for share and get id
 
                 unsigned long long admin_contact_id = get_object_id_by_handle_and_type_with_lock(
-                        ctx,*i,"contact",&update_domain_exception,
+                        ctx, false, *i,"contact",&update_domain_exception,
                         &Exception::add_unknown_admin_contact_handle);
                 if(admin_contact_id == 0) continue;
 

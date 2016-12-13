@@ -41,6 +41,8 @@
 #include "src/epp/nsset/nsset_check.h"
 #include "src/epp/nsset/nsset_info.h"
 #include "src/epp/nsset/nsset_delete.h"
+#include "src/epp/domain/domain_registration_time.h"
+#include "src/epp/domain/domain_enum_validation.h"
 
 namespace Corba {
 
@@ -50,7 +52,32 @@ namespace Corba {
 
     Epp::ContactCreateInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
 
-    Optional<std::string> convert_corba_string_change(const char* input);
+    /**
+     * Unwrapper for attributes which can be empty with special meaning
+     *
+     * @param _src string to be unwrapped, should not be NULL
+     *
+     * @return Optional() if input string empty, else unwrapped input
+     */
+    Optional<std::string> unwrap_string_for_change_to_Optional_string(const char* _src);
+
+    /**
+     * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
+     *
+     * @param _src string to be unwrapped, should not be NULL
+     *
+     * @return Optional() if input string empty, empty string if input contains special control char, unwrapped input in other cases
+     */
+    Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string(const char* _src);
+
+    /**
+     * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
+     *
+     * @param _src string to be unwrapped, should not be NULL
+     *
+     * @return empty string if input string empty, Optinal(Nullable()) if input ocntains special control char, unwrapped input in other cases
+     */
+    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src);
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
@@ -73,6 +100,7 @@ namespace Corba {
     Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src);
 
     boost::optional<short> unwrap_tech_check_level(CORBA::Short level);
+
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
@@ -115,6 +143,21 @@ namespace Corba {
         const std::vector<std::string>& nsset_handles,
         const std::map<std::string, boost::optional<Epp::LocalizedNssetHandleRegistrationObstruction> >& nsset_handle_check_results
     );
+
+    /**
+     * length of domain registration period
+     */
+    Epp::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period);
+
+    /**
+     * domain administrative contacts unwrapper
+     */
+    std::vector<std::string> unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact & in);
+
+    /**
+     * ENUM validation list unwrapper
+     */
+    std::vector<Epp::ENUMValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext);
 }
 
 #endif

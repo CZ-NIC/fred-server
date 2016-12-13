@@ -57,6 +57,7 @@ namespace Fred
         {
             unsigned long long contact_id = get_object_id_by_handle_and_type_with_lock(
                 _ctx,
+                true,
                 handle_,
                 "contact",
                 static_cast<Exception*>(NULL),

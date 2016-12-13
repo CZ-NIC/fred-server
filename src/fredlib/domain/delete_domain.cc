@@ -76,6 +76,7 @@ namespace Fred
             //get domain_id and lock object_registry row for update
             unsigned long long domain_id = get_object_id_by_handle_and_type_with_lock(
                 _ctx,
+                true,
                 no_root_dot_fqdn,
                 "domain",
                 static_cast<Exception*>(NULL),

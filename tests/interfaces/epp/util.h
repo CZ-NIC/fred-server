@@ -42,6 +42,10 @@ namespace Test {
         }
     };
 
+    struct autorollbacking_context : virtual Fixture::instantiate_db_template {
+        Fred::OperationContextCreator ctx;
+    };
+
     inline void check_correct_aggregated_exception_was_thrown(const Epp::Error& _error) {
 
         bool correct_exception_type_thrown = false;

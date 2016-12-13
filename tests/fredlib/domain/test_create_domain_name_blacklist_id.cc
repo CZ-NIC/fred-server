@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(create_domain_name_blacklist_id)
         "SELECT COUNT(*) "
         "FROM domain_blacklist "
         "WHERE regexp=$1::text AND "
-              "valid_from<CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<valid_to OR valid_to IS NULL)",
+              "valid_from<=CURRENT_TIMESTAMP AND (CURRENT_TIMESTAMP<valid_to OR valid_to IS NULL)",
             Database::query_param_list(regexp_test_domain_fqdn));
     BOOST_CHECK(static_cast< unsigned >(blacklist_result[0][0]) == 1);
 }
