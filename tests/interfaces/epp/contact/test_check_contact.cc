@@ -37,7 +37,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, has_invalid_registrar_id)
     BOOST_CHECK_THROW(
         Fred::OperationContextCreator ctx;
 
-        Epp::Nsset::check_nsset(
+        Epp::Contact::check_contact(
             ctx,
             std::set<std::string>(),
             invalid_registrar_id

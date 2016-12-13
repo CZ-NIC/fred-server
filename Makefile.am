@@ -1560,6 +1560,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/param.h \
 		src/epp/impl/reason.h \
 		src/epp/impl/response.h \
+		src/epp/impl/util.h \
+		src/epp/impl/util.cc \
 		src/epp/error.h \
 		src/epp/impl/parameter_errors.h \
 		src/epp/impl/parameter_errors.cc \
@@ -2690,7 +2692,10 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
-		tests/interfaces/domain_browser/test_domain_browser.cc
+		tests/interfaces/domain_browser/test_domain_browser.cc \
+		src/epp/impl/util.cc \
+		src/epp/impl/util.h \
+		tests/setup/fixtures.h
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

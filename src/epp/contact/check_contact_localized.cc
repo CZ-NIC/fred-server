@@ -1,10 +1,35 @@
+/*
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file
+ */
+
 #include "src/epp/contact/check_contact_localized.h"
 
-#include "src/epp/impl/action.h"
 #include "src/epp/contact/check_contact.h"
+#include "src/epp/contact/impl/contact_handle_registration_obstruction.h"
+#include "src/epp/impl/action.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
+#include "src/epp/impl/util.h"
+#include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 
 #include <set>
@@ -20,63 +45,22 @@ typedef std::map< std::string, Nullable< ContactHandleRegistrationObstruction::E
 typedef std::map< std::string, boost::optional< ContactHandleLocalizedRegistrationObstruction > > HandleToLocalizedObstruction;
 typedef std::map< unsigned, ContactHandleRegistrationObstruction::Enum > DescriptionIdToObstruction;
 
-std::string get_column_for_language(SessionLang::Enum _lang)
-{
-    switch (_lang)
-    {
-        case SessionLang::en: return "reason";
-        case SessionLang::cs: return "reason_cs";
-    }
-    throw UnknownLocalizationLanguage();
-}
-
-ObstructionToDescription get_localized_description_of_obstructions(
-    Fred::OperationContext &_ctx,
-    const DescriptionIdToObstruction &_obstructions,
-    SessionLang::Enum _lang)
-{
-    ObstructionToDescription result;
-    if (_obstructions.empty()) {
-        return result;
+std::set<unsigned> convert_to_description_db_ids(const DescriptionIdToObstruction& _obstructions) {
+    std::set<unsigned> states_ids;
+    for(
+        DescriptionIdToObstruction::const_iterator it = _obstructions.begin();
+        it != _obstructions.end();
+        ++it
+    ) {
+        states_ids.insert(to_description_db_id(ContactHandleRegistrationObstruction::to_reason(it->second)));
     }
 
-    Database::query_param_list params;
-    std::string query = "SELECT id," + get_column_for_language(_lang) + " "
-                        "FROM enum_reason "
-                        "WHERE id IN (";
-    for (DescriptionIdToObstruction::const_iterator obstruction_ptr = _obstructions.begin();
-         obstruction_ptr != _obstructions.end();
-         ++obstruction_ptr)
-    {
-        if (obstruction_ptr != _obstructions.begin()) {
-            query += ",";
-        }
-        query += ("$" + params.add(obstruction_ptr->first) + "::INTEGER");
-    }
-    query += ")";
-    const Database::Result db_res = _ctx.get_conn().exec_params(query, params);
-    if (db_res.size() < _obstructions.size()) {
-        throw MissingLocalizedDescription();
-    }
-
-    for (std::size_t idx = 0; idx < db_res.size(); ++idx) {
-        const unsigned description_id = static_cast< unsigned >(db_res[idx][0]);
-        const DescriptionIdToObstruction::const_iterator obstruction_ptr =
-            _obstructions.find(description_id);
-        if (obstruction_ptr == _obstructions.end()) {
-            throw UnknownLocalizedDescriptionId();
-        }
-        const ContactHandleRegistrationObstruction::Enum obstruction = obstruction_ptr->second;
-        const std::string description = static_cast< std::string >(db_res[idx][1]);
-        result.insert(std::make_pair(obstruction, description));
-    }
-
-    return result;
+    return states_ids;
 }
 
 boost::optional< ContactHandleLocalizedRegistrationObstruction > get_localized_obstruction(
-    const Nullable< ContactHandleRegistrationObstruction::Enum > &_check_result,
-    const ObstructionToDescription &_localized_descriptions)
+    const Nullable< ContactHandleRegistrationObstruction::Enum >& _check_result,
+    const ObstructionToDescription& _localized_descriptions)
 {
     if (_check_result.isnull()) {
         return boost::optional< ContactHandleLocalizedRegistrationObstruction >();
@@ -92,9 +76,9 @@ boost::optional< ContactHandleLocalizedRegistrationObstruction > get_localized_o
 }
 
 HandleToLocalizedObstruction localize_check_contact_results(
-    Fred::OperationContext &_ctx,
-    const HandleToObstruction &_check_results,
-    SessionLang::Enum _lang)
+    Fred::OperationContext& _ctx,
+    const HandleToObstruction& _check_results,
+    const SessionLang::Enum _lang)
 {
     DescriptionIdToObstruction used_obstructions;
     for (HandleToObstruction::const_iterator check_ptr = _check_results.begin();
@@ -108,11 +92,15 @@ HandleToLocalizedObstruction localize_check_contact_results(
             used_obstructions[description_id] = obstruction;
         }
     }
+
+    // get_localized_description_of_obstruction
     const ObstructionToDescription localized_descriptions =
-        get_localized_description_of_obstructions(_ctx, used_obstructions, _lang);
+        get_reasons_descriptions<ContactHandleRegistrationObstruction>(_ctx, convert_to_description_db_ids(used_obstructions), _lang);
+    if (localized_descriptions.size() < used_obstructions.size()) {
+        throw MissingLocalizedDescription();
+    }
 
     HandleToLocalizedObstruction result;
-
     for (HandleToObstruction::const_iterator check_ptr = _check_results.begin();
          check_ptr != _check_results.end();
          ++check_ptr)
@@ -124,7 +112,7 @@ HandleToLocalizedObstruction localize_check_contact_results(
     return result;
 }
 
-}//namespace Epp::{anonymous}
+}//namespace Epp::Contact::{anonymous}
 
 CheckContactLocalizedResponse check_contact_localized(
     const std::set<std::string>& _contact_handles,

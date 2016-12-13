@@ -752,9 +752,9 @@ namespace Corba {
 
         switch (_check_result.get_value().state)
         {
-            case Epp::Keyset::KeysetHandleRegistrationObstructin::invalid_handle   : return ccReg::BadFormat;
-            case Epp::Keyset::KeysetHandleRegistrationObstructin::protected_handle : return ccReg::DelPeriod;
-            case Epp::Keyset::KeysetHandleRegistrationObstructin::registered_handle: return ccReg::Exist;
+            case Epp::Keyset::KeysetHandleRegistrationObstruction::invalid_handle   : return ccReg::BadFormat;
+            case Epp::Keyset::KeysetHandleRegistrationObstruction::protected_handle : return ccReg::DelPeriod;
+            case Epp::Keyset::KeysetHandleRegistrationObstruction::registered_handle: return ccReg::Exist;
         }
 
         throw std::runtime_error("unknown keyset handle check result");

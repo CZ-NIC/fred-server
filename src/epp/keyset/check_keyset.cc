@@ -6,26 +6,26 @@ namespace Keyset {
 
 namespace {
 
-Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > validity_to_check_result(
+Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > validity_to_check_result(
     Fred::Keyset::HandleState::SyntaxValidity _validity)
 {
     switch (_validity)
     {
-        case Fred::Keyset::HandleState::invalid: return Keyset::KeysetHandleRegistrationObstructin::invalid_handle;
-        case Fred::Keyset::HandleState::valid: return Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum >();
+        case Fred::Keyset::HandleState::invalid: return Keyset::KeysetHandleRegistrationObstruction::invalid_handle;
+        case Fred::Keyset::HandleState::valid: return Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum >();
     }
 
     throw std::runtime_error("Invalid Fred::Keyset::HandleState::SyntaxValidity value.");
 }
 
-Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > keyset_handle_state_to_check_result(
+Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > keyset_handle_state_to_check_result(
     Fred::Keyset::HandleState::SyntaxValidity _handle_validity,
     Fred::Keyset::HandleState::Registrability _handle_registrability)
 {
     switch (_handle_registrability)
     {
-        case Fred::Keyset::HandleState::registered           : return Keyset::KeysetHandleRegistrationObstructin::registered_handle;
-        case Fred::Keyset::HandleState::in_protection_period : return Keyset::KeysetHandleRegistrationObstructin::protected_handle;
+        case Fred::Keyset::HandleState::registered           : return Keyset::KeysetHandleRegistrationObstruction::registered_handle;
+        case Fred::Keyset::HandleState::in_protection_period : return Keyset::KeysetHandleRegistrationObstruction::protected_handle;
         case Fred::Keyset::HandleState::available            : return validity_to_check_result(_handle_validity);
     }
 
@@ -34,7 +34,7 @@ Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > keyset_handle_state
 
 }//namespace Epp::{anonymous}
 
-std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > > check_keyset(
+std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > > check_keyset(
     Fred::OperationContext &_ctx,
     const std::set< std::string > &_keyset_handles,
     unsigned long long _registrar_id)
@@ -45,7 +45,7 @@ std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstructin::Enu
     }
 
     typedef std::set< std::string > Handles;
-    typedef std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > > CheckResult;
+    typedef std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > > CheckResult;
 
     CheckResult result;
 

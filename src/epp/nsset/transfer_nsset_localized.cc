@@ -1,8 +1,8 @@
 #include "src/epp/nsset/transfer_nsset_localized.h"
+#include "src/epp/nsset/transfer_nsset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
-#include "src/epp/nsset/transfer_nsset.h"
 #include "src/epp/impl/localization.h"
 
 #include "util/log/context.h"
@@ -11,17 +11,16 @@ namespace Epp {
 namespace Nsset {
 
 LocalizedSuccessResponse transfer_nsset_localized(
-    const std::string& _nsset_handle,
-    const std::string& _authinfopw,
-    const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const bool _epp_notification_disabled,
-    const std::string& _client_transaction_handles_prefix_not_to_nofify
-) {
-
+        const std::string& _nsset_handle,
+        const std::string& _authinfopw,
+        const unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id,
+        const SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        const bool _epp_notification_disabled,
+        const std::string& _client_transaction_handles_prefix_not_to_nofify)
+{
     try {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
@@ -35,8 +34,7 @@ LocalizedSuccessResponse transfer_nsset_localized(
             _nsset_handle,
             _authinfopw,
             _registrar_id,
-            _logd_request_id
-        );
+            _logd_request_id);
 
         const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
 
@@ -49,67 +47,68 @@ LocalizedSuccessResponse transfer_nsset_localized(
             _server_transaction_handle,
             _client_transaction_handle,
             _epp_notification_disabled,
-            _client_transaction_handles_prefix_not_to_nofify
-        );
+            _client_transaction_handles_prefix_not_to_nofify);
 
         return result;
 
-    } catch(const AuthErrorServerClosingConnection& e) {
+    }
+    catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::authentication_error_server_closing_connection,
             std::set<Error>(),
-            _lang
-        );
-
-    } catch(const NonexistentHandle& e) {
+            _lang);
+    }
+    catch (const NonexistentHandle&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::object_not_exist,
             std::set<Error>(),
-            _lang
-        );
-
-    } catch(const ObjectNotEligibleForTransfer& e) {
+            _lang);
+    }
+    catch (const ObjectNotEligibleForTransfer&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::not_eligible_for_transfer,
             std::set<Error>(),
-            _lang
-        );
-
-    } catch(const ObjectStatusProhibitsOperation& e) {
+            _lang);
+    }
+    catch (const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::status_prohibits_operation,
             std::set<Error>(),
-            _lang
-        );
-
-    } catch(const AuthorizationInformationError& e) {
+            _lang);
+    }
+    catch (const AuthorizationInformationError&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::authorization_information_error,
             std::set<Error>(),
-            _lang
-        );
-
-    } catch(const LocalizedFailResponse&) {
-        throw;
-
-    } catch(...) {
+            _lang);
+    }
+    catch (const std::exception& e) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("transfer_nsset_localized failure: ") + e.what());
         throw create_localized_fail_response(
             exception_localization_ctx,
             Response::failed,
             std::set<Error>(),
-            _lang
-        );
+            _lang);
+    }
+    catch (...) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in transfer_nsset_localized function");
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::failed,
+            std::set<Error>(),
+            _lang);
     }
 }
 

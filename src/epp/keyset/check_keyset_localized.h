@@ -36,7 +36,7 @@ struct CheckKeysetLocalizedResponse
 {
     struct Result
     {
-        KeysetHandleRegistrationObstructin::Enum state;
+        KeysetHandleRegistrationObstruction::Enum state;
         std::string description;
     };
 

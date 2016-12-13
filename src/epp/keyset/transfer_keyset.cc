@@ -68,7 +68,7 @@ unsigned long long transfer_keyset(
         }
 
         if (keyset_data.authinfopw != _authinfopw) {
-            throw AuthorizationError();
+            throw AuthorizationInformationError();
         }
 
         const unsigned long long post_transfer_history_id =
@@ -96,7 +96,7 @@ unsigned long long transfer_keyset(
         throw NonexistentHandle();
     }
     catch (const Fred::IncorrectAuthInfoPw&) {
-        throw AuthorizationError();
+        throw AuthorizationInformationError();
     }
     catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
         throw ObjectNotEligibleForTransfer();

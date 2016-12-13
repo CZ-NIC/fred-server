@@ -1,10 +1,11 @@
 #include "src/epp/contact/info_contact_localized.h"
 
+#include "src/admin/contact/verification/contact_states/enum.h"
 #include "src/epp/contact/info_contact.h"
-#include "src/epp/impl/exception.h"
-#include "src/epp/impl/util.h"
-#include "src/epp/impl/localization.h"
 #include "src/epp/impl/action.h"
+#include "src/epp/impl/exception.h"
+#include "src/epp/impl/localization.h"
+#include "src/epp/impl/util.h"
 
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/registrar/info_registrar.h"

@@ -53,6 +53,22 @@ struct ContactHandleRegistrationObstruction
         }
         throw MissingLocalizedDescription();
     }
+
+    /**
+     * @throws MissingLocalizedDescription
+     */
+    static Enum from_reason(Reason::Enum value)
+    {
+        switch (value)
+        {
+            case Reason::invalid_handle:   return invalid_handle;
+            case Reason::existing:         return registered_handle;
+            case Reason::protected_period: return protected_handle;
+            default:
+                throw MissingLocalizedDescription();
+                break;
+        }
+    }
 };
 
 } // namespace Epp::Contact

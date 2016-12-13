@@ -311,13 +311,13 @@ void check_protected_period_keyset(const std::string &keyset_handle, const Test:
         std::set< std::string > handles;
         handles.insert(keyset_handle);
         const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
-        const std::map< std::string, Nullable< Epp::Keyset::KeysetHandleRegistrationObstructin::Enum > > check_result =
+        const std::map< std::string, Nullable< Epp::Keyset::KeysetHandleRegistrationObstruction::Enum > > check_result =
             Epp::Keyset::check_keyset(ctx, handles, registrar_id);
         ctx.commit_transaction();
         BOOST_REQUIRE(check_result.size() == 1);
         BOOST_REQUIRE(check_result.count(keyset_handle) == 1);
         BOOST_REQUIRE(!check_result.find(keyset_handle)->second.isnull());
-        BOOST_CHECK(check_result.find(keyset_handle)->second.get_value() == Epp::Keyset::KeysetHandleRegistrationObstructin::protected_handle);
+        BOOST_CHECK(check_result.find(keyset_handle)->second.get_value() == Epp::Keyset::KeysetHandleRegistrationObstruction::protected_handle);
         return;
     }
     catch (const std::exception &e) {

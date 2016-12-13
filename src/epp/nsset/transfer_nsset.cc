@@ -81,7 +81,7 @@ unsigned long long transfer_nsset(
                     _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>())
             .exec(_ctx);
 
-        // FIXME use
+        // TODO use 
         //Fred::Poll::CreateEppActionPollMessage(post_transfer_history_id,
         //                                       Fred::Poll::nsset,
         //                                       Fred::Poll::TRANSFER_NSSET).exec(_ctx);

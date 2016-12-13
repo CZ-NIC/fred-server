@@ -29,7 +29,7 @@
 namespace Epp {
 namespace Keyset {
 
-struct KeysetHandleRegistrationObstructin
+struct KeysetHandleRegistrationObstruction
 {
     enum Enum
     {
@@ -37,22 +37,38 @@ struct KeysetHandleRegistrationObstructin
         protected_handle,
         registered_handle
     };
-};
 
-/**
- * @throws MissingLocalizedDescription
- */
-inline Reason::Enum to_reason(const KeysetHandleRegistrationObstructin::Enum value)
-{
-    switch (value)
+    /**
+     * @throws MissingLocalizedDescription
+     */
+    static Reason::Enum to_reason(const KeysetHandleRegistrationObstruction::Enum value)
     {
-        case KeysetHandleRegistrationObstructin::invalid_handle:    return Reason::invalid_handle;
-        case KeysetHandleRegistrationObstructin::registered_handle: return Reason::existing;
-        case KeysetHandleRegistrationObstructin::protected_handle:  return Reason::protected_period;
+        switch (value)
+        {
+            case KeysetHandleRegistrationObstruction::invalid_handle:    return Reason::invalid_handle;
+            case KeysetHandleRegistrationObstruction::registered_handle: return Reason::existing;
+            case KeysetHandleRegistrationObstruction::protected_handle:  return Reason::protected_period;
+        }
+        throw MissingLocalizedDescription();
     }
 
-    throw MissingLocalizedDescription();
-}
+    /**
+     * @throws MissingLocalizedDescription
+     */
+    static KeysetHandleRegistrationObstruction::Enum from_reason(const Reason::Enum value)
+    {
+        switch (value)
+        {
+            case Reason::invalid_handle:   return KeysetHandleRegistrationObstruction::invalid_handle;
+            case Reason::existing:         return KeysetHandleRegistrationObstruction::registered_handle;
+            case Reason::protected_period: return KeysetHandleRegistrationObstruction::protected_handle;
+            default:
+                throw MissingLocalizedDescription();
+                break;
+        }
+    }
+
+};
 
 }//namespace Epp::Keyset
 }//namespace Epp

@@ -27,9 +27,14 @@
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
+#include "src/epp/impl/util.h"
+#include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
+#include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 
+#include <map>
 #include <set>
+#include <stdexcept>
 
 namespace Epp {
 namespace Keyset {
@@ -37,63 +42,36 @@ namespace Localized {
 
 namespace {
 
-typedef std::map< std::string, Nullable< KeysetHandleRegistrationObstructin::Enum > > RawResults;
+typedef std::map< std::string, Nullable< KeysetHandleRegistrationObstruction::Enum > > RawResults;
+
+std::set<unsigned> convert_to_description_db_ids(const RawResults& _keyset_check_results) {
+    std::set<unsigned> states_ids;
+    for (RawResults::const_iterator result_ptr = _keyset_check_results.begin();
+            result_ptr != _keyset_check_results.end();
+            ++result_ptr)
+    {
+        if (!result_ptr->second.isnull()) {
+            states_ids.insert(to_description_db_id(KeysetHandleRegistrationObstruction::to_reason(result_ptr->second.get_value())));
+        }
+    }
+
+    return states_ids;
+}
 
 CheckKeysetLocalizedResponse::Results localize_check_keyset_results(
     Fred::OperationContext& _ctx,
-    const std::map< std::string, Nullable< KeysetHandleRegistrationObstructin::Enum > >& _keyset_check_results,
-    SessionLang::Enum _lang)
+    const std::map< std::string, Nullable< KeysetHandleRegistrationObstruction::Enum > >& _keyset_check_results,
+    const SessionLang::Enum _lang)
 {
-    typedef std::map< std::string, Nullable< KeysetHandleRegistrationObstructin::Enum > > RawResult;
-    typedef std::map< Reason::Enum, std::string > ReasonDescription;
-    ReasonDescription reason_description;
-    {
-        Database::query_param_list params;
-        std::string set_of_reason_ids;
-        {
-            std::set< Reason::Enum > enum_reason_ids;
-            for (RawResult::const_iterator result_ptr = _keyset_check_results.begin();
-                 result_ptr != _keyset_check_results.end(); ++result_ptr)
-            {
-                if (!result_ptr->second.isnull()) {
-                    const Reason::Enum reason = to_reason(result_ptr->second.get_value());
-                    if (enum_reason_ids.insert(reason).second) {
-                        if (!set_of_reason_ids.empty()) {
-                            set_of_reason_ids += ",";
-                        }
-                        set_of_reason_ids += "$" + params.add(reason) + "::INTEGER";
-                    }
-                }
-            }
-        }
-        if (!params.empty()) {
-            std::string column_name;
-            switch (_lang)
-            {
-                case SessionLang::en:
-                    column_name = "reason";
-                    break;
-                case SessionLang::cs:
-                    column_name = "reason_cs";
-                    break;
-            }
-            if (column_name.empty()) {
-                throw UnknownLocalizationLanguage();
-            }
-            const Database::Result db_res = _ctx.get_conn().exec_params(
-                "SELECT id," + column_name + " "
-                "FROM enum_reason "
-                "WHERE id IN (" + set_of_reason_ids + ")", params);
-            if (db_res.size() <= 0) {
-                throw MissingLocalizedDescription();
-            }
-            for (::size_t idx = 0; idx < db_res.size(); ++idx) {
-                const Reason::Enum reason = from_description_db_id< Reason >(static_cast< unsigned >(db_res[idx][0]));
-                const std::string description = static_cast< std::string >(db_res[idx][1]);
-                reason_description[reason] = description;
-            }
-        }
+    typedef std::map< KeysetHandleRegistrationObstruction::Enum, std::string > ReasonDescription;
+
+    // get_localized_description_of_obstruction
+    const ReasonDescription reasons_descriptions =
+        get_reasons_descriptions<KeysetHandleRegistrationObstruction>(_ctx, convert_to_description_db_ids(_keyset_check_results), _lang);
+    if (reasons_descriptions.size() <= 0) {
+        throw MissingLocalizedDescription();
     }
+
     CheckKeysetLocalizedResponse::Results localized_result;
     for (RawResults::const_iterator result_ptr = _keyset_check_results.begin();
          result_ptr != _keyset_check_results.end(); ++result_ptr)
@@ -102,8 +80,7 @@ CheckKeysetLocalizedResponse::Results localize_check_keyset_results(
         if (!result_ptr->second.isnull()) {
             CheckKeysetLocalizedResponse::Result data;
             data.state = result_ptr->second.get_value();
-            const Reason::Enum reason = to_reason(data.state);
-            data.description = reason_description[reason];
+            data.description = reasons_descriptions.at(data.state);
             result = data;
         }
         localized_result[result_ptr->first] = result;
@@ -115,8 +92,8 @@ CheckKeysetLocalizedResponse::Results localize_check_keyset_results(
 
 CheckKeysetLocalizedResponse check_keyset_localized(
     const std::set< std::string >& _keyset_handles,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
+    const unsigned long long _registrar_id,
+    const SessionLang::Enum _lang,
     const std::string& _server_transaction_handle)
 {
     try {
@@ -127,7 +104,7 @@ CheckKeysetLocalizedResponse check_keyset_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstructin::Enum > > check_keyset_results =
+        const std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > > check_keyset_results =
             check_keyset(
                     ctx,
                     _keyset_handles,

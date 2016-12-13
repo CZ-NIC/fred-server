@@ -14,13 +14,13 @@ namespace Epp {
 namespace Keyset {
 
 LocalizedSuccessResponse delete_keyset_localized(
-    const std::string &_keyset_handle,
+    const std::string& _keyset_handle,
     const unsigned long long _registrar_id,
     const SessionLang::Enum _lang,
-    const std::string &_server_transaction_handle,
-    const std::string &_client_transaction_handle,
+    const std::string& _server_transaction_handle,
+    const std::string& _client_transaction_handle,
     bool _epp_notification_disabled,
-    const std::string &_client_transaction_handles_prefix_not_to_nofify)
+    const std::string& _client_transaction_handles_prefix_not_to_nofify)
 {
     try {
         Logging::Context logging_ctx1("rifd");
@@ -30,68 +30,81 @@ LocalizedSuccessResponse delete_keyset_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long last_history_id_before_delete = delete_keyset(ctx, _keyset_handle, _registrar_id);
+        const unsigned long long last_history_id_before_delete = delete_keyset(
+                ctx,
+                _keyset_handle,
+                _registrar_id);
 
-        const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
+        const LocalizedSuccessResponse result = create_localized_success_response(
+                ctx,
+                Response::ok,
+                _lang);
 
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
-            Notification::deleted,
-            last_history_id_before_delete,
-            _registrar_id,
-            _server_transaction_handle,
-            _client_transaction_handle,
-            _epp_notification_disabled,
-            _client_transaction_handles_prefix_not_to_nofify);
+                Notification::deleted,
+                last_history_id_before_delete,
+                _registrar_id,
+                _server_transaction_handle,
+                _client_transaction_handle,
+                _epp_notification_disabled,
+                _client_transaction_handles_prefix_not_to_nofify);
 
         return result;
     }
-    catch (const AuthErrorServerClosingConnection &e) {
-        Fred::OperationContextCreator ctx;
+    catch (const AuthErrorServerClosingConnection& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
             Response::authentication_error_server_closing_connection,
             std::set< Error >(),
             _lang);
     }
-    catch (const NonexistentHandle &e) {
-        Fred::OperationContextCreator ctx;
+    catch (const NonexistentHandle& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
             Response::object_not_exist,
             std::set< Error >(),
             _lang);
     }
-    catch (const ParameterErrors &e) {
-        Fred::OperationContextCreator ctx;
+    catch (const ParameterErrors& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
         std::set< Error > errors;
 
         if (e.has_scalar_parameter_error(Param::registrar_autor, Reason::unauthorized_registrar)) {
             errors.insert(Error::of_scalar_parameter(Param::registrar_autor, Reason::unauthorized_registrar));
             throw create_localized_fail_response(
-                ctx,
+                exception_localization_ctx,
                 Response::authorization_error,
                 errors,
                 _lang);
         }
-        throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
+        throw create_localized_fail_response(exception_localization_ctx, Response::failed, e.get_set_of_error(), _lang);
     }
-    catch (const ObjectStatusProhibitsOperation &e) {
-        Fred::OperationContextCreator ctx;
+    catch (const ObjectStatusProhibitsOperation& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
             Response::status_prohibits_operation,
             std::set< Error >(),
             _lang);
     }
-    catch (const LocalizedFailResponse&) {
-        throw;
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("delete_keyset_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::failed,
+            std::set<Error>(),
+            _lang);
     }
     catch (...) {
-        Fred::OperationContextCreator ctx;
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in delete_keyset_localized function");
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
             Response::failed,
             std::set< Error >(),
             _lang);

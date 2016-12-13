@@ -23,15 +23,19 @@
 #include "src/epp/nsset/check_nsset_localized.h"
 
 #include "src/epp/impl/action.h"
-#include "src/epp/nsset/check_nsset.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
+#include "src/epp/impl/util.h"
+#include "src/epp/nsset/check_nsset.h"
+#include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
+#include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 #include "util/map_at.h"
 #include "util/util.h"
 
 #include <set>
+#include <stdexcept>
 #include <utility>
 
 #include <boost/algorithm/string/join.hpp>
@@ -47,79 +51,17 @@ namespace {
  * @returns untyped postgres array
  * Caller should cast it properly before using in query.
  */
-static std::string convert_to_pg_array(const std::set<unsigned>& _input) {
-    std::vector<std::string> string_values;
-    string_values.reserve(_input.size());
-
-    BOOST_FOREACH(unsigned elem, _input) {
-        string_values.push_back( boost::lexical_cast<std::string>(elem) );
-    }
-
-    return "{" + boost::algorithm::join(string_values, ", ") + "}";
-}
-
 static std::set<unsigned> convert_to_description_db_ids(const std::set<NssetHandleRegistrationObstruction::Enum>& _obstructions) {
     std::set<unsigned> states_ids;
-
     for(
         std::set<NssetHandleRegistrationObstruction::Enum>::const_iterator it = _obstructions.begin();
         it != _obstructions.end();
         ++it
     ) {
-        states_ids.insert( to_description_db_id(NssetHandleRegistrationObstruction::to_reason(*it) ));
+        states_ids.insert(to_description_db_id(NssetHandleRegistrationObstruction::to_reason(*it)));
     }
 
     return states_ids;
-}
-
-static std::map<NssetHandleRegistrationObstruction::Enum, std::string> get_localized_description_of_obstructions(
-    Fred::OperationContext& _ctx,
-    const std::set<NssetHandleRegistrationObstruction::Enum>& _obstructions,
-    const SessionLang::Enum _lang
-) {
-    std::map<unsigned, NssetHandleRegistrationObstruction::Enum> reason_id_obstruction_map;
-    for(std::set<NssetHandleRegistrationObstruction::Enum>::const_iterator it = _obstructions.begin();
-        it != _obstructions.end();
-        ++it
-    ) {
-        reason_id_obstruction_map.insert(
-            std::make_pair(to_description_db_id(
-                NssetHandleRegistrationObstruction::to_reason(*it)), *it));
-    }
-
-    const std::string column_name =
-        _lang == SessionLang::en
-        ?   "reason"
-        :   _lang == SessionLang::cs
-            ?   "reason_cs"
-            :   throw UnknownLocalizationLanguage();
-
-    const Database::Result db_res = _ctx.get_conn().exec_params(
-        "SELECT "
-            "id AS id_, " +
-            column_name + " AS reason_txt_ "
-        "FROM enum_reason "
-        "WHERE id = ANY( $1::integer[] ) ",
-        Database::query_param_list(
-            convert_to_pg_array( convert_to_description_db_ids(_obstructions) )
-        )
-    );
-
-    if(db_res.size() < _obstructions.size()) {
-        throw MissingLocalizedDescription();
-    }
-
-    std::map<NssetHandleRegistrationObstruction::Enum, std::string> result;
-
-    for(unsigned long i = 0; i < db_res.size(); ++i) {
-        result.insert(
-            std::make_pair(
-                map_at(reason_id_obstruction_map, static_cast<unsigned>(db_res[i]["id_"])),
-                static_cast<std::string>(db_res[i]["reason_txt_"]))
-        );
-    }
-
-    return result;
 }
 
 static std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > localize_check_nsset_results(
@@ -127,14 +69,19 @@ static std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObs
     const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> >& _check_results,
     const SessionLang::Enum _lang
 ) {
-    const std::map<NssetHandleRegistrationObstruction::Enum, std::string> localized_description_of_obstructions = get_localized_description_of_obstructions(
-            _ctx, static_cast< const std::set<NssetHandleRegistrationObstruction::Enum>& >(
+    const std::set<NssetHandleRegistrationObstruction::Enum> obstructions =
+        static_cast< const std::set<NssetHandleRegistrationObstruction::Enum>& >(
                 Util::set_of<NssetHandleRegistrationObstruction::Enum>
-                    (NssetHandleRegistrationObstruction::invalid_handle)
-                    (NssetHandleRegistrationObstruction::protected_handle)
-                    (NssetHandleRegistrationObstruction::registered_handle)),
-            _lang
-        );
+                (NssetHandleRegistrationObstruction::invalid_handle)
+                (NssetHandleRegistrationObstruction::protected_handle)
+                (NssetHandleRegistrationObstruction::registered_handle));
+
+    const std::map<NssetHandleRegistrationObstruction::Enum, std::string> reasons_descriptions =
+        get_reasons_descriptions<NssetHandleRegistrationObstruction>(_ctx, convert_to_description_db_ids(obstructions), _lang);
+
+    if(reasons_descriptions.size() < obstructions.size()) {
+        throw MissingLocalizedDescription();
+    }
 
     std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > result;
     for(std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> >::const_iterator nsset_it = _check_results.begin();
@@ -146,7 +93,7 @@ static std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObs
                 :   boost::optional<NssetHandleLocalizedRegistrationObstruction>(
                         NssetHandleLocalizedRegistrationObstruction(
                             nsset_it->second.get_value(),
-                            map_at(localized_description_of_obstructions, nsset_it->second.get_value())
+                            reasons_descriptions.at(nsset_it->second.get_value())
                         )
                     )
             )
@@ -219,7 +166,6 @@ CheckNssetLocalizedResponse check_nsset_localized(
                 std::set< Error >(),
                 _lang);
     }
-
 }
 
 } // namespace Epp::Nsset
