@@ -28,7 +28,6 @@
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
 #include <boost/optional.hpp>
-#include "util/db/nullable.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 

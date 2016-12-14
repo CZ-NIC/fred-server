@@ -10,6 +10,11 @@
 
 #include "util/log/context.h"
 
+#include <boost/format.hpp>
+#include <boost/format/free_funcs.hpp>
+
+#include <string>
+
 namespace Epp {
 namespace Keyset {
 namespace Localized {

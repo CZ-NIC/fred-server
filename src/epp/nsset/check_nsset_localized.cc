@@ -30,79 +30,25 @@
 #include "src/epp/nsset/check_nsset.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
+#include "util/db/nullable.h"
 #include "util/log/context.h"
 #include "util/map_at.h"
 #include "util/util.h"
 
-#include <set>
-#include <stdexcept>
-#include <utility>
-
 #include <boost/algorithm/string/join.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
+#include <boost/format/free_funcs.hpp>
 #include <boost/lexical_cast.hpp>
+
+#include <map>
+#include <set>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace Epp {
 namespace Nsset {
-
-namespace {
-
-/**
- * @returns untyped postgres array
- * Caller should cast it properly before using in query.
- */
-static std::set<unsigned> convert_to_description_db_ids(const std::set<NssetHandleRegistrationObstruction::Enum>& _obstructions) {
-    std::set<unsigned> states_ids;
-    for(
-        std::set<NssetHandleRegistrationObstruction::Enum>::const_iterator it = _obstructions.begin();
-        it != _obstructions.end();
-        ++it
-    ) {
-        states_ids.insert(to_description_db_id(NssetHandleRegistrationObstruction::to_reason(*it)));
-    }
-
-    return states_ids;
-}
-
-static std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > localize_check_nsset_results(
-    Fred::OperationContext& _ctx,
-    const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> >& _check_results,
-    const SessionLang::Enum _lang
-) {
-    const std::set<NssetHandleRegistrationObstruction::Enum> obstructions =
-        static_cast< const std::set<NssetHandleRegistrationObstruction::Enum>& >(
-                Util::set_of<NssetHandleRegistrationObstruction::Enum>
-                (NssetHandleRegistrationObstruction::invalid_handle)
-                (NssetHandleRegistrationObstruction::protected_handle)
-                (NssetHandleRegistrationObstruction::registered_handle));
-
-    const std::map<NssetHandleRegistrationObstruction::Enum, std::string> reasons_descriptions =
-        get_reasons_descriptions<NssetHandleRegistrationObstruction>(_ctx, convert_to_description_db_ids(obstructions), _lang);
-
-    if(reasons_descriptions.size() < obstructions.size()) {
-        throw MissingLocalizedDescription();
-    }
-
-    std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > result;
-    for(std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> >::const_iterator nsset_it = _check_results.begin();
-        nsset_it != _check_results.end(); ++nsset_it)
-    {
-        result.insert(std::make_pair(nsset_it->first,
-            nsset_it->second.isnull()
-                ?   boost::optional<NssetHandleLocalizedRegistrationObstruction>()
-                :   boost::optional<NssetHandleLocalizedRegistrationObstruction>(
-                        NssetHandleLocalizedRegistrationObstruction(
-                            nsset_it->second.get_value(),
-                            reasons_descriptions.at(nsset_it->second.get_value())
-                        )
-                    )
-            )
-        );
-    }
-    return result;
-}
-
-} // namespace Epp::Nsset::{anonymous}
 
 CheckNssetLocalizedResponse check_nsset_localized(
     const std::set<std::string>& _nsset_handles,
@@ -112,9 +58,9 @@ CheckNssetLocalizedResponse check_nsset_localized(
 ) {
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast<unsigned>( Action::CheckNsset)));
+        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>( Action::CheckNsset)));
 
         Fred::OperationContextCreator ctx;
 
@@ -131,7 +77,7 @@ CheckNssetLocalizedResponse check_nsset_localized(
                    _lang);
 
         const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > localized_check_nsset_results =
-           localize_check_nsset_results(
+           localize_check_results<NssetHandleRegistrationObstruction, NssetHandleLocalizedRegistrationObstruction, boost::optional>(
                    ctx,
                    check_nsset_results,
                    _lang);
