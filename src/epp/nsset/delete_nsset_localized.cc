@@ -1,7 +1,7 @@
 #include "src/epp/nsset/delete_nsset_localized.h"
+#include "src/epp/nsset/delete_nsset.h"
 
 #include "src/epp/impl/conditionally_enqueue_notification.h"
-#include "src/epp/nsset/delete_nsset.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/impl/localization.h"
@@ -9,18 +9,20 @@
 
 #include "util/log/context.h"
 
+#include <boost/format/free_funcs.hpp>
+
 namespace Epp {
 namespace Nsset {
 
 LocalizedSuccessResponse delete_nsset_localized(
-        const std::string& _handle,
+        const std::string& _nsset_handle,
         const unsigned long long _registrar_id,
         const SessionLang::Enum _lang,
         const std::string& _server_transaction_handle,
         const std::string& _client_transaction_handle,
         const bool _epp_notification_disabled,
-        const std::string& _client_transaction_handles_prefix_not_to_nofify
-) {
+        const std::string& _client_transaction_handles_prefix_not_to_nofify)
+{
     try {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
@@ -31,7 +33,7 @@ LocalizedSuccessResponse delete_nsset_localized(
 
         const unsigned long long last_history_id_before_delete = delete_nsset(
                 ctx,
-                _handle,
+                _nsset_handle,
                 _registrar_id);
 
         const LocalizedSuccessResponse result = create_localized_success_response(
@@ -51,9 +53,8 @@ LocalizedSuccessResponse delete_nsset_localized(
                 _client_transaction_handles_prefix_not_to_nofify);
 
         return result;
-
     }
-    catch(const AuthErrorServerClosingConnection& e) {
+    catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
@@ -61,7 +62,7 @@ LocalizedSuccessResponse delete_nsset_localized(
                 std::set<Error>(),
                 _lang);
     }
-    catch(const NonexistentHandle& e) {
+    catch (const NonexistentHandle&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
@@ -69,7 +70,7 @@ LocalizedSuccessResponse delete_nsset_localized(
                 std::set<Error>(),
                 _lang);
     }
-    catch(const AuthorizationError& e) {
+    catch (const AuthorizationError&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
@@ -77,7 +78,7 @@ LocalizedSuccessResponse delete_nsset_localized(
                 Util::set_of<Error>(Error::of_scalar_parameter(Param::registrar_autor, Reason::unauthorized_registrar)),
                 _lang);
     }
-    catch(const ObjectStatusProhibitsOperation& e) {
+    catch (const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
@@ -85,7 +86,7 @@ LocalizedSuccessResponse delete_nsset_localized(
                 std::set<Error>(),
                 _lang);
     }
-    catch(const ObjectAssociationProhibitsOperation& e) {
+    catch (const ObjectAssociationProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
