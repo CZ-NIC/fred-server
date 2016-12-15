@@ -1556,7 +1556,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/localization.h \
 		src/epp/impl/localization.cc \
 		src/epp/impl/response_localized.h \
-		src/epp/impl/states_localized.h \
+		src/epp/impl/object_states_localized.h \
 		src/epp/impl/param.h \
 		src/epp/impl/reason.h \
 		src/epp/impl/response.h \

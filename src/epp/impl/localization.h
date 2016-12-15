@@ -25,7 +25,7 @@
 
 #include "src/epp/error.h"
 #include "src/epp/impl/response_localized.h"
-#include "src/epp/impl/states_localized.h"
+#include "src/epp/impl/object_states_localized.h"
 #include "src/epp/impl/response.h"
 #include "src/epp/impl/session_lang.h"
 
@@ -55,16 +55,16 @@ LocalizedFailResponse create_localized_fail_response(
     SessionLang::Enum _lang
 );
 
-std::map<std::string, std::string> get_object_state_descriptions(
+std::map<std::string, std::string> localize_object_states_deprecated(
     Fred::OperationContext& _ctx,
     const std::set<std::string>& _state_handles,
     SessionLang::Enum _lang
 );
 
-LocalizedStates get_localized_object_state(
-    Fred::OperationContext &_ctx,
-    const std::set< Fred::Object_State::Enum > &_states,
-    SessionLang::Enum _lang);
+ObjectStatesLocalized localize_object_states(
+        Fred::OperationContext& _ctx,
+        const std::set<Fred::Object_State::Enum>& _states,
+        SessionLang::Enum _lang);
 
 }
 

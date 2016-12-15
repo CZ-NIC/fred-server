@@ -26,7 +26,12 @@
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
+
 #include "util/db/nullable.h"
+
+#include <map>
+#include <set>
+#include <string>
 
 namespace Epp {
 namespace Keyset {
@@ -44,28 +49,30 @@ struct CheckKeysetLocalizedResponse
 
         Result(
             const KeysetHandleRegistrationObstruction::Enum _state,
-            const std::string& _description
-        ) :
-           state(_state),
-           description(_description)
+            const std::string& _description)
+        :   state(_state),
+            description(_description)
         { }
     };
 
-    typedef std::map< std::string, Nullable< Result > > Results;
+    typedef std::map<std::string, Nullable<Result> > Results;
 
-    CheckKeysetLocalizedResponse(const LocalizedSuccessResponse& _response, const Results& _results)
+    CheckKeysetLocalizedResponse(
+        const LocalizedSuccessResponse& _response,
+        const Results& _results)
     :   ok_response(_response),
-        results(_results) { }
+        results(_results)
+    { }
 
     LocalizedSuccessResponse ok_response;
     Results results;
 };
 
 CheckKeysetLocalizedResponse check_keyset_localized(
-    const std::set< std::string >& _keyset_handles,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle);
+        const std::set<std::string>& _keyset_handles,
+        unsigned long long _registrar_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle);
 
 } // namespace Epp::Keyset::Localized
 } // namespace Epp::Keyset

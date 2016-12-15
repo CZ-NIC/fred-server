@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef STATES_LOCALIZED_H_96ACF1844D5F4404B4694EABA35A19B7
-#define STATES_LOCALIZED_H_96ACF1844D5F4404B4694EABA35A19B7
+#ifndef OBJECT_STATES_LOCALIZED_H_33777B6EEDFD423494782C90D5718B94
+#define OBJECT_STATES_LOCALIZED_H_33777B6EEDFD423494782C90D5718B94
 
 #include "src/fredlib/object/object_state.h"
 
@@ -29,7 +29,7 @@
 
 namespace Epp {
 
-struct LocalizedStates
+struct ObjectStatesLocalized
 {
     typedef std::map< Fred::Object_State::Enum, std::string > Descriptions;
     Descriptions descriptions;

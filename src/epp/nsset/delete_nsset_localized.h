@@ -32,14 +32,13 @@ namespace Epp {
 namespace Nsset {
 
 LocalizedSuccessResponse delete_nsset_localized(
-    const std::string& _handle,
-    const unsigned long long _registrar_id,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const bool _epp_notification_disabled,
-    const std::string& _client_transaction_handles_prefix_not_to_nofify
-);
+        const std::string& _nsset_handle,
+        unsigned long long _registrar_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        bool _epp_notification_disabled,
+        const std::string& _client_transaction_handles_prefix_not_to_nofify);
 
 } // namespace Epp::Nsset
 } // namespace Epp

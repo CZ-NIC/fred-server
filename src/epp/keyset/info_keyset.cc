@@ -10,12 +10,12 @@
 namespace Epp {
 namespace Keyset {
 
-InfoKeysetData info_keyset(Fred::OperationContext &_ctx,
+InfoKeysetOutputData info_keyset(Fred::OperationContext &_ctx,
                            const std::string &_keyset_handle,
                            unsigned long long _registrar_id)
 {
     try {
-        InfoKeysetData result;
+        InfoKeysetOutputData result;
         static const char *const utc_timezone = "UTC";
         const Fred::InfoKeysetData data = Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx, utc_timezone).info_keyset_data;
         result.handle = data.handle;

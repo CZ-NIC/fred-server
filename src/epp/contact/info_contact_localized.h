@@ -40,31 +40,30 @@ namespace Contact {
 
 struct InfoContactLocalizedOutputData
 {
-    InfoContactLocalizedOutputData(const boost::optional< ContactDisclose > &disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
-    Nullable< std::string > last_update_registrar_handle;
-    std::map< std::string, std::string > localized_external_states;
+    Nullable<std::string> last_update_registrar_handle;
+    std::map<std::string, std::string> localized_external_states;
     boost::posix_time::ptime crdate;
-    Nullable< boost::posix_time::ptime > last_update;
-    Nullable< boost::posix_time::ptime > last_transfer;
-    Nullable< std::string > name;
-    Nullable< std::string > organization;
-    Nullable< std::string > street1;
-    Nullable< std::string > street2;
-    Nullable< std::string > street3;
-    Nullable< std::string > city;
-    Nullable< std::string > state_or_province;
-    Nullable< std::string > postal_code;
-    Nullable< std::string > country_code;
-    Nullable< std::string > telephone;
-    Nullable< std::string > fax;
-    Nullable< std::string > email;
-    Nullable< std::string > notify_email;
-    Nullable< std::string > VAT;
-    Nullable< std::string > ident;
+    Nullable<boost::posix_time::ptime> last_update;
+    Nullable<boost::posix_time::ptime> last_transfer;
+    Nullable<std::string> name;
+    Nullable<std::string> organization;
+    Nullable<std::string> street1;
+    Nullable<std::string> street2;
+    Nullable<std::string> street3;
+    Nullable<std::string> city;
+    Nullable<std::string> state_or_province;
+    Nullable<std::string> postal_code;
+    Nullable<std::string> country_code;
+    Nullable<std::string> telephone;
+    Nullable<std::string> fax;
+    Nullable<std::string> email;
+    Nullable<std::string> notify_email;
+    Nullable<std::string> VAT;
+    Nullable<std::string> ident;
     struct IdentType
     {
         enum Enum
@@ -76,24 +75,33 @@ struct InfoContactLocalizedOutputData
             birthday
         };
     };
-    Nullable< IdentType::Enum > identtype;
-    Nullable< std::string > auth_info_pw;
-    boost::optional< ContactDisclose > disclose;
+    Nullable<IdentType::Enum> identtype;
+    Nullable<std::string> auth_info_pw;
+    boost::optional<ContactDisclose> disclose;
+
+    InfoContactLocalizedOutputData(const boost::optional<ContactDisclose>& _disclose)
+    :   disclose(_disclose)
+    { }
 };
 
 struct InfoContactLocalizedResponse
 {
-    InfoContactLocalizedResponse(const LocalizedSuccessResponse &_ok_response,
-                                 const InfoContactLocalizedOutputData &_payload);
     const LocalizedSuccessResponse ok_response;
-    const InfoContactLocalizedOutputData payload;
+    const InfoContactLocalizedOutputData data;
+
+    InfoContactLocalizedResponse(
+        const LocalizedSuccessResponse& _ok_response,
+        const InfoContactLocalizedOutputData& _data)
+    :   ok_response(_ok_response),
+        data(_data)
+    { }
 };
 
 InfoContactLocalizedResponse info_contact_localized(
-    const std::string &_handle,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
-    const std::string &_server_transaction_handle);
+        const std::string& _handle,
+        unsigned long long _registrar_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle);
 
 } // namespace Epp::Contact
 } // namespace Epp

@@ -20,8 +20,8 @@
  *  @file
  */
 
-#include "src/epp/keyset/check_keyset.h"
 #include "src/epp/keyset/check_keyset_localized.h"
+#include "src/epp/keyset/check_keyset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/exception.h"
@@ -34,7 +34,6 @@
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
-#include <boost/optional.hpp>
 #include <boost/format/free_funcs.hpp>
 
 #include <map>
@@ -47,36 +46,36 @@ namespace Keyset {
 namespace Localized {
 
 CheckKeysetLocalizedResponse check_keyset_localized(
-    const std::set< std::string >& _keyset_handles,
-    const unsigned long long _registrar_id,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle)
+        const std::set<std::string>& _keyset_handles,
+        const unsigned long long _registrar_id,
+        const SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle)
 {
     try {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast< unsigned >(Action::CheckKeyset)));
+        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckKeyset)));
 
         Fred::OperationContextCreator ctx;
 
-        const std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > > check_keyset_results =
-            check_keyset(
-                    ctx,
-                    _keyset_handles,
-                    _registrar_id);
+        const std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> > check_keyset_results =
+                check_keyset(
+                        ctx,
+                        _keyset_handles,
+                        _registrar_id);
 
         const LocalizedSuccessResponse ok_response =
-            create_localized_success_response(
-                    ctx,
-                    Response::ok,
-                    _lang);
+                create_localized_success_response(
+                        ctx,
+                        Response::ok,
+                        _lang);
 
         const CheckKeysetLocalizedResponse::Results localized_check_keyset_results =
-            localize_check_results<KeysetHandleRegistrationObstruction, CheckKeysetLocalizedResponse::Result, Nullable>(
-                    ctx,
-                    check_keyset_results,
-                    _lang);
+                localize_check_results<KeysetHandleRegistrationObstruction, CheckKeysetLocalizedResponse::Result, Nullable>(
+                        ctx,
+                        check_keyset_results,
+                        _lang);
 
         return CheckKeysetLocalizedResponse(
                 ok_response,
@@ -96,7 +95,7 @@ CheckKeysetLocalizedResponse check_keyset_localized(
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,
-                std::set< Error >(),
+                std::set<Error>(),
                 _lang);
     }
     catch (...) {
@@ -105,7 +104,7 @@ CheckKeysetLocalizedResponse check_keyset_localized(
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,
-                std::set< Error >(),
+                std::set<Error>(),
                 _lang);
     }
 }

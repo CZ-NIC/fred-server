@@ -2388,7 +2388,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
         );
 
         ccReg::Contact_var info_result = new ccReg::Contact;
-        Corba::wrap_InfoContactLocalizedOutputData(response.payload, info_result.inout());
+        Corba::wrap_InfoContactLocalizedOutputData(response.data, info_result.inout());
         ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
@@ -2668,7 +2668,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
             server_transaction_handle
         );
 
-        ccReg::NSSet_var info_result = new ccReg::NSSet( Corba::wrap_localized_info_nsset(response.payload) );
+        ccReg::NSSet_var info_result = new ccReg::NSSet( Corba::wrap_localized_info_nsset(response.data) );
         ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
@@ -3109,17 +3109,17 @@ ccReg_EPP_i::KeySetInfo(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::Keyset::Localized::InfoResult info_result =
+        const Epp::Keyset::Localized::InfoKeysetLocalizedResponse response =
             Epp::Keyset::Localized::info_keyset_localized(keyset_handle,
                                                           session_data.registrar_id,
                                                           session_data.language,
                                                           server_transaction_handle);
 
         ccReg::KeySet_var keyset = new ccReg::KeySet;
-        Corba::wrap_Epp_Keyset_Localized_InfoData(info_result.data, keyset);
+        Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(response.data, keyset);
 
         ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(info_result.response,
+        Corba::wrap_Epp_LocalizedSuccessResponse(response.ok_response,
                                                  server_transaction_handle,
                                                  return_value);
 

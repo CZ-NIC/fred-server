@@ -35,7 +35,7 @@
 namespace Epp {
 namespace Keyset {
 
-struct InfoKeysetData
+struct InfoKeysetOutputData
 {
     typedef std::set< Fred::Object_State::Enum > States;
     typedef std::set< Keyset::DsRecord > DsRecords;

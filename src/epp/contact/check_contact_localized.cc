@@ -21,8 +21,8 @@
  */
 
 #include "src/epp/contact/check_contact_localized.h"
-
 #include "src/epp/contact/check_contact.h"
+
 #include "src/epp/contact/impl/contact_handle_registration_obstruction.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/exception.h"
@@ -35,6 +35,7 @@
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
+#include <boost/optional.hpp>
 
 #include <map>
 #include <set>
@@ -44,15 +45,15 @@
 namespace Epp {
 namespace Contact {
 
-typedef std::map< std::string, Nullable< ContactHandleRegistrationObstruction::Enum > > HandleToObstruction;
-typedef std::map< std::string, boost::optional< ContactHandleLocalizedRegistrationObstruction > > HandleToLocalizedObstruction;
+typedef std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > HandleToObstruction;
+typedef std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> > HandleToLocalizedObstruction;
 
 CheckContactLocalizedResponse check_contact_localized(
-    const std::set<std::string>& _contact_handles,
-    const unsigned long long _registrar_id,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle
-) {
+        const std::set<std::string>& _contact_handles,
+        const unsigned long long _registrar_id,
+        const SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle)
+{
     try {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
@@ -62,27 +63,26 @@ CheckContactLocalizedResponse check_contact_localized(
         Fred::OperationContextCreator ctx;
 
         const HandleToObstruction check_contact_results =
-            check_contact(
-                    ctx,
-                    _contact_handles,
-                    _registrar_id);
+                check_contact(
+                        ctx,
+                        _contact_handles,
+                        _registrar_id);
 
         const LocalizedSuccessResponse ok_response =
-            create_localized_success_response(
-                    ctx,
-                    Response::ok,
-                    _lang);
+                create_localized_success_response(
+                        ctx,
+                        Response::ok,
+                        _lang);
 
         const HandleToLocalizedObstruction localized_check_contact_results =
-            localize_check_results<ContactHandleRegistrationObstruction, ContactHandleLocalizedRegistrationObstruction, boost::optional>(
-                    ctx,
-                    check_contact_results,
-                    _lang);
+                localize_check_results<ContactHandleRegistrationObstruction, ContactHandleLocalizedRegistrationObstruction, boost::optional>(
+                        ctx,
+                        check_contact_results,
+                        _lang);
 
         return CheckContactLocalizedResponse(
                 ok_response,
                 localized_check_contact_results);
-
     }
     catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;

@@ -21,7 +21,7 @@ namespace Epp {
 namespace {
 
 std::string get_reason(
-    Fred::OperationContext &_ctx,
+    Fred::OperationContext& _ctx,
     Reason::Enum _reason,
     SessionLang::Enum _lang)
 {
@@ -52,7 +52,7 @@ std::string get_reason(
 }
 
 std::string get_response_msg(
-    Fred::OperationContext &_ctx,
+    Fred::OperationContext& _ctx,
     Response::Enum _response,
     SessionLang::Enum _lang)
 {
@@ -83,8 +83,8 @@ std::string get_response_msg(
 }
 
 std::set< LocalizedError > create_localized_errors(
-    Fred::OperationContext &_ctx,
-    const std::set< Error > &_errors,
+    Fred::OperationContext& _ctx,
+    const std::set< Error >& _errors,
     SessionLang::Enum _lang)
 {
     std::set< LocalizedError > result;
@@ -151,7 +151,7 @@ std::string get_ok_state_description(SessionLang::Enum _lang)
 }
 
 }
-std::map<std::string, std::string> get_object_state_descriptions(
+std::map<std::string, std::string> localize_object_states_deprecated(
     Fred::OperationContext& _ctx,
     const std::set<std::string>& _state_handles,
     const SessionLang::Enum _lang
@@ -184,16 +184,16 @@ std::map<std::string, std::string> get_object_state_descriptions(
     return result;
 }
 
-LocalizedStates get_localized_object_state(
-    Fred::OperationContext &_ctx,
-    const std::set< Fred::Object_State::Enum > &_states,
+ObjectStatesLocalized localize_object_states(
+    Fred::OperationContext& _ctx,
+    const std::set< Fred::Object_State::Enum >& _states,
     SessionLang::Enum _lang)
 {
     typedef std::vector< Fred::ObjectStateDescription > ObjectStateDescriptions;
     const ObjectStateDescriptions all_state_descriptions =
         Fred::GetObjectStateDescriptions(Conversion::Enums::to_db_handle(_lang)).exec(_ctx);
 
-    LocalizedStates states;
+    ObjectStatesLocalized states;
     for (ObjectStateDescriptions::const_iterator state_ptr = all_state_descriptions.begin();
          state_ptr != all_state_descriptions.end(); ++state_ptr)
     {

@@ -47,7 +47,7 @@
 
 namespace Corba {
 
-    std::vector<std::string> unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact & in);
+    std::vector<std::string> unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact&  in);
 
     std::vector<Epp::Nsset::DnsHostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
 
@@ -82,21 +82,21 @@ namespace Corba {
      */
     Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(const char* _src);
 
-    void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::Contact::ContactChange &dst);
+    void unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::ContactChange& dst);
 
     std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
 
-    std::vector< std::string > unwrap_TechContact_to_vector_string(const ccReg::TechContact &_tech_contacts);
+    std::vector< std::string > unwrap_TechContact_to_vector_string(const ccReg::TechContact& _tech_contacts);
 
     std::vector< Epp::Keyset::DsRecord > unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(
-        const ccReg::DSRecord &_ds_records);
+        const ccReg::DSRecord& _ds_records);
 
-    void unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str &_src, Epp::Keyset::DsRecord &_dst);
+    void unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str& _src, Epp::Keyset::DsRecord& _dst);
 
     std::vector< Epp::Keyset::DnsKey > unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(
-        const ccReg::DNSKey &_dns_keys);
+        const ccReg::DNSKey& _dns_keys);
 
-    void unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str &_src, Epp::Keyset::DnsKey &_dst);
+    void unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str& _src, Epp::Keyset::DnsKey& _dst);
 
     Epp::RequestParams unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
 
@@ -105,13 +105,13 @@ namespace Corba {
 
     ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
 
-    void wrap_Epp_LocalizedSuccessResponse(const Epp::LocalizedSuccessResponse &_src,
-                                           const std::string &_server_transaction_handle,
-                                           ccReg::Response &_dst);
+    void wrap_Epp_LocalizedSuccessResponse(const Epp::LocalizedSuccessResponse& _src,
+                                           const std::string& _server_transaction_handle,
+                                           ccReg::Response& _dst);
 
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
 
-    void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData &src, ccReg::Contact &dst);
+    void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData& src, ccReg::Contact& dst);
 
     ccReg::NSSet wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input );
 
@@ -127,15 +127,15 @@ namespace Corba {
      * @returns data ordered the same way as input handles
      */
     void wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
-        const std::vector< std::string > &handles,
-        const Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results &check_results,
-        ccReg::CheckResp &dst);
+        const std::vector< std::string >& handles,
+        const Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results& check_results,
+        ccReg::CheckResp& dst);
 
-    void wrap_Epp_LocalizedStates(const Epp::LocalizedStates &_src, ccReg::Status &_dst);
+    void wrap_Epp_ObjectStatesLocalized(const Epp::ObjectStatesLocalized& _src, ccReg::Status& _dst);
 
-    void wrap_Epp_InfoKeysetData_TechContacts(const Epp::Keyset::InfoKeysetData::TechContacts &_src, ccReg::TechContact &_dst);
+    void wrap_Epp_InfoKeysetOutputData_TechContacts(const Epp::Keyset::InfoKeysetOutputData::TechContacts& _src, ccReg::TechContact& _dst);
 
-    void wrap_Epp_Keyset_Localized_InfoData(const Epp::Keyset::Localized::InfoData &_src, ccReg::KeySet &_dst);
+    void wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(const Epp::Keyset::Localized::InfoKeysetLocalizedOutputData& _src, ccReg::KeySet& _dst);
 
     /**
      * @returns data ordered the same way as input nsset_handles

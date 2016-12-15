@@ -32,7 +32,7 @@ namespace Keyset {
 /**
  * @throws NonexistentHandle
  */
-InfoKeysetData info_keyset(Fred::OperationContext &_ctx,
+InfoKeysetOutputData info_keyset(Fred::OperationContext &_ctx,
                            const std::string &_keyset_handle,
                            unsigned long long _registrar_id);
 

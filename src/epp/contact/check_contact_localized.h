@@ -26,15 +26,18 @@
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/contact/impl/contact_handle_registration_obstruction.h"
-#include "util/db/nullable.h"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
+
+#include <map>
+#include <set>
+#include <string>
 
 namespace Epp {
 namespace Contact {
 
-struct ContactHandleLocalizedRegistrationObstruction {
+struct ContactHandleLocalizedRegistrationObstruction
+{
     const ContactHandleRegistrationObstruction::Enum state;
     const std::string description;
 
@@ -47,13 +50,14 @@ struct ContactHandleLocalizedRegistrationObstruction {
     { }
 };
 
-struct CheckContactLocalizedResponse {
+struct CheckContactLocalizedResponse
+{
     const LocalizedSuccessResponse ok_response;
-    const std::map< std::string, boost::optional< ContactHandleLocalizedRegistrationObstruction > > contact_statuses;
+    const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> > contact_statuses;
 
     CheckContactLocalizedResponse(
         const LocalizedSuccessResponse& _ok_response,
-        const std::map< std::string, boost::optional< ContactHandleLocalizedRegistrationObstruction > >& _contact_statuses
+        const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> >& _contact_statuses
     ) :
         ok_response(_ok_response),
         contact_statuses(_contact_statuses)
@@ -61,11 +65,10 @@ struct CheckContactLocalizedResponse {
 };
 
 CheckContactLocalizedResponse check_contact_localized(
-    const std::set<std::string>& _contact_handles,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle
-);
+        const std::set<std::string>& _contact_handles,
+        unsigned long long _registrar_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle);
 
 } // namespace Epp::Contact
 } // namespace Epp

@@ -1,60 +1,110 @@
+/*
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file
+ */
+
 #include "src/epp/keyset/info_keyset_localized.h"
 #include "src/epp/keyset/info_keyset.h"
+
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/localization.h"
-
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
+#include <boost/format/free_funcs.hpp>
+
+#include <set>
+#include <vector>
 
 namespace Epp {
 namespace Keyset {
 namespace Localized {
 
-InfoResult info_keyset_localized(
-    const std::string &_keyset_handle,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
-    const std::string &_server_transaction_handle)
+InfoKeysetLocalizedResponse info_keyset_localized(
+        const std::string& _keyset_handle,
+        const unsigned long long _registrar_id,
+        const SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle)
 {
-    Logging::Context logging_ctx1("rifd");
-    Logging::Context logging_ctx2(str(boost::format("clid-%1%") % _registrar_id));
-    Logging::Context logging_ctx3(_server_transaction_handle);
-    Logging::Context logging_ctx4(str(boost::format("action-%1%") % static_cast< unsigned >(Action::InfoKeyset)));
+    // since no changes are comitted this transaction is reused for everything
+    Fred::OperationContextCreator ctx;
 
     try {
+        Logging::Context logging_ctx1("rifd");
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
+        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoKeyset)));
+
         Fred::OperationContextCreator ctx;
-        const InfoKeysetData keyset_info_data = info_keyset(ctx, _keyset_handle, _registrar_id);
-        InfoData data;
-        data.handle = keyset_info_data.handle;
-        data.roid = keyset_info_data.roid;
-        data.sponsoring_registrar_handle = keyset_info_data.sponsoring_registrar_handle;
-        data.creating_registrar_handle = keyset_info_data.creating_registrar_handle;
-        data.last_update_registrar_handle = keyset_info_data.last_update_registrar_handle;
-        data.states = get_localized_object_state(ctx, keyset_info_data.states, _lang);
-        data.crdate = keyset_info_data.crdate;
-        data.last_update = keyset_info_data.last_update;
-        data.last_transfer = keyset_info_data.last_transfer;
-        data.auth_info_pw = keyset_info_data.auth_info_pw;
-        data.ds_records = keyset_info_data.ds_records;
-        data.dns_keys = keyset_info_data.dns_keys;
-        data.tech_contacts = keyset_info_data.tech_contacts;
-        const InfoResult result(data, create_localized_success_response(ctx, Response::ok, _lang));
-        ctx.commit_transaction();
-        return result;
+        const InfoKeysetOutputData info_keyset_data =
+                info_keyset(
+                        ctx,
+                        _keyset_handle,
+                        _registrar_id);
+
+        return InfoKeysetLocalizedResponse(
+                create_localized_success_response(
+                        ctx,
+                        Response::ok,
+                        _lang),
+                InfoKeysetLocalizedOutputData(
+                        info_keyset_data.handle,
+                        info_keyset_data.roid,
+                        info_keyset_data.sponsoring_registrar_handle,
+                        info_keyset_data.creating_registrar_handle,
+                        info_keyset_data.last_update_registrar_handle,
+                        localize_object_states(ctx, info_keyset_data.states, _lang),
+                        info_keyset_data.crdate,
+                        info_keyset_data.last_update,
+                        info_keyset_data.last_transfer,
+                        info_keyset_data.auth_info_pw,
+                        info_keyset_data.ds_records,
+                        info_keyset_data.dns_keys,
+                        info_keyset_data.tech_contacts));
+
     }
     catch (const NonexistentHandle&) {
-        Fred::OperationContextCreator ctx;
-        ctx.get_log().info("localized_keyset_info failure: NonexistentHandle");
-        throw create_localized_fail_response(ctx, Response::object_not_exist, std::set< Error >(), _lang);
+        ctx.get_log().info("info_keyset_localized failure: NonexistentHandle");
+        throw create_localized_fail_response(
+                ctx,
+                Response::object_not_exist,
+                std::set<Error>(),
+                _lang);
     }
-    catch(const LocalizedFailResponse&) {
-        throw;
+    catch (const std::exception& e) {
+        ctx.get_log().info(std::string("info_keyset_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+                ctx,
+                Response::failed,
+                std::set<Error>(),
+                _lang);
     }
-    catch(...) {
-        Fred::OperationContextCreator ctx;
-        ctx.get_log().info("localized_keyset_info failure: unexpected exception");
-        throw create_localized_fail_response(ctx, Response::failed, std::set< Error >(), _lang);
+    catch (...) {
+        ctx.get_log().info("info_keyset_localized failure: unexpected exception");
+        throw create_localized_fail_response(
+                ctx,
+                Response::failed,
+                std::set<Error>(),
+                _lang);
     }
 }
 

@@ -37,7 +37,8 @@
 namespace Epp {
 namespace Nsset {
 
-struct InfoNssetLocalizedOutputData {
+struct InfoNssetLocalizedOutputData
+{
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -65,8 +66,8 @@ struct InfoNssetLocalizedOutputData {
         const Nullable<std::string>& _auth_info_pw,
         const std::vector<DnsHostOutput>& _dns_host,
         const std::vector<std::string>& _tech_contacts,
-        short _tech_check_level
-    ) :
+        short _tech_check_level)
+    :
         handle(_handle),
         roid(_roid),
         sponsoring_registrar_handle(_sponsoring_registrar_handle),
@@ -83,25 +84,25 @@ struct InfoNssetLocalizedOutputData {
     { }
 };
 
-struct InfoNssetLocalizedResponse {
+struct InfoNssetLocalizedResponse
+{
     const LocalizedSuccessResponse ok_response;
-    const InfoNssetLocalizedOutputData payload;
+    const InfoNssetLocalizedOutputData data;
 
     InfoNssetLocalizedResponse(
         const LocalizedSuccessResponse& _ok_response,
-        const InfoNssetLocalizedOutputData& _payload
-    ) :
+        const InfoNssetLocalizedOutputData& _data)
+    :
         ok_response(_ok_response),
-        payload(_payload)
+        data(_data)
     { }
 };
 
 InfoNssetLocalizedResponse info_nsset_localized(
-    const std::string& _handle,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle
-);
+        const std::string& _handle,
+        unsigned long long _registrar_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle);
 
 } // namespace Epp::Nsset
 } // namespace Epp

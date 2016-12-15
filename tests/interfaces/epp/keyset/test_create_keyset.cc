@@ -166,7 +166,7 @@ void check_created_keyset(const KeysetCreateData &data)
 {
     try {
         Fred::OperationContextCreator ctx;
-        const Epp::Keyset::InfoKeysetData info_data = Epp::Keyset::info_keyset(ctx, data.keyset_handle, data.registrar_id);
+        const Epp::Keyset::InfoKeysetOutputData info_data = Epp::Keyset::info_keyset(ctx, data.keyset_handle, data.registrar_id);
         ctx.commit_transaction();
         BOOST_CHECK(info_data.handle == data.keyset_handle);
         BOOST_CHECK(info_data.creating_registrar_handle == data.registrar_handle);
