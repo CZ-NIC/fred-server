@@ -22,16 +22,21 @@
 
 #include "src/epp/nsset/info_nsset.h"
 
-#include <fredlib/nsset.h>
-#include <fredlib/registrar.h>
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
 
 #include <boost/foreach.hpp>
+#include <boost/optional.hpp>
 
 #include <iterator>
+#include <string>
 #include <vector>
 #include <algorithm>
 
@@ -59,29 +64,34 @@ InfoNssetOutputData info_nsset(
     }
 
     try {
-        const Fred::InfoNssetData nsset_info_data = Fred::InfoNssetByHandle(_handle).exec(_ctx, "UTC").info_nsset_data;
+        const Fred::InfoNssetData info_nsset_data = Fred::InfoNssetByHandle(_handle).exec(_ctx, "UTC").info_nsset_data;
 
         //tech contact handle list
         std::vector<std::string> tech_contacts;
-        tech_contacts.reserve(nsset_info_data.tech_contacts.size());
-        BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_contact, nsset_info_data.tech_contacts) {
+        tech_contacts.reserve(info_nsset_data.tech_contacts.size());
+        BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_contact, info_nsset_data.tech_contacts) {
             tech_contacts.push_back(tech_contact.handle);
         }
 
+        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool callers_is_sponsoring_registrar = info_nsset_data.sponsoring_registrar_handle == callers_registrar_handle;
+        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
+
         return InfoNssetOutputData(
-            nsset_info_data.handle,
-            nsset_info_data.roid,
-            nsset_info_data.sponsoring_registrar_handle,
-            nsset_info_data.create_registrar_handle,
-            nsset_info_data.update_registrar_handle,
-            convert_object_states(Fred::GetObjectStates(nsset_info_data.id).exec(_ctx) ),
-            nsset_info_data.creation_time,
-            nsset_info_data.update_time,
-            nsset_info_data.transfer_time,
-            nsset_info_data.authinfopw,
-            make_epp_dnshosts_output(nsset_info_data.dns_hosts),
+            info_nsset_data.handle,
+            info_nsset_data.roid,
+            info_nsset_data.sponsoring_registrar_handle,
+            info_nsset_data.create_registrar_handle,
+            info_nsset_data.update_registrar_handle,
+            convert_object_states(Fred::GetObjectStates(info_nsset_data.id).exec(_ctx) ),
+            info_nsset_data.creation_time,
+            info_nsset_data.update_time,
+            info_nsset_data.transfer_time,
+            // show object authinfo only to sponsoring registrar
+            authinfo_has_to_be_hidden ? boost::optional<std::string>() : info_nsset_data.authinfopw,
+            make_epp_dnshosts_output(info_nsset_data.dns_hosts),
             tech_contacts,
-            nsset_info_data.tech_check_level.get_value_or(0)
+            info_nsset_data.tech_check_level.get_value_or(0)
         );
 
     } catch (const Fred::InfoNssetByHandle::Exception& e) {

@@ -29,10 +29,12 @@
 #include "src/fredlib/contact/info_contact_data.h"
 #include "util/db/nullable.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include <string>
 #include <set>
 #include <vector>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
 namespace Contact {
@@ -64,7 +66,7 @@ struct InfoContactOutputData
     Nullable< std::string > notify_email;
     Nullable< std::string > VAT;
     boost::optional< Fred::PersonalIdUnion > personal_id;
-    std::string auth_info_pw;
+    boost::optional< std::string > auth_info_pw;
     boost::optional< ContactDisclose > disclose;
 };
 

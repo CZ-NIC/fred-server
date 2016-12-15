@@ -23,15 +23,17 @@
 #ifndef EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
 #define EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
 
+#include "src/epp/nsset/impl/dns_host_output.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
+#include <boost/asio/ip/address.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/asio/ip/address.hpp>
-#include "src/epp/nsset/impl/dns_host_output.h"
 
 namespace Epp {
 namespace Nsset {
@@ -46,11 +48,10 @@ struct InfoNssetOutputData {
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
-    std::string auth_info_pw;
+    boost::optional<std::string> auth_info_pw;
     std::vector<DnsHostOutput> dns_hosts;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
-
 
     InfoNssetOutputData(
         const std::string& _handle,
@@ -62,7 +63,7 @@ struct InfoNssetOutputData {
         const boost::posix_time::ptime& _crdate,
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const std::string& _auth_info_pw,
+        const boost::optional<std::string>& _auth_info_pw,
         const std::vector<DnsHostOutput>& _dns_hosts,
         const std::vector<std::string>& _tech_contacts,
         short _tech_check_level

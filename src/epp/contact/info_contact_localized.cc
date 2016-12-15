@@ -31,7 +31,6 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/registrar/info_registrar.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -99,10 +98,6 @@ InfoContactLocalizedResponse info_contact_localized(
                     _contact_handle,
                     _lang,
                     _registrar_id);
-
-        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle;
-        const bool callers_is_sponsoring_registrar = info_contact_data.sponsoring_registrar_handle == callers_registrar_handle;
-        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
 
         InfoContactLocalizedOutputData output_data(info_contact_data.disclose);
         output_data.handle                       = info_contact_data.handle;
@@ -174,7 +169,7 @@ InfoContactLocalizedResponse info_contact_localized(
                 throw std::runtime_error("Invalid ident type.");
             }
         }
-        output_data.auth_info_pw      = authinfo_has_to_be_hidden ? Nullable<std::string>() : info_contact_data.auth_info_pw;
+        output_data.auth_info_pw      = info_contact_data.auth_info_pw;
 
         return InfoContactLocalizedResponse(
                 create_localized_success_response(

@@ -64,7 +64,8 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
 static void check_equal(const Epp::Nsset::InfoNssetOutputData& nsset_data, const Fred::InfoNssetData& info_data) {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( nsset_data.handle ), info_data.handle );
 
-    BOOST_CHECK_EQUAL( nsset_data.auth_info_pw, info_data.authinfopw );
+    BOOST_REQUIRE(nsset_data.auth_info_pw);
+    BOOST_CHECK_EQUAL( nsset_data.auth_info_pw.value(), info_data.authinfopw );
 
     BOOST_CHECK_EQUAL( nsset_data.dns_hosts.size(), info_data.dns_hosts.size() );
     for(std::size_t i = 0; i < nsset_data.dns_hosts.size(); ++i)

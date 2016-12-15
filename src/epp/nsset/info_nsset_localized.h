@@ -25,14 +25,16 @@
 
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
+#include "src/epp/nsset/impl/dns_host_output.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
+#include <boost/asio/ip/address.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/asio/ip/address.hpp>
-#include "src/epp/nsset/impl/dns_host_output.h"
 
 namespace Epp {
 namespace Nsset {
@@ -48,7 +50,7 @@ struct InfoNssetLocalizedOutputData
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
-    Nullable<std::string> auth_info_pw;
+    boost::optional<std::string> auth_info_pw;
     std::vector<DnsHostOutput> dns_host;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
@@ -63,7 +65,7 @@ struct InfoNssetLocalizedOutputData
         const boost::posix_time::ptime& _crdate,
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const Nullable<std::string>& _auth_info_pw,
+        const boost::optional<std::string>& _auth_info_pw,
         const std::vector<DnsHostOutput>& _dns_host,
         const std::vector<std::string>& _tech_contacts,
         short _tech_check_level)

@@ -32,7 +32,6 @@
 #include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/registrar/info_registrar.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -67,11 +66,6 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         _nsset_handle,
                         _lang,
                         _registrar_id);
-
-        // show object authinfo only to sponsoring registrar
-        if(info_nsset_data.sponsoring_registrar_handle != Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle) {
-            info_nsset_data.auth_info_pw = std::string();
-        }
 
         // hide internal states
         {

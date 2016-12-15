@@ -1,15 +1,19 @@
 #include "src/epp/impl/disclose_policy.h"
 #include "src/epp/contact/info_contact.h"
 
+#include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
-
-#include <fredlib/contact.h>
-#include <fredlib/registrar.h>
+#include "util/db/nullable.h"
+#include "src/fredlib/contact.h"
+#include "src/fredlib/registrar.h"
 
 #include <boost/foreach.hpp>
+
+#include <string>
+
 
 namespace Epp {
 namespace Contact {
@@ -175,7 +179,13 @@ InfoContactOutputData info_contact(
         output_data.notify_email      = info.notifyemail;
         output_data.VAT               = info.vat;
         output_data.personal_id       = get_personal_id(info.ssn, info.ssntype);
-        output_data.auth_info_pw      = info.authinfopw;
+
+        // show object authinfo only to sponsoring registrar
+        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool callers_is_sponsoring_registrar = info.sponsoring_registrar_handle == callers_registrar_handle;
+        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
+        output_data.auth_info_pw      = authinfo_has_to_be_hidden ? boost::optional<std::string>() : info.authinfopw;
+
         return output_data;
 
     } catch (const Fred::InfoContactByHandle::Exception& e) {

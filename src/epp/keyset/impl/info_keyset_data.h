@@ -28,9 +28,11 @@
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include <string>
 #include <set>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
 namespace Keyset {
@@ -51,7 +53,7 @@ struct InfoKeysetOutputData
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable< boost::posix_time::ptime > last_update; ///< Date and time of last change
     Nullable< boost::posix_time::ptime > last_transfer; ///< Date and time of last transfer
-    Nullable< std::string > auth_info_pw; ///< Password for keyset transfer
+    boost::optional<std::string> auth_info_pw; ///< Password for keyset transfer
     DsRecords ds_records; ///< List of ds records
     DnsKeys dns_keys; ///< List of dnskeys
     TechContacts tech_contacts; ///< List of technical contacts identifier

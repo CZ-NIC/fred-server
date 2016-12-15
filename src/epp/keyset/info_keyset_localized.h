@@ -30,6 +30,8 @@
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
 
+#include <boost/optional.hpp>
+
 namespace Epp {
 namespace Keyset {
 namespace Localized {
@@ -45,7 +47,7 @@ struct InfoKeysetLocalizedOutputData
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
     Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
-    Nullable<std::string> auth_info_pw; ///< Password for keyset transfer
+    boost::optional<std::string> auth_info_pw; ///< Password for keyset transfer
     InfoKeysetOutputData::DsRecords ds_records; ///< List of ds records
     InfoKeysetOutputData::DnsKeys dns_keys; ///< List of dnskeys
     InfoKeysetOutputData::TechContacts tech_contacts; ///< List of technical contacts identifier
@@ -60,7 +62,7 @@ struct InfoKeysetLocalizedOutputData
         const boost::posix_time::ptime& _crdate,
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const Nullable<std::string>& _auth_info_pw,
+        const boost::optional<std::string>& _auth_info_pw,
         const InfoKeysetOutputData::DsRecords& _ds_records,
         const InfoKeysetOutputData::DnsKeys& _dns_keys,
         const InfoKeysetOutputData::TechContacts& _tech_contacts)

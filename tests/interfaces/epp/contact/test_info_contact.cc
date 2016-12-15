@@ -26,10 +26,11 @@
 #include "src/epp/impl/disclose_policy.h"
 #include "src/epp/contact/info_contact.h"
 
-#include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/optional.hpp>
+#include <boost/test/unit_test.hpp>
 
 namespace {
 
@@ -66,7 +67,9 @@ void check_equal(const Epp::Contact::InfoContactOutputData &epp_data, const Fred
     BOOST_CHECK_EQUAL(epp_data.personal_id.is_initialized() ? epp_data.personal_id->get_type() : "",
                       fred_data.ssntype.get_value_or_default());
 
-    BOOST_CHECK_EQUAL(epp_data.auth_info_pw,                        fred_data.authinfopw);
+    BOOST_REQUIRE(epp_data.auth_info_pw);
+    BOOST_CHECK_EQUAL(epp_data.auth_info_pw.value(),                        fred_data.authinfopw);
+
     BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::name         >(epp_data), fred_data.disclosename);
     BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::organization >(epp_data), fred_data.discloseorganization);
     BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::address      >(epp_data), fred_data.discloseaddress);

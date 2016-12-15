@@ -33,8 +33,8 @@ namespace Keyset {
  * @throws NonexistentHandle
  */
 InfoKeysetOutputData info_keyset(Fred::OperationContext &_ctx,
-                           const std::string &_keyset_handle,
-                           unsigned long long _registrar_id);
+                                 const std::string &_keyset_handle,
+                                 unsigned long long _registrar_id);
 
 } // namespace Epp::Keyset
 } // namespace Epp

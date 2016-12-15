@@ -171,9 +171,9 @@ void check_created_keyset(const KeysetCreateData &data)
         BOOST_CHECK(info_data.handle == data.keyset_handle);
         BOOST_CHECK(info_data.creating_registrar_handle == data.registrar_handle);
         BOOST_CHECK(info_data.sponsoring_registrar_handle == data.registrar_handle);
-        BOOST_REQUIRE(!info_data.auth_info_pw.isnull());
-        BOOST_CHECK(!info_data.auth_info_pw.get_value().empty());
-        BOOST_CHECK(!data.auth_info_pw.isset() || (info_data.auth_info_pw.get_value() == data.auth_info_pw.get_value()));
+        BOOST_REQUIRE(info_data.auth_info_pw);
+        BOOST_CHECK(!info_data.auth_info_pw.value().empty());
+        BOOST_CHECK(!data.auth_info_pw.isset() || (info_data.auth_info_pw.value() == data.auth_info_pw.get_value()));
         BOOST_CHECK(info_data.tech_contacts.size() == data.tech_contacts.size());
         BOOST_CHECK(!info_data.tech_contacts.empty());
         for (std::vector< std::string >::const_iterator tech_contact_ptr = data.tech_contacts.begin();

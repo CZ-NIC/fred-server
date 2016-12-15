@@ -533,7 +533,7 @@ namespace Corba {
         dst.VAT = wrap_Nullable_string_to_string(src.VAT);
         dst.ident = wrap_Nullable_string_to_string(src.ident);
         dst.identtype = wrap_identtyp(src.identtype);
-        dst.AuthInfoPw = wrap_Nullable_string_to_string(src.auth_info_pw);
+        dst.AuthInfoPw = Corba::wrap_string_to_corba_string(src.auth_info_pw ? src.auth_info_pw.value() : std::string());
 
         if (!src.disclose.is_initialized()) {
             dst.DiscloseFlag           = ccReg::DISCL_EMPTY;
@@ -592,7 +592,7 @@ namespace Corba {
         // XXX IDL nonsense
         result.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_input.last_transfer);
 
-        result.AuthInfoPw = Corba::wrap_string_to_corba_string(_input.auth_info_pw.get_value_or_default());
+        result.AuthInfoPw = Corba::wrap_string_to_corba_string(_input.auth_info_pw ? _input.auth_info_pw.value() : std::string());
 
         {
             result.dns.length( _input.dns_host.size() );
@@ -835,7 +835,7 @@ namespace Corba {
         _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
         _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);
         _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);
-        _dst.AuthInfoPw = wrap_Nullable_string_to_string(_src.auth_info_pw);
+        _dst.AuthInfoPw = wrap_string_to_corba_string(_src.auth_info_pw ? _src.auth_info_pw.value() : std::string());
         _dst.dsrec.length(0); // has to be empty
         wrap_Epp_InfoKeysetOutputData_DnsKeys(_src.dns_keys, _dst.dnsk);
         wrap_Epp_InfoKeysetOutputData_TechContacts(_src.tech_contacts, _dst.tech);

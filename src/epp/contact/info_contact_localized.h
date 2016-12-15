@@ -76,7 +76,7 @@ struct InfoContactLocalizedOutputData
         };
     };
     Nullable<IdentType::Enum> identtype;
-    Nullable<std::string> auth_info_pw;
+    boost::optional<std::string> auth_info_pw;
     boost::optional<ContactDisclose> disclose;
 
     InfoContactLocalizedOutputData(const boost::optional<ContactDisclose>& _disclose)
