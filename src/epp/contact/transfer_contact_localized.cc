@@ -29,76 +29,91 @@ LocalizedSuccessResponse transfer_contact_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long post_transfer_history_id = transfer_contact(
-            ctx,
-            _contact_handle,
-            _authinfopw,
-            _registrar_id,
-            _logd_request_id);
+        const unsigned long long post_transfer_history_id =
+                transfer_contact(
+                        ctx,
+                        _contact_handle,
+                        _authinfopw,
+                        _registrar_id,
+                        _logd_request_id);
 
-        const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
+        const LocalizedSuccessResponse result =
+                create_localized_success_response(
+                        ctx,
+                        Response::ok,
+                        _lang);
 
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
-            Notification::transferred,
-            post_transfer_history_id,
-            _registrar_id,
-            _server_transaction_handle,
-            _client_transaction_handle,
-            _epp_notification_disabled,
-            _client_transaction_handles_prefix_not_to_notify);
+                Notification::transferred,
+                post_transfer_history_id,
+                _registrar_id,
+                _server_transaction_handle,
+                _client_transaction_handle,
+                _epp_notification_disabled,
+                _client_transaction_handles_prefix_not_to_notify);
 
         return result;
 
     }
-    catch(const AuthErrorServerClosingConnection& e) {
+    catch(const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::authentication_error_server_closing_connection,
-            std::set<Error>(),
-            _lang);
+                exception_localization_ctx,
+                Response::authentication_error_server_closing_connection,
+                std::set<Error>(),
+                _lang);
     }
-    catch(const NonexistentHandle& e) {
+    catch(const NonexistentHandle&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::object_not_exist,
-            std::set<Error>(),
-            _lang);
+                exception_localization_ctx,
+                Response::object_not_exist,
+                std::set<Error>(),
+                _lang);
     }
-    catch(const ObjectNotEligibleForTransfer& e) {
+    catch(const ObjectNotEligibleForTransfer&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::not_eligible_for_transfer,
-            std::set<Error>(),
-            _lang);
+                exception_localization_ctx,
+                Response::not_eligible_for_transfer,
+                std::set<Error>(),
+                _lang);
     }
-    catch(const ObjectStatusProhibitsOperation& e) {
+    catch(const ObjectStatusProhibitsOperation&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::status_prohibits_operation,
-            std::set<Error>(),
-            _lang);
+                exception_localization_ctx,
+                Response::status_prohibits_operation,
+                std::set<Error>(),
+                _lang);
     }
-    catch(const AuthorizationError& e) {
+    catch(const AuthorizationInformationError&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::authorization_information_error,
-            std::set<Error>(),
-            _lang);
+                exception_localization_ctx,
+                Response::authorization_information_error,
+                std::set<Error>(),
+                _lang);
+    }
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("transfer_contact_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::failed,
+                std::set<Error>(),
+                _lang);
     }
     catch(...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in transfer_contact_localized function");
         throw create_localized_fail_response(
-            exception_localization_ctx,
-            Response::failed,
-            std::set<Error>(),
-            _lang);
+                exception_localization_ctx,
+                Response::failed,
+                std::set<Error>(),
+                _lang);
     }
 }
 
