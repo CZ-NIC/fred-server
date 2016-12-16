@@ -37,28 +37,30 @@ namespace Localized {
 
 struct ResponseOfCreate
 {
-    ResponseOfCreate(const LocalizedSuccessResponse &_response,
-                     const boost::posix_time::ptime &_crdate)
+    LocalizedSuccessResponse ok_response;
+    boost::posix_time::ptime crdate;
+
+    ResponseOfCreate(
+        const LocalizedSuccessResponse& _response,
+        const boost::posix_time::ptime& _crdate)
     :   ok_response(_response),
         crdate(_crdate)
     { }
-    LocalizedSuccessResponse ok_response;
-    boost::posix_time::ptime crdate;
 };
 
 ResponseOfCreate create_keyset_localized(
-    const std::string &_keyset_handle,
-    const Optional< std::string > &_auth_info_pw,
-    const std::vector< std::string > &_tech_contacts,
-    const std::vector< Keyset::DsRecord > &_ds_records,
-    const std::vector< Keyset::DnsKey > &_dns_keys,
-    unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id,
-    SessionLang::Enum _lang,
-    const std::string &_server_transaction_handle,
-    const std::string &_client_transaction_handle,
-    bool _epp_notification_disabled,
-    const std::string &_dont_notify_client_transaction_handles_with_this_prefix);
+        const std::string& _keyset_handle,
+        const Optional<std::string>& _auth_info_pw,
+        const std::vector<std::string>& _tech_contacts,
+        const std::vector<Keyset::DsRecord>& _ds_records,
+        const std::vector<Keyset::DnsKey>& _dns_keys,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        bool _epp_notification_disabled,
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
 
 } // namespace Epp::Keyset::Localized
 } // namespace Epp::Keyset

@@ -19,14 +19,14 @@ namespace Epp {
 namespace Nsset {
 
 CreateNssetLocalizedResponse create_nsset_localized(
-    const CreateNssetInputData& _data,
-    const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const bool _epp_notification_disabled,
-    const std::string& _client_transaction_handles_prefix_not_to_nofify)
+        const CreateNssetInputData& _data,
+        const unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id,
+        const SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        const bool _epp_notification_disabled,
+        const std::string& _client_transaction_handles_prefix_not_to_nofify)
 {
     try {
         Logging::Context logging_ctx("rifd");
@@ -37,19 +37,18 @@ CreateNssetLocalizedResponse create_nsset_localized(
         Fred::OperationContextCreator ctx;
 
         const CreateNssetResult impl_result(
-            create_nsset(ctx,
-                         _data,
-                         _registrar_id,
-                         _logd_request_id));
+                create_nsset(
+                        ctx,
+                        _data,
+                        _registrar_id,
+                        _logd_request_id));
 
         const CreateNssetLocalizedResponse localized_result(
-            create_localized_success_response(
-                ctx,
-                Response::ok,
-                _lang
-            ),
-            impl_result.crdate
-        );
+                create_localized_success_response(
+                        ctx,
+                        Response::ok,
+                        _lang),
+                impl_result.crdate);
 
         ctx.commit_transaction();
 
