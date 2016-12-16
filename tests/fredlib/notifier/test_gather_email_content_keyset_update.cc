@@ -207,11 +207,11 @@ BOOST_FIXTURE_TEST_CASE(test_big_update_from_full_data, has_keyset_big_update<ha
     etalon["changes.keyset.tech_c.new"]   = boost::join( extract::handles( new_keyset_data.tech_contacts ), " " );
 
     etalon["changes.keyset.dnskey"]         = "1";
-    etalon["changes.keyset.dnskey.old.0"]   = "(flags: 1 protocol: 1 algorithm: 1 key: da_key!!!)";
-    etalon["changes.keyset.dnskey.old.1"]   = "(flags: 2 protocol: 2 algorithm: 2 key: super_secret_key)";
-    etalon["changes.keyset.dnskey.new.0"]   = "(flags: 1 protocol: 1 algorithm: 1 key: da_key!!!)";
+    etalon["changes.keyset.dnskey.old.0"]   = "(flags: 1 protocol: 1 algorithm: 3 key: da_key!!!)";
+    etalon["changes.keyset.dnskey.old.1"]   = "(flags: 2 protocol: 2 algorithm: 3 key: super_secret_key)";
+    etalon["changes.keyset.dnskey.new.0"]   = "(flags: 1 protocol: 1 algorithm: 3 key: da_key!!!)";
     etalon["changes.keyset.dnskey.new.1"]   = "(flags: 3 protocol: 3 algorithm: 3 key: key_no_3)";
-    etalon["changes.keyset.dnskey.new.2"]   = "(flags: 2 protocol: 2 algorithm: 2 key: super_secret_key)";
+    etalon["changes.keyset.dnskey.new.2"]   = "(flags: 2 protocol: 2 algorithm: 3 key: super_secret_key)";
 
 
     check_maps_are_equal(

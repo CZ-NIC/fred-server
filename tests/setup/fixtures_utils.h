@@ -366,7 +366,7 @@ namespace Test {
 
         obj.set_authinfo(rnd.xnstring(15));
         obj.set_dns_keys(
-            boost::assign::list_of(Fred::DnsKey(1, 1, 1, "abcde"))
+            boost::assign::list_of(Fred::DnsKey(1, 1, 3, "abcde"))
         );
 
         return obj;
