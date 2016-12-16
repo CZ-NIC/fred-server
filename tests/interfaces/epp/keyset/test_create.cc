@@ -125,7 +125,7 @@ KeySetCreateData create_successfully_by(const Test::ObjectsProvider &objects_pro
             data.tech_contacts.push_back(objects_provider.get_contact(idx).handle);
         }
         static const unsigned long long logd_request_id = 12345;
-        data.dns_keys.push_back(Epp::KeySet::DnsKey(0, 3, 1, "bla="));
+        data.dns_keys.push_back(Epp::KeySet::DnsKey(0, 3, 8, "bla="));
         BOOST_CHECK(is_nondecreasing(Epp::KeySet::min_number_of_dns_keys, data.dns_keys.size(), Epp::KeySet::max_number_of_dns_keys));
         const Epp::KeysetCreateResult result = Epp::keyset_create(
             ctx,

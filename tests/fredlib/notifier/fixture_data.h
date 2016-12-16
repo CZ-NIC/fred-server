@@ -225,8 +225,8 @@ struct has_full_keyset : has_autocomitting_ctx {
                     .set_authinfo("AUT_H_I_NFO")
                     .set_dns_keys(
                         boost::assign::list_of
-                            ( Fred::DnsKey(1, 1, 1, "da_key!!!") )
-                            ( Fred::DnsKey(2, 2, 2, "super_secret_key") )
+                            ( Fred::DnsKey(1, 1, 3, "da_key!!!") )
+                            ( Fred::DnsKey(2, 2, 3, "super_secret_key") )
                     )
                     .set_tech_contacts(
                         boost::assign::list_of

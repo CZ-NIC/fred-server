@@ -24,9 +24,12 @@
 #ifndef DNS_KEY_H_3FB42F6AC9528E34ECA037A8A6EBB999//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define DNS_KEY_H_3FB42F6AC9528E34ECA037A8A6EBB999
 
+#include "src/fredlib/opcontext.h"
+
 #include <ctype.h>
 #include <string>
 #include <algorithm>
+#include <map>
 
 namespace Epp {
 namespace KeySet {
@@ -95,7 +98,16 @@ public:
         return alg_;
     }
 
-    bool is_alg_correct()const;
+    class AlgValidator
+    {
+    public:
+        AlgValidator(Fred::OperationContext &_ctx);
+        bool is_alg_correct(const DnsKey &_dns_key);
+    private:
+        Fred::OperationContext &ctx_;
+        typedef std::map< unsigned short, bool > AlgNumberToIsCorrect;
+        AlgNumberToIsCorrect alg_correctness_;
+    };
 
     /**
      * Key field getter.

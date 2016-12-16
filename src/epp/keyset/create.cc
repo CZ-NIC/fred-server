@@ -122,6 +122,7 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys,
         return false;
     }
 
+    KeySet::DnsKey::AlgValidator alg_validator(_ctx);
     typedef std::map< KeySet::DnsKey, unsigned short > DnsKeyIndex;
     DnsKeyIndex unique_dns_keys;
     Success correct = true;
@@ -171,7 +172,7 @@ Success check_dns_keys(const std::vector< KeySet::DnsKey > &_dns_keys,
             correct = false;
         }
 
-        if (!dns_key_ptr->is_alg_correct())
+        if (!alg_validator.is_alg_correct(*dns_key_ptr))
         {
             _param_errors.add_vector_parameter_error(Param::keyset_dnskey, idx, Reason::dnskey_bad_alg);
             correct = false;

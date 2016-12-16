@@ -1,6 +1,5 @@
 #include "src/epp/keyset/dns_key.h"
-
-#include <ctype.h>
+#include "src/fredlib/keyset/check_dns_key.h"
 
 namespace Epp {
 namespace KeySet {
@@ -118,10 +117,20 @@ bool DnsKey::is_protocol_correct()const
     return protocol_ == 3u;
 }
 
-//DNS key item alg occupies 8 bits => range <0, 255>
-bool DnsKey::is_alg_correct()const
+DnsKey::AlgValidator::AlgValidator(Fred::OperationContext &_ctx):ctx_(_ctx) { }
+
+bool DnsKey::AlgValidator::is_alg_correct(const DnsKey &_dns_key)
 {
-    return (0u <= alg_) && (alg_ <= 255u);
+    const unsigned short alg = _dns_key.get_alg();
+    const AlgNumberToIsCorrect::const_iterator alg_correctness_ptr = alg_correctness_.find(alg);
+    const bool alg_correctness_is_known = alg_correctness_ptr != alg_correctness_.end();
+    if (alg_correctness_is_known)
+    {
+        return alg_correctness_ptr->second;
+    }
+    const bool alg_is_correct = Fred::DnsSec::get_algorithm_usability(ctx_, alg) == Fred::DnsSec::Algorithm::usable;
+    alg_correctness_.insert(std::make_pair(alg, alg_is_correct));
+    return alg_is_correct;
 }
 
 DnsKey::CheckKey::Result DnsKey::check_key()const
