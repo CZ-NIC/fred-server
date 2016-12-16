@@ -120,11 +120,12 @@ void check_equal(const Epp::ContactCreateInputData &create_data, const Fred::Inf
     BOOST_CHECK_EQUAL(create_data.VAT,               info_data.vat.get_value_or_default());
     BOOST_CHECK_EQUAL(create_data.ident,             info_data.ssn.get_value_or_default());
 
-    BOOST_CHECK_EQUAL(create_data.identtype.isnull() ? ""
-                                                     : ident_type_to_string(create_data.identtype.get_value()),
-                      info_data.ssntype.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.identtype.isnull()
+        ? ""
+        : ident_type_to_string(create_data.identtype.get_value()),
+            info_data.ssntype.get_value_or_default());
 
-    BOOST_CHECK_EQUAL(create_data.authinfo,          info_data.authinfopw);
+    BOOST_CHECK_EQUAL(create_data.authinfo.value_or(std::string("not set")), info_data.authinfopw);
     BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::name         >(create_data), info_data.disclosename);
     BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::organization >(create_data), info_data.discloseorganization);
     BOOST_CHECK_EQUAL(to_disclose< Epp::ContactDisclose::Item::address      >(create_data), info_data.discloseaddress);

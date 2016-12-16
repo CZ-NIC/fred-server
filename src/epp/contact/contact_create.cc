@@ -54,7 +54,10 @@ ContactCreateInputData::ContactCreateInputData(const ContactChange &src)
     VAT(convert(src.vat)),
     ident(convert(src.ident)),
     identtype(src.ident_type),
-    authinfo(convert(src.auth_info_pw)),
+    authinfo(
+        (src.auth_info_pw.value_or(Nullable<std::string>()).isnull() )
+            ? boost::optional<std::string>()
+            : boost::optional<std::string>(convert(src.auth_info_pw))),
     disclose(src.disclose)
 {
     if (disclose.is_initialized()) {
