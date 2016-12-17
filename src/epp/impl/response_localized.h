@@ -33,14 +33,14 @@ namespace Epp {
 
     struct LocalizedSuccessResponse {
         const Response::Enum response;
-        const std::string localized_msg;
+        const std::string localized_response_description;
 
         LocalizedSuccessResponse(
             const Response::Enum& _response,
-            const std::string& _localized_msg
+            const std::string& _localized_response_description
         ) :
             response(_response),
-            localized_msg(_localized_msg)
+            localized_response_description(_localized_response_description)
         { }
     };
 
@@ -87,17 +87,17 @@ namespace std {
 namespace Epp {
     struct LocalizedFailResponse {
         const Response::Enum response;
-        const std::string localized_msg;
-        const std::set<LocalizedError> errors;
+        const std::string localized_response_description;
+        const std::set<LocalizedError> localized_errors;
 
         LocalizedFailResponse(
             const Response::Enum& _response,
-            const std::string& _localized_msg,
-            const std::set<LocalizedError>& _errors
+            const std::string& _localized_response_description,
+            const std::set<LocalizedError>& _localized_errors
         ) :
             response(_response),
-            localized_msg(_localized_msg),
-            errors(_errors)
+            localized_response_description(_localized_response_description),
+            localized_errors(_localized_errors)
         { }
     };
 }

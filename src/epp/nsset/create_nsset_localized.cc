@@ -104,7 +104,7 @@ CreateNssetLocalizedResponse create_nsset_localized(
                 e.get(),
                 _lang);
     }
-    catch(const RequiredParameterMissing& ) {
+    catch(const RequiredParameterMissing&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
