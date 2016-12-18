@@ -66,39 +66,53 @@ ObjectStatesLocalized localize_object_states(
         const std::set<Fred::Object_State::Enum>& _states,
         SessionLang::Enum _lang);
 
-std::string get_db_table_enum_reason_column_name_for_language(SessionLang::Enum _lang);
-std::string get_db_table_enum_error_column_name_for_language(SessionLang::Enum _lang);
-
-std::string convert_values_to_pg_array(const std::set<unsigned>& _input);
+std::string get_reason_description_localized_column_name(SessionLang::Enum _lang);
+std::string get_response_description_localized_column_name(SessionLang::Enum _lang);
 
 /**
  * @returns untyped postgres array
  * Caller should cast it properly before using in query.
  */
+std::string convert_values_to_pg_array(const std::set<unsigned>& _input);
+
 template <typename T>
-std::set<unsigned> convert_values_to_description_db_ids(const std::map<std::string, Nullable<typename T::Enum> >& _check_results) {
-    std::set<unsigned> states_ids;
-    for (typename std::map<std::string, Nullable<typename T::Enum> >::const_iterator result_ptr = _check_results.begin();
-         result_ptr != _check_results.end();
+std::set<unsigned> convert_reasons_to_reasons_descriptions_db_ids(const std::map<std::string, Nullable<typename T::Enum> >& _reasons) {
+    std::set<unsigned> reasons_descriptions_db_ids;
+    for (typename std::map<std::string, Nullable<typename T::Enum> >::const_iterator result_ptr = _reasons.begin();
+         result_ptr != _reasons.end();
          ++result_ptr)
     {
         if (!result_ptr->second.isnull()) {
-            states_ids.insert(to_description_db_id(T::to_reason(result_ptr->second.get_value())));
+            reasons_descriptions_db_ids.insert(to_description_db_id(T::to_reason(result_ptr->second.get_value())));
         }
     }
 
-    return states_ids;
+    return reasons_descriptions_db_ids;
 }
 
+/**
+* @brief Gives localized reasons descriptions for provided reasons IDs
+*
+* @tparam T  requested reason type
+* @param _ctx
+* @param _reasons_ids  IDs of reasons which will be localized
+* @param _lang
+*
+* @return  localized reasons descriptions
+*/
 template <typename T>
-std::map<typename T::Enum, std::string> get_reasons_descriptions(const Fred::OperationContext& _ctx, const std::set<unsigned>& _reasons_ids, const SessionLang::Enum _lang) {
-    std::map<typename T::Enum, std::string> result;
+std::map<typename T::Enum, std::string> get_reasons_descriptions_localized(
+        const Fred::OperationContext& _ctx,
+        const std::set<unsigned>& _reasons_ids,
+        const SessionLang::Enum _lang)
+{
+    std::map<typename T::Enum, std::string> reasons_descriptions_localized;
     if(!_reasons_ids.empty()) {
-        const std::string column_name = get_db_table_enum_reason_column_name_for_language(_lang);
+        const std::string reason_description_column_name = get_reason_description_localized_column_name(_lang);
         const Database::Result db_result = _ctx.get_conn().exec_params(
                 "SELECT "
                     "id AS reason_id, " +
-                    column_name + " AS reason_description "
+                    reason_description_column_name + " AS reason_description_localized "
                 "FROM enum_reason "
                 "WHERE id = ANY( $1::integer[] ) ",
                 Database::query_param_list(
@@ -110,55 +124,72 @@ std::map<typename T::Enum, std::string> get_reasons_descriptions(const Fred::Ope
         }
 
         for (::size_t i = 0; i < db_result.size(); ++i) {
-            const typename T::Enum reason = T::from_reason(from_description_db_id<Reason>(static_cast<unsigned>(db_result[i]["reason_id"])));
-            const std::string description = static_cast<std::string>(db_result[i]["reason_description"]);
-            result[reason] = description;
+
+            const typename T::Enum reason =
+                    T::from_reason(
+                            from_description_db_id<Reason>(
+                                    static_cast<unsigned>(db_result[i]["reason_id"])));
+
+            const std::string reason_description_localized =
+                    static_cast<std::string>(db_result[i]["reason_description_localized"]);
+
+            reasons_descriptions_localized[reason] = reason_description_localized;
+
         }
     }
-    return result;
+    return reasons_descriptions_localized;
 }
 
+/**
+* @brief Decorate each check results with localized reason description.
+*
+* @tparam F  from type (not localized check result type)
+* @tparam T  to type (localized check result type)
+* @tparam O  makes T either Optional or boost::optional
+* @param _ctx
+* @param _check_results
+* @param _lang
+*
+* @returns  localized check results
+*/
 template <typename F, typename T, template <class> class O>
 std::map<std::string, O<T> > localize_check_results(
         Fred::OperationContext& _ctx,
         const std::map<std::string, Nullable<typename F::Enum> >& _check_results,
         const SessionLang::Enum _lang)
 {
-    // get_localized_descriptions_of_obstruction
-    const std::map<typename F::Enum, std::string> reasons_descriptions =
-            get_reasons_descriptions<F>(
+    // get_localized_descriptions
+    const std::map<typename F::Enum, std::string> reasons_descriptions_localized =
+            get_reasons_descriptions_localized<F>(
                     _ctx,
-                    convert_values_to_description_db_ids<F>(_check_results),
+                    convert_reasons_to_reasons_descriptions_db_ids<F>(_check_results),
                     _lang);
 
     // for each check result
-    std::map<std::string, O<T> > localized_result;
-    for (typename std::map<std::string, Nullable<typename F::Enum> >::const_iterator check_ptr = _check_results.begin();
-         check_ptr != _check_results.end();
-         ++check_ptr)
+    std::map<std::string, O<T> > localized_results;
+    for (typename std::map<std::string, Nullable<typename F::Enum> >::const_iterator check_result = _check_results.begin();
+         check_result != _check_results.end();
+         ++check_result)
     {
         // keep handle
-        const std::string handle = check_ptr->first;
+        const std::string handle = check_result->first;
 
-        // but obstruction::Enum
+        // but reason
         Nullable<typename F::Enum>
-        obstruction = check_ptr->second;
+        const reason = check_result->second;
 
-        // convert to localized_obstruction (not Enum)
-        O<T>
-        localized_obstruction = obstruction.isnull()
+        // ...decorate with reason_description_localized
+        const O<T>
+        reason_description_localized = reason.isnull()
             ? O<T>()
-            : O<T>(
-                T(
-                    obstruction.get_value(),
-                    reasons_descriptions.at(obstruction.get_value())
-                )
-              );
+            : O<T>(T(
+                    reason.get_value(),
+                    reasons_descriptions_localized.at(reason.get_value())));
 
-        localized_result.insert(std::make_pair(handle, localized_obstruction));
+        localized_results.insert(std::make_pair(handle, reason_description_localized));
     }
 
-    return localized_result;
+    return localized_results;
 }
 
 } // namespace Epp

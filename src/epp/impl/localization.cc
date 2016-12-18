@@ -32,7 +32,7 @@ std::string get_reason_description(
     Reason::Enum _reason,
     SessionLang::Enum _lang)
 {
-    const std::string column_name = get_db_table_enum_reason_column_name_for_language(_lang);
+    const std::string column_name = get_reason_description_localized_column_name(_lang);
 
     const Database::Result res = _ctx.get_conn().exec_params(
         "SELECT " + column_name + " "
@@ -56,7 +56,7 @@ std::string get_response_description(
     Response::Enum _response,
     SessionLang::Enum _lang)
 {
-    const std::string column_name = get_db_table_enum_error_column_name_for_language(_lang);
+    const std::string column_name = get_response_description_localized_column_name(_lang);
 
     const Database::Result res = _ctx.get_conn().exec_params(
         "SELECT " + column_name + " "
@@ -200,7 +200,7 @@ ObjectStatesLocalized localize_object_states(
     return states;
 }
 
-std::string get_db_table_enum_reason_column_name_for_language(SessionLang::Enum _lang)
+std::string get_reason_description_localized_column_name(SessionLang::Enum _lang)
 {
     switch (_lang)
     {
@@ -213,7 +213,7 @@ std::string get_db_table_enum_reason_column_name_for_language(SessionLang::Enum 
     throw UnknownLocalizationLanguage();
 }
 
-std::string get_db_table_enum_error_column_name_for_language(SessionLang::Enum _lang)
+std::string get_response_description_localized_column_name(SessionLang::Enum _lang)
 {
     switch (_lang)
     {
