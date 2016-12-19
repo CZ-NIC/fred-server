@@ -1,3 +1,11 @@
+2016-12-19 (2.29.0)
+
+  * epp backend rewrite - domain methods
+
+  * epp backend keysets - add configuration of prohibited dnskey algorithms
+
+  * epp backend contacts - fix authorization error reason message (update operation)
+
 2016-10-09 (2.28.0)
 
   * epp backend rewrite - nsset and keyset methods
