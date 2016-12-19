@@ -43,7 +43,7 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_registrar_id, HasDomainData)
     BOOST_CHECK_THROW(
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             0,
             42
         ),
@@ -53,12 +53,12 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_registrar_id, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn_zone, HasDomainData)
 {
-    domain2_renew_input_data.value().fqdn = domain2_renew_input_data.value().fqdn + std::string("c");
+    (*domain2_renew_input_data).fqdn = (*domain2_renew_input_data).fqdn + std::string("c");
 
     try{
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(renew_fail_registrar_zone_access, HasDomainDataAndRegist
     BOOST_CHECK_THROW(
             Epp::domain_renew_impl(
                 ctx,
-                domain2_renew_input_data.value(),
+                *domain2_renew_input_data,
                 registrar_data_not_in_zone_.id,
                 42
             ),
@@ -105,13 +105,13 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(renew_invalid_curexpdate, HasDomainData)
 {
-    domain2_renew_input_data.value().current_exdate = boost::gregorian::to_iso_extended_string(
-    boost::gregorian::from_simple_string(domain2_renew_input_data.value().current_exdate) + boost::gregorian::days(1));
+    (*domain2_renew_input_data).current_exdate = boost::gregorian::to_iso_extended_string(
+    boost::gregorian::from_simple_string((*domain2_renew_input_data).current_exdate) + boost::gregorian::days(1));
 
     try{
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -132,12 +132,12 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_curexpdate, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(renew_neg_period, HasDomainData)
 {
-    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(-12,Epp::DomainRegistrationTime::Unit::month);
+    (*domain2_renew_input_data).period = Epp::DomainRegistrationTime(-12,Epp::DomainRegistrationTime::Unit::month);
 
     try{
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -158,12 +158,12 @@ BOOST_FIXTURE_TEST_CASE(renew_neg_period, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(renew_small_period, HasDomainData)
 {
-    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::month);
+    (*domain2_renew_input_data).period = Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::month);
 
     try{
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -184,12 +184,12 @@ BOOST_FIXTURE_TEST_CASE(renew_small_period, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(renew_big_period, HasDomainData)
 {
-    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(132,Epp::DomainRegistrationTime::Unit::month);
+    (*domain2_renew_input_data).period = Epp::DomainRegistrationTime(132,Epp::DomainRegistrationTime::Unit::month);
 
     try{
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -210,12 +210,12 @@ BOOST_FIXTURE_TEST_CASE(renew_big_period, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(renew_modulo_period, HasDomainData)
 {
-    domain2_renew_input_data.value().period = Epp::DomainRegistrationTime(25,Epp::DomainRegistrationTime::Unit::month);
+    (*domain2_renew_input_data).period = Epp::DomainRegistrationTime(25,Epp::DomainRegistrationTime::Unit::month);
 
     try{
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            (*domain2_renew_input_data),
             info_registrar_data_.id,
             42
         );
@@ -253,12 +253,12 @@ BOOST_FIXTURE_TEST_CASE(renew_empty_valexdate_enum, HasDomainData)
         42
     );
 
-    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
+    (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
 
     BOOST_CHECK_NO_THROW(
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         )
@@ -284,15 +284,15 @@ BOOST_FIXTURE_TEST_CASE(renew_special_valexdate_enum, HasDomainData)
         42
     );
 
-    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
-    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+    (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
+    (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension());
 
     try
     {
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -331,15 +331,15 @@ BOOST_FIXTURE_TEST_CASE(renew_yesterday_enum_valexdate, HasDomainData)
         42
     );
 
-    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
-    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+    (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
+    (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension(current_local_date - boost::gregorian::days(1), false));
 
     try
     {
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -378,15 +378,15 @@ BOOST_FIXTURE_TEST_CASE(renew_today_enum_valexdate, HasDomainData)
         42
     );
 
-    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
-    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+    (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
+    (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension(current_local_date, false));
 
     try
     {
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -425,14 +425,14 @@ BOOST_FIXTURE_TEST_CASE(renew_tomorrow_enum_valexdate, HasDomainData)
         42
     );
 
-    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
-    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+    (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
+    (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
         Epp::ENUMValidationExtension(current_local_date + boost::gregorian::days(1), false));
 
     BOOST_CHECK_NO_THROW(
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         ));
@@ -462,14 +462,14 @@ BOOST_FIXTURE_TEST_CASE(renew_max_enum_valexdate, HasDomainData)
         42
     );
 
-    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
-    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+    (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
+    (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
         Epp::ENUMValidationExtension(max_valexdate_renew, false));
 
     BOOST_CHECK_NO_THROW(
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         ));
@@ -499,15 +499,15 @@ BOOST_FIXTURE_TEST_CASE(renew_long_enum_valexdate, HasDomainData)
         42
     );
 
-    domain2_renew_input_data.value().fqdn = domain1_create_input_data.fqdn;
-    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+    (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
+    (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
         Epp::ENUMValidationExtension(max_valexdate_renew + boost::gregorian::days(1), false));
 
     try
     {
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -530,13 +530,13 @@ BOOST_FIXTURE_TEST_CASE(renew_long_enum_valexdate, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(renew_nonempty_valexdate_nonenum, HasDomainData)
 {
-    domain2_renew_input_data.value().enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
+    (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
         Epp::ENUMValidationExtension());
 
     try{
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         );
@@ -564,14 +564,14 @@ BOOST_FIXTURE_TEST_CASE(renew_status_prohibited, HasDomainData)
         "    (SELECT id FROM enum_object_states WHERE name = $2::text))"
         "  RETURNING object_id",
         Database::query_param_list
-            (domain2_renew_input_data.value().fqdn)
+            ((*domain2_renew_input_data).fqdn)
             (Fred::ObjectState::SERVER_RENEW_PROHIBITED));
     Fred::PerformObjectStateRequest(static_cast<unsigned long long>(res_id[0][0])).exec(ctx);
 
     BOOST_CHECK_THROW(
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42)
             , Epp::ObjectStatusProhibitsOperation
@@ -587,14 +587,14 @@ BOOST_FIXTURE_TEST_CASE(renew_status_delete, HasDomainData)
         "    (SELECT id FROM enum_object_states WHERE name = $2::text))"
         "  RETURNING object_id",
         Database::query_param_list
-            (domain2_renew_input_data.value().fqdn)
+            ((*domain2_renew_input_data).fqdn)
             (Fred::ObjectState::DELETE_CANDIDATE));
     Fred::PerformObjectStateRequest(static_cast<unsigned long long>(res_id[0][0])).exec(ctx);
 
     BOOST_CHECK_THROW(
         Epp::domain_renew_impl(
             ctx,
-            domain2_renew_input_data.value(),
+            *domain2_renew_input_data,
             info_registrar_data_.id,
             42)
             , Epp::ObjectStatusProhibitsOperation
@@ -607,12 +607,12 @@ BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
     Epp::DomainRenewResult renew_result =
     Epp::domain_renew_impl(
         ctx,
-        domain2_renew_input_data.value(),
+        *domain2_renew_input_data,
         info_registrar_data_.id,
         42
     );
 
-    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain2_renew_input_data.value().fqdn).exec(ctx, "UTC").info_domain_data;
+    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle((*domain2_renew_input_data).fqdn).exec(ctx, "UTC").info_domain_data;
 
     const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
             static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '2 year'::interval)::date")[0][0]));

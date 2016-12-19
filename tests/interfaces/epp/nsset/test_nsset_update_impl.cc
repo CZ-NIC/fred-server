@@ -328,7 +328,7 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
 
     if(update_data.tech_check_level)
     {
-        BOOST_CHECK_EQUAL( update_data.tech_check_level.value() , info_data.tech_check_level.get_value_or_default());
+        BOOST_CHECK_EQUAL( *update_data.tech_check_level, info_data.tech_check_level.get_value_or_default());
     }
 
 }
