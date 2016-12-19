@@ -1,8 +1,8 @@
 #include "src/epp/domain/domain_renew_impl.h"
 #include "src/epp/error.h"
-#include "src/epp/exception.h"
-#include "src/epp/exception_aggregate_param_errors.h"
-#include "src/epp/reason.h"
+#include "src/epp/impl/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
+#include "src/epp/impl/reason.h"
 #include "src/epp/impl/util.h"
 
 #include "src/fredlib/domain/renew_domain.h"

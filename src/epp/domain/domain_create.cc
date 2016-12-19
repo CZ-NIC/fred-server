@@ -1,13 +1,13 @@
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/epp/domain/domain_create.h"
-#include "src/epp/action.h"
-#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/domain/domain_create_impl.h"
 #include "src/epp/domain/domain_billing.h"
-#include "src/epp/exception.h"
-#include "src/epp/exception_aggregate_param_errors.h"
-#include "src/epp/localization.h"
-#include "src/epp/response.h"
+#include "src/epp/impl/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
+#include "src/epp/impl/localization.h"
+#include "src/epp/impl/response.h"
 
 #include "util/log/context.h"
 #include "util/decimal/decimal.h"
@@ -45,8 +45,8 @@ namespace Epp {
 
         const LocalizedCreateDomainResponse localized_result(
             create_localized_success_response(
-                Response::ok,
                 ctx,
+                Response::ok,
                 _lang
             ),
             impl_result.crtime,

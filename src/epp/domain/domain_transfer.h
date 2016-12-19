@@ -24,8 +24,8 @@
 #ifndef DOMAIN_TRANSFER_H_1E8ED6049ECA4195BB9F694B6F2E1A56
 #define DOMAIN_TRANSFER_H_1E8ED6049ECA4195BB9F694B6F2E1A56
 
-#include "src/epp/localized_response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/session_lang.h"
 #include "util/optional_value.h"
 
 #include <string>

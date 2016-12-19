@@ -1560,7 +1560,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/param.h \
 		src/epp/impl/reason.h \
 		src/epp/impl/response.h \
-		src/epp/impl/util.h \
 		src/epp/error.h \
 		src/epp/impl/parameter_errors.h \
 		src/epp/impl/parameter_errors.cc \
@@ -1595,6 +1594,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_disclose.h \
 		src/epp/contact/impl/post_contact_update_hooks.cc \
 		src/epp/contact/impl/post_contact_update_hooks.h \
+		src/epp/domain/domain_check.cc \
+		src/epp/domain/domain_check.h \
 		src/epp/domain/domain_check_impl.cc \
 		src/epp/domain/domain_check_impl.h \
 		src/epp/domain/domain_check_localization.cc \
@@ -1629,8 +1630,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/domain_update_impl.cc \
 		src/epp/domain/domain_update_impl.h \
 		src/epp/domain/domain_registration_obstruction.h \
-		src/epp/keyset/dns_key.cc \
-		src/epp/keyset/dns_key.h \
 		src/epp/keyset/impl/dns_key.cc \
 		src/epp/keyset/impl/dns_key.h \
 		src/epp/keyset/ds_record.h \
@@ -2692,7 +2691,6 @@ tests_test_server_SOURCES = \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
 		tests/interfaces/domain_browser/test_domain_browser.cc \
-		src/epp/impl/util.h \
 		tests/setup/fixtures.h
 
 tests_test_server_LDFLAGS = \

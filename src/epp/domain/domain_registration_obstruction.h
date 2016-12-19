@@ -24,8 +24,8 @@
 #ifndef DOMAIN_REGISTRATION_OBSTRUCTION_H_EC6B8C64A07B47D7AB68755BAEB424A9
 #define DOMAIN_REGISTRATION_OBSTRUCTION_H_EC6B8C64A07B47D7AB68755BAEB424A9
 
-#include "src/epp/exception.h"
-#include "src/epp/reason.h"
+#include "src/epp/impl/exception.h"
+#include "src/epp/impl/reason.h"
 
 #include <string>
 

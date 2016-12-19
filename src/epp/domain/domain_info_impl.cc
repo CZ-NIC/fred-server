@@ -1,6 +1,6 @@
 #include "src/epp/domain/domain_info_impl.h"
 
-#include "src/epp/exception.h"
+#include "src/epp/impl/exception.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/object/object_state.h"

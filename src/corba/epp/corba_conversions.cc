@@ -711,7 +711,7 @@ namespace Corba {
             {
                 throw std::runtime_error("null char ptr");
             }
-            ret.push_back(Epp::DNShostInput(std::string(in[i].fqdn),
+            ret.push_back(Epp::Nsset::DnsHostInput(std::string(in[i].fqdn),
                 unwrap_inet_addr_to_vector_asio_addr(in[i].inet)));
         }
         return ret;

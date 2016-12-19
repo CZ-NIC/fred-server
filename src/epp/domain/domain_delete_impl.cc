@@ -1,6 +1,6 @@
 #include "src/epp/domain/domain_delete_impl.h"
 
-#include "src/epp/exception.h"
+#include "src/epp/impl/exception.h"
 
 #include "src/epp/impl/util.h"
 #include "src/fredlib/domain/delete_domain.h"

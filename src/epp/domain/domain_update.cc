@@ -1,14 +1,14 @@
 #include "src/epp/domain/domain_update.h"
 
-#include "src/epp/action.h"
-#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/domain/domain_update_impl.h"
-#include "src/epp/exception_aggregate_param_errors.h"
-#include "src/epp/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
+#include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
-#include "src/epp/localization.h"
-#include "src/epp/response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/localization.h"
+#include "src/epp/impl/response.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
 #include "util/log/context.h"
@@ -68,7 +68,7 @@ LocalizedSuccessResponse domain_update(
             _rifd_epp_update_domain_keyset_clear
         );
 
-        const LocalizedSuccessResponse localized_success_response = create_localized_success_response(Response::ok, ctx, _lang);
+        const LocalizedSuccessResponse localized_success_response = create_localized_success_response(ctx, Response::ok, _lang);
 
         ctx.commit_transaction();
 

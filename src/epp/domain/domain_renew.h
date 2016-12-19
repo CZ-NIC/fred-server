@@ -23,8 +23,8 @@
 #ifndef EPP_DOMAIN_RENEW_H_a8e407273a344ff38249263566f3e51f
 #define EPP_DOMAIN_RENEW_H_a8e407273a344ff38249263566f3e51f
 
-#include "src/epp/localized_response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/epp/domain/domain_registration_time.h"
 #include "src/epp/domain/domain_enum_validation.h"
 

@@ -29,7 +29,6 @@
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
-#include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/opcontext.h"
 #include "util/log/context.h"

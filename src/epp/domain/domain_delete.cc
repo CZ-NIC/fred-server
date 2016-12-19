@@ -1,11 +1,11 @@
 #include "src/epp/domain/domain_delete.h"
 
-#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/domain/domain_delete_impl.h"
-#include "src/epp/exception.h"
+#include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
-#include "src/epp/localization.h"
-#include "src/epp/action.h"
+#include "src/epp/impl/localization.h"
+#include "src/epp/impl/action.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -38,7 +38,7 @@ LocalizedSuccessResponse domain_delete(
             _registrar_id
         );
 
-        const LocalizedSuccessResponse result = create_localized_success_response(Response::ok, ctx, _lang);
+        const LocalizedSuccessResponse result = create_localized_success_response(ctx, Response::ok, _lang);
 
         ctx.commit_transaction();
 

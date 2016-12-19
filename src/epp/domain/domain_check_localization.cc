@@ -1,7 +1,7 @@
 #include "src/epp/domain/domain_check_localization.h"
 
 #include "src/epp/domain/domain_registration_obstruction.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/session_lang.h"
 
 #include <boost/optional.hpp>
 

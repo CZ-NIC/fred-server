@@ -29,7 +29,6 @@
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
 #include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 

@@ -2,7 +2,6 @@
 
 #include "src/epp/impl/exception.h"
 
-#include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/registrar/info_registrar.h"

@@ -123,7 +123,7 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys,
         return false;
     }
 
-    KeySet::DnsKey::AlgValidator alg_validator(_ctx);
+    Keyset::DnsKey::AlgValidator alg_validator(_ctx);
     typedef std::map< Keyset::DnsKey, unsigned short > DnsKeyIndex;
     DnsKeyIndex unique_dns_keys;
     Success correct = true;

@@ -1,11 +1,11 @@
 #include "src/epp/domain/domain_info.h"
 
-#include "src/epp/action.h"
+#include "src/epp/impl/action.h"
 #include "src/epp/domain/domain_info_impl.h"
-#include "src/epp/localization.h"
-#include "src/epp/localized_states.h"
-#include "src/epp/response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/localization.h"
+#include "src/epp/impl/object_states_localized.h"
+#include "src/epp/impl/response.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/fredlib/exception.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"
@@ -49,7 +49,7 @@ DomainInfoResponse domain_info(
         localized_domain_info_output_data.nsset = domain_info_output_data.nsset;
         localized_domain_info_output_data.keyset = domain_info_output_data.keyset;
         localized_domain_info_output_data.localized_external_states =
-            get_localized_object_state(ctx, domain_info_output_data.states, _lang);
+            localize_object_states(ctx, domain_info_output_data.states, _lang);
         localized_domain_info_output_data.sponsoring_registrar_handle = domain_info_output_data.sponsoring_registrar_handle;
         localized_domain_info_output_data.creating_registrar_handle = domain_info_output_data.creating_registrar_handle;
         localized_domain_info_output_data.last_update_registrar_handle = domain_info_output_data.last_update_registrar_handle;
@@ -64,7 +64,7 @@ DomainInfoResponse domain_info(
         localized_domain_info_output_data.tmpcontact = domain_info_output_data.tmpcontact;
 
         const LocalizedSuccessResponse localized_success_response =
-            create_localized_success_response(Response::ok, ctx, _lang);
+            create_localized_success_response(ctx, Response::ok, _lang);
 
         return DomainInfoResponse(
             localized_success_response,

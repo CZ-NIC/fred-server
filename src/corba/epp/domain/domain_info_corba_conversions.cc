@@ -85,7 +85,7 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
     _dst.nsset = Corba::wrap_string_to_corba_string(_src.nsset.get_value_or_default());
     _dst.keyset = Corba::wrap_string_to_corba_string(_src.keyset.get_value_or_default());
 
-    Corba::wrap_Epp_LocalizedStates(_src.localized_external_states, _dst.stat);
+    Corba::wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
 
     _dst.ClID = Corba::wrap_string_to_corba_string(_src.sponsoring_registrar_handle);
     _dst.CrID = Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);

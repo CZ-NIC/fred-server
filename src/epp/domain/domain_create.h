@@ -23,8 +23,8 @@
 #ifndef DOMAIN_CREATE_H_B6C01C595C524BD983B8E61AFD2C607A
 #define DOMAIN_CREATE_H_B6C01C595C524BD983B8E61AFD2C607A
 
-#include "src/epp/localized_response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/epp/domain/domain_registration_time.h"
 #include "src/epp/domain/domain_enum_validation.h"
 

@@ -25,7 +25,7 @@
 #define DOMAIN_CHECK_LOCALIZATION_H_B5F52221D6A04D55ADC9227F1C14C30E
 
 #include "src/epp/domain/domain_registration_obstruction.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 

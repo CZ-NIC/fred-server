@@ -25,9 +25,9 @@
 #define DOMAIN_INFO_H_9B80EDF973BF4C58B5161B84BEF2DF1C
 
 #include "src/epp/domain/domain_enum_validation.h"
-#include "src/epp/localized_response.h"
-#include "src/epp/localized_states.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/object_states_localized.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
@@ -49,7 +49,7 @@ struct DomainInfoLocalizedOutputData {
     std::string registrant;
     Nullable<std::string> nsset;
     Nullable<std::string> keyset;
-    LocalizedStates localized_external_states; ///< Domain states list
+    ObjectStatesLocalized localized_external_states; ///< Domain states list
     std::string sponsoring_registrar_handle; ///< Registrar which has to right for change
     std::string creating_registrar_handle; ///< Registrar which created contact
     Nullable<std::string> last_update_registrar_handle; ///< Registrar which realized changes

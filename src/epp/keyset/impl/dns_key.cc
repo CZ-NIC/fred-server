@@ -1,4 +1,3 @@
-<<<<<<< HEAD:src/epp/keyset/dns_key.cc
 #include "src/epp/keyset/impl/dns_key.h"
 #include "src/fredlib/keyset/check_dns_key.h"
 

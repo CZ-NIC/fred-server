@@ -24,7 +24,7 @@
 #ifndef DOMAIN_UPDATE_IMPL_H_B80377A0BC624CA296665A7136E08421
 #define DOMAIN_UPDATE_IMPL_H_B80377A0BC624CA296665A7136E08421
 
-#include "src/epp/contact/contact_update.h"
+#include "src/epp/contact/update_contact.h"
 #include "src/epp/domain/domain_enum_validation.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"

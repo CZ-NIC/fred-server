@@ -24,7 +24,7 @@
 #include "tests/interfaces/epp/domain/fixture.h"
 
 #include "src/epp/domain/domain_info_impl.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/session_lang.h"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>

@@ -1,11 +1,11 @@
-#include "src/epp/disclose_policy.h"
+#include "src/epp/impl/disclose_policy.h"
 #include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/domain/domain_update_impl.h"
-#include "src/epp/exception_aggregate_param_errors.h"
-#include "src/epp/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
+#include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
-#include "src/epp/param.h"
-#include "src/epp/reason.h"
+#include "src/epp/impl/param.h"
+#include "src/epp/impl/reason.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/domain_name.h"
@@ -297,8 +297,8 @@ unsigned long long domain_update_impl(
 
     if (_keyset_chg.isset()
     && !_keyset_chg.get_value().isnull()
-    && (Fred::KeySet::get_handle_registrability(_ctx, _keyset_chg.get_value().get_value())
-        != Fred::KeySet::HandleState::registered))
+    && (Fred::Keyset::get_handle_registrability(_ctx, _keyset_chg.get_value().get_value())
+        != Fred::Keyset::HandleState::registered))
     {
         parameter_value_policy_error.add(
             Error::of_scalar_parameter(

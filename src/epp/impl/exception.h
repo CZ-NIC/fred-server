@@ -38,7 +38,7 @@ namespace Epp {
     struct NonexistentHandle                  :Exception { const char* what() const throw() { return "nonexistent handle"; } };
     struct InvalidHandle                      :Exception { const char* what() const throw() { return "invalid handle"; } };
     //struct ObjectExists                       :Exception { const char* what() const throw() { return "object exists"; } };
-    struct ObjectDoesNotExist                 :Exception { const char* what() const throw() { return "object does not exist"; } };
+    //struct ObjectDoesNotExist                 :Exception { const char* what() const throw() { return "object does not exist"; } };
     struct ObjectNotEligibleForTransfer       :Exception { const char* what() const throw() { return "object not eligible for transfer"; } };
     //struct ObjectStatusProhibitsOperation     :Exception { const char* what() const throw() { return "object status prohibits operation"; } };
     //struct ObjectAssociationProhibitsOperation:Exception { const char* what() const throw() { return "object association prohibits operation"; } };
@@ -50,7 +50,7 @@ namespace Epp {
     struct InvalidReasonValue                 :Exception { const char* what() const throw() { return "invalid Reason::Enum value"; } };
 
     //struct RequiredParameterMissing : Exception { const char* what() const throw() { return "Required parameter missing"; } };
-    struct BillingFailure : Exception { const char* what() const throw() { return "Billing failure"; } };
+    //struct BillingFailure : Exception { const char* what() const throw() { return "Billing failure"; } };
 
     /* localized descriptions */
     struct LocalizedDescriptionException:Exception { };

@@ -1,8 +1,8 @@
 #include "src/epp/domain/domain_create_impl.h"
 #include "src/epp/error.h"
-#include "src/epp/exception.h"
-#include "src/epp/exception_aggregate_param_errors.h"
-#include "src/epp/reason.h"
+#include "src/epp/impl/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
+#include "src/epp/impl/reason.h"
 #include "src/epp/impl/util.h"
 
 #include "src/fredlib/domain/domain_name.h"
@@ -114,8 +114,8 @@ DomainCreateResult domain_create_impl(
 
     //check keyset exists if set
     if(!_data.keyset.empty()
-    && (Fred::KeySet::get_handle_registrability(_ctx,_data.keyset)
-        != Fred::KeySet::HandleState::registered))
+    && (Fred::Keyset::get_handle_registrability(_ctx,_data.keyset)
+        != Fred::Keyset::HandleState::registered))
     {
         parameter_value_policy_error.add(Error::of_scalar_parameter(
                     Param::domain_keyset,Reason::keyset_notexist));

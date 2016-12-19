@@ -24,8 +24,8 @@
 #ifndef DOMAIN_DELETE_H_C6667D81894D496DBA319233B6153F2E
 #define DOMAIN_DELETE_H_C6667D81894D496DBA319233B6153F2E
 
-#include "src/epp/localized_response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/session_lang.h"
 
 #include <string>
 

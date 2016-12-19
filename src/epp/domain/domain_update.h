@@ -24,8 +24,8 @@
 #ifndef DOMAIN_UPDATE_H_E54DDFE4EB2C45D6972306DF00AD05C7
 #define DOMAIN_UPDATE_H_E54DDFE4EB2C45D6972306DF00AD05C7
 
-#include "src/epp/localized_response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/epp/domain/domain_enum_validation.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"

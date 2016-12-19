@@ -24,11 +24,11 @@
 #ifndef DOMAIN_CHECK_H_465105F022A041DC84D07A0A30AF568C
 #define DOMAIN_CHECK_H_465105F022A041DC84D07A0A30AF568C
 
-#include "src/epp/action.h"
+#include "src/epp/impl/action.h"
 #include "src/epp/domain/domain_check_localization.h"
 #include "src/epp/domain/domain_registration_obstruction.h"
-#include "src/epp/localized_response.h"
-#include "src/epp/session_lang.h"
+#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/session_lang.h"
 
 #include <set>
 #include <map>
