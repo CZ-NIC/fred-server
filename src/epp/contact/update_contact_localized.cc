@@ -124,7 +124,7 @@ LocalizedSuccessResponse update_contact_localized(
                 std::set<Error>(),
                 _lang);
     }
-    catch(const AggregatedParamErrors& e) {
+    catch(const ParameterValuePolicyError& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,

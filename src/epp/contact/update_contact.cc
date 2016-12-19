@@ -434,9 +434,7 @@ unsigned long long update_contact(
     // when deleting or not-changing, no check of data is needed
     if (ContactChange::does_value_mean< ContactChange::Value::to_set >(_change.country_code)) {
         if (!is_country_code_valid(_ctx, ContactChange::get_value(_change.country_code))) {
-            AggregatedParamErrors exception;
-            exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
-            throw exception;
+            throw ParameterValuePolicyError().add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
         }
     }
 

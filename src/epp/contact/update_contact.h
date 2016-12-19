@@ -39,7 +39,7 @@ namespace Contact {
  * @throws NonexistentHandle
  * @throws AuthorizationError
  * @throws ObjectStatusProhibitsOperation in case conatct has serverUpdateProhibited or deleteCandidate status (or request)
- * @throws AggregatedParamErrors
+ * @throws ParameterValuePolicyError
  */
 unsigned long long update_contact(
     Fred::OperationContext &_ctx,
