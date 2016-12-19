@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef EPP_EXCEPTION_AGGREGATE_PARAM_ERRORS_854853143541
-#define EPP_EXCEPTION_AGGREGATE_PARAM_ERRORS_854853143541
+#ifndef EXCEPTION_AGGREGATE_PARAM_ERRORS_H_E07FF065CEB94BB6BF86C7D103D03B3F
+#define EXCEPTION_AGGREGATE_PARAM_ERRORS_H_E07FF065CEB94BB6BF86C7D103D03B3F
 
 #include "src/epp/error.h"
 
@@ -29,88 +29,96 @@
 
 namespace Epp {
 
-    class AggregatedParamErrors {
-        private:
-            std::set<Error> param_errors_;
+class AggregatedParamErrors {
+public:
+    AggregatedParamErrors& add(const Error& _new_error) {
+        param_errors_.insert(_new_error);
+        return *this;
+    }
 
-        public:
-            AggregatedParamErrors& add(const Error& _new_error) {
-                param_errors_.insert(_new_error);
-                return *this;
-            }
+    std::set<Error> get() const {
+        return param_errors_;
+    }
 
-            std::set<Error> get() const {
-                return param_errors_;
-            }
+    bool is_empty() const { return param_errors_.empty(); }
 
-            bool is_empty() const { return param_errors_.empty(); }
-    };
+private:
+    std::set<Error> param_errors_;
+};
 
-    class ParameterValuePolicyError {
-        std::set<Error> param_errors_;
+class ParameterValuePolicyError {
+public:
+    ParameterValuePolicyError& add(const Error& _new_error) {
+        param_errors_.insert(_new_error);
+        return *this;
+    }
 
-    public:
-        ParameterValuePolicyError& add(const Error& _new_error) {
-            param_errors_.insert(_new_error);
-            return *this;
-        }
+    ParameterValuePolicyError& add(const std::set<Error>& _new_errors) {
+        param_errors_.insert(_new_errors.begin(), _new_errors.end());
+        return *this;
+    }
 
-        std::set<Error> get() const {
-            return param_errors_;
-        }
+    std::set<Error> get() const {
+        return param_errors_;
+    }
 
-        bool is_empty() const { return param_errors_.empty(); }
-    };
+    bool is_empty() const { return param_errors_.empty(); }
 
-    class ParameterValueRangeError {
-        std::set<Error> param_errors_;
+private:
+    std::set<Error> param_errors_;
 
-    public:
-        ParameterValueRangeError& add(const Error& _new_error) {
-            param_errors_.insert(_new_error);
-            return *this;
-        }
+};
 
-        std::set<Error> get() const {
-            return param_errors_;
-        }
+class ParameterValueRangeError {
+public:
+    ParameterValueRangeError& add(const Error& _new_error) {
+        param_errors_.insert(_new_error);
+        return *this;
+    }
 
-        bool is_empty() const { return param_errors_.empty(); }
-    };
+    std::set<Error> get() const {
+        return param_errors_;
+    }
 
-    class ParameterValueSyntaxError {
-        std::set<Error> param_errors_;
+    bool is_empty() const { return param_errors_.empty(); }
 
-    public:
-        ParameterValueSyntaxError& add(const Error& _new_error) {
-            param_errors_.insert(_new_error);
-            return *this;
-        }
+private:
+    std::set<Error> param_errors_;
 
-        std::set<Error> get() const {
-            return param_errors_;
-        }
+};
 
-        bool is_empty() const { return param_errors_.empty(); }
-    };
+class ParameterValueSyntaxError {
+    std::set<Error> param_errors_;
 
-    class RequiredSpecificParameterMissing {
-        std::set<Error> param_errors_;
+public:
+    ParameterValueSyntaxError& add(const Error& _new_error) {
+        param_errors_.insert(_new_error);
+        return *this;
+    }
 
-    public:
-        RequiredSpecificParameterMissing& add(const Error& _new_error) {
-            param_errors_.insert(_new_error);
-            return *this;
-        }
+    std::set<Error> get() const {
+        return param_errors_;
+    }
 
-        std::set<Error> get() const {
-            return param_errors_;
-        }
+    bool is_empty() const { return param_errors_.empty(); }
+};
 
-        bool is_empty() const { return param_errors_.empty(); }
-    };
+class RequiredSpecificParameterMissing {
+    std::set<Error> param_errors_;
 
+public:
+    RequiredSpecificParameterMissing& add(const Error& _new_error) {
+        param_errors_.insert(_new_error);
+        return *this;
+    }
 
-}
+    std::set<Error> get() const {
+        return param_errors_;
+    }
+
+    bool is_empty() const { return param_errors_.empty(); }
+};
+
+} // namespace Epp
 
 #endif

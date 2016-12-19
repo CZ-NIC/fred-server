@@ -4,6 +4,7 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/parameter_errors.h"
 #include "src/epp/impl/response.h"
@@ -14,43 +15,6 @@
 namespace Epp {
 namespace Keyset {
 namespace Localized {
-
-namespace {
-
-typedef bool Presents;
-
-Presents insert_scalar_parameter_error_if_presents(
-        const ParameterErrors& _src,
-        Param::Enum _param,
-        Reason::Enum _reason,
-        std::set<Error>& _dst)
-{
-    if (_src.has_scalar_parameter_error(_param, _reason)) {
-        _dst.insert(Error::of_scalar_parameter(_param, _reason));
-        return true;
-    }
-    return false;
-}
-
-Presents insert_vector_parameter_error_if_presents(
-        const ParameterErrors& _src,
-        Param::Enum _param,
-        Reason::Enum _reason,
-        std::set<Error>& _dst)
-{
-    if (_src.has_vector_parameter_error(_param, _reason)) {
-        const ParameterErrors::Where where = _src.get_vector_parameter_error(_param, _reason);
-        for (ParameterErrors::Where::Indexes::const_iterator idx_ptr = where.indexes.begin();
-             idx_ptr != where.indexes.end(); ++idx_ptr)
-        {
-            _dst.insert(Error::of_vector_parameter(_param, *idx_ptr, _reason));
-        }
-        return true;
-    }
-    return false;
-}
-
-}//namespace Epp::Keyset::Localized::{anonymous}
 
 LocalizedSuccessResponse update_keyset_localized(
         const std::string& _keyset_handle,
@@ -109,96 +73,60 @@ LocalizedSuccessResponse update_keyset_localized(
                 _dont_notify_client_transaction_handles_with_this_prefix);
 
         return localized_result;
+
     }
     catch (const AuthErrorServerClosingConnection&) {
-        Fred::OperationContextCreator ctx;
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
             Response::authentication_error_server_closing_connection,
             std::set<Error>(),
             _lang);
     }
-    catch (const ObjectStatusProhibitsOperation&) {
-        Fred::OperationContextCreator ctx;
+    catch(const NonexistentHandle&) {
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+                exception_localization_ctx,
+                Response::object_not_exist,
+                std::set<Error>(),
+                _lang);
+    }
+    catch(const AuthorizationError&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::authorization_error,
+                std::set<Error>(),
+                _lang);
+    }
+    catch (const ObjectStatusProhibitsOperation&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
             Response::status_prohibits_operation,
             std::set<Error>(),
             _lang);
     }
-    catch (const ParameterErrors& e) {
-        Fred::OperationContextCreator ctx;
-        std::set<Error> errors;
-
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_handle, Reason::keyset_notexist, errors)) {
-            throw create_localized_fail_response(ctx, Response::object_not_exist, errors, _lang);
-        }
-
-        if (insert_scalar_parameter_error_if_presents(e, Param::registrar_autor, Reason::unauthorized_registrar, errors)) {
-            throw create_localized_fail_response(ctx, Response::authorization_error, errors, _lang);
-        }
-
-        if (e.has_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit)  ||
-            e.has_scalar_parameter_error(Param::keyset_tech,     Reason::techadmin_limit) ||
-            e.has_scalar_parameter_error(Param::keyset_dnskey,   Reason::dnskey_limit))
-        {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, std::set<Error>(), _lang);
-        }
-
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::technical_contact_not_registered, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::duplicated_contact, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_add,   Reason::technical_contact_already_assigned, errors);
-        if (!errors.empty()) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_rem,   Reason::technical_contact_not_registered, errors);
-        insert_vector_parameter_error_if_presents(e, Param::keyset_tech_rem,   Reason::duplicated_contact, errors);
-        if (!errors.empty()) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::duplicated_dnskey, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_flags, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_protocol, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_alg, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_key_char, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_bad_key_len, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_add, Reason::dnskey_exist, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_rem, Reason::duplicated_dnskey, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_vector_parameter_error_if_presents(e, Param::keyset_dnskey_rem, Reason::dnskey_notexist, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_dnskey,   Reason::no_dnskey_dsrecord, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-        if (insert_scalar_parameter_error_if_presents(e, Param::keyset_tech_rem, Reason::can_not_remove_tech, errors)) {
-            throw create_localized_fail_response(ctx, Response::parameter_value_policy_error, errors, _lang);
-        }
-
-        throw create_localized_fail_response(ctx, Response::failed, e.get_set_of_error(), _lang);
+    catch (const ParameterValuePolicyError& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::parameter_value_policy_error,
+                e.get(),
+                _lang);
+    }
+    catch (const ParameterValueRangeError& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::parameter_value_range_error,
+                e.get(),
+                _lang);
     }
     catch (...) {
-        Fred::OperationContextCreator ctx;
+        Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
-            ctx,
+            exception_localization_ctx,
             Response::failed,
             std::set<Error>(),
             _lang);

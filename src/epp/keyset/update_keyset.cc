@@ -3,6 +3,7 @@
 
 #include "src/epp/error.h"
 #include "src/epp/impl/exception.h"
+#include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/parameter_errors.h"
 #include "src/epp/impl/reason.h"
 
@@ -27,6 +28,39 @@ namespace Keyset {
 
 namespace {
 
+typedef bool Presents;
+
+Presents insert_scalar_parameter_error_if_presents(
+        const ParameterErrors& _src,
+        Param::Enum _param,
+        Reason::Enum _reason,
+        std::set<Error>& _dst)
+{
+    if (_src.has_scalar_parameter_error(_param, _reason)) {
+        _dst.insert(Error::of_scalar_parameter(_param, _reason));
+        return true;
+    }
+    return false;
+}
+
+Presents insert_vector_parameter_error_if_presents(
+        const ParameterErrors& _src,
+        Param::Enum _param,
+        Reason::Enum _reason,
+        std::set<Error>& _dst)
+{
+    if (_src.has_vector_parameter_error(_param, _reason)) {
+        const ParameterErrors::Where where = _src.get_vector_parameter_error(_param, _reason);
+        for (ParameterErrors::Where::Indexes::const_iterator idx_ptr = where.indexes.begin();
+             idx_ptr != where.indexes.end(); ++idx_ptr)
+        {
+            _dst.insert(Error::of_vector_parameter(_param, *idx_ptr, _reason));
+        }
+        return true;
+    }
+    return false;
+}
+
 Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
                                          unsigned long long _registrar_id,
                                          Fred::OperationContext &_ctx,
@@ -41,10 +75,8 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
         const bool is_system_registrar = callers_registrar.system.get_value_or(false);
         const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
         if (!is_operation_permitted) {
-            ParameterErrors param_errors;
-            param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::unauthorized_registrar);
             _ctx.get_log().info("check_keyset_handle failure: registrar not authorized for this operation");
-            throw param_errors;
+            throw AuthorizationError();
         }
         if (!is_system_registrar) {
             Fred::LockObjectStateRequestLock(keyset_data.id).exec(_ctx);
@@ -61,10 +93,8 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
     }
     catch (const Fred::InfoKeysetByHandle::Exception &e) {
         if (e.is_set_unknown_handle()) {
-            ParameterErrors param_errors;
-            param_errors.add_scalar_parameter_error(Param::keyset_handle, Reason::keyset_notexist);
             _ctx.get_log().info("check_keyset_handle failure: keyset not found");
-            throw param_errors;
+            throw NonexistentHandle();
         }
         _ctx.get_log().error("check_keyset_handle failure: unexpected error has occurred");
         throw;
@@ -457,8 +487,64 @@ UpdateKeysetResult update_keyset(
         }
 
         if (!param_errors.is_empty()) {
-            throw param_errors;
+            std::set<Error> errors;
+
+            if (param_errors.has_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit)  ||
+                param_errors.has_scalar_parameter_error(Param::keyset_tech,     Reason::techadmin_limit) ||
+                param_errors.has_scalar_parameter_error(Param::keyset_dnskey,   Reason::dnskey_limit))
+            {
+                throw ParameterValuePolicyError();
+            }
+
+            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_add,   Reason::technical_contact_not_registered, errors);
+            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_add,   Reason::duplicated_contact, errors);
+            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_add,   Reason::technical_contact_already_assigned, errors);
+            if (!errors.empty()) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+
+            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_rem,   Reason::technical_contact_not_registered, errors);
+            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_rem,   Reason::duplicated_contact, errors);
+            if (!errors.empty()) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::duplicated_dnskey, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_flags, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_protocol, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_alg, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_key_char, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_key_len, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_exist, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_rem, Reason::duplicated_dnskey, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_rem, Reason::dnskey_notexist, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+
+            if (insert_scalar_parameter_error_if_presents(param_errors, Param::keyset_dnskey,   Reason::no_dnskey_dsrecord, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
+            if (insert_scalar_parameter_error_if_presents(param_errors, Param::keyset_tech_rem, Reason::can_not_remove_tech, errors)) {
+                throw ParameterValuePolicyError().add(errors);
+            }
         }
+
         result.id = keyset_data.id;
     }
 
