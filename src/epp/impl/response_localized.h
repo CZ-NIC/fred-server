@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_EPP_LOCALIZED_RESPONSE_988764121
-#define SRC_EPP_LOCALIZED_RESPONSE_988764121
+#ifndef RESPONSE_LOCALIZED_H_A5D5FF63BD4A4ECFADECA24EE8BDA0DC
+#define RESPONSE_LOCALIZED_H_A5D5FF63BD4A4ECFADECA24EE8BDA0DC
 
 #include "src/epp/impl/param.h"
 #include "src/epp/impl/response.h"

@@ -1,5 +1,5 @@
-#ifndef _MESSAGES_H_
-#define _MESSAGES_H_
+#ifndef MESSAGES_H_58EFA707C484477FB1267D1695B2EEB9
+#define MESSAGES_H_58EFA707C484477FB1267D1695B2EEB9
 
 #include <iostream>
 #include <vector>
@@ -43,4 +43,4 @@ private:
   int m_lang;
 };
 
-#endif // _MESSAGES_H_
+#endif

@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_ERROR_9347842721087
-#define EPP_ERROR_9347842721087
+#ifndef ERROR_H_F4329EF82684498C981B740316398B93
+#define ERROR_H_F4329EF82684498C981B740316398B93
 
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/param.h"

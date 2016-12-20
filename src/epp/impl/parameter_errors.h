@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767
+#ifndef PARAMETER_ERRORS_H_E22C59E9B6444B4CA244E95CC96F768A
+#define PARAMETER_ERRORS_H_E22C59E9B6444B4CA244E95CC96F768A
 
 #include "src/epp/error.h"
 
@@ -68,4 +68,4 @@ private:
 
 } // namespace Epp
 
-#endif//PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767
+#endif

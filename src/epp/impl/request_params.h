@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CORBA_EPP_REQUEST_PARAMS_90798304534
-#define CORBA_EPP_REQUEST_PARAMS_90798304534
+#ifndef REQUEST_PARAMS_H_E846A60680374E6287EA3DE17D3A5FEA
+#define REQUEST_PARAMS_H_E846A60680374E6287EA3DE17D3A5FEA
 
 #include "util/util.h"
 #include "util/optional_value.h"

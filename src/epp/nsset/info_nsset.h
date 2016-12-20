@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
-#define EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
+#ifndef INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
+#define INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
 
 #include "src/epp/nsset/impl/dns_host_output.h"
 #include "src/epp/impl/session_lang.h"

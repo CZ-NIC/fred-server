@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_EPP_GET_REGISTRAR_SESSION_DATA_38454101632052
-#define SRC_EPP_GET_REGISTRAR_SESSION_DATA_38454101632052
+#ifndef GET_REGISTRAR_SESSION_DATA_H_B7B802E9C549405F85FE4DE10A393EAD
+#define GET_REGISTRAR_SESSION_DATA_H_B7B802E9C549405F85FE4DE10A393EAD
 
 #include "src/corba/epp/epp_session.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"

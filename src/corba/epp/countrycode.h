@@ -1,5 +1,5 @@
-#ifndef COUNTRYCODE_H
-#define COUNTRYCODE_H
+#ifndef COUNTRYCODE_H_E104B6D592014DFCA247850CEEFC0522
+#define COUNTRYCODE_H_E104B6D592014DFCA247850CEEFC0522
 
 #include <string>
 #include <vector>
@@ -27,4 +27,4 @@ public:
 private:
     CountryCodeT cc_;
 };//class CountryCode
-#endif //COUNTRYCODE_H
+#endif

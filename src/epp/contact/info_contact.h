@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_CONTACT_INFO_IMPL_976543419473
-#define EPP_CONTACT_INFO_IMPL_976543419473
+#ifndef INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
+#define INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
 
 #include "src/epp/contact/contact_disclose.h"
 #include "src/epp/impl/session_lang.h"

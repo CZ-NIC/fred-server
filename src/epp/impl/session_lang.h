@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_EPP_SESSION_LANG_505343440
-#define SRC_EPP_SESSION_LANG_505343440
+#ifndef SESSION_LANG_H_925FC52CA2FA45B5A1F584AE8E94AB22
+#define SESSION_LANG_H_925FC52CA2FA45B5A1F584AE8E94AB22
 
 #include "src/epp/impl/exception.h"
 
