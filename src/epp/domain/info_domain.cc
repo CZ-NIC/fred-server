@@ -66,7 +66,11 @@ InfoDomainOutputData info_domain(
         domain_info_output_data.last_transfer = info_domain_data.transfer_time;
         domain_info_output_data.exdate = info_domain_data.expiration_date;
 
-        domain_info_output_data.auth_info_pw = info_domain_data.authinfopw;
+        // show object authinfo only to sponsoring registrar
+        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool callers_is_sponsoring_registrar = info_domain_data.sponsoring_registrar_handle == callers_registrar_handle;
+        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
+        domain_info_output_data.auth_info_pw = authinfo_has_to_be_hidden ? boost::optional<std::string>() : info_domain_data.authinfopw;
 
         for (
             std::vector<Fred::ObjectIdHandlePair>::const_iterator object_id_handle_pair = info_domain_data.admin_contacts.begin();

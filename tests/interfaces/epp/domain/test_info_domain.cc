@@ -72,7 +72,8 @@ void check_equal(
     BOOST_CHECK_EQUAL(_domain_info_output_data.last_update, _info_domain_data.update_time);
     BOOST_CHECK_EQUAL(_domain_info_output_data.last_transfer, _info_domain_data.transfer_time);
     BOOST_CHECK_EQUAL(_domain_info_output_data.exdate, _info_domain_data.expiration_date);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.auth_info_pw, _info_domain_data.authinfopw);
+    BOOST_REQUIRE(_domain_info_output_data.auth_info_pw);
+    BOOST_CHECK_EQUAL(_domain_info_output_data.auth_info_pw.value(), _info_domain_data.authinfopw);
 
     std::set<std::string> info_domain_data_admin_contacts = vector_of_Fred_ObjectIdHandlePair_to_set_of_string(_info_domain_data.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(

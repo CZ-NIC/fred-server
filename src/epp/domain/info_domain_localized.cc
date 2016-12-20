@@ -41,11 +41,6 @@ InfoDomainResponse info_domain_localized(
                         _domain_fqdn,
                         _registrar_id);
 
-        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_registrar_id).exec(ctx).info_registrar_data.handle;
-
-        const bool callers_is_sponsoring_registrar = domain_info_output_data.sponsoring_registrar_handle == callers_registrar_handle;
-        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
-
         DomainInfoLocalizedOutputData localized_domain_info_output_data;
 
         localized_domain_info_output_data.roid = domain_info_output_data.roid;
@@ -62,8 +57,7 @@ InfoDomainResponse info_domain_localized(
         localized_domain_info_output_data.last_update = domain_info_output_data.last_update;
         localized_domain_info_output_data.last_transfer = domain_info_output_data.last_transfer;
         localized_domain_info_output_data.exdate = domain_info_output_data.exdate;
-        localized_domain_info_output_data.auth_info_pw =
-            authinfo_has_to_be_hidden ? Nullable<std::string>() : domain_info_output_data.auth_info_pw;
+        localized_domain_info_output_data.auth_info_pw = domain_info_output_data.auth_info_pw;
         localized_domain_info_output_data.admin = domain_info_output_data.admin;
         localized_domain_info_output_data.ext_enum_domain_validation = domain_info_output_data.ext_enum_domain_validation;
         localized_domain_info_output_data.tmpcontact = domain_info_output_data.tmpcontact;

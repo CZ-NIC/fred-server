@@ -101,7 +101,7 @@ void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
 
     _dst.ExDate = Corba::wrap_string_to_corba_string(boost::gregorian::to_iso_extended_string(_src.exdate));
 
-    _dst.AuthInfoPw = Corba::wrap_string_to_corba_string(_src.auth_info_pw.get_value_or_default());
+    _dst.AuthInfoPw = Corba::wrap_string_to_corba_string(_src.auth_info_pw ? _src.auth_info_pw.value() : std::string());
 
     _dst.admin.length(_src.admin.size());
     unsigned long dst_admin_index = 0;
