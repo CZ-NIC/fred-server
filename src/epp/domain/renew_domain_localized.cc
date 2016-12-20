@@ -141,8 +141,18 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 std::set<Error>(),
                 _lang);
     }
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("renew_domain_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::failed,
+                std::set<Error>(),
+                _lang);
+    }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in renew_domain_localized function");
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,

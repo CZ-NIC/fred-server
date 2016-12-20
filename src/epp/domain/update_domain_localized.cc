@@ -146,6 +146,7 @@ LocalizedSuccessResponse update_domain_localized(
     }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in update_domain_localized function");
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,
