@@ -12,12 +12,13 @@
 #include "util/log/context.h"
 #include "util/decimal/decimal.h"
 
+#include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
 
 namespace Epp {
 namespace Domain {
 
-    CreateDomainLocalizedResponse create_domain_localized(
+CreateDomainLocalizedResponse create_domain_localized(
         const CreateDomainInputData& _data,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
@@ -26,9 +27,8 @@ namespace Domain {
         const std::string& _client_transaction_handle,
         const bool _epp_notification_disabled,
         const std::string& _client_transaction_handles_prefix_not_to_nofify,
-        const bool _rifd_epp_operations_charging
-    ) {
-
+        const bool _rifd_epp_operations_charging)
+{
     try {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
@@ -37,7 +37,7 @@ namespace Domain {
 
         Fred::OperationContextCreator ctx;
 
-        const CreateDomainResult impl_result(
+        const CreateDomainResult create_domain_result(
                 create_domain(
                         ctx,
                         _data,
@@ -49,28 +49,28 @@ namespace Domain {
                         ctx,
                         Response::ok,
                         _lang),
-                impl_result.crtime,
-                impl_result.exdate);
+                create_domain_result.crtime,
+                create_domain_result.exdate);
 
         if(_rifd_epp_operations_charging
                 && Fred::InfoRegistrarById(_registrar_id).exec(ctx)
-                    .info_registrar_data.system.get_value_or(false) == false)
+                   .info_registrar_data.system.get_value_or(false) == false)
         {
             create_domain_bill_item(
                     _data.fqdn,
-                    impl_result.crtime,
+                    create_domain_result.crtime,
                     _registrar_id,
-                    impl_result.id,
+                    create_domain_result.id,
                     ctx);
 
             renew_domain_bill_item(
                     _data.fqdn,
-                    impl_result.crtime,
+                    create_domain_result.crtime,
                     _registrar_id,
-                    impl_result.id,
-                    impl_result.length_of_domain_registration_in_years,
-                    impl_result.old_exdate,
-                    impl_result.exdate,
+                    create_domain_result.id,
+                    create_domain_result.length_of_domain_registration_in_years,
+                    create_domain_result.old_exdate,
+                    create_domain_result.exdate,
                     ctx);
         }
 
@@ -78,7 +78,7 @@ namespace Domain {
 
         conditionally_enqueue_notification(
                 Notification::created,
-                impl_result.create_history_id,
+                create_domain_result.create_history_id,
                 _registrar_id,
                 _server_transaction_handle,
                 _client_transaction_handle,
@@ -86,12 +86,21 @@ namespace Domain {
                 _client_transaction_handles_prefix_not_to_nofify);
 
         return localized_result;
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::authentication_error_server_closing_connection,
+                std::set<Error>(),
+                _lang);
+    }
+    catch (const ObjectExists&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::object_exist,
                 std::set<Error>(),
                 _lang);
     }
@@ -143,16 +152,18 @@ namespace Domain {
                 e.get(),
                 _lang);
     }
-    catch (const ObjectExists&) {
+    catch (const std::exception& e) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("create_domain_localized failure: ") + e.what());
         throw create_localized_fail_response(
                 exception_localization_ctx,
-                Response::object_exist,
+                Response::failed,
                 std::set<Error>(),
                 _lang);
     }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in create_domain_localized function");
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,
@@ -161,5 +172,5 @@ namespace Domain {
     }
 }
 
-} // Epp::Domain
-} // Epp
+} // namespace Epp::Domain
+} // namespace Epp

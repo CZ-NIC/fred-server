@@ -27,6 +27,7 @@
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/optional.hpp>
 
 #include <set>
 
@@ -61,7 +62,7 @@ struct InfoDomainOutputData {
 InfoDomainOutputData info_domain(
     Fred::OperationContext& _ctx,
     const std::string& _domain_fqdn,
-    unsigned long long _registrar_id
+    unsigned long long _session_registrar_id
 );
 
 } // namespace Epp::Domain

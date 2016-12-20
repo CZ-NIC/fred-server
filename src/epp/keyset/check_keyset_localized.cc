@@ -76,6 +76,7 @@ CheckKeysetLocalizedResponse check_keyset_localized(
         return CheckKeysetLocalizedResponse(
                 localized_success_response,
                 localized_check_keyset_results);
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator ctx;

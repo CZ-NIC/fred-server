@@ -76,10 +76,10 @@ RenewDomainResult renew_domain(
     }
 
     //check if fqdn is registered and get domain info data and lock domain for update
-    Fred::InfoDomainData domain_info_data;
+    Fred::InfoDomainData info_domain_data;
     try
     {
-        domain_info_data =  Fred::InfoDomainByHandle(
+        info_domain_data =  Fred::Domain::InfoDomainByHandle(
                 Fred::Zone::rem_trailing_dot(_data.fqdn))
             .set_lock().exec(_ctx,"UTC").info_domain_data;
     }
@@ -97,7 +97,7 @@ RenewDomainResult renew_domain(
     try
     {
         const boost::gregorian::date current_exdate = boost::gregorian::from_simple_string(_data.current_exdate);
-        if(current_exdate != domain_info_data.expiration_date)
+        if(current_exdate != info_domain_data.expiration_date)
         {
             throw std::runtime_error("input exdate");
         }
@@ -140,7 +140,7 @@ RenewDomainResult renew_domain(
 
     //check if domain renew is possible
     Database::Result exdate_result = _ctx.get_conn().exec_params(Database::ParamQuery
-        ("SELECT (").param_date(domain_info_data.expiration_date)
+        ("SELECT (").param_date(info_domain_data.expiration_date)
             (" + ").param_bigint(domain_registration_in_months)(" * ('1 month'::interval))::date as new_exdate, ")
         ("(").param_date(current_local_date)
             (" + ").param_bigint(zone_data.ex_period_max)(" * ('1 month'::interval))::date as max_exdate"));
@@ -176,10 +176,10 @@ RenewDomainResult renew_domain(
 
         //ENUM validation expiration date is optional, if missing ENUM domain is not currently validated
         const boost::optional<boost::gregorian::date> current_valexdate
-            = domain_info_data.enum_domain_validation.isnull()
+            = info_domain_data.enum_domain_validation.isnull()
                 ? boost::optional<boost::gregorian::date>()
                 : boost::optional<boost::gregorian::date>(
-                    domain_info_data.enum_domain_validation.get_value().validation_expiration);
+                    info_domain_data.enum_domain_validation.get_value().validation_expiration);
 
         if(is_new_enum_domain_validation_expiration_date_invalid(
             new_valexdate, current_local_date, zone_data.enum_validation_period,
@@ -198,19 +198,19 @@ RenewDomainResult renew_domain(
                .exec(_ctx)
                .info_registrar_data;
 
-    if( domain_info_data.sponsoring_registrar_handle != logged_in_registrar.handle
+    if( info_domain_data.sponsoring_registrar_handle != logged_in_registrar.handle
         && !logged_in_registrar.system.get_value_or_default() ) {
         throw AuthorizationError();
     }
 
     // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(domain_info_data.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(domain_info_data.id).exec(_ctx);
+    Fred::LockObjectStateRequestLock(info_domain_data.id).exec(_ctx);
+    Fred::PerformObjectStateRequest(info_domain_data.id).exec(_ctx);
 
     if( !logged_in_registrar.system.get_value_or_default()
-            && (Fred::ObjectHasState(domain_info_data.id, Fred::ObjectState::SERVER_RENEW_PROHIBITED).exec(_ctx)
+            && (Fred::ObjectHasState(info_domain_data.id, Fred::ObjectState::SERVER_RENEW_PROHIBITED).exec(_ctx)
                 ||
-                Fred::ObjectHasState(domain_info_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
+                Fred::ObjectHasState(info_domain_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
     ) {
         throw ObjectStatusProhibitsOperation();
     }
@@ -239,10 +239,10 @@ RenewDomainResult renew_domain(
         unsigned long long renewed_domain_history_id = renew_domain.exec(_ctx);
 
         return RenewDomainResult(
-            domain_info_data.id,
+            info_domain_data.id,
             renewed_domain_history_id,
             current_utc_time,
-            domain_info_data.expiration_date,
+            info_domain_data.expiration_date,
             new_exdate,
             domain_registration_in_months / 12);
 

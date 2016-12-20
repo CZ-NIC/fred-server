@@ -88,11 +88,10 @@ InfoContactLocalizedResponse info_contact_localized(
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoContact)));
 
         const InfoContactOutputData info_contact_data =
-            info_contact(
-                    ctx,
-                    _contact_handle,
-                    _lang,
-                    _registrar_id);
+                info_contact(
+                        ctx,
+                        _contact_handle,
+                        _registrar_id);
 
         InfoContactLocalizedOutputData output_data(info_contact_data.disclose);
         output_data.handle                       = info_contact_data.handle;

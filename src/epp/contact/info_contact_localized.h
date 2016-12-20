@@ -25,11 +25,12 @@
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
+
 #include <map>
 #include <set>
 #include <string>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
 
 namespace Epp {
 namespace Contact {
@@ -94,7 +95,7 @@ struct InfoContactLocalizedResponse
 };
 
 InfoContactLocalizedResponse info_contact_localized(
-        const std::string& _handle,
+        const std::string& _contact_handle,
         unsigned long long _registrar_id,
         SessionLang::Enum _lang,
         const std::string& _server_transaction_handle);

@@ -51,49 +51,49 @@ std::set<std::string> vector_of_Fred_ObjectIdHandlePair_to_set_of_string(const s
 }
 
 void check_equal(
-    const Epp::Domain::InfoDomainOutputData& _domain_info_output_data,
+    const Epp::Domain::InfoDomainOutputData& _info_domain_output_data,
     const Fred::InfoDomainData& _info_domain_data)
 {
-    BOOST_CHECK_EQUAL(_domain_info_output_data.roid, _info_domain_data.roid);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.fqdn, _info_domain_data.fqdn);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.registrant, _info_domain_data.registrant.handle);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.roid, _info_domain_data.roid);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.fqdn, _info_domain_data.fqdn);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.registrant, _info_domain_data.registrant.handle);
     //BOOST_CHECK_EQUAL(
-    //    _domain_info_output_data.nsset.isnull() ? "" : domain_info_output_data.nsset.get_value(),
+    //    _info_domain_output_data.nsset.isnull() ? "" : info_domain_output_data.nsset.get_value(),
     //    _info_domain_data.nsset.isnull() ? "" : _info_domain_data.nsset.get_value().handle
     //);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.nsset.get_value_or_default(), _info_domain_data.nsset.get_value_or_default().handle);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.keyset.get_value_or_default(), _info_domain_data.keyset.get_value_or_default().handle);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.nsset.get_value_or_default(), _info_domain_data.nsset.get_value_or_default().handle);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.keyset.get_value_or_default(), _info_domain_data.keyset.get_value_or_default().handle);
     // states
-    BOOST_CHECK_EQUAL(_domain_info_output_data.sponsoring_registrar_handle, _info_domain_data.sponsoring_registrar_handle);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.creating_registrar_handle, _info_domain_data.create_registrar_handle);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.last_update_registrar_handle, _info_domain_data.update_registrar_handle);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.sponsoring_registrar_handle, _info_domain_data.sponsoring_registrar_handle);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.creating_registrar_handle, _info_domain_data.create_registrar_handle);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.last_update_registrar_handle, _info_domain_data.update_registrar_handle);
 
-    BOOST_CHECK_EQUAL(_domain_info_output_data.crdate, _info_domain_data.creation_time);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.last_update, _info_domain_data.update_time);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.last_transfer, _info_domain_data.transfer_time);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.exdate, _info_domain_data.expiration_date);
-    BOOST_REQUIRE(_domain_info_output_data.auth_info_pw);
-    BOOST_CHECK_EQUAL(_domain_info_output_data.auth_info_pw.value(), _info_domain_data.authinfopw);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.crdate, _info_domain_data.creation_time);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.last_update, _info_domain_data.update_time);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.last_transfer, _info_domain_data.transfer_time);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.exdate, _info_domain_data.expiration_date);
+    BOOST_REQUIRE(_info_domain_output_data.auth_info_pw);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.auth_info_pw.value(), _info_domain_data.authinfopw);
 
     std::set<std::string> info_domain_data_admin_contacts = vector_of_Fred_ObjectIdHandlePair_to_set_of_string(_info_domain_data.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(
-        _domain_info_output_data.admin.begin(),
-        _domain_info_output_data.admin.end(),
+        _info_domain_output_data.admin.begin(),
+        _info_domain_output_data.admin.end(),
         info_domain_data_admin_contacts.begin(),
         info_domain_data_admin_contacts.end()
     );
 
     BOOST_CHECK_EQUAL(
-       _domain_info_output_data.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()).get_valexdate(),
+       _info_domain_output_data.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()).get_valexdate(),
        _info_domain_data.enum_domain_validation.get_value_or_default().validation_expiration
    );
 
     BOOST_CHECK_EQUAL(
-       _domain_info_output_data.ext_enum_domain_validation.get_value_or_default().get_publish(),
+       _info_domain_output_data.ext_enum_domain_validation.get_value_or_default().get_publish(),
        _info_domain_data.enum_domain_validation.get_value_or_default().publish
    );
 
-    BOOST_CHECK_EQUAL(_domain_info_output_data.tmpcontact.size(), 0);
+    BOOST_CHECK_EQUAL(_info_domain_output_data.tmpcontact.size(), 0);
 }
 
 } // namespace {anonymous}

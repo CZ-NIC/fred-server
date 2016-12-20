@@ -118,8 +118,8 @@
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/epp/corba_conversions.h"
-#include "src/corba/epp/domain/domain_check_corba_conversions.h"
-#include "src/corba/epp/domain/domain_info_corba_conversions.h"
+#include "src/corba/epp/domain/check_domain_corba_conversions.h"
+#include "src/corba/epp/domain/info_domain_corba_conversions.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "util/util.h"
 
@@ -2850,7 +2850,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     try {
         const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
-        const Epp::Domain::InfoDomainResponse domain_info_response = Epp::Domain::info_domain_localized(
+        const Epp::Domain::InfoDomainLocalizedResponse info_domain_response = Epp::Domain::info_domain_localized(
             Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
             epp_registrar_session_data.registrar_id,
             epp_registrar_session_data.language,
@@ -2858,8 +2858,8 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
         );
 
         ccReg::Domain_var domain_info_result = new ccReg::Domain;
-        Corba::wrap_Epp_Domain_DomainInfoLocalizedOutputData(domain_info_response.localized_domain_info_output_data, domain_info_result.inout());
-        ccReg::Response_var return_value = new ccReg::Response(Corba::wrap_response(domain_info_response.localized_success_response, server_transaction_handle));
+        Corba::wrap_Epp_Domain_InfoDomainLocalizedOutputData(info_domain_response.info_domain_localized_output_data, domain_info_result.inout());
+        ccReg::Response_var return_value = new ccReg::Response(Corba::wrap_response(info_domain_response.localized_success_response, server_transaction_handle));
 
         /* No exception shall be thrown from here onwards. */
 
@@ -2945,18 +2945,18 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     }
 }
 
-ccReg::Response * ccReg_EPP_i::DomainCreate(
-        const char *fqdn,
-        const char *Registrant,
-        const char *nsset,
-        const char *keyset,
-        const char *AuthInfoPw,
+ccReg::Response* ccReg_EPP_i::DomainCreate(
+        const char* fqdn,
+        const char* Registrant,
+        const char* nsset,
+        const char* keyset,
+        const char* AuthInfoPw,
         const ccReg::Period_str& period,
-        const ccReg::AdminContact & admin,
+        const ccReg::AdminContact& admin,
         ccReg::timestamp_out _create_time,
         ccReg::timestamp_out exDate,
-        const ccReg::EppParams &_epp_params,
-        const ccReg::ExtensionList & ext)
+        const ccReg::EppParams& _epp_params,
+        const ccReg::ExtensionList& ext)
 {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {

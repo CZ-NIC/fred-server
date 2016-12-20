@@ -37,7 +37,7 @@ namespace Contact {
 
 struct InfoContactOutputData
 {
-    InfoContactOutputData(const boost::optional< ContactDisclose > &_disclose);
+    InfoContactOutputData(const boost::optional< ContactDisclose >& _disclose);
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -71,10 +71,9 @@ struct InfoContactOutputData
  * @throws ExceptionNonexistentHandle
  */
 InfoContactOutputData info_contact(
-    Fred::OperationContext &_ctx,
-    const std::string &_handle,
-    SessionLang::Enum _object_state_description_lang,
-    unsigned long long _session_registrar_id);
+        Fred::OperationContext& _ctx,
+        const std::string& _handle,
+        unsigned long long _session_registrar_id);
 
 } // namespace Epp::Contact
 } // namespace Epp

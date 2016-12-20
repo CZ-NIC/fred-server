@@ -107,6 +107,7 @@ ResponseOfCreate create_keyset_localized(
                 _dont_notify_client_transaction_handles_with_this_prefix);
 
         return localized_result;
+
     }
     catch (const AuthErrorServerClosingConnection&)
     {

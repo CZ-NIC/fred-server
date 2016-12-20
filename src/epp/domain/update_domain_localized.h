@@ -28,33 +28,30 @@
 #include <string>
 #include <vector>
 
-#include <string>
-
 namespace Epp {
-
 namespace Domain {
 
 LocalizedSuccessResponse update_domain_localized(
-    const std::string& _domain_fqdn,
-    const Optional<std::string>& _registrant_chg,
-    const Optional<std::string>& _auth_info_pw_chg,
-    const Optional<Nullable<std::string> >& _nsset_chg,
-    const Optional<Nullable<std::string> >& _keyset_chg,
-    const std::vector<std::string>& _admin_contacts_add,
-    const std::vector<std::string>& _admin_contacts_rem,
-    const std::vector<std::string>& _tmpcontacts_rem,
-    const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
-    unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
-    const bool _epp_update_domain_enqueue_check,
-    SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const bool _epp_notification_disabled,
-    const std::string& _client_transaction_handles_prefix_not_to_notify,
-    bool _rifd_epp_update_domain_keyset_clear);
-}
+        const std::string& _domain_fqdn,
+        const Optional<std::string>& _registrant_chg,
+        const Optional<std::string>& _auth_info_pw_chg,
+        const Optional<Nullable<std::string> >& _nsset_chg,
+        const Optional<Nullable<std::string> >& _keyset_chg,
+        const std::vector<std::string>& _admin_contacts_add,
+        const std::vector<std::string>& _admin_contacts_rem,
+        const std::vector<std::string>& _tmpcontacts_rem,
+        const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id,
+        bool _epp_update_domain_enqueue_check,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        bool _epp_notification_disabled,
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix,
+        bool _rifd_epp_update_domain_keyset_clear);
 
-}
+} // namespace Epp::Domain
+} // namespace Epp
 
 #endif

@@ -14,7 +14,6 @@
 
 #include <string>
 
-
 namespace Epp {
 namespace Contact {
 
@@ -123,7 +122,6 @@ InfoContactOutputData::InfoContactOutputData(const boost::optional< ContactDiscl
 InfoContactOutputData info_contact(
     Fred::OperationContext &_ctx,
     const std::string &_handle,
-    const SessionLang::Enum _object_state_description_lang,
     const unsigned long long _session_registrar_id)
 {
     const bool registrar_is_authenticated = _session_registrar_id != 0;

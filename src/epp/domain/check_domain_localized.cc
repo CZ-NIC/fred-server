@@ -72,6 +72,7 @@ CheckDomainLocalizedResponse check_domain_localized(
         return CheckDomainLocalizedResponse(
                 localized_success_response,
                 localized_check_results);
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         throw create_localized_fail_response(

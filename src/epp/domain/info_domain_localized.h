@@ -29,6 +29,7 @@
 
 #include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 
 #include <set>
 #include <string>
@@ -36,7 +37,8 @@
 namespace Epp {
 namespace Domain {
 
-struct DomainInfoLocalizedOutputData {
+struct InfoDomainLocalizedOutputData
+{
     typedef std::set<Fred::Object_State::Enum> States;
     std::string roid; ///< Domain repository ID
     std::string fqdn; ///< Domain FQDN
@@ -57,25 +59,24 @@ struct DomainInfoLocalizedOutputData {
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
 };
 
-struct InfoDomainResponse {
+struct InfoDomainLocalizedResponse
+{
     const LocalizedSuccessResponse localized_success_response;
-    const DomainInfoLocalizedOutputData localized_domain_info_output_data;
+    const InfoDomainLocalizedOutputData info_domain_localized_output_data;
 
-    InfoDomainResponse(
+    InfoDomainLocalizedResponse(
         const LocalizedSuccessResponse& localized_success_response,
-        const DomainInfoLocalizedOutputData& localized_domain_info_output_data
-    ) :
-        localized_success_response(localized_success_response),
-        localized_domain_info_output_data(localized_domain_info_output_data)
+        const InfoDomainLocalizedOutputData& info_domain_localized_output_data)
+    :   localized_success_response(localized_success_response),
+        info_domain_localized_output_data(info_domain_localized_output_data)
     { }
 };
 
-InfoDomainResponse info_domain_localized(
-    const std::string& _domain_fqdn,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle
-);
+InfoDomainLocalizedResponse info_domain_localized(
+        const std::string& _domain_fqdn,
+        unsigned long long _registrar_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle);
 
 } // namespace Epp::Domain
 } // namespace Epp

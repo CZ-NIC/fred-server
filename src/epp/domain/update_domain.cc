@@ -93,10 +93,10 @@ unsigned long long update_domain(
     }
 
 
-    Fred::InfoDomainData domain_data_before_update;
+    Fred::InfoDomainData info_domain_data_before_update;
     try
     {
-        domain_data_before_update = Fred::InfoDomainByHandle(
+        info_domain_data_before_update = Fred::InfoDomainByHandle(
                 Fred::Zone::rem_trailing_dot(_domain_fqdn))
             .set_lock().exec(_ctx, "UTC").info_domain_data;
     }
@@ -132,10 +132,10 @@ unsigned long long update_domain(
             else {
 
                 const boost::optional<boost::gregorian::date> curr_enum_valexdate
-                    = domain_data_before_update.enum_domain_validation.isnull()
+                    = info_domain_data_before_update.enum_domain_validation.isnull()
                         ? boost::optional<boost::gregorian::date>()
                         : boost::optional<boost::gregorian::date>(
-                            domain_data_before_update.enum_domain_validation.get_value().validation_expiration);
+                            info_domain_data_before_update.enum_domain_validation.get_value().validation_expiration);
 
                 if(is_new_enum_domain_validation_expiration_date_invalid(
                     req_enum_valexdate.get_value(),
@@ -176,7 +176,7 @@ unsigned long long update_domain(
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
 
-    const bool is_sponsoring_registrar = (domain_data_before_update.sponsoring_registrar_handle ==
+    const bool is_sponsoring_registrar = (info_domain_data_before_update.sponsoring_registrar_handle ==
                                           session_registrar.handle);
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
     const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
@@ -185,10 +185,10 @@ unsigned long long update_domain(
         throw AuthorizationError();
     }
 
-    Fred::LockObjectStateRequestLock(domain_data_before_update.id).exec(_ctx);
+    Fred::LockObjectStateRequestLock(info_domain_data_before_update.id).exec(_ctx);
     // process object state requests
-    Fred::PerformObjectStateRequest(domain_data_before_update.id).exec(_ctx);
-    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_update.id).exec(_ctx));
+    Fred::PerformObjectStateRequest(info_domain_data_before_update.id).exec(_ctx);
+    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data_before_update.id).exec(_ctx));
 
     if (!is_system_registrar) {
         if (domain_states.presents(Fred::Object_State::server_update_prohibited) ||
@@ -214,10 +214,10 @@ unsigned long long update_domain(
         }
         else if (
             std::find_if(
-                domain_data_before_update.admin_contacts.begin(),
-                domain_data_before_update.admin_contacts.end(),
+                info_domain_data_before_update.admin_contacts.begin(),
+                info_domain_data_before_update.admin_contacts.end(),
                 MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_add_iter)
-            ) != domain_data_before_update.admin_contacts.end()
+            ) != info_domain_data_before_update.admin_contacts.end()
         ) {
             parameter_value_policy_error.add(
                 Error::of_vector_parameter(
@@ -251,10 +251,10 @@ unsigned long long update_domain(
         }
         else if (
             std::find_if(
-                domain_data_before_update.admin_contacts.begin(),
-                domain_data_before_update.admin_contacts.end(),
+                info_domain_data_before_update.admin_contacts.begin(),
+                info_domain_data_before_update.admin_contacts.end(),
                 MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_rem_iter)
-            ) == domain_data_before_update.admin_contacts.end()
+            ) == info_domain_data_before_update.admin_contacts.end()
         ) {
             parameter_value_policy_error.add(
                 Error::of_vector_parameter(

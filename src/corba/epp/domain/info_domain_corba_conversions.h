@@ -17,28 +17,26 @@
  */
 
 /**
- *  @file domain_check_corba_conversions.h
+ *  @file domain_info_corba_conversions.h
  *  <++>
  */
 
-#ifndef DOMAIN_CHECK_CORBA_CONVERSIONS_H_AF87AFA258D34CB79CA9D67847D16BCF
-#define DOMAIN_CHECK_CORBA_CONVERSIONS_H_AF87AFA258D34CB79CA9D67847D16BCF
+#ifndef INFO_DOMAIN_CORBA_CONVERSIONS_H_368D6EEFB187456AA743F124CF1612EB
+#define INFO_DOMAIN_CORBA_CONVERSIONS_H_368D6EEFB187456AA743F124CF1612EB
 
 #include "util/corba_conversion.h"
 
 #include "src/corba/EPP.hh"
 
-#include "src/epp/domain/check_domain_localized.h"
+#include "src/epp/domain/info_domain_localized.h"
 
 namespace Corba {
 
-/**
- * @returns data ordered the same way as input fqdns
- */
-ccReg::CheckResp wrap_Epp_Domain_CheckDomainLocalizedResponse(
-        const std::vector<std::string>& _domain_fqdns,
-        const std::map<std::string, boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction);
+    void wrap_Epp_Domain_InfoDomainLocalizedOutputData(
+        const Epp::Domain::InfoDomainLocalizedOutputData& _src,
+        ccReg::Domain& _dst
+    );
 
-} // namespace Corba
+}
 
 #endif

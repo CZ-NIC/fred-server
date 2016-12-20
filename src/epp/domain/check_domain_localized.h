@@ -40,8 +40,8 @@ struct CheckDomainLocalizedResponse
 
     CheckDomainLocalizedResponse(
         const LocalizedSuccessResponse& localized_success_response,
-        const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> >& domain_fqdn_to_domain_localized_registration_obstruction
-    ) :
+        const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> >& domain_fqdn_to_domain_localized_registration_obstruction)
+    :
         localized_success_response(localized_success_response),
         domain_fqdn_to_domain_localized_registration_obstruction(domain_fqdn_to_domain_localized_registration_obstruction)
     { }

@@ -1546,10 +1546,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/action.h \
 		src/corba/epp/reason.h \
 		src/corba/epp/response.h \
-		src/corba/epp/domain/domain_check_corba_conversions.h \
-		src/corba/epp/domain/domain_check_corba_conversions.cc \
-		src/corba/epp/domain/domain_info_corba_conversions.h \
-		src/corba/epp/domain/domain_info_corba_conversions.cc \
+		src/corba/epp/domain/check_domain_corba_conversions.h \
+		src/corba/epp/domain/check_domain_corba_conversions.cc \
+		src/corba/epp/domain/info_domain_corba_conversions.h \
+		src/corba/epp/domain/info_domain_corba_conversions.cc \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
 		src/epp/impl/disclose_policy.h \

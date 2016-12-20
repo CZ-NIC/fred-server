@@ -300,7 +300,7 @@ bool tmpcontacts_rem_not_empty_exception_check(const Epp::ParameterValuePolicyEr
    return !e.is_empty();
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForDomainUpdate)
+BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForUpdateDomain)
 {
     BOOST_REQUIRE(!tmpcontacts_rem_.empty());
 
@@ -334,7 +334,7 @@ BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForDomainUpdate)
     const std::string fqdn_with_spaces("  " + info_domain_data_.fqdn + "  ");
 
     BOOST_CHECK_THROW(
-        Epp::Domain::domain_update_impl(
+        Epp::Domain::update_domain(
             ctx,
             fqdn_with_spaces,
             Optional<std::string>(new_registrant_handle_),
@@ -353,7 +353,7 @@ BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForDomainUpdate)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(ok, HasDataForDomainUpdate)
+BOOST_FIXTURE_TEST_CASE(ok, HasDataForUpdateDomain)
 {
     BOOST_REQUIRE(admin_contacts_add_.size() == 2);
     BOOST_REQUIRE(admin_contacts_rem_.size() == 1);

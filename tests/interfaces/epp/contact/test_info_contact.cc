@@ -92,7 +92,6 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_contact)
         Epp::Contact::info_contact(
             ctx,
             contact.handle,
-            Epp::SessionLang::en,
             0 /* <== !!! */
         ),
         Epp::AuthErrorServerClosingConnection
@@ -105,7 +104,6 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_contact)
         Epp::Contact::info_contact(
             ctx,
             contact.handle + "SOMEobscureSTRING",
-            Epp::SessionLang::en,
             42 /* TODO */
         ),
         Epp::NonexistentHandle
@@ -116,7 +114,11 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_contact)
 BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_contact)
 {
     check_equal(
-        Epp::Contact::info_contact(ctx, contact.handle, Epp::SessionLang::en, registrar.id),
+        Epp::Contact::info_contact(
+            ctx,
+            contact.handle,
+            registrar.id
+        ),
         contact);
 }
 

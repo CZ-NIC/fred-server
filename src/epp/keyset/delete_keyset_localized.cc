@@ -54,6 +54,7 @@ LocalizedSuccessResponse delete_keyset_localized(
                 _client_transaction_handles_prefix_not_to_nofify);
 
         return result;
+
     }
     catch (const AuthErrorServerClosingConnection& e) {
         Fred::OperationContextCreator exception_localization_ctx;

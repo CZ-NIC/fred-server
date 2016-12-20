@@ -77,6 +77,7 @@ CheckNssetLocalizedResponse check_nsset_localized(
         return CheckNssetLocalizedResponse(
                 localized_success_response,
                 localized_check_nsset_results);
+
     }
     catch (const AuthErrorServerClosingConnection) {
         Fred::OperationContextCreator ctx;

@@ -41,7 +41,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const RenewDomainResult impl_result(
+        const RenewDomainResult renew_domain_result(
                 renew_domain(
                         ctx,
                         _data,
@@ -53,7 +53,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
                         ctx,
                         Response::ok,
                         _lang),
-                impl_result.exdate);
+                renew_domain_result.exdate);
 
         //tmp billing impl
         if(_rifd_epp_operations_charging
@@ -62,12 +62,12 @@ RenewDomainLocalizedResponse renew_domain_localized(
         {
             renew_domain_bill_item(
                     _data.fqdn,
-                    impl_result.curent_time,
+                    renew_domain_result.curent_time,
                     _registrar_id,
-                    impl_result.domain_id,
-                    impl_result.length_of_domain_registration_in_years,
-                    impl_result.old_exdate,
-                    impl_result.exdate,
+                    renew_domain_result.domain_id,
+                    renew_domain_result.length_of_domain_registration_in_years,
+                    renew_domain_result.old_exdate,
+                    renew_domain_result.exdate,
                     ctx);
         }
 
@@ -75,7 +75,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
 
         conditionally_enqueue_notification(
                 Notification::renewed,
-                impl_result.domain_history_id,
+                renew_domain_result.domain_history_id,
                 _registrar_id,
                 _server_transaction_handle,
                 _client_transaction_handle,
@@ -83,6 +83,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 _client_transaction_handles_prefix_not_to_nofify);
 
         return localized_result;
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;

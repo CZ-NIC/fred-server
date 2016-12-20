@@ -21,7 +21,7 @@ LocalizedSuccessResponse delete_contact_localized(
         const std::string& _server_transaction_handle,
         const std::string& _client_transaction_handle,
         const bool _epp_notification_disabled,
-        const std::string& _client_transaction_handles_prefix_not_to_notify)
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix)
 {
     try {
         Logging::Context logging_ctx1("rifd");
@@ -31,15 +31,17 @@ LocalizedSuccessResponse delete_contact_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long last_history_id_before_delete = delete_contact(
-                ctx,
-                _contact_handle,
-                _registrar_id);
+        const unsigned long long last_history_id_before_delete =
+                delete_contact(
+                        ctx,
+                        _contact_handle,
+                        _registrar_id);
 
-        const LocalizedSuccessResponse result = create_localized_success_response(
-                ctx,
-                Response::ok,
-                _lang);
+        const LocalizedSuccessResponse result =
+                create_localized_success_response(
+                        ctx,
+                        Response::ok,
+                        _lang);
 
         ctx.commit_transaction();
 
@@ -50,9 +52,10 @@ LocalizedSuccessResponse delete_contact_localized(
                 _server_transaction_handle,
                 _client_transaction_handle,
                 _epp_notification_disabled,
-                _client_transaction_handles_prefix_not_to_notify);
+                _dont_notify_client_transaction_handles_with_this_prefix);
 
         return result;
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;

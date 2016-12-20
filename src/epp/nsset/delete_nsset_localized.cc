@@ -53,6 +53,7 @@ LocalizedSuccessResponse delete_nsset_localized(
                 _client_transaction_handles_prefix_not_to_nofify);
 
         return result;
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;

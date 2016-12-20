@@ -79,6 +79,7 @@ CheckContactLocalizedResponse check_contact_localized(
         return CheckContactLocalizedResponse(
                 localized_success_response,
                 localized_check_contact_results);
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         throw create_localized_fail_response(

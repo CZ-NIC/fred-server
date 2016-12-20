@@ -25,6 +25,7 @@
 #include "util/optional_value.h"
 
 #include <string>
+#include <vector>
 
 namespace Epp {
 namespace Contact {
@@ -34,12 +35,12 @@ LocalizedSuccessResponse update_contact_localized(
         const ContactChange& _data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
-        const bool _epp_update_contact_enqueue_check,
+        bool _epp_update_contact_enqueue_check,
         SessionLang::Enum _lang,
         const std::string& _server_transaction_handle,
         const std::string& _client_transaction_handle,
-        const bool _epp_notification_disabled,
-        const std::string& _client_transaction_handles_prefix_not_to_notify);
+        bool _epp_notification_disabled,
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
 
 } // namespace Epp::Contact
 } // namespace Epp

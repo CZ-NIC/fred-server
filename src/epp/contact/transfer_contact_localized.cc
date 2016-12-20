@@ -7,6 +7,12 @@
 
 #include "util/log/context.h"
 
+#include <boost/format.hpp>
+#include <boost/format/free_funcs.hpp>
+
+#include <set>
+#include <string>
+
 namespace Epp {
 namespace Contact {
 
@@ -19,7 +25,7 @@ LocalizedSuccessResponse transfer_contact_localized(
         const std::string& _server_transaction_handle,
         const std::string& _client_transaction_handle,
         const bool _epp_notification_disabled,
-        const std::string& _client_transaction_handles_prefix_not_to_notify)
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix)
 {
     try {
         Logging::Context logging_ctx1("rifd");
@@ -52,7 +58,7 @@ LocalizedSuccessResponse transfer_contact_localized(
                 _server_transaction_handle,
                 _client_transaction_handle,
                 _epp_notification_disabled,
-                _client_transaction_handles_prefix_not_to_notify);
+                _dont_notify_client_transaction_handles_with_this_prefix);
 
         return result;
 

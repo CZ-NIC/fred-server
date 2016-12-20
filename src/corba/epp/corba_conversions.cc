@@ -16,7 +16,7 @@
 #include "util/map_at.h"
 #include "util/optional_value.h"
 
-#include "src/old_utils/util.h" // for convert_rfc3339_timestamp() // FIXME replace with domain_info_corba_conversions.cc version
+#include "src/old_utils/util.h" // for convert_rfc3339_timestamp() // FIXME replace with info_domain_corba_conversions.cc version
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>

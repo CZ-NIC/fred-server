@@ -75,15 +75,15 @@ CreateContactInputData::CreateContactInputData(const ContactChange& src)
 }
 
 CreateContactLocalizedResponse create_contact_localized(
-    const std::string& _contact_handle,
-    const CreateContactInputData& _data,
-    const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const bool _epp_notification_disabled,
-    const std::string& _dont_notify_client_transaction_handles_with_this_prefix)
+        const std::string& _contact_handle,
+        const CreateContactInputData& _data,
+        const unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id,
+        const SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        const bool _epp_notification_disabled,
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix)
 {
     try {
         Logging::Context logging_ctx("rifd");
@@ -93,8 +93,9 @@ CreateContactLocalizedResponse create_contact_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const CreateContactResult impl_result(
-                create_contact(ctx,
+        const CreateContactResult create_contact_result(
+                create_contact(
+                        ctx,
                         _contact_handle,
                         _data,
                         _registrar_id,
@@ -105,13 +106,13 @@ CreateContactLocalizedResponse create_contact_localized(
                         ctx,
                         Response::ok,
                         _lang),
-                impl_result.crdate);
+                create_contact_result.crdate);
 
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
                 Notification::created,
-                impl_result.create_history_id,
+                create_contact_result.create_history_id,
                 _registrar_id,
                 _server_transaction_handle,
                 _client_transaction_handle,

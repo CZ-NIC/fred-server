@@ -12,21 +12,23 @@
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
 
+#include <set>
+#include <string>
+
 namespace Epp {
 namespace Domain {
 
 LocalizedSuccessResponse transfer_domain_localized(
-    const std::string& _domain_fqdn,
-    const std::string& _authinfopw,
-    const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
-    const SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    const bool _epp_notification_disabled,
-    const std::string& _client_transaction_handles_prefix_not_to_notify
-) {
-
+        const std::string& _domain_fqdn,
+        const std::string& _authinfopw,
+        const unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id,
+        const SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        const bool _epp_notification_disabled,
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix)
+{
     try {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
@@ -60,23 +62,16 @@ LocalizedSuccessResponse transfer_domain_localized(
                 _server_transaction_handle,
                 _client_transaction_handle,
                 _epp_notification_disabled,
-                _client_transaction_handles_prefix_not_to_notify);
+                _dont_notify_client_transaction_handles_with_this_prefix);
 
         return result;
+
     }
     catch (const AuthErrorServerClosingConnection&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-    }
-    catch (const AuthorizationError&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::authorization_error,
                 std::set<Error>(),
                 _lang);
     }
@@ -112,8 +107,26 @@ LocalizedSuccessResponse transfer_domain_localized(
                 std::set<Error>(),
                 _lang);
     }
+    catch (const AuthorizationError&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::authorization_error,
+                std::set<Error>(),
+                _lang);
+    }
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("transfer_domain_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::failed,
+                std::set<Error>(),
+                _lang);
+    }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in transfer_domain_localized function");
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,

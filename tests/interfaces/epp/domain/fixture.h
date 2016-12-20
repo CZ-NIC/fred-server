@@ -424,7 +424,7 @@ struct HasInfoDomainDataOfDomainWithInvalidFqdn : HasInfoDomainData {
     }
 };
 
-struct HasDataForDomainUpdate : HasInfoDomainData {
+struct HasDataForUpdateDomain : HasInfoDomainData {
     const std::string new_registrant_handle_;
     const std::string new_auth_info_pw_;
     const std::string new_nsset_handle_;
@@ -438,7 +438,7 @@ struct HasDataForDomainUpdate : HasInfoDomainData {
     std::vector<std::string> tmpcontacts_rem_;
     std::vector<Epp::ENUMValidationExtension> enum_validation_list_;
 
-    HasDataForDomainUpdate()
+    HasDataForUpdateDomain() {
         : new_registrant_handle_("REGISTRANT2"),
           new_auth_info_pw_(" auth info "),
           new_nsset_handle_("NSSET2"),

@@ -1,5 +1,5 @@
 #include "src/corba/epp/corba_conversions.h"
-#include "src/corba/epp/domain/domain_info_corba_conversions.h"
+#include "src/corba/epp/domain/info_domain_corba_conversions.h"
 #include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/domain/impl/domain_enum_validation.h"
@@ -73,8 +73,8 @@ void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(const Nullable<Epp:
 
 } // namespace Corba::{anonymous}
 
-void wrap_Epp_Domain_DomainInfoLocalizedOutputData(
-    const Epp::Domain::DomainInfoLocalizedOutputData& _src,
+void wrap_Epp_Domain_InfoDomainLocalizedOutputData(
+    const Epp::Domain::InfoDomainLocalizedOutputData& _src,
     ccReg::Domain& _dst
 ) {
 

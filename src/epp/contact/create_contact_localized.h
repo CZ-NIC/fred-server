@@ -33,7 +33,6 @@ namespace Contact {
 
 struct CreateContactInputData
 {
-    CreateContactInputData(const ContactChange& src);
     std::string name;
     std::string organization;
     std::vector<std::string> streets;
@@ -50,6 +49,8 @@ struct CreateContactInputData
     Nullable<ContactChange::IdentType::Enum> identtype;
     boost::optional<std::string> authinfo;
     boost::optional<ContactDisclose> disclose;
+
+    CreateContactInputData(const ContactChange& src);
 };
 
 struct CreateContactLocalizedResponse
@@ -73,7 +74,7 @@ CreateContactLocalizedResponse create_contact_localized(
         SessionLang::Enum _lang,
         const std::string& _server_transaction_handle,
         const std::string& _client_transaction_handle,
-        const bool _epp_notification_disabled,
+        bool _epp_notification_disabled,
         const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
 
 } // namespace Epp::Contact
