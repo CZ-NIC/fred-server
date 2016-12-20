@@ -39,7 +39,6 @@
 
 namespace Epp {
 namespace Keyset {
-namespace Localized {
 
 CheckKeysetLocalizedResponse check_keyset_localized(
         const std::set<std::string>& _keyset_handles,
@@ -104,6 +103,5 @@ CheckKeysetLocalizedResponse check_keyset_localized(
     }
 }
 
-} // namespace Epp::Keyset::Localized
 } // namespace Epp::Keyset
 } // namespace Epp

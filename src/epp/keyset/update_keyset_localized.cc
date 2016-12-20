@@ -17,7 +17,6 @@
 
 namespace Epp {
 namespace Keyset {
-namespace Localized {
 
 LocalizedSuccessResponse update_keyset_localized(
         const std::string& _keyset_handle,
@@ -146,6 +145,5 @@ LocalizedSuccessResponse update_keyset_localized(
     }
 }
 
-} // namespace Epp::Keyset::Localized
 } // namespace Epp::Keyset
 } // namespace Epp

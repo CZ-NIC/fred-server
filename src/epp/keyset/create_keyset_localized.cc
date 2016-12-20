@@ -17,7 +17,6 @@
 
 namespace Epp {
 namespace Keyset {
-namespace Localized {
 
 namespace {
 
@@ -54,7 +53,7 @@ Presents insert_vector_parameter_error_if_presents(
     return false;
 }
 
-}//namespace Epp::Keyset::Localized::{anonymous}
+}//namespace Epp::Keyset::{anonymous}
 
 ResponseOfCreate create_keyset_localized(
         const std::string& _keyset_handle,
@@ -205,6 +204,5 @@ ResponseOfCreate create_keyset_localized(
     }
 }
 
-} // namespace Epp::Keyset::Localized
 } // namespace Epp::Keyset
 } // namespace Epp

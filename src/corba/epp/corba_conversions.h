@@ -128,14 +128,14 @@ namespace Corba {
      */
     void wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
         const std::vector< std::string >& handles,
-        const Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results& check_results,
+        const Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
         ccReg::CheckResp& dst);
 
     void wrap_Epp_ObjectStatesLocalized(const Epp::ObjectStatesLocalized& _src, ccReg::Status& _dst);
 
     void wrap_Epp_InfoKeysetOutputData_TechContacts(const Epp::Keyset::InfoKeysetOutputData::TechContacts& _src, ccReg::TechContact& _dst);
 
-    void wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(const Epp::Keyset::Localized::InfoKeysetLocalizedOutputData& _src, ccReg::KeySet& _dst);
+    void wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(const Epp::Keyset::InfoKeysetLocalizedOutputData& _src, ccReg::KeySet& _dst);
 
     /**
      * @returns data ordered the same way as input nsset_handles

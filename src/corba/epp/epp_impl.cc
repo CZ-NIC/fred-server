@@ -2346,7 +2346,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::vector< std::string > handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::Keyset::Localized::CheckKeysetLocalizedResponse localized_response = Epp::Keyset::Localized::check_keyset_localized(
+        const Epp::Keyset::CheckKeysetLocalizedResponse localized_response = Epp::Keyset::check_keyset_localized(
             std::set< std::string >(handles_to_be_checked.begin(), handles_to_be_checked.end()),
             session_data.registrar_id,
             session_data.language,
@@ -2609,7 +2609,7 @@ ccReg_EPP_i::KeySetTransfer(
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const std::string auth_info = Corba::unwrap_string_from_const_char_ptr(_auth_info);
-        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::transfer_keyset_localized(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::transfer_keyset_localized(
             keyset_handle,
             auth_info,
             session_data.registrar_id,
@@ -3073,8 +3073,8 @@ ccReg_EPP_i::KeySetInfo(
             Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
         const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::Keyset::Localized::InfoKeysetLocalizedResponse response =
-            Epp::Keyset::Localized::info_keyset_localized(keyset_handle,
+        const Epp::Keyset::InfoKeysetLocalizedResponse response =
+            Epp::Keyset::info_keyset_localized(keyset_handle,
                                                           session_data.registrar_id,
                                                           session_data.language,
                                                           server_transaction_handle);
@@ -3207,7 +3207,7 @@ ccReg_EPP_i::KeySetCreate(
         const std::vector< Epp::Keyset::DnsKey > dns_keys =
             Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys);
 
-        const Epp::Keyset::Localized::ResponseOfCreate response = Epp::Keyset::Localized::create_keyset_localized(
+        const Epp::Keyset::ResponseOfCreate response = Epp::Keyset::create_keyset_localized(
             keyset_handle,
             auth_info_pw,
             tech_contacts,
@@ -3276,7 +3276,7 @@ ccReg_EPP_i::KeySetUpdate(
         const std::vector< Epp::Keyset::DnsKey > dns_keys_rem =
             Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_rem);
 
-        const Epp::LocalizedSuccessResponse response = Epp::Keyset::Localized::update_keyset_localized(
+        const Epp::LocalizedSuccessResponse response = Epp::Keyset::update_keyset_localized(
             keyset_handle,
             auth_info_pw,
             tech_contacts_add,

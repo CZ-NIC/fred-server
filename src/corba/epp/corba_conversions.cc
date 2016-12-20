@@ -743,7 +743,7 @@ namespace Corba {
     }
 
     static ccReg::CheckAvail wrap_keyset_handle_check_result(
-        const Nullable< Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Result >& _check_result)
+        const Nullable< Epp::Keyset::CheckKeysetLocalizedResponse::Result >& _check_result)
     {
         if (_check_result.isnull()) {
             return ccReg::NotExist;
@@ -761,7 +761,7 @@ namespace Corba {
 
     void wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
         const std::vector< std::string >& handles,
-        const Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results& check_results,
+        const Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
         ccReg::CheckResp& dst)
     {
         dst.length(handles.size());
@@ -770,7 +770,7 @@ namespace Corba {
         ::size_t idx = 0;
         for (Handles::const_iterator handle_ptr = handles.begin(); handle_ptr != handles.end(); ++handle_ptr, ++idx)
         {
-            typedef Epp::Keyset::Localized::CheckKeysetLocalizedResponse::Results CheckResults;
+            typedef Epp::Keyset::CheckKeysetLocalizedResponse::Results CheckResults;
             const CheckResults::const_iterator result_ptr = check_results.find(*handle_ptr);
             if (result_ptr == check_results.end()) {
                 throw std::out_of_range("handle " + (*handle_ptr) + " not found");
@@ -824,7 +824,7 @@ namespace Corba {
         }
     }
 
-    void wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(const Epp::Keyset::Localized::InfoKeysetLocalizedOutputData& _src, ccReg::KeySet& _dst)
+    void wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(const Epp::Keyset::InfoKeysetLocalizedOutputData& _src, ccReg::KeySet& _dst)
     {
         _dst.handle = _src.handle.c_str();
         _dst.ROID = _src.roid.c_str();

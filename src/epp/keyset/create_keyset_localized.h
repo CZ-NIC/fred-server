@@ -29,7 +29,6 @@
 
 namespace Epp {
 namespace Keyset {
-namespace Localized {
 
 struct ResponseOfCreate
 {
@@ -58,7 +57,6 @@ ResponseOfCreate create_keyset_localized(
         bool _epp_notification_disabled,
         const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
 
-} // namespace Epp::Keyset::Localized
 } // namespace Epp::Keyset
 } // namespace Epp
 

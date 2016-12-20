@@ -31,7 +31,6 @@
 
 namespace Epp {
 namespace Keyset {
-namespace Localized {
 
 struct CheckKeysetLocalizedResponse
 {
@@ -70,7 +69,6 @@ CheckKeysetLocalizedResponse check_keyset_localized(
         SessionLang::Enum _lang,
         const std::string& _server_transaction_handle);
 
-} // namespace Epp::Keyset::Localized
 } // namespace Epp::Keyset
 } // namespace Epp
 
