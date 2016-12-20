@@ -2316,7 +2316,7 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
         );
 
         ccReg::CheckResp_var domain_check_results = new ccReg::CheckResp(
-            Corba::wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
+            Corba::wrap_Epp_Domain_CheckDomainLocalizedResponse(
                 domain_fqdns,
                 domain_check_response.domain_fqdn_to_domain_localized_registration_obstruction
             )

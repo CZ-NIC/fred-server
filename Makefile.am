@@ -1598,8 +1598,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain.cc \
 		src/epp/domain/check_domain.h \
-		src/epp/domain/impl/domain_check_localization.cc \
-		src/epp/domain/impl/domain_check_localization.h \
 		src/epp/domain/delete_domain_localized.cc \
 		src/epp/domain/delete_domain_localized.h \
 		src/epp/domain/delete_domain.cc \

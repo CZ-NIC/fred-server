@@ -34,9 +34,9 @@ ccReg::CheckAvail wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
 /**
  * @returns check results in the same order as input handles
  */
-ccReg::CheckResp wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
+ccReg::CheckResp wrap_Epp_Domain_CheckDomainLocalizedResponse(
     const std::vector<std::string>& _domain_fqdns,
-    const Epp::Domain::DomainFqdnToDomainLocalizedRegistrationObstruction& _domain_fqdn_to_domain_localized_registration_obstruction
+    const std::map<std::string, boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> >&_domain_fqdn_to_domain_localized_registration_obstruction
 ) {
     ccReg::CheckResp result;
     result.length(_domain_fqdns.size());

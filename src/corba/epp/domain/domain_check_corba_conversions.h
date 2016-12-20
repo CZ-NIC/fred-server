@@ -29,18 +29,16 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/domain/check_domain_localized.h"
-#include "src/epp/domain/impl/domain_check_localization.h"
 
 namespace Corba {
 
-    /**
-     * @returns data ordered the same way as input fqdns
-     */
-    ccReg::CheckResp wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
-        const std::vector<std::string>& domain_fqdns,
-        const Epp::Domain::DomainFqdnToDomainLocalizedRegistrationObstruction& _domain_fqdn_to_domain_localized_registration_obstruction
-    );
+/**
+ * @returns data ordered the same way as input fqdns
+ */
+ccReg::CheckResp wrap_Epp_Domain_CheckDomainLocalizedResponse(
+        const std::vector<std::string>& _domain_fqdns,
+        const std::map<std::string, boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction);
 
-}
+} // namespace Corba
 
 #endif

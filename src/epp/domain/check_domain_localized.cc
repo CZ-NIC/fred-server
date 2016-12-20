@@ -23,7 +23,6 @@
 #include "src/epp/domain/check_domain_localized.h"
 #include "src/epp/domain/check_domain.h"
 
-#include "src/epp/domain/impl/domain_check_localization.h"
 #include "src/epp/domain/impl/domain_registration_obstruction.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
@@ -56,7 +55,7 @@ CheckDomainLocalizedResponse check_domain_localized(
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckDomain)));
 
-        const DomainFqdnToDomainRegistrationObstruction domain_fqdn_to_domain_registration_obstruction =
+        const std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_domain_results =
                 check_domain(
                         ctx,
                         _domain_fqdns,
@@ -68,15 +67,15 @@ CheckDomainLocalizedResponse check_domain_localized(
                         Response::ok,
                         _lang);
 
-        const DomainFqdnToDomainLocalizedRegistrationObstruction domain_fqdn_to_domain_localized_registration_obstruction =
-                create_domain_fqdn_to_domain_localized_registration_obstruction(
+        const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> > localized_check_results =
+                localize_check_results<DomainRegistrationObstruction, DomainLocalizedRegistrationObstruction, boost::optional>(
                         ctx,
-                        domain_fqdn_to_domain_registration_obstruction,
+                        check_domain_results,
                         _lang);
 
         return CheckDomainLocalizedResponse(
                 localized_success_response,
-                domain_fqdn_to_domain_localized_registration_obstruction);
+                localized_check_results);
     }
     catch (const AuthErrorServerClosingConnection&) {
         throw create_localized_fail_response(

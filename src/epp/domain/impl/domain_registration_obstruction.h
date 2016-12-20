@@ -54,6 +54,24 @@ struct DomainRegistrationObstruction {
         }
         throw MissingLocalizedDescription();
     }
+
+    /**
+     * @throws MissingLocalizedDescription
+     */
+    static DomainRegistrationObstruction::Enum from_reason(const Reason::Enum value)
+    {
+        switch (value)
+        {
+            case Reason::existing:                       return DomainRegistrationObstruction::registered;
+            case Reason::blacklisted_domain:             return DomainRegistrationObstruction::blacklisted;
+            case Reason::not_applicable_domain:          return DomainRegistrationObstruction::zone_not_in_registry;
+            case Reason::invalid_handle:                 return DomainRegistrationObstruction::invalid_fqdn;
+            default:
+                throw MissingLocalizedDescription();
+                break;
+        }
+    }
+
 };
 
 struct DomainLocalizedRegistrationObstruction {
