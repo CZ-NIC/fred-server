@@ -24,7 +24,7 @@
 #ifndef FIXTURE_H_389DB6E81FF44407AFC3763706918744
 #define FIXTURE_H_389DB6E81FF44407AFC3763706918744
 
-#include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/impl/domain_enum_validation.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/nsset/create_nsset.h"
@@ -38,8 +38,8 @@
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "tests/interfaces/epp/util.h"
-#include "src/epp/domain/domain_create.h"
-#include "src/epp/domain/domain_renew.h"
+#include "src/epp/domain/create_domain_localized.h"
+#include "src/epp/domain/renew_domain_localized.h"
 #include "tests/setup/fixtures.h"
 #include "util/optional_value.h"
 #include "util/db/nullable.h"
@@ -324,13 +324,12 @@ struct HasDomainData : HasInfoRegistrarData {
     const std::string authinfopw1;
     const std::string authinfopw2;
 
-    Epp::DomainCreateInputData domain1_create_input_data;
-    Epp::DomainCreateInputData domain2_create_input_data;
+    Epp::Domain::CreateDomainInputData domain1_create_input_data;
+    Epp::Domain::CreateDomainInputData domain2_create_input_data;
 
+    Epp::Domain::RenewDomainInputData domain1_renew_input_data;
 
-    Epp::DomainRenewInputData domain1_renew_input_data;
-
-    boost::optional<Epp::DomainRenewInputData> domain2_renew_input_data;
+    boost::optional<Epp::Domain::RenewDomainInputData> domain2_renew_input_data;
 
 
     HasDomainData()
@@ -354,17 +353,17 @@ struct HasDomainData : HasInfoRegistrarData {
     , authinfopw2("transferheslo")
 
     , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw1),
-        Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
+        Epp::Domain::DomainRegistrationTime(1, Epp::DomainRegistrationTime::Unit::year),
         Util::vector_of<std::string>(contact2)(contact3),
         std::vector<Epp::ENUMValidationExtension>())
 
     , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw2),
-            Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
+            Epp::Domain::DomainRegistrationTime(1, Epp::DomainRegistrationTime::Unit::year),
             Util::vector_of<std::string>(contact2)(contact3),
             std::vector<Epp::ENUMValidationExtension>())
 
     , domain1_renew_input_data(fqdn1, std::string(""),
-            Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
+            Epp::Domain::DomainRegistrationTime(1,Epp::Domain::DomainRegistrationTime::Unit::year),
             std::vector<Epp::ENUMValidationExtension>())
 
     {
@@ -389,9 +388,9 @@ struct HasDomainData : HasInfoRegistrarData {
             .set_enum_validation_expiration(create_result_fqdn2.creation_time.date() + boost::gregorian::months(3))
             .set_nsset(nsset1).set_keyset(keyset1).set_admin_contacts(Util::vector_of<std::string>(contact2)(contact3)).exec(ctx);
 
-        domain2_renew_input_data = Epp::DomainRenewInputData(fqdn2,
+        domain2_renew_input_data = Epp::Domain::RenewDomainInputData(fqdn2,
                 boost::gregorian::to_iso_extended_string(Fred::InfoDomainByHandle(fqdn2).exec(ctx).info_domain_data.expiration_date),
-                Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),std::vector<Epp::ENUMValidationExtension>());
+                Epp::Domain::DomainRegistrationTime(1,Epp::Domain::DomainRegistrationTime::Unit::year),std::vector<Epp::ENUMValidationExtension>());
 
         ctx.get_conn().exec_params(
             "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "

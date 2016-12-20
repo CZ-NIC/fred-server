@@ -2,8 +2,8 @@
 #include "src/corba/epp/domain/domain_info_corba_conversions.h"
 #include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_string.h"
-#include "src/epp/domain/domain_enum_validation.h"
-#include "src/epp/domain/domain_info.h"
+#include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/epp/domain/info_domain_localized.h"
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>

@@ -28,7 +28,7 @@
 
 #include "src/corba/EPP.hh"
 
-#include "src/epp/domain/domain_info.h"
+#include "src/epp/domain/info_domain_localized.h"
 
 namespace Corba {
 

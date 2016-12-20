@@ -263,80 +263,95 @@ public:
      *
      * \throws ccReg::EPP::EppError
      */
-    ccReg::Response* DomainCheck(
-        const ccReg::Check& _domain_fqdns,
-        ccReg::CheckResp_out _domain_check_results,
-        const ccReg::EppParams& _epp_params
-    );
+  ccReg::Response* DomainCheck(
+          const ccReg::Check& _domain_fqdns,
+          ccReg::CheckResp_out _domain_check_results,
+          const ccReg::EppParams& _epp_params);
 
-    /**
-     * DomainInfo - get information obout domain identified by its FQDN
-     *
-     * \param _domain_fqdn - identifier of domain - fully qualified domain name
-     * \param _domain_info - output information
-     * \param _epp_params - parameters of EPP session
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
-    ccReg::Response* DomainInfo(
-        const char* _domain_fqdn,
-        ccReg::Domain_out _domain_info,
-        const ccReg::EppParams& _epp_params
-    );
+  /**
+   * DomainInfo - get information obout domain identified by its FQDN
+   *
+   * \param _domain_fqdn - identifier of domain - fully qualified domain name
+   * \param _domain_info - output information
+   * \param _epp_params - parameters of EPP session
+   *
+   * \return ccReg::Response
+   *
+   * \throws ccReg::EPP::EppError
+   */
+  ccReg::Response* DomainInfo(
+          const char* _domain_fqdn,
+          ccReg::Domain_out _domain_info,
+          const ccReg::EppParams& _epp_params);
 
-    /**
-     * DomainDelete - delete domain identified by its FQDN
-     *
-     * \param _domain_fqdn - identifier of domain - fully qualified domain name
-     * \param _epp_params - parameters of EPP session
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
-    ccReg::Response* DomainDelete(
-        const char* _domain_fqdn,
-        const ccReg::EppParams& _epp_params
-    );
+  /**
+   * DomainDelete - delete domain identified by its FQDN
+   *
+   * \param _domain_fqdn - identifier of domain - fully qualified domain name
+   * \param _epp_params - parameters of EPP session
+   *
+   * \return ccReg::Response
+   *
+   * \throws ccReg::EPP::EppError
+   */
+  ccReg::Response* DomainDelete(
+          const char* _domain_fqdn,
+          const ccReg::EppParams& _epp_params);
 
-    /**
-     * DomainUpdate - update data of domain identified by its FQDN
-     *
-     * \param _domain_fqdn - identifiers of domains to check
-     * \param _registrant_chg - change of domain holder
-     * \param _auth_info_pw_chg  - change of password
-     * \param _nsset_chg - change of nsset
-     * \param _keyset_chg - change of keyset
-     * \param _admin_contacts_add - sequence of added administration contacts
-     * \param _admin_contacts_rem - sequence of deleted administration contacts
-     * \param _tmpcontacts_rem - OBSOLETE sequence of deleted temporary contacts
-     * \param _epp_params - common EPP parametres
-     * \param _ext - ExtensionList
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
-    ccReg::Response* DomainUpdate(
-        const char* _domain_fqdn,
-        const char* _registrant_chg,
-        const char* _auth_info_pw_chg,
-        const char* _nsset_chg,
-        const char* _keyset_chg,
-        const ccReg::AdminContact& _admin_contacts_add,
-        const ccReg::AdminContact& _admin_contacts_rem,
-        const ccReg::AdminContact& _tmpcontacts_rem,
-        const ccReg::EppParams& _epp_params,
-        const ccReg::ExtensionList& _ext
-    );
 
-  ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char *keyset, const char* AuthInfoPw, const ccReg::Period_str& period, const ccReg::AdminContact& admin, ccReg::timestamp_out crDate, ccReg::date_out exDate, const ccReg::EppParams &params, const ccReg::ExtensionList& ext);
+  /**
+   * DomainUpdate - update data of domain identified by its FQDN
+   *
+   * \param _domain_fqdn - identifiers of domains to check
+   * \param _registrant_chg - change of domain holder
+   * \param _auth_info_pw_chg  - change of password
+   * \param _nsset_chg - change of nsset
+   * \param _keyset_chg - change of keyset
+   * \param _admin_contacts_add - sequence of added administration contacts
+   * \param _admin_contacts_rem - sequence of deleted administration contacts
+   * \param _tmpcontacts_rem - OBSOLETE sequence of deleted temporary contacts
+   * \param _epp_params - common EPP parametres
+   * \param _ext - ExtensionList
+   *
+   * \return ccReg::Response
+   *
+   * \throws ccReg::EPP::EppError
+   */
+  ccReg::Response* DomainUpdate(
+          const char* _domain_fqdn,
+          const char* _registrant_chg,
+          const char* _auth_info_pw_chg,
+          const char* _nsset_chg,
+          const char* _keyset_chg,
+          const ccReg::AdminContact& _admin_contacts_add,
+          const ccReg::AdminContact& _admin_contacts_rem,
+          const ccReg::AdminContact& _tmpcontacts_rem,
+          const ccReg::EppParams& _epp_params,
+          const ccReg::ExtensionList& _ext);
 
-  ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate, const ccReg::Period_str& period, ccReg::timestamp_out exDate, const ccReg::EppParams &params, const ccReg::ExtensionList& ext);
 
-    /**
+  ccReg::Response* DomainCreate(
+          const char* _domain_fqdn,
+          const char* _registrant,
+          const char* _nsset,
+          const char* _keyset,
+          const char* _auth_info_pw,
+          const ccReg::Period_str& _period,
+          const ccReg::AdminContact& _admin_contacts,
+          ccReg::timestamp_out _crdate,
+          ccReg::date_out _exdate,
+          const ccReg::EppParams& _epp_params,
+          const ccReg::ExtensionList& _ext);
+
+
+  ccReg::Response* DomainRenew(
+          const char* _domain_fqdn,
+          const char* _current_exdate,
+          const ccReg::Period_str& _period,
+          ccReg::timestamp_out _exdate,
+          const ccReg::EppParams& _epp_params,
+          const ccReg::ExtensionList& _ext);
+  /**
      * DomainTransfer - transfer domain to other registrar
      *
      * \param _domain_fqdn - identifier of domain to transfer
@@ -347,11 +362,10 @@ public:
      *
      * \throws ccReg::EPP::EppError
      */
-    ccReg::Response* DomainTransfer(
-        const char* _domain_fqdn,
-        const char* _auth_info_pw,
-        const ccReg::EppParams& _epp_params
-    );
+  ccReg::Response* DomainTransfer(
+          const char* _domain_fqdn,
+          const char* _auth_info_pw,
+          const ccReg::EppParams& _epp_params);
 
   // tech check nsset
   ccReg::Response* nssetTest(const char* handle, CORBA::Short level, const ccReg::Lists& fqdns, const ccReg::EppParams &params);

@@ -866,14 +866,14 @@ namespace Corba {
         return result;
     }
 
-    Epp::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period)
+    Epp::Domain::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period)
     {
         switch(period.unit)
         {
             case ccReg::unit_month:
-                return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::month);
+                return Epp::Domain::DomainRegistrationTime(period.count, Epp::Domain::DomainRegistrationTime::Unit::month);
             case ccReg::unit_year:
-                return Epp::DomainRegistrationTime(period.count, Epp::DomainRegistrationTime::Unit::year);
+                return Epp::Domain::DomainRegistrationTime(period.count, Epp::Domain::DomainRegistrationTime::Unit::year);
         };
         throw std::runtime_error("unwrap_domain_registration_period internal error");
     }

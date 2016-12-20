@@ -42,8 +42,8 @@
 #include "src/epp/nsset/check_nsset_localized.h"
 #include "src/epp/nsset/info_nsset_localized.h"
 #include "src/epp/nsset/delete_nsset_localized.h"
-#include "src/epp/domain/domain_registration_time.h"
-#include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/impl/domain_registration_time.h"
+#include "src/epp/domain/impl/domain_enum_validation.h"
 
 namespace Corba {
 
@@ -148,7 +148,7 @@ namespace Corba {
     /**
      * length of domain registration period
      */
-    Epp::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period);
+    Epp::Domain::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period);
 
     /**
      * domain administrative contacts unwrapper

@@ -2,8 +2,8 @@
 
 #include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_string.h"
-#include "src/epp/domain/domain_check.h"
-#include "src/epp/domain/domain_registration_obstruction.h"
+#include "src/epp/domain/check_domain_localized.h"
+#include "src/epp/domain/impl/domain_registration_obstruction.h"
 
 #include "util/map_at.h"
 

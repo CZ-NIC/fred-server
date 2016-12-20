@@ -37,13 +37,13 @@ namespace Localized {
 
 struct ResponseOfCreate
 {
-    LocalizedSuccessResponse ok_response;
+    LocalizedSuccessResponse localized_success_response;
     boost::posix_time::ptime crdate;
 
     ResponseOfCreate(
         const LocalizedSuccessResponse& _response,
         const boost::posix_time::ptime& _crdate)
-    :   ok_response(_response),
+    :   localized_success_response(_response),
         crdate(_crdate)
     { }
 };

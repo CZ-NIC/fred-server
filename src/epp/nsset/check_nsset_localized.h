@@ -52,14 +52,14 @@ struct NssetHandleLocalizedRegistrationObstruction
 
 struct CheckNssetLocalizedResponse
 {
-    const LocalizedSuccessResponse ok_response;
+    const LocalizedSuccessResponse localized_success_response;
     const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > nsset_statuses;
 
     CheckNssetLocalizedResponse(
-        const LocalizedSuccessResponse& _ok_response,
+        const LocalizedSuccessResponse& _localized_success_response,
         const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> >& _nsset_statuses)
     :
-        ok_response(_ok_response),
+        localized_success_response(_localized_success_response),
         nsset_statuses(_nsset_statuses)
     { }
 };

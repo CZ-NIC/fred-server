@@ -58,13 +58,13 @@ struct CheckKeysetLocalizedResponse
     typedef std::map<std::string, Nullable<Result> > Results;
 
     CheckKeysetLocalizedResponse(
-        const LocalizedSuccessResponse& _response,
+        const LocalizedSuccessResponse& _localized_success_response,
         const Results& _results)
-    :   ok_response(_response),
+    :   localized_success_response(_localized_success_response),
         results(_results)
     { }
 
-    LocalizedSuccessResponse ok_response;
+    LocalizedSuccessResponse localized_success_response;
     Results results;
 };
 

@@ -9,6 +9,9 @@
 #include "src/epp/impl/util.h"
 #include "util/log/context.h"
 
+#include <boost/format.hpp>
+#include <boost/format/free_funcs.hpp>
+
 #include <string>
 
 namespace Epp {
@@ -111,8 +114,18 @@ LocalizedSuccessResponse update_nsset_localized(
                 e.get(),
                 _lang);
     }
+    catch (const std::exception& e) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("update_contact_localized failure: ") + e.what());
+        throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::failed,
+                std::set<Error>(),
+                _lang);
+    }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in update_contact_localized function");
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,

@@ -88,14 +88,14 @@ struct InfoNssetLocalizedOutputData
 
 struct InfoNssetLocalizedResponse
 {
-    const LocalizedSuccessResponse ok_response;
+    const LocalizedSuccessResponse localized_success_response;
     const InfoNssetLocalizedOutputData data;
 
     InfoNssetLocalizedResponse(
-        const LocalizedSuccessResponse& _ok_response,
+        const LocalizedSuccessResponse& _localized_success_response,
         const InfoNssetLocalizedOutputData& _data)
     :
-        ok_response(_ok_response),
+        localized_success_response(_localized_success_response),
         data(_data)
     { }
 };

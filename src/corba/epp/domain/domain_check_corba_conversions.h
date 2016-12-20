@@ -28,8 +28,8 @@
 
 #include "src/corba/EPP.hh"
 
-#include "src/epp/domain/domain_check.h"
-#include "src/epp/domain/domain_check_localization.h"
+#include "src/epp/domain/check_domain_localized.h"
+#include "src/epp/domain/impl/domain_check_localization.h"
 
 namespace Corba {
 

@@ -9,8 +9,10 @@
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
-
 #include "util/log/context.h"
+
+#include <boost/format.hpp>
+#include <boost/format/free_funcs.hpp>
 
 #include <string>
 
@@ -143,6 +145,7 @@ LocalizedSuccessResponse update_contact_localized(
     }
     catch(...) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info("unexpected exception in update_contact_localized function");
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::failed,

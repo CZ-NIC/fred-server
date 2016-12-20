@@ -76,13 +76,13 @@ struct CreateNssetInputData
 
 struct CreateNssetLocalizedResponse
 {
-    const LocalizedSuccessResponse ok_response;
+    const LocalizedSuccessResponse localized_success_response;
     const boost::posix_time::ptime crdate;
 
     CreateNssetLocalizedResponse(
-        const LocalizedSuccessResponse& _ok_response,
+        const LocalizedSuccessResponse& _localized_success_response,
         const boost::posix_time::ptime& _crdate)
-    :   ok_response(_ok_response),
+    :   localized_success_response(_localized_success_response),
         crdate(_crdate)
     { }
 };

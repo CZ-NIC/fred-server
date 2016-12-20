@@ -86,13 +86,13 @@ struct InfoContactLocalizedOutputData
 
 struct InfoContactLocalizedResponse
 {
-    const LocalizedSuccessResponse ok_response;
+    const LocalizedSuccessResponse localized_success_response;
     const InfoContactLocalizedOutputData data;
 
     InfoContactLocalizedResponse(
-        const LocalizedSuccessResponse& _ok_response,
+        const LocalizedSuccessResponse& _localized_success_response,
         const InfoContactLocalizedOutputData& _data)
-    :   ok_response(_ok_response),
+    :   localized_success_response(_localized_success_response),
         data(_data)
     { }
 };

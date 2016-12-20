@@ -1594,42 +1594,42 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_disclose.h \
 		src/epp/contact/impl/post_contact_update_hooks.cc \
 		src/epp/contact/impl/post_contact_update_hooks.h \
-		src/epp/domain/domain_check.cc \
-		src/epp/domain/domain_check.h \
-		src/epp/domain/domain_check_impl.cc \
-		src/epp/domain/domain_check_impl.h \
-		src/epp/domain/domain_check_localization.cc \
-		src/epp/domain/domain_check_localization.h \
-		src/epp/domain/domain_delete.cc \
-		src/epp/domain/domain_delete.h \
-		src/epp/domain/domain_delete_impl.cc \
-		src/epp/domain/domain_delete_impl.h \
-		src/epp/domain/domain_info.cc \
-		src/epp/domain/domain_info.h \
-		src/epp/domain/domain_info_impl.cc \
-		src/epp/domain/domain_info_impl.h \
-		src/epp/domain/domain_transfer.cc \
-		src/epp/domain/domain_transfer.h \
-		src/epp/domain/domain_transfer_impl.cc \
-		src/epp/domain/domain_transfer_impl.h \
-		src/epp/domain/domain_create.cc \
-		src/epp/domain/domain_create.h \
-		src/epp/domain/domain_registration_time.h \
-		src/epp/domain/domain_enum_validation.h \
-		src/epp/domain/domain_enum_validation.cc \
-		src/epp/domain/domain_create_impl.cc \
-		src/epp/domain/domain_create_impl.h \
-		src/epp/domain/domain_renew_impl.cc \
-		src/epp/domain/domain_renew_impl.h \
-		src/epp/domain/domain_renew.cc \
-		src/epp/domain/domain_renew.h \
-		src/epp/domain/domain_billing.cc \
-		src/epp/domain/domain_billing.h \
-		src/epp/domain/domain_update.cc \
-		src/epp/domain/domain_update.h \
-		src/epp/domain/domain_update_impl.cc \
-		src/epp/domain/domain_update_impl.h \
-		src/epp/domain/domain_registration_obstruction.h \
+		src/epp/domain/check_domain_localized.cc \
+		src/epp/domain/check_domain_localized.h \
+		src/epp/domain/check_domain.cc \
+		src/epp/domain/check_domain.h \
+		src/epp/domain/impl/domain_check_localization.cc \
+		src/epp/domain/impl/domain_check_localization.h \
+		src/epp/domain/delete_domain_localized.cc \
+		src/epp/domain/delete_domain_localized.h \
+		src/epp/domain/delete_domain.cc \
+		src/epp/domain/delete_domain.h \
+		src/epp/domain/info_domain_localized.cc \
+		src/epp/domain/info_domain_localized.h \
+		src/epp/domain/info_domain.cc \
+		src/epp/domain/info_domain.h \
+		src/epp/domain/transfer_domain_localized.cc \
+		src/epp/domain/transfer_domain_localized.h \
+		src/epp/domain/transfer_domain.cc \
+		src/epp/domain/transfer_domain.h \
+		src/epp/domain/create_domain_localized.cc \
+		src/epp/domain/create_domain_localized.h \
+		src/epp/domain/impl/domain_registration_time.h \
+		src/epp/domain/impl/domain_enum_validation.h \
+		src/epp/domain/impl/domain_enum_validation.cc \
+		src/epp/domain/create_domain.cc \
+		src/epp/domain/create_domain.h \
+		src/epp/domain/renew_domain.cc \
+		src/epp/domain/renew_domain.h \
+		src/epp/domain/renew_domain_localized.cc \
+		src/epp/domain/renew_domain_localized.h \
+		src/epp/domain/impl/domain_billing.cc \
+		src/epp/domain/impl/domain_billing.h \
+		src/epp/domain/update_domain_localized.cc \
+		src/epp/domain/update_domain_localized.h \
+		src/epp/domain/update_domain.cc \
+		src/epp/domain/update_domain.h \
+		src/epp/domain/impl/domain_registration_obstruction.h \
 		src/epp/keyset/impl/dns_key.cc \
 		src/epp/keyset/impl/dns_key.h \
 		src/epp/keyset/ds_record.h \
@@ -2507,14 +2507,14 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
 		tests/interfaces/epp/domain/fixture.h \
 		tests/interfaces/epp/domain/fixture.cc \
-		tests/interfaces/epp/domain/test_domain_check_impl.cc \
-		tests/interfaces/epp/domain/test_domain_delete_impl.cc \
-		tests/interfaces/epp/domain/test_domain_info_impl.cc \
-		tests/interfaces/epp/domain/test_domain_transfer_impl.cc \
-		tests/interfaces/epp/domain/test_domain_update_impl.cc \
-		tests/interfaces/epp/domain/test_domain_create_impl.cc \
-		tests/interfaces/epp/domain/test_domain_renew_impl.cc \
-		tests/interfaces/epp/domain/test_domain_billing_impl.cc \
+		tests/interfaces/epp/domain/test_check_domain.cc \
+		tests/interfaces/epp/domain/test_delete_domain.cc \
+		tests/interfaces/epp/domain/test_info_domain.cc \
+		tests/interfaces/epp/domain/test_transfer_domain.cc \
+		tests/interfaces/epp/domain/test_update_domain.cc \
+		tests/interfaces/epp/domain/test_create_domain.cc \
+		tests/interfaces/epp/domain/test_renew_domain.cc \
+		tests/interfaces/epp/domain/test_bill_domain.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
 		tests/interfaces/epp/keyset/test_create_keyset.cc \

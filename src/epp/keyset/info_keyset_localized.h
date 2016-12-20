@@ -86,13 +86,13 @@ struct InfoKeysetLocalizedOutputData
 
 struct InfoKeysetLocalizedResponse
 {
-    LocalizedSuccessResponse ok_response;
+    LocalizedSuccessResponse localized_success_response;
     InfoKeysetLocalizedOutputData data;
 
     InfoKeysetLocalizedResponse(
-        const LocalizedSuccessResponse& _ok_response,
+        const LocalizedSuccessResponse& _localized_success_response,
         const InfoKeysetLocalizedOutputData& _data)
-    :   ok_response(_ok_response),
+    :   localized_success_response(_localized_success_response),
         data(_data)
     { }
 };

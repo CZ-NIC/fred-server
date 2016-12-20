@@ -51,13 +51,13 @@ CheckKeysetLocalizedResponse check_keyset_localized(
         const SessionLang::Enum _lang,
         const std::string& _server_transaction_handle)
 {
+    Fred::OperationContextCreator ctx;
+
     try {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckKeyset)));
-
-        Fred::OperationContextCreator ctx;
 
         const std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> > check_keyset_results =
                 check_keyset(
@@ -65,7 +65,7 @@ CheckKeysetLocalizedResponse check_keyset_localized(
                         _keyset_handles,
                         _registrar_id);
 
-        const LocalizedSuccessResponse ok_response =
+        const LocalizedSuccessResponse localized_success_response =
                 create_localized_success_response(
                         ctx,
                         Response::ok,
@@ -78,31 +78,29 @@ CheckKeysetLocalizedResponse check_keyset_localized(
                         _lang);
 
         return CheckKeysetLocalizedResponse(
-                ok_response,
+                localized_success_response,
                 localized_check_keyset_results);
     }
     catch (const AuthErrorServerClosingConnection&) {
-        Fred::OperationContextCreator exception_localization_ctx;
+        Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
-                exception_localization_ctx,
+                ctx,
                 Response::authentication_error_server_closing_connection,
                 std::set<Error>(),
                 _lang);
     }
     catch (const std::exception& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info(std::string("check_keyset_localized failure: ") + e.what());
+        ctx.get_log().info(std::string("check_keyset_localized failure: ") + e.what());
         throw create_localized_fail_response(
-                exception_localization_ctx,
+                ctx,
                 Response::failed,
                 std::set<Error>(),
                 _lang);
     }
     catch (...) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info("unexpected exception in check_keyset_localized function");
+        ctx.get_log().info("unexpected exception in check_keyset_localized function");
         throw create_localized_fail_response(
-                exception_localization_ctx,
+                ctx,
                 Response::failed,
                 std::set<Error>(),
                 _lang);

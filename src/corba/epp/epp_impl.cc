@@ -97,13 +97,13 @@
 #include "src/epp/keyset/delete_keyset_localized.h"
 #include "src/epp/keyset/transfer_keyset_localized.h"
 
-#include "src/epp/domain/domain_check.h"
-#include "src/epp/domain/domain_delete.h"
-#include "src/epp/domain/domain_info.h"
-#include "src/epp/domain/domain_transfer.h"
-#include "src/epp/domain/domain_create.h"
-#include "src/epp/domain/domain_renew.h"
-#include "src/epp/domain/domain_update.h"
+#include "src/epp/domain/check_domain_localized.h"
+#include "src/epp/domain/delete_domain_localized.h"
+#include "src/epp/domain/info_domain_localized.h"
+#include "src/epp/domain/transfer_domain_localized.h"
+#include "src/epp/domain/create_domain_localized.h"
+#include "src/epp/domain/renew_domain_localized.h"
+#include "src/epp/domain/update_domain_localized.h"
 
 #include "src/epp/impl/response.h"
 #include "src/epp/impl/reason.h"
@@ -2247,7 +2247,7 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
             )
         );
 
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.localized_success_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
 
@@ -2284,7 +2284,7 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
             )
         );
 
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.localized_success_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
 
@@ -2308,7 +2308,7 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
         const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
         const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(_domain_fqdns);
 
-        const Epp::Domain::DomainCheckResponse domain_check_response = Epp::Domain::domain_check(
+        const Epp::Domain::CheckDomainLocalizedResponse domain_check_response = Epp::Domain::check_domain_localized(
             std::set<std::string>(domain_fqdns.begin(), domain_fqdns.end()),
             epp_registrar_session_data.registrar_id,
             epp_registrar_session_data.language,
@@ -2356,7 +2356,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
         Corba::wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(handles_to_be_checked, localized_response.results, check_results);
 
         ccReg::Response_var return_value =
-            new ccReg::Response(Corba::wrap_response(localized_response.ok_response, server_transaction_handle));
+            new ccReg::Response(Corba::wrap_response(localized_response.localized_success_response, server_transaction_handle));
 
         /* No exception shall be thrown from here onwards. */
         _check_results = check_results._retn();
@@ -2389,7 +2389,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
 
         ccReg::Contact_var info_result = new ccReg::Contact;
         Corba::wrap_InfoContactLocalizedOutputData(response.data, info_result.inout());
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.localized_success_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
 
@@ -2484,7 +2484,7 @@ ccReg::Response * ccReg_EPP_i::ContactCreate(
         );
 
         ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string( formatTime( response.crdate ) );
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.localized_success_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
 
@@ -2575,7 +2575,7 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
 
         return new ccReg::Response(
             Corba::wrap_response(
-                Epp::Domain::domain_transfer(
+                Epp::Domain::transfer_domain_localized(
                     Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
                     Corba::unwrap_string_from_const_char_ptr(_auth_info_pw),
                     session_data.registrar_id,
@@ -2669,7 +2669,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
         );
 
         ccReg::NSSet_var info_result = new ccReg::NSSet( Corba::wrap_localized_info_nsset(response.data) );
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.localized_success_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
 
@@ -2770,7 +2770,7 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
         );
 
         ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string( formatTime( response.crdate ) );
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.localized_success_response, server_transaction_handle) );
 
         /* No exception shall be thrown from here onwards. */
 
@@ -2850,7 +2850,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     try {
         const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
-        const Epp::Domain::DomainInfoResponse domain_info_response = Epp::Domain::domain_info(
+        const Epp::Domain::InfoDomainResponse domain_info_response = Epp::Domain::info_domain_localized(
             Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
             epp_registrar_session_data.registrar_id,
             epp_registrar_session_data.language,
@@ -2880,7 +2880,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
     try {
         const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
 
-        const Epp::LocalizedSuccessResponse response = Epp::Domain::domain_delete(
+        const Epp::LocalizedSuccessResponse response = Epp::Domain::delete_domain_localized(
             Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
             epp_registrar_session_data.registrar_id,
             epp_registrar_session_data.language,
@@ -2916,7 +2916,7 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
 
         return new ccReg::Response(
             Corba::wrap_response(
-                Epp::Domain::domain_update(
+                Epp::Domain::update_domain_localized(
                     Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
                     Corba::unwrap_string_for_change_to_Optional_string_no_trim(_registrant_chg),
                     Corba::unwrap_string_for_change_or_remove_to_Optional_string_no_trim(_auth_info_pw_chg),
@@ -2945,28 +2945,6 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    DomainCreate
- *
- * DESCRIPTION: creation of domain record
- *
- * PARAMETERS:  fqdn - domain identifier, its name
- *              registrant -  domain holder
- *              nsset -  nsset identifier
- *              keyset - keyset identifier
- *              period - period of domain validity in mounths
- *              AuthInfoPw  -  password
- *              admin - sequence of administration contacts
- *        OUT:  crDate - date of object creation
- *        OUT:  exDate - date of object expiration
- *              params - common EPP parametres
- *              ext - ExtensionList
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
 ccReg::Response * ccReg_EPP_i::DomainCreate(
         const char *fqdn,
         const char *Registrant,
@@ -2978,8 +2956,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         ccReg::timestamp_out _create_time,
         ccReg::timestamp_out exDate,
         const ccReg::EppParams &_epp_params,
-        const ccReg::ExtensionList & ext
-        )
+        const ccReg::ExtensionList & ext)
 {
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
@@ -2988,8 +2965,8 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
 
         const std::string authinfo = Corba::unwrap_string_from_const_char_ptr(AuthInfoPw);
 
-        const Epp::LocalizedCreateDomainResponse response = domain_create(
-            Epp::DomainCreateInputData(
+        const Epp::Domain::CreateDomainLocalizedResponse response = Epp::Domain::create_domain_localized(
+            Epp::Domain::CreateDomainInputData(
                 Corba::unwrap_string_from_const_char_ptr(fqdn),
                 Corba::unwrap_string_from_const_char_ptr(Registrant),
                 Corba::unwrap_string_from_const_char_ptr(nsset),
@@ -3017,7 +2994,7 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
         ccReg::timestamp_var exdate = Corba::wrap_string_to_corba_string(
                 boost::gregorian::to_iso_extended_string(response.expiration_date));
         ccReg::Response_var return_value = new ccReg::Response(
-                Corba::wrap_response(response.ok_response, server_transaction_handle));
+                Corba::wrap_response(response.localized_success_response, server_transaction_handle));
 
         /* No exception shall be thrown from here onwards. */
 
@@ -3030,65 +3007,52 @@ ccReg::Response * ccReg_EPP_i::DomainCreate(
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    DomainRenew
- *
- * DESCRIPTION: domain validity renewal of aperiod and
- *		save changes into history
- * PARAMETERS:  fqdn - domain name of nssetu
- *              curExpDate - date of domain expiration !!! time in a GMT format 00:00:00
- *              period - period of renewal in mounths
- *        OUT:  exDate - date and time of new domain expiration
- *              params - common EPP parametres
- *              ext - ExtensionList
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
-ccReg::Response *
-ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
-        const ccReg::Period_str& period, ccReg::timestamp_out exDate,
-        const ccReg::EppParams &_epp_params, const ccReg::ExtensionList & ext)
+ccReg::Response*
+ccReg_EPP_i::DomainRenew(
+        const char* fqdn,
+        const char* curExpDate,
+        const ccReg::Period_str& period,
+        ccReg::timestamp_out exDate,
+        const ccReg::EppParams& _epp_params,
+        const ccReg::ExtensionList& ext)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
     try {
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
-        const Epp::LocalizedRenewDomainResponse response = domain_renew(
-            Epp::DomainRenewInputData(
-                Corba::unwrap_string_from_const_char_ptr(fqdn),
-                Corba::unwrap_string_from_const_char_ptr(curExpDate),
-                Corba::unwrap_domain_registration_period(period),
-                Corba::unwrap_enum_validation_extension(ext)
-            ),
-            session_data.registrar_id,
-            request_params.log_request_id,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_,
-            rifd_epp_operations_charging_
-        );
+        const Epp::Domain::RenewDomainLocalizedResponse response =
+                renew_domain_localized(
+                        Epp::Domain::RenewDomainInputData(
+                                Corba::unwrap_string_from_const_char_ptr(fqdn),
+                                Corba::unwrap_string_from_const_char_ptr(curExpDate),
+                                Corba::unwrap_domain_registration_period(period),
+                                Corba::unwrap_enum_validation_extension(ext)),
+                        session_data.registrar_id,
+                        request_params.log_request_id,
+                        session_data.language,
+                        server_transaction_handle,
+                        request_params.client_transaction_id,
+                        disable_epp_notifier_,
+                        disable_epp_notifier_cltrid_prefix_,
+                        rifd_epp_operations_charging_);
 
-        ccReg::timestamp_var exdate = Corba::wrap_string_to_corba_string(
-                boost::gregorian::to_iso_extended_string(response.expiration_date));
-        ccReg::Response_var return_value = new ccReg::Response(
-                Corba::wrap_response(response.ok_response, server_transaction_handle));
+        ccReg::timestamp_var exdate =
+                Corba::wrap_string_to_corba_string(
+                        boost::gregorian::to_iso_extended_string(response.expiration_date));
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Corba::wrap_response(response.localized_success_response, server_transaction_handle));
 
         /* No exception shall be thrown from here onwards. */
 
         exDate = exdate._retn();
         return return_value._retn();
-
-    } catch(const Epp::LocalizedFailResponse& e) {
+    }
+    catch (const Epp::LocalizedFailResponse& e) {
         throw Corba::wrap_error(e, server_transaction_handle);
     }
-
-
 }
 
 /*************************************************************
@@ -3119,7 +3083,7 @@ ccReg_EPP_i::KeySetInfo(
         Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(response.data, keyset);
 
         ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(response.ok_response,
+        Corba::wrap_Epp_LocalizedSuccessResponse(response.localized_success_response,
                                                  server_transaction_handle,
                                                  return_value);
 
@@ -3259,7 +3223,7 @@ ccReg_EPP_i::KeySetCreate(
 
         ccReg::timestamp_var create_time = formatTime(response.crdate).c_str();
         ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(response.ok_response,
+        Corba::wrap_Epp_LocalizedSuccessResponse(response.localized_success_response,
                                                  server_transaction_handle,
                                                  return_value);
 

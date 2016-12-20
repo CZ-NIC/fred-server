@@ -52,13 +52,13 @@ CheckNssetLocalizedResponse check_nsset_localized(
         const SessionLang::Enum _lang,
         const std::string& _server_transaction_handle)
 {
+    Fred::OperationContextCreator ctx;
+
     try {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckNsset)));
-
-        Fred::OperationContextCreator ctx;
 
         const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset_results =
                 check_nsset(
@@ -66,7 +66,7 @@ CheckNssetLocalizedResponse check_nsset_localized(
                         _nsset_handles,
                         _registrar_id);
 
-        const LocalizedSuccessResponse ok_response =
+        const LocalizedSuccessResponse localized_success_response =
                 create_localized_success_response(
                         ctx,
                         Response::ok,
@@ -79,31 +79,31 @@ CheckNssetLocalizedResponse check_nsset_localized(
                         _lang);
 
         return CheckNssetLocalizedResponse(
-                ok_response,
+                localized_success_response,
                 localized_check_nsset_results);
     }
     catch (const AuthErrorServerClosingConnection) {
-        Fred::OperationContextCreator exception_localization_ctx;
+        Fred::OperationContextCreator ctx;
         throw create_localized_fail_response(
-                exception_localization_ctx,
+                ctx,
                 Response::authentication_error_server_closing_connection,
                 std::set<Error>(),
                 _lang);
     }
     catch (const std::exception& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info(std::string("check_nsset_localized failure: ") + e.what());
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info(std::string("check_nsset_localized failure: ") + e.what());
         throw create_localized_fail_response(
-                exception_localization_ctx,
+                ctx,
                 Response::failed,
                 std::set<Error>(),
                 _lang);
     }
     catch (...) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info("unexpected exception in check_nsset_localized function");
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info("unexpected exception in check_nsset_localized function");
         throw create_localized_fail_response(
-                exception_localization_ctx,
+                ctx,
                 Response::failed,
                 std::set<Error>(),
                 _lang);
