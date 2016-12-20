@@ -40,7 +40,7 @@
 #include <vector>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(DomainUpdateImpl)
+BOOST_AUTO_TEST_SUITE(UpdateDomain)
 
 BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
 {

@@ -30,7 +30,7 @@
 #include "src/epp/nsset/transfer_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(NssetTransferImpl)
+BOOST_AUTO_TEST_SUITE(TransferNsset)
 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_nsset)
 {

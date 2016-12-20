@@ -29,7 +29,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(DomainDeleteImpl)
+BOOST_AUTO_TEST_SUITE(DeleteDomain)
 
 BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
 {

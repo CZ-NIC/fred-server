@@ -34,9 +34,9 @@
 #include "src/epp/nsset/impl/nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(NssetCreateImpl)
+BOOST_AUTO_TEST_SUITE(CreateNsset)
 
-BOOST_FIXTURE_TEST_CASE( test_case_uninitialized_ip_prohibited, has_registrar )
+BOOST_FIXTURE_TEST_CASE(test_case_uninitialized_ip_prohibited, has_registrar)
 {
     boost::optional<boost::asio::ip::address> ip;
     BOOST_REQUIRE(Epp::Nsset::is_prohibited_ip_addr(ip,ctx));

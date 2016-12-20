@@ -33,7 +33,7 @@
 #include <string>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(DomainTransferImpl)
+BOOST_AUTO_TEST_SUITE(TransferDomain)
 
 BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, HasInfoDomainData)
 {

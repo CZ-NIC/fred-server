@@ -37,7 +37,7 @@
 #include <iterator>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(NssetUpdateImpl)
+BOOST_AUTO_TEST_SUITE(UpdateNsset)
 
 BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 {

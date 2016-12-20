@@ -84,7 +84,7 @@ void check_equal(const Epp::Contact::InfoContactOutputData &epp_data, const Fred
 }//namespace {anonymous}
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(ContactInfoImpl)
+BOOST_AUTO_TEST_SUITE(InfoContact)
 
 BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_contact)
 {

@@ -36,7 +36,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(DomainCreateImpl)
+BOOST_AUTO_TEST_SUITE(CreateDomain)
 
 bool handle_oidhpair_predicate (const std::string& handle, const Fred::ObjectIdHandlePair& pair)
 {

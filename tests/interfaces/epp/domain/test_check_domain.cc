@@ -30,7 +30,7 @@
 #include <boost/assign/list_of.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(DomainCheckImpl)
+BOOST_AUTO_TEST_SUITE(CheckDomain)
 
 BOOST_FIXTURE_TEST_CASE(test_result_size_empty, HasInfoRegistrarData)
 {

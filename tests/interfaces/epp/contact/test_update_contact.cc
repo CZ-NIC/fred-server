@@ -148,7 +148,7 @@ std::string ident_type_to_string(Epp::Contact::ContactChange::IdentType::Enum ty
 }//namespace {anonymous}
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(ContactUpdateImpl)
+BOOST_AUTO_TEST_SUITE(UpdateContact)
 
 BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
 {

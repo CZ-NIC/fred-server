@@ -140,7 +140,7 @@ void check_equal(const Epp::Contact::CreateContactInputData &create_data, const 
 }
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(ContactCreateImpl)
+BOOST_AUTO_TEST_SUITE(CreateContact)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
 {

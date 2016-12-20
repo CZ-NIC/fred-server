@@ -33,7 +33,7 @@
 #include "src/epp/nsset/info_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(NssetInfoImpl)
+BOOST_AUTO_TEST_SUITE(InfoNsset)
 
 BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
 {

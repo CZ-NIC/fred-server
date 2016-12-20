@@ -30,7 +30,7 @@
 #include "src/epp/contact/delete_contact.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(ContactDeleteImpl)
+BOOST_AUTO_TEST_SUITE(DeleteContact)
 
 BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_contact)
 {

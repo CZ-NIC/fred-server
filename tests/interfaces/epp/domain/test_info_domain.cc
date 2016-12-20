@@ -98,7 +98,7 @@ void check_equal(
 } // namespace {anonymous}
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(DomainInfoImpl)
+BOOST_AUTO_TEST_SUITE(InfoDomain)
 
 BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
 {

@@ -30,7 +30,7 @@
 #include "src/epp/nsset/delete_nsset.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(NssetDeleteImpl)
+BOOST_AUTO_TEST_SUITE(DeleteNsset)
 
 BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_nsset)
 {

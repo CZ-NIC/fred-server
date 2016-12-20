@@ -36,7 +36,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(DomainRenewImpl)
+BOOST_AUTO_TEST_SUITE(RenewDomain)
 
 BOOST_FIXTURE_TEST_CASE(renew_invalid_registrar_id, HasDomainData)
 {

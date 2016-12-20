@@ -30,7 +30,7 @@
 #include "src/epp/contact/check_contact.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_FIXTURE_TEST_SUITE(ContactCheckImpl, Test::autocommitting_context)
+BOOST_FIXTURE_TEST_SUITE(CheckContact, Test::autocommitting_context)
 
 BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, has_invalid_registrar_id)
 {

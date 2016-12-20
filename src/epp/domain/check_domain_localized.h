@@ -18,7 +18,6 @@
 
 /**
  *  @file domain_check.h
- *  <++>
  */
 
 #ifndef CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
@@ -31,13 +30,15 @@
 
 #include <boost/optional.hpp>
 
-#include <set>
 #include <map>
+#include <set>
+#include <string>
 
 namespace Epp {
 namespace Domain {
 
-struct CheckDomainLocalizedResponse {
+struct CheckDomainLocalizedResponse
+{
     const LocalizedSuccessResponse localized_success_response;
     const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> > domain_fqdn_to_domain_localized_registration_obstruction;
 
@@ -51,11 +52,10 @@ struct CheckDomainLocalizedResponse {
 };
 
 CheckDomainLocalizedResponse check_domain_localized(
-    const std::set<std::string>& _domain_fqdns,
-    unsigned long long _registrar_id,
-    SessionLang::Enum _lang,
-    const std::string& _server_transaction_handle
-);
+        const std::set<std::string>& _domain_fqdns,
+        unsigned long long _registrar_id,
+        SessionLang::Enum _lang,
+        const std::string& _server_transaction_handle);
 
 } // namespace Epp::Domain
 } // namespace Epp

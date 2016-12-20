@@ -52,14 +52,14 @@ struct ContactHandleLocalizedRegistrationObstruction
 
 struct CheckContactLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const LocalizedSuccessResponse ok_response;
     const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> > contact_statuses;
 
     CheckContactLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const LocalizedSuccessResponse& _ok_response,
         const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> >& _contact_statuses
     ) :
-        localized_success_response(_localized_success_response),
+        ok_response(_ok_response),
         contact_statuses(_contact_statuses)
     { }
 };

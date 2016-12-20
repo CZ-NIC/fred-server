@@ -30,7 +30,7 @@
 #include "src/epp/contact/transfer_contact.h"
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
-BOOST_AUTO_TEST_SUITE(ContactTransferImpl)
+BOOST_AUTO_TEST_SUITE(TransferContact)
 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_contact)
 {
