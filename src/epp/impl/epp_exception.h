@@ -33,8 +33,7 @@ public:
     /** Every EppException needs valid epp_result_code_ */
     EppException(EppResultCode::Enum _epp_result_code)
         : epp_result_code_(_epp_result_code)
-    {
-    }
+    { }
 
     virtual const char* what() const throw() = 0;
 

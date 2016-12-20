@@ -32,30 +32,26 @@
 namespace Epp {
 
 LocalizedSuccessResponse create_localized_success_response(
-    Fred::OperationContext& _ctx,
-    const Response::Enum& _response,
-    SessionLang::Enum _lang
-);
+        Fred::OperationContext& _ctx,
+        const Response::Enum& _response,
+        SessionLang::Enum _lang);
 
 LocalizedFailResponse create_localized_fail_response(
-    Fred::OperationContext& _ctx,
-    const Response::Enum& _response,
-    const std::set<Error>& _errors,
-    SessionLang::Enum _lang
-);
+        Fred::OperationContext& _ctx,
+        const Response::Enum& _response,
+        const std::set<Error>& _errors,
+        SessionLang::Enum _lang);
 
 LocalizedFailResponse create_localized_fail_response(
-    Fred::OperationContext& _ctx,
-    const Response::Enum& _response,
-    const Error& _error,
-    SessionLang::Enum _lang
-);
+        Fred::OperationContext& _ctx,
+        const Response::Enum& _response,
+        const Error& _error,
+        SessionLang::Enum _lang);
 
 std::map<std::string, std::string> localize_object_states_deprecated(
-    Fred::OperationContext& _ctx,
-    const std::set<std::string>& _state_handles,
-    SessionLang::Enum _lang
-);
+        Fred::OperationContext& _ctx,
+        const std::set<std::string>& _state_handles,
+        SessionLang::Enum _lang);
 
 ObjectStatesLocalized localize_object_states(
         Fred::OperationContext& _ctx,

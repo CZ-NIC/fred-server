@@ -49,6 +49,7 @@ public:
     bool has_vector_parameter_error_at(Param::Enum _param, unsigned short _index, Reason::Enum _reason)const;
     const Where& get_vector_parameter_error(Param::Enum _param, Reason::Enum _reason)const;
     std::set< Error > get_set_of_error()const;
+
 private:
     class What
     {
@@ -65,6 +66,6 @@ private:
     WhatWhere what_where_;
 };
 
-}
+} // namespace Epp
 
 #endif//PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767

@@ -28,14 +28,14 @@ namespace Epp {
 
 struct RequestParams
 {
+    unsigned long long session_id;
+    std::string client_transaction_id;
+    Optional<unsigned long long> log_request_id;
+
     std::string get_server_transaction_handle()const
     {
         return Util::make_svtrid(log_request_id.get_value_or(0));
     }
-
-    unsigned long long session_id;
-    std::string client_transaction_id;
-    Optional< unsigned long long > log_request_id;
 };
 
 }

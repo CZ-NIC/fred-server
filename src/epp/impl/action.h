@@ -21,62 +21,64 @@
 
 namespace Epp {
 
-struct Action {
-    enum Enum {
-        ClientLogin =        100,
-        ClientLogout =       101,
+struct Action
+{
+    enum Enum
+    {
+        ClientLogin         = 100,
+        ClientLogout        = 101,
 
         PollAcknowledgement = 120,
-        PollResponse =        121,
+        PollResponse        = 121,
 
-        CheckContact =       200,
-        InfoContact =        201,
-        DeleteContact =      202,
-        UpdateContact =      203,
-        CreateContact =      204,
-        TransferContact =    205,
+        CheckContact        = 200,
+        InfoContact         = 201,
+        DeleteContact       = 202,
+        UpdateContact       = 203,
+        CreateContact       = 204,
+        TransferContact     = 205,
 
-        CheckNsset =         400,
-        InfoNsset =          401,
-        DeleteNsset =        402,
-        UpdateNsset =        403,
-        CreateNsset =        404,
-        TransferNsset =      405,
+        CheckNsset          = 400,
+        InfoNsset           = 401,
+        DeleteNsset         = 402,
+        UpdateNsset         = 403,
+        CreateNsset         = 404,
+        TransferNsset       = 405,
 
-        CheckDomain =        500,
-        InfoDomain =         501,
-        DeleteDomain =       502,
-        UpdateDomain =       503,
-        CreateDomain =       504,
-        TransferDomain =     505,
-        RenewDomain =        506,
-        TradeDomain =        507,
+        CheckDomain         = 500,
+        InfoDomain          = 501,
+        DeleteDomain        = 502,
+        UpdateDomain        = 503,
+        CreateDomain        = 504,
+        TransferDomain      = 505,
+        RenewDomain         = 506,
+        TradeDomain         = 507,
 
-        CheckKeyset =        600,
-        InfoKeyset =         601,
-        DeleteKeyset =       602,
-        UpdateKeyset =       603,
-        CreateKeyset =       604,
-        TransferKeyset =     605,
+        CheckKeyset         = 600,
+        InfoKeyset          = 601,
+        DeleteKeyset        = 602,
+        UpdateKeyset        = 603,
+        CreateKeyset        = 604,
+        TransferKeyset      = 605,
 
-        UnknowAction =      1000,
+        UnknowAction        = 1000,
 
-        ListContact =       1002,
-        ListNsset =         1004,
-        ListDomain =        1005,
-        ListKeyset =        1006,
+        ListContact         = 1002,
+        ListNsset           = 1004,
+        ListDomain          = 1005,
+        ListKeyset          = 1006,
 
-        ClientCredit =      1010,
+        ClientCredit        = 1010,
 
-        NssetTest =         1012,
+        NssetTest           = 1012,
 
-        ContactSendAuthInfo =   1101,
-        NssetSendAuthInfo =     1102,
-        DomainSendAuthInfo =    1103,
-        KeysetSendAuthInfo =    1106,
+        ContactSendAuthInfo = 1101,
+        NssetSendAuthInfo   = 1102,
+        DomainSendAuthInfo  = 1103,
+        KeysetSendAuthInfo  = 1106,
 
-        Info =                  1104,
-        GetInfoResults =        1105
+        Info                = 1104,
+        GetInfoResults      = 1105
     };
 };
 

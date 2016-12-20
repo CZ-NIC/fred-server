@@ -27,9 +27,9 @@ namespace Epp {
 
 struct ObjectStatesLocalized
 {
-    typedef std::map< Fred::Object_State::Enum, std::string > Descriptions;
+    typedef std::map<Fred::Object_State::Enum, std::string> Descriptions;
     Descriptions descriptions;
-    std::string ok_state_description;
+    std::string success_state_localized_description;
 };
 
 

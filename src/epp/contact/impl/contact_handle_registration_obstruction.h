@@ -62,7 +62,6 @@ struct ContactHandleRegistrationObstruction
             case Reason::protected_period: return protected_handle;
             default:
                 throw MissingLocalizedDescription();
-                break;
         }
     }
 };

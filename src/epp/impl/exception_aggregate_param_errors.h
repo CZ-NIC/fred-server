@@ -25,40 +25,53 @@
 
 namespace Epp {
 
-class AggregatedParamErrors {
+class AggregatedParamErrors
+{
 public:
-    AggregatedParamErrors& add(const Error& _new_error) {
+    AggregatedParamErrors& add(const Error& _new_error)
+    {
         param_errors_.insert(_new_error);
         return *this;
     }
 
-    std::set<Error> get() const {
+    std::set<Error> get() const
+    {
         return param_errors_;
     }
 
-    bool is_empty() const { return param_errors_.empty(); }
+    bool is_empty() const
+    {
+        return param_errors_.empty();
+    }
 
 private:
     std::set<Error> param_errors_;
 };
 
-class ParameterValuePolicyError {
+class ParameterValuePolicyError
+{
 public:
-    ParameterValuePolicyError& add(const Error& _new_error) {
+    ParameterValuePolicyError& add(const Error& _new_error)
+    {
         param_errors_.insert(_new_error);
         return *this;
     }
 
-    ParameterValuePolicyError& add(const std::set<Error>& _new_errors) {
+    ParameterValuePolicyError& add(const std::set<Error>& _new_errors)
+    {
         param_errors_.insert(_new_errors.begin(), _new_errors.end());
         return *this;
     }
 
-    std::set<Error> get() const {
+    std::set<Error> get() const
+    {
         return param_errors_;
     }
 
-    bool is_empty() const { return param_errors_.empty(); }
+    bool is_empty() const
+    {
+        return param_errors_.empty();
+    }
 
 private:
     std::set<Error> param_errors_;
@@ -67,52 +80,73 @@ private:
 
 class ParameterValueRangeError {
 public:
-    ParameterValueRangeError& add(const Error& _new_error) {
+    ParameterValueRangeError& add(const Error& _new_error)
+    {
         param_errors_.insert(_new_error);
         return *this;
     }
 
-    std::set<Error> get() const {
+    std::set<Error> get() const
+    {
         return param_errors_;
     }
 
-    bool is_empty() const { return param_errors_.empty(); }
+    bool is_empty() const
+    {
+        return param_errors_.empty();
+    }
 
 private:
     std::set<Error> param_errors_;
 
 };
 
-class ParameterValueSyntaxError {
-    std::set<Error> param_errors_;
-
+class ParameterValueSyntaxError
+{
 public:
-    ParameterValueSyntaxError& add(const Error& _new_error) {
+    ParameterValueSyntaxError& add(const Error& _new_error)
+    {
         param_errors_.insert(_new_error);
         return *this;
     }
 
-    std::set<Error> get() const {
+    std::set<Error> get() const
+    {
         return param_errors_;
     }
 
-    bool is_empty() const { return param_errors_.empty(); }
+    bool is_empty() const
+    {
+        return param_errors_.empty();
+    }
+
+private:
+    std::set<Error> param_errors_;
+
 };
 
-class RequiredSpecificParameterMissing {
-    std::set<Error> param_errors_;
-
+class RequiredSpecificParameterMissing
+{
 public:
-    RequiredSpecificParameterMissing& add(const Error& _new_error) {
+    RequiredSpecificParameterMissing& add(const Error& _new_error)
+    {
         param_errors_.insert(_new_error);
         return *this;
     }
 
-    std::set<Error> get() const {
+    std::set<Error> get() const
+    {
         return param_errors_;
     }
 
-    bool is_empty() const { return param_errors_.empty(); }
+    bool is_empty() const
+    {
+        return param_errors_.empty();
+    }
+
+private:
+    std::set<Error> param_errors_;
+
 };
 
 } // namespace Epp

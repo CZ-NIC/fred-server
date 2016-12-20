@@ -25,12 +25,13 @@
 
 namespace Epp {
 
-    inline RegistrarSessionData get_registrar_session_data(EppSessionContainer& _epp_sessions, unsigned long long _session_id) {
-        return RegistrarSessionData(
+inline RegistrarSessionData get_registrar_session_data(EppSessionContainer& _epp_sessions, unsigned long long _session_id)
+{
+    return RegistrarSessionData(
             Legacy::get_registrar_id(_epp_sessions, _session_id),
-            Legacy::get_lang(_epp_sessions, _session_id)
-        );
-    }
+            Legacy::get_lang(_epp_sessions, _session_id));
+}
+
 }
 
 #endif

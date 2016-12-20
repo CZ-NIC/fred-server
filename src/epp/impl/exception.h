@@ -25,7 +25,7 @@
 
 namespace Epp {
 
-    struct Exception:std::exception { };
+    struct Exception : std::exception { };
 
     struct AuthErrorServerClosingConnection   :Exception { const char* what() const throw() { return "authentication error: server is closing connection"; } };
     //struct AuthorizationError                 :Exception { const char* what() const throw() { return "authorization error"; } };

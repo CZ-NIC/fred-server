@@ -60,10 +60,8 @@ struct KeysetHandleRegistrationObstruction
             case Reason::protected_period: return KeysetHandleRegistrationObstruction::protected_handle;
             default:
                 throw MissingLocalizedDescription();
-                break;
         }
     }
-
 };
 
 }//namespace Epp::Keyset

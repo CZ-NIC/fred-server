@@ -21,8 +21,10 @@
 
 namespace Epp {
 
-struct Param {
-    enum Enum {
+struct Param
+{
+    enum Enum
+    {
         poll_msg_id,
         contact_handle,
         contact_cc,
@@ -60,6 +62,6 @@ struct Param {
     };
 };
 
-}
+} // namespace Epp
 
 #endif

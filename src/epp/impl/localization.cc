@@ -131,7 +131,7 @@ LocalizedSuccessResponse create_localized_success_response(
 
 namespace {
 
-std::string get_ok_state_description(SessionLang::Enum _lang)
+std::string get_success_state_localized_description(SessionLang::Enum _lang)
 {
     switch (_lang)
     {
@@ -152,7 +152,7 @@ std::map<std::string, std::string> localize_object_states_deprecated(
     std::map<std::string, std::string> handle_to_description;
     {
         const std::vector< Fred::ObjectStateDescription > all_state_descriptions =
-            Fred::GetObjectStateDescriptions(Conversion::Enums::to_db_handle(_lang)).exec(_ctx);
+            Fred::GetObjectStateDescriptions(SessionLang::to_db_handle(_lang)).exec(_ctx);
         BOOST_FOREACH(const Fred::ObjectStateDescription& state_description, all_state_descriptions) {
             handle_to_description.insert(std::make_pair(state_description.handle, state_description.description));
         }
@@ -162,7 +162,7 @@ std::map<std::string, std::string> localize_object_states_deprecated(
     BOOST_FOREACH(const std::string& handle, _state_handles) {
         /* XXX HACK: OK state */
         if (handle == "ok") {
-            result["ok"] = get_ok_state_description(_lang);
+            result["ok"] = get_success_state_localized_description(_lang);
             continue;
         }
 
@@ -184,7 +184,7 @@ ObjectStatesLocalized localize_object_states(
 {
     typedef std::vector< Fred::ObjectStateDescription > ObjectStateDescriptions;
     const ObjectStateDescriptions all_state_descriptions =
-        Fred::GetObjectStateDescriptions(Conversion::Enums::to_db_handle(_lang)).exec(_ctx);
+        Fred::GetObjectStateDescriptions(SessionLang::to_db_handle(_lang)).exec(_ctx);
 
     ObjectStatesLocalized states;
     for (ObjectStateDescriptions::const_iterator state_ptr = all_state_descriptions.begin();
@@ -196,7 +196,7 @@ ObjectStatesLocalized localize_object_states(
             states.descriptions[state] = state_ptr->description;
         }
     }
-    states.ok_state_description = get_ok_state_description(_lang);
+    states.success_state_localized_description = get_success_state_localized_description(_lang);
     return states;
 }
 

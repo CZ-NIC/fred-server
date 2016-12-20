@@ -786,7 +786,7 @@ namespace Corba {
         if (_src.descriptions.empty()) {
             _dst.length(1);
             _dst[0].value = "ok";
-            _dst[0].text = _src.ok_state_description.c_str();
+            _dst[0].text = _src.success_state_localized_description.c_str();
             return;
         }
         _dst.length(_src.descriptions.size());

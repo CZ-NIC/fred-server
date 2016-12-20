@@ -27,75 +27,80 @@
 
 namespace Epp {
 
-    struct LocalizedSuccessResponse {
-        const Response::Enum response;
-        const std::string localized_response_description;
+struct LocalizedSuccessResponse
+{
+    const Response::Enum response;
+    const std::string localized_response_description;
 
-        LocalizedSuccessResponse(
-            const Response::Enum& _response,
-            const std::string& _localized_response_description
-        ) :
-            response(_response),
-            localized_response_description(_localized_response_description)
-        { }
-    };
-
-    struct LocalizedError {
-        const Param::Enum param;
-        const unsigned short position;
-        const std::string localized_reason_description;
-
-        LocalizedError(
-            Param::Enum _param,
-            unsigned short _position,
-            const std::string& _localized_reason_description
-        ) :
-            param(_param),
-            position(_position),
-            localized_reason_description(_localized_reason_description)
-        { }
-    };
-}
-
-/* Only intended for std::set usage - ordering definition is irrelevant. */
-
-namespace std {
-    template<> struct less<Epp::LocalizedError> {
-        bool operator()(const Epp::LocalizedError& lhs, const Epp::LocalizedError& rhs) const {
-            /* order by param, position, reason */
-
-            if(      static_cast<int>(lhs.param) < static_cast<int>(rhs.param) ) { return true; }
-            else if( static_cast<int>(lhs.param) > static_cast<int>(rhs.param) ) { return false; }
-            else {
-
-                if(      lhs.position < rhs.position ) { return true; }
-                else if( lhs.position > rhs.position ) { return false; }
-                else {
-
-                    if( lhs.localized_reason_description < rhs.localized_reason_description ) { return true; }
-                    else { return false; }
-                }
-            }
-        }
-    };
+    LocalizedSuccessResponse(
+        const Response::Enum& _response,
+        const std::string& _localized_response_description)
+    :
+        response(_response),
+        localized_response_description(_localized_response_description)
+    { }
 };
 
-namespace Epp {
-    struct LocalizedFailResponse {
-        const Response::Enum response;
-        const std::string localized_response_description;
-        const std::set<LocalizedError> localized_errors;
+struct LocalizedError
+{
+    const Param::Enum param;
+    const unsigned short position;
+    const std::string localized_reason_description;
 
-        LocalizedFailResponse(
-            const Response::Enum& _response,
-            const std::string& _localized_response_description,
-            const std::set<LocalizedError>& _localized_errors
-        ) :
-            response(_response),
-            localized_response_description(_localized_response_description),
-            localized_errors(_localized_errors)
-        { }
-    };
+    LocalizedError(
+        Param::Enum _param,
+        unsigned short _position,
+        const std::string& _localized_reason_description)
+    :
+        param(_param),
+        position(_position),
+        localized_reason_description(_localized_reason_description)
+    { }
+};
+
+} // namespace Epp
+
+namespace std {
+/**
+ * Only intended for std::set usage - ordering definition is irrelevant.
+ */
+template <> struct less<Epp::LocalizedError>
+{
+    bool operator()(const Epp::LocalizedError& lhs, const Epp::LocalizedError& rhs) const {
+        /* order by param, position, reason */
+
+        if(      static_cast<int>(lhs.param) < static_cast<int>(rhs.param) ) { return true; }
+        else if( static_cast<int>(lhs.param) > static_cast<int>(rhs.param) ) { return false; }
+        else {
+
+            if(      lhs.position < rhs.position ) { return true; }
+            else if( lhs.position > rhs.position ) { return false; }
+            else {
+
+                if( lhs.localized_reason_description < rhs.localized_reason_description ) { return true; }
+                else { return false; }
+            }
+        }
+    }
+};
+} // namespace std
+
+namespace Epp {
+struct LocalizedFailResponse {
+    const Response::Enum response;
+    const std::string localized_response_description;
+    const std::set<LocalizedError> localized_errors;
+
+    LocalizedFailResponse(
+        const Response::Enum& _response,
+        const std::string& _localized_response_description,
+        const std::set<LocalizedError>& _localized_errors)
+    :
+        response(_response),
+        localized_response_description(_localized_response_description),
+        localized_errors(_localized_errors)
+    { }
+};
 }
 
 #endif

@@ -29,14 +29,13 @@ namespace Epp {
  * Creates notification request in case registrar is not system registrar and _client_transaction_handle is not beginning with _dont_notify_client_transaction_handles_with_this_prefix.
  */
 void conditionally_enqueue_notification(
-    Notification::notified_event _event,
-    unsigned long long _object_history_id_post_change,
-    unsigned long long _registrar_id,
-    const std::string& _server_transaction_handle,
-    const std::string& _client_transaction_handle,
-    bool _epp_notification_disabled,
-    const std::string& _dont_notify_client_transaction_handles_with_this_prefix
-) throw();
+        Notification::notified_event _event,
+        unsigned long long _object_history_id_post_change,
+        unsigned long long _registrar_id,
+        const std::string& _server_transaction_handle,
+        const std::string& _client_transaction_handle,
+        bool _epp_notification_disabled,
+        const std::string& _dont_notify_client_transaction_handles_with_this_prefix) throw();
 
 }
 

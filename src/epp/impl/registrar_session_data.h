@@ -29,8 +29,8 @@ struct RegistrarSessionData {
 
     RegistrarSessionData(
         unsigned long long _registrar_id,
-        SessionLang::Enum _language
-    ) :
+        SessionLang::Enum _language)
+    :
         registrar_id(_registrar_id),
         language(_language)
     { }
