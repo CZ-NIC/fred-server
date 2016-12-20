@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef SRC_EPP_GET_REGISTRAR_SESSION_DATA_38454101632052
 #define SRC_EPP_GET_REGISTRAR_SESSION_DATA_38454101632052
 

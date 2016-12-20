@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "src/epp/nsset/check_nsset_localized.h"
 #include "src/epp/nsset/check_nsset.h"
 

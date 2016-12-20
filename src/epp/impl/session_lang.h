@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef SRC_EPP_SESSION_LANG_505343440
 #define SRC_EPP_SESSION_LANG_505343440
 

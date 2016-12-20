@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file domain_info.h
- *  <++>
- */
-
 #ifndef INFO_DOMAIN_LOCALIZED_H_23BA4FC5083B45F2AB3100C54E6AF3F6
 #define INFO_DOMAIN_LOCALIZED_H_23BA4FC5083B45F2AB3100C54E6AF3F6
 

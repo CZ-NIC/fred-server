@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CREATE_DOMAIN_H_7C2F051F1B4049FCBD49A2067CB12083
 #define CREATE_DOMAIN_H_7C2F051F1B4049FCBD49A2067CB12083
 

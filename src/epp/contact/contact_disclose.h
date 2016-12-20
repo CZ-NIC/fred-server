@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  header of contact disclose items
- */
-
 #ifndef CONTACT_DISCLOSE_H_1318689F62984852B43515D6E0C14343
 #define CONTACT_DISCLOSE_H_1318689F62984852B43515D6E0C14343
 

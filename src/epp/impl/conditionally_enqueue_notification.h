@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef SRC_EPP_CONDITIONALLY_ENQUEUE_NOTIFICATION_4534374535
 #define SRC_EPP_CONDITIONALLY_ENQUEUE_NOTIFICATION_4534374535
 

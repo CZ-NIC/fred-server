@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef EPP_CONTACT_INFO_IMPL_976543419473
 #define EPP_CONTACT_INFO_IMPL_976543419473
 

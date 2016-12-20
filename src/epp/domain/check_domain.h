@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file check_domain.h
- *  <++>
- */
-
 #ifndef CHECK_DOMAIN_H_29361249D9254622AD544B34701D9E63
 #define CHECK_DOMAIN_H_29361249D9254622AD544B34701D9E63
 

@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  header of EPP ContactChange class
- */
-
 #ifndef CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
 #define CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
 

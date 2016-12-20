@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "src/epp/keyset/check_keyset_localized.h"
 #include "src/epp/keyset/check_keyset.h"
 

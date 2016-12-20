@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 #define CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 

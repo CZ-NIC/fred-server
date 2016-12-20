@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 #define INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 

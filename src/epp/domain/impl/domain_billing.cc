@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-
 #include "src/epp/domain/impl/domain_billing.h"
 #include "src/epp/impl/exception.h"
 #include "src/fredlib/zone/zone.h"

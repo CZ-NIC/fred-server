@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
 #define UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
 

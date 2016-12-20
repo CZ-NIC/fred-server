@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
 #define EPP_NSSET_INFO_IMPL_d14d7d8e47e14524b67f6e31847dc375
 

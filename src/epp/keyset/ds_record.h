@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  ds record
- */
-
 #ifndef DS_RECORD_H_BD42642FAB5A4153B45827E3BDEB2805
 #define DS_RECORD_H_BD42642FAB5A4153B45827E3BDEB2805
 

@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  header of disclose policy
- */
-
 #ifndef DISCLOSE_POLICY_H_1162753ED75243D8A3C57E0DC309C3A0
 #define DISCLOSE_POLICY_H_1162753ED75243D8A3C57E0DC309C3A0
 

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef LIMITS_H_0C5D2850727C4534B1BAFFFAE9BD13FD
 #define LIMITS_H_0C5D2850727C4534B1BAFFFAE9BD13FD
 

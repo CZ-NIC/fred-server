@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
 #define CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
 

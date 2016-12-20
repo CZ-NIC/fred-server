@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DNS_HOST_OUTPUT_H_AF9BB4F2EDD64A929920CF34924B88BA
 #define DNS_HOST_OUTPUT_H_AF9BB4F2EDD64A929920CF34924B88BA
 

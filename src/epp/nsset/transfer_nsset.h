@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
 #define TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
 

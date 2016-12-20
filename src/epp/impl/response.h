@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef RESPONSE_H_40B4B7E37BC94D97BF077CA2AB6F5915
 #define RESPONSE_H_40B4B7E37BC94D97BF077CA2AB6F5915
 

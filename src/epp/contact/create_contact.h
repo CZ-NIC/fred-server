@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
 #define CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
 

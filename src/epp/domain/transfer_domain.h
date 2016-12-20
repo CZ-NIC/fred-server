@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file transfer_domain.h
- *  <++>
- */
-
 #ifndef TRANSFER_DOMAIN_H_5EA6B0EA56704EF5ACCB8A6A2B76D1DD
 #define TRANSFER_DOMAIN_H_5EA6B0EA56704EF5ACCB8A6A2B76D1DD
 

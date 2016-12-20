@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
 #define UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
 

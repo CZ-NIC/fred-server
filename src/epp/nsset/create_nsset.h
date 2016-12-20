@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CREATE_NSSET_H_2C8AA4B2A66B416FADE6B4087CFEFF2B
 #define CREATE_NSSET_H_2C8AA4B2A66B416FADE6B4087CFEFF2B
 

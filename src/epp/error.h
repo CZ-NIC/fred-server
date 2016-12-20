@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef EPP_ERROR_9347842721087
 #define EPP_ERROR_9347842721087
 

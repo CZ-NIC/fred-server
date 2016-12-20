@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DNS_HOST_INPUT_H_5AECF83B2E1642388AB0A8C400CD4083
 #define DNS_HOST_INPUT_H_5AECF83B2E1642388AB0A8C400CD4083
 

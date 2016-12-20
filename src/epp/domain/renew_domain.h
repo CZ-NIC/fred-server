@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef RENEW_DOMAIN_H_D7F4D8C176734E96A2CECBBED06B6A99
 #define RENEW_DOMAIN_H_D7F4D8C176734E96A2CECBBED06B6A99
 

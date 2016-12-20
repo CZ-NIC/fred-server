@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CORBA_EPP_REQUEST_PARAMS_90798304534
 #define CORBA_EPP_REQUEST_PARAMS_90798304534
 

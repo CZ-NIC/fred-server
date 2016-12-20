@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
 #define UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
 

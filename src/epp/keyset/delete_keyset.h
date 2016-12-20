@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DELETE_KEYSET_H_B1F9FD75689C471A8C4FAB8A30DB2B80
 #define DELETE_KEYSET_H_B1F9FD75689C471A8C4FAB8A30DB2B80
 

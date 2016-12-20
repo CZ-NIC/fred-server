@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
 #define DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
 

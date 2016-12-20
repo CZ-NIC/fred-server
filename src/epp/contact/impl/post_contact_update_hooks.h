@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef POST_CONTACT_UPDATE_HOOKS_H_FF84328B19F347E0990D608DF8CD7A6E
 #define POST_CONTACT_UPDATE_HOOKS_H_FF84328B19F347E0990D608DF8CD7A6E
 

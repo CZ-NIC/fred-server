@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/info_contact.h"
 

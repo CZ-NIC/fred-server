@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file domain_update.h
- *  <++>
- */
-
 #ifndef UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 #define UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 

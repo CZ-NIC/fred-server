@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file domain_delete.h
- *  <++>
- */
-
 #ifndef DELETE_DOMAIN_LOCALIZED_H_7881B671649445C0BD9D46F87C8643B8
 #define DELETE_DOMAIN_LOCALIZED_H_7881B671649445C0BD9D46F87C8643B8
 

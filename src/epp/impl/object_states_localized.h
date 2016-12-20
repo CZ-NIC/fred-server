@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef OBJECT_STATES_LOCALIZED_H_33777B6EEDFD423494782C90D5718B94
 #define OBJECT_STATES_LOCALIZED_H_33777B6EEDFD423494782C90D5718B94
 

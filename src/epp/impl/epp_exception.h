@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file epp_exception.h
- *  <++>
- */
-
 #ifndef EPP_EXCEPTION_H_31397E48DE5D4189A8C4A2E84F180DA9
 #define EPP_EXCEPTION_H_31397E48DE5D4189A8C4A2E84F180DA9
 

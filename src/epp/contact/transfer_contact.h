@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef TRANSFER_CONTACT_H_A01B6F5659C348CB9F8372FEBD555CDB
 #define TRANSFER_CONTACT_H_A01B6F5659C348CB9F8372FEBD555CDB
 

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 #define INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 

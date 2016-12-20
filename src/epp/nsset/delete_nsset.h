@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DELETE_NSSET_H_3578B2297509402F87E30F8130000C4A
 #define DELETE_NSSET_H_3578B2297509402F87E30F8130000C4A
 

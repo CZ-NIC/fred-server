@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DELETE_CONTACT_H_453EB59462824558BD5077709DA2806D
 #define DELETE_CONTACT_H_453EB59462824558BD5077709DA2806D
 

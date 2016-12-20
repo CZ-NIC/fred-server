@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef NSSET_H_634498071C8843DB8A93086D7746DDE0
 #define NSSET_H_634498071C8843DB8A93086D7746DDE0
 

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
 #define UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
 

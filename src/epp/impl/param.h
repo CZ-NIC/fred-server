@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef PARAM_H_43A26050C330469EBFC164136C249328
 #define PARAM_H_43A26050C330469EBFC164136C249328
 

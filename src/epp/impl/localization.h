@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
 #define LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
 

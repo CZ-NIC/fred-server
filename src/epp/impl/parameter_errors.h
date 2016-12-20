@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
 #define PARAMETER_ERRORS_D7D0DF2BB2FDF109C515EDC9D88A2767
 

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef ACTION_H_634CD0147D514718B0DBCC0FF3579D8C
 #define ACTION_H_634CD0147D514718B0DBCC0FF3579D8C
 

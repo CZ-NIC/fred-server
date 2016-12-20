@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DOMAIN_REGISTRATION_TIME_H_521BF5BEF4D94811AAAE0FEB4C801D0C
 #define DOMAIN_REGISTRATION_TIME_H_521BF5BEF4D94811AAAE0FEB4C801D0C
 

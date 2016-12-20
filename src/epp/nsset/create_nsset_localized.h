@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CREATE_NSSET_LOCALIZED_H_E012D98CCFF7446FB305B72D2F4B8417
 #define CREATE_NSSET_LOCALIZED_H_E012D98CCFF7446FB305B72D2F4B8417
 

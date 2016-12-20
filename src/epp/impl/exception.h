@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef EXCEPTION_H_B43EF188F27B433A95725369EF9D1FAB
 #define EXCEPTION_H_B43EF188F27B433A95725369EF9D1FAB
 

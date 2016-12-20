@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
 #define TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
 

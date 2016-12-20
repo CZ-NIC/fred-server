@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "src/epp/nsset/info_nsset.h"
 
 #include "src/fredlib/nsset.h"

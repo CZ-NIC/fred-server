@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file epp_result_code.h
- *  <++>
- */
-
 #ifndef EPP_RESULT_CODE_H_BFC3F7DA349447F9B0A921B0174E9923
 #define EPP_RESULT_CODE_H_BFC3F7DA349447F9B0A921B0174E9923
 

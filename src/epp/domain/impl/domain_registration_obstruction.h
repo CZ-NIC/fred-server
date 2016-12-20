@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file domain_registration_obstruction.h
- *  <++>
- */
-
 #ifndef DOMAIN_REGISTRATION_OBSTRUCTION_H_EC6B8C64A07B47D7AB68755BAEB424A9
 #define DOMAIN_REGISTRATION_OBSTRUCTION_H_EC6B8C64A07B47D7AB68755BAEB424A9
 

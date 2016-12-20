@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef INFO_KEYSET_DATA_H_22BCA2CEF9D4405C8BE709B0EA5107C5
 #define INFO_KEYSET_DATA_H_22BCA2CEF9D4405C8BE709B0EA5107C5
 

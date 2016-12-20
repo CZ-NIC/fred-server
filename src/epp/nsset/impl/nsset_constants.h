@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef NSSET_CONSTANTS_H_30216F5F90764F32A8BE0F704CCC45E1
 #define NSSET_CONSTANTS_H_30216F5F90764F32A8BE0F704CCC45E1
 

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef NSSET_HANDLE_STATE_TO_CHECK_RESULT_H_3A20C6DC9F7A4471B4F76A233BE2B068
 #define NSSET_HANDLE_STATE_TO_CHECK_RESULT_H_3A20C6DC9F7A4471B4F76A233BE2B068
 

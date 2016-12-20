@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-
 #ifndef DOMAIN_BILLING_H_01E6DC08BDFC491D954546D9307693DB
 #define DOMAIN_BILLING_H_01E6DC08BDFC491D954546D9307693DB
 

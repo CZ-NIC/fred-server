@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
 #define CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
 

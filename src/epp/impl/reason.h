@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef REASON_H_7629BFD8BB7641BE890C92F2BEC79615
 #define REASON_H_7629BFD8BB7641BE890C92F2BEC79615
 

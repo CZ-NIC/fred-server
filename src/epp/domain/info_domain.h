@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file info_domain.h
- *  <++>
- */
-
 #ifndef INFO_DOMAIN_H_A9C7B7C225EB43899886D9EE74F3EF6B
 #define INFO_DOMAIN_H_A9C7B7C225EB43899886D9EE74F3EF6B
 

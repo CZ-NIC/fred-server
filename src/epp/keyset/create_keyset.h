@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 #define CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 

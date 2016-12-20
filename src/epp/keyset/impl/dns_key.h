@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  keyset dns key
- */
-
 #ifndef DNS_KEY_H_C09AC6C027EE4158BD3BFE2C58D9F3AF
 #define DNS_KEY_H_C09AC6C027EE4158BD3BFE2C58D9F3AF
 

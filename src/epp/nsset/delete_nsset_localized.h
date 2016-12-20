@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef DELETE_NSSET_LOCALIZED_H_9D46AC55B43743898CF9E6A41641A1BC
 #define DELETE_NSSET_LOCALIZED_H_9D46AC55B43743898CF9E6A41641A1BC
 

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CORBA_EPP_REGISTRAR_SESSION_DATA_54154540219
 #define CORBA_EPP_REGISTRAR_SESSION_DATA_54154540219
 
