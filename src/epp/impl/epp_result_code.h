@@ -58,6 +58,47 @@ struct EppResultCode
         authentication_error_server_closing_connection   = 2501,
         session_limit_exceeded_server_closing_connection = 2502,
     };
+
+    static const char* to_string(EppResultCode::Enum _epp_result_code)
+    {
+        switch (_epp_result_code)
+        {
+            case command_completed_successfully:                   return "command completed successfully";
+            case command_completed_successfully_action_pending:    return "command completed successfully; action pending";
+            case command_completed_successfully_no_messages:       return "command completed successfully; no messages";
+            case command_completed_successfully_ack_to_dequeue:    return "command completed successfully; ack to dequeue";
+            case command_completed_successfully_ending_session:    return "command completed successfully; ending session";
+            case unknown_command:                                  return "unknown command";
+            case command_syntax_error:                             return "command syntax error";
+            case command_use_error:                                return "command use error";
+            case required_parameter_missing:                       return "required parameter missing";
+            case parameter_value_range_error:                      return "parameter value range error";
+            case parameter_value_syntax_error:                     return "parameter value syntax error";
+            case unimplemented_protocol_version:                   return "unimplemented protocol version";
+            case unimplemented_command:                            return "unimplemented command";
+            case unimplemented_option:                             return "unimplemented option";
+            case unimplemented_extension:                          return "unimplemented extension";
+            case billing_failure:                                  return "Billing failure";
+            case object_is_not_eligible_for_renewal:               return "object is not eligible for renewal";
+            case object_is_not_eligible_for_transfer:              return "object is not eligible for transfer";
+            case authentication_error:                             return "authentication error";
+            case authorization_error:                              return "authorization error";
+            case invalid_authorization_information:                return "invalid authorization information";
+            case object_pending_transfer:                          return "object pending transfer";
+            case object_not_pending_transfer:                      return "object not pending transfer";
+            case object_exists:                                    return "object exists";
+            case object_does_not_exist:                            return "object does not exist";
+            case object_status_prohibits_operation:                return "object status prohibits operation";
+            case object_association_prohibits_operation:           return "object association prohibits operation";
+            case parameter_value_policy_error:                     return "parameter value policy error";
+            case unimplemented_object_service:                     return "unimplemented object service";
+            case data_management_policy_violation:                 return "data management policy violation";
+            case command_failed:                                   return "command failed";
+            case command_failed_server_closing_connection:         return "command failed; server closing connection";
+            case authentication_error_server_closing_connection:   return "authentication error; server closing connection";
+            case session_limit_exceeded_server_closing_connection: return "session limit exceeded; server closing connection";
+        }
+    }
 };
 
 #endif
