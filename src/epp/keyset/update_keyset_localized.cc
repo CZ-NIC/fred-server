@@ -90,7 +90,10 @@ LocalizedSuccessResponse update_keyset_localized(
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::object_not_exist,
-                std::set<Error>(),
+                Util::set_of<Error>(
+                        Error::of_scalar_parameter(
+                                Param::keyset_handle,
+                                Reason::keyset_notexist)),
                 _lang);
     }
     catch(const AuthorizationError&) {
@@ -98,7 +101,10 @@ LocalizedSuccessResponse update_keyset_localized(
         throw create_localized_fail_response(
                 exception_localization_ctx,
                 Response::authorization_error,
-                std::set<Error>(),
+                Util::set_of<Error>(
+                        Error::of_scalar_parameter(
+                                Param::registrar_autor,
+                                Reason::unauthorized_registrar)),
                 _lang);
     }
     catch (const ObjectStatusProhibitsOperation&) {
