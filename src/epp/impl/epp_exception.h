@@ -19,9 +19,10 @@
 #ifndef EPP_EXCEPTION_H_31397E48DE5D4189A8C4A2E84F180DA9
 #define EPP_EXCEPTION_H_31397E48DE5D4189A8C4A2E84F180DA9
 
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_response_failure.h"
 
 #include <exception>
+#include <set>
 
 namespace Epp {
 
@@ -30,24 +31,22 @@ class EppException : std::exception
 
 public:
 
-    /** Every EppException needs valid epp_result_code_ */
-    EppException(EppResultCode::Enum _epp_response_result_code)
-        : epp_response_result_code_(_epp_response_result_code)
+    /** Every EppException needs a valid EppResponseFailure */
+    EppException(EppResponseFailure _epp_response)
+        : epp_response_(_epp_response)
     { }
 
-    const char* what() const throw() {
-        // for now, we have only one epp_response_result_code,
-        // so its description is used to describe this exception
-        return EppResultCode::to_string(epp_response_result_code_);
+    EppResponseFailure epp_response() const throw() {
+        return epp_response_;
     }
 
-    EppResultCode::Enum epp_response_result_code() const throw() {
-        return epp_response_result_code_;
+    const char* what() const throw() {
+        return epp_response_.to_string();
     }
 
 protected:
 
-    EppResultCode::Enum epp_response_result_code_;
+    EppResponseFailure epp_response_;
 
 };
 

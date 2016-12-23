@@ -21,8 +21,6 @@
 
 #include <exception>
 
-#include "src/epp/impl/epp_exception.h"
-
 namespace Epp {
 
     struct Exception : std::exception { };
@@ -44,6 +42,7 @@ namespace Epp {
     struct InvalidIdentTypeDbHandle           :Exception { const char* what() const throw() { return "invalid IdentType db handle"; } };
     struct InvalidResponseValue               :Exception { const char* what() const throw() { return "invalid Response::Enum value"; } };
     struct InvalidReasonValue                 :Exception { const char* what() const throw() { return "invalid Reason::Enum value"; } };
+    struct InvalidEppResultCodeValue          :Exception { const char* what() const throw() { return "invalid EppResultCode::(Success|Failure) value"; } };
 
     struct RequiredParameterMissing : Exception { const char* what() const throw() { return "Required parameter missing"; } };
     struct BillingFailure : Exception { const char* what() const throw() { return "Billing failure"; } };

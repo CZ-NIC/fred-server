@@ -17,9 +17,11 @@
  */
 
 #include "src/epp/domain/info_domain_localized.h"
+#include "src/epp/domain/info_domain.h"
 
 #include "src/epp/impl/action.h"
-#include "src/epp/domain/info_domain.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/object_states_localized.h"
 #include "src/epp/impl/response.h"
@@ -101,6 +103,14 @@ InfoDomainLocalizedResponse info_domain_localized(
                 ctx,
                 Response::object_not_exist,
                 std::set<Error>(),
+                _lang);
+    }
+    catch (const EppResponseFailure& e) {
+        ctx.get_log().info(std::string("info_domain_localized: ") + e.what());
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw EppResponseFailureLocalized(
+                exception_localization_ctx,
+                e,
                 _lang);
     }
     catch (const std::exception& e) {

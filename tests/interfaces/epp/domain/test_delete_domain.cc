@@ -21,6 +21,9 @@
  */
 
 #include "src/epp/domain/delete_domain.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/param.h"
+#include "src/epp/impl/reason.h"
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -33,26 +36,36 @@ BOOST_AUTO_TEST_SUITE(DeleteDomain)
 
 BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
 {
-    BOOST_CHECK_THROW(
+    try {
+    //BOOST_CHECK_THROW(
         Epp::Domain::delete_domain(
             ctx,
             info_domain_data_.fqdn,
             0 // invalid registrar_id
-        ),
-        Epp::AuthErrorServerClosingConnection
-    );
+        );//,
+        //Epp::AuthErrorServerClosingConnection
+    //);
+    }
+    catch (const Epp::EppResponseFailure& e) {
+        BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoDomainDataOfNonexistentDomain)
 {
-    BOOST_CHECK_THROW(
+    try {
+    //BOOST_CHECK_THROW(
         Epp::Domain::delete_domain(
             ctx,
             info_domain_data_.fqdn,
             info_registrar_data_.id
-        ),
-        Epp::ObjectDoesNotExist
-    );
+        );//,
+        //Epp::NonexistentHandle
+    //);
+    }
+    catch (const Epp::EppResponseFailure& e) {
+        BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
@@ -69,38 +82,58 @@ BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNone
 
 BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
 {
-    BOOST_CHECK_THROW(
+    try {
+    //BOOST_CHECK_THROW(
         Epp::Domain::delete_domain(
             ctx,
             info_domain_data_.fqdn,
             different_info_registrar_data_.id
-        ),
-        Epp::AuthorizationError
-    );
+        );//,
+        //Epp::AuthorizationError
+    //);
+    }
+    catch (const Epp::EppResponseFailure& e) {
+        BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+        BOOST_CHECK(e.epp_result().extended_errors());
+        BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+        BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::registrar_autor);
+        BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::unauthorized_registrar);
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
 {
-    BOOST_CHECK_THROW(
+    try {
+    //BOOST_CHECK_THROW(
         Epp::Domain::delete_domain(
             ctx,
             info_domain_data_.fqdn,
             info_registrar_data_.id
-        ),
-        Epp::ZoneAuthorizationError
-    );
+        );//,
+        //Epp::AuthorizationError
+    //);
+    }
+    catch (const Epp::EppResponseFailure& e) {
+        BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+        BOOST_CHECK(!e.epp_result().extended_errors());
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
 {
-    BOOST_CHECK_THROW(
+    try {
+    //BOOST_CHECK_THROW(
         Epp::Domain::delete_domain(
             ctx,
             info_domain_data_.fqdn,
             info_registrar_data_.id
-        ),
-        Epp::ObjectStatusProhibitsOperation
-    );
+        );//,
+        //Epp::ObjectStatusProhibitsOperation
+    //);
+    }
+    catch (const Epp::EppResponseFailure& e) {
+        BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainData)

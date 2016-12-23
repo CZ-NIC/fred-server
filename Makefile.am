@@ -246,6 +246,9 @@ noinst_HEADERS = \
 		src/epp/impl/registrar_session_data.h \
 		src/epp/impl/request_params.h \
 		src/epp/error.h \
+		src/epp/impl/epp_response_failure.h \
+		src/epp/impl/epp_result_failure.h \
+		src/epp/impl/epp_result_code.h \
 		src/epp/impl/action.h \
 		src/epp/impl/exception_aggregate_param_errors.h \
 		src/epp/impl/util.h \
@@ -1561,6 +1564,18 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/reason.h \
 		src/epp/impl/response.h \
 		src/epp/error.h \
+		src/epp/impl/epp_response_failure.h \
+		src/epp/impl/epp_response_failure_localized.h \
+		src/epp/impl/epp_response_failure_localized.cc \
+		src/epp/impl/epp_result_failure.h \
+		src/epp/impl/epp_result_failure.cc \
+		src/epp/impl/epp_result_failure_localized.h \
+		src/epp/impl/epp_result_failure_localized.cc \
+		src/epp/impl/epp_extended_error.h \
+		src/epp/impl/epp_extended_error.cc \
+		src/epp/impl/epp_extended_error_localized.h \
+		src/epp/impl/epp_extended_error_localized.cc \
+		src/epp/impl/epp_result_code.h \
 		src/epp/impl/parameter_errors.h \
 		src/epp/impl/parameter_errors.cc \
 		src/epp/impl/conditionally_enqueue_notification.h \

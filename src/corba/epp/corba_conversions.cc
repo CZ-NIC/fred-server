@@ -11,6 +11,11 @@
 #include "src/epp/keyset/info_keyset_localized.h"
 #include "src/epp/nsset/info_nsset_localized.h"
 
+#include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_result_failure_localized.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_extended_error_localized.h"
+
 #include "util/corba_conversion.h"
 #include "util/db/nullable.h"
 #include "util/map_at.h"
@@ -227,6 +232,38 @@ namespace Corba {
             result.errorList[i].reason = wrap_string_to_corba_string(it->localized_reason_description);
         }
 
+        return result;
+    }
+
+    ccReg::EPP::EppError wrap_epp_response_failure_localized(
+            const Epp::EppResponseFailureLocalized& _epp_response_failure,
+            const std::string& _server_transaction_handle)
+    {
+        ccReg::EPP::EppError result;
+
+        const Epp::EppResultFailureLocalized& epp_result = _epp_response_failure.epp_result();
+
+        CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), result.errCode);
+        result.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
+        result.errMsg = wrap_string_to_corba_string(epp_result.epp_result_description());
+
+        const boost::optional<std::set<Epp::EppExtendedErrorLocalized> >& epp_extended_errors =
+                epp_result.extended_errors();
+
+        if(epp_extended_errors) {
+            const std::set<Epp::EppExtendedErrorLocalized>::size_type size = epp_extended_errors->size();
+            result.errorList.length(size);
+
+            int i = 0;
+            for(std::set<Epp::EppExtendedErrorLocalized>::const_iterator epp_extended_error = epp_extended_errors->begin();
+                epp_extended_error != epp_extended_errors->end();
+                ++epp_extended_error, ++i)
+            {
+                result.errorList[i].code = wrap_param_error(epp_extended_error->param());
+                CorbaConversion::wrap_int(epp_extended_error->position(), result.errorList[i].position);
+                result.errorList[i].reason = wrap_string_to_corba_string(epp_extended_error->reason_description());
+            }
+        }
         return result;
     }
 

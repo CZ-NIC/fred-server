@@ -20,6 +20,7 @@
 #define LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
 
 #include "src/epp/error.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/object_states_localized.h"
 #include "src/epp/impl/response.h"
@@ -61,6 +62,15 @@ ObjectStatesLocalized localize_object_states(
 std::string get_reason_description_localized_column_name(SessionLang::Enum _lang);
 std::string get_response_description_localized_column_name(SessionLang::Enum _lang);
 
+std::string get_reason_description_localized(
+        Fred::OperationContext& _ctx,
+        Reason::Enum _reason,
+        SessionLang::Enum _lang);
+
+std::string get_epp_result_description_localized(
+        Fred::OperationContext& _ctx,
+        EppResultCode::Failure _epp_result_code,
+        SessionLang::Enum _session_lang);
 /**
  * @returns untyped postgres array
  * Caller should cast it properly before using in query.

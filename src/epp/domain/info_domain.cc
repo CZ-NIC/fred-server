@@ -1,6 +1,9 @@
 #include "src/epp/domain/info_domain.h"
 
 #include "src/epp/impl/exception.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/domain/info_domain.h"

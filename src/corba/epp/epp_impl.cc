@@ -50,6 +50,8 @@
 #include "response.h"  // errors code
 #include "reason.h"    // reason messages code
 
+#include "src/epp/impl/epp_response_failure_localized.h"
+
 // logger
 #include "src/old_utils/log.h"
 
@@ -2869,6 +2871,9 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
     } catch(const Epp::LocalizedFailResponse& e) {
         throw Corba::wrap_error(e, server_transaction_handle);
     }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainDelete(
@@ -2894,6 +2899,9 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
 
     } catch(const Epp::LocalizedFailResponse& e) {
         throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
     }
 }
 

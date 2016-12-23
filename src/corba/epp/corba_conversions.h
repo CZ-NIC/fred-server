@@ -29,6 +29,7 @@
 
 #include "src/epp/nsset/impl/dns_host_input.h"
 #include "src/corba/EPP.hh"
+#include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/request_params.h"
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/contact/contact_change.h"
@@ -110,6 +111,8 @@ namespace Corba {
                                            ccReg::Response& _dst);
 
     ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
+
+    ccReg::EPP::EppError wrap_epp_response_failure_localized(const Epp::EppResponseFailureLocalized& _epp_response_failure, const std::string& _server_transaction_handle);
 
     void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData& src, ccReg::Contact& dst);
 
