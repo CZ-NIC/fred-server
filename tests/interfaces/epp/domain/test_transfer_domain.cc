@@ -20,24 +20,34 @@
  *  @file
  */
 
-#include "src/epp/domain/transfer_domain.h"
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
+
+#include "src/epp/domain/transfer_domain.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/param.h"
+#include "src/epp/impl/reason.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <set>
-#include <vector>
 #include <string>
+#include <vector>
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(TransferDomain)
+
+bool fail_auth_error_srvr_closing_connection_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, HasInfoDomainData)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::transfer_domain(
             ctx,
             info_domain_data_.fqdn,
@@ -45,13 +55,19 @@ BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, HasInfoDomainDa
             0,
             42
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        fail_auth_error_srvr_closing_connection_exception
     );
+}
+bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoRegistrarData)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::transfer_domain(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
@@ -59,13 +75,20 @@ BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoRegistrarData)
             info_registrar_data_.id,
             42
         ),
-        Epp::ObjectDoesNotExist
+        Epp::EppResponseFailure,
+        fail_nonexistent_handle_exception
     );
+}
+
+bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::domain_transfer_impl(
             ctx,
             info_enum_domain_data_.fqdn,
@@ -73,13 +96,20 @@ BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNone
             info_registrar_data_.id,
             42
         ),
-        Epp::ObjectDoesNotExist
+        Epp::EppResponseFailure,
+        fail_enum_domain_does_not_exist_exception,
     );
+}
+
+bool fail_not_eligible_for_transfer_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_is_not_eligible_for_transfer);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_not_eligible_for_transfer, HasInfoDomainData)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::transfer_domain(
             ctx,
             info_domain_data_.fqdn,
@@ -87,27 +117,41 @@ BOOST_FIXTURE_TEST_CASE(fail_not_eligible_for_transfer, HasInfoDomainData)
             info_registrar_data_.id,
             42
         ),
-        Epp::ObjectNotEligibleForTransfer
+        Epp::EppResponseFailure,
+        fail_not_eligible_for_transfer_exception
     );
+}
+
+bool fail_prohibiting_status1(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status1, HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited)
 {
-    BOOST_CHECK_THROW(
-        Epp::Domain::domain_transfer_impl(
+    BOOST_CHECK_EXCEPTION(
+        Epp::Domain::transfer_domain(
             ctx,
             info_domain_data_.fqdn,
             info_domain_data_.authinfopw,
             different_info_registrar_data_.id,
             42
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        fail_prohibiting_status1
     );
+}
+
+bool fail_authz_info_error_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::invalid_authorization_information);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_authz_info_error, HasInfoDomainDataAndDifferentInfoRegistrarData)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::transfer_domain(
             ctx,
             info_domain_data_.fqdn,
@@ -115,13 +159,19 @@ BOOST_FIXTURE_TEST_CASE(fail_authz_info_error, HasInfoDomainDataAndDifferentInfo
             different_info_registrar_data_.id,
             42
         ),
-        Epp::AuthorizationInformationError
+        Epp::EppResponseFailure,
+        fail_authz_info_error_exception
     );
+}
+bool fail_registrar_without_zone_access_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::transfer_domain(
             ctx,
             info_domain_data_.fqdn,
@@ -129,7 +179,8 @@ BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWit
             info_registrar_data_.id, // same registrar but zone access should be checked before this
             42
         ),
-        Epp::AuthorizationError
+        Epp::EppResponseFailure,
+        fail_registrar_without_zone_access_exception
     );
 }
 

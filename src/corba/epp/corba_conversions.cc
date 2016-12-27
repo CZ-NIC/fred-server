@@ -930,10 +930,10 @@ namespace Corba {
         return ret;
     }
 
-    std::vector<Epp::ENUMValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext)
+    std::vector<Epp::Domain::EnumValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext)
     {
         const ccReg::ENUMValidationExtension *enum_ext = 0;
-        std::vector<Epp::ENUMValidationExtension> ret;
+        std::vector<Epp::Domain::EnumValidationExtension> ret;
         ret.reserve(ext.length());
         for(unsigned i = 0; i < ext.length(); ++i)
         {
@@ -949,7 +949,7 @@ namespace Corba {
                     //conversion errors ignored here, implementation must later handle `not-a-date-time` value correctly
                 }
 
-                ret.push_back(Epp::ENUMValidationExtension(valexdate,
+                ret.push_back(Epp::EnumValidationExtension(valexdate,
                     enum_ext->publish == ccReg::DISCL_DISPLAY)
                 );
             }

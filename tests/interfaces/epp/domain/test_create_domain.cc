@@ -20,14 +20,15 @@
  *  @file
  */
 
-#include "src/epp/domain/create_domain.h"
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
+#include "src/epp/domain/create_domain.h"
 #include "src/epp/domain/create_domain_localized.h"
-
-#include "src/fredlib/object/object_id_handle_pair.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/fredlib/object/generate_authinfo_password.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 
 #include <vector>
 #include <string>
@@ -35,7 +36,7 @@
 #include <boost/foreach.hpp>
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(CreateDomain)
 
 bool handle_oidhpair_predicate (const std::string& handle, const Fred::ObjectIdHandlePair& pair)
@@ -43,17 +44,34 @@ bool handle_oidhpair_predicate (const std::string& handle, const Fred::ObjectIdH
   return (handle == pair.handle);
 }
 
+bool create_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, HasDomainData)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             0,
             42
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        create_invalid_registrar_id_exception
     );
+}
+
+bool create_invalid_fqdn_zone_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_fqdn);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::not_applicable_domain);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_zone, HasDomainData)
@@ -93,29 +111,48 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_cz, HasDomainData)
     BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
     BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::not_applicable_domain);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_fqdn_zone_exception
+     );
 }
 
+bool create_invalid_fqdn_zone_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_fqdn);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::not_applicable_domain);
+    return true;
+}
+
+BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_zone, HasDomainData)
+{
+    domain1_create_input_data.fqdn = domain1_create_input_data.fqdn + std::string("c");
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+
+    BOOST_CHECK_EXCEPTION(
+        Epp::Domain::create_domain(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_fqdn_syntax_exception
+    );
+}
+
+// FIXME
 BOOST_FIXTURE_TEST_CASE(create_invalid_dot_cz, HasDomainData)
 {
     domain1_create_input_data.fqdn = std::string(".cz");
@@ -264,7 +301,6 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_double_dot, HasDomainData)
     {
         BOOST_ERROR("unexpected exception type");
     }
-}
 
 BOOST_FIXTURE_TEST_CASE(fqdn_syntax_no_dot, HasDomainData)
 {
@@ -296,18 +332,36 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_no_dot, HasDomainData)
     }
 }
 
+// END OF FIXME
+
+bool create_fail_already_existing_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_exists);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, HasDomainData)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain2_create_input_data,
             info_registrar_data_.id,
             42 /* TODO */
         ),
-        Epp::ObjectExists
+        Epp::EppResponseFailure,
+        create_fail_already_existing_exception
     );
+}
+
+bool create_fqdn_blacklisted_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_fqdn);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::blacklisted_domain);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_fqdn_blacklisted, HasDomainData)
@@ -320,40 +374,46 @@ BOOST_FIXTURE_TEST_CASE(create_fqdn_blacklisted, HasDomainData)
     BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
     BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::blacklisted_domain);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_fqdn_blacklisted_exception
+    );
+}
+
+bool create_fail_registrar_zone_access_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_fail_registrar_zone_access, HasDomainDataAndRegistrar)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             registrar_data_not_in_zone_.id,
             42 /* TODO */
         ),
-        Epp::AuthorizationError
+        Epp::EppResponseFailure,
+        create_fail_registrar_zone_access_exception
     );
+}
+
+bool create_invalid_nsset_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_nsset);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::nsset_notexist);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_nsset, HasDomainData)
@@ -363,27 +423,26 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_nsset, HasDomainData)
     BOOST_TEST_MESSAGE("domain1_create_input_data.nsset " << domain1_create_input_data.nsset);
     BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_nsset);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::nsset_notexist);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_nsset_exception
+    );
+}
+
+bool create_invalid_keyset_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_keyset);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::keyset_notexist);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_keyset, HasDomainData)
@@ -393,27 +452,26 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_keyset, HasDomainData)
     BOOST_TEST_MESSAGE("domain1_create_input_data.keyset " << domain1_create_input_data.keyset);
     BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_keyset);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::keyset_notexist);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_keyset_exception
+    );
+}
+
+bool create_empty_registrant_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_registrant);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::registrant_notexist);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_empty_registrant, HasDomainData)
@@ -423,27 +481,26 @@ BOOST_FIXTURE_TEST_CASE(create_empty_registrant, HasDomainData)
     BOOST_TEST_MESSAGE("domain1_create_input_data.registrant " << domain1_create_input_data.registrant);
     BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::RequiredSpecificParameterMissing& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_registrant);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::registrant_notexist);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_empty_registrant_exception
+    );
+}
+
+bool create_invalid_registrant_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_registrant);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::registrant_notexist);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrant, HasDomainData)
@@ -453,177 +510,182 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrant, HasDomainData)
     BOOST_TEST_MESSAGE("domain1_create_input_data.registrant " << domain1_create_input_data.registrant);
     BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_registrant);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::registrant_notexist);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_registrant_exception
+    );
+}
+
+bool create_invalid_period_negative_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_range_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_period);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::period_range);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_period_negative, HasDomainData)
 {
     domain1_create_input_data.period = Epp::Domain::DomainRegistrationTime(-12,Epp::Domain::DomainRegistrationTime::Unit::month);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValueRangeError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_period_negative_exception
+    );
+}
+
+bool create_invalid_period_toolong_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_range_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_period);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::period_range);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_period_toolong, HasDomainData)
 {
     domain1_create_input_data.period = Epp::Domain::DomainRegistrationTime(132,Epp::Domain::DomainRegistrationTime::Unit::month);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValueRangeError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_period_toolong_exception
+    );
+}
+
+bool create_invalid_period_modulo_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_period);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::policy_range);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_period_modulo, HasDomainData)
 {
     domain1_create_input_data.period = Epp::Domain::DomainRegistrationTime(25,Epp::Domain::DomainRegistrationTime::Unit::month);
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_policy);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_period_modulo_exception
+    );
+}
+
+bool create_empty_valexdate_enum_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::required_parameter_missing);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_empty_valexdate_enum, HasDomainData)
 {
     domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    domain1_create_input_data.enum_validation_list = std::vector<Epp::ENUMValidationExtension>();
-
-    BOOST_CHECK_THROW(
-        Epp::Domain::create_domain(
-            ctx,
-            domain1_create_input_data,
-            info_registrar_data_.id,
-            42 /* TODO */
-        ),
-        Epp::RequiredParameterMissing
-    );
-}
-
-bool valexpdate_not_valid_exception(const Epp::ParameterValueRangeError& ex) {
-    BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
-    BOOST_CHECK(ex.get().size() == 1);
-    BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
-    BOOST_CHECK(ex.get().rbegin()->position == 1);
-    BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
-    return true;
-}
-
-BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, HasDomainData)
-{
-    domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
-            Epp::ENUMValidationExtension());
+    domain1_create_input_data.enum_validation_list = std::vector<Epp::Domain::EnumValidationExtension>();
 
     BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42 /* TODO */),
-        Epp::ParameterValueRangeError,
-        valexpdate_not_valid_exception);
+            42 /* TODO */
+        ),
+        Epp::EppResponseFailure,
+        create_empty_valexdate_enum_exception
+    );
+}
+
+bool create_special_valexdate_enum_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_range_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_ext_val_date);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::valexpdate_not_valid);
+    return true;
+}
+
+BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, HasDomainData)
+{
+    domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
+            Epp::Domain::EnumValidationExtension());
+
+    BOOST_CHECK_EXCEPTION(
+        Epp::Domain::create_domain(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42 /* TODO */
+        ),
+        Epp::EppResponseFailure,
+        create_special_valexdate_enum_exception
+    );
+}
+
+bool create_nonempty_valexdate_nonenum_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_ext_val_date);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::valexpdate_not_used);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_nonempty_valexdate_nonenum, HasDomainData)
 {
-    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
-            Epp::ENUMValidationExtension());
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
+            Epp::Domain::EnumValidationExtension());
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
-        BOOST_CHECK(ex.get().rbegin()->position == 1);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_used);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_nonempty_valexdate_nonenum_exception
+    );
+}
+
+bool create_enum_valexdate_today_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_range_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_ext_val_date);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::valexpdate_not_valid);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_today, HasDomainData)
@@ -635,30 +697,29 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_today, HasDomainData)
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
-            Epp::ENUMValidationExtension(current_local_date, false));//yesterday
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
+            Epp::Domain::EnumValidationExtension(current_local_date, false));//yesterday
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValueRangeError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
-        BOOST_CHECK(ex.get().rbegin()->position == 1);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_enum_valexdate_today_exception
+    );
+}
+
+bool create_enum_valexdate_yesterday_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_range_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_ext_val_date);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::valexpdate_not_valid);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_yesterday, HasDomainData)
@@ -670,30 +731,29 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_yesterday, HasDomainData)
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
-            Epp::ENUMValidationExtension(current_local_date - boost::gregorian::days(1), false));//yesterday
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
+            Epp::Domain::EnumValidationExtension(current_local_date - boost::gregorian::days(1), false));//yesterday
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValueRangeError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
-        BOOST_CHECK(ex.get().rbegin()->position == 1);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_enum_valexdate_yesterday_exception
+    );
+}
+
+bool create_enum_valexdate_7m_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_range_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_ext_val_date);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::valexpdate_not_valid);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_7m, HasDomainData)
@@ -705,84 +765,71 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_7m, HasDomainData)
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
-            Epp::ENUMValidationExtension(current_local_date + boost::gregorian::months(7), false));//7 months
+    domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
+            Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::months(7), false));//7 months
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValueRangeError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
-        BOOST_CHECK(ex.get().rbegin()->position == 1);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_enum_valexdate_7m_exception
+    );
+}
+
+bool create_nonexistent_admin_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_admin);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 3);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::admin_notexist);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_nonexistent_admin, HasDomainData)
 {
     domain1_create_input_data.admin_contacts.push_back(*domain1_create_input_data.admin_contacts.rbegin() + "NONEXISTING");
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_admin);
-        BOOST_CHECK(ex.get().rbegin()->position == 3);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::admin_notexist);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_nonexistent_admin_exception
+    );
+}
+
+bool create_duplicated_admin_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_admin);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 3);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::duplicated_contact);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, HasDomainData)
 {
     domain1_create_input_data.admin_contacts.push_back(*domain1_create_input_data.admin_contacts.rbegin());
 
-    try{
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValuePolicyError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_admin);
-        BOOST_CHECK(ex.get().rbegin()->position == 3);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::duplicated_contact);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_duplicated_admin_exception
+    );
 }
 
 BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)

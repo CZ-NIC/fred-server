@@ -3,9 +3,7 @@
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
-
 #include "src/epp/impl/exception.h"
-
 #include "src/epp/impl/util.h"
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/domain/domain.h"
@@ -18,21 +16,22 @@
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
 #include "src/fredlib/zone/zone.h"
+
 #include <boost/date_time/gregorian/greg_date.hpp>
 
-namespace Epp {
+#include <string>
 
+namespace Epp {
 namespace Domain {
 
 unsigned long long delete_domain(
-    Fred::OperationContext& _ctx,
-    const std::string& _domain_fqdn,
-    const unsigned long long _registrar_id
-) {
+        Fred::OperationContext& _ctx,
+        const std::string& _domain_fqdn,
+        const unsigned long long _registrar_id)
+{
 
     const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
-        //throw AuthErrorServerClosingConnection();
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
@@ -42,9 +41,9 @@ unsigned long long delete_domain(
     try {
         zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
             Fred::Zone::rem_trailing_dot(_domain_fqdn));
-    } catch (const Fred::Zone::Exception& e) {
+    }
+    catch (const Fred::Zone::Exception& e) {
         if(e.is_set_unknown_zone_in_fqdn()) {
-            //throw NonexistentHandle();
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
@@ -80,12 +79,11 @@ unsigned long long delete_domain(
     const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
 
     if (!is_registrar_authorized) {
-        //throw AuthorizationError();
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
-                               .add_extended_error(
-                                       EppExtendedError::of_scalar_parameter(
-                                               Param::registrar_autor,
-                                               Reason::unauthorized_registrar)));
+                                         .add_extended_error(
+                                                 EppExtendedError::of_scalar_parameter(
+                                                         Param::registrar_autor,
+                                                         Reason::unauthorized_registrar)));
     }
 
     if (!is_system_registrar) {
@@ -98,7 +96,6 @@ unsigned long long delete_domain(
             domain_states.presents(Fred::Object_State::server_delete_prohibited) ||
             domain_states.presents(Fred::Object_State::delete_candidate))
         {
-            //throw ObjectStatusProhibitsOperation();
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
     }
@@ -109,18 +106,18 @@ unsigned long long delete_domain(
 
         return domain_data_before_delete.historyid;
 
-    } catch (const Fred::DeleteDomainByHandle::Exception& e) {
+    }
+    catch (const Fred::DeleteDomainByHandle::Exception& e) {
 
-        /* general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority */
+        // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if(e.is_set_unknown_domain_fqdn()) {
             throw;
         }
 
-        /* in the improbable case that exception is incorrectly set */
+        // in the improbable case that exception is incorrectly set
         throw;
     }
 }
 
-}
-
-}
+} // namespace Epp::Domain
+} // namespace Epp

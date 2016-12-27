@@ -2,6 +2,9 @@
 
 #include "src/epp/impl/exception.h"
 
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/check_contact.h"
@@ -21,11 +24,13 @@ unsigned long long delete_contact(
 ) {
 
     if( _registrar_id == 0 ) {
-        throw AuthErrorServerClosingConnection();
+        //throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     if( Fred::Contact::get_handle_registrability(_ctx, _handle) != Fred::ContactHandleState::Registrability::registered ) {
-        throw NonexistentHandle();
+        //throw NonexistentHandle();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
     const Fred::InfoRegistrarData callers_registrar =
@@ -38,7 +43,12 @@ unsigned long long delete_contact(
     const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
 
     if (!is_operation_permitted) {
-        throw AuthorizationError();
+        //throw AuthorizationError();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
+                                         .add_extended_error(
+                                                 EppExtendedError::of_scalar_parameter(
+                                                         Param::registrar_autor,
+                                                         Reason::unauthorized_registrar)));
     }
 
     // do it before any object state related checks
@@ -48,14 +58,16 @@ unsigned long long delete_contact(
     const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_delete.id).exec(_ctx));
     if (contact_states.presents(Fred::Object_State::linked))
     {
-        throw ObjectAssociationProhibitsOperation();
+        //throw ObjectAssociationProhibitsOperation();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_association_prohibits_operation));
     }
     if (!is_system_registrar) {
         if (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
             contact_states.presents(Fred::Object_State::server_delete_prohibited) ||
             contact_states.presents(Fred::Object_State::delete_candidate))
         {
-            throw ObjectStatusProhibitsOperation();
+            //throw ObjectStatusProhibitsOperation();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
     }
 
@@ -73,7 +85,8 @@ unsigned long long delete_contact(
         }
 
         if( e.is_set_object_linked_to_contact_handle() ) {
-            throw ObjectStatusProhibitsOperation();
+            //throw ObjectStatusProhibitsOperation();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 
         /* in the improbable case that exception is incorrectly set */

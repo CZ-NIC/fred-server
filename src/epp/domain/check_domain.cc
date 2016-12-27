@@ -1,6 +1,9 @@
 #include "src/epp/domain/check_domain.h"
 
 #include "src/epp/domain/impl/domain_registration_obstruction.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/check_domain.h"
@@ -13,14 +16,13 @@
 #include <idna.h>
 
 namespace Epp {
-
 namespace Domain {
 
 namespace {
 
 Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstruction_by_fqdn(
-    Fred::OperationContext& _ctx,
-    const std::string _domain_fqdn)
+        Fred::OperationContext& _ctx,
+        const std::string _domain_fqdn)
 {
     switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn)) {
 
@@ -50,14 +52,14 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
 } // namespace Epp::Domain::{anonymous}
 
 std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_domain(
-    Fred::OperationContext& _ctx,
-    const std::set<std::string>& _domain_fqdns,
-    unsigned long long _registrar_id
-) {
+        Fred::OperationContext& _ctx,
+        const std::set<std::string>& _domain_fqdns,
+        unsigned long long _registrar_id)
+{
 
     const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > domain_fqdn_to_domain_registration_obstruction;
@@ -69,6 +71,5 @@ std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_doma
     return domain_fqdn_to_domain_registration_obstruction;
 }
 
-}
-
-}
+} // namespace Epp::Domain
+} // namespace Epp

@@ -89,6 +89,11 @@ public:
         return extended_errors_;
     }
 
+    const bool empty() const
+    {
+        return !extended_errors_ || extended_errors_->empty();
+    }
+
     virtual const char* c_str() const throw() {
         return EppResultCode::c_str(epp_result_code_);
     }
@@ -110,6 +115,9 @@ private:
     boost::optional<std::set<EppExtendedError> > extended_errors_; ///< represents STD 69 response result's extValue
 
 };
+
+bool has_extended_error(const Epp::EppResultFailure& _epp_result_failure, const Epp::EppExtendedError& _epp_extended_error);
+bool has_extended_error_with_param_reason(const Epp::EppResultFailure& _epp_result_failure, const Epp::Param::Enum& _param, const Epp::Reason::Enum& _reason);
 
 } // namespace Epp
 

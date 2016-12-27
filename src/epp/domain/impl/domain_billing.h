@@ -26,15 +26,16 @@
 
 #include <string>
 
-namespace Epp
-{
-    void create_domain_bill_item(const std::string& fqdn,
+namespace Epp {
+namespace Domain {
+
+void create_domain_bill_item(const std::string& fqdn,
         const boost::posix_time::ptime& domain_create_timestamp_utc,
         unsigned long long sponsoring_registrar_id,
         unsigned long long created_domain_id,
         Fred::OperationContext& ctx);
 
-    void renew_domain_bill_item(const std::string& fqdn,
+void renew_domain_bill_item(const std::string& fqdn,
         const boost::posix_time::ptime& domain_renew_timestamp_utc,
         unsigned long long sponsoring_registrar_id,
         unsigned long long renewed_domain_id,
@@ -42,6 +43,8 @@ namespace Epp
         const boost::gregorian::date& old_domain_expiration_date_local,
         const boost::gregorian::date& domain_expiration_date_local,
         Fred::OperationContext& ctx);
-}
+
+} // namespace Epp::Domain
+} // namespace Epp
 
 #endif

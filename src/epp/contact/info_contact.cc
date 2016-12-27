@@ -1,14 +1,17 @@
 #include "src/epp/impl/disclose_policy.h"
 #include "src/epp/contact/info_contact.h"
 
-#include "src/fredlib/registrar/info_registrar.h"
-#include "src/fredlib/contact/info_contact.h"
-#include "src/fredlib/object_state/get_object_states.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
-#include "util/db/nullable.h"
 #include "src/fredlib/contact.h"
+#include "src/fredlib/contact/info_contact.h"
+#include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/registrar.h"
+#include "src/fredlib/registrar/info_registrar.h"
+#include "util/db/nullable.h"
 
 #include <boost/foreach.hpp>
 
@@ -126,7 +129,8 @@ InfoContactOutputData info_contact(
 {
     const bool registrar_is_authenticated = _session_registrar_id != 0;
     if (!registrar_is_authenticated) {
-        throw AuthErrorServerClosingConnection();
+        //throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     try {
@@ -189,7 +193,8 @@ InfoContactOutputData info_contact(
     } catch (const Fred::InfoContactByHandle::Exception& e) {
 
         if(e.is_set_unknown_contact_handle()) {
-            throw NonexistentHandle();
+            //throw NonexistentHandle();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
         /* in the improbable case that exception is incorrectly set */

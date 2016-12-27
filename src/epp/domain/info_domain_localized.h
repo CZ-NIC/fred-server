@@ -55,7 +55,7 @@ struct InfoDomainLocalizedOutputData
     boost::gregorian::date exdate;
     boost::optional<std::string> auth_info_pw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
-    Nullable<Epp::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
+    Nullable<EnumValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
 };
 

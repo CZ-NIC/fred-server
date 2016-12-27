@@ -19,7 +19,11 @@
 #include "src/epp/domain/check_domain_localized.h"
 #include "src/epp/domain/check_domain.h"
 
-#include "src/epp/domain/impl/domain_registration_obstruction.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
 #include "src/epp/impl/session_lang.h"
@@ -74,27 +78,25 @@ CheckDomainLocalizedResponse check_domain_localized(
                 localized_check_results);
 
     }
-    catch (const AuthErrorServerClosingConnection&) {
-        throw create_localized_fail_response(
+    catch (const EppResponseFailure& e) {
+        ctx.get_log().info(std::string("check_domain_localized: ") + e.what());
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
+                e,
                 _lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("check_domain_localized failure: ") + e.what());
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
     catch (...) {
         ctx.get_log().info("unexpected exception in check_domain_localized function");
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
 

@@ -53,17 +53,11 @@ struct CreateDomainResult {
     { }
 };
 
-/**
- * @throws AuthErrorServerClosingConnection
- * @throws ObjectExists
- * @throws AggregatedParamErrors
- */
 CreateDomainResult create_domain(
-    Fred::OperationContext& _ctx,
-    const CreateDomainInputData& _data,
-    unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-);
+        Fred::OperationContext& _ctx,
+        const CreateDomainInputData& _data,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Domain
 } // namespace Epp

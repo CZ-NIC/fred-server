@@ -27,7 +27,6 @@
 #include <string>
 
 namespace Epp {
-
 namespace Domain {
 
 /**
@@ -36,13 +35,11 @@ namespace Domain {
  * \throws  AuthErrorServerClosingConnection
  */
 std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_domain(
-    Fred::OperationContext& _ctx,
-    const std::set<std::string>& _domain_fqdns,
-    unsigned long long _registrar_id
-);
+        Fred::OperationContext& _ctx,
+        const std::set<std::string>& _domain_fqdns,
+        unsigned long long _registrar_id);
 
-}
-
-}
+} // namespace Epp::Domain
+} // namespace Epp
 
 #endif

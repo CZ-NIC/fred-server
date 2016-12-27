@@ -1,25 +1,27 @@
 #include "src/epp/domain/renew_domain_localized.h"
 #include "src/epp/domain/renew_domain.h"
 
-#include "src/fredlib/registrar/info_registrar.h"
 #include "src/epp/domain/impl/domain_billing.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/domain/impl/domain_billing.h"
-#include "src/epp/impl/exception.h"
-#include "src/epp/impl/exception_aggregate_param_errors.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
-
-#include "util/log/context.h"
+#include "src/fredlib/opcontext.h"
+#include "src/fredlib/registrar/info_registrar.h"
 #include "util/decimal/decimal.h"
+#include "util/log/context.h"
 
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
 
 #include <set>
+#include <stdexcept>
 #include <string>
 
 namespace Epp {
@@ -58,7 +60,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
                         _lang),
                 renew_domain_result.exdate);
 
-        //tmp billing impl
+        // tmp billing impl
         if(_rifd_epp_operations_charging
                 && Fred::InfoRegistrarById(_registrar_id).exec(ctx)
                     .info_registrar_data.system.get_value_or(false) == false)
@@ -88,64 +90,16 @@ RenewDomainLocalizedResponse renew_domain_localized(
         return localized_result;
 
     }
-    catch (const AuthErrorServerClosingConnection&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-    }
-    catch (const ParameterValuePolicyError& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::parameter_value_policy_error,
-                e.get(),
-                _lang);
-    }
-    catch (const AuthorizationError&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::authorization_error,
-                std::set<Error>(),
-                _lang);
-    }
-    catch (const ObjectDoesNotExist&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::object_not_exist,
-                std::set<Error>(),
-                _lang);
-    }
-    catch (const ParameterValueRangeError& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::parameter_value_range_error,
-                e.get(),
-                _lang);
-    }
-    catch (const ObjectStatusProhibitsOperation&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::status_prohibits_operation,
-                std::set<Error>(),
-                _lang);
-    }
     catch (const BillingFailure&) {
         Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 exception_localization_ctx,
-                Response::billing_failure,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::billing_failure)),
                 _lang);
     }
     catch (const EppResponseFailure& e) {
         Fred::OperationContextCreator exception_localization_ctx;
+        exception_localization_ctx.get_log().info(std::string("renew_domain_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 e,
@@ -154,19 +108,17 @@ RenewDomainLocalizedResponse renew_domain_localized(
     catch (const std::exception& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("renew_domain_localized failure: ") + e.what());
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 exception_localization_ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info("unexpected exception in renew_domain_localized function");
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 exception_localization_ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
 }

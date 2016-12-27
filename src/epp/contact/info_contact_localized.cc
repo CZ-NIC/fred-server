@@ -21,6 +21,8 @@
 
 #include "src/admin/contact/verification/contact_states/enum.h"
 #include "src/epp/impl/action.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
@@ -173,19 +175,26 @@ InfoContactLocalizedResponse info_contact_localized(
                 output_data);
 
     }
-    catch (const AuthErrorServerClosingConnection&) {
-        throw create_localized_fail_response(
+    //catch (const AuthErrorServerClosingConnection&) {
+    //    throw create_localized_fail_response(
+    //            ctx,
+    //            Response::authentication_error_server_closing_connection,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    //catch (const NonexistentHandle&) {
+    //    ctx.get_log().info("info_contact_localized failure: NonexistentHandle");
+    //    throw create_localized_fail_response(
+    //            ctx,
+    //            Response::object_not_exist,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    catch (const EppResponseFailure& e) {
+        ctx.get_log().info(std::string("info_contact_localized: ") + e.what());
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-    }
-    catch (const NonexistentHandle&) {
-        ctx.get_log().info("info_contact_localized failure: NonexistentHandle");
-        throw create_localized_fail_response(
-                ctx,
-                Response::object_not_exist,
-                std::set<Error>(),
+                e,
                 _lang);
     }
     catch (const std::exception& e) {

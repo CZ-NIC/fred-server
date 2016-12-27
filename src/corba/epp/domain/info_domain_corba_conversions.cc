@@ -59,7 +59,7 @@ std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_ptime) {
         TimeZoneOffset(local_ptime).to_rfc3339_string();
 }
 
-void wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(const Nullable<Epp::ENUMValidationExtension>& _src, ccReg::ExtensionList& _dst) {
+void wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(const Nullable<Epp::Domain::EnumValidationExtension>& _src, ccReg::ExtensionList& _dst) {
     if(!_src.isnull()) {
         ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
         enumVal->valExDate = Corba::wrap_string_to_corba_string(
@@ -110,7 +110,7 @@ void wrap_Epp_Domain_InfoDomainLocalizedOutputData(
         ++dst_admin_index;
     }
 
-    Corba::wrap_Epp_ENUMValidationExtension_to_ccReg_ExtensionList(
+    Corba::wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(
         _src.ext_enum_domain_validation,
         _dst.ext
     );

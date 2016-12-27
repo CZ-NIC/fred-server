@@ -1,9 +1,10 @@
 #include "src/epp/domain/info_domain.h"
 
-#include "src/epp/impl/exception.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/exception.h"
+#include "src/epp/impl/util.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/domain/info_domain.h"
@@ -22,14 +23,14 @@ namespace Epp {
 namespace Domain {
 
 InfoDomainOutputData info_domain(
-    Fred::OperationContext& _ctx,
-    const std::string& _domain_fqdn,
-    unsigned long long _session_registrar_id
-) {
+        Fred::OperationContext& _ctx,
+        const std::string& _domain_fqdn,
+        unsigned long long _session_registrar_id)
+{
 
     const bool registrar_is_authenticated = _session_registrar_id != 0;
     if (!registrar_is_authenticated) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     InfoDomainOutputData info_domain_output_data;
@@ -79,26 +80,27 @@ InfoDomainOutputData info_domain(
         for (
             std::vector<Fred::ObjectIdHandlePair>::const_iterator object_id_handle_pair = info_domain_data.admin_contacts.begin();
             object_id_handle_pair != info_domain_data.admin_contacts.end();
-            ++object_id_handle_pair
-        ) {
+            ++object_id_handle_pair)
+        {
             info_domain_output_data.admin.insert(object_id_handle_pair->handle);
         }
 
         info_domain_output_data.ext_enum_domain_validation =
-            info_domain_data.enum_domain_validation.isnull() ? Nullable<Epp::ENUMValidationExtension>()
-                                                             : Epp::ENUMValidationExtension(
+            info_domain_data.enum_domain_validation.isnull() ? Nullable<EnumValidationExtension>()
+                                                             : EnumValidationExtension(
                                                                  info_domain_data.enum_domain_validation.get_value().validation_expiration,
                                                                  info_domain_data.enum_domain_validation.get_value().publish
                                                                );
 
 
-    } catch (const Fred::InfoDomainByHandle::Exception& e) {
+    }
+    catch (const Fred::InfoDomainByHandle::Exception& e) {
 
         if(e.is_set_unknown_fqdn()) {
-            throw NonexistentHandle();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         };
 
-        /* in the improbable case that exception is incorrectly set */
+        // in the improbable case that exception is incorrectly set
         throw;
 
     }

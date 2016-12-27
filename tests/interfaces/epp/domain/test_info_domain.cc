@@ -20,10 +20,12 @@
  *  @file
  */
 
-#include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/domain/fixture.h"
+#include "tests/interfaces/epp/util.h"
 
 #include "src/epp/domain/info_domain.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/session_lang.h"
 
 #include <boost/test/unit_test.hpp>
@@ -84,7 +86,7 @@ void check_equal(
     );
 
     BOOST_CHECK_EQUAL(
-       _info_domain_output_data.ext_enum_domain_validation.get_value_or(Epp::ENUMValidationExtension()).get_valexdate(),
+       _info_domain_output_data.ext_enum_domain_validation.get_value_or(Epp::Domain::EnumValidationExtension()).get_valexdate(),
        _info_domain_data.enum_domain_validation.get_value_or_default().validation_expiration
    );
 
@@ -98,33 +100,46 @@ void check_equal(
 
 } // namespace {anonymous}
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(InfoDomain)
+
+bool fail_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::info_domain(
             ctx,
             info_domain_data_.fqdn,
             0 // invalid registrar_id
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        fail_invalid_registrar_id_exception
     );
+}
+
+bool fail_nonexistent_fqdn_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn, HasInfoDomainDataOfNonexistentDomain)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::info_domain(
             ctx,
             info_domain_data_.fqdn,
             info_registrar_data_.id
         ),
-        Epp::NonexistentHandle
+        Epp::EppResponseFailure,
+        fail_nonexistent_fqdn_exception
     );
 }
-
 
 BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainData)
 {

@@ -22,14 +22,15 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/object_states_localized.h"
 #include "src/epp/impl/response.h"
 #include "src/epp/impl/session_lang.h"
-#include "src/fredlib/exception.h"
+#include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/registrar/info_registrar.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -91,46 +92,29 @@ InfoDomainLocalizedResponse info_domain_localized(
                 info_domain_localized_output_data);
 
     }
-    catch (const AuthErrorServerClosingConnection&) {
-        throw create_localized_fail_response(
-                ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-    }
-    catch (const NonexistentHandle&) {
-        throw create_localized_fail_response(
-                ctx,
-                Response::object_not_exist,
-                std::set<Error>(),
-                _lang);
-    }
     catch (const EppResponseFailure& e) {
         ctx.get_log().info(std::string("info_domain_localized: ") + e.what());
-        Fred::OperationContextCreator exception_localization_ctx;
         throw EppResponseFailureLocalized(
-                exception_localization_ctx,
+                ctx,
                 e,
                 _lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("info_domain_localized failure: ") + e.what());
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
     catch (...) {
-        ctx.get_log().info("info_domain_localized failure: unexpected exception");
-        throw create_localized_fail_response(
+        ctx.get_log().info("unexpected exception in info_domain_localized function");
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
 
+}
+
 } // namespace Epp::Domain
 } // namespace Epp
-
-}

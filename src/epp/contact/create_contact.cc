@@ -3,15 +3,22 @@
 #include "src/epp/impl/disclose_policy.h"
 
 #include "src/epp/error.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/util.h"
-
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/registrar/info_registrar.h"
+#include "util/optional_value.h"
+
+#include <boost/optional.hpp>
+
+#include <string>
 
 namespace Epp {
 namespace Contact {
@@ -55,13 +62,18 @@ CreateContactResult create_contact(
 {
     const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
-        throw AuthErrorServerClosingConnection();
+        //throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_contact_handle) ==
                                  Fred::ContactHandleState::SyntaxValidity::valid;
     if (!handle_is_valid) {
-        throw InvalidHandle();
+        //throw InvalidHandle();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_syntax_error)
+                                        .add_extended_error(EppExtendedError::of_scalar_parameter(
+                                                Param::contact_handle,
+                                                Reason::bad_format_contact_handle)));
     }
 
     {
@@ -71,23 +83,35 @@ CreateContactResult create_contact(
         const bool contact_is_registered = contact_registrability ==
                                            Fred::ContactHandleState::Registrability::registered;
         if (contact_is_registered) {
-            throw ObjectExists();
+            //throw ObjectExists();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_exists));
         }
 
-        AggregatedParamErrors exception;
+        //AggregatedParamErrors exception;
+        EppResultFailure parameter_value_policy_error(EppResultCode::parameter_value_policy_error);
 
         const bool contact_is_in_protection_period = contact_registrability ==
                                                      Fred::ContactHandleState::Registrability::in_protection_period;
         if (contact_is_in_protection_period) {
-            exception.add(Error::of_scalar_parameter(Param::contact_handle, Reason::protected_period));
+            //exception.add(Error::of_scalar_parameter(Param::contact_handle, Reason::protected_period));
+            parameter_value_policy_error.add_extended_error(
+                    EppExtendedError::of_scalar_parameter(
+                            Param::contact_handle,
+                            Reason::protected_period));
         }
 
         if (!is_country_code_valid(_ctx, _data.country_code)) {
-            exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
+            //exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
+            parameter_value_policy_error.add_extended_error(
+                    EppExtendedError::of_scalar_parameter(
+                            Param::contact_cc,
+                            Reason::country_notexist));
         }
 
-        if (!exception.is_empty()) {
-            throw exception;
+        //if (!exception.is_empty()) {
+        //    throw exception;
+        if (!parameter_value_policy_error.empty()) {
+            throw EppResponseFailure(parameter_value_policy_error);
         }
     }
 
@@ -157,13 +181,18 @@ CreateContactResult create_contact(
         }
 
         if( e.is_set_invalid_contact_handle() /* wrong exception name */ ) {
-            throw ObjectExists();
+            //throw ObjectExists();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_exists));
         }
 
         if( e.is_set_unknown_country() ) {
-            AggregatedParamErrors exception;
-            exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
-            throw exception;
+            //AggregatedParamErrors exception;
+            //exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
+            //throw exception;
+            throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
+                    .add_extended_error(EppExtendedError::of_scalar_parameter(
+                            Param::contact_cc,
+                            Reason::country_notexist)));
         }
 
         /* in the improbable case that exception is incorrectly set */

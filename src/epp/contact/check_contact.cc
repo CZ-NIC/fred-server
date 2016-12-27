@@ -1,7 +1,10 @@
 #include "src/epp/contact/check_contact.h"
 
-#include "src/fredlib/contact/check_contact.h"
 #include "src/epp/contact/impl/contact_handle_state_to_check_result.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/fredlib/contact/check_contact.h"
 
 #include <boost/foreach.hpp>
 
@@ -16,6 +19,8 @@ std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > che
     const unsigned long long invalid_registrar_id = 0;
     if (_registrar_id == invalid_registrar_id) {
         throw AuthErrorServerClosingConnection();
+        //throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > result;

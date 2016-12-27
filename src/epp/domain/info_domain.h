@@ -52,7 +52,7 @@ struct InfoDomainOutputData {
     boost::gregorian::date exdate;
     boost::optional<std::string> auth_info_pw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
-    Nullable<Epp::ENUMValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
+    Nullable<EnumValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
 };
 
@@ -60,10 +60,9 @@ struct InfoDomainOutputData {
  * @returns domain data for given domain FQDN
  */
 InfoDomainOutputData info_domain(
-    Fred::OperationContext& _ctx,
-    const std::string& _domain_fqdn,
-    unsigned long long _session_registrar_id
-);
+        Fred::OperationContext& _ctx,
+        const std::string& _domain_fqdn,
+        unsigned long long _session_registrar_id);
 
 } // namespace Epp::Domain
 } // namespace Epp

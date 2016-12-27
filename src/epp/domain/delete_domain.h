@@ -24,7 +24,6 @@
 #include <string>
 
 namespace Epp {
-
 namespace Domain {
 
 /**
@@ -41,13 +40,11 @@ namespace Domain {
  * \throws Fred::DeleteDomainByHandle::Exception
  */
 unsigned long long delete_domain(
-    Fred::OperationContext& _ctx,
-    const std::string& _domain_fqdn,
-    unsigned long long _registrar_id
-);
+        Fred::OperationContext& _ctx,
+        const std::string& _domain_fqdn,
+        unsigned long long _registrar_id);
 
-}
-
-}
+} // namespace Epp::Domain
+} // namespace Epp
 
 #endif

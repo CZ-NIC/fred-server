@@ -37,13 +37,13 @@ struct RenewDomainInputData
     std::string fqdn;
     std::string current_exdate;
     DomainRegistrationTime period;
-    std::vector<Epp::ENUMValidationExtension> enum_validation_list;
+    std::vector<EnumValidationExtension> enum_validation_list;
 
     RenewDomainInputData(
         const std::string& _fqdn,
         const std::string& _current_exdate,
         const DomainRegistrationTime& _period,
-        const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list)
+        const std::vector<EnumValidationExtension>& _enum_validation_list)
     :   fqdn(_fqdn),
         current_exdate(_current_exdate),
         period(_period),

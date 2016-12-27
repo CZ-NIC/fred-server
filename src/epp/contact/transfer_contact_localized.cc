@@ -3,8 +3,9 @@
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/localization.h"
-
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -63,44 +64,52 @@ LocalizedSuccessResponse transfer_contact_localized(
         return result;
 
     }
-    catch(const AuthErrorServerClosingConnection&) {
+    //catch(const AuthErrorServerClosingConnection&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::authentication_error_server_closing_connection,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    //catch(const NonexistentHandle&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::object_not_exist,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    //catch(const ObjectNotEligibleForTransfer&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::not_eligible_for_transfer,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    //catch(const ObjectStatusProhibitsOperation&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::status_prohibits_operation,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    //catch(const AuthorizationInformationError&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::authorization_information_error,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    catch (const EppResponseFailure& e) {
         Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
+        exception_localization_ctx.get_log().info(std::string("transfer_contact_localized: ") + e.what());
+        throw EppResponseFailureLocalized(
                 exception_localization_ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-    }
-    catch(const NonexistentHandle&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::object_not_exist,
-                std::set<Error>(),
-                _lang);
-    }
-    catch(const ObjectNotEligibleForTransfer&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::not_eligible_for_transfer,
-                std::set<Error>(),
-                _lang);
-    }
-    catch(const ObjectStatusProhibitsOperation&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::status_prohibits_operation,
-                std::set<Error>(),
-                _lang);
-    }
-    catch(const AuthorizationInformationError&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::authorization_information_error,
-                std::set<Error>(),
+                e,
                 _lang);
     }
     catch (const std::exception& e) {

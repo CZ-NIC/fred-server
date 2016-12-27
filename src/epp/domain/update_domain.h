@@ -28,26 +28,24 @@
 #include <string>
 
 namespace Epp {
-
 namespace Domain {
 
 unsigned long long update_domain(
-    Fred::OperationContext& _ctx,
-    const std::string& _domain_fqdn,
-    const Optional<std::string>& _registrant_chg,
-    const Optional<std::string>& _auth_info_pw_chg,
-    const Optional<Nullable<std::string> >& _nsset_chg,
-    const Optional<Nullable<std::string> >& _keyset_chg,
-    const std::vector<std::string>& _admin_contacts_add,
-    const std::vector<std::string>& _admin_contacts_rem,
-    const std::vector<std::string>& _tmpcontacts_rem,
-    const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
-    unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id,
-    bool _rifd_epp_update_domain_keyset_clear);
+        Fred::OperationContext& _ctx,
+        const std::string& _domain_fqdn,
+        const Optional<std::string>& _registrant_chg,
+        const Optional<std::string>& _auth_info_pw_chg,
+        const Optional<Nullable<std::string> >& _nsset_chg,
+        const Optional<Nullable<std::string> >& _keyset_chg,
+        const std::vector<std::string>& _admin_contacts_add,
+        const std::vector<std::string>& _admin_contacts_rem,
+        const std::vector<std::string>& _tmpcontacts_rem,
+        const std::vector<EnumValidationExtension>& _enum_validation_list,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id,
+        bool _rifd_epp_update_domain_keyset_clear);
 
-}
-
-}
+} // namespace Epp::Domain
+} // namespace Epp
 
 #endif

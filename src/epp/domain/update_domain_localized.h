@@ -40,7 +40,7 @@ LocalizedSuccessResponse update_domain_localized(
         const std::vector<std::string>& _admin_contacts_add,
         const std::vector<std::string>& _admin_contacts_rem,
         const std::vector<std::string>& _tmpcontacts_rem,
-        const std::vector<Epp::ENUMValidationExtension>& _enum_validation_list,
+        const std::vector<EnumValidationExtension>& _enum_validation_list,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
         bool _epp_update_domain_enqueue_check,

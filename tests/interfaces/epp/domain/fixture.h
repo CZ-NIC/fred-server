@@ -355,16 +355,16 @@ struct HasDomainData : HasInfoRegistrarData {
     , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw1),
         Epp::Domain::DomainRegistrationTime(1, Epp::DomainRegistrationTime::Unit::year),
         Util::vector_of<std::string>(contact2)(contact3),
-        std::vector<Epp::ENUMValidationExtension>())
+        std::vector<Epp::Domain::EnumValidationExtension>())
 
     , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw2),
             Epp::Domain::DomainRegistrationTime(1, Epp::DomainRegistrationTime::Unit::year),
             Util::vector_of<std::string>(contact2)(contact3),
-            std::vector<Epp::ENUMValidationExtension>())
+            std::vector<Epp::Domain::EnumValidationExtension>())
 
     , domain1_renew_input_data(fqdn1, std::string(""),
             Epp::Domain::DomainRegistrationTime(1,Epp::Domain::DomainRegistrationTime::Unit::year),
-            std::vector<Epp::ENUMValidationExtension>())
+            std::vector<Epp::Domain::EnumValidationExtension>())
 
     {
         Fred::CreateContact(contact1, info_registrar_data_.handle).exec(ctx);
@@ -390,7 +390,7 @@ struct HasDomainData : HasInfoRegistrarData {
 
         domain2_renew_input_data = Epp::Domain::RenewDomainInputData(fqdn2,
                 boost::gregorian::to_iso_extended_string(Fred::InfoDomainByHandle(fqdn2).exec(ctx).info_domain_data.expiration_date),
-                Epp::Domain::DomainRegistrationTime(1,Epp::Domain::DomainRegistrationTime::Unit::year),std::vector<Epp::ENUMValidationExtension>());
+                Epp::Domain::DomainRegistrationTime(1,Epp::Domain::DomainRegistrationTime::Unit::year),std::vector<Epp::Domain::EnumValidationExtension>());
 
         ctx.get_conn().exec_params(
             "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
@@ -436,7 +436,7 @@ struct HasDataForUpdateDomain : HasInfoDomainData {
     std::vector<std::string> admin_contacts_add_;
     std::vector<std::string> admin_contacts_rem_;
     std::vector<std::string> tmpcontacts_rem_;
-    std::vector<Epp::ENUMValidationExtension> enum_validation_list_;
+    std::vector<Epp::Domain::EnumValidationExtension> enum_validation_list_;
 
     HasDataForUpdateDomain() {
         : new_registrant_handle_("REGISTRANT2"),

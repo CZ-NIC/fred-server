@@ -24,43 +24,44 @@
 #include "src/fredlib/opcontext.h"
 
 namespace Epp {
+namespace Domain {
 
-    /**
-     *
-     */
-    class ENUMValidationExtension
+/**
+ *
+ */
+class EnumValidationExtension
+{
+    boost::gregorian::date valexdate;
+    bool publish;
+
+public:
+    EnumValidationExtension()
+    : publish(false)
+    {}
+    EnumValidationExtension(const boost::gregorian::date& _valexdate,
+            bool _publish)
+    : valexdate(_valexdate)
+    , publish(_publish)
+    {}
+
+    boost::gregorian::date get_valexdate() const
     {
-        boost::gregorian::date valexdate;
-        bool publish;
-
-    public:
-        ENUMValidationExtension()
-        : publish(false)
-        {}
-        ENUMValidationExtension(const boost::gregorian::date& _valexdate,
-                bool _publish)
-        : valexdate(_valexdate)
-        , publish(_publish)
-        {}
-
-        boost::gregorian::date get_valexdate() const
-        {
-            return valexdate;
-        }
-        bool get_publish() const
-        {
-            return publish;
-        }
-    };
+        return valexdate;
+    }
+    bool get_publish() const
+    {
+        return publish;
+    }
 };
 
-
 bool is_new_enum_domain_validation_expiration_date_invalid(
-        const boost::gregorian::date& new_valexdate,//local date
-        const boost::gregorian::date& current_local_date ,
-        unsigned enum_validation_period,//in months
-        const boost::optional<boost::gregorian::date>& current_valexdate, //if not set, ENUM domain is not currently validated
-        Fred::OperationContext& _ctx
-        );
+        const boost::gregorian::date& new_valexdate, // local date
+        const boost::gregorian::date& current_local_date,
+        unsigned enum_validation_period, // in months
+        const boost::optional<boost::gregorian::date>& current_valexdate, // if not set, ENUM domain is not currently validated
+        Fred::OperationContext& _ctx);
+
+} // namespece Epp::Domain
+} // namespace Epp
 
 #endif

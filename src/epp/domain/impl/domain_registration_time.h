@@ -31,15 +31,18 @@ public:
     {
         enum Enum {month,year};
     };
+
 private:
     int length_of_domain_registration;
     Unit::Enum unit_of_domain_registration_time;
+
 public:
-    DomainRegistrationTime(int _length_of_domain_registration,
-        Unit::Enum _unit_of_domain_registration_time)
-    : length_of_domain_registration(_length_of_domain_registration)
-    , unit_of_domain_registration_time(_unit_of_domain_registration_time)
-    {}
+    DomainRegistrationTime(
+      int _length_of_domain_registration,
+      Unit::Enum _unit_of_domain_registration_time)
+    : length_of_domain_registration(_length_of_domain_registration),
+      unit_of_domain_registration_time(_unit_of_domain_registration_time)
+    { }
 
     int get_length_of_domain_registration_in_months() const
     {

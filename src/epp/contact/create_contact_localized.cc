@@ -3,12 +3,13 @@
 #include "src/epp/contact/contact_change.h"
 
 #include "src/epp/impl/action.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
-
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -122,36 +123,44 @@ CreateContactLocalizedResponse create_contact_localized(
         return localized_result;
 
     }
-    catch(const AuthErrorServerClosingConnection&) {
+    //catch(const AuthErrorServerClosingConnection&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::authentication_error_server_closing_connection,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    //catch(const ObjectExists&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::object_exist,
+    //            std::set<Error>(),
+    //            _lang);
+    //}
+    //catch(const InvalidHandle&) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::parameter_value_syntax_error,
+    //            Error::of_scalar_parameter(Param::contact_handle, Reason::bad_format_contact_handle),
+    //            _lang);
+    //}
+    //catch(const AggregatedParamErrors& e) {
+    //    Fred::OperationContextCreator exception_localization_ctx;
+    //    throw create_localized_fail_response(
+    //            exception_localization_ctx,
+    //            Response::parameter_value_policy_error,
+    //            e.get(),
+    //            _lang);
+    //}
+    catch (const EppResponseFailure& e) {
         Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
+        exception_localization_ctx.get_log().info(std::string("create_contact_localized: ") + e.what());
+        throw EppResponseFailureLocalized(
                 exception_localization_ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-    }
-    catch(const ObjectExists&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::object_exist,
-                std::set<Error>(),
-                _lang);
-    }
-    catch(const InvalidHandle&) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::parameter_value_syntax_error,
-                Error::of_scalar_parameter(Param::contact_handle, Reason::bad_format_contact_handle),
-                _lang);
-    }
-    catch(const AggregatedParamErrors& e) {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw create_localized_fail_response(
-                exception_localization_ctx,
-                Response::parameter_value_policy_error,
-                e.get(),
+                e,
                 _lang);
     }
     catch (const std::exception& e) {

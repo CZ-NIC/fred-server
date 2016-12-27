@@ -161,7 +161,7 @@ namespace Corba {
     /**
      * ENUM validation list unwrapper
      */
-    std::vector<Epp::ENUMValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext);
+    std::vector<Epp::Domain::EnumValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext);
 }
 
 #endif
