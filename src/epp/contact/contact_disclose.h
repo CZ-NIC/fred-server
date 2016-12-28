@@ -27,6 +27,7 @@
 #endif// EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
 
 namespace Epp {
+namespace Contact {
 
 class ContactDisclose
 {
@@ -105,6 +106,7 @@ private:
     std::set< Item::Enum > items_;
 };
 
-}//namespace Epp
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

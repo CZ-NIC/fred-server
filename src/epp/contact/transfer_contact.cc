@@ -37,12 +37,10 @@ unsigned long long transfer_contact(
 {
     static const unsigned long long invalid_registrar_id = 0;
     if (_registrar_id == invalid_registrar_id) {
-        //throw AuthErrorServerClosingConnection();
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     if (Fred::Contact::get_handle_registrability(_ctx, _contact_handle) != Fred::ContactHandleState::Registrability::registered) {
-        //throw NonexistentHandle();
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
@@ -58,7 +56,6 @@ unsigned long long transfer_contact(
             .exec(_ctx).info_registrar_data.handle;
 
     if (contact_data.sponsoring_registrar_handle == session_registrar_handle) {
-        //throw ObjectNotEligibleForTransfer();
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 
@@ -70,11 +67,10 @@ unsigned long long transfer_contact(
     if (Fred::ObjectHasState(contact_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(_ctx) ||
         Fred::ObjectHasState(contact_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
     {
-        throw ObjectStatusProhibitsOperation();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
     }
 
     if (contact_data.authinfopw != _authinfopw) {
-        //throw AuthorizationInformationError();
         throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
 
@@ -94,21 +90,16 @@ unsigned long long transfer_contact(
         Fred::Poll::CreateTransferContactPollMessage(post_transfer_history_id).exec(_ctx);
 
         return post_transfer_history_id;
-
     }
     catch (const Fred::UnknownContactId&) {
-        //throw NonexistentHandle();
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
     catch (const Fred::IncorrectAuthInfoPw&) {
-        //throw AuthorizationInformationError();
         throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
     catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
-        //throw ObjectNotEligibleForTransfer();
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
-
 }
 
 } // namespace Epp::Contact

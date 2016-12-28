@@ -23,6 +23,8 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/response.h"
@@ -83,13 +85,6 @@ CheckContactLocalizedResponse check_contact_localized(
                 localized_check_contact_results);
 
     }
-    //catch (const AuthErrorServerClosingConnection&) {
-    //    throw create_localized_fail_response(
-    //            ctx,
-    //            Response::authentication_error_server_closing_connection,
-    //            std::set<Error>(),
-    //            _lang);
-    //}
     catch (const EppResponseFailure& e) {
         ctx.get_log().info(std::string("check_contact_localized: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -99,18 +94,16 @@ CheckContactLocalizedResponse check_contact_localized(
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("check_contact_localized failure: ") + e.what());
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
     catch (...) {
         ctx.get_log().info("unexpected exception in check_contact_localized function");
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
 }

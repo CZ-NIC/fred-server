@@ -24,7 +24,7 @@
 
 #include "src/epp/contact/impl/contact_handle_state_to_check_result.h"
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(ContactHandleStateToCheckResult)
 
 BOOST_AUTO_TEST_CASE(test_conversion)

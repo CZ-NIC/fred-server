@@ -25,8 +25,8 @@ namespace Contact {
 
 namespace {
 
-template < ContactDisclose::Item::Enum ITEM >
-bool should_item_be_disclosed(const boost::optional< ContactDisclose > &_disclose)
+template <ContactDisclose::Item::Enum ITEM>
+bool should_item_be_disclosed(const boost::optional<ContactDisclose>& _disclose)
 {
     const bool use_the_default_policy = !_disclose.is_initialized();
     if (use_the_default_policy) {
@@ -35,7 +35,7 @@ bool should_item_be_disclosed(const boost::optional< ContactDisclose > &_disclos
     return _disclose->should_be_disclosed< ITEM >(is_the_default_policy_to_disclose());
 }
 
-Optional< std::string > to_db_handle(const Nullable< ContactChange::IdentType::Enum > &src)
+Optional<std::string> to_db_handle(const Nullable<ContactChange::IdentType::Enum>& src)
 {
     if (src.isnull()) {
         return Optional< std::string >();
@@ -51,25 +51,23 @@ Optional< std::string > to_db_handle(const Nullable< ContactChange::IdentType::E
     throw std::runtime_error("Invalid Epp::Contact::ContactChange::IdentType::Enum value.");
 }
 
-}//namespace Epp::{anonymous}
+} // namespace Epp::{anonymous}
 
 CreateContactResult create_contact(
-    Fred::OperationContext &_ctx,
-    const std::string &_contact_handle,
-    const CreateContactInputData &_data,
-    const unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id)
+        Fred::OperationContext& _ctx,
+        const std::string& _contact_handle,
+        const CreateContactInputData& _data,
+        const unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id)
 {
     const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
-        //throw AuthErrorServerClosingConnection();
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_contact_handle) ==
                                  Fred::ContactHandleState::SyntaxValidity::valid;
     if (!handle_is_valid) {
-        //throw InvalidHandle();
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_syntax_error)
                                         .add_extended_error(EppExtendedError::of_scalar_parameter(
                                                 Param::contact_handle,
@@ -83,35 +81,29 @@ CreateContactResult create_contact(
         const bool contact_is_registered = contact_registrability ==
                                            Fred::ContactHandleState::Registrability::registered;
         if (contact_is_registered) {
-            //throw ObjectExists();
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_exists));
         }
 
-        //AggregatedParamErrors exception;
-        EppResultFailure parameter_value_policy_error(EppResultCode::parameter_value_policy_error);
+        EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
         const bool contact_is_in_protection_period = contact_registrability ==
                                                      Fred::ContactHandleState::Registrability::in_protection_period;
         if (contact_is_in_protection_period) {
-            //exception.add(Error::of_scalar_parameter(Param::contact_handle, Reason::protected_period));
-            parameter_value_policy_error.add_extended_error(
+            parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_scalar_parameter(
                             Param::contact_handle,
                             Reason::protected_period));
         }
 
         if (!is_country_code_valid(_ctx, _data.country_code)) {
-            //exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
-            parameter_value_policy_error.add_extended_error(
+            parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_scalar_parameter(
                             Param::contact_cc,
                             Reason::country_notexist));
         }
 
-        //if (!exception.is_empty()) {
-        //    throw exception;
-        if (!parameter_value_policy_error.empty()) {
-            throw EppResponseFailure(parameter_value_policy_error);
+        if (!parameter_value_policy_errors.empty()) {
+            throw EppResponseFailure(parameter_value_policy_errors);
         }
     }
 
@@ -169,9 +161,10 @@ CreateContactResult create_contact(
             create_data.creation_time
         );
 
-    } catch (const Fred::CreateContact::Exception& e) {
+    }
+    catch (const Fred::CreateContact::Exception& e) {
 
-        /* general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority */
+        // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if(
             e.is_set_forbidden_company_name_setting() ||
             e.is_set_unknown_registrar_handle() ||
@@ -181,21 +174,17 @@ CreateContactResult create_contact(
         }
 
         if( e.is_set_invalid_contact_handle() /* wrong exception name */ ) {
-            //throw ObjectExists();
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_exists));
         }
 
         if( e.is_set_unknown_country() ) {
-            //AggregatedParamErrors exception;
-            //exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
-            //throw exception;
             throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
                     .add_extended_error(EppExtendedError::of_scalar_parameter(
                             Param::contact_cc,
                             Reason::country_notexist)));
         }
 
-        /* in the improbable case that exception is incorrectly set */
+        // in the improbable case that exception is incorrectly set
         throw;
     }
 }

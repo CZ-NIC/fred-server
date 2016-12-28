@@ -38,11 +38,11 @@ namespace Contact {
  * @throws ParameterValuePolicyError
  */
 unsigned long long update_contact(
-    Fred::OperationContext &_ctx,
-    const std::string &_contact_handle,
-    const ContactChange &_data,
-    unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id);
+        Fred::OperationContext& _ctx,
+        const std::string& _contact_handle,
+        const ContactChange& _data,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Contact
 } // namespace Epp

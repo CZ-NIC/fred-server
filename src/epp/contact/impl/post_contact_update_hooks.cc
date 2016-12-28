@@ -91,7 +91,7 @@ private:
     const std::string name_;
 };
 
-}//namespace Epp::{anonymous}
+} // namespace Epp::Contact::{anonymous}
 
 void post_contact_update_hooks(
     Fred::OperationContext& _ctx,

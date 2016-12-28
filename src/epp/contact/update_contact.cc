@@ -315,7 +315,6 @@ void set_ContactUpdate_discloseflag_address(
                                                                         _contact_data_before_update,
                                                                         _change);
         if (address_has_to_be_hidden && !address_can_be_hidden) {
-            //throw ObjectStatusProhibitsOperation();
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
         address_has_to_be_disclosed = !address_has_to_be_hidden || !address_can_be_hidden;
@@ -324,15 +323,14 @@ void set_ContactUpdate_discloseflag_address(
     update_op.set_discloseaddress(address_has_to_be_disclosed);
 }
 
-Fred::InfoContactData info_contact_by_handle(const std::string &handle, Fred::OperationContext &ctx)
+Fred::InfoContactData info_contact_by_handle(const std::string& handle, Fred::OperationContext& ctx)
 {
     try {
         // TODO admin_contact_verification_modification AdminContactVerificationObjectStates::conditionally_cancel_final_states( ) relies on this exclusive lock
         return Fred::InfoContactByHandle(handle).set_lock().exec(ctx).info_contact_data;
     }
-    catch (const Fred::InfoContactByHandle::Exception &e) {
+    catch (const Fred::InfoContactByHandle::Exception& e) {
         e.is_set_unknown_contact_handle()
-            //? throw NonexistentHandle();
             ? throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist))
             : throw;
     }
@@ -362,8 +360,8 @@ struct Ident
         const bool ident_value_has_to_be_changed =
             ContactChange::does_value_mean< ContactChange::Value::to_set >(ident_value_);
         if (ident_type_has_to_be_changed != ident_value_has_to_be_changed) {
-            ident_type_has_to_be_changed ? throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing))  //throw SsnTypeWithoutSsn()
-                                         : throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing)); //throw SsnWithoutSsnType();
+            ident_type_has_to_be_changed ? throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing))  // ssn type without ssn
+                                         : throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing)); // ssn without ssn type
         }
     }
 
@@ -391,7 +389,7 @@ struct Ident
     const Nullable< ContactChange::IdentType::Enum > ident_type_;
 };
 
-}//namespace Epp::{anonymous}
+} // namespace Epp::Contact::{anonymous}
 
 unsigned long long update_contact(
         Fred::OperationContext& _ctx,
@@ -402,14 +400,12 @@ unsigned long long update_contact(
 {
     const bool registrar_is_authenticated = _registrar_id != 0;
     if (!registrar_is_authenticated) {
-        //throw AuthErrorServerClosingConnection();
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     const bool contact_is_registered = Fred::Contact::get_handle_registrability(_ctx, _contact_handle) ==
                                        Fred::ContactHandleState::Registrability::registered;
     if (!contact_is_registered) {
-        //throw NonexistentHandle();
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
@@ -423,7 +419,6 @@ unsigned long long update_contact(
     const bool operation_is_permitted = (is_sponsoring_registrar || is_system_registrar);
 
     if (!operation_is_permitted) {
-        //throw AuthorizationError();
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
                                          .add_extended_error(
                                                  EppExtendedError::of_scalar_parameter(
@@ -440,7 +435,6 @@ unsigned long long update_contact(
         if (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
             contact_states.presents(Fred::Object_State::delete_candidate))
         {
-            //throw ObjectStatusProhibitsOperation();
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
     }
@@ -448,7 +442,6 @@ unsigned long long update_contact(
     // when deleting or not-changing, no check of data is needed
     if (ContactChange::does_value_mean< ContactChange::Value::to_set >(_change.country_code)) {
         if (!is_country_code_valid(_ctx, ContactChange::get_value(_change.country_code))) {
-            //throw ParameterValuePolicyError().add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
             throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
                                              .add_extended_error(
                                                      EppExtendedError::of_scalar_parameter(
@@ -529,11 +522,10 @@ unsigned long long update_contact(
         try {
             const unsigned long long new_history_id = update.exec(_ctx);
             return new_history_id;
-
         }
         catch(const Fred::UpdateContactByHandle::ExceptionType &e) {
 
-            /* general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority */
+            // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
             if (e.is_set_forbidden_company_name_setting() ||
                 e.is_set_unknown_registrar_handle() ||
                 e.is_set_unknown_ssntype())
@@ -543,22 +535,18 @@ unsigned long long update_contact(
 
             if (e.is_set_unknown_contact_handle())
             {
-                //throw NonexistentHandle();
                 throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
             }
 
             if (e.is_set_unknown_country())
             {
-                //AggregatedParamErrors exception;
-                //exception.add(Error::of_scalar_parameter(Param::contact_cc, Reason::country_notexist));
-                //throw exception;
                 throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
                         .add_extended_error(EppExtendedError::of_scalar_parameter(
                                 Param::contact_cc,
                                 Reason::country_notexist)));
             }
 
-            /* in the improbable case that exception is incorrectly set */
+            // in the improbable case that exception is incorrectly set
             throw;
         }
     }

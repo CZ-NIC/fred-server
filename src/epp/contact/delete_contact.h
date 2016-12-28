@@ -37,10 +37,9 @@ namespace Contact {
  * @throws ObjectStatusProhibitsOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long delete_contact(
-    Fred::OperationContext& _ctx,
-    const std::string& _handle,
-    unsigned long long _registrar_id
-);
+        Fred::OperationContext& _ctx,
+        const std::string& _handle,
+        unsigned long long _registrar_id);
 
 } // namespace Epp::Contact
 } // namespace Epp

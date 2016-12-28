@@ -20,29 +20,38 @@
  *  @file
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/assign/list_of.hpp>
-
-#include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/util.h"
 
 #include "src/epp/contact/check_contact.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_FIXTURE_TEST_SUITE(CheckContact, Test::autocommitting_context)
+
+bool test_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, has_invalid_registrar_id)
 {
-    BOOST_CHECK_THROW(
-        Fred::OperationContextCreator ctx;
+    Fred::OperationContextCreator ctx;
 
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::check_contact(
             ctx,
             std::set<std::string>(),
             invalid_registrar_id
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        test_invalid_registrar_id_exception
     );
 }
 

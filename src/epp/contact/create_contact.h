@@ -31,8 +31,8 @@ namespace Contact {
 struct CreateContactResult
 {
     CreateContactResult(unsigned long long _contact_id,
-                        unsigned long long _create_history_id,
-                        const boost::posix_time::ptime &_contact_crdate)
+        unsigned long long _create_history_id,
+        const boost::posix_time::ptime& _contact_crdate)
     :   id(_contact_id),
         create_history_id(_create_history_id),
         crdate(_contact_crdate)
@@ -43,17 +43,12 @@ struct CreateContactResult
     const boost::posix_time::ptime crdate;
 };
 
-/**
- * @throws AuthErrorServerClosingConnection
- * @throws ObjectExists
- * @throws AggregatedParamErrors
- */
 CreateContactResult create_contact(
-    Fred::OperationContext &_ctx,
-    const std::string &_contact_handle,
-    const CreateContactInputData &_data,
-    unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id);
+        Fred::OperationContext& _ctx,
+        const std::string& _contact_handle,
+        const CreateContactInputData& _data,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Contact
 } // namespace Epp

@@ -20,63 +20,97 @@
  *  @file
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/assign/list_of.hpp>
-
-#include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/util.h"
 
 #include "src/epp/contact/delete_contact.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(DeleteContact)
+
+bool delete_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_contact)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             0
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        delete_invalid_registrar_id_exception
     );
+}
+
+bool delete_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, has_contact)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             "SOMEobscureString",
             registrar.id
         ),
-        Epp::NonexistentHandle
+        Epp::EppResponseFailure,
+        delete_fail_nonexistent_handle_exception
     );
+}
+
+bool delete_fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::registrar_autor);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::unauthorized_registrar);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_contact_and_a_different_registrar)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             the_different_registrar.id
         ),
-        Epp::AuthorizationError
+        Epp::EppResponseFailure,
+        delete_fail_wrong_registrar_exception
     );
+}
+
+bool delete_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, has_contact_with_server_update_prohibited)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        delete_fail_prohibiting_status1_exception
     );
 }
 
@@ -86,15 +120,22 @@ struct has_contact_with_server_delete_prohibited : has_contact_with_status {
     { }
 };
 
+bool delete_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, has_contact_with_delete_candidate)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        delete_fail_prohibiting_status2_exception
     );
 }
 
@@ -104,15 +145,22 @@ struct has_contact_owning_domain : has_contact {
     }
 };
 
+bool delete_fail_owning_domain_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_association_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(delete_fail_owning_domain, has_contact_owning_domain)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectAssociationProhibitsOperation
+        Epp::EppResponseFailure,
+        delete_fail_owning_domain_exception
     );
 }
 
@@ -127,15 +175,22 @@ struct has_contact_owning_domain_and_another_admin_contact : has_contact {
     }
 };
 
+bool delete_fail_administrating_domain_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_association_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(delete_fail_administrating_domain, has_contact_owning_domain_and_another_admin_contact)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectAssociationProhibitsOperation
+        Epp::EppResponseFailure,
+        delete_fail_administrating_domain_exception
     );
 }
 
@@ -147,15 +202,22 @@ struct has_contact_administrating_nsset : has_contact {
     }
 };
 
+bool delete_fail_linked_nsset_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_association_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(delete_fail_linked_nsset, has_contact_administrating_nsset)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectAssociationProhibitsOperation
+        Epp::EppResponseFailure,
+        delete_fail_linked_nsset_exception
     );
 }
 
@@ -167,15 +229,22 @@ struct has_contact_administrating_keyset : has_contact {
     }
 };
 
+bool delete_fail_linked_keyset_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_association_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, has_contact_administrating_keyset)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Contact::delete_contact(
             ctx,
             contact.handle,
             registrar.id
         ),
-        Epp::ObjectAssociationProhibitsOperation
+        Epp::EppResponseFailure,
+        delete_fail_linked_keyset_exception
     );
 }
 

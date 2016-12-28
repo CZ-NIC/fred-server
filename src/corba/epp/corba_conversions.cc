@@ -317,51 +317,51 @@ namespace Corba {
         return dst;
     }
 
-    Epp::ContactDisclose convert_ContactChange_to_ContactDisclose(
+    Epp::Contact::ContactDisclose convert_ContactChange_to_ContactDisclose(
             const ccReg::ContactChange& src,
-            Epp::ContactDisclose::Flag::Enum meaning)
+            Epp::Contact::ContactDisclose::Flag::Enum meaning)
     {
-        Epp::ContactDisclose result(meaning);
+        Epp::Contact::ContactDisclose result(meaning);
         if (wrap_int< bool >(src.DiscloseName)) {
-            result.add< Epp::ContactDisclose::Item::name >();
+            result.add< Epp::Contact::ContactDisclose::Item::name >();
         }
         if (wrap_int< bool >(src.DiscloseOrganization)) {
-            result.add< Epp::ContactDisclose::Item::organization >();
+            result.add< Epp::Contact::ContactDisclose::Item::organization >();
         }
         if (wrap_int< bool >(src.DiscloseAddress)) {
-            result.add< Epp::ContactDisclose::Item::address >();
+            result.add< Epp::Contact::ContactDisclose::Item::address >();
         }
         if (wrap_int< bool >(src.DiscloseTelephone)) {
-            result.add< Epp::ContactDisclose::Item::telephone >();
+            result.add< Epp::Contact::ContactDisclose::Item::telephone >();
         }
         if (wrap_int< bool >(src.DiscloseFax)) {
-            result.add< Epp::ContactDisclose::Item::fax >();
+            result.add< Epp::Contact::ContactDisclose::Item::fax >();
         }
         if (wrap_int< bool >(src.DiscloseEmail)) {
-            result.add< Epp::ContactDisclose::Item::email >();
+            result.add< Epp::Contact::ContactDisclose::Item::email >();
         }
         if (wrap_int< bool >(src.DiscloseVAT)) {
-            result.add< Epp::ContactDisclose::Item::vat >();
+            result.add< Epp::Contact::ContactDisclose::Item::vat >();
         }
         if (wrap_int< bool >(src.DiscloseIdent)) {
-            result.add< Epp::ContactDisclose::Item::ident >();
+            result.add< Epp::Contact::ContactDisclose::Item::ident >();
         }
         if (wrap_int< bool >(src.DiscloseNotifyEmail)) {
-            result.add< Epp::ContactDisclose::Item::notify_email >();
+            result.add< Epp::Contact::ContactDisclose::Item::notify_email >();
         }
         return result;
     }
 
-    boost::optional< Epp::ContactDisclose > unwrap_ContactChange_to_ContactDisclose(const ccReg::ContactChange& src)
+    boost::optional< Epp::Contact::ContactDisclose > unwrap_ContactChange_to_ContactDisclose(const ccReg::ContactChange& src)
     {
         switch (src.DiscloseFlag)
         {
             case ccReg::DISCL_EMPTY:
-                return boost::optional< Epp::ContactDisclose >();
+                return boost::optional< Epp::Contact::ContactDisclose >();
             case ccReg::DISCL_HIDE:
-                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::hide);
+                return convert_ContactChange_to_ContactDisclose(src, Epp::Contact::ContactDisclose::Flag::hide);
             case ccReg::DISCL_DISPLAY:
-                return convert_ContactChange_to_ContactDisclose(src, Epp::ContactDisclose::Flag::disclose);
+                return convert_ContactChange_to_ContactDisclose(src, Epp::Contact::ContactDisclose::Flag::disclose);
         }
         throw std::runtime_error("Invalid DiscloseFlag value;");
     }
@@ -471,8 +471,8 @@ namespace Corba {
 
     namespace {
 
-    template < Epp::ContactDisclose::Item::Enum ITEM >
-    CORBA::Boolean presents(const Epp::ContactDisclose& src)
+    template < Epp::Contact::ContactDisclose::Item::Enum ITEM >
+    CORBA::Boolean presents(const Epp::Contact::ContactDisclose& src)
     {
         return wrap_int< CORBA::Boolean >(src.presents< ITEM >());
     }
@@ -587,15 +587,15 @@ namespace Corba {
         else {
             dst.DiscloseFlag         = src.disclose->does_present_item_mean_to_disclose() ? ccReg::DISCL_DISPLAY
                                                                                           : ccReg::DISCL_HIDE;
-            dst.DiscloseName         = presents< Epp::ContactDisclose::Item::name         >(*src.disclose);
-            dst.DiscloseOrganization = presents< Epp::ContactDisclose::Item::organization >(*src.disclose);
-            dst.DiscloseAddress      = presents< Epp::ContactDisclose::Item::address      >(*src.disclose);
-            dst.DiscloseTelephone    = presents< Epp::ContactDisclose::Item::telephone    >(*src.disclose);
-            dst.DiscloseFax          = presents< Epp::ContactDisclose::Item::fax          >(*src.disclose);
-            dst.DiscloseEmail        = presents< Epp::ContactDisclose::Item::email        >(*src.disclose);
-            dst.DiscloseVAT          = presents< Epp::ContactDisclose::Item::vat          >(*src.disclose);
-            dst.DiscloseIdent        = presents< Epp::ContactDisclose::Item::ident        >(*src.disclose);
-            dst.DiscloseNotifyEmail  = presents< Epp::ContactDisclose::Item::notify_email >(*src.disclose);
+            dst.DiscloseName         = presents< Epp::Contact::ContactDisclose::Item::name         >(*src.disclose);
+            dst.DiscloseOrganization = presents< Epp::Contact::ContactDisclose::Item::organization >(*src.disclose);
+            dst.DiscloseAddress      = presents< Epp::Contact::ContactDisclose::Item::address      >(*src.disclose);
+            dst.DiscloseTelephone    = presents< Epp::Contact::ContactDisclose::Item::telephone    >(*src.disclose);
+            dst.DiscloseFax          = presents< Epp::Contact::ContactDisclose::Item::fax          >(*src.disclose);
+            dst.DiscloseEmail        = presents< Epp::Contact::ContactDisclose::Item::email        >(*src.disclose);
+            dst.DiscloseVAT          = presents< Epp::Contact::ContactDisclose::Item::vat          >(*src.disclose);
+            dst.DiscloseIdent        = presents< Epp::Contact::ContactDisclose::Item::ident        >(*src.disclose);
+            dst.DiscloseNotifyEmail  = presents< Epp::Contact::ContactDisclose::Item::notify_email >(*src.disclose);
         }
     }
 

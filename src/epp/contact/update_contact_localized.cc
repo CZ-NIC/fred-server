@@ -7,6 +7,8 @@
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/localization.h"
@@ -82,62 +84,6 @@ LocalizedSuccessResponse update_contact_localized(
         return localized_result;
 
     }
-    //catch(const AuthErrorServerClosingConnection&) {
-    //    Fred::OperationContextCreator exception_localization_ctx;
-    //    throw create_localized_fail_response(
-    //            exception_localization_ctx,
-    //            Response::authentication_error_server_closing_connection,
-    //            std::set<Error>(),
-    //            _lang);
-    //}
-    //catch(const NonexistentHandle&) {
-    //    Fred::OperationContextCreator exception_localization_ctx;
-    //    throw create_localized_fail_response(
-    //            exception_localization_ctx,
-    //            Response::object_not_exist,
-    //            std::set<Error>(),
-    //            _lang);
-    //}
-    //catch(const AuthorizationError&) {
-    //    Fred::OperationContextCreator exception_localization_ctx;
-    //    throw create_localized_fail_response(
-    //            exception_localization_ctx,
-    //            Response::authorization_error,
-    //            Error::of_scalar_parameter(Param::registrar_autor, Reason::unauthorized_registrar),
-    //            _lang);
-    //}
-    //catch(const ObjectStatusProhibitsOperation&) {
-    //    Fred::OperationContextCreator exception_localization_ctx;
-    //    throw create_localized_fail_response(
-    //            exception_localization_ctx,
-    //            Response::status_prohibits_operation,
-    //            std::set<Error>(),
-    //            _lang);
-    //}
-    //catch(const SsnWithoutSsnType&) {
-    //    Fred::OperationContextCreator exception_localization_ctx;
-    //    throw create_localized_fail_response(
-    //            exception_localization_ctx,
-    //            Response::parameter_missing,
-    //            std::set<Error>(),
-    //            _lang);
-    //}
-    //catch(const SsnTypeWithoutSsn&) {
-    //    Fred::OperationContextCreator exception_localization_ctx;
-    //    throw create_localized_fail_response(
-    //            exception_localization_ctx,
-    //            Response::parameter_missing,
-    //            std::set<Error>(),
-    //            _lang);
-    //}
-    //catch(const ParameterValuePolicyError& e) {
-    //    Fred::OperationContextCreator exception_localization_ctx;
-    //    throw create_localized_fail_response(
-    //            exception_localization_ctx,
-    //            Response::parameter_value_policy_error,
-    //            e.get(),
-    //            _lang);
-    //}
     catch (const EppResponseFailure& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("update_contact_localized: ") + e.what());
@@ -149,19 +95,17 @@ LocalizedSuccessResponse update_contact_localized(
     catch (const std::exception& e) {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("update_contact_localized failure: ") + e.what());
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 exception_localization_ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
-    catch(...) {
+    catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info("unexpected exception in update_contact_localized function");
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 exception_localization_ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
 }

@@ -38,12 +38,11 @@ namespace Contact {
  * @throws AuthorizationError in case invalid _authinfopw is given
  */
 unsigned long long transfer_contact(
-    Fred::OperationContext& _ctx,
-    const std::string& _contact_handle,
-    const std::string& _authinfopw,
-    unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-);
+        Fred::OperationContext& _ctx,
+        const std::string& _contact_handle,
+        const std::string& _authinfopw,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Contact
 } // namespace Epp

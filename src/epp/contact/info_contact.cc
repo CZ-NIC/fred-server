@@ -22,12 +22,13 @@ namespace Contact {
 
 namespace {
 
-std::set< std::string > convert_object_states(const std::vector< Fred::ObjectStateData > &_object_states)
+std::set<std::string> convert_object_states(const std::vector<Fred::ObjectStateData>& _object_states)
 {
     std::set< std::string > result;
 
-    for (std::vector< Fred::ObjectStateData >::const_iterator state_ptr = _object_states.begin();
-         state_ptr != _object_states.end(); ++state_ptr)
+    for (std::vector<Fred::ObjectStateData>::const_iterator state_ptr = _object_states.begin();
+            state_ptr != _object_states.end();
+            ++state_ptr)
     {
         const bool state_is_internal = !state_ptr->is_external;
         if (!state_is_internal) {
@@ -38,7 +39,7 @@ std::set< std::string > convert_object_states(const std::vector< Fred::ObjectSta
     return result;
 }
 
-void insert_discloseflags(const Fred::InfoContactData &src, ContactDisclose &dst)
+void insert_discloseflags(const Fred::InfoContactData& src, ContactDisclose& dst)
 {
     const bool meaning_of_present_discloseflag = dst.does_present_item_mean_to_disclose();
     if (src.disclosename == meaning_of_present_discloseflag) {
@@ -70,21 +71,22 @@ void insert_discloseflags(const Fred::InfoContactData &src, ContactDisclose &dst
     }
 }
 
-boost::optional< ContactDisclose > get_discloseflags(const Fred::InfoContactData &src)
+boost::optional<ContactDisclose> get_discloseflags(const Fred::InfoContactData& src)
 {
     ContactDisclose disclose(is_the_default_policy_to_disclose() ? ContactDisclose::Flag::hide
                                                                  : ContactDisclose::Flag::disclose);
     insert_discloseflags(src, disclose);
     const bool discloseflags_conform_to_the_default_policy = disclose.is_empty();
-    return discloseflags_conform_to_the_default_policy ? boost::optional< ContactDisclose >()
+    return discloseflags_conform_to_the_default_policy ? boost::optional<ContactDisclose>()
                                                        : disclose;
 }
 
-boost::optional< Fred::PersonalIdUnion > get_personal_id(const Nullable< std::string > &_value,
-                                                         const Nullable< std::string > &_type)
+boost::optional<Fred::PersonalIdUnion> get_personal_id(
+        const Nullable<std::string>& _value,
+        const Nullable<std::string>& _type)
 {
     if (_value.isnull() || _type.isnull()) {
-        return boost::optional< Fred::PersonalIdUnion >();
+        return boost::optional<Fred::PersonalIdUnion>();
     }
     const std::string value = _value.get_value();
     const std::string type = _type.get_value();
@@ -110,26 +112,24 @@ boost::optional< Fred::PersonalIdUnion > get_personal_id(const Nullable< std::st
     }
     result = Fred::PersonalIdUnion::get_RC(value);
     if (result.get_type() == type) {
-        return boost::optional< Fred::PersonalIdUnion >();
+        return boost::optional<Fred::PersonalIdUnion>();
     }
     throw std::runtime_error("Invalid ident type.");
 }
 
 }//namespace Epp::{anonymous}
 
-InfoContactOutputData::InfoContactOutputData(const boost::optional< ContactDisclose > &_disclose)
+InfoContactOutputData::InfoContactOutputData(const boost::optional<ContactDisclose>& _disclose)
 :   disclose(_disclose)
-{
-}
+{ }
 
 InfoContactOutputData info_contact(
-    Fred::OperationContext &_ctx,
-    const std::string &_handle,
-    const unsigned long long _session_registrar_id)
+        Fred::OperationContext& _ctx,
+        const std::string& _handle,
+        const unsigned long long _session_registrar_id)
 {
     const bool registrar_is_authenticated = _session_registrar_id != 0;
     if (!registrar_is_authenticated) {
-        //throw AuthErrorServerClosingConnection();
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
@@ -190,14 +190,14 @@ InfoContactOutputData info_contact(
 
         return output_data;
 
-    } catch (const Fred::InfoContactByHandle::Exception& e) {
+    }
+    catch (const Fred::InfoContactByHandle::Exception& e) {
 
         if(e.is_set_unknown_contact_handle()) {
-            //throw NonexistentHandle();
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
-        /* in the improbable case that exception is incorrectly set */
+        // in the improbable case that exception is incorrectly set
         throw;
     }
 }
