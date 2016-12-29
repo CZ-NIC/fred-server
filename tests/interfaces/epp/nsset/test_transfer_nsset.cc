@@ -20,21 +20,29 @@
  *  @file
  */
 
+#include "tests/interfaces/epp/util.h"
+#include "tests/interfaces/epp/nsset/fixture.h"
+
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/nsset/transfer_nsset.h"
+
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 
-#include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/nsset/fixture.h"
-
-#include "src/epp/nsset/transfer_nsset.h"
-
-BOOST_AUTO_TEST_SUITE(TestEpp)
+BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(TransferNsset)
+
+bool transfer_fail_auth_error_srvr_closing_connection_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_nsset)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
@@ -42,13 +50,20 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_ns
             0,
             42
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        transfer_fail_auth_error_srvr_closing_connection_exception
     );
+}
+
+bool transfer_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::transfer_nsset(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
@@ -56,13 +71,20 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
             registrar.id,
             42
         ),
-        Epp::NonexistentHandle
+        Epp::EppResponseFailure,
+        transfer_fail_nonexistent_handle_exception
     );
+}
+
+bool transfer_fail_not_eligible_for_transfer_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_is_not_eligible_for_transfer);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, has_nsset)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
@@ -70,7 +92,8 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, has_nsset)
             registrar.id,
             42
         ),
-        Epp::ObjectNotEligibleForTransfer
+        Epp::EppResponseFailure,
+        transfer_fail_not_eligible_for_transfer_exception
     );
 }
 
@@ -86,9 +109,15 @@ struct has_another_registrar : virtual Test::autocommitting_context {
 
 struct has_nsset_with_server_transfer_prohibited_and_another_registrar : has_nsset_with_server_transfer_prohibited, has_another_registrar { };
 
+bool transfer_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_nsset_with_server_transfer_prohibited_and_another_registrar)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
@@ -96,15 +125,22 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_nsset_with_server
             another_registrar.id,
             42
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        transfer_fail_prohibiting_status1_exception
     );
 }
 
 struct has_nsset_with_server_delete_prohibited_and_another_registrar : has_nsset_with_delete_candidate, has_another_registrar { };
 
+bool transfer_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_nsset_with_server_delete_prohibited_and_another_registrar)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
@@ -112,15 +148,22 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_nsset_with_server
             another_registrar.id,
             42
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        transfer_fail_prohibiting_status2_exception
     );
 }
 
 struct has_nsset_and_another_registrar : has_nsset, has_another_registrar { };
 
+bool transfer_fail_authinfo_error_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::invalid_authorization_information);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfo_error, has_nsset_and_another_registrar)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
@@ -128,7 +171,8 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfo_error, has_nsset_and_another_regi
             another_registrar.id,
             42
         ),
-        Epp::AuthorizationInformationError
+        Epp::EppResponseFailure,
+        transfer_fail_authinfo_error_exception
     );
 }
 

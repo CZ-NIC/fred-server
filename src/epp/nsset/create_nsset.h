@@ -45,17 +45,11 @@ struct CreateNssetResult {
     { }
 };
 
-/**
- * @throws AuthErrorServerClosingConnection
- * @throws ObjectExists
- * @throws AggregatedParamErrors
- */
 CreateNssetResult create_nsset(
-    Fred::OperationContext& _ctx,
-    const CreateNssetInputData& _data,
-    unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-);
+        Fred::OperationContext& _ctx,
+        const CreateNssetInputData& _data,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Nsset
 } // namespace Epp

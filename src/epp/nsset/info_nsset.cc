@@ -18,15 +18,18 @@
 
 #include "src/epp/nsset/info_nsset.h"
 
-#include "src/fredlib/nsset.h"
-#include "src/fredlib/nsset/info_nsset.h"
-#include "src/fredlib/nsset/info_nsset_data.h"
-#include "src/fredlib/registrar.h"
-#include "src/fredlib/registrar/info_registrar.h"
-#include "src/fredlib/object_state/get_object_states.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
+#include "src/fredlib/nsset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/registrar.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
@@ -50,13 +53,13 @@ static std::set<std::string> convert_object_states(const std::vector<Fred::Objec
 }
 
 InfoNssetOutputData info_nsset(
-    Fred::OperationContext& _ctx,
-    const std::string& _handle,
-    const SessionLang::Enum _object_state_description_lang,
-    const unsigned long long _session_registrar_id
-) {
+        Fred::OperationContext& _ctx,
+        const std::string& _handle,
+        const SessionLang::Enum _object_state_description_lang,
+        const unsigned long long _session_registrar_id)
+{
     if( _session_registrar_id == 0 ) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     try {
@@ -90,13 +93,14 @@ InfoNssetOutputData info_nsset(
             info_nsset_data.tech_check_level.get_value_or(0)
         );
 
-    } catch (const Fred::InfoNssetByHandle::Exception& e) {
+    }
+    catch (const Fred::InfoNssetByHandle::Exception& e) {
 
         if(e.is_set_unknown_handle()) {
-            throw NonexistentHandle();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
-        /* in the improbable case that exception is incorrectly set */
+        // in the improbable case that exception is incorrectly set
         throw;
     }
 }

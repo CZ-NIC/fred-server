@@ -30,9 +30,9 @@ namespace Epp {
 namespace Nsset {
 
 inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_check_result(
-    const Fred::NssetHandleState::SyntaxValidity::Enum _handle_validity,
-    const Fred::NssetHandleState::Registrability::Enum _handle_in_registry
-) {
+        const Fred::NssetHandleState::SyntaxValidity::Enum _handle_validity,
+        const Fred::NssetHandleState::Registrability::Enum _handle_in_registry)
+{
     if(_handle_in_registry == Fred::NssetHandleState::Registrability::registered)
     {
         return NssetHandleRegistrationObstruction::registered_handle;

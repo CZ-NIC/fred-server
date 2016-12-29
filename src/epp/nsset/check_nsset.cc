@@ -18,8 +18,11 @@
 
 #include "src/epp/nsset/check_nsset.h"
 
-#include "src/fredlib/nsset/check_nsset.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/nsset/impl/nsset_handle_state_to_check_result.h"
+#include "src/fredlib/nsset/check_nsset.h"
 
 #include <boost/foreach.hpp>
 
@@ -27,13 +30,13 @@ namespace Epp {
 namespace Nsset {
 
 std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
-    Fred::OperationContext& _ctx,
-    const std::set<std::string>& _nsset_handles,
-    unsigned long long _registrar_id
-) {
+        Fred::OperationContext& _ctx,
+        const std::set<std::string>& _nsset_handles,
+        unsigned long long _registrar_id)
+{
     const unsigned long long invalid_registrar_id = 0;
     if (_registrar_id == invalid_registrar_id) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > result;

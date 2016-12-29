@@ -85,11 +85,10 @@ struct InfoNssetOutputData {
  * @throws ExceptionNonexistentHandle
  */
 InfoNssetOutputData info_nsset(
-    Fred::OperationContext& _ctx,
-    const std::string& _handle,
-    SessionLang::Enum _object_state_description_lang,
-    unsigned long long _session_registrar_id
-);
+        Fred::OperationContext& _ctx,
+        const std::string& _handle,
+        SessionLang::Enum _object_state_description_lang,
+        unsigned long long _session_registrar_id);
 
 } // namespace Epp::Nsset
 } // namespace Epp

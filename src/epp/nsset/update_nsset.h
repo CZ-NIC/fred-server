@@ -37,11 +37,10 @@ namespace Nsset {
  * @throws AggregatedParamErrors
  */
 unsigned long long update_nsset(
-    Fred::OperationContext& _ctx,
-    const UpdateNssetInputData& _data,
-    unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-);
+        Fred::OperationContext& _ctx,
+        const UpdateNssetInputData& _data,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Nsset
 } // namespace Epp

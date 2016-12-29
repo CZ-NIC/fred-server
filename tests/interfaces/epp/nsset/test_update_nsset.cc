@@ -20,24 +20,32 @@
  *  @file
  */
 
-#include <boost/test/unit_test.hpp>
+#include "tests/interfaces/epp/nsset/fixture.h"
+#include "tests/interfaces/epp/util.h"
+
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/nsset/update_nsset.h"
+#include "util/map_at.h"
+
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
-
-#include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/nsset/fixture.h"
-
-#include "src/epp/nsset/update_nsset.h"
-#include "util/map_at.h"
+#include <boost/test/unit_test.hpp>
 
 #include <map>
 #include <vector>
 #include <algorithm>
 #include <iterator>
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(UpdateNsset)
+
+bool update_nsset_invalid_registrar_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 {
@@ -56,19 +64,24 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
         nsset_max_hosts
     );
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             data,
             0,  // <== !!!
             42 // TODO
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        update_nsset_invalid_registrar_exception
     );
 
 }
 
-
+bool update_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
 {
@@ -86,15 +99,26 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
         nsset_max_hosts
     );
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
             42 /* TODO */
         ),
-        Epp::NonexistentHandle
+        Epp::EppResponseFailure,
+        update_fail_nonexistent_handle_exception
     );
+}
+
+bool update_fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::registrar_autor);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::unauthorized_registrar);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_registrar)
@@ -113,15 +137,22 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
         nsset_max_hosts
     );
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             data,
             the_different_registrar.id,
             42 /* TODO */
         ),
-        Epp::AuthorizationError
+        Epp::EppResponseFailure,
+        update_fail_wrong_registrar_exception
     );
+}
+
+bool update_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_update_prohibited)
@@ -140,15 +171,22 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
         nsset_max_hosts
     );
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        update_fail_prohibiting_status1_exception
     );
+}
+
+bool update_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_candidate)
@@ -168,15 +206,22 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
     );
 
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        update_fail_prohibiting_status2_exception
     );
+}
+
+bool update_fail_prohibiting_status_request_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_delete_candidate_request)
@@ -194,14 +239,15 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
         nsset_min_hosts,
         nsset_max_hosts
     );
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             data,
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectStatusProhibitsOperation
+        Epp::EppResponseFailure,
+        update_fail_prohibiting_status_request_exception
     );
 
     /* now object has the state deleteCandidate itself */
@@ -388,25 +434,25 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
             nsset_max_hosts
         );
 
-    try
-    {
-    Epp::Nsset::update_nsset(
-        ctx,
-        data,
-        registrar.id,
-        42 /* TODO */
-    );
-
-    check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
-
+    try {
+        Epp::Nsset::update_nsset(
+            ctx,
+            data,
+            registrar.id,
+            42 /* TODO */
+        );
+        check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
     }
-    catch(const Epp::ParameterValuePolicyError& pe)
+    catch(const Epp::EppResponseFailure& e)
     {
-        BOOST_FOREACH(Epp::Error e, pe.get())
-        {
-            BOOST_ERROR(std::string("Epp::ParameterValuePolicyError e.param: ") << e.param
-                << std::string(" e.position: ") << e.position
-                << std::string(" e.reason: ") << e.reason);
+        if(e.epp_result().extended_errors()) {
+            BOOST_ERROR(e.what());
+            BOOST_FOREACH(const Epp::EppExtendedError& epp_extended_error, e.epp_result().extended_errors().get())
+            {
+                BOOST_ERROR(std::string("epp_extended_error: param: ") << epp_extended_error.param()
+                    << std::string(" position: ") << epp_extended_error.position()
+                    << std::string(" reason: ") << epp_extended_error.reason());
+            }
         }
     }
     catch(const std::exception& e)

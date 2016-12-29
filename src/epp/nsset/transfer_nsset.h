@@ -38,12 +38,11 @@ namespace Nsset {
  * @throws AuthorizationError in case invalid _authinfopw is given
  */
 unsigned long long transfer_nsset(
-    Fred::OperationContext& _ctx,
-    const std::string& _nsset_handle,
-    const std::string& _authinfopw,
-    unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-);
+        Fred::OperationContext& _ctx,
+        const std::string& _nsset_handle,
+        const std::string& _authinfopw,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Nsset
 } // namespace Epp

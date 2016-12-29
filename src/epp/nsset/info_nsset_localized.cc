@@ -20,6 +20,8 @@
 #include "src/epp/nsset/info_nsset.h"
 
 #include "src/epp/impl/action.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
@@ -34,6 +36,8 @@
 
 #include <algorithm>
 #include <set>
+#include <stdexcept>
+#include <string>
 #include <vector>
 #include <boost/foreach.hpp>
 
@@ -110,35 +114,25 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         info_nsset_data.tech_check_level));
 
     }
-    catch (const AuthErrorServerClosingConnection&) {
-        throw create_localized_fail_response(
+    catch (const EppResponseFailure& e) {
+        ctx.get_log().info(std::string("info_nsset_localized: ") + e.what());
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::authentication_error_server_closing_connection,
-                std::set<Error>(),
-                _lang);
-    }
-    catch (const NonexistentHandle&) {
-        ctx.get_log().info("info_nsset_localized failure: NonexistentHandle");
-        throw create_localized_fail_response(
-                ctx,
-                Response::object_not_exist,
-                std::set<Error>(),
+                e,
                 _lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("info_nsset_localized failure: ") + e.what());
-        throw create_localized_fail_response(
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
     catch (...) {
-        ctx.get_log().info("info_nsset_localized failure: unexpected exception");
-        throw create_localized_fail_response(
+        ctx.get_log().info("unexpected exception in info_nsset_localized function");
+        throw EppResponseFailureLocalized(
                 ctx,
-                Response::failed,
-                std::set<Error>(),
+                EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _lang);
     }
 }

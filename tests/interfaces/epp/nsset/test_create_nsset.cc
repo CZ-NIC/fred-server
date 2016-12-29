@@ -20,20 +20,22 @@
  *  @file
  */
 
-#include <boost/test/unit_test.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/assign/list_of.hpp>
-
-#include <set>
-#include <algorithm>
-
-#include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
+#include "tests/interfaces/epp/util.h"
 
 #include "src/epp/nsset/create_nsset.h"
 #include "src/epp/nsset/impl/nsset.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 
-BOOST_AUTO_TEST_SUITE(TestEpp)
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <algorithm>
+#include <set>
+
+BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(CreateNsset)
 
 BOOST_FIXTURE_TEST_CASE(test_case_uninitialized_ip_prohibited, has_registrar)
@@ -42,46 +44,74 @@ BOOST_FIXTURE_TEST_CASE(test_case_uninitialized_ip_prohibited, has_registrar)
     BOOST_REQUIRE(Epp::Nsset::is_prohibited_ip_addr(ip,ctx));
 }
 
+bool create_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_nsset_input_data_set)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
             0 /* <== !!! */,
             42
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        create_invalid_registrar_id_exception
     );
+}
+bool create_fail_handle_format_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_syntax_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
+    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::nsset_handle, Epp::Reason::bad_format_nsset_handle));
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_nsset_input_data_set)
 {
     nsset_input_data.handle +="?";
-    try {
-        Epp::Nsset::create_nsset(
-            ctx,
-            nsset_input_data,
-            registrar.id,
-            42 /* TODO */
-        );
-    } catch(...) {
-        Test::check_correct_aggregated_exception_was_thrown( Epp::Error::of_scalar_parameter( Epp::Param::nsset_handle, Epp::Reason::bad_format_nsset_handle ) );
-    }
-}
-
-BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_nsset_with_input_data_set)
-{
-
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
             registrar.id,
             42 /* TODO */
         ),
-        Epp::ObjectExists
+        Epp::EppResponseFailure,
+        create_fail_handle_format_exception
     );
+}
+
+bool create_fail_already_existing_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_exists);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
+BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_nsset_with_input_data_set)
+{
+    BOOST_CHECK_EXCEPTION(
+        Epp::Nsset::create_nsset(
+            ctx,
+            nsset_input_data,
+            registrar.id,
+            42 /* TODO */
+        ),
+        Epp::EppResponseFailure,
+        create_fail_already_existing_exception
+    );
+}
+
+bool create_fail_protected_handle_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
+    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::nsset_handle, Epp::Reason::protected_period));
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_set)
@@ -90,29 +120,17 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_
         Fred::DeleteNssetByHandle(nsset.handle).exec(ctx);
     }
 
-    try {
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
             registrar.id,
             42 /* TODO */
-        );
-    } catch (const Epp::ParameterValuePolicyError& _error) {
-        const Epp::Error epp_error = Epp::Error::of_scalar_parameter( Epp::Param::nsset_handle, Epp::Reason::protected_period );
-        const std::set<Epp::Error> errors = _error.get();
-
-                    BOOST_CHECK(
-                            errors.find(epp_error)
-                        !=
-                        errors.end()
-                    );
-    }
-    catch(...)
-    {
-        BOOST_ERROR("wrong_exception caught");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_fail_protected_handle_exception
+    );
 }
-
 
 bool boost_asio_ip_address_predicate (const boost::optional<boost::asio::ip::address>& ip1, const boost::asio::ip::address& ip2)
 {

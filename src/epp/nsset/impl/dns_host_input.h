@@ -32,23 +32,23 @@
 namespace Epp {
 namespace Nsset {
 
-    /**
-     * DNS host data.
-     */
-    struct DnsHostInput {
-        std::string fqdn;/**< nameserver host name*/
-        std::vector<boost::optional<boost::asio::ip::address> > inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host, non-initialized if value is invalid*/
+/**
+ * DNS host data.
+ */
+struct DnsHostInput {
+    std::string fqdn;/**< nameserver host name*/
+    std::vector<boost::optional<boost::asio::ip::address> > inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host, non-initialized if value is invalid*/
 
-        /**
-         * Constructor initializing all attributes.
-         * @param _fqdn nameserver name
-         * @param _inet_addr addresses of the nameserver, non-initialized if value is invalid
-         */
-        DnsHostInput(const std::string& _fqdn, const std::vector<boost::optional<boost::asio::ip::address> >& _inet_addr)
-        : fqdn(_fqdn)
-        , inet_addr(_inet_addr)
-        {}
-    };
+    /**
+     * Constructor initializing all attributes.
+     * @param _fqdn nameserver name
+     * @param _inet_addr addresses of the nameserver, non-initialized if value is invalid
+     */
+    DnsHostInput(const std::string& _fqdn, const std::vector<boost::optional<boost::asio::ip::address> >& _inet_addr)
+    :   fqdn(_fqdn),
+        inet_addr(_inet_addr)
+    { }
+};
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -20,44 +20,60 @@
  *  @file
  */
 
+#include "tests/interfaces/epp/util.h"
+#include "tests/interfaces/epp/nsset/fixture.h"
+
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/nsset/impl/dns_host_output.h"
+#include "src/epp/nsset/info_nsset.h"
+
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/optional.hpp>
 
-#include "src/epp/nsset/impl/dns_host_output.h"
-#include "tests/interfaces/epp/util.h"
-#include "tests/interfaces/epp/nsset/fixture.h"
-
-#include "src/epp/nsset/info_nsset.h"
-
-BOOST_AUTO_TEST_SUITE(TestEpp)
+BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(InfoNsset)
+
+bool info_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::info_nsset(
             ctx,
             nsset.handle,
             Epp::SessionLang::en,
             0 /* <== !!! */
         ),
-        Epp::AuthErrorServerClosingConnection
+        Epp::EppResponseFailure,
+        info_invalid_registrar_id_exception
     );
+}
+
+bool info_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
 {
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Nsset::info_nsset(
             ctx,
             nsset.handle + "SOMEobscureSTRING",
             Epp::SessionLang::en,
             42 /* TODO */
         ),
-        Epp::NonexistentHandle
+        Epp::EppResponseFailure,
+        info_fail_nonexistent_handle_exception
     );
 }
 

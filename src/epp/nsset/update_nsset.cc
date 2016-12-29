@@ -1,52 +1,73 @@
-#include "src/epp/nsset/update_nsset.h"
-#include "src/epp/nsset/impl/nsset.h"
-#include "src/epp/nsset/impl/dns_host_input.h"
-#include "src/epp/nsset/impl/nsset_constants.h"
+/*
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+#include "src/epp/nsset/update_nsset.h"
+
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/util.h"
-
-#include "src/fredlib/zone/zone.h"
-#include "src/fredlib/nsset/info_nsset.h"
-#include "src/fredlib/nsset/update_nsset.h"
-#include "src/fredlib/nsset/check_nsset.h"
+#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/nsset/impl/nsset.h"
+#include "src/epp/nsset/impl/nsset_constants.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/domain/domain_name.h"
-#include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/nsset/check_nsset.h"
+#include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
-
-#include "util/optional_value.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/zone/zone.h"
 #include "util/map_at.h"
+#include "util/optional_value.h"
 #include "util/util.h"
-
-#include <vector>
-#include <map>
 
 #include <boost/foreach.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <vector>
+#include <set>
+#include <string>
+
+using namespace std;
 
 namespace Epp {
 namespace Nsset {
 
 unsigned long long update_nsset(
-    Fred::OperationContext& _ctx,
-    const UpdateNssetInputData& _data,
-    const unsigned long long _registrar_id,
-    const Optional<unsigned long long>& _logd_request_id
-) {
+        Fred::OperationContext& _ctx,
+        const UpdateNssetInputData& _data,
+        const unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id)
+{
 
-    if( _registrar_id == 0 ) {
-        throw AuthErrorServerClosingConnection();
+    if (_registrar_id == 0 ) {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if( Fred::Nsset::get_handle_registrability(_ctx, _data.handle) != Fred::NssetHandleState::Registrability::registered ) {
-        throw NonexistentHandle();
+    if (Fred::Nsset::get_handle_registrability(_ctx, _data.handle) != Fred::NssetHandleState::Registrability::registered) {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
     struct translate_info_nsset_exception {
@@ -54,8 +75,8 @@ unsigned long long update_nsset(
             try {
                 return Fred::InfoNssetByHandle(_handle).set_lock().exec(_ctx).info_nsset_data;
             } catch(const Fred::InfoNssetByHandle::Exception& e) {
-                if( e.is_set_unknown_handle() ) {
-                    throw NonexistentHandle();
+                if (e.is_set_unknown_handle()) {
+                    throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
                 }
                 throw;
             }
@@ -69,26 +90,30 @@ unsigned long long update_nsset(
             .exec(_ctx)
             .info_registrar_data;
 
-    if( nsset_data_before_update.sponsoring_registrar_handle != logged_in_registrar.handle
-        && !logged_in_registrar.system.get_value_or_default() ) {
-        throw AuthorizationError();
+    if (nsset_data_before_update.sponsoring_registrar_handle != logged_in_registrar.handle
+        && !logged_in_registrar.system.get_value_or_default()) {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
+                                         .add_extended_error(
+                                                 EppExtendedError::of_scalar_parameter(
+                                                         Param::registrar_autor,
+                                                         Reason::unauthorized_registrar)));
     }
 
     // do it before any object state related checks
     Fred::LockObjectStateRequestLock(nsset_data_before_update.id).exec(_ctx);
     Fred::PerformObjectStateRequest(nsset_data_before_update.id).exec(_ctx);
 
-    if( !logged_in_registrar.system.get_value_or_default()
+    if (!logged_in_registrar.system.get_value_or_default()
             && (Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
                 ||
                 Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
     ) {
-        throw ObjectStatusProhibitsOperation();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
     }
 
     //lists check
     {
-        ParameterValuePolicyError ex;
+        EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
         std::set<std::string> nsset_dns_host_fqdn;
         BOOST_FOREACH(const Fred::DnsHost& dns_hosts, nsset_data_before_update.dns_hosts)
@@ -110,28 +135,34 @@ unsigned long long update_nsset(
                 _data.tech_contacts_add.at(i));
 
             //check technical contact exists
-            if(Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts_add.at(i))
+            if (Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts_add.at(i))
                 != Fred::ContactHandleState::Registrability::registered)
             {
-                ex.add(Error::of_vector_parameter(Param::nsset_tech_add,
-                    boost::numeric_cast<unsigned short>(i),
-                    Reason::technical_contact_not_registered));
+                parameter_value_policy_errors.add_extended_error(
+                        EppExtendedError::of_vector_parameter(
+                                Param::nsset_tech_add,
+                                boost::numeric_cast<unsigned short>(i),
+                                Reason::technical_contact_not_registered));
             }
 
             //check if given tech contact to be added is already admin of the nsset
-            if(nsset_tech_c_handles.find(upper_tech_contact_handle) != nsset_tech_c_handles.end())
+            if (nsset_tech_c_handles.find(upper_tech_contact_handle) != nsset_tech_c_handles.end())
             {
-                ex.add(Error::of_vector_parameter(Param::nsset_tech_add,
-                    boost::numeric_cast<unsigned short>(i),
-                    Reason::technical_contact_already_assigned));
+                parameter_value_policy_errors.add_extended_error(
+                        EppExtendedError::of_vector_parameter(
+                                Param::nsset_tech_add,
+                                boost::numeric_cast<unsigned short>(i),
+                                Reason::technical_contact_already_assigned));
             }
 
             //check technical contact duplicity
-            if(tech_contact_to_add_duplicity.insert(upper_tech_contact_handle).second == false)
+            if (tech_contact_to_add_duplicity.insert(upper_tech_contact_handle).second == false)
             {
-                ex.add(Error::of_vector_parameter(Param::nsset_tech_add,
-                    boost::numeric_cast<unsigned short>(i),
-                    Reason::duplicated_contact));
+                parameter_value_policy_errors.add_extended_error(
+                        EppExtendedError::of_vector_parameter(
+                                Param::nsset_tech_add,
+                                boost::numeric_cast<unsigned short>(i),
+                                Reason::duplicated_contact));
             }
         }
 
@@ -149,19 +180,23 @@ unsigned long long update_nsset(
                 _data.tech_contacts_rem.at(i));
 
             //check if given tech contact to remove is NOT admin of nsset
-            if(nsset_tech_c_handles.find(upper_tech_contact_handle) == nsset_tech_c_handles.end())
+            if (nsset_tech_c_handles.find(upper_tech_contact_handle) == nsset_tech_c_handles.end())
             {
-                ex.add(Error::of_vector_parameter(Param::nsset_tech_rem,
-                    boost::numeric_cast<unsigned short>(i),
-                    Reason::can_not_remove_tech));
+                parameter_value_policy_errors.add_extended_error(
+                        EppExtendedError::of_vector_parameter(
+                                Param::nsset_tech_rem,
+                                boost::numeric_cast<unsigned short>(i),
+                                Reason::can_not_remove_tech));
             }
 
             //check technical contact duplicity
-            if(tech_contact_to_remove_duplicity.insert(upper_tech_contact_handle).second == false)
+            if (tech_contact_to_remove_duplicity.insert(upper_tech_contact_handle).second == false)
             {
-                ex.add(Error::of_vector_parameter(Param::nsset_tech_rem,
-                    boost::numeric_cast<unsigned short>(i),
-                    Reason::duplicated_contact));
+                parameter_value_policy_errors.add_extended_error(
+                        EppExtendedError::of_vector_parameter(
+                                Param::nsset_tech_rem,
+                                boost::numeric_cast<unsigned short>(i),
+                                Reason::duplicated_contact));
             }
         }
 
@@ -174,31 +209,37 @@ unsigned long long update_nsset(
                 const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
                         _data.dns_hosts_add.at(i).fqdn);
 
-                if(!Fred::Domain::is_rfc1123_compliant_host_name(_data.dns_hosts_add.at(i).fqdn))
+                if (!Fred::Domain::is_rfc1123_compliant_host_name(_data.dns_hosts_add.at(i).fqdn))
                 {
-                    ex.add(Error::of_vector_parameter(Param::nsset_dns_name_add,
-                        boost::numeric_cast<unsigned short>(i),//position in list
-                        Reason::bad_dns_name));
+                    parameter_value_policy_errors.add_extended_error(
+                            EppExtendedError::of_vector_parameter(
+                                    Param::nsset_dns_name_add,
+                                    boost::numeric_cast<unsigned short>(i),
+                                    Reason::bad_dns_name));
                 }
 
                 //check dns host duplicity
-                if(dns_host_to_add_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
+                if (dns_host_to_add_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
                 {
-                    ex.add(Error::of_vector_parameter(Param::nsset_dns_name_add,
-                        boost::numeric_cast<unsigned short>(i),
-                        Reason::duplicated_dns_name));
+                    parameter_value_policy_errors.add_extended_error(
+                            EppExtendedError::of_vector_parameter(
+                                    Param::nsset_dns_name_add,
+                                    boost::numeric_cast<unsigned short>(i),
+                                    Reason::duplicated_dns_name));
                 }
 
-                check_disallowed_glue_ipaddrs(_data.dns_hosts_add.at(i), nsset_ipaddr_to_add_position, ex, _ctx);
+                check_disallowed_glue_ipaddrs(_data.dns_hosts_add.at(i), nsset_ipaddr_to_add_position, parameter_value_policy_errors, _ctx);
 
                 //nameserver fqdn alredy assigned to nsset and not in list of fqdn to be removed
-                if( (nsset_dns_host_fqdn.find(lower_dnshost_fqdn) != nsset_dns_host_fqdn.end())//dns host fqdn to be added is alredy assigned to nsset
+                if ((nsset_dns_host_fqdn.find(lower_dnshost_fqdn) != nsset_dns_host_fqdn.end())//dns host fqdn to be added is alredy assigned to nsset
                     && (nsset_dns_host_fqdn_to_remove.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn_to_remove.end())//dns host fqdn to be added is not in list of fqdn to be removed (dns hosts are removed first)
                 )
                 {
-                    ex.add(Error::of_vector_parameter(Param::nsset_dns_name_add,
-                        boost::numeric_cast<unsigned short>(i),//position in list
-                        Reason::dns_name_exist));
+                    parameter_value_policy_errors.add_extended_error(
+                            EppExtendedError::of_vector_parameter(
+                                    Param::nsset_dns_name_add,
+                                    boost::numeric_cast<unsigned short>(i),
+                                    Reason::dns_name_exist));
                 }
 
                 //check nameserver IP addresses
@@ -207,18 +248,22 @@ unsigned long long update_nsset(
                     for(std::size_t j = 0; j < _data.dns_hosts_add.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_to_add_position)
                     {
                         boost::optional<boost::asio::ip::address> dnshostipaddr = _data.dns_hosts_add.at(i).inet_addr.at(j);
-                        if(is_prohibited_ip_addr(dnshostipaddr, _ctx))
+                        if (is_prohibited_ip_addr(dnshostipaddr, _ctx))
                         {
-                            ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
-                                boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
-                                Reason::bad_ip_address));
+                            parameter_value_policy_errors.add_extended_error(
+                                    EppExtendedError::of_vector_parameter(
+                                            Param::nsset_dns_addr,
+                                            boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
+                                            Reason::bad_ip_address));
                         }
 
-                        if(dnshostipaddr.is_initialized() && dns_host_to_add_ip_duplicity.insert(dnshostipaddr.get()).second == false)
+                        if (dnshostipaddr.is_initialized() && dns_host_to_add_ip_duplicity.insert(dnshostipaddr.get()).second == false)
                         {
-                            ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
-                                boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
-                                Reason::duplicated_dns_address));
+                            parameter_value_policy_errors.add_extended_error(
+                                    EppExtendedError::of_vector_parameter(
+                                            Param::nsset_dns_addr,
+                                            boost::numeric_cast<unsigned short>(nsset_ipaddr_to_add_position),
+                                            Reason::duplicated_dns_address));
                         }
                     }
                 }
@@ -234,30 +279,36 @@ unsigned long long update_nsset(
                         _data.dns_hosts_rem.at(i).fqdn);
 
                 //dns host fqdn to be removed is NOT assigned to nsset
-                if(nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())
+                if (nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())
                 {
-                    ex.add(Error::of_vector_parameter(Param::nsset_dns_name_rem,
-                        boost::numeric_cast<unsigned short>(i),
-                        Reason::dns_name_notexist));
+                    parameter_value_policy_errors.add_extended_error(
+                            EppExtendedError::of_vector_parameter(
+                                    Param::nsset_dns_name_rem,
+                                    boost::numeric_cast<unsigned short>(i),
+                                    Reason::dns_name_notexist));
                 }
 
                 //check dns host duplicity
-                if(dns_host_to_remove_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
+                if (dns_host_to_remove_fqdn_duplicity.insert(lower_dnshost_fqdn).second == false)
                 {
-                    ex.add(Error::of_vector_parameter(Param::nsset_dns_name_rem,
-                        boost::numeric_cast<unsigned short>(i),
-                        Reason::duplicated_dns_name));
+                    parameter_value_policy_errors.add_extended_error(
+                            EppExtendedError::of_vector_parameter(
+                                    Param::nsset_dns_name_rem,
+                                    boost::numeric_cast<unsigned short>(i),
+                                    Reason::duplicated_dns_name));
                 }
             }
         }
 
-        if(!ex.is_empty()) throw ex;
+        if (!parameter_value_policy_errors.empty()) {
+            throw EppResponseFailure(parameter_value_policy_errors);
+        }
     }
 
-    if(_data.tech_check_level
+    if (_data.tech_check_level
         && *_data.tech_check_level > max_nsset_tech_check_level)
     {
-        throw ParameterValueRangeError();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_range_error));
     }
 
     // update itself
@@ -285,34 +336,32 @@ unsigned long long update_nsset(
 
             const Fred::InfoNssetData nsset_data_after_update = translate_info_nsset_exception::exec(_ctx, _data.handle);
 
-            if(nsset_data_after_update.tech_contacts.empty()
+            if (nsset_data_after_update.tech_contacts.empty()
             || nsset_data_after_update.tech_contacts.size() > max_nsset_tech_contacts)
             {
-                throw ParameterValuePolicyError();
+                throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
             }
 
-            if(nsset_data_after_update.dns_hosts.size() < _data.config_nsset_min_hosts
+            if (nsset_data_after_update.dns_hosts.size() < _data.config_nsset_min_hosts
             || nsset_data_after_update.dns_hosts.size() > _data.config_nsset_max_hosts)
             {
-                throw ParameterValuePolicyError();
+                throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
             }
 
             return new_history_id;
 
         } catch(const Fred::UpdateNsset::Exception& e) {
 
-            /* general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority */
-            if(
-                e.is_set_unknown_registrar_handle()
-            ) {
+            // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
+            if (e.is_set_unknown_registrar_handle()) {
                 throw;
             }
 
-            if( e.is_set_unknown_nsset_handle() ) {
-                throw NonexistentHandle();
+            if (e.is_set_unknown_nsset_handle()) {
+                throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
             }
 
-            /* in the improbable case that exception is incorrectly set */
+            // in the improbable case that exception is incorrectly set
             throw;
         }
     }

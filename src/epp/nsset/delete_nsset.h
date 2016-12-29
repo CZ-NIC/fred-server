@@ -37,10 +37,9 @@ namespace Nsset {
  * @throws ObjectStatusProhibitsOperation in case nsset has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long delete_nsset(
-    Fred::OperationContext& _ctx,
-    const std::string& _handle,
-    unsigned long long _registrar_id
-);
+        Fred::OperationContext& _ctx,
+        const std::string& _handle,
+        unsigned long long _registrar_id);
 
 } // namespace Epp::Nsset
 } // namespace Epp
