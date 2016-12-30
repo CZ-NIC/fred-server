@@ -49,7 +49,9 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>()
+        boost::optional<short>(),
+        2,
+        10
     );
 
     BOOST_CHECK_THROW(
@@ -75,7 +77,9 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>()
+        boost::optional<short>(),
+        2,
+        10
     );
 
     BOOST_CHECK_THROW(
@@ -98,7 +102,9 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>()
+        boost::optional<short>(),
+        2,
+        10
     );
 
     BOOST_CHECK_THROW(
@@ -121,7 +127,9 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>()
+        boost::optional<short>(),
+        2,
+        10
     );
 
     BOOST_CHECK_THROW(
@@ -144,7 +152,9 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>()
+        boost::optional<short>(),
+        2,
+        10
     );
 
 
@@ -168,7 +178,9 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
         std::vector<Epp::DNShostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>()
+        boost::optional<short>(),
+        2,
+        10
     );
     BOOST_CHECK_THROW(
         Epp::nsset_update_impl(
@@ -357,7 +369,9 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),//tech_contacts_rem
-            3
+            3,
+            2,
+            10
         );
 
     try
@@ -397,7 +411,9 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
             std::vector<Epp::DNShostInput>(), //rem_dns
             std::vector<std::string>(),//0
             std::vector<std::string>(),
-            3
+            3,
+            2,
+            10
         );
 
     Epp::nsset_update_impl(

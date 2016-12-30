@@ -298,8 +298,8 @@ unsigned long long nsset_update_impl(
                 throw ParameterValuePolicyError();
             }
 
-            if(nsset_data_after_update.dns_hosts.size() < min_nsset_dns_hosts
-            || nsset_data_after_update.dns_hosts.size() > max_nsset_dns_hosts)
+            if(nsset_data_after_update.dns_hosts.size() < _data.config_nsset_min_hosts
+            || nsset_data_after_update.dns_hosts.size() > _data.config_nsset_max_hosts)
             {
                 throw ParameterValuePolicyError();
             }

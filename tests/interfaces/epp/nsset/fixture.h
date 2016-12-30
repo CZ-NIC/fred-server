@@ -163,7 +163,9 @@ struct has_nsset_input_data_set : has_registrar
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
             3,
-            3
+            3,
+            2,
+            10
         ))
     {
         Fred::Contact::PlaceAddress place;
@@ -214,7 +216,9 @@ struct has_nsset_with_input_data_set : has_registrar {
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
             3,
-            3
+            3,
+            2,
+            10
         ))
     {
         Fred::Contact::PlaceAddress place;
