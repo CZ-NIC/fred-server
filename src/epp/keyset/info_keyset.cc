@@ -1,17 +1,20 @@
 #include "src/epp/keyset/info_keyset.h"
 
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
-
-#include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
 namespace Keyset {
 
-InfoKeysetOutputData info_keyset(Fred::OperationContext &_ctx,
-                           const std::string &_keyset_handle,
-                           unsigned long long _registrar_id)
+InfoKeysetOutputData info_keyset(
+        Fred::OperationContext& _ctx,
+        const std::string& _keyset_handle,
+        unsigned long long _registrar_id)
 {
     try {
         InfoKeysetOutputData result;
@@ -61,9 +64,9 @@ InfoKeysetOutputData info_keyset(Fred::OperationContext &_ctx,
         }
         return result;
     }
-    catch (const Fred::InfoKeysetByHandle::Exception &e) {
+    catch (const Fred::InfoKeysetByHandle::Exception& e) {
         if (e.is_set_unknown_handle()) {
-            throw NonexistentHandle();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
         throw;
     }

@@ -21,12 +21,15 @@
  */
 
 #include "tests/interfaces/epp/keyset/fixture.h"
+
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/parameter_errors.h"
+#include "src/epp/keyset/check_keyset.h"
 #include "src/epp/keyset/create_keyset.h"
 #include "src/epp/keyset/delete_keyset.h"
-#include "src/epp/keyset/check_keyset.h"
-#include "src/epp/keyset/info_keyset.h"
 #include "src/epp/keyset/impl/limits.h"
+#include "src/epp/keyset/info_keyset.h"
 #include "src/fredlib/registrar/create_registrar.h"
 
 #include <sstream>
@@ -140,19 +143,11 @@ KeysetCreateData create_successfully_by(const Test::ObjectsProvider &objects_pro
         ctx.commit_transaction();
         return data;
     }
-    catch (const Epp::AuthErrorServerClosingConnection&) {
-        std::cout << "catch: AuthErrorServerClosingConnection" << std::endl;
+    catch (const Epp::EppResponseFailure& e) {
+        std::cout << "catch: " << e.what() << std::endl;
         throw;
     }
-    catch (const Epp::ParameterErrors&) {
-        std::cout << "catch: ParameterErrors" << std::endl;
-        throw;
-    }
-    catch (const Fred::CreateKeyset::Exception&) {
-        std::cout << "catch: Fred::CreateKeyset::Exception" << std::endl;
-        throw;
-    }
-    catch (const std::exception &e) {
+    catch (const std::exception& e) {
         std::cout << "catch: " << e.what() << std::endl;
         throw;
     }
@@ -202,12 +197,18 @@ void check_created_keyset(const KeysetCreateData &data)
     }
 }
 
+bool create_by_invalid_registrar_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
 void create_by_invalid_registrar(const KeysetCreateData &data)
 {
     Fred::OperationContextCreator ctx;
     static const unsigned long long invalid_registrar_id = 0;
     static const unsigned long long logd_request_id = 12346;
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Keyset::create_keyset(
             ctx,
             data.keyset_handle,
@@ -217,23 +218,16 @@ void create_by_invalid_registrar(const KeysetCreateData &data)
             data.dns_keys,
             invalid_registrar_id,
             logd_request_id),
-        Epp::AuthErrorServerClosingConnection);
+        Epp::EppResponseFailure,
+        create_by_invalid_registrar_exception
+    );
 }
 
-bool equal(const Epp::ParameterErrors &a, const Epp::ParameterErrors &b)
-{
-    const std::set< Epp::Error > errors_a = a.get_set_of_error();
-    const std::set< Epp::Error > errors_b = b.get_set_of_error();
-    if (errors_a.size() != errors_b.size()) {
-        return false;
-    }
-    for (std::set< Epp::Error >::const_iterator error_a_ptr = errors_a.begin();
-         error_a_ptr != errors_a.end(); ++error_a_ptr)
-    {
-        if (errors_b.count(*error_a_ptr) != 1) {
-            return false;
-        }
-    }
+bool create_with_correct_data_but_registered_handle_by_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_exists);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
+    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::keyset_handle, Epp::Reason::existing));
     return true;
 }
 
@@ -246,7 +240,7 @@ void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &d
                   Fred::Keyset::HandleState::registered);
     static const unsigned long long logd_request_id = 12346;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
-    try {
+    BOOST_CHECK_EXCEPTION(
         Epp::Keyset::create_keyset(
             ctx,
             data.keyset_handle,
@@ -255,14 +249,10 @@ void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &d
             data.ds_records,
             data.dns_keys,
             registrar_id,
-            logd_request_id);
-        BOOST_CHECK(false);
-    }
-    catch (const Epp::ParameterErrors &e) {
-        Epp::ParameterErrors expected_errors;
-        expected_errors.add_scalar_parameter_error(Epp::Param::keyset_handle, Epp::Reason::existing);
-        BOOST_CHECK(equal(e, expected_errors));
-    }
+            logd_request_id),
+        Epp::EppResponseFailure,
+        create_with_correct_data_but_registered_handle_by_exception
+    );
 }
 
 template < Registrar::Enum REGISTRAR >
@@ -280,19 +270,11 @@ KeysetCreateData create_protected_period_by(const Test::ObjectsProvider &objects
         ctx.commit_transaction();
         return data;
     }
-    catch (const Epp::AuthErrorServerClosingConnection&) {
-        std::cout << "catch: AuthErrorServerClosingConnection" << std::endl;
+    catch (const Epp::EppResponseFailure& e) {
+        std::cout << "catch: " << e.what() << std::endl;
         throw;
     }
-    catch (const Epp::NonexistentHandle&) {
-        std::cout << "catch: NonexistentHandle" << std::endl;
-        throw;
-    }
-    catch (const Epp::ObjectStatusProhibitsOperation&) {
-        std::cout << "catch: ObjectStatusProhibitsOperation" << std::endl;
-        throw;
-    }
-    catch (const std::exception &e) {
+    catch (const std::exception& e) {
         std::cout << "catch: " << e.what() << std::endl;
         throw;
     }
@@ -306,7 +288,6 @@ template < Registrar::Enum REGISTRAR >
 void check_protected_period_keyset(const std::string &keyset_handle, const Test::ObjectsProvider &objects_provider)
 {
     try {
-
         Fred::OperationContextCreator ctx;
         std::set< std::string > handles;
         handles.insert(keyset_handle);
@@ -330,6 +311,14 @@ void check_protected_period_keyset(const std::string &keyset_handle, const Test:
     }
 }
 
+bool create_with_correct_data_but_protected_handle_by_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
+    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::keyset_handle, Epp::Reason::protected_period));
+    return true;
+}
+
 template < Registrar::Enum REGISTRAR >
 void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &data,
                                                       const Test::ObjectsProvider &objects_provider)
@@ -339,7 +328,7 @@ void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &da
                   Fred::Keyset::HandleState::in_protection_period);
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
-    try {
+    BOOST_CHECK_EXCEPTION(
         Epp::Keyset::create_keyset(
             ctx,
             data.keyset_handle,
@@ -348,14 +337,18 @@ void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &da
             data.ds_records,
             data.dns_keys,
             registrar_id,
-            logd_request_id);
-        BOOST_CHECK(false);
-    }
-    catch (const Epp::ParameterErrors &e) {
-        Epp::ParameterErrors expected_errors;
-        expected_errors.add_scalar_parameter_error(Epp::Param::keyset_handle, Epp::Reason::protected_period);
-        BOOST_CHECK(equal(e, expected_errors));
-    }
+            logd_request_id),
+        Epp::EppResponseFailure,
+        create_with_correct_data_but_protected_handle_by_exception
+    );
+}
+
+bool create_with_correct_data_but_invalid_handle_by_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_syntax_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
+    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::keyset_handle, Epp::Reason::bad_format_keyset_handle));
+    return true;
 }
 
 template < Registrar::Enum REGISTRAR >
@@ -368,7 +361,7 @@ void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data
     Fred::OperationContextCreator ctx;
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
-    try {
+    BOOST_CHECK_EXCEPTION(
         Epp::Keyset::create_keyset(
             ctx,
             invalid_keyset_handle,
@@ -377,17 +370,13 @@ void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data
             data.ds_records,
             data.dns_keys,
             registrar_id,
-            logd_request_id);
-        BOOST_CHECK(false);
-    }
-    catch (const Epp::ParameterErrors &e) {
-        Epp::ParameterErrors expected_errors;
-        expected_errors.add_scalar_parameter_error(Epp::Param::keyset_handle, Epp::Reason::bad_format_keyset_handle);
-        BOOST_CHECK(equal(e, expected_errors));
-    }
+            logd_request_id),
+        Epp::EppResponseFailure,
+        create_with_correct_data_but_invalid_handle_by_exception
+    );
 }
 
-}
+} // namespace {anonymous}
 
 BOOST_FIXTURE_TEST_CASE(create, Test::ObjectsProvider)
 {

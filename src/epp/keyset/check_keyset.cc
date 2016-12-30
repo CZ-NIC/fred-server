@@ -1,4 +1,8 @@
 #include "src/epp/keyset/check_keyset.h"
+
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/fredlib/keyset/check_keyset.h"
 
 namespace Epp {
@@ -34,14 +38,14 @@ Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > keyset_handle_stat
 
 }//namespace Epp::{anonymous}
 
-std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > > check_keyset(
-    Fred::OperationContext &_ctx,
-    const std::set< std::string > &_keyset_handles,
-    unsigned long long _registrar_id)
+std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> > check_keyset(
+        Fred::OperationContext& _ctx,
+        const std::set<std::string>& _keyset_handles,
+        unsigned long long _registrar_id)
 {
     const unsigned long long invalid_registrar_id = 0;
     if (_registrar_id == invalid_registrar_id) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     typedef std::set< std::string > Handles;

@@ -103,7 +103,7 @@ public:
     }
 
     // only intended for std::set usage - ordering definition is irrelevant
-    friend bool operator < (const Epp::EppResultFailure& lhs, const Epp::EppResultFailure& rhs);
+    friend bool operator < (const EppResultFailure& lhs, const EppResultFailure& rhs);
 
 protected:
 
@@ -116,8 +116,10 @@ private:
 
 };
 
-bool has_extended_error(const Epp::EppResultFailure& _epp_result_failure, const Epp::EppExtendedError& _epp_extended_error);
-bool has_extended_error_with_param_reason(const Epp::EppResultFailure& _epp_result_failure, const Epp::Param::Enum& _param, const Epp::Reason::Enum& _reason);
+bool has_extended_error(const EppResultFailure& _epp_result_failure, const EppExtendedError& _epp_extended_error);
+bool has_extended_error_with_param_reason(const EppResultFailure& _epp_result_failure, const Param::Enum& _param, const Reason::Enum& _reason);
+bool has_extended_error_with_param_index_reason(const EppResultFailure& _epp_result_failure, const Param::Enum& _param, unsigned short _index, const Reason::Enum& _reason);
+std::set<EppExtendedError> extended_errors_with_param_reason(const EppResultFailure& _epp_result_failure, const Param::Enum& _param, const Reason::Enum& _reason);
 
 } // namespace Epp
 

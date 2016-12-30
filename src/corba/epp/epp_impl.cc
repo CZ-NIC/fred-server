@@ -2368,8 +2368,8 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
         _check_results = check_results._retn();
         return return_value._retn();
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
     }
 }
 
@@ -2547,7 +2547,6 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
     const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
 
     try {
-
         const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
         const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
 
@@ -2639,8 +2638,8 @@ ccReg_EPP_i::KeySetTransfer(
         /* No exception shall be thrown from here onwards. */
         return return_value._retn();
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
     }
 }
 
@@ -3119,8 +3118,8 @@ ccReg_EPP_i::KeySetInfo(
         _keyset_info = keyset._retn();
         return return_value._retn();
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
     }
 }
 
@@ -3159,8 +3158,8 @@ ccReg_EPP_i::KeySetDelete(
         /* No exception shall be thrown from here onwards. */
         return return_value._retn();
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
     }
 }
 
@@ -3259,8 +3258,8 @@ ccReg_EPP_i::KeySetCreate(
         _crdate = create_time._retn();
         return return_value._retn();
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
     }
 }
 
@@ -3329,8 +3328,8 @@ ccReg_EPP_i::KeySetUpdate(
         /* No exception shall be thrown from here onwards. */
         return return_value._retn();
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_epp_response_failure_localized(e, server_transaction_handle);
     }
 }
 

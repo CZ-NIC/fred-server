@@ -1,15 +1,17 @@
 #include "src/epp/keyset/delete_keyset.h"
 
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/parameter_errors.h"
-
-#include "src/fredlib/registrar/info_registrar.h"
-#include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/delete_keyset.h"
+#include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
 namespace Keyset {
@@ -30,7 +32,7 @@ unsigned long long delete_keyset(
 {
     static const unsigned long long invalid_registrar_id = 0;
     if (_registrar_id == invalid_registrar_id) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     try {
@@ -42,10 +44,13 @@ unsigned long long delete_keyset(
         const bool is_system_registrar = callers_registrar.system.get_value_or(false);
         const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
         if (!is_operation_permitted) {
-            ParameterErrors param_errors;
-            param_errors.add_scalar_parameter_error(Param::registrar_autor, Reason::unauthorized_registrar);
             _ctx.get_log().info("keyset_delete failure: registrar not authorized for this operation");
-            throw param_errors;
+            throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
+                                             .add_extended_error(
+                                                     EppExtendedError::of_scalar_parameter(
+                                                             Param::registrar_autor,
+                                                             Reason::unauthorized_registrar)));
+
         }
 
         // do it before any object state related checks
@@ -63,7 +68,7 @@ unsigned long long delete_keyset(
                                       presents(keyset_states, Fred::Object_State::delete_candidate))) ||
             presents(keyset_states, Fred::Object_State::linked))
         {
-            throw ObjectStatusProhibitsOperation();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 
         Fred::DeleteKeysetByHandle(_keyset_handle).exec(_ctx);
@@ -72,7 +77,7 @@ unsigned long long delete_keyset(
     }
     catch (const Fred::InfoKeysetByHandle::Exception &e) {
         if (e.is_set_unknown_handle()) {
-            throw NonexistentHandle();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
         throw;
     }
@@ -84,7 +89,7 @@ unsigned long long delete_keyset(
         }
 
         if (e.is_set_object_linked_to_keyset_handle()) {
-            throw ObjectStatusProhibitsOperation();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 
         // in the improbable case that exception is incorrectly set

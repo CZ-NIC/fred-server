@@ -33,11 +33,10 @@ namespace Keyset {
 /**
  * @returns check results for given contact handles
  */
-std::map< std::string, Nullable< Keyset::KeysetHandleRegistrationObstruction::Enum > > check_keyset(
-    Fred::OperationContext& _ctx,
-    const std::set< std::string >& _keyset_handles,
-    unsigned long long _registrar_id
-);
+std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> > check_keyset(
+        Fred::OperationContext& _ctx,
+        const std::set<std::string>& _keyset_handles,
+        unsigned long long _registrar_id);
 
 } // namespace Epp::Keyset
 } // namespace Epp

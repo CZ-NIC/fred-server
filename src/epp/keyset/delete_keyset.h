@@ -38,9 +38,9 @@ namespace Keyset {
  * @throws ObjectStatusProhibitsOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long delete_keyset(
-    Fred::OperationContext &_ctx,
-    const std::string &_keyset_handle,
-    unsigned long long _registrar_id);
+        Fred::OperationContext& _ctx,
+        const std::string& _keyset_handle,
+        unsigned long long _registrar_id);
 
 } // namespace Epp::Keyset
 } // namespace Epp

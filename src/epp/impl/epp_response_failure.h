@@ -20,6 +20,7 @@
 #define EPP_RESPONSE_H_46F4B7C48AAC42D98C56119AE0AB5D51
 
 #include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_code.h"
 
 #include <exception>
 #include <set>
@@ -68,6 +69,19 @@ public:
         return epp_results_.front();
     }
 
+    //EppResultFailure& first_epp_result_with_code(EppResultCode::Failure _epp_result_code) {
+    //    for (std::vector<EppResultFailure>::iterator epp_result = epp_results_.begin();
+    //         epp_result != epp_results_.end();
+    //         ++epp_result)
+    //    {
+    //        if (epp_result->epp_result_code() == _epp_result_code) {
+    //            return *epp_result;
+    //        }
+    //    }
+    //    epp_results_.push_back(EppResultFailure(_epp_result_code));
+    //    return epp_results_.back();
+    //}
+    //
     /**
      * For now, we have only one epp_result,
      * so its description is used to describe this exception.

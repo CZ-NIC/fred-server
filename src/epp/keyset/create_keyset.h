@@ -19,8 +19,8 @@
 #ifndef CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 #define CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 
-#include "src/fredlib/opcontext.h"
 #include "src/epp/keyset/impl/info_keyset_data.h"
+#include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -35,19 +35,15 @@ struct CreateKeysetResult
     boost::posix_time::ptime crdate;
 };
 
-/**
- * @throws AuthErrorServerClosingConnection
- * @throws ParameterErrors
- */
 CreateKeysetResult create_keyset(
-    Fred::OperationContext &_ctx,
-    const std::string &_keyset_handle,
-    const Optional< std::string > &_auth_info_pw,
-    const std::vector< std::string > &_tech_contacts,
-    const std::vector< Keyset::DsRecord > &_ds_records,
-    const std::vector< Keyset::DnsKey > &_dns_keys,
-    unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id);
+        Fred::OperationContext& _ctx,
+        const std::string& _keyset_handle,
+        const Optional<std::string>& _auth_info_pw,
+        const std::vector<std::string>& _tech_contacts,
+        const std::vector<Keyset::DsRecord>& _ds_records,
+        const std::vector<Keyset::DnsKey>& _dns_keys,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Keyset
 } // namespace Epp

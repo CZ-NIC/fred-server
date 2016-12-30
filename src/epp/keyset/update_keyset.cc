@@ -2,23 +2,22 @@
 #include "src/epp/keyset/impl/limits.h"
 
 #include "src/epp/error.h"
+#include "src/epp/impl/epp_extended_error.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/parameter_errors.h"
 #include "src/epp/impl/reason.h"
-
-#include "src/fredlib/registrar/info_registrar.h"
-
-#include "src/fredlib/keyset/update_keyset.h"
-#include "src/fredlib/keyset/info_keyset.h"
-
-#include "src/fredlib/object/states_info.h"
-
 #include "src/fredlib/contact/check_contact.h"
-
+#include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 #include <map>
 #include <set>
@@ -28,43 +27,11 @@ namespace Keyset {
 
 namespace {
 
-typedef bool Presents;
-
-Presents insert_scalar_parameter_error_if_presents(
-        const ParameterErrors& _src,
-        Param::Enum _param,
-        Reason::Enum _reason,
-        std::set<Error>& _dst)
-{
-    if (_src.has_scalar_parameter_error(_param, _reason)) {
-        _dst.insert(Error::of_scalar_parameter(_param, _reason));
-        return true;
-    }
-    return false;
-}
-
-Presents insert_vector_parameter_error_if_presents(
-        const ParameterErrors& _src,
-        Param::Enum _param,
-        Reason::Enum _reason,
-        std::set<Error>& _dst)
-{
-    if (_src.has_vector_parameter_error(_param, _reason)) {
-        const ParameterErrors::Where where = _src.get_vector_parameter_error(_param, _reason);
-        for (ParameterErrors::Where::Indexes::const_iterator idx_ptr = where.indexes.begin();
-             idx_ptr != where.indexes.end(); ++idx_ptr)
-        {
-            _dst.insert(Error::of_vector_parameter(_param, *idx_ptr, _reason));
-        }
-        return true;
-    }
-    return false;
-}
-
-Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
-                                         unsigned long long _registrar_id,
-                                         Fred::OperationContext &_ctx,
-                                         std::string &_callers_registrar_handle)
+Fred::InfoKeysetData check_keyset_handle(
+        const std::string& _keyset_handle,
+        unsigned long long _registrar_id,
+        Fred::OperationContext& _ctx,
+        std::string& _callers_registrar_handle)
 {
     try {
         const Fred::InfoRegistrarData callers_registrar =
@@ -76,7 +43,7 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
         const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
         if (!is_operation_permitted) {
             _ctx.get_log().info("check_keyset_handle failure: registrar not authorized for this operation");
-            throw AuthorizationError();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
         }
         if (!is_system_registrar) {
             Fred::LockObjectStateRequestLock(keyset_data.id).exec(_ctx);
@@ -85,21 +52,21 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
             if (keyset_states.presents(Fred::Object_State::server_update_prohibited) ||
                 keyset_states.presents(Fred::Object_State::delete_candidate))
             {
-                throw ObjectStatusProhibitsOperation();
+                throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
             }
         }
         _callers_registrar_handle = callers_registrar.handle;
         return keyset_data;
     }
-    catch (const Fred::InfoKeysetByHandle::Exception &e) {
+    catch (const Fred::InfoKeysetByHandle::Exception& e) {
         if (e.is_set_unknown_handle()) {
             _ctx.get_log().info("check_keyset_handle failure: keyset not found");
-            throw NonexistentHandle();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
         _ctx.get_log().error("check_keyset_handle failure: unexpected error has occurred");
         throw;
     }
-    catch (const Fred::InfoRegistrarById::Exception &e) {
+    catch (const Fred::InfoRegistrarById::Exception& e) {
         if (e.is_set_unknown_registrar_id()) {
             _ctx.get_log().error("check_keyset_handle failure: registrar id not found");
             throw;
@@ -108,20 +75,20 @@ Fred::InfoKeysetData check_keyset_handle(const std::string &_keyset_handle,
                                                           "InfoRegistrarById operation");
         throw;
     }
-    catch (const ObjectStatusProhibitsOperation&) {
-        _ctx.get_log().info("check_keyset_handle failure: object update prohibited");
+    catch (const EppResponseFailure& e) {
+        _ctx.get_log().info(std::string("check_keyset_handle failure: ") + e.what());
         throw;
     }
     catch (...) {
-        _ctx.get_log().error("check_keyset_handle failure: unexpected exception was throwing");
+        _ctx.get_log().error("unexpected exception in check_keyset_handle function");
         throw;
     }
 }
 
 typedef std::set< std::string > Handles;
-Handles get_tech_contact_handles(const std::vector< Fred::ObjectIdHandlePair > &_id_handles)
+Handles get_tech_contact_handles(const std::vector<Fred::ObjectIdHandlePair>& _id_handles)
 {
-    typedef std::vector< Fred::ObjectIdHandlePair > IdHandlePairs;
+    typedef std::vector<Fred::ObjectIdHandlePair> IdHandlePairs;
     Handles result;
     for (IdHandlePairs::const_iterator id_handle_ptr = _id_handles.begin();
          id_handle_ptr != _id_handles.end(); ++id_handle_ptr)
@@ -132,12 +99,15 @@ Handles get_tech_contact_handles(const std::vector< Fred::ObjectIdHandlePair > &
 }
 
 typedef bool Presents;
-Presents copy_error(Param::Enum _param, Reason::Enum _reason,
-                    unsigned short _src_idx, unsigned short _dst_idx,
-                    ParameterErrors &_param_errors)
+Presents copy_error(
+        Param::Enum _param,
+        Reason::Enum _reason,
+        unsigned short _src_idx,
+        unsigned short _dst_idx,
+        EppResultFailure& _epp_result_errors)
 {
-    if (_param_errors.has_vector_parameter_error_at(_param, _src_idx, _reason)) {
-        _param_errors.add_vector_parameter_error(_param, _dst_idx, _reason);
+    if (Epp::has_extended_error_with_param_index_reason(_epp_result_errors, _param, _src_idx, _reason)) {
+        _epp_result_errors.add_extended_error(EppExtendedError::of_vector_parameter(_param, _dst_idx, _reason));
         return true;
     }
     return false;
@@ -145,11 +115,12 @@ Presents copy_error(Param::Enum _param, Reason::Enum _reason,
 
 typedef bool Success;
 
-Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add,
-                            const std::vector< std::string > &_tech_contacts_rem,
-                            const Fred::InfoKeysetData &_keyset_data,
-                            Fred::OperationContext &_ctx,
-                            ParameterErrors &_param_errors)
+Success check_tech_contacts(
+        const std::vector<std::string>& _tech_contacts_add,
+        const std::vector<std::string>& _tech_contacts_rem,
+        const Fred::InfoKeysetData& _keyset_data,
+        Fred::OperationContext& _ctx,
+        EppResultFailure& _policy_errors)
 {
     if (_tech_contacts_add.empty() && _tech_contacts_rem.empty()) {//nothing to do
         return true;
@@ -158,14 +129,14 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
     Success check_result = true;
 
     if (Keyset::max_number_of_tech_contacts < _tech_contacts_add.size()) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_tech, Reason::techadmin_limit);
+        _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_tech, Reason::techadmin_limit));
         check_result = false;
     }
 
     const Handles current_tech_contacts = get_tech_contact_handles(_keyset_data.tech_contacts);
 
     if (current_tech_contacts.size() < _tech_contacts_rem.size()) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_tech_rem, Reason::can_not_remove_tech);
+        _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_tech, Reason::can_not_remove_tech));
         check_result = false;
     }
 
@@ -182,18 +153,30 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
     {
         const HandleIndex::const_iterator handle_index_ptr = unique_handles.find(*handle_ptr);
         if (handle_index_ptr != unique_handles.end()) {//a duplicate handle
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::duplicated_contact);
-            copy_error(Param::keyset_tech_add, Reason::technical_contact_not_registered,
-                       handle_index_ptr->second, idx, _param_errors);
-            copy_error(Param::keyset_tech_add, Reason::technical_contact_already_assigned,
-                       handle_index_ptr->second, idx, _param_errors);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_add, idx, Reason::duplicated_contact));
+            if (Epp::has_extended_error_with_param_index_reason(
+                        _policy_errors,
+                        Param::keyset_tech_add,
+                        handle_index_ptr->second,
+                        Reason::technical_contact_not_registered))
+            {
+                _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_add, idx, Reason::technical_contact_not_registered));
+            }
+            if (Epp::has_extended_error_with_param_index_reason(
+                        _policy_errors,
+                        Param::keyset_tech_add,
+                        handle_index_ptr->second,
+                        Reason::technical_contact_already_assigned))
+            {
+                _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_add, idx, Reason::technical_contact_already_assigned));
+            }
             check_result = false;
             continue;
         }
         //unique handle
         unique_handles.insert(std::make_pair(*handle_ptr, idx));
         if (0 < current_tech_contacts.count(*handle_ptr)) {
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::technical_contact_already_assigned);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_add, idx, Reason::technical_contact_already_assigned));
             check_result = false;
             continue;
         }
@@ -203,7 +186,7 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
                 break;
             case Fred::ContactHandleState::Registrability::available:
             case Fred::ContactHandleState::Registrability::in_protection_period:
-                _param_errors.add_vector_parameter_error(Param::keyset_tech_add, idx, Reason::technical_contact_not_registered);
+                _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_add, idx, Reason::technical_contact_not_registered));
                 check_result = false;
                 break;
         }
@@ -216,16 +199,23 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
     {
         const HandleIndex::const_iterator handle_index_ptr = unique_handles.find(*handle_ptr);
         if (handle_index_ptr != unique_handles.end()) {//a duplicate handle
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_rem, idx, Reason::duplicated_contact);
-            copy_error(Param::keyset_tech_rem, Reason::technical_contact_not_registered,
-                       handle_index_ptr->second, idx, _param_errors);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_rem, idx, Reason::duplicated_contact));
+            if (Epp::has_extended_error_with_param_index_reason(
+                        _policy_errors,
+                        Param::keyset_tech,
+                        handle_index_ptr->second,
+                        Reason::technical_contact_not_registered))
+            {
+                _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_rem, idx, Reason::technical_contact_not_registered));
+            }
+
             check_result = false;
             continue;
         }
         //unique handle
         unique_handles.insert(std::make_pair(*handle_ptr, idx));
         if (current_tech_contacts.count(*handle_ptr) == 0) {
-            _param_errors.add_vector_parameter_error(Param::keyset_tech_rem, idx, Reason::technical_contact_not_registered);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_tech_rem, idx, Reason::technical_contact_not_registered));
             check_result = false;
             continue;
         }
@@ -237,18 +227,18 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
     }
 
     if ((current_tech_contacts.size() + _tech_contacts_add.size()) < _tech_contacts_rem.size()) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_tech_rem, Reason::can_not_remove_tech);
+        _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_tech_rem, Reason::can_not_remove_tech));
         return false;
     }
     const unsigned short number_of_tech_contacts =   current_tech_contacts.size()
                                                    +    _tech_contacts_add.size()
                                                    -    _tech_contacts_rem.size();
     if (number_of_tech_contacts < Keyset::min_number_of_tech_contacts) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_tech_rem, Reason::can_not_remove_tech);
+        _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_tech_rem, Reason::can_not_remove_tech));
         return false;
     }
     if (Keyset::max_number_of_tech_contacts < number_of_tech_contacts) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_tech, Reason::techadmin_limit);
+        _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_tech, Reason::techadmin_limit));
         return false;
     }
 
@@ -257,19 +247,21 @@ Success check_tech_contacts(const std::vector< std::string > &_tech_contacts_add
 
 template < unsigned MIN_NUMBER_OF_DS_RECORDS, unsigned MAX_NUMBER_OF_DS_RECORDS >
 Success check_ds_records(const std::vector< Keyset::DsRecord >&, const std::vector< Keyset::DsRecord >&,
-                         const Fred::InfoKeysetData&, Fred::OperationContext&, ParameterErrors&);
+                         const Fred::InfoKeysetData&, Fred::OperationContext&, EppResultFailure&);
 
 //specialization for requirement of no DS records
-template < >
-Success check_ds_records< 0, 0 >(const std::vector< Keyset::DsRecord > &_ds_records_add,
-                                 const std::vector< Keyset::DsRecord > &_ds_records_rem,
-                                 const Fred::InfoKeysetData&, Fred::OperationContext&,
-                                 ParameterErrors &_param_errors)
+template <>
+Success check_ds_records<0, 0>(
+        const std::vector<Keyset::DsRecord>& _ds_records_add,
+        const std::vector<Keyset::DsRecord>& _ds_records_rem,
+        const Fred::InfoKeysetData&,
+        Fred::OperationContext&,
+        EppResultFailure& _policy_errors)
 {
     if (_ds_records_add.empty() && _ds_records_rem.empty()) {
         return true;
     }
-    _param_errors.add_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit);
+    _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_dsrecord, Reason::dsrecord_limit));
     return false;
 }
 
@@ -288,11 +280,12 @@ DnsKeys get_dns_keys(const std::vector< Fred::DnsKey > &_dns_keys)
     return result;
 }
 
-Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
-                       const std::vector< Keyset::DnsKey > &_dns_keys_rem,
-                       const Fred::InfoKeysetData &_keyset_data,
-                       Fred::OperationContext &_ctx,
-                       ParameterErrors &_param_errors)
+Success check_dns_keys(
+        const std::vector<Keyset::DnsKey>& _dns_keys_add,
+        const std::vector<Keyset::DnsKey>& _dns_keys_rem,
+        const Fred::InfoKeysetData& _keyset_data,
+        Fred::OperationContext& _ctx,
+        EppResultFailure& _policy_errors)
 {
     if (_dns_keys_add.empty() && _dns_keys_rem.empty()) {//nothing to do
         return true;
@@ -301,14 +294,14 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
     Success check_result = true;
 
     if (Keyset::max_number_of_dns_keys < _dns_keys_add.size()) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::dnskey_limit);
+        _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_dnskey, Reason::dnskey_limit));
         check_result = false;
     }
 
     const DnsKeys current_dns_keys = get_dns_keys(_keyset_data.dns_keys);
 
     if (current_dns_keys.size() < _dns_keys_rem.size()) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::no_dnskey_dsrecord);
+        _policy_errors.add_extended_error(EppExtendedError::of_scalar_parameter(Param::keyset_dnskey, Reason::no_dnskey_dsrecord));
         check_result = false;
     }
 
@@ -326,19 +319,19 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
     {
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(*dns_key_ptr);
         if (dns_key_index_ptr != unique_dns_keys.end()) {//a duplicate dns_key
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::duplicated_dnskey);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_add, idx, Reason::duplicated_dnskey));
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_exist,
-                       dns_key_index_ptr->second, idx, _param_errors);
+                       dns_key_index_ptr->second, idx, _policy_errors);
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_bad_flags,
-                       dns_key_index_ptr->second, idx, _param_errors);
+                       dns_key_index_ptr->second, idx, _policy_errors);
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_bad_protocol,
-                       dns_key_index_ptr->second, idx, _param_errors);
+                       dns_key_index_ptr->second, idx, _policy_errors);
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_bad_alg,
-                       dns_key_index_ptr->second, idx, _param_errors);
+                       dns_key_index_ptr->second, idx, _policy_errors);
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_bad_key_char,
-                       dns_key_index_ptr->second, idx, _param_errors);
+                       dns_key_index_ptr->second, idx, _policy_errors);
             copy_error(Param::keyset_dnskey_add, Reason::dnskey_bad_key_len,
-                       dns_key_index_ptr->second, idx, _param_errors);
+                       dns_key_index_ptr->second, idx, _policy_errors);
             check_result = false;
             continue;
         }
@@ -346,26 +339,26 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
         //unique DNS key
         unique_dns_keys.insert(std::make_pair(*dns_key_ptr, idx));
         if (0 < current_dns_keys.count(*dns_key_ptr)) {
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_exist);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_add, idx, Reason::dnskey_exist));
             check_result = false;
             continue;
         }
 
         if (!dns_key_ptr->is_flags_correct())
         {
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_flags);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_flags));
             check_result = false;
         }
 
         if (!dns_key_ptr->is_protocol_correct())
         {
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_protocol);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_protocol));
             check_result = false;
         }
 
         if (!alg_validator.is_alg_correct(*dns_key_ptr))
         {
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_alg);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_alg));
             check_result = false;
         }
 
@@ -374,11 +367,11 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
             case Keyset::DnsKey::CheckKey::ok:
                 break;
             case Keyset::DnsKey::CheckKey::bad_char:
-                _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_key_char);
+                _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_key_char));
                 check_result = false;
                 break;
             case Keyset::DnsKey::CheckKey::bad_length:
-                _param_errors.add_vector_parameter_error(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_key_len);
+                _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_add, idx, Reason::dnskey_bad_key_len));
                 check_result = false;
                 break;
         }
@@ -391,16 +384,16 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
     {
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(*dns_key_ptr);
         if (dns_key_index_ptr != unique_dns_keys.end()) {//a duplicate DNS key
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_rem, idx, Reason::duplicated_dnskey);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_rem, idx, Reason::duplicated_dnskey));
             copy_error(Param::keyset_dnskey_rem, Reason::dnskey_notexist,
-                       dns_key_index_ptr->second, idx, _param_errors);
+                       dns_key_index_ptr->second, idx, _policy_errors);
             check_result = false;
             continue;
         }
         //unique DNS key
         unique_dns_keys.insert(std::make_pair(*dns_key_ptr, idx));
         if (current_dns_keys.count(*dns_key_ptr) == 0) {
-            _param_errors.add_vector_parameter_error(Param::keyset_dnskey_rem, idx, Reason::dnskey_notexist);
+            _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey_rem, idx, Reason::dnskey_notexist));
             check_result = false;
             continue;
         }
@@ -412,16 +405,16 @@ Success check_dns_keys(const std::vector< Keyset::DnsKey > &_dns_keys_add,
     }
 
     if ((current_dns_keys.size() + _dns_keys_add.size()) < _dns_keys_rem.size()) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::no_dnskey_dsrecord);
+        _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey, idx, Reason::no_dnskey_dsrecord));
         return false;
     }
     const unsigned short number_of_dns_keys = current_dns_keys.size() + _dns_keys_add.size() - _dns_keys_rem.size();
     if (number_of_dns_keys < Keyset::min_number_of_dns_keys) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::no_dnskey_dsrecord);
+        _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey, idx, Reason::no_dnskey_dsrecord));
         return false;
     }
     if (Keyset::max_number_of_dns_keys < number_of_dns_keys) {
-        _param_errors.add_scalar_parameter_error(Param::keyset_dnskey, Reason::dnskey_limit);
+        _policy_errors.add_extended_error(EppExtendedError::of_vector_parameter(Param::keyset_dnskey, idx, Reason::dnskey_limit));
         return false;
     }
 
@@ -445,21 +438,21 @@ std::vector< Fred::DnsKey > to_fred(const std::vector< Keyset::DnsKey > &_dns_ke
 }//namespace Epp::{anonymous}
 
 UpdateKeysetResult update_keyset(
-    Fred::OperationContext &_ctx,
-    const std::string &_keyset_handle,
-    const Optional< std::string > &_auth_info_pw,
-    const std::vector< std::string > &_tech_contacts_add,
-    const std::vector< std::string > &_tech_contacts_rem,
-    const std::vector< Keyset::DsRecord > &_ds_records_add,
-    const std::vector< Keyset::DsRecord > &_ds_records_rem,
-    const std::vector< Keyset::DnsKey > &_dns_keys_add,
-    const std::vector< Keyset::DnsKey > &_dns_keys_rem,
-    unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id)
+        Fred::OperationContext& _ctx,
+        const std::string& _keyset_handle,
+        const Optional<std::string>& _auth_info_pw,
+        const std::vector<std::string>& _tech_contacts_add,
+        const std::vector<std::string>& _tech_contacts_rem,
+        const std::vector<Keyset::DsRecord>& _ds_records_add,
+        const std::vector<Keyset::DsRecord>& _ds_records_rem,
+        const std::vector<Keyset::DnsKey>& _dns_keys_add,
+        const std::vector<Keyset::DnsKey>& _dns_keys_rem,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id)
 {
     static const unsigned long long invalid_registrar_id = 0;
     if (_registrar_id == invalid_registrar_id) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     UpdateKeysetResult result;
@@ -469,79 +462,101 @@ UpdateKeysetResult update_keyset(
                                                                      _registrar_id,
                                                                      _ctx,
                                                                      callers_registrar_handle);
-        ParameterErrors param_errors;
 
-        if (!check_tech_contacts(_tech_contacts_add, _tech_contacts_rem, keyset_data, _ctx, param_errors)) {
+        EppResultFailure existing_objects   = EppResultFailure(EppResultCode::object_exists);
+        EppResultFailure missing_parameters = EppResultFailure(EppResultCode::required_parameter_missing);
+        EppResultFailure policy_errors      = EppResultFailure(EppResultCode::parameter_value_policy_error);
+        EppResultFailure syntax_errors      = EppResultFailure(EppResultCode::parameter_value_syntax_error);
+
+        if (!check_tech_contacts(_tech_contacts_add, _tech_contacts_rem, keyset_data, _ctx, policy_errors)) {
             _ctx.get_log().info("check_tech_contacts failure");
         }
 
         if (!check_ds_records< Keyset::min_number_of_ds_records,
                                Keyset::max_number_of_ds_records >(_ds_records_add, _ds_records_rem,
-                                                                  keyset_data, _ctx, param_errors))
+                                                                  keyset_data, _ctx, policy_errors))
         {
             _ctx.get_log().info("check_ds_records failure");
         }
 
-        if (!check_dns_keys(_dns_keys_add, _dns_keys_rem, keyset_data, _ctx, param_errors)) {
+        if (!check_dns_keys(_dns_keys_add, _dns_keys_rem, keyset_data, _ctx, policy_errors)) {
             _ctx.get_log().info("check_dns_keys failure");
         }
 
-        if (!param_errors.is_empty()) {
+        if (!policy_errors.empty()) {
             std::set<Error> errors;
 
-            if (param_errors.has_scalar_parameter_error(Param::keyset_dsrecord, Reason::dsrecord_limit)  ||
-                param_errors.has_scalar_parameter_error(Param::keyset_tech,     Reason::techadmin_limit) ||
-                param_errors.has_scalar_parameter_error(Param::keyset_dnskey,   Reason::dnskey_limit))
+            if (Epp::has_extended_error_with_param_reason(policy_errors, Param::keyset_dsrecord, Reason::dsrecord_limit)  ||
+                Epp::has_extended_error_with_param_reason(policy_errors, Param::keyset_tech,     Reason::techadmin_limit) ||
+                Epp::has_extended_error_with_param_reason(policy_errors, Param::keyset_dnskey,   Reason::dnskey_limit))
             {
-                throw ParameterValuePolicyError();
+                throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
             }
 
-            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_add,   Reason::technical_contact_not_registered, errors);
-            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_add,   Reason::duplicated_contact, errors);
-            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_add,   Reason::technical_contact_already_assigned, errors);
-            if (!errors.empty()) {
-                throw ParameterValuePolicyError().add(errors);
-            }
+            {
+                EppResultFailure policy_errors_to_throw = EppResultFailure(EppResultCode::parameter_value_policy_error);
 
-            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_rem,   Reason::technical_contact_not_registered, errors);
-            insert_vector_parameter_error_if_presents(param_errors, Param::keyset_tech_rem,   Reason::duplicated_contact, errors);
-            if (!errors.empty()) {
-                throw ParameterValuePolicyError().add(errors);
-            }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_tech, Reason::technical_contact_not_registered));
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_tech, Reason::duplicated_contact));
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_tech, Reason::technical_contact_already_assigned));
+                if (!policy_errors_to_throw.empty())
+                {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
 
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::duplicated_dnskey, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_flags, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_protocol, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_alg, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_key_char, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_key_len, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_add, Reason::dnskey_exist, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_rem, Reason::duplicated_dnskey, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_vector_parameter_error_if_presents(param_errors, Param::keyset_dnskey_rem, Reason::dnskey_notexist, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_tech_rem, Reason::technical_contact_not_registered));
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_tech_rem, Reason::duplicated_contact));
+                if (!policy_errors_to_throw.empty())
+                {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
 
-            if (insert_scalar_parameter_error_if_presents(param_errors, Param::keyset_dnskey,   Reason::no_dnskey_dsrecord, errors)) {
-                throw ParameterValuePolicyError().add(errors);
-            }
-            if (insert_scalar_parameter_error_if_presents(param_errors, Param::keyset_tech_rem, Reason::can_not_remove_tech, errors)) {
-                throw ParameterValuePolicyError().add(errors);
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_add, Reason::duplicated_dnskey));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_flags));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_protocol));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_alg));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_key_char));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_add, Reason::dnskey_bad_key_len));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_add, Reason::dnskey_exist));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_rem, Reason::duplicated_dnskey));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey_rem, Reason::dnskey_notexist));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_dnskey, Reason::no_dnskey_dsrecord));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
+                policy_errors_to_throw.add_extended_errors(Epp::extended_errors_with_param_reason(policy_errors, Param::keyset_tech_rem, Reason::can_not_remove_tech));
+                if (!policy_errors_to_throw.empty()) {
+                    throw EppResponseFailure(policy_errors_to_throw);
+                }
             }
         }
 
@@ -564,8 +579,11 @@ UpdateKeysetResult update_keyset(
             const Fred::InfoKeysetData keyset_data =
                 Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx).info_keyset_data;
             if (keyset_data.tech_contacts.size() < Keyset::min_number_of_tech_contacts) {
-                throw ParameterErrors().add_scalar_parameter_error(Param::keyset_tech_rem,
-                                                                   Reason::can_not_remove_tech);
+                throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
+                                                 .add_extended_error(
+                                                         EppExtendedError::of_scalar_parameter(
+                                                                 Param::keyset_tech_rem,
+                                                                 Reason::can_not_remove_tech)));
             }
         }
         return result;

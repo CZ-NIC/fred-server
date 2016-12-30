@@ -1,21 +1,23 @@
 #include "src/epp/keyset/transfer_keyset.h"
 
 #include "src/epp/error.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/util.h"
-
+#include "src/fredlib/exception.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/transfer_keyset.h"
-#include "src/fredlib/exception.h"
-#include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/object/object_state.h"
+#include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/poll/message_types.h"
 #include "src/fredlib/poll/create_epp_action_poll_message_impl.h"
+#include "src/fredlib/poll/message_types.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
 
@@ -23,15 +25,15 @@ namespace Epp {
 namespace Keyset {
 
 unsigned long long transfer_keyset(
-    Fred::OperationContext &_ctx,
-    const std::string &_keyset_handle,
-    const std::string &_authinfopw,
-    unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id)
+        Fred::OperationContext& _ctx,
+        const std::string& _keyset_handle,
+        const std::string& _authinfopw,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id)
 {
     static const unsigned long long invalid_registrar_id = 0;
     if (_registrar_id == invalid_registrar_id) {
-        throw AuthErrorServerClosingConnection();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
     try {
@@ -47,7 +49,7 @@ unsigned long long transfer_keyset(
                 .info_registrar_data.handle;
 
         if (keyset_data.sponsoring_registrar_handle == session_registrar_handle) {
-            throw ObjectNotEligibleForTransfer();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
         }
 
         // do it before any object state related checks
@@ -64,11 +66,11 @@ unsigned long long transfer_keyset(
         if ((keyset_states.find(Fred::Object_State::server_transfer_prohibited) != keyset_states.end()) ||
             (keyset_states.find(Fred::Object_State::delete_candidate) != keyset_states.end()))
         {
-            throw ObjectStatusProhibitsOperation();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 
         if (keyset_data.authinfopw != _authinfopw) {
-            throw AuthorizationInformationError();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
         }
 
         const unsigned long long post_transfer_history_id =
@@ -88,18 +90,18 @@ unsigned long long transfer_keyset(
     }
     catch (const Fred::InfoKeysetByHandle::Exception &e) {
         if (e.is_set_unknown_handle()) {
-            throw NonexistentHandle();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
         throw;
     }
     catch (const Fred::UnknownKeysetId&) {
-        throw NonexistentHandle();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
     catch (const Fred::IncorrectAuthInfoPw&) {
-        throw AuthorizationInformationError();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
     catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
-        throw ObjectNotEligibleForTransfer();
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 }
 

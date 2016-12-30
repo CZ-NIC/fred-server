@@ -38,11 +38,11 @@ namespace Keyset {
  * @throws AutorError in case invalid _authinfopw is given
  */
 unsigned long long transfer_keyset(
-    Fred::OperationContext &_ctx,
-    const std::string &_keyset_handle,
-    const std::string &_authinfopw,
-    unsigned long long _registrar_id,
-    const Optional< unsigned long long > &_logd_request_id);
+        Fred::OperationContext& _ctx,
+        const std::string& _keyset_handle,
+        const std::string& _authinfopw,
+        unsigned long long _registrar_id,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Keyset
 } // namespace Epp
