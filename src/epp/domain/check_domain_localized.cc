@@ -25,7 +25,6 @@
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/response.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/fredlib/exception.h"
 #include "src/fredlib/opcontext.h"
@@ -64,7 +63,7 @@ CheckDomainLocalizedResponse check_domain_localized(
         const LocalizedSuccessResponse localized_success_response =
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang);
 
         const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> > localized_check_results =

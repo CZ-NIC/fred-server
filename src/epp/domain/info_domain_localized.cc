@@ -26,7 +26,6 @@
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/object_states_localized.h"
-#include "src/epp/impl/response.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/object/object_state.h"
@@ -87,7 +86,7 @@ InfoDomainLocalizedResponse info_domain_localized(
         return InfoDomainLocalizedResponse(
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang),
                 info_domain_localized_output_data);
 

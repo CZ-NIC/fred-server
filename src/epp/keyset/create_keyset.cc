@@ -297,8 +297,6 @@ CreateKeysetResult create_keyset(
                 }
             }
 
-            //throw create_localized_fail_response(exception_localization_ctx, Response::failed, param_errors.get_set_of_error(), _lang);
-
             // existing_objects, missing_parameters, syntax_errors were already thrown
             // but we played with policy_errors; if we missed some policy error, throw policy_errors now
             throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed)

@@ -11,7 +11,6 @@
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/parameter_errors.h"
-#include "src/epp/impl/response.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -64,7 +63,7 @@ LocalizedSuccessResponse update_keyset_localized(
         const LocalizedSuccessResponse localized_result =
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang);
 
         ctx.commit_transaction();

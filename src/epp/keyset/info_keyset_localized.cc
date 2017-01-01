@@ -63,7 +63,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
         return InfoKeysetLocalizedResponse(
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang),
                 InfoKeysetLocalizedOutputData(
                         info_keyset_data.handle,

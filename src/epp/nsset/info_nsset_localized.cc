@@ -96,7 +96,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
         return InfoNssetLocalizedResponse(
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang),
                 InfoNssetLocalizedOutputData(
                         info_nsset_data.handle,

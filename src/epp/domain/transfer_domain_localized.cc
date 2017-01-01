@@ -8,7 +8,6 @@
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/response.h"
 #include "src/epp/impl/util.h"
 #include "src/fredlib/poll/create_transfer_domain_poll_message.h"
 #include "util/log/context.h"
@@ -53,7 +52,7 @@ LocalizedSuccessResponse transfer_domain_localized(
         const LocalizedSuccessResponse result =
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang);
 
         Fred::Poll::CreateTransferDomainPollMessage(post_transfer_history_id).exec(ctx);

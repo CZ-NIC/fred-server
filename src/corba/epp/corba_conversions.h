@@ -110,8 +110,6 @@ namespace Corba {
                                            const std::string& _server_transaction_handle,
                                            ccReg::Response& _dst);
 
-    ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle);
-
     ccReg::EPP::EppError wrap_epp_response_failure_localized(const Epp::EppResponseFailureLocalized& _epp_response_failure, const std::string& _server_transaction_handle);
 
     void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData& src, ccReg::Contact& dst);

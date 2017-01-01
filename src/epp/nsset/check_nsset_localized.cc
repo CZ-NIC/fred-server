@@ -24,7 +24,6 @@
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/response.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
@@ -67,7 +66,7 @@ CheckNssetLocalizedResponse check_nsset_localized(
         const LocalizedSuccessResponse localized_success_response =
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang);
 
         const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > localized_check_nsset_results =

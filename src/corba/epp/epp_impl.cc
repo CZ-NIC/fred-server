@@ -107,7 +107,6 @@
 #include "src/epp/domain/renew_domain_localized.h"
 #include "src/epp/domain/update_domain_localized.h"
 
-#include "src/epp/impl/response.h"
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/param.h"
 #include "src/epp/impl/session_lang.h"

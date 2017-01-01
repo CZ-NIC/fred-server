@@ -67,7 +67,7 @@ LocalizedSuccessResponse update_contact_localized(
         const LocalizedSuccessResponse localized_result =
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang);
 
         ctx.commit_transaction();

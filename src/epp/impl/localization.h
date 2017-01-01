@@ -23,7 +23,6 @@
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/object_states_localized.h"
-#include "src/epp/impl/response.h"
 #include "src/epp/impl/session_lang.h"
 
 #include "src/fredlib/opcontext.h"
@@ -34,19 +33,7 @@ namespace Epp {
 
 LocalizedSuccessResponse create_localized_success_response(
         Fred::OperationContext& _ctx,
-        const Response::Enum& _response,
-        SessionLang::Enum _lang);
-
-LocalizedFailResponse create_localized_fail_response(
-        Fred::OperationContext& _ctx,
-        const Response::Enum& _response,
-        const std::set<Error>& _errors,
-        SessionLang::Enum _lang);
-
-LocalizedFailResponse create_localized_fail_response(
-        Fred::OperationContext& _ctx,
-        const Response::Enum& _response,
-        const Error& _error,
+        const EppResultCode::Success& _response,
         SessionLang::Enum _lang);
 
 std::map<std::string, std::string> localize_object_states_deprecated(

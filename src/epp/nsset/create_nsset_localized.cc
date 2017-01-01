@@ -26,7 +26,6 @@
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/response.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -67,7 +66,7 @@ CreateNssetLocalizedResponse create_nsset_localized(
         const CreateNssetLocalizedResponse localized_result(
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang),
                 impl_result.crdate);
 

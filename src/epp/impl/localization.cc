@@ -3,7 +3,7 @@
 #include "src/epp/error.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/reason.h"
-#include "src/epp/impl/response.h"
+#include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/impl/util.h"
@@ -77,7 +77,7 @@ namespace {
 
 std::string get_response_description(
     Fred::OperationContext& _ctx,
-    Response::Enum _response,
+    EppResultCode::Success _epp_result_code,
     SessionLang::Enum _lang)
 {
     const std::string column_name = get_response_description_localized_column_name(_lang);
@@ -86,7 +86,7 @@ std::string get_response_description(
         "SELECT " + column_name + " "
         "FROM enum_error "
         "WHERE id=$1::integer",
-        Database::query_param_list(to_description_db_id(_response)));
+        Database::query_param_list(EppResultCode::to_description_db_id(_epp_result_code)));
 
     if (res.size() < 1) {
         throw MissingLocalizedDescription();
@@ -119,37 +119,37 @@ std::set< LocalizedError > localize_errors(
 
 LocalizedFailResponse create_localized_fail_response(
     Fred::OperationContext& _ctx,
-    const Response::Enum& _response,
+    const EppResultCode::Success& _epp_result_code,
     const std::set<Error>& _errors,
     const SessionLang::Enum _lang
 ) {
     return LocalizedFailResponse(
-        _response,
-        get_response_description(_ctx, _response, _lang),
+        _epp_result_code,
+        get_response_description(_ctx, _epp_result_code, _lang),
         localize_errors(_ctx, _errors, _lang)
     );
 }
 
 LocalizedFailResponse create_localized_fail_response(
     Fred::OperationContext& _ctx,
-    const Response::Enum& _response,
+    const EppResultCode::Success& _epp_result_code,
     const Error& _error,
     const SessionLang::Enum _lang
 ) {
     std::set<Error> errors;
     errors.insert(_error);
 
-    return create_localized_fail_response(_ctx, _response, errors, _lang);
+    return create_localized_fail_response(_ctx, _epp_result_code, errors, _lang);
 }
 
 LocalizedSuccessResponse create_localized_success_response(
     Fred::OperationContext& _ctx,
-    const Response::Enum& _response,
+    const EppResultCode::Success& _epp_result_code,
     const SessionLang::Enum _lang
 ) {
     return LocalizedSuccessResponse(
-        _response,
-        get_response_description(_ctx, Response::ok, _lang)
+        _epp_result_code,
+        get_response_description(_ctx, EppResultCode::command_completed_successfully, _lang)
     );
 }
 

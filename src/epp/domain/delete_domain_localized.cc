@@ -46,7 +46,7 @@ LocalizedSuccessResponse delete_domain_localized(
         const LocalizedSuccessResponse result =
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang);
 
         ctx.commit_transaction();

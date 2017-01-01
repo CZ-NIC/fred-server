@@ -11,7 +11,6 @@
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/response.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "util/decimal/decimal.h"
@@ -56,7 +55,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
         const RenewDomainLocalizedResponse localized_result(
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang),
                 renew_domain_result.exdate);
 

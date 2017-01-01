@@ -172,7 +172,7 @@ InfoContactLocalizedResponse info_contact_localized(
         return InfoContactLocalizedResponse(
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang),
                 output_data);
     }

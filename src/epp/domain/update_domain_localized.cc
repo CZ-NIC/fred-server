@@ -8,7 +8,6 @@
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/response.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/impl/util.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
@@ -75,7 +74,7 @@ LocalizedSuccessResponse update_domain_localized(
         const LocalizedSuccessResponse localized_success_response =
                 create_localized_success_response(
                         ctx,
-                        Response::ok,
+                        EppResultCode::command_completed_successfully,
                         _lang);
 
         ctx.commit_transaction();

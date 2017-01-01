@@ -207,32 +207,9 @@ namespace Corba {
                                            const std::string& _server_transaction_handle,
                                            ccReg::Response& _dst)
     {
-        CorbaConversion::wrap_int(Epp::to_description_db_id(_src.response), _dst.code);
+        CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(_src.epp_result_code), _dst.code);
         _dst.svTRID = _server_transaction_handle.c_str();
         _dst.msg = _src.localized_response_description.c_str();
-    }
-
-    ccReg::EPP::EppError wrap_error(const Epp::LocalizedFailResponse& _input, const std::string& _server_transaction_handle) {
-        ccReg::EPP::EppError result;
-
-        CorbaConversion::wrap_int(Epp::to_description_db_id(_input.response), result.errCode);
-        result.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
-        result.errMsg = wrap_string_to_corba_string(_input.localized_response_description);
-
-        const std::set<Epp::Error>::size_type size = _input.localized_errors.size();
-        result.errorList.length(size);
-
-        int i = 0;
-        for(std::set<Epp::LocalizedError>::const_iterator it = _input.localized_errors.begin();
-            it != _input.localized_errors.end();
-            ++it, ++i
-        ) {
-            result.errorList[i].code = wrap_param_error(it->param);
-            CorbaConversion::wrap_int(it->position, result.errorList[i].position);
-            result.errorList[i].reason = wrap_string_to_corba_string(it->localized_reason_description);
-        }
-
-        return result;
     }
 
     ccReg::EPP::EppError wrap_epp_response_failure_localized(
