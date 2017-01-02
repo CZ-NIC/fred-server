@@ -32,9 +32,9 @@
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/zone/zone.h"
@@ -85,13 +85,18 @@ unsigned long long update_nsset(
 
     const Fred::InfoNssetData nsset_data_before_update = translate_info_nsset_exception::exec(_ctx, _data.handle);
 
-    const Fred::InfoRegistrarData logged_in_registrar = Fred::InfoRegistrarById(_registrar_id)
-            .set_lock(/* TODO lock registrar for share */ )
-            .exec(_ctx)
-            .info_registrar_data;
+    const Fred::InfoRegistrarData logged_in_registrar =
+            Fred::InfoRegistrarById(_registrar_id)
+                    .set_lock(/* TODO lock registrar for share */)
+                    .exec(_ctx)
+                    .info_registrar_data;
 
-    if (nsset_data_before_update.sponsoring_registrar_handle != logged_in_registrar.handle
-        && !logged_in_registrar.system.get_value_or_default()) {
+    const bool is_sponsoring_registrar = (nsset_data_before_update.sponsoring_registrar_handle ==
+                                          logged_in_registrar.handle);
+    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
+    const bool operation_is_permitted = (is_sponsoring_registrar || is_system_registrar);
+
+    if (!operation_is_permitted) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
                                          .add_extended_error(
                                                  EppExtendedError::of_scalar_parameter(
@@ -103,12 +108,14 @@ unsigned long long update_nsset(
     Fred::LockObjectStateRequestLock(nsset_data_before_update.id).exec(_ctx);
     Fred::PerformObjectStateRequest(nsset_data_before_update.id).exec(_ctx);
 
-    if (!logged_in_registrar.system.get_value_or_default()
-            && (Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
-                ||
-                Fred::ObjectHasState(nsset_data_before_update.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
-    ) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+    if (!is_system_registrar)
+    {
+        const Fred::ObjectStatesInfo nsset_states_before_update(Fred::GetObjectStates(nsset_data_before_update.id).exec(_ctx));
+        if (nsset_states_before_update.presents(Fred::Object_State::server_update_prohibited) ||
+            nsset_states_before_update.presents(Fred::Object_State::delete_candidate))
+        {
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+        }
     }
 
     //lists check

@@ -409,13 +409,17 @@ unsigned long long update_contact(
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
-    const Fred::InfoRegistrarData callers_registrar =
-        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
     const Fred::InfoContactData contact_data_before_update = info_contact_by_handle(_contact_handle, _ctx);
 
+    const Fred::InfoRegistrarData logged_in_registrar =
+            Fred::InfoRegistrarById(_registrar_id)
+                    .set_lock()
+                    .exec(_ctx)
+                    .info_registrar_data;
+
     const bool is_sponsoring_registrar = (contact_data_before_update.sponsoring_registrar_handle ==
-                                          callers_registrar.handle);
-    const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+                                          logged_in_registrar.handle);
+    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
     const bool operation_is_permitted = (is_sponsoring_registrar || is_system_registrar);
 
     if (!operation_is_permitted) {
@@ -430,10 +434,11 @@ unsigned long long update_contact(
     Fred::LockObjectStateRequestLock(contact_data_before_update.id).exec(_ctx);
     Fred::PerformObjectStateRequest(contact_data_before_update.id).exec(_ctx);
 
-    if (!is_system_registrar) {
-        const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_update.id).exec(_ctx));
-        if (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
-            contact_states.presents(Fred::Object_State::delete_candidate))
+    if (!is_system_registrar)
+    {
+        const Fred::ObjectStatesInfo contact_states_before_update(Fred::GetObjectStates(contact_data_before_update.id).exec(_ctx));
+        if (contact_states_before_update.presents(Fred::Object_State::server_update_prohibited) ||
+            contact_states_before_update.presents(Fred::Object_State::delete_candidate))
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
@@ -452,7 +457,7 @@ unsigned long long update_contact(
 
     // update itself
     {
-        Fred::UpdateContactByHandle update(_contact_handle, callers_registrar.handle);
+        Fred::UpdateContactByHandle update(_contact_handle, logged_in_registrar.handle);
 
         set_ContactUpdate_member(_change.name,         update, &Fred::UpdateContactByHandle::set_name);
         set_ContactUpdate_member(_change.organization, update, &Fred::UpdateContactByHandle::set_organization);

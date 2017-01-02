@@ -28,9 +28,9 @@
 #include "src/fredlib/nsset/delete_nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -53,21 +53,25 @@ unsigned long long delete_nsset(
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
-    const Fred::InfoNssetData nsset_data_before_delete = Fred::InfoNssetByHandle(_handle).set_lock().exec(_ctx).info_nsset_data;
+    const Fred::InfoNssetData nsset_data_before_delete =
+            Fred::InfoNssetByHandle(_handle)
+                    .set_lock()
+                    .exec(_ctx)
+                    .info_nsset_data;
 
-    const Fred::InfoRegistrarData sponsoring_registrar_before_update =
-        Fred::InfoRegistrarByHandle(nsset_data_before_delete.sponsoring_registrar_handle)
-            .set_lock(/* TODO az to bude mozne, staci lock registrar for share */ )
-            .exec(_ctx)
-            .info_registrar_data;
+    const Fred::InfoRegistrarData logged_in_registrar =
+            Fred::InfoRegistrarById(_registrar_id)
+                    .set_lock(/* TODO lock registrar for share */)
+                    .exec(_ctx)
+                    .info_registrar_data;
 
-    const Fred::InfoRegistrarData logged_in_registrar = Fred::InfoRegistrarById(_registrar_id)
-                .set_lock(/* TODO lock registrar for share */ )
-                .exec(_ctx)
-                .info_registrar_data;
+    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
+    const bool is_sponsoring_registrar = (nsset_data_before_delete.sponsoring_registrar_handle ==
+                                          logged_in_registrar.handle);
 
-    if( sponsoring_registrar_before_update.id != _registrar_id
-        && !logged_in_registrar.system.get_value_or_default() ) {
+    const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
+
+    if (!is_operation_permitted) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
                                          .add_extended_error(
                                                  EppExtendedError::of_scalar_parameter(
@@ -79,17 +83,17 @@ unsigned long long delete_nsset(
     Fred::LockObjectStateRequestLock(nsset_data_before_delete.id).exec(_ctx);
     Fred::PerformObjectStateRequest(nsset_data_before_delete.id).exec(_ctx);
 
-    if(!logged_in_registrar.system.get_value_or_default()
-            && ( Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(_ctx)
-        ||
-        Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(_ctx)
-        ||
-        Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx)
-    )) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+    const Fred::ObjectStatesInfo nsset_states_before_delete(Fred::GetObjectStates(nsset_data_before_delete.id).exec(_ctx));
+    if (!is_system_registrar) {
+        if (nsset_states_before_delete.presents(Fred::Object_State::server_update_prohibited) ||
+            nsset_states_before_delete.presents(Fred::Object_State::server_delete_prohibited) ||
+            nsset_states_before_delete.presents(Fred::Object_State::delete_candidate))
+        {
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+        }
     }
 
-    if(Fred::ObjectHasState(nsset_data_before_delete.id, Fred::ObjectState::LINKED).exec(_ctx))
+    if (nsset_states_before_delete.presents(Fred::Object_State::linked))
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_association_prohibits_operation));
     }

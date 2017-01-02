@@ -12,6 +12,7 @@
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/transfer_keyset.h"
 #include "src/fredlib/object/object_state.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
@@ -37,7 +38,7 @@ unsigned long long transfer_keyset(
     }
 
     try {
-        const Fred::InfoKeysetData keyset_data =
+        const Fred::InfoKeysetData keyset_data_before_transfer =
             Fred::InfoKeysetByHandle(_keyset_handle)
                 .set_lock()
                 .exec(_ctx).info_keyset_data;
@@ -48,34 +49,29 @@ unsigned long long transfer_keyset(
                 .exec(_ctx)
                 .info_registrar_data.handle;
 
-        if (keyset_data.sponsoring_registrar_handle == session_registrar_handle) {
+        if (keyset_data_before_transfer.sponsoring_registrar_handle == session_registrar_handle) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
         }
 
         // do it before any object state related checks
-        Fred::LockObjectStateRequestLock(keyset_data.id).exec(_ctx);
-        Fred::PerformObjectStateRequest(keyset_data.id).exec(_ctx);
+        Fred::LockObjectStateRequestLock(keyset_data_before_transfer.id).exec(_ctx);
+        Fred::PerformObjectStateRequest(keyset_data_before_transfer.id).exec(_ctx);
 
-        typedef std::vector< Fred::ObjectStateData > StatesData;
-        StatesData states_data = Fred::GetObjectStates(keyset_data.id).exec(_ctx);
-        typedef std::set< Fred::Object_State::Enum > ObjectStates;
-        ObjectStates keyset_states;
-        for (StatesData::const_iterator data_ptr = states_data.begin(); data_ptr != states_data.end(); ++data_ptr) {
-            keyset_states.insert(Conversion::Enums::from_db_handle< Fred::Object_State >(data_ptr->state_name));
-        }
-        if ((keyset_states.find(Fred::Object_State::server_transfer_prohibited) != keyset_states.end()) ||
-            (keyset_states.find(Fred::Object_State::delete_candidate) != keyset_states.end()))
+        const Fred::ObjectStatesInfo keyset_states_before_transfer(Fred::GetObjectStates(keyset_data_before_transfer.id).exec(_ctx));
+
+        if (keyset_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||
+            keyset_states_before_transfer.presents(Fred::Object_State::delete_candidate))
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 
-        if (keyset_data.authinfopw != _authinfopw) {
+        if (keyset_data_before_transfer.authinfopw != _authinfopw) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
         }
 
         const unsigned long long post_transfer_history_id =
             Fred::TransferKeyset(
-                    keyset_data.id,
+                    keyset_data_before_transfer.id,
                     session_registrar_handle,
                     _authinfopw,
                     _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable< unsigned long long >())

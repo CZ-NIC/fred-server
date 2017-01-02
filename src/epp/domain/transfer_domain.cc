@@ -17,7 +17,6 @@
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"

@@ -28,7 +28,7 @@
 #include "src/epp/domain/renew_domain_localized.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_code.h"
-#include "src/fredlib/object_state/object_state_name.h"
+#include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -602,7 +602,7 @@ BOOST_FIXTURE_TEST_CASE(renew_status_prohibited, HasDomainData)
         "  RETURNING object_id",
         Database::query_param_list
             ((*domain2_renew_input_data).fqdn)
-            (Fred::ObjectState::SERVER_RENEW_PROHIBITED));
+            (Conversion::Enums::to_db_handle(Fred::Object_State::server_renew_prohibited)));
     Fred::PerformObjectStateRequest(static_cast<unsigned long long>(res_id[0][0])).exec(ctx);
 
     BOOST_CHECK_EXCEPTION(
@@ -632,7 +632,7 @@ BOOST_FIXTURE_TEST_CASE(renew_status_delete, HasDomainData)
         "  RETURNING object_id",
         Database::query_param_list
             ((*domain2_renew_input_data).fqdn)
-            (Fred::ObjectState::DELETE_CANDIDATE));
+            (Conversion::Enums::to_db_handle(Fred::Object_State::delete_candidate)));
     Fred::PerformObjectStateRequest(static_cast<unsigned long long>(res_id[0][0])).exec(ctx);
 
     BOOST_CHECK_EXCEPTION(

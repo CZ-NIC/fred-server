@@ -31,13 +31,22 @@ unsigned long long delete_contact(
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
-    const Fred::InfoRegistrarData callers_registrar =
-        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
-    const Fred::InfoContactData contact_data_before_delete = Fred::InfoContactByHandle(_handle).set_lock().exec(_ctx).info_contact_data;
+    const Fred::InfoContactData contact_data_before_delete =
+            Fred::InfoContactByHandle(_handle)
+                    .set_lock()
+                    .exec(_ctx)
+                    .info_contact_data;
 
+    const Fred::InfoRegistrarData logged_in_registrar =
+            Fred::InfoRegistrarById(_registrar_id)
+                    .set_lock()
+                    .exec(_ctx)
+                    .info_registrar_data;
+
+    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
     const bool is_sponsoring_registrar = (contact_data_before_delete.sponsoring_registrar_handle ==
-                                          callers_registrar.handle);
-    const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+                                          logged_in_registrar.handle);
+
     const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
 
     if (!is_operation_permitted) {
@@ -52,15 +61,16 @@ unsigned long long delete_contact(
     Fred::LockObjectStateRequestLock(contact_data_before_delete.id).exec(_ctx);
     Fred::PerformObjectStateRequest(contact_data_before_delete.id).exec(_ctx);
 
-    const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact_data_before_delete.id).exec(_ctx));
-    if (contact_states.presents(Fred::Object_State::linked))
+    const Fred::ObjectStatesInfo contact_states_before_delete(Fred::GetObjectStates(contact_data_before_delete.id).exec(_ctx));
+    if (contact_states_before_delete.presents(Fred::Object_State::linked))
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_association_prohibits_operation));
     }
+
     if (!is_system_registrar) {
-        if (contact_states.presents(Fred::Object_State::server_update_prohibited) ||
-            contact_states.presents(Fred::Object_State::server_delete_prohibited) ||
-            contact_states.presents(Fred::Object_State::delete_candidate))
+        if (contact_states_before_delete.presents(Fred::Object_State::server_update_prohibited) ||
+            contact_states_before_delete.presents(Fred::Object_State::server_delete_prohibited) ||
+            contact_states_before_delete.presents(Fred::Object_State::delete_candidate))
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }

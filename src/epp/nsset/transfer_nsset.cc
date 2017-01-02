@@ -32,10 +32,10 @@
 #include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/transfer_nsset.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/poll/create_transfer_nsset_poll_message.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -61,29 +61,30 @@ unsigned long long transfer_nsset(
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
-    const Fred::InfoNssetData nsset_data = Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
+    const Fred::InfoNssetData nsset_data_before_transfer = Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
 
     //set of authinfopw
     std::set<std::string> nsset_tech_c_authinfo;
-    nsset_tech_c_authinfo.insert(nsset_data.authinfopw);
-    BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_c,nsset_data.tech_contacts)
+    nsset_tech_c_authinfo.insert(nsset_data_before_transfer.authinfopw);
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_c, nsset_data_before_transfer.tech_contacts)
     {
         nsset_tech_c_authinfo.insert(Fred::InfoContactById(tech_c.id).exec(_ctx).info_contact_data.authinfopw);
     }
 
     const std::string session_registrar_handle = Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data.handle;
 
-    if(nsset_data.sponsoring_registrar_handle == session_registrar_handle) {
+    if(nsset_data_before_transfer.sponsoring_registrar_handle == session_registrar_handle) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 
     // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(nsset_data.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(nsset_data.id).exec(_ctx);
+    Fred::LockObjectStateRequestLock(nsset_data_before_transfer.id).exec(_ctx);
+    Fred::PerformObjectStateRequest(nsset_data_before_transfer.id).exec(_ctx);
 
-    // FIXME use Fred::Object_State instead
-    if(Fred::ObjectHasState(nsset_data.id, Fred::ObjectState::SERVER_TRANSFER_PROHIBITED).exec(_ctx) ||
-        Fred::ObjectHasState(nsset_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
+    const Fred::ObjectStatesInfo nsset_states_before_transfer(Fred::GetObjectStates(nsset_data_before_transfer.id).exec(_ctx));
+
+    if (nsset_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||
+        nsset_states_before_transfer.presents(Fred::Object_State::delete_candidate))
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
     }
@@ -95,7 +96,7 @@ unsigned long long transfer_nsset(
     try {
         unsigned long long post_transfer_history_id =
             Fred::TransferNsset(
-                    nsset_data.id,
+                    nsset_data_before_transfer.id,
                     session_registrar_handle,
                     _authinfopw,
                     _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>())
