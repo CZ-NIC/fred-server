@@ -25,30 +25,6 @@
 
 namespace Epp {
 
-std::string get_epp_result_description_localized(
-        Fred::OperationContext& _ctx,
-        EppResultCode::Failure _epp_result_code,
-        SessionLang::Enum _session_lang)
-{
-    const std::string column_name = get_response_description_localized_column_name(_session_lang);
-
-    const Database::Result res = _ctx.get_conn().exec_params(
-        "SELECT " + column_name + " "
-        "FROM enum_error "
-        "WHERE id=$1::integer",
-        Database::query_param_list(EppResultCode::to_description_db_id(_epp_result_code)));
-
-    if (res.size() < 1) {
-        throw MissingLocalizedDescription();
-    }
-
-    if (1 < res.size()) {
-        throw std::runtime_error("0 or 1 row expected");
-    }
-
-    return static_cast< std::string >(res[0][0]);
-}
-
 std::string get_reason_description_localized(
     Fred::OperationContext& _ctx,
     Reason::Enum _reason,
@@ -73,75 +49,6 @@ std::string get_reason_description_localized(
     return static_cast< std::string >(res[0][0]);
 }
 
-namespace {
-
-std::string get_response_description(
-    Fred::OperationContext& _ctx,
-    EppResultCode::Success _epp_result_code,
-    SessionLang::Enum _lang)
-{
-    const std::string column_name = get_response_description_localized_column_name(_lang);
-
-    const Database::Result res = _ctx.get_conn().exec_params(
-        "SELECT " + column_name + " "
-        "FROM enum_error "
-        "WHERE id=$1::integer",
-        Database::query_param_list(EppResultCode::to_description_db_id(_epp_result_code)));
-
-    if (res.size() < 1) {
-        throw MissingLocalizedDescription();
-    }
-
-    if (1 < res.size()) {
-        throw std::runtime_error("0 or 1 row expected");
-    }
-
-    return static_cast< std::string >(res[0][0]);
-}
-
-std::set< LocalizedError > localize_errors(
-    Fred::OperationContext& _ctx,
-    const std::set< Error >& _errors,
-    SessionLang::Enum _lang)
-{
-    std::set< LocalizedError > result;
-
-    for (std::set< Error >::const_iterator error_ptr = _errors.begin(); error_ptr != _errors.end(); ++error_ptr)
-    {
-        const std::string reason_description = get_reason_description_localized(_ctx, error_ptr->reason, _lang);
-        result.insert(LocalizedError(error_ptr->param, error_ptr->position, reason_description));
-    }
-
-    return result;
-}
-
-}//namespace Epp::{anonymous}
-
-LocalizedFailResponse create_localized_fail_response(
-    Fred::OperationContext& _ctx,
-    const EppResultCode::Success& _epp_result_code,
-    const std::set<Error>& _errors,
-    const SessionLang::Enum _lang
-) {
-    return LocalizedFailResponse(
-        _epp_result_code,
-        get_response_description(_ctx, _epp_result_code, _lang),
-        localize_errors(_ctx, _errors, _lang)
-    );
-}
-
-LocalizedFailResponse create_localized_fail_response(
-    Fred::OperationContext& _ctx,
-    const EppResultCode::Success& _epp_result_code,
-    const Error& _error,
-    const SessionLang::Enum _lang
-) {
-    std::set<Error> errors;
-    errors.insert(_error);
-
-    return create_localized_fail_response(_ctx, _epp_result_code, errors, _lang);
-}
-
 LocalizedSuccessResponse create_localized_success_response(
     Fred::OperationContext& _ctx,
     const EppResultCode::Success& _epp_result_code,
@@ -149,7 +56,7 @@ LocalizedSuccessResponse create_localized_success_response(
 ) {
     return LocalizedSuccessResponse(
         _epp_result_code,
-        get_response_description(_ctx, EppResultCode::command_completed_successfully, _lang)
+        get_epp_result_description_localized<EppResultCode::Success>(_ctx, EppResultCode::command_completed_successfully, _lang)
     );
 }
 

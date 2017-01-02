@@ -19,7 +19,7 @@ EppResultFailureLocalized::EppResultFailureLocalized(
         const SessionLang::Enum& _session_lang)
     : epp_result_failure_(_epp_result_failure)
 {
-    epp_result_description_ = get_epp_result_description_localized(_ctx, epp_result_failure_.epp_result_code(), _session_lang);
+    epp_result_description_ = get_epp_result_description_localized<EppResultCode::Failure>(_ctx, epp_result_failure_.epp_result_code(), _session_lang);
 
     const boost::optional<std::set<EppExtendedError> >& extended_errors = _epp_result_failure.extended_errors();
     if (extended_errors) {

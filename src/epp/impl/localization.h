@@ -31,6 +31,34 @@
 
 namespace Epp {
 
+std::string get_reason_description_localized_column_name(SessionLang::Enum _lang);
+std::string get_response_description_localized_column_name(SessionLang::Enum _lang);
+
+template <typename T>
+std::string get_epp_result_description_localized(
+        Fred::OperationContext& _ctx,
+        T _epp_result_code,
+        SessionLang::Enum _session_lang)
+{
+    const std::string column_name = get_response_description_localized_column_name(_session_lang);
+
+    const Database::Result res = _ctx.get_conn().exec_params(
+            "SELECT " + column_name + " "
+            "FROM enum_error "
+            "WHERE id=$1::integer",
+            Database::query_param_list(EppResultCode::to_description_db_id(_epp_result_code)));
+
+    if (res.size() < 1) {
+        throw MissingLocalizedDescription();
+    }
+
+    if (1 < res.size()) {
+        throw std::runtime_error("0 or 1 row expected");
+    }
+
+    return static_cast<std::string>(res[0][0]);
+}
+
 LocalizedSuccessResponse create_localized_success_response(
         Fred::OperationContext& _ctx,
         const EppResultCode::Success& _response,
@@ -45,9 +73,6 @@ ObjectStatesLocalized localize_object_states(
         Fred::OperationContext& _ctx,
         const std::set<Fred::Object_State::Enum>& _states,
         SessionLang::Enum _lang);
-
-std::string get_reason_description_localized_column_name(SessionLang::Enum _lang);
-std::string get_response_description_localized_column_name(SessionLang::Enum _lang);
 
 std::string get_reason_description_localized(
         Fred::OperationContext& _ctx,
