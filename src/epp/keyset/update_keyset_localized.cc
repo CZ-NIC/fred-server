@@ -8,9 +8,7 @@
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
-#include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/parameter_errors.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>

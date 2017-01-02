@@ -20,14 +20,13 @@
  *  @file
  */
 
-#ifndef TEST_INTERFACE_EPP_UTIL_3563545411254
-#define TEST_INTERFACE_EPP_UTIL_3563545411254
+#ifndef UTIL_H_A4B759EF1350488596C500C9CC949C14
+#define UTIL_H_A4B759EF1350488596C500C9CC949C14
 
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 
 #include "src/epp/impl/exception.h"
-#include "src/epp/impl/exception_aggregate_param_errors.h"
 #include "src/epp/error.h"
 
 #include <boost/test/test_tools.hpp>
@@ -45,29 +44,6 @@ namespace Test {
     struct autorollbacking_context : virtual Fixture::instantiate_db_template {
         Fred::OperationContextCreator ctx;
     };
-
-    inline void check_correct_aggregated_exception_was_thrown(const Epp::Error& _error) {
-
-        bool correct_exception_type_thrown = false;
-
-        try {
-            throw;
-
-        } catch(const Epp::AggregatedParamErrors& e) {
-
-            correct_exception_type_thrown = true;
-
-            const std::set<Epp::Error> errors = e.get();
-
-            BOOST_CHECK(
-                errors.find(_error)
-                !=
-                errors.end()
-            );
-        }
-
-        BOOST_CHECK(correct_exception_type_thrown);
-    }
 
     class RegistrarProvider
     {
