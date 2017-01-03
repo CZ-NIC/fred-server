@@ -145,8 +145,8 @@ struct has_nsset_with_all_data_set : has_registrar {
 struct has_nsset_input_data_set : has_registrar
 {
     Epp::NssetCreateInputData nsset_input_data;
-    const unsigned nsset_min_hosts = 2;
-    const unsigned nsset_max_hosts = 10;
+    const unsigned int nsset_min_hosts = 2;
+    const unsigned int nsset_max_hosts = 10;
 
     has_nsset_input_data_set()
     : nsset_input_data(Epp::NssetCreateInputData(
@@ -200,8 +200,8 @@ struct has_nsset_input_data_set : has_registrar
 struct has_nsset_with_input_data_set : has_registrar {
     Fred::InfoNssetData nsset;
     Epp::NssetCreateInputData nsset_input_data;
-    const unsigned nsset_min_hosts = 2;
-    const unsigned nsset_max_hosts = 10;
+    const unsigned int nsset_min_hosts = 2;
+    const unsigned int nsset_max_hosts = 10;
 
     has_nsset_with_input_data_set()
     : nsset_input_data(Epp::NssetCreateInputData(
