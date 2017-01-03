@@ -41,8 +41,8 @@ BOOST_AUTO_TEST_SUITE(NssetUpdateImpl)
 
 BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     const Epp::NssetUpdateInputData data(
         nsset.handle + "*?!",
         Optional<std::string>(),
@@ -71,8 +71,8 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     const Epp::NssetUpdateInputData data(
         nsset.handle + "abc",
         Optional<std::string>(),
@@ -98,8 +98,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_registrar)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     const Epp::NssetUpdateInputData data(
         nsset.handle,
         Optional<std::string>(),
@@ -125,8 +125,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_update_prohibited)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     const Epp::NssetUpdateInputData data(
         nsset.handle,
         Optional<std::string>(),
@@ -152,8 +152,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_candidate)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     const Epp::NssetUpdateInputData data(
         nsset.handle,
         Optional<std::string>(),
@@ -180,8 +180,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_delete_candidate_request)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     const Epp::NssetUpdateInputData data(
         nsset.handle,
         Optional<std::string>(),
@@ -359,8 +359,8 @@ void check_after_update_data(const Epp::NssetUpdateInputData& update_data,
 
 BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     Epp::NssetUpdateInputData data(
             nsset.handle,
             "authInfo1234",
@@ -417,8 +417,8 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 
 BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_transfer_prohibited_request)
 {
-    const unsigned int nsset_min_hosts = 2;
-    const unsigned int nsset_max_hosts = 10;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
     Epp::NssetUpdateInputData data(
             nsset.handle,
             "authInfo1234",
