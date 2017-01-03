@@ -27,6 +27,7 @@
 
 #include <boost/mpl/assert.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/cast.hpp>
 
 namespace Epp {
 

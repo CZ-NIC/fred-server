@@ -111,7 +111,7 @@ ContactCreateResult contact_create_impl(
         const Fred::CreateContact create_contact_op(
             _contact_handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
-            _data.authinfo ? Optional<std::string>(_data.authinfo.value()) : Optional<std::string>() ,
+            _data.authinfo ? Optional<std::string>(*_data.authinfo) : Optional<std::string>() ,
             _data.name,
             _data.organization,
             place,

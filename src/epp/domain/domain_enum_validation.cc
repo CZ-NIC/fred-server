@@ -32,13 +32,13 @@ bool is_new_enum_domain_validation_expiration_date_invalid(
         {
             const boost::gregorian::date validation_continuation_begin = boost::gregorian::from_simple_string(
                 static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
-                    ("SELECT (").param_date(current_valexdate.value())
+                    ("SELECT (").param_date(*current_valexdate)
                     (" - val::bigint * ('1 day'::interval))::date ")
                     ("FROM enum_parameters WHERE name = 'enum_validation_continuation_window'")
                     )[0][0]));
 
             if(current_local_date >= validation_continuation_begin
-                && current_local_date < current_valexdate.value())
+                && current_local_date < *current_valexdate)
             {
                 validation_continuation = true;
             }
@@ -46,7 +46,7 @@ bool is_new_enum_domain_validation_expiration_date_invalid(
 
         const boost::gregorian::date max_valexdate = boost::gregorian::from_simple_string(
             static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
-            ("SELECT (").param_date(validation_continuation ? current_valexdate.value() : current_local_date)
+            ("SELECT (").param_date(validation_continuation ? *current_valexdate : current_local_date)
             (" + ").param_bigint(enum_validation_period)(" * ('1 month'::interval))::date ")
             )[0][0]));
         ;

@@ -25,6 +25,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
+#include <boost/cast.hpp>
 
 #include "src/epp/localized_response.h"
 #include "src/epp/session_lang.h"
@@ -62,7 +63,7 @@ namespace Epp {
         short get_nsset_tech_check_level() const
         {
             return input_tech_check_level
-                ? input_tech_check_level.value()
+                ? *input_tech_check_level
                 : boost::numeric_cast<short>(config_default_nsset_tech_check_level);
         }
     };
