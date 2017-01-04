@@ -55,11 +55,11 @@ NssetCreateResult nsset_create_impl(
         throw RequiredParameterMissing();
     }
 
-    if(_data.dns_hosts.size() < min_nsset_dns_hosts) {
+    if(_data.dns_hosts.size() < _data.config_nsset_min_hosts) {
         throw ParameterValuePolicyError();
     }
 
-    if(_data.dns_hosts.size() > max_nsset_dns_hosts) {
+    if(_data.dns_hosts.size() > _data.config_nsset_max_hosts) {
         throw ParameterValuePolicyError();
     }
 

@@ -70,6 +70,8 @@ std::auto_ptr<ccReg_EPP_i> create_epp_backend_object()
                 , registry_args_ptr->disable_epp_notifier
                 , registry_args_ptr->lock_epp_commands
                 , registry_args_ptr->nsset_level
+                , registry_args_ptr->nsset_min_hosts
+                , registry_args_ptr->nsset_max_hosts
                 , registry_args_ptr->docgen_path
                 , registry_args_ptr->docgen_template_path
                 , registry_args_ptr->fileclient_path

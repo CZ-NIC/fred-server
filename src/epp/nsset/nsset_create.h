@@ -44,6 +44,8 @@ namespace Epp {
         std::vector<std::string> tech_contacts;
         boost::optional<short> input_tech_check_level;
         unsigned int config_default_nsset_tech_check_level;
+        unsigned int config_nsset_min_hosts;
+        unsigned int config_nsset_max_hosts;
 
         NssetCreateInputData(
             const std::string& _handle,
@@ -51,13 +53,17 @@ namespace Epp {
             const std::vector<Epp::DNShostInput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
             const boost::optional<short>& _input_tech_check_level,
-            const unsigned int _config_default_nsset_tech_check_level)
+            const unsigned int _config_default_nsset_tech_check_level,
+            const unsigned int _config_nsset_min_hosts,
+            const unsigned int _config_nsset_max_hosts)
         : handle(_handle)
         , authinfo(_authinfo)
         , dns_hosts(_dns_hosts)
         , tech_contacts(_tech_contacts)
         , input_tech_check_level(_input_tech_check_level)
         , config_default_nsset_tech_check_level(_config_default_nsset_tech_check_level)
+        , config_nsset_min_hosts(_config_nsset_min_hosts)
+        , config_nsset_max_hosts(_config_nsset_max_hosts)
         {}
 
         short get_nsset_tech_check_level() const

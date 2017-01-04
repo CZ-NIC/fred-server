@@ -49,6 +49,8 @@ private:
   bool disable_epp_notifier_;
   bool lock_epp_commands_;
   unsigned int nsset_level_;
+  unsigned int nsset_min_hosts_;
+  unsigned int nsset_max_hosts_;
   std::string docgen_path_;
   std::string docgen_template_path_;
   std::string fileclient_path_;
@@ -83,6 +85,8 @@ public:
           , bool disable_epp_notifier
           , bool lock_epp_commands
           , unsigned int nsset_level
+          , unsigned int nsset_min_hosts
+          , unsigned int nsset_max_hosts
           , const std::string& docgen_path
           , const std::string& docgen_template_path
           , const std::string& fileclient_path

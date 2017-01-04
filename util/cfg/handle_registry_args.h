@@ -50,6 +50,8 @@ public:
     bool disable_epp_notifier;
     bool lock_epp_commands;
     unsigned int nsset_level;
+    unsigned int nsset_min_hosts;
+    unsigned int nsset_max_hosts;
     std::string docgen_path;
     std::string docgen_template_path;
     unsigned int docgen_domain_count_limit;
@@ -74,6 +76,12 @@ public:
                 ("registry.nsset_level",
                  po::value<unsigned int>()->default_value(3),
                  "default nsset level")
+                ("registry.nsset_min_hosts",
+                 po::value<unsigned int>()->default_value(2),
+                 "minimal number of hosts in nsset")
+                ("registry.nsset_max_hosts",
+                 po::value<unsigned int>()->default_value(10),
+                 "maximal number of hosts in nsset")
                 ("registry.docgen_path",
                  po::value<std::string>(),
                  "")
@@ -108,6 +116,8 @@ public:
             throw std::runtime_error("configured default nsset_level out of range");
         }
 
+        nsset_min_hosts = vm["registry.nsset_min_hosts"].as<unsigned int>();
+        nsset_max_hosts = vm["registry.nsset_max_hosts"].as<unsigned int>();
         docgen_domain_count_limit = vm["registry.docgen_domain_count_limit"].as<unsigned int>();
         docgen_path = (vm.count("registry.docgen_path") == 0
                 ? std::string() : vm["registry.docgen_path"].as<std::string>());
@@ -149,6 +159,10 @@ public:
         {return HandleRegistryArgs::lock_epp_commands;}
     unsigned int get_nsset_level()
         {return HandleRegistryArgs::nsset_level;}
+    unsigned int get_nsset_min_hosts()
+        {return HandleRegistryArgs::nsset_min_hosts;}
+    unsigned int get_nsset_max_hosts()
+        {return HandleRegistryArgs::nsset_max_hosts;}
     const std::string& get_docgen_path()
         {return HandleRegistryArgs::docgen_path;}
     const std::string& get_docgen_template_path()

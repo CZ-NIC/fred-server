@@ -94,6 +94,10 @@ disable_epp_notifier = false
 lock_epp_commands = true
 # Default report level for create_nsset command
 nsset_level = 3
+# Minimal number of hosts in nsset
+nsset_min_hosts = 2
+# Maximal number of hosts in nsset
+nsset_max_hosts = 10
 
 # Path to fred-doc2pdf utility
 docgen_path = @BINDIR@/fred-doc2pdf

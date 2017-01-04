@@ -145,6 +145,8 @@ struct has_nsset_with_all_data_set : has_registrar {
 struct has_nsset_input_data_set : has_registrar
 {
     Epp::NssetCreateInputData nsset_input_data;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
 
     has_nsset_input_data_set()
     : nsset_input_data(Epp::NssetCreateInputData(
@@ -163,7 +165,9 @@ struct has_nsset_input_data_set : has_registrar
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
             3,
-            3
+            3,
+            nsset_min_hosts,
+            nsset_max_hosts
         ))
     {
         Fred::Contact::PlaceAddress place;
@@ -196,6 +200,8 @@ struct has_nsset_input_data_set : has_registrar
 struct has_nsset_with_input_data_set : has_registrar {
     Fred::InfoNssetData nsset;
     Epp::NssetCreateInputData nsset_input_data;
+    static const unsigned int nsset_min_hosts = 2;
+    static const unsigned int nsset_max_hosts = 10;
 
     has_nsset_with_input_data_set()
     : nsset_input_data(Epp::NssetCreateInputData(
@@ -214,7 +220,9 @@ struct has_nsset_with_input_data_set : has_registrar {
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),
             3,
-            3
+            3,
+            nsset_min_hosts,
+            nsset_max_hosts
         ))
     {
         Fred::Contact::PlaceAddress place;

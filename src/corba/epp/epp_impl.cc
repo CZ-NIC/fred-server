@@ -666,6 +666,8 @@ ccReg_EPP_i::ccReg_EPP_i(
     , bool disable_epp_notifier
     , bool lock_epp_commands
     , unsigned int nsset_level
+    , unsigned int nsset_min_hosts
+    , unsigned int nsset_max_hosts
     , const std::string& docgen_path
     , const std::string& docgen_template_path
     , const std::string& fileclient_path
@@ -688,6 +690,8 @@ ccReg_EPP_i::ccReg_EPP_i(
     , disable_epp_notifier_(disable_epp_notifier)
     , lock_epp_commands_(lock_epp_commands)
     , nsset_level_(nsset_level)
+    , nsset_min_hosts_(nsset_min_hosts)
+    , nsset_max_hosts_(nsset_max_hosts)
     , docgen_path_(docgen_path)
     , docgen_template_path_(docgen_template_path)
     , fileclient_path_(fileclient_path)
@@ -2765,7 +2769,9 @@ ccReg::Response * ccReg_EPP_i::NSSetCreate(
                 Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns),
                 Corba::unwrap_ccreg_techcontacts_to_vector_string(tech),
                 Corba::unwrap_tech_check_level(level),
-                this->nsset_level_
+                this->nsset_level_,
+                this->nsset_min_hosts_,
+                this->nsset_max_hosts_
             ),
             session_data.registrar_id,
             request_params.log_request_id,
@@ -2826,7 +2832,9 @@ ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
                     Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_rem),
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),
                     Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_rem),
-                    Corba::unwrap_tech_check_level(level)
+                    Corba::unwrap_tech_check_level(level),
+                    this->nsset_min_hosts_,
+                    this->nsset_max_hosts_
                 ),
             session_data.registrar_id,
             request_params.log_request_id,
