@@ -6,6 +6,12 @@
 
   * epp backend contacts - fix authorization error reason message (update operation)
 
+  * epp backend nssets - add configuration for min/max ns hosts
+
+  * centos7 with old stdint and mpdecimal-2.4.2 build fixes
+
+  * support for boost 1.48
+
 2016-10-09 (2.28.0)
 
   * epp backend rewrite - nsset and keyset methods
