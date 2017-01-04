@@ -13,12 +13,12 @@ namespace Epp {
 
 EppResponseFailureLocalized::EppResponseFailureLocalized(
         Fred::OperationContext& _ctx,
-        const EppResponseFailure& _epp_response_failure,
+        const EppResponseFailure& _epp_response,
         const Epp::SessionLang::Enum& _session_lang)
-    : epp_response_failure_(_epp_response_failure)
+    : epp_response_(_epp_response)
 {
 
-    const std::vector<EppResultFailure>& epp_results = _epp_response_failure.epp_results();
+    const std::vector<EppResultFailure>& epp_results = _epp_response.epp_results();
 
     for (std::vector<EppResultFailure>::const_iterator epp_result = epp_results.begin();
          epp_result != epp_results.end();
@@ -29,4 +29,3 @@ EppResponseFailureLocalized::EppResponseFailureLocalized(
 }
 
 } // namespace Epp
-

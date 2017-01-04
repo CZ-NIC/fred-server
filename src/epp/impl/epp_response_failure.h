@@ -47,7 +47,7 @@ public:
     }
 
     virtual ~EppResponseFailure() throw ()
-    {}
+    { }
 
     EppResponseFailure& add(const EppResultFailure& _epp_result)
     {

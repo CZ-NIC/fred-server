@@ -16,13 +16,13 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_RESPONSE_FAILURE_LOCALIZED_H_2206E3966B8346719CBDBBFD6A2DC0EB
-#define EPP_RESPONSE_FAILURE_LOCALIZED_H_2206E3966B8346719CBDBBFD6A2DC0EB
+#ifndef EPP_RESPONSE_SUCCESS_LOCALIZED_H_CABCE7C3B4504499B9CBAB066076F463
+#define EPP_RESPONSE_SUCCESS_LOCALIZED_H_CABCE7C3B4504499B9CBAB066076F463
 
-#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_success.h"
 #include "src/epp/impl/session_lang.h"
 
-#include "src/epp/impl/epp_result_failure_localized.h"
+#include "src/epp/impl/epp_result_success_localized.h"
 
 #include "src/fredlib/opcontext.h"
 
@@ -30,30 +30,26 @@
 
 namespace Epp {
 
-class EppResponseFailureLocalized
+class EppResponseSuccessLocalized
 {
 public:
 
-    EppResponseFailureLocalized(
+    EppResponseSuccessLocalized(
             Fred::OperationContext& _ctx,
-            const EppResponseFailure& _epp_response,
+            const EppResponseSuccess& _epp_response,
             const Epp::SessionLang::Enum& _session_lang);
 
-    virtual ~EppResponseFailureLocalized() throw()
+    virtual ~EppResponseSuccessLocalized() throw()
     { }
 
-    const std::vector<EppResultFailureLocalized>& epp_results() const {
-        return epp_results_;
-    }
-
-    const EppResultFailureLocalized& epp_result() const {
-        return epp_results_.front();
+    const EppResultSuccessLocalized& epp_result() const {
+        return epp_result_;
     }
 
 private:
 
-    EppResponseFailure epp_response_;
-    std::vector<EppResultFailureLocalized> epp_results_;
+    EppResponseSuccess epp_response_;
+    EppResultSuccessLocalized epp_result_;
 };
 
 } // namespace Epp

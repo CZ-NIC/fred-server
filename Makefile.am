@@ -247,7 +247,9 @@ noinst_HEADERS = \
 		src/epp/impl/request_params.h \
 		src/epp/error.h \
 		src/epp/impl/epp_response_failure.h \
+		src/epp/impl/epp_response_success.h \
 		src/epp/impl/epp_result_failure.h \
+		src/epp/impl/epp_result_success.h \
 		src/epp/impl/epp_result_code.h \
 		src/epp/impl/action.h \
 		src/epp/impl/util.h \
@@ -1566,10 +1568,16 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/epp_response_failure.h \
 		src/epp/impl/epp_response_failure_localized.h \
 		src/epp/impl/epp_response_failure_localized.cc \
+		src/epp/impl/epp_response_success.h \
+		src/epp/impl/epp_response_success_localized.h \
+		src/epp/impl/epp_response_success_localized.cc \
 		src/epp/impl/epp_result_failure.h \
 		src/epp/impl/epp_result_failure.cc \
 		src/epp/impl/epp_result_failure_localized.h \
 		src/epp/impl/epp_result_failure_localized.cc \
+		src/epp/impl/epp_result_success.h \
+		src/epp/impl/epp_result_success_localized.h \
+		src/epp/impl/epp_result_success_localized.cc \
 		src/epp/impl/epp_extended_error.h \
 		src/epp/impl/epp_extended_error.cc \
 		src/epp/impl/epp_extended_error_localized.h \

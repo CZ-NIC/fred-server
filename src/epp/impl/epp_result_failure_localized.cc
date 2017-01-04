@@ -15,13 +15,13 @@ namespace Epp {
 
 EppResultFailureLocalized::EppResultFailureLocalized(
         Fred::OperationContext& _ctx,
-        const EppResultFailure& _epp_result_failure,
+        const EppResultFailure& _epp_result,
         const SessionLang::Enum& _session_lang)
-    : epp_result_failure_(_epp_result_failure)
+    : epp_result_(_epp_result)
 {
-    epp_result_description_ = get_epp_result_description_localized<EppResultCode::Failure>(_ctx, epp_result_failure_.epp_result_code(), _session_lang);
+    epp_result_description_ = get_epp_result_description_localized<EppResultCode::Failure>(_ctx, epp_result_.epp_result_code(), _session_lang);
 
-    const boost::optional<std::set<EppExtendedError> >& extended_errors = _epp_result_failure.extended_errors();
+    const boost::optional<std::set<EppExtendedError> >& extended_errors = _epp_result.extended_errors();
     if (extended_errors) {
         extended_errors_ = std::set<EppExtendedErrorLocalized>();
         for (std::set<EppExtendedError>::const_iterator extended_error = extended_errors->begin();

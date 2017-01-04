@@ -12,6 +12,7 @@
 #include "src/epp/nsset/info_nsset_localized.h"
 
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_failure_localized.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_extended_error_localized.h"
@@ -212,13 +213,28 @@ namespace Corba {
         _dst.msg = _src.localized_response_description.c_str();
     }
 
+    ccReg::Response wrap_epp_response_success_localized(
+            const Epp::EppResponseSuccessLocalized& _epp_response,
+            const std::string& _server_transaction_handle)
+    {
+        ccReg::Response result;
+
+        const Epp::EppResultSuccessLocalized& epp_result = _epp_response.epp_result();
+
+        CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), result.code);
+        result.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
+        result.msg    = wrap_string_to_corba_string(epp_result.epp_result_description());
+
+        return result;
+    }
+
     ccReg::EPP::EppError wrap_epp_response_failure_localized(
-            const Epp::EppResponseFailureLocalized& _epp_response_failure,
+            const Epp::EppResponseFailureLocalized& _epp_response,
             const std::string& _server_transaction_handle)
     {
         ccReg::EPP::EppError result;
 
-        const Epp::EppResultFailureLocalized& epp_result = _epp_response_failure.epp_result();
+        const Epp::EppResultFailureLocalized& epp_result = _epp_response.epp_result();
 
         CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), result.errCode);
         result.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
@@ -907,7 +923,7 @@ namespace Corba {
         return ret;
     }
 
-    std::vector<Epp::Domain::EnumValidationExtension> unwrap_enum_validation_extension(const ccReg::ExtensionList& ext)
+    std::vector<Epp::Domain::EnumValidationExtension> unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
     {
         const ccReg::ENUMValidationExtension *enum_ext = 0;
         std::vector<Epp::Domain::EnumValidationExtension> ret;

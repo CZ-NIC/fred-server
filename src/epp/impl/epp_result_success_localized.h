@@ -16,11 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EPP_RESULT_FAILURE_LOCALIZED_H_F6024F1DD96944B58A9E6F191A9DB2A6
-#define EPP_RESULT_FAILURE_LOCALIZED_H_F6024F1DD96944B58A9E6F191A9DB2A6
+#ifndef EPP_RESULT_SUCCESS_LOCALIZED_H_2B0481DFEC544E119EC86D0C318C9920
+#define EPP_RESULT_SUCCESS_LOCALIZED_H_2B0481DFEC544E119EC86D0C318C9920
 
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_extended_error_localized.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/session_lang.h"
 
 #include "src/fredlib/opcontext.h"
@@ -31,21 +30,21 @@
 
 namespace Epp {
 
-class EppResultFailureLocalized
+class EppResultSuccessLocalized
 {
 
 public:
 
-    EppResultFailureLocalized(
+    EppResultSuccessLocalized(
             Fred::OperationContext& _ctx,
-            const EppResultFailure& _epp_result,
+            const EppResultSuccess& _epp_result,
             const SessionLang::Enum& _session_lang);
 
     virtual const char* c_str() const throw() {
         return epp_result_description_.c_str();
     }
 
-    EppResultCode::Failure epp_result_code() const {
+    EppResultCode::Success epp_result_code() const {
         return epp_result_.epp_result_code();
     }
 
@@ -53,18 +52,11 @@ public:
         return epp_result_description_;
     }
 
-    const boost::optional<std::set<EppExtendedErrorLocalized> >& extended_errors() const
-    {
-        return extended_errors_;
-    }
-
 private:
 
-    EppResultFailure epp_result_;
+    EppResultSuccess epp_result_;
 
     std::string epp_result_description_;
-
-    boost::optional<std::set<EppExtendedErrorLocalized> > extended_errors_;
 
 };
 
