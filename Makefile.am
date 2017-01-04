@@ -13,7 +13,8 @@ AM_CPPFLAGS = \
 		-I $(top_srcdir)/util/db \
 		-I $(top_srcdir)/util/decimal \
 		-I $(top_srcdir)/include \
-		-I $(top_builddir)
+		-I $(top_builddir) \
+		-D __STDC_LIMIT_MACROS
 
 AM_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
