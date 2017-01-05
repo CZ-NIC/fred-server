@@ -5,8 +5,11 @@
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
@@ -17,7 +20,7 @@
 namespace Epp {
 namespace Keyset {
 
-LocalizedSuccessResponse delete_keyset_localized(
+EppResponseSuccessLocalized delete_keyset_localized(
         const std::string& _keyset_handle,
         const unsigned long long _registrar_id,
         const SessionLang::Enum _lang,
@@ -34,15 +37,17 @@ LocalizedSuccessResponse delete_keyset_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long last_history_id_before_delete = delete_keyset(
-                ctx,
-                _keyset_handle,
-                _registrar_id);
+        const unsigned long long last_history_id_before_delete =
+                delete_keyset(
+                        ctx,
+                        _keyset_handle,
+                        _registrar_id);
 
-        const LocalizedSuccessResponse result = create_localized_success_response(
-                ctx,
-                EppResultCode::command_completed_successfully,
-                _lang);
+        const EppResponseSuccessLocalized epp_response_success_localized =
+                EppResponseSuccessLocalized(
+                        ctx,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                        _lang);
 
         ctx.commit_transaction();
 
@@ -55,7 +60,7 @@ LocalizedSuccessResponse delete_keyset_localized(
                 _epp_notification_disabled,
                 _client_transaction_handles_prefix_not_to_nofify);
 
-        return result;
+        return epp_response_success_localized;
 
     }
     catch (const EppResponseFailure& e) {

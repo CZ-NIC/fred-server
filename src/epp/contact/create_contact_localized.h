@@ -20,7 +20,7 @@
 #define CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
 
 #include "src/epp/contact/contact_change.h"
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
@@ -55,13 +55,13 @@ struct CreateContactInputData
 
 struct CreateContactLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const boost::posix_time::ptime crdate;
 
     CreateContactLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const boost::posix_time::ptime& _crdate)
-    :   localized_success_response(_localized_success_response),
+    :   epp_response_success_localized(_epp_response_success_localized),
         crdate(_crdate)
     { }
 };

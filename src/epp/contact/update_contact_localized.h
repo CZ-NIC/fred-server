@@ -20,7 +20,7 @@
 #define UPDATE_CONTACT_LOCALIZED_H_3265A4F7B3D6435FBB17D88760C1AAED
 
 #include "src/epp/contact/contact_change.h"
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "util/optional_value.h"
 
@@ -30,7 +30,7 @@
 namespace Epp {
 namespace Contact {
 
-LocalizedSuccessResponse update_contact_localized(
+EppResponseSuccessLocalized update_contact_localized(
         const std::string& _contact_handle,
         const ContactChange& _data,
         unsigned long long _registrar_id,

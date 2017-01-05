@@ -19,7 +19,7 @@
 #ifndef DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
 #define DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 
 #include <string>
@@ -27,7 +27,7 @@
 namespace Epp {
 namespace Keyset {
 
-LocalizedSuccessResponse delete_keyset_localized(
+EppResponseSuccessLocalized delete_keyset_localized(
         const std::string& _keyset_handle,
         unsigned long long _registrar_id,
         SessionLang::Enum _lang,

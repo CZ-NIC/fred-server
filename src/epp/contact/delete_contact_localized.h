@@ -19,7 +19,7 @@
 #ifndef DELETE_CONTACT_LOCALIZED_H_4DDDFFEC71B342668A5C34F8785EDDB7
 #define DELETE_CONTACT_LOCALIZED_H_4DDDFFEC71B342668A5C34F8785EDDB7
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 
 #include <string>
@@ -27,7 +27,7 @@
 namespace Epp {
 namespace Contact {
 
-LocalizedSuccessResponse delete_contact_localized(
+EppResponseSuccessLocalized delete_contact_localized(
         const std::string& _contact_handle,
         unsigned long long _registrar_id,
         SessionLang::Enum _lang,

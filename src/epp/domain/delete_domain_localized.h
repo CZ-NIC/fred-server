@@ -19,7 +19,7 @@
 #ifndef DELETE_DOMAIN_LOCALIZED_H_7881B671649445C0BD9D46F87C8643B8
 #define DELETE_DOMAIN_LOCALIZED_H_7881B671649445C0BD9D46F87C8643B8
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 
 #include <string>
@@ -27,7 +27,7 @@
 namespace Epp {
 namespace Domain {
 
-LocalizedSuccessResponse delete_domain_localized(
+EppResponseSuccessLocalized delete_domain_localized(
         const std::string& _domain_fqdn,
         unsigned long long _registrar_id,
         SessionLang::Enum _lang,

@@ -19,7 +19,7 @@
 #ifndef DELETE_NSSET_LOCALIZED_H_9D46AC55B43743898CF9E6A41641A1BC
 #define DELETE_NSSET_LOCALIZED_H_9D46AC55B43743898CF9E6A41641A1BC
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 
 #include <string>
@@ -27,7 +27,7 @@
 namespace Epp {
 namespace Nsset {
 
-LocalizedSuccessResponse delete_nsset_localized(
+EppResponseSuccessLocalized delete_nsset_localized(
         const std::string& _nsset_handle,
         unsigned long long _registrar_id,
         SessionLang::Enum _lang,

@@ -22,8 +22,11 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/localization.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/opcontext.h"
@@ -60,11 +63,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                         _keyset_handle,
                         _registrar_id);
 
-        return InfoKeysetLocalizedResponse(
-                create_localized_success_response(
-                        ctx,
-                        EppResultCode::command_completed_successfully,
-                        _lang),
+        const InfoKeysetLocalizedOutputData info_keyset_localized_output_data =
                 InfoKeysetLocalizedOutputData(
                         info_keyset_data.handle,
                         info_keyset_data.roid,
@@ -78,7 +77,14 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                         info_keyset_data.auth_info_pw,
                         info_keyset_data.ds_records,
                         info_keyset_data.dns_keys,
-                        info_keyset_data.tech_contacts));
+                        info_keyset_data.tech_contacts);
+
+        return InfoKeysetLocalizedResponse(
+                EppResponseSuccessLocalized(
+                        ctx,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                        _lang),
+                info_keyset_localized_output_data);
 
     }
     catch (const EppResponseFailure& e) {
@@ -96,7 +102,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                 _lang);
     }
     catch (...) {
-        ctx.get_log().info("info_keyset_localized failure: unexpected exception");
+        ctx.get_log().info("unexpected exception in info_keyset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),

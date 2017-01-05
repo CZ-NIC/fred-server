@@ -306,7 +306,7 @@ public:
 
     ccReg::Response* ContactInfo(
             const char* _handle,
-            ccReg::Contact_out _info_result,
+            ccReg::Contact_out _contact_info,
             const ccReg::EppParams& _epp_params);
 
     ccReg::Response* ContactTransfer(
@@ -361,15 +361,15 @@ public:
     /**
       * @brief returns detailed information about nsset and subservient DNS hosts empty value if contact doesn't exist
       *
-      * @param handle - identifier of contact
-      * @param n - structure of Nsset detailed description
-      * @param params - common EPP parameters
+      * @param _nsset_handle - identifier of contact
+      * @param _nsset_info - structure of Nsset detailed description
+      * @param _epp_params - common EPP parameters
       *
       * @return svTRID and errCode
       */
     ccReg::Response* NSSetInfo(
             const char* _nsset_handle,
-            ccReg::NSSet_out _info_result,
+            ccReg::NSSet_out _nsset_info,
             const ccReg::EppParams& _epp_params);
 
     ccReg::Response* NSSetTransfer(

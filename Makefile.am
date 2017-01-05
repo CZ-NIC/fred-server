@@ -237,7 +237,6 @@ noinst_HEADERS = \
 		tests/util/corba_conversion_test.idl \
 		src/fredlib/object/object_type.h \
 		src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h \
-		src/epp/impl/response_localized.h \
 		src/epp/impl/exception.h \
 		src/epp/impl/session_lang.h \
 		src/epp/contact/contact_change.h \
@@ -1559,7 +1558,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/disclose_policy.h \
 		src/epp/impl/localization.h \
 		src/epp/impl/localization.cc \
-		src/epp/impl/response_localized.h \
 		src/epp/impl/object_states_localized.h \
 		src/epp/impl/param.h \
 		src/epp/impl/reason.h \

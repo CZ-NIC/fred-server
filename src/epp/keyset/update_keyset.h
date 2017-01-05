@@ -34,10 +34,6 @@ struct UpdateKeysetResult
     unsigned long long update_history_id;
 };
 
-/**
- * @throws ObjectStatusProhibitsOperation
- * @throws ParameterErrors
- */
 UpdateKeysetResult update_keyset(
         Fred::OperationContext& _ctx,
         const std::string& _keyset_handle,

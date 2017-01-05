@@ -6,8 +6,11 @@
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -47,10 +50,10 @@ CreateDomainLocalizedResponse create_domain_localized(
                         _registrar_id,
                         _logd_request_id));
 
-        const CreateDomainLocalizedResponse localized_result(
-                create_localized_success_response(
+        const CreateDomainLocalizedResponse create_domain_localized_response(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang),
                 create_domain_result.crtime,
                 create_domain_result.exdate);
@@ -88,7 +91,7 @@ CreateDomainLocalizedResponse create_domain_localized(
                 _epp_notification_disabled,
                 _client_transaction_handles_prefix_not_to_nofify);
 
-        return localized_result;
+        return create_domain_localized_response;
 
     }
     catch (const BillingFailure&) {

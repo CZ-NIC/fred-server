@@ -19,7 +19,7 @@
 #ifndef CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
 #define CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
 
@@ -45,7 +45,8 @@ struct CheckKeysetLocalizedResponse
         Result(
             const KeysetHandleRegistrationObstruction::Enum _state,
             const std::string& _description)
-        :   state(_state),
+        :
+            state(_state),
             description(_description)
         { }
     };
@@ -53,13 +54,13 @@ struct CheckKeysetLocalizedResponse
     typedef std::map<std::string, Nullable<Result> > Results;
 
     CheckKeysetLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const Results& _results)
-    :   localized_success_response(_localized_success_response),
+    :   epp_response_success_localized(_epp_response_success_localized),
         results(_results)
     { }
 
-    LocalizedSuccessResponse localized_success_response;
+    EppResponseSuccessLocalized epp_response_success_localized;
     Results results;
 };
 

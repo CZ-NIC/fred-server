@@ -20,7 +20,7 @@
 #define INFO_CONTACT_LOCALIZED_H_1AA5F0561FEF4660B5392F22BD64435C
 
 #include "src/epp/contact/contact_disclose.h"
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -83,13 +83,13 @@ struct InfoContactLocalizedOutputData
 
 struct InfoContactLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const InfoContactLocalizedOutputData data;
 
     InfoContactLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const InfoContactLocalizedOutputData& _data)
-    :   localized_success_response(_localized_success_response),
+    :   epp_response_success_localized(_epp_response_success_localized),
         data(_data)
     { }
 };

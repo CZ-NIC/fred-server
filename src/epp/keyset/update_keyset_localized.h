@@ -19,7 +19,7 @@
 #ifndef UPDATE_KEYSET_LOCALIZED_H_D8C319D4188D49BBB144814D6A67970C
 #define UPDATE_KEYSET_LOCALIZED_H_D8C319D4188D49BBB144814D6A67970C
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/keyset/ds_record.h"
 #include "src/epp/keyset/impl/dns_key.h"
@@ -31,7 +31,7 @@
 namespace Epp {
 namespace Keyset {
 
-LocalizedSuccessResponse update_keyset_localized(
+EppResponseSuccessLocalized update_keyset_localized(
         const std::string& _keyset_handle,
         const Optional<std::string>& _auth_info_pw,
         const std::vector<std::string>& _tech_contacts_add,

@@ -19,10 +19,10 @@
 #ifndef CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
 #define CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
 
+#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/epp/keyset/ds_record.h"
 #include "src/epp/keyset/impl/dns_key.h"
-#include "src/epp/impl/response_localized.h"
-#include "src/epp/impl/session_lang.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -30,20 +30,21 @@
 namespace Epp {
 namespace Keyset {
 
-struct ResponseOfCreate
+struct CreateKeysetLocalizedResponse
 {
-    LocalizedSuccessResponse localized_success_response;
+    EppResponseSuccessLocalized epp_response_success_localized;
     boost::posix_time::ptime crdate;
 
-    ResponseOfCreate(
-        const LocalizedSuccessResponse& _response,
+    CreateKeysetLocalizedResponse(
+        const EppResponseSuccessLocalized& _response,
         const boost::posix_time::ptime& _crdate)
-    :   localized_success_response(_response),
+    :
+        epp_response_success_localized(_response),
         crdate(_crdate)
     { }
 };
 
-ResponseOfCreate create_keyset_localized(
+CreateKeysetLocalizedResponse create_keyset_localized(
         const std::string& _keyset_handle,
         const Optional<std::string>& _auth_info_pw,
         const std::vector<std::string>& _tech_contacts,

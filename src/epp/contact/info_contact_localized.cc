@@ -23,8 +23,11 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
@@ -91,25 +94,25 @@ InfoContactLocalizedResponse info_contact_localized(
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoContact)));
 
-        const InfoContactOutputData info_contact_data =
+        const InfoContactOutputData info_contact_output_data =
                 info_contact(
                         ctx,
                         _contact_handle,
                         _registrar_id);
 
-        InfoContactLocalizedOutputData output_data(info_contact_data.disclose);
-        output_data.handle                       = info_contact_data.handle;
-        output_data.roid                         = info_contact_data.roid;
-        output_data.sponsoring_registrar_handle  = info_contact_data.sponsoring_registrar_handle;
-        output_data.creating_registrar_handle    = info_contact_data.creating_registrar_handle;
-        output_data.last_update_registrar_handle = info_contact_data.last_update_registrar_handle;
+        InfoContactLocalizedOutputData info_contact_localized_output_data(info_contact_output_data.disclose);
+        info_contact_localized_output_data.handle                       = info_contact_output_data.handle;
+        info_contact_localized_output_data.roid                         = info_contact_output_data.roid;
+        info_contact_localized_output_data.sponsoring_registrar_handle  = info_contact_output_data.sponsoring_registrar_handle;
+        info_contact_localized_output_data.creating_registrar_handle    = info_contact_output_data.creating_registrar_handle;
+        info_contact_localized_output_data.last_update_registrar_handle = info_contact_output_data.last_update_registrar_handle;
 
-        // compute output_data.localized_external_states
+        // compute info_contact_localized_output_data.localized_external_states
         {
             const std::vector<std::string> admin_contact_verification_states =
                 Admin::AdminContactVerificationObjectStates::get_all();
 
-            std::set<std::string> filtered_states = info_contact_data.states;
+            std::set<std::string> filtered_states = info_contact_output_data.states;
 
             // XXX HACK: Ticket #10053 - temporary hack until changed xml schemas are released upon poor registrars
             // Do not propagate admin contact verification states.
@@ -119,62 +122,62 @@ InfoContactLocalizedResponse info_contact_localized(
                 static const char *const ok_state_name = "ok";
                 filtered_states.insert(ok_state_name);
             }
-            output_data.localized_external_states =
+            info_contact_localized_output_data.localized_external_states =
                     localize_object_states_deprecated(ctx, filtered_states, _lang);
         }
 
-        output_data.crdate            = info_contact_data.crdate;
-        output_data.last_update       = info_contact_data.last_update;
-        output_data.last_transfer     = info_contact_data.last_transfer;
-        output_data.name              = info_contact_data.name;
-        output_data.organization      = info_contact_data.organization;
-        output_data.street1           = info_contact_data.street1;
-        output_data.street2           = info_contact_data.street2;
-        output_data.street3           = info_contact_data.street3;
-        output_data.city              = info_contact_data.city;
-        output_data.state_or_province = info_contact_data.state_or_province;
-        output_data.postal_code       = info_contact_data.postal_code;
-        output_data.country_code      = info_contact_data.country_code;
-        output_data.telephone         = info_contact_data.telephone;
-        output_data.fax               = info_contact_data.fax;
-        output_data.email             = info_contact_data.email;
-        output_data.notify_email      = info_contact_data.notify_email;
-        output_data.VAT               = info_contact_data.VAT;
-        if (info_contact_data.personal_id.is_initialized()) {
-            output_data.ident         = info_contact_data.personal_id->get();
-            if (info_contact_data.personal_id->get_type() == Fred::PersonalIdUnion::get_OP("").get_type())
+        info_contact_localized_output_data.crdate            = info_contact_output_data.crdate;
+        info_contact_localized_output_data.last_update       = info_contact_output_data.last_update;
+        info_contact_localized_output_data.last_transfer     = info_contact_output_data.last_transfer;
+        info_contact_localized_output_data.name              = info_contact_output_data.name;
+        info_contact_localized_output_data.organization      = info_contact_output_data.organization;
+        info_contact_localized_output_data.street1           = info_contact_output_data.street1;
+        info_contact_localized_output_data.street2           = info_contact_output_data.street2;
+        info_contact_localized_output_data.street3           = info_contact_output_data.street3;
+        info_contact_localized_output_data.city              = info_contact_output_data.city;
+        info_contact_localized_output_data.state_or_province = info_contact_output_data.state_or_province;
+        info_contact_localized_output_data.postal_code       = info_contact_output_data.postal_code;
+        info_contact_localized_output_data.country_code      = info_contact_output_data.country_code;
+        info_contact_localized_output_data.telephone         = info_contact_output_data.telephone;
+        info_contact_localized_output_data.fax               = info_contact_output_data.fax;
+        info_contact_localized_output_data.email             = info_contact_output_data.email;
+        info_contact_localized_output_data.notify_email      = info_contact_output_data.notify_email;
+        info_contact_localized_output_data.VAT               = info_contact_output_data.VAT;
+        if (info_contact_output_data.personal_id.is_initialized()) {
+            info_contact_localized_output_data.ident         = info_contact_output_data.personal_id->get();
+            if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_OP("").get_type())
             {
-                output_data.identtype = InfoContactLocalizedOutputData::IdentType::op;
+                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::op;
             }
-            else if (info_contact_data.personal_id->get_type() == Fred::PersonalIdUnion::get_PASS("").get_type())
+            else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_PASS("").get_type())
             {
-                output_data.identtype = InfoContactLocalizedOutputData::IdentType::pass;
+                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::pass;
             }
-            else if (info_contact_data.personal_id->get_type() == Fred::PersonalIdUnion::get_ICO("").get_type())
+            else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_ICO("").get_type())
             {
-                output_data.identtype = InfoContactLocalizedOutputData::IdentType::ico;
+                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::ico;
             }
-            else if (info_contact_data.personal_id->get_type() == Fred::PersonalIdUnion::get_MPSV("").get_type())
+            else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_MPSV("").get_type())
             {
-                output_data.identtype = InfoContactLocalizedOutputData::IdentType::mpsv;
+                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::mpsv;
             }
-            else if (info_contact_data.personal_id->get_type() == Fred::PersonalIdUnion::get_BIRTHDAY("").get_type())
+            else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_BIRTHDAY("").get_type())
             {
-                output_data.identtype = InfoContactLocalizedOutputData::IdentType::birthday;
+                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::birthday;
             }
             else
             {
                 throw std::runtime_error("Invalid ident type.");
             }
         }
-        output_data.auth_info_pw      = info_contact_data.auth_info_pw;
+        info_contact_localized_output_data.auth_info_pw      = info_contact_output_data.auth_info_pw;
 
         return InfoContactLocalizedResponse(
-                create_localized_success_response(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang),
-                output_data);
+                info_contact_localized_output_data);
     }
     catch (const EppResponseFailure& e) {
         ctx.get_log().info(std::string("info_contact_localized: ") + e.what());

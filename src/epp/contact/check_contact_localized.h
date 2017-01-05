@@ -19,7 +19,7 @@
 #ifndef CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 #define CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/contact/impl/contact_handle_registration_obstruction.h"
 
@@ -48,14 +48,14 @@ struct ContactHandleLocalizedRegistrationObstruction
 
 struct CheckContactLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> > contact_statuses;
 
     CheckContactLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
-        const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> >& _contact_statuses
-    ) :
-        localized_success_response(_localized_success_response),
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
+        const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> >& _contact_statuses)
+    :
+        epp_response_success_localized(_epp_response_success_localized),
         contact_statuses(_contact_statuses)
     { }
 };

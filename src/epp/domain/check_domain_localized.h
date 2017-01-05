@@ -19,9 +19,9 @@
 #ifndef CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 #define CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 
-#include "src/epp/impl/action.h"
 #include "src/epp/domain/impl/domain_registration_obstruction.h"
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 
 #include <boost/optional.hpp>
@@ -35,15 +35,15 @@ namespace Domain {
 
 struct CheckDomainLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> > domain_fqdn_to_domain_localized_registration_obstruction;
 
     CheckDomainLocalizedResponse(
-        const LocalizedSuccessResponse& localized_success_response,
-        const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> >& domain_fqdn_to_domain_localized_registration_obstruction)
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
+        const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction)
     :
-        localized_success_response(localized_success_response),
-        domain_fqdn_to_domain_localized_registration_obstruction(domain_fqdn_to_domain_localized_registration_obstruction)
+        epp_response_success_localized(_epp_response_success_localized),
+        domain_fqdn_to_domain_localized_registration_obstruction(_domain_fqdn_to_domain_localized_registration_obstruction)
     { }
 };
 

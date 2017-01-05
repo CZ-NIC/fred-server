@@ -23,8 +23,11 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
@@ -67,21 +70,15 @@ CheckContactLocalizedResponse check_contact_localized(
                         _contact_handles,
                         _registrar_id);
 
-        const LocalizedSuccessResponse localized_success_response =
-                create_localized_success_response(
+        return CheckContactLocalizedResponse(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
-                        _lang);
-
-        const HandleToLocalizedObstruction localized_check_contact_results =
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                        _lang),
                 localize_check_results<ContactHandleRegistrationObstruction, ContactHandleLocalizedRegistrationObstruction, boost::optional>(
                         ctx,
                         check_contact_results,
-                        _lang);
-
-        return CheckContactLocalizedResponse(
-                localized_success_response,
-                localized_check_contact_results);
+                        _lang));
 
     }
     catch (const EppResponseFailure& e) {

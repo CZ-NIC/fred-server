@@ -22,8 +22,11 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/object_states_localized.h"
 #include "src/epp/impl/session_lang.h"
@@ -62,31 +65,30 @@ InfoDomainLocalizedResponse info_domain_localized(
                         _domain_fqdn,
                         _registrar_id);
 
-        InfoDomainLocalizedOutputData info_domain_localized_output_data;
-
-        info_domain_localized_output_data.roid = info_domain_output_data.roid;
-        info_domain_localized_output_data.fqdn = info_domain_output_data.fqdn;
-        info_domain_localized_output_data.registrant = info_domain_output_data.registrant;
-        info_domain_localized_output_data.nsset = info_domain_output_data.nsset;
-        info_domain_localized_output_data.keyset = info_domain_output_data.keyset;
-        info_domain_localized_output_data.localized_external_states =
-                localize_object_states(ctx, info_domain_output_data.states, _lang);
-        info_domain_localized_output_data.sponsoring_registrar_handle = info_domain_output_data.sponsoring_registrar_handle;
-        info_domain_localized_output_data.creating_registrar_handle = info_domain_output_data.creating_registrar_handle;
-        info_domain_localized_output_data.last_update_registrar_handle = info_domain_output_data.last_update_registrar_handle;
-        info_domain_localized_output_data.crdate = info_domain_output_data.crdate;
-        info_domain_localized_output_data.last_update = info_domain_output_data.last_update;
-        info_domain_localized_output_data.last_transfer = info_domain_output_data.last_transfer;
-        info_domain_localized_output_data.exdate = info_domain_output_data.exdate;
-        info_domain_localized_output_data.auth_info_pw = info_domain_output_data.auth_info_pw;
-        info_domain_localized_output_data.admin = info_domain_output_data.admin;
-        info_domain_localized_output_data.ext_enum_domain_validation = info_domain_output_data.ext_enum_domain_validation;
-        info_domain_localized_output_data.tmpcontact = info_domain_output_data.tmpcontact;
+        const InfoDomainLocalizedOutputData info_domain_localized_output_data =
+                InfoDomainLocalizedOutputData(
+                        info_domain_output_data.roid,
+                        info_domain_output_data.fqdn,
+                        info_domain_output_data.registrant,
+                        info_domain_output_data.nsset,
+                        info_domain_output_data.keyset,
+                        localize_object_states(ctx, info_domain_output_data.states, _lang),
+                        info_domain_output_data.sponsoring_registrar_handle,
+                        info_domain_output_data.creating_registrar_handle,
+                        info_domain_output_data.last_update_registrar_handle,
+                        info_domain_output_data.crdate,
+                        info_domain_output_data.last_update,
+                        info_domain_output_data.last_transfer,
+                        info_domain_output_data.exdate,
+                        info_domain_output_data.auth_info_pw,
+                        info_domain_output_data.admin,
+                        info_domain_output_data.ext_enum_domain_validation,
+                        info_domain_output_data.tmpcontact);
 
         return InfoDomainLocalizedResponse(
-                create_localized_success_response(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang),
                 info_domain_localized_output_data);
 

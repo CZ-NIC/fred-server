@@ -4,7 +4,6 @@
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/impl/util.h"
 #include "src/fredlib/db_settings.h"
@@ -24,6 +23,32 @@
 #include <vector>
 
 namespace Epp {
+
+std::string get_reason_description_localized_column_name(SessionLang::Enum _lang)
+{
+    switch (_lang)
+    {
+        case SessionLang::en:
+            return "reason";
+
+        case SessionLang::cs:
+            return "reason_cs";
+    }
+    throw UnknownLocalizationLanguage();
+}
+
+std::string get_result_description_localized_column_name(SessionLang::Enum _lang)
+{
+    switch (_lang)
+    {
+        case SessionLang::en:
+            return "status";
+
+        case SessionLang::cs:
+            return "status_cs";
+    }
+    throw UnknownLocalizationLanguage();
+}
 
 std::string get_reason_description_localized(
     Fred::OperationContext& _ctx,
@@ -47,17 +72,6 @@ std::string get_reason_description_localized(
     }
 
     return static_cast< std::string >(res[0][0]);
-}
-
-LocalizedSuccessResponse create_localized_success_response(
-    Fred::OperationContext& _ctx,
-    const EppResultCode::Success& _epp_result_code,
-    const SessionLang::Enum _lang
-) {
-    return LocalizedSuccessResponse(
-        _epp_result_code,
-        get_epp_result_description_localized<EppResultCode::Success>(_ctx, EppResultCode::command_completed_successfully, _lang)
-    );
 }
 
 namespace {
@@ -129,32 +143,6 @@ ObjectStatesLocalized localize_object_states(
     }
     states.success_state_localized_description = get_success_state_localized_description(_lang);
     return states;
-}
-
-std::string get_reason_description_localized_column_name(SessionLang::Enum _lang)
-{
-    switch (_lang)
-    {
-        case SessionLang::en:
-            return "reason";
-
-        case SessionLang::cs:
-            return "reason_cs";
-    }
-    throw UnknownLocalizationLanguage();
-}
-
-std::string get_response_description_localized_column_name(SessionLang::Enum _lang)
-{
-    switch (_lang)
-    {
-        case SessionLang::en:
-            return "status";
-
-        case SessionLang::cs:
-            return "status_cs";
-    }
-    throw UnknownLocalizationLanguage();
 }
 
 /**

@@ -19,10 +19,10 @@
 #ifndef CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 #define CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 
-#include "src/epp/impl/response_localized.h"
-#include "src/epp/impl/session_lang.h"
-#include "src/epp/domain/impl/domain_registration_time.h"
 #include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/epp/domain/impl/domain_registration_time.h"
+#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/impl/session_lang.h"
 #include "util/optional_value.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -65,15 +65,16 @@ struct CreateDomainInputData
 };
 
 struct CreateDomainLocalizedResponse {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const boost::posix_time::ptime crtime;
     const boost::gregorian::date expiration_date;
 
     CreateDomainLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const boost::posix_time::ptime& _crtime,
         const boost::gregorian::date& _expiration_date)
-    :   localized_success_response(_localized_success_response),
+    :
+        epp_response_success_localized(_epp_response_success_localized),
         crtime(_crtime),
         expiration_date(_expiration_date)
     { }

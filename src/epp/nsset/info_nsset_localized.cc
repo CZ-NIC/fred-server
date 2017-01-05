@@ -59,7 +59,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoNsset)));
 
-        InfoNssetOutputData info_nsset_data =
+        InfoNssetOutputData info_nsset_output_data =
                 info_nsset(
                         ctx,
                         _nsset_handle,
@@ -74,10 +74,10 @@ InfoNssetLocalizedResponse info_nsset_localized(
             // TODO Fred::GetObjectStates pro "handle"
             const std::vector<Fred::ObjectStateData> state_definitions =
                 Fred::GetObjectStates(
-                    Fred::InfoNssetByHandle(info_nsset_data.handle).exec(ctx).info_nsset_data.id
+                    Fred::InfoNssetByHandle(info_nsset_output_data.handle).exec(ctx).info_nsset_data.id
                 ).exec(ctx);
 
-            BOOST_FOREACH(const std::string& state, info_nsset_data.states) {
+            BOOST_FOREACH(const std::string& state, info_nsset_output_data.states) {
                 BOOST_FOREACH(const Fred::ObjectStateData& state_def, state_definitions) {
                     if(state_def.is_external) {
                         filtered_states.insert(state);
@@ -85,33 +85,36 @@ InfoNssetLocalizedResponse info_nsset_localized(
                 }
             }
 
-            info_nsset_data.states = filtered_states;
+            info_nsset_output_data.states = filtered_states;
         }
 
         /* XXX HACK: OK state */
-        if (info_nsset_data.states.empty()) {
-            info_nsset_data.states.insert("ok");
+        if (info_nsset_output_data.states.empty()) {
+            info_nsset_output_data.states.insert("ok");
         }
 
-        return InfoNssetLocalizedResponse(
-                create_localized_success_response(
-                        ctx,
-                        EppResultCode::command_completed_successfully,
-                        _lang),
+        const InfoNssetLocalizedOutputData info_nsset_localized_output_data =
                 InfoNssetLocalizedOutputData(
-                        info_nsset_data.handle,
-                        info_nsset_data.roid,
-                        info_nsset_data.sponsoring_registrar_handle,
-                        info_nsset_data.creating_registrar_handle,
-                        info_nsset_data.last_update_registrar_handle,
-                        localize_object_states_deprecated(ctx, info_nsset_data.states, _lang),
-                        info_nsset_data.crdate,
-                        info_nsset_data.last_update,
-                        info_nsset_data.last_transfer,
-                        info_nsset_data.auth_info_pw,
-                        info_nsset_data.dns_hosts,
-                        info_nsset_data.tech_contacts,
-                        info_nsset_data.tech_check_level));
+                        info_nsset_output_data.handle,
+                        info_nsset_output_data.roid,
+                        info_nsset_output_data.sponsoring_registrar_handle,
+                        info_nsset_output_data.creating_registrar_handle,
+                        info_nsset_output_data.last_update_registrar_handle,
+                        localize_object_states_deprecated(ctx, info_nsset_output_data.states, _lang),
+                        info_nsset_output_data.crdate,
+                        info_nsset_output_data.last_update,
+                        info_nsset_output_data.last_transfer,
+                        info_nsset_output_data.auth_info_pw,
+                        info_nsset_output_data.dns_hosts,
+                        info_nsset_output_data.tech_contacts,
+                        info_nsset_output_data.tech_check_level);
+
+        return InfoNssetLocalizedResponse(
+                EppResponseSuccessLocalized(
+                        ctx,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                        _lang),
+                info_nsset_localized_output_data);
 
     }
     catch (const EppResponseFailure& e) {

@@ -32,13 +32,11 @@
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/request_params.h"
-#include "src/epp/impl/response_localized.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/contact/update_contact_localized.h"
 #include "src/epp/contact/check_contact_localized.h"
-#include "src/epp/impl/response_localized.h"
 #include "src/epp/keyset/info_keyset_localized.h"
 #include "src/epp/keyset/check_keyset_localized.h"
 #include "src/epp/nsset/check_nsset_localized.h"
@@ -104,14 +102,18 @@ namespace Corba {
 
     boost::optional<short> unwrap_tech_check_level(CORBA::Short level);
 
-    ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle);
+    void wrap_Epp_EppResponseSuccessLocalized(
+            const Epp::EppResponseSuccessLocalized& _input,
+            const std::string& _server_transaction_handle,
+            ccReg::Response& _dst);
 
-    void wrap_Epp_LocalizedSuccessResponse(const Epp::LocalizedSuccessResponse& _src,
-                                           const std::string& _server_transaction_handle,
-                                           ccReg::Response& _dst);
+    ccReg::Response wrap_Epp_EppResponseSuccessLocalized(
+            const Epp::EppResponseSuccessLocalized& _input,
+            const std::string& _server_transaction_handle);
 
-    ccReg::Response wrap_epp_response_success_localized(const Epp::EppResponseSuccessLocalized& _input, const std::string& _server_transaction_handle);
-    ccReg::EPP::EppError wrap_epp_response_failure_localized(const Epp::EppResponseFailureLocalized& _epp_response_failure, const std::string& _server_transaction_handle);
+    ccReg::EPP::EppError wrap_Epp_EppResponseFailureLocalized(
+            const Epp::EppResponseFailureLocalized& _epp_response_failure,
+            const std::string& _server_transaction_handle);
 
     void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData& src, ccReg::Contact& dst);
 

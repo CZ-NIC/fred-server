@@ -19,7 +19,7 @@
 #ifndef TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
 #define TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "util/optional_value.h"
 
@@ -28,7 +28,7 @@
 namespace Epp {
 namespace Nsset {
 
-LocalizedSuccessResponse transfer_nsset_localized(
+EppResponseSuccessLocalized transfer_nsset_localized(
         const std::string& _nsset_handle,
         const std::string& _authinfopw,
         unsigned long long _registrar_id,

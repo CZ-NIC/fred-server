@@ -19,10 +19,10 @@
 #ifndef INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 #define INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 
-#include "src/epp/keyset/impl/info_keyset_data.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/object_states_localized.h"
-#include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/session_lang.h"
+#include "src/epp/keyset/impl/info_keyset_data.h"
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
 
@@ -81,13 +81,14 @@ struct InfoKeysetLocalizedOutputData
 
 struct InfoKeysetLocalizedResponse
 {
-    LocalizedSuccessResponse localized_success_response;
+    EppResponseSuccessLocalized epp_response_success_localized;
     InfoKeysetLocalizedOutputData data;
 
     InfoKeysetLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const InfoKeysetLocalizedOutputData& _data)
-    :   localized_success_response(_localized_success_response),
+    :
+        epp_response_success_localized(_epp_response_success_localized),
         data(_data)
     { }
 };

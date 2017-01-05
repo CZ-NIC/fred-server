@@ -21,7 +21,6 @@
 
 #include "src/epp/error.h"
 #include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/response_localized.h"
 #include "src/epp/impl/object_states_localized.h"
 #include "src/epp/impl/session_lang.h"
 
@@ -32,7 +31,12 @@
 namespace Epp {
 
 std::string get_reason_description_localized_column_name(SessionLang::Enum _lang);
-std::string get_response_description_localized_column_name(SessionLang::Enum _lang);
+std::string get_result_description_localized_column_name(SessionLang::Enum _lang);
+
+std::string get_reason_description_localized(
+        Fred::OperationContext& _ctx,
+        Reason::Enum _reason,
+        SessionLang::Enum _lang);
 
 template <typename T>
 std::string get_epp_result_description_localized(
@@ -40,7 +44,7 @@ std::string get_epp_result_description_localized(
         T _epp_result_code,
         SessionLang::Enum _session_lang)
 {
-    const std::string column_name = get_response_description_localized_column_name(_session_lang);
+    const std::string column_name = get_result_description_localized_column_name(_session_lang);
 
     const Database::Result res = _ctx.get_conn().exec_params(
             "SELECT " + column_name + " "
@@ -59,11 +63,6 @@ std::string get_epp_result_description_localized(
     return static_cast<std::string>(res[0][0]);
 }
 
-LocalizedSuccessResponse create_localized_success_response(
-        Fred::OperationContext& _ctx,
-        const EppResultCode::Success& _response,
-        SessionLang::Enum _lang);
-
 std::map<std::string, std::string> localize_object_states_deprecated(
         Fred::OperationContext& _ctx,
         const std::set<std::string>& _state_handles,
@@ -74,15 +73,6 @@ ObjectStatesLocalized localize_object_states(
         const std::set<Fred::Object_State::Enum>& _states,
         SessionLang::Enum _lang);
 
-std::string get_reason_description_localized(
-        Fred::OperationContext& _ctx,
-        Reason::Enum _reason,
-        SessionLang::Enum _lang);
-
-std::string get_epp_result_description_localized(
-        Fred::OperationContext& _ctx,
-        EppResultCode::Failure _epp_result_code,
-        SessionLang::Enum _session_lang);
 /**
  * @returns untyped postgres array
  * Caller should cast it properly before using in query.

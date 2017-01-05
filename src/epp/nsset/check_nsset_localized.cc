@@ -63,21 +63,15 @@ CheckNssetLocalizedResponse check_nsset_localized(
                         _nsset_handles,
                         _registrar_id);
 
-        const LocalizedSuccessResponse localized_success_response =
-                create_localized_success_response(
+        return CheckNssetLocalizedResponse(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
-                        _lang);
-
-        const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > localized_check_nsset_results =
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                        _lang),
                 localize_check_results<NssetHandleRegistrationObstruction, NssetHandleLocalizedRegistrationObstruction, boost::optional>(
                         ctx,
                         check_nsset_results,
-                        _lang);
-
-        return CheckNssetLocalizedResponse(
-                localized_success_response,
-                localized_check_nsset_results);
+                        _lang));
 
     }
     catch (const EppResponseFailure& e) {

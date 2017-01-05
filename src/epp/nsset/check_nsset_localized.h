@@ -19,7 +19,7 @@
 #ifndef CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
 #define CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
 
@@ -48,14 +48,14 @@ struct NssetHandleLocalizedRegistrationObstruction
 
 struct CheckNssetLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > nsset_statuses;
 
     CheckNssetLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> >& _nsset_statuses)
     :
-        localized_success_response(_localized_success_response),
+        epp_response_success_localized(_epp_response_success_localized),
         nsset_statuses(_nsset_statuses)
     { }
 };

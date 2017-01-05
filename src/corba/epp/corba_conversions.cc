@@ -197,38 +197,34 @@ namespace Corba {
         throw ExceptionInvalidParam();
     }
 
-    ccReg::Response wrap_response(const Epp::LocalizedSuccessResponse& _input, const std::string& _server_transaction_handle)
+    void wrap_Epp_EppResponseSuccessLocalized(
+            const Epp::EppResponseSuccessLocalized& _epp_response,
+            const std::string& _server_transaction_handle,
+            ccReg::Response& _dst)
     {
-        ccReg::Response result;
-        wrap_Epp_LocalizedSuccessResponse(_input, _server_transaction_handle, result);
-        return result;
+        const Epp::EppResultSuccessLocalized& epp_result = _epp_response.epp_result();
+
+        CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), _dst.code);
+        _dst.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
+        _dst.msg    = wrap_string_to_corba_string(epp_result.epp_result_description());
     }
 
-    void wrap_Epp_LocalizedSuccessResponse(const Epp::LocalizedSuccessResponse& _src,
-                                           const std::string& _server_transaction_handle,
-                                           ccReg::Response& _dst)
-    {
-        CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(_src.epp_result_code), _dst.code);
-        _dst.svTRID = _server_transaction_handle.c_str();
-        _dst.msg = _src.localized_response_description.c_str();
-    }
-
-    ccReg::Response wrap_epp_response_success_localized(
+    ccReg::Response wrap_Epp_EppResponseSuccessLocalized(
             const Epp::EppResponseSuccessLocalized& _epp_response,
             const std::string& _server_transaction_handle)
     {
-        ccReg::Response result;
+        ccReg::Response response;
 
         const Epp::EppResultSuccessLocalized& epp_result = _epp_response.epp_result();
 
-        CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), result.code);
-        result.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
-        result.msg    = wrap_string_to_corba_string(epp_result.epp_result_description());
+        CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), response.code);
+        response.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
+        response.msg    = wrap_string_to_corba_string(epp_result.epp_result_description());
 
-        return result;
+        return response;
     }
 
-    ccReg::EPP::EppError wrap_epp_response_failure_localized(
+    ccReg::EPP::EppError wrap_Epp_EppResponseFailureLocalized(
             const Epp::EppResponseFailureLocalized& _epp_response,
             const std::string& _server_transaction_handle)
     {

@@ -19,7 +19,7 @@
 #ifndef INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 #define INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/nsset/impl/dns_host_output.h"
 #include "src/fredlib/opcontext.h"
@@ -84,14 +84,14 @@ struct InfoNssetLocalizedOutputData
 
 struct InfoNssetLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const InfoNssetLocalizedOutputData data;
 
     InfoNssetLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const InfoNssetLocalizedOutputData& _data)
     :
-        localized_success_response(_localized_success_response),
+        epp_response_success_localized(_epp_response_success_localized),
         data(_data)
     { }
 };

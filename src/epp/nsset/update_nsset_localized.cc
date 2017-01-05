@@ -38,7 +38,7 @@
 namespace Epp {
 namespace Nsset {
 
-LocalizedSuccessResponse update_nsset_localized(
+EppResponseSuccessLocalized update_nsset_localized(
         const UpdateNssetInputData& _data,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
@@ -57,31 +57,31 @@ LocalizedSuccessResponse update_nsset_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const unsigned long long new_history_id =
+        const unsigned long long nsset_new_hisotry_id =
                 update_nsset(
                         ctx,
                         _data,
                         _registrar_id,
                         _logd_request_id);
 
-        const LocalizedSuccessResponse localized_result =
-                create_localized_success_response(
+        const EppResponseSuccessLocalized epp_response_success_localized =
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang);
 
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
                 Notification::updated,
-                new_history_id,
+                nsset_new_hisotry_id,
                 _registrar_id,
                 _server_transaction_handle,
                 _client_transaction_handle,
                 _epp_notification_disabled,
                 _client_transaction_handles_prefix_not_to_nofify);
 
-        return localized_result;
+        return epp_response_success_localized;
 
     }
     catch (const EppResponseFailure& e) {

@@ -23,7 +23,7 @@
 #include <boost/optional.hpp>
 #include <boost/cast.hpp>
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/nsset/impl/dns_host_input.h"
 #include "util/db/nullable.h"
@@ -72,13 +72,13 @@ struct CreateNssetInputData
 
 struct CreateNssetLocalizedResponse
 {
-    const LocalizedSuccessResponse localized_success_response;
+    const EppResponseSuccessLocalized epp_response_success_localized;
     const boost::posix_time::ptime crdate;
 
     CreateNssetLocalizedResponse(
-        const LocalizedSuccessResponse& _localized_success_response,
+        const EppResponseSuccessLocalized& _epp_response_success_localized,
         const boost::posix_time::ptime& _crdate)
-    :   localized_success_response(_localized_success_response),
+    :   epp_response_success_localized(_epp_response_success_localized),
         crdate(_crdate)
     { }
 };

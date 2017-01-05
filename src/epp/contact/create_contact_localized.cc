@@ -3,11 +3,14 @@
 #include "src/epp/contact/contact_change.h"
 
 #include "src/epp/impl/action.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
+#include "src/epp/impl/epp_response_failure.h"
+#include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "util/log/context.h"
@@ -102,10 +105,10 @@ CreateContactLocalizedResponse create_contact_localized(
                         _registrar_id,
                         _logd_request_id));
 
-        const CreateContactLocalizedResponse localized_result(
-                create_localized_success_response(
+        const CreateContactLocalizedResponse create_contact_localized_response(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang),
                 create_contact_result.crdate);
 
@@ -120,7 +123,7 @@ CreateContactLocalizedResponse create_contact_localized(
                 _epp_notification_disabled,
                 _dont_notify_client_transaction_handles_with_this_prefix);
 
-        return localized_result;
+        return create_contact_localized_response;
 
     }
     catch (const EppResponseFailure& e) {

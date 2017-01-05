@@ -22,8 +22,11 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
@@ -63,21 +66,15 @@ CheckKeysetLocalizedResponse check_keyset_localized(
                         _keyset_handles,
                         _registrar_id);
 
-        const LocalizedSuccessResponse localized_success_response =
-                create_localized_success_response(
+        return CheckKeysetLocalizedResponse(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
-                        _lang);
-
-        const CheckKeysetLocalizedResponse::Results localized_check_keyset_results =
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                        _lang),
                 localize_check_results<KeysetHandleRegistrationObstruction, CheckKeysetLocalizedResponse::Result, Nullable>(
                         ctx,
                         check_keyset_results,
-                        _lang);
-
-        return CheckKeysetLocalizedResponse(
-                localized_success_response,
-                localized_check_keyset_results);
+                        _lang));
 
     }
     catch (const EppResponseFailure& e) {

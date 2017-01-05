@@ -19,7 +19,7 @@
 #ifndef UPDATE_NSSET_LOCALIZED_H_EF8D30BE9BAF43968D5E49305821ECA2
 #define UPDATE_NSSET_LOCALIZED_H_EF8D30BE9BAF43968D5E49305821ECA2
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/nsset/impl/dns_host_input.h"
 #include "util/optional_value.h"
@@ -66,7 +66,7 @@ struct UpdateNssetInputData
     { }
 };
 
-LocalizedSuccessResponse update_nsset_localized(
+EppResponseSuccessLocalized update_nsset_localized(
         const UpdateNssetInputData& _data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,

@@ -5,11 +5,12 @@
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/localization.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -52,10 +53,10 @@ RenewDomainLocalizedResponse renew_domain_localized(
                         _registrar_id,
                         _logd_request_id));
 
-        const RenewDomainLocalizedResponse localized_result(
-                create_localized_success_response(
+        const RenewDomainLocalizedResponse renew_domain_localized_response(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang),
                 renew_domain_result.exdate);
 
@@ -86,7 +87,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 _epp_notification_disabled,
                 _client_transaction_handles_prefix_not_to_nofify);
 
-        return localized_result;
+        return renew_domain_localized_response;
 
     }
     catch (const BillingFailure&) {

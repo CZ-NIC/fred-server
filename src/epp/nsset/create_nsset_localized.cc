@@ -62,10 +62,10 @@ CreateNssetLocalizedResponse create_nsset_localized(
                         _registrar_id,
                         _logd_request_id));
 
-        const CreateNssetLocalizedResponse localized_result(
-                create_localized_success_response(
+        const CreateNssetLocalizedResponse create_nsset_localized_response(
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang),
                 impl_result.crdate);
 
@@ -80,7 +80,7 @@ CreateNssetLocalizedResponse create_nsset_localized(
                 _epp_notification_disabled,
                 _client_transaction_handles_prefix_not_to_nofify);
 
-        return localized_result;
+        return create_nsset_localized_response;
 
     }
     catch (const EppResponseFailure& e) {

@@ -36,7 +36,7 @@
 namespace Epp {
 namespace Nsset {
 
-LocalizedSuccessResponse transfer_nsset_localized(
+EppResponseSuccessLocalized transfer_nsset_localized(
         const std::string& _nsset_handle,
         const std::string& _authinfopw,
         const unsigned long long _registrar_id,
@@ -63,10 +63,10 @@ LocalizedSuccessResponse transfer_nsset_localized(
                         _registrar_id,
                         _logd_request_id);
 
-        const LocalizedSuccessResponse result =
-                create_localized_success_response(
+        const EppResponseSuccessLocalized epp_response_success_localized =
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang);
 
         ctx.commit_transaction();
@@ -80,7 +80,7 @@ LocalizedSuccessResponse transfer_nsset_localized(
                 _epp_notification_disabled,
                 _client_transaction_handles_prefix_not_to_nofify);
 
-        return result;
+        return epp_response_success_localized;
 
     }
     catch (const EppResponseFailure& e) {

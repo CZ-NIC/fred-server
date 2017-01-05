@@ -19,7 +19,7 @@
 #ifndef TRANSFER_CONTACT_LOCALIZED_H_24DC8E8F98A248C4B25980228AD6AB69
 #define TRANSFER_CONTACT_LOCALIZED_H_24DC8E8F98A248C4B25980228AD6AB69
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "util/optional_value.h"
 
@@ -28,7 +28,7 @@
 namespace Epp {
 namespace Contact {
 
-LocalizedSuccessResponse transfer_contact_localized(
+EppResponseSuccessLocalized transfer_contact_localized(
         const std::string& _contact_handle,
         const std::string& _authinfopw,
         unsigned long long _registrar_id,

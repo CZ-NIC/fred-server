@@ -5,8 +5,11 @@
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/impl/util.h"
@@ -26,7 +29,7 @@
 namespace Epp {
 namespace Domain {
 
-LocalizedSuccessResponse update_domain_localized(
+EppResponseSuccessLocalized update_domain_localized(
         const std::string& _domain_fqdn,
         const Optional<std::string>& _registrant_chg,
         const Optional<std::string>& _auth_info_pw_chg,
@@ -71,10 +74,10 @@ LocalizedSuccessResponse update_domain_localized(
                         _logd_request_id,
                         _rifd_epp_update_domain_keyset_clear);
 
-        const LocalizedSuccessResponse localized_success_response =
-                create_localized_success_response(
+        const EppResponseSuccessLocalized epp_response_success_localized =
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang);
 
         ctx.commit_transaction();
@@ -88,7 +91,7 @@ LocalizedSuccessResponse update_domain_localized(
                 _epp_notification_disabled,
                 _dont_notify_client_transaction_handles_with_this_prefix);
 
-        return localized_success_response;
+        return epp_response_success_localized;
 
     }
     catch (const EppResponseFailure& e) {

@@ -5,8 +5,11 @@
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
 #include "util/log/context.h"
@@ -19,7 +22,7 @@
 namespace Epp {
 namespace Keyset {
 
-LocalizedSuccessResponse update_keyset_localized(
+EppResponseSuccessLocalized update_keyset_localized(
         const std::string& _keyset_handle,
         const Optional<std::string>& _auth_info_pw,
         const std::vector<std::string>& _tech_contacts_add,
@@ -44,7 +47,7 @@ LocalizedSuccessResponse update_keyset_localized(
 
         Fred::OperationContextCreator ctx;
 
-        const UpdateKeysetResult result =
+        const UpdateKeysetResult update_keyset_result =
                 update_keyset(
                         ctx,
                         _keyset_handle,
@@ -58,24 +61,24 @@ LocalizedSuccessResponse update_keyset_localized(
                         _registrar_id,
                         _logd_request_id);
 
-        const LocalizedSuccessResponse localized_result =
-                create_localized_success_response(
+        const EppResponseSuccessLocalized epp_response_success_localized =
+                EppResponseSuccessLocalized(
                         ctx,
-                        EppResultCode::command_completed_successfully,
+                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang);
 
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
                 Notification::updated,
-                result.update_history_id,
+                update_keyset_result.update_history_id,
                 _registrar_id,
                 _server_transaction_handle,
                 _client_transaction_handle,
                 _epp_notification_disabled,
                 _dont_notify_client_transaction_handles_with_this_prefix);
 
-        return localized_result;
+        return epp_response_success_localized;
 
     }
     catch (const EppResponseFailure& e) {

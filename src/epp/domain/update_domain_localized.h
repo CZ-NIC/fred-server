@@ -19,7 +19,7 @@
 #ifndef UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 #define UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 
-#include "src/epp/impl/response_localized.h"
+#include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/session_lang.h"
 #include "src/epp/domain/impl/domain_enum_validation.h"
 #include "util/db/nullable.h"
@@ -31,7 +31,7 @@
 namespace Epp {
 namespace Domain {
 
-LocalizedSuccessResponse update_domain_localized(
+EppResponseSuccessLocalized update_domain_localized(
         const std::string& _domain_fqdn,
         const Optional<std::string>& _registrant_chg,
         const Optional<std::string>& _auth_info_pw_chg,
