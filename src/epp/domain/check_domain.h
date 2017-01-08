@@ -23,6 +23,7 @@
 #include "src/epp/domain/impl/domain_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 
+#include <map>
 #include <set>
 #include <string>
 

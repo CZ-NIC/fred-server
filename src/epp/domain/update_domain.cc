@@ -46,9 +46,9 @@ class MatchesHandle {
     std::string upper_case_handle_;
 
 public:
-    MatchesHandle(const std::string& _handle)
+    explicit MatchesHandle(const std::string& _handle)
     : upper_case_handle_(boost::algorithm::to_upper_copy(_handle))
-    {}
+    { }
 
     bool operator()(const T& item) const
     {
@@ -119,13 +119,13 @@ unsigned long long update_domain(
     Optional<boost::gregorian::date> req_enum_valexdate;
     Optional<bool> enum_publish_flag;
 
-    if(zone_data.is_enum) {
+    if (zone_data.is_enum) {
 
-        if(!_enum_validation_list.empty()) {
+        if (!_enum_validation_list.empty()) {
 
             req_enum_valexdate = _enum_validation_list.rbegin()->get_valexdate();
 
-            if(req_enum_valexdate.get_value().is_special())
+            if (req_enum_valexdate.get_value().is_special())
             {
                 parameter_value_range_errors.add_extended_error(
                         EppExtendedError::of_vector_parameter(
@@ -141,7 +141,7 @@ unsigned long long update_domain(
                         : boost::optional<boost::gregorian::date>(
                             info_domain_data_before_update.enum_domain_validation.get_value().validation_expiration);
 
-                if(is_new_enum_domain_validation_expiration_date_invalid(
+                if (is_new_enum_domain_validation_expiration_date_invalid(
                     req_enum_valexdate.get_value(),
                     current_local_date,
                     zone_data.enum_validation_period,
@@ -160,9 +160,9 @@ unsigned long long update_domain(
         }
     }
     else { // not enum
-        for(
-            std::vector<EnumValidationExtension>::const_iterator enum_validation_list_item_ptr = _enum_validation_list.begin(); 
-            enum_validation_list_item_ptr != _enum_validation_list.end(); 
+        for (
+            std::vector<EnumValidationExtension>::const_iterator enum_validation_list_item_ptr = _enum_validation_list.begin();
+            enum_validation_list_item_ptr != _enum_validation_list.end();
             ++enum_validation_list_item_ptr)
         {
             parameter_value_range_errors.add_extended_error(
@@ -177,18 +177,6 @@ unsigned long long update_domain(
         throw parameter_value_range_errors;
     }
 
-<<<<<<< HEAD
-=======
-    try {
-        if (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
-            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
-        }
-    }
-    catch (const EppResponseFailure&) {
-        throw;
-    }
-
->>>>>>> d1e7571... Ticket #17427 - new exception handling (domain)
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
 
@@ -197,17 +185,12 @@ unsigned long long update_domain(
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
     const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
 
-<<<<<<< HEAD
     if (!is_registrar_authorized) {
-        throw AuthorizationError();
-=======
-    if (!is_operation_permitted) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
                                          .add_extended_error(
                                                  EppExtendedError::of_scalar_parameter(
                                                          Param::registrar_autor,
                                                          Reason::unauthorized_registrar)));
->>>>>>> d1e7571... Ticket #17427 - new exception handling (domain)
     }
 
     Fred::LockObjectStateRequestLock(info_domain_data_before_update.id).exec(_ctx);
@@ -244,7 +227,7 @@ unsigned long long update_domain(
                 info_domain_data_before_update.admin_contacts.begin(),
                 info_domain_data_before_update.admin_contacts.end(),
                 MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_add_iter)
-            ) != domain_data_before_update.admin_contacts.end())
+            ) != info_domain_data_before_update.admin_contacts.end())
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -281,7 +264,7 @@ unsigned long long update_domain(
                 info_domain_data_before_update.admin_contacts.begin(),
                 info_domain_data_before_update.admin_contacts.end(),
                 MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_rem_iter)
-            ) == domain_data_before_update.admin_contacts.end())
+            ) == info_domain_data_before_update.admin_contacts.end())
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(

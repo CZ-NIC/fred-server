@@ -28,6 +28,8 @@
 
 #include <boost/optional.hpp>
 
+#include <string>
+
 namespace Epp {
 namespace Keyset {
 

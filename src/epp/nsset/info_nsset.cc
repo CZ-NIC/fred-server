@@ -35,6 +35,7 @@
 #include <boost/optional.hpp>
 
 #include <iterator>
+#include <set>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -58,7 +59,7 @@ InfoNssetOutputData info_nsset(
         const SessionLang::Enum _object_state_description_lang,
         const unsigned long long _session_registrar_id)
 {
-    if( _session_registrar_id == 0 ) {
+    if ( _session_registrar_id == 0 ) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
@@ -96,7 +97,7 @@ InfoNssetOutputData info_nsset(
     }
     catch (const Fred::InfoNssetByHandle::Exception& e) {
 
-        if(e.is_set_unknown_handle()) {
+        if (e.is_set_unknown_handle()) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 

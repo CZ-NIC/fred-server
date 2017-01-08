@@ -45,11 +45,11 @@ unsigned long long delete_nsset(
         const unsigned long long _registrar_id)
 {
 
-    if( _registrar_id == 0 ) {
+    if ( _registrar_id == 0 ) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if( Fred::Nsset::get_handle_registrability(_ctx, _handle) != Fred::NssetHandleState::Registrability::registered ) {
+    if ( Fred::Nsset::get_handle_registrability(_ctx, _handle) != Fred::NssetHandleState::Registrability::registered ) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
@@ -107,11 +107,11 @@ unsigned long long delete_nsset(
     } catch(const Fred::DeleteNssetByHandle::Exception& e) {
 
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
-        if( e.is_set_unknown_nsset_handle() ) {
+        if ( e.is_set_unknown_nsset_handle() ) {
             throw;
         }
 
-        if( e.is_set_object_linked_to_nsset_handle() ) {
+        if ( e.is_set_object_linked_to_nsset_handle() ) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 

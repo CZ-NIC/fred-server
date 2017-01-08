@@ -164,7 +164,7 @@ CreateContactResult create_contact(
     catch (const Fred::CreateContact::Exception& e) {
 
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
-        if(
+        if (
             e.is_set_forbidden_company_name_setting() ||
             e.is_set_unknown_registrar_handle() ||
             e.is_set_unknown_ssntype()
@@ -172,11 +172,11 @@ CreateContactResult create_contact(
             throw;
         }
 
-        if( e.is_set_invalid_contact_handle() /* wrong exception name */ ) {
+        if ( e.is_set_invalid_contact_handle() /* wrong exception name */ ) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_exists));
         }
 
-        if( e.is_set_unknown_country() ) {
+        if ( e.is_set_unknown_country() ) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
                     .add_extended_error(EppExtendedError::of_scalar_parameter(
                             Param::contact_cc,

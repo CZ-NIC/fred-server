@@ -1,6 +1,7 @@
-#include "src/corba/epp/corba_conversions.h"
+#include "src/corba/epp/domain/check_domain_corba_conversions.h"
 
 #include "src/corba/EPP.hh"
+
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/domain/check_domain_localized.h"
 #include "src/epp/domain/impl/domain_registration_obstruction.h"
@@ -29,7 +30,7 @@ ccReg::CheckAvail wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
     throw std::logic_error("Unexpected Epp::Domain::DomainRegistrationObstruction::Enum value.");
 }
 
-} // namespace Corba::{anonymous}
+} // namespace Cobra::{anonymous}
 
 /**
  * @returns check results in the same order as input handles
@@ -42,7 +43,7 @@ ccReg::CheckResp wrap_Epp_Domain_CheckDomainLocalizedResponse(
     result.length(_domain_fqdns.size());
 
     CORBA::ULong result_idx = 0;
-    for(
+    for (
         std::vector<std::string>::const_iterator domain_fqdn_ptr = _domain_fqdns.begin();
         domain_fqdn_ptr != _domain_fqdns.end();
         ++domain_fqdn_ptr, ++result_idx

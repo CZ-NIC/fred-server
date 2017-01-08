@@ -33,7 +33,7 @@ class EppResultSuccess
 public:
 
     /** Every EppResultSuccess instance must have a valid EppResultCode::Success */
-    EppResultSuccess(EppResultCode::Success _epp_result_code)
+    explicit EppResultSuccess(EppResultCode::Success _epp_result_code)
         : epp_result_code_(_epp_result_code)
     { }
 

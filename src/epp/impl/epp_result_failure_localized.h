@@ -28,6 +28,7 @@
 #include <boost/optional.hpp>
 
 #include <set>
+#include <string>
 
 namespace Epp {
 

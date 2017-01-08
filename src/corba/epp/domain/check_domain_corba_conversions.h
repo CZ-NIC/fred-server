@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file domain_check_corba_conversions.h
- *  <++>
- */
-
 #ifndef CHECK_DOMAIN_CORBA_CONVERSIONS_H_23FE85CDCEFF48A581E649EB35C36B79
 #define CHECK_DOMAIN_CORBA_CONVERSIONS_H_23FE85CDCEFF48A581E649EB35C36B79
 
@@ -29,6 +24,10 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/domain/check_domain_localized.h"
+
+#include <map>
+#include <string>
+#include <vector>
 
 namespace Corba {
 

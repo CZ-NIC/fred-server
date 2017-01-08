@@ -29,6 +29,9 @@
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
+#include <string>
+#include <vector>
+
 namespace Epp {
 namespace Nsset {
 

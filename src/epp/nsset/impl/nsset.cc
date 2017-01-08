@@ -19,12 +19,12 @@ namespace Nsset {
             " WHERE family($1::inet) = family(network)",
             Database::query_param_list(ipaddr.get().to_string()));
 
-        if(ip_check.size() > 1)
+        if (ip_check.size() > 1)
         {
             throw std::logic_error("wrong sql query");
         }
 
-        if((ip_check.size() == 1) && static_cast<bool>(ip_check[0][0]))
+        if ((ip_check.size() == 1) && static_cast<bool>(ip_check[0][0]))
         {
             return true;
         }
@@ -39,7 +39,7 @@ namespace Nsset {
         inet_addrs.reserve(data.size());
         BOOST_FOREACH(const boost::optional<boost::asio::ip::address>& optional_ipaddr, data)
         {
-            if(optional_ipaddr.is_initialized()) {
+            if (optional_ipaddr.is_initialized()) {
                 inet_addrs.push_back(optional_ipaddr.get());
             }
         }

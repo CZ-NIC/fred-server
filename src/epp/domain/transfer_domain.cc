@@ -50,14 +50,14 @@ unsigned long long transfer_domain(
         zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
             Fred::Zone::rem_trailing_dot(_domain_fqdn));
     } catch (const Fred::Zone::Exception& e) {
-        if(e.is_set_unknown_zone_in_fqdn()) {
+        if (e.is_set_unknown_zone_in_fqdn()) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
         /* in the improbable case that exception is incorrectly set */
         throw;
     }
 
-    if(!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
+    if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
     }
 
@@ -83,7 +83,7 @@ unsigned long long transfer_domain(
     const bool is_sponsoring_registrar = (domain_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);
 
-    if(is_sponsoring_registrar) {
+    if (is_sponsoring_registrar) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 

@@ -45,7 +45,7 @@ void create_domain_bill_item(const std::string& fqdn,
             " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
         , Database::query_param_list(domain_create_timestamp_utc)(zone_id)("CreateDomain"));
 
-    if(operation_price_list_result.size() != 1)
+    if (operation_price_list_result.size() != 1)
     {
         ctx.get_log().error("price_list result");
         throw std::runtime_error("price_list result");
@@ -56,7 +56,7 @@ void create_domain_bill_item(const std::string& fqdn,
     const Decimal price_list_price = static_cast<std::string>(operation_price_list_result[0][2]);
     const Decimal  price_list_quantity = static_cast<std::string>(operation_price_list_result[0][3]);
 
-    if(price_list_quantity == Decimal("0"))
+    if (price_list_quantity == Decimal("0"))
     {
         ctx.get_log().error("price_list_quantity == 0");
         throw std::runtime_error("price_list_quantity == 0");
@@ -74,7 +74,7 @@ void create_domain_bill_item(const std::string& fqdn,
             " FOR UPDATE "
         , Database::query_param_list(sponsoring_registrar_id)(zone_id));
 
-    if(locked_registrar_credit_result.size() != 1)
+    if (locked_registrar_credit_result.size() != 1)
     {
         ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
@@ -83,7 +83,7 @@ void create_domain_bill_item(const std::string& fqdn,
     const unsigned long long registrar_credit_id = static_cast<unsigned long long>(locked_registrar_credit_result[0][0]);
     const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][1]);
 
-    if((price != Decimal("0"))
+    if ((price != Decimal("0"))
     && (registrar_credit_balance < price)
     && (!enable_postpaid_operation))
     {
@@ -99,7 +99,7 @@ void create_domain_bill_item(const std::string& fqdn,
             " RETURNING id "
         , Database::query_param_list(Decimal("0") - price)(registrar_credit_id));
 
-    if(registrar_credit_transaction_result.size() != 1)
+    if (registrar_credit_transaction_result.size() != 1)
     {
         ctx.get_log().error("charge_operation: registrar_credit_transaction failed");
         throw std::runtime_error("charge_operation: registrar_credit_transaction failed");
@@ -150,7 +150,7 @@ void renew_domain_bill_item(
             " AND pl.zone_id = $2::bigint AND eo.operation = $3::text "
         , Database::query_param_list(domain_renew_timestamp_utc)(zone_id)("RenewDomain"));
 
-    if(operation_price_list_result.size() != 1)
+    if (operation_price_list_result.size() != 1)
     {
         ctx.get_log().error("price_list result");
         throw std::runtime_error("price_list result");
@@ -161,7 +161,7 @@ void renew_domain_bill_item(
     const Decimal price_list_price = static_cast<std::string>(operation_price_list_result[0][2]);
     const Decimal  price_list_quantity = static_cast<std::string>(operation_price_list_result[0][3]);
 
-    if(price_list_quantity == Decimal("0"))
+    if (price_list_quantity == Decimal("0"))
     {
         ctx.get_log().error("price_list_quantity == 0");
         throw std::runtime_error("price_list_quantity == 0");
@@ -184,7 +184,7 @@ void renew_domain_bill_item(
             " FOR UPDATE "
         , Database::query_param_list(sponsoring_registrar_id)(zone_id));
 
-    if(locked_registrar_credit_result.size() != 1)
+    if (locked_registrar_credit_result.size() != 1)
     {
         ctx.get_log().error("unable to get registrar_credit");
         throw std::runtime_error("unable to get registrar_credit");
@@ -193,7 +193,7 @@ void renew_domain_bill_item(
     const unsigned long long registrar_credit_id = static_cast<unsigned long long>(locked_registrar_credit_result[0][0]);
     const Decimal registrar_credit_balance = static_cast<std::string>(locked_registrar_credit_result[0][1]);
 
-    if((price != Decimal("0"))
+    if ((price != Decimal("0"))
     && (registrar_credit_balance < price)
     && (!enable_postpaid_operation))
     {
@@ -209,7 +209,7 @@ void renew_domain_bill_item(
             " RETURNING id "
         , Database::query_param_list(Decimal("0") - price)(registrar_credit_id));
 
-    if(registrar_credit_transaction_result.size() != 1)
+    if (registrar_credit_transaction_result.size() != 1)
     {
         ctx.get_log().error("charge_operation: registrar_credit_transaction failed");
         throw std::runtime_error("charge_operation: registrar_credit_transaction failed");

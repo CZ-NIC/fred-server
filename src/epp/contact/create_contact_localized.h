@@ -25,8 +25,11 @@
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-#include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace Epp {
 namespace Contact {
@@ -50,7 +53,7 @@ struct CreateContactInputData
     boost::optional<std::string> authinfo;
     boost::optional<ContactDisclose> disclose;
 
-    CreateContactInputData(const ContactChange& src);
+    explicit CreateContactInputData(const ContactChange& src);
 };
 
 struct CreateContactLocalizedResponse

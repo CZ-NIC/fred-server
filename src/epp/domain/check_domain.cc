@@ -13,7 +13,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <idna.h>
+#include <map>
 
 namespace Epp {
 namespace Domain {
@@ -22,7 +22,7 @@ namespace {
 
 Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstruction_by_fqdn(
         Fred::OperationContext& _ctx,
-        const std::string _domain_fqdn)
+        const std::string& _domain_fqdn)
 {
     switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn)) {
 

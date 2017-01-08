@@ -73,7 +73,7 @@ public:
 private:
     const std::vector<std::string> disallowed_;
 
-    FilterOut(const std::vector<std::string>& _disallowed) : disallowed_(_disallowed)
+    explicit FilterOut(const std::vector<std::string>& _disallowed) : disallowed_(_disallowed)
     { }
 };
 

@@ -15,9 +15,10 @@
 #include "util/db/nullable.h"
 #include "util/enum_conversion.h"
 
-#include <iterator>
-#include <vector>
 #include <algorithm>
+#include <iterator>
+#include <string>
+#include <vector>
 
 namespace Epp {
 namespace Domain {
@@ -96,9 +97,9 @@ InfoDomainOutputData info_domain(
     }
     catch (const Fred::InfoDomainByHandle::Exception& e) {
 
-        if(e.is_set_unknown_fqdn()) {
+        if (e.is_set_unknown_fqdn()) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
-        };
+        }
 
         // in the improbable case that exception is incorrectly set
         throw;

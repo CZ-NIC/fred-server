@@ -22,6 +22,7 @@
 #include "src/fredlib/object/object_state.h"
 
 #include <map>
+#include <string>
 
 namespace Epp {
 

@@ -78,7 +78,7 @@ unsigned long long transfer_contact(
     }
 
     try {
-        const unsigned long long post_transfer_history_id = 
+        const unsigned long long post_transfer_history_id =
             Fred::TransferContact(
                 contact_data_before_transfer.id,
                 session_registrar_handle,

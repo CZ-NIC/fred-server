@@ -16,11 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file domain_info_corba_conversions.h
- *  <++>
- */
-
 #ifndef INFO_DOMAIN_CORBA_CONVERSIONS_H_368D6EEFB187456AA743F124CF1612EB
 #define INFO_DOMAIN_CORBA_CONVERSIONS_H_368D6EEFB187456AA743F124CF1612EB
 

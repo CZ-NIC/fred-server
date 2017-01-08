@@ -32,6 +32,7 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
+#include <string>
 #include <vector>
 
 namespace Epp {
@@ -46,7 +47,7 @@ std::vector<DnsHostOutput> make_epp_dnshosts_output(const std::vector<Fred::DnsH
 template <class T> void check_disallowed_glue_ipaddrs(
     const DnsHostInput& _nsdata, std::size_t _current_nsset_ipaddr_position, T& _parameter_value_policy_error, Fred::OperationContext& _ctx)
 {
-    if(_nsdata.inet_addr.size() > 0)
+    if (_nsdata.inet_addr.size() > 0)
     {
         const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(_nsdata.fqdn);
         try
@@ -56,7 +57,7 @@ template <class T> void check_disallowed_glue_ipaddrs(
         }
         catch(const Fred::Zone::Exception& e)
         {
-            if(e.is_set_unknown_zone_in_fqdn()
+            if (e.is_set_unknown_zone_in_fqdn()
                 && (e.get_unknown_zone_in_fqdn() == (Fred::Zone::rem_trailing_dot(lower_dnshost_fqdn)) ))
             {
                 //zone not found

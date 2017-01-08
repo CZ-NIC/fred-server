@@ -18,6 +18,8 @@
 
 #include "src/epp/domain/impl/domain_enum_validation.h"
 
+#include <string>
+
 namespace Epp {
 namespace Domain {
 
@@ -29,7 +31,7 @@ bool is_new_enum_domain_validation_expiration_date_invalid(
         Fred::OperationContext& _ctx)
 {
     bool validation_continuation = false;
-    if(current_valexdate.is_initialized())
+    if (current_valexdate.is_initialized())
     {
         const boost::gregorian::date validation_continuation_begin = boost::gregorian::from_simple_string(
             static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
@@ -38,7 +40,7 @@ bool is_new_enum_domain_validation_expiration_date_invalid(
                 ("FROM enum_parameters WHERE name = 'enum_validation_continuation_window'")
                 )[0][0]));
 
-        if(current_local_date >= validation_continuation_begin
+        if (current_local_date >= validation_continuation_begin
             && current_local_date < *current_valexdate)
         {
             validation_continuation = true;
@@ -50,10 +52,9 @@ bool is_new_enum_domain_validation_expiration_date_invalid(
         ("SELECT (").param_date(validation_continuation ? *current_valexdate : current_local_date)
         (" + ").param_bigint(enum_validation_period)(" * ('1 month'::interval))::date ")
         )[0][0]));
-    ;
 
     //if new_valexdate is not valid
-    if(new_valexdate.is_special()
+    if (new_valexdate.is_special()
     || new_valexdate <= current_local_date
     || new_valexdate > max_valexdate)
     {

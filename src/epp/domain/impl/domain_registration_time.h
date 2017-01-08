@@ -29,7 +29,7 @@ class DomainRegistrationTime
 public:
     struct Unit
     {
-        enum Enum {month,year};
+        enum Enum {month, year};
     };
 
 private:

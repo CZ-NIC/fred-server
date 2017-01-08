@@ -26,6 +26,7 @@
 #include "util/optional_value.h"
 
 #include <string>
+#include <vector>
 
 namespace Epp {
 namespace Domain {

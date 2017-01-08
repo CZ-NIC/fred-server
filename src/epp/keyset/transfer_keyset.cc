@@ -20,6 +20,7 @@
 #include "src/fredlib/poll/message_types.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
+#include <string>
 
 namespace Epp {
 namespace Keyset {

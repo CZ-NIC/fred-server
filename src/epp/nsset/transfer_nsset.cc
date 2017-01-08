@@ -41,6 +41,9 @@
 
 #include <boost/foreach.hpp>
 
+#include <set>
+#include <string>
+
 namespace Epp {
 namespace Nsset {
 
@@ -56,7 +59,7 @@ unsigned long long transfer_nsset(
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if( Fred::Nsset::get_handle_registrability(_ctx, _nsset_handle) != Fred::NssetHandleState::Registrability::registered ) {
+    if ( Fred::Nsset::get_handle_registrability(_ctx, _nsset_handle) != Fred::NssetHandleState::Registrability::registered ) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
@@ -72,7 +75,7 @@ unsigned long long transfer_nsset(
 
     const std::string session_registrar_handle = Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data.handle;
 
-    if(nsset_data_before_transfer.sponsoring_registrar_handle == session_registrar_handle) {
+    if (nsset_data_before_transfer.sponsoring_registrar_handle == session_registrar_handle) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 
@@ -88,7 +91,7 @@ unsigned long long transfer_nsset(
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
     }
 
-    if(nsset_tech_c_authinfo.find(_authinfopw) == nsset_tech_c_authinfo.end()) {
+    if (nsset_tech_c_authinfo.find(_authinfopw) == nsset_tech_c_authinfo.end()) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
 

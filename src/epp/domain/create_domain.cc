@@ -29,6 +29,8 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
+#include <set>
+#include <string>
 namespace Epp {
 namespace Domain {
 
@@ -108,17 +110,17 @@ CreateDomainResult create_domain(
 
     // check nsset exists if set
     if (!_data.nsset.empty()
-    && (Fred::Nsset::get_handle_registrability(_ctx,_data.nsset)
+    && (Fred::Nsset::get_handle_registrability(_ctx, _data.nsset)
         != Fred::NssetHandleState::Registrability::registered))
     {
         parameter_value_policy_errors.add_extended_error(
                 EppExtendedError::of_scalar_parameter(
-                Param::domain_nsset,Reason::nsset_notexist));
+                Param::domain_nsset, Reason::nsset_notexist));
     }
 
     // check keyset exists if set
     if (!_data.keyset.empty()
-    && (Fred::Keyset::get_handle_registrability(_ctx,_data.keyset)
+    && (Fred::Keyset::get_handle_registrability(_ctx, _data.keyset)
         != Fred::Keyset::HandleState::registered))
     {
         parameter_value_policy_errors.add_extended_error(
@@ -137,7 +139,7 @@ CreateDomainResult create_domain(
     }
 
     // check registrant contact exists
-    if ((Fred::Contact::get_handle_registrability(_ctx,_data.registrant)
+    if ((Fred::Contact::get_handle_registrability(_ctx, _data.registrant)
         != Fred::ContactHandleState::Registrability::registered))
     {
         parameter_value_policy_errors.add_extended_error(
@@ -221,7 +223,7 @@ CreateDomainResult create_domain(
     std::set<std::string> admin_contact_duplicity;
     for (unsigned i = 0; i < _data.admin_contacts.size(); ++i)
     {
-        if (Fred::Contact::get_handle_registrability(_ctx,_data.admin_contacts.at(i))
+        if (Fred::Contact::get_handle_registrability(_ctx, _data.admin_contacts.at(i))
             != Fred::ContactHandleState::Registrability::registered)
         {
             parameter_value_policy_errors.add_extended_error(
@@ -285,7 +287,7 @@ CreateDomainResult create_domain(
             enum_validation_expiration,
             enum_publish_flag,
             _logd_request_id
-        ).exec(_ctx,"UTC");
+        ).exec(_ctx, "UTC");
 
         if (result.creation_time.is_special())
         {

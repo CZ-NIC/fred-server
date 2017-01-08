@@ -8,6 +8,9 @@
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
+#include <string>
+#include <vector>
+
 namespace Epp {
 namespace Keyset {
 

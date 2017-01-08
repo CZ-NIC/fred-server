@@ -43,7 +43,7 @@ unsigned long long delete_domain(
             Fred::Zone::rem_trailing_dot(_domain_fqdn));
     }
     catch (const Fred::Zone::Exception& e) {
-        if(e.is_set_unknown_zone_in_fqdn()) {
+        if (e.is_set_unknown_zone_in_fqdn()) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
@@ -110,7 +110,7 @@ unsigned long long delete_domain(
     catch (const Fred::DeleteDomainByHandle::Exception& e) {
 
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
-        if(e.is_set_unknown_domain_fqdn()) {
+        if (e.is_set_unknown_domain_fqdn()) {
             throw;
         }
 

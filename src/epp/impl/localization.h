@@ -26,7 +26,9 @@
 
 #include "src/fredlib/opcontext.h"
 
+#include <map>
 #include <set>
+#include <string>
 
 namespace Epp {
 
@@ -111,7 +113,7 @@ std::map<typename T::Enum, std::string> get_reasons_descriptions_localized(
         const SessionLang::Enum _lang)
 {
     std::map<typename T::Enum, std::string> reasons_descriptions_localized;
-    if(!_reasons_ids.empty()) {
+    if (!_reasons_ids.empty()) {
         const std::string reason_description_column_name = get_reason_description_localized_column_name(_lang);
         const Database::Result db_result = _ctx.get_conn().exec_params(
                 "SELECT "

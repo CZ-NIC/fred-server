@@ -18,6 +18,7 @@
 #include <boost/format/free_funcs.hpp>
 
 #include <string>
+#include <vector>
 
 namespace Epp {
 namespace Keyset {

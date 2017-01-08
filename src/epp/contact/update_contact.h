@@ -23,6 +23,8 @@
 #include "src/epp/contact/update_contact_localized.h"
 #include "src/fredlib/opcontext.h"
 
+#include <string>
+
 namespace Epp {
 namespace Contact {
 

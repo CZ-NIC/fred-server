@@ -23,6 +23,8 @@
 
 #include "src/epp/nsset/transfer_nsset_localized.h"
 
+#include <string>
+
 namespace Epp {
 namespace Nsset {
 

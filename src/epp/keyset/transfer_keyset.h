@@ -22,6 +22,8 @@
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
+#include <string>
+
 namespace Epp {
 namespace Keyset {
 

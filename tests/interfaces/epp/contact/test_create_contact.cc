@@ -159,7 +159,7 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
         Epp::Contact::create_contact(
             ctx,
             "contacthandle",
-            contact_data,
+            Epp::Contact::CreateContactInputData(contact_data),
             0 /* <== !!! */,
             42
         ),
@@ -187,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
         Epp::Contact::create_contact(
             ctx,
             "contacthandle1?" /* <== !!! */,
-            contact_data,
+            Epp::Contact::CreateContactInputData(contact_data),
             registrar.id,
             42 /* TODO */
         ),
@@ -211,7 +211,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
         Epp::Contact::create_contact(
             ctx,
             contact.handle,
-            contact_data,
+            Epp::Contact::CreateContactInputData(contact_data),
             registrar.id,
             42 /* TODO */
         ),
@@ -241,7 +241,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
         Epp::Contact::create_contact(
             ctx,
             contact.handle,
-            contact_data,
+            Epp::Contact::CreateContactInputData(contact_data),
             registrar.id,
             42 /* TODO */
         ),
@@ -268,7 +268,7 @@ BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
         Epp::Contact::create_contact(
             ctx,
             "contacthandle1",
-            contact_data,
+            Epp::Contact::CreateContactInputData(contact_data),
             registrar.id,
             42 /* TODO */
         ),
@@ -286,7 +286,7 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
     const Epp::Contact::CreateContactResult result = Epp::Contact::create_contact(
         ctx,
         contact_handle,
-        contact_data,
+        Epp::Contact::CreateContactInputData(contact_data),
         registrar.id,
         42 /* TODO */
     );
@@ -299,7 +299,7 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
         const std::string current_utc_time = static_cast< std::string >(db_res[0][0]);
         BOOST_CHECK_EQUAL(boost::posix_time::time_from_string(current_utc_time), result.crdate);
         BOOST_CHECK_EQUAL(boost::to_upper_copy(contact_handle), check_sample.handle);
-        check_equal(contact_data, check_sample);
+        check_equal(Epp::Contact::CreateContactInputData(contact_data), check_sample);
     }
 }
 

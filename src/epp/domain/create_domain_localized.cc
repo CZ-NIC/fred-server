@@ -21,6 +21,8 @@
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
 
+#include <string>
+
 namespace Epp {
 namespace Domain {
 
@@ -58,7 +60,7 @@ CreateDomainLocalizedResponse create_domain_localized(
                 create_domain_result.crtime,
                 create_domain_result.exdate);
 
-        if(_rifd_epp_operations_charging
+        if (_rifd_epp_operations_charging
                 && Fred::InfoRegistrarById(_registrar_id).exec(ctx)
                    .info_registrar_data.system.get_value_or(false) == false)
         {

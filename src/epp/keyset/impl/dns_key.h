@@ -96,7 +96,7 @@ public:
     class AlgValidator
     {
     public:
-        AlgValidator(Fred::OperationContext &_ctx);
+        explicit AlgValidator(Fred::OperationContext &_ctx);
         bool is_alg_correct(const DnsKey &_dns_key);
     private:
         Fred::OperationContext &ctx_;

@@ -23,11 +23,11 @@ unsigned long long delete_contact(
         const unsigned long long _registrar_id)
 {
 
-    if( _registrar_id == 0 ) {
+    if ( _registrar_id == 0 ) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if( Fred::Contact::get_handle_registrability(_ctx, _handle) != Fred::ContactHandleState::Registrability::registered ) {
+    if ( Fred::Contact::get_handle_registrability(_ctx, _handle) != Fred::ContactHandleState::Registrability::registered ) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
@@ -86,11 +86,11 @@ unsigned long long delete_contact(
     catch(const Fred::DeleteContactByHandle::Exception& e) {
 
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
-        if( e.is_set_unknown_contact_handle() ) {
+        if ( e.is_set_unknown_contact_handle() ) {
             throw;
         }
 
-        if( e.is_set_object_linked_to_contact_handle() ) {
+        if ( e.is_set_object_linked_to_contact_handle() ) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 

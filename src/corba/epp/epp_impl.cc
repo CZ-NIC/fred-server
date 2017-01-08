@@ -2430,7 +2430,7 @@ ccReg::Response* ccReg_EPP_i::ContactCreate(
         const Epp::Contact::CreateContactLocalizedResponse create_contact_localized_response =
                 Epp::Contact::create_contact_localized(
                         Corba::unwrap_string(_contact_handle),
-                        contact_create_data,
+                        Epp::Contact::CreateContactInputData(contact_create_data),
                         registrar_session_data.registrar_id,
                         epp_request_params.log_request_id.get_value_or(0),
                         registrar_session_data.language,

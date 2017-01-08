@@ -53,6 +53,8 @@ namespace Nsset {
 
 CreateNssetResult create_nsset(
         Fred::OperationContext& _ctx,
+        const CreateNssetInputData& _data,
+        const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id)
 {
 
@@ -113,7 +115,7 @@ CreateNssetResult create_nsset(
     {
         std::set<std::string> tech_contact_duplicity;
         EppResultFailure parameter_value_policy_error(EppResultCode::parameter_value_policy_error);
-        for(std::size_t i = 0; i < _data.tech_contacts.size(); ++i)
+        for (std::size_t i = 0; i < _data.tech_contacts.size(); ++i)
         {   // check technical contact exists
             if (Fred::Contact::get_handle_registrability(_ctx, _data.tech_contacts.at(i))
                 != Fred::ContactHandleState::Registrability::registered)
@@ -148,7 +150,7 @@ CreateNssetResult create_nsset(
         std::set<std::string> dns_host_fqdn_duplicity;
         EppResultFailure parameter_value_policy_error(EppResultCode::parameter_value_policy_error);
         std::size_t nsset_ipaddr_position = 0;
-        for(std::size_t i = 0; i < _data.dns_hosts.size(); ++i)
+        for (std::size_t i = 0; i < _data.dns_hosts.size(); ++i)
         {
             const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(_data.dns_hosts.at(i).fqdn);
 
@@ -177,7 +179,7 @@ CreateNssetResult create_nsset(
             // check nameserver IP addresses
             {
                 std::set<boost::asio::ip::address> dns_host_ip_duplicity;
-                for(std::size_t j = 0; j < _data.dns_hosts.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_position)
+                for (std::size_t j = 0; j < _data.dns_hosts.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_position)
                 {
                     const boost::optional<boost::asio::ip::address> dnshostipaddr = _data.dns_hosts.at(i).inet_addr.at(j);
                     if (is_prohibited_ip_addr(dnshostipaddr, _ctx))

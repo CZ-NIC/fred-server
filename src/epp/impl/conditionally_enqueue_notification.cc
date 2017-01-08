@@ -20,9 +20,9 @@ void conditionally_enqueue_notification(
         Fred::OperationContextCreator ctx;
         try {
 
-            if(!_epp_notification_disabled)
+            if (!_epp_notification_disabled)
             {
-                if(_client_transaction_handle.substr( 0, _dont_notify_client_transaction_handles_with_this_prefix.length() )
+                if (_client_transaction_handle.substr( 0, _dont_notify_client_transaction_handles_with_this_prefix.length() )
                     == _dont_notify_client_transaction_handles_with_this_prefix
                     &&
                     Fred::InfoRegistrarById(_registrar_id).exec(ctx)

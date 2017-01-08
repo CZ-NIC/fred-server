@@ -36,6 +36,7 @@
 #include <boost/format/free_funcs.hpp>
 
 #include <set>
+#include <string>
 #include <vector>
 
 namespace Epp {

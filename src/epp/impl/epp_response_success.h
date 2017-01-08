@@ -42,11 +42,11 @@ class EppResponseSuccess : std::exception
 public:
 
     /** Every EppResponse needs a valid EppResultSuccess */
-    EppResponseSuccess(EppResultSuccess _epp_result)
+    explicit EppResponseSuccess(EppResultSuccess _epp_result)
         : epp_result_(_epp_result)
     { }
 
-    virtual ~EppResponseSuccess() throw ()
+    virtual ~EppResponseSuccess() throw()
     { }
 
     const EppResultSuccess& epp_result() const {

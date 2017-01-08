@@ -39,13 +39,13 @@ class EppResultFailure
 public:
 
     /** Every EppResultFailure instance must have a valid EppResultCode::Failure */
-    EppResultFailure(EppResultCode::Failure _epp_result_code)
+    explicit EppResultFailure(EppResultCode::Failure _epp_result_code)
         : epp_result_code_(_epp_result_code)
     { }
 
     //EppResultFailure& add_error(const EppExtendedError& _error)
     //{
-    //    if(!errors_) {
+    //    if (!errors_) {
     //        errors_ = std::set<EppError>();
     //    }
     //    errors_->insert(_error);
@@ -54,7 +54,7 @@ public:
 
     //EppResultFailure& add_errors_(const std::set<EppExtendedError>& _errors)
     //{
-    //    if(!errors_) {
+    //    if (!errors_) {
     //        errors_ = std::set<EppError>();
     //    }
     //    errors_->insert(_errors.begin(), _errors.end());
@@ -63,7 +63,7 @@ public:
 
     EppResultFailure& add_extended_error(const EppExtendedError& _error)
     {
-        if(!extended_errors_) {
+        if (!extended_errors_) {
             extended_errors_ = std::set<EppExtendedError>();
         }
         extended_errors_->insert(_error);
@@ -72,7 +72,7 @@ public:
 
     EppResultFailure& add_extended_errors(const std::set<EppExtendedError>& _errors)
     {
-        if(!extended_errors_) {
+        if (!extended_errors_) {
             extended_errors_ = std::set<EppExtendedError>();
         }
         extended_errors_->insert(_errors.begin(), _errors.end());
@@ -116,10 +116,25 @@ private:
 
 };
 
-bool has_extended_error(const EppResultFailure& _epp_result_failure, const EppExtendedError& _epp_extended_error);
-bool has_extended_error_with_param_reason(const EppResultFailure& _epp_result_failure, const Param::Enum& _param, const Reason::Enum& _reason);
-bool has_extended_error_with_param_index_reason(const EppResultFailure& _epp_result_failure, const Param::Enum& _param, unsigned short _index, const Reason::Enum& _reason);
-std::set<EppExtendedError> extended_errors_with_param_reason(const EppResultFailure& _epp_result_failure, const Param::Enum& _param, const Reason::Enum& _reason);
+bool has_extended_error(
+        const EppResultFailure& _epp_result_failure,
+        const EppExtendedError& _epp_extended_error);
+
+bool has_extended_error_with_param_reason(
+        const EppResultFailure& _epp_result_failure,
+        const Param::Enum& _param,
+        const Reason::Enum& _reason);
+
+bool has_extended_error_with_param_index_reason(
+        const EppResultFailure& _epp_result_failure,
+        const Param::Enum& _param,
+        unsigned short _index,
+        const Reason::Enum& _reason);
+
+std::set<EppExtendedError> extended_errors_with_param_reason(
+        const EppResultFailure& _epp_result_failure,
+        const Param::Enum& _param,
+        const Reason::Enum& _reason);
 
 } // namespace Epp
 

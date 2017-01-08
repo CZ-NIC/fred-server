@@ -45,6 +45,8 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <set>
+#include <string>
 #include <vector>
 #include <set>
 #include <string>
@@ -135,7 +137,7 @@ unsigned long long update_nsset(
 
         //tech contacts to add check
         std::set<std::string> tech_contact_to_add_duplicity;
-        for(std::size_t i = 0; i < _data.tech_contacts_add.size(); ++i)
+        for (std::size_t i = 0; i < _data.tech_contacts_add.size(); ++i)
         {
             const std::string upper_tech_contact_handle = boost::algorithm::to_upper_copy(
                 _data.tech_contacts_add.at(i));
@@ -180,7 +182,7 @@ unsigned long long update_nsset(
         }
 
         //tech contacts to remove check
-        for(std::size_t i = 0; i < _data.tech_contacts_rem.size(); ++i)
+        for (std::size_t i = 0; i < _data.tech_contacts_rem.size(); ++i)
         {
             const std::string upper_tech_contact_handle = boost::algorithm::to_upper_copy(
                 _data.tech_contacts_rem.at(i));
@@ -210,7 +212,7 @@ unsigned long long update_nsset(
         {
             std::set<std::string> dns_host_to_add_fqdn_duplicity;
             std::size_t nsset_ipaddr_to_add_position = 0;
-            for(std::size_t i = 0; i < _data.dns_hosts_add.size(); ++i)
+            for (std::size_t i = 0; i < _data.dns_hosts_add.size(); ++i)
             {
                 const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
                         _data.dns_hosts_add.at(i).fqdn);
@@ -251,7 +253,7 @@ unsigned long long update_nsset(
                 //check nameserver IP addresses
                 {
                     std::set<boost::asio::ip::address> dns_host_to_add_ip_duplicity;
-                    for(std::size_t j = 0; j < _data.dns_hosts_add.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_to_add_position)
+                    for (std::size_t j = 0; j < _data.dns_hosts_add.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_to_add_position)
                     {
                         boost::optional<boost::asio::ip::address> dnshostipaddr = _data.dns_hosts_add.at(i).inet_addr.at(j);
                         if (is_prohibited_ip_addr(dnshostipaddr, _ctx))
@@ -279,7 +281,7 @@ unsigned long long update_nsset(
         //check dns hosts to remove
         {
             std::set<std::string> dns_host_to_remove_fqdn_duplicity;
-            for(std::size_t i = 0; i < _data.dns_hosts_rem.size(); ++i)
+            for (std::size_t i = 0; i < _data.dns_hosts_rem.size(); ++i)
             {
                 const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
                         _data.dns_hosts_rem.at(i).fqdn);

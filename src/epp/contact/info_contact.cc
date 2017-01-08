@@ -153,12 +153,12 @@ InfoContactOutputData info_contact(
                 : info.place.get_value().street1;
         output_data.street2           = info.place.isnull()
                 ? Nullable< std::string >()
-                : ! info.place.get_value().street2.isset()
+                : !info.place.get_value().street2.isset()
                     ? Nullable< std::string >()
                     : info.place.get_value().street2.get_value();
         output_data.street3           = info.place.isnull()
                 ? Nullable< std::string >()
-                : ! info.place.get_value().street3.isset()
+                : !info.place.get_value().street3.isset()
                     ? Nullable< std::string >()
                     : info.place.get_value().street3.get_value();
         output_data.city              = info.place.isnull()
@@ -193,7 +193,7 @@ InfoContactOutputData info_contact(
     }
     catch (const Fred::InfoContactByHandle::Exception& e) {
 
-        if(e.is_set_unknown_contact_handle()) {
+        if (e.is_set_unknown_contact_handle()) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 

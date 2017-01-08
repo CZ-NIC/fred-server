@@ -1,6 +1,9 @@
+#include "src/corba/epp/domain/info_domain_corba_conversions.h"
+
+#include "src/corba/EPP.hh"
+
 #include "src/corba/epp/corba_conversions.h"
 #include "src/corba/epp/domain/info_domain_corba_conversions.h"
-#include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/domain/impl/domain_enum_validation.h"
 #include "src/epp/domain/info_domain_localized.h"
@@ -10,6 +13,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/c_local_time_adjustor.hpp>
 
+#include <set>
 #include <string>
 
 namespace Corba {
@@ -21,13 +25,13 @@ namespace {
 struct TimeZoneOffset {
     boost::optional<boost::posix_time::time_duration> time_zone_offset_;
 
-    TimeZoneOffset(const boost::posix_time::ptime& _utc_time) {
+    explicit TimeZoneOffset(const boost::posix_time::ptime& _utc_time) {
         time_zone_offset_ = boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_time) - _utc_time;
     }
 
     std::string to_rfc3339_string() {
-        if(time_zone_offset_) {
-            if(time_zone_offset_->hours() || time_zone_offset_->minutes()) {
+        if (time_zone_offset_) {
+            if (time_zone_offset_->hours() || time_zone_offset_->minutes()) {
                 return boost::str(boost::format("%1$+03d:%2$02d")
                     % time_zone_offset_->hours()
                     % boost::date_time::absolute_value(time_zone_offset_->minutes()));
@@ -60,7 +64,7 @@ std::string format_time_to_rfc3339(const boost::posix_time::ptime& _utc_ptime) {
 }
 
 void wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(const Nullable<Epp::Domain::EnumValidationExtension>& _src, ccReg::ExtensionList& _dst) {
-    if(!_src.isnull()) {
+    if (!_src.isnull()) {
         ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
         enumVal->valExDate = Corba::wrap_string_to_corba_string(
             boost::gregorian::to_iso_extended_string(_src.get_value().get_valexdate())

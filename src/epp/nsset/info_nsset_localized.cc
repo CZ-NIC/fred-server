@@ -79,7 +79,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
 
             BOOST_FOREACH(const std::string& state, info_nsset_output_data.states) {
                 BOOST_FOREACH(const Fred::ObjectStateData& state_def, state_definitions) {
-                    if(state_def.is_external) {
+                    if (state_def.is_external) {
                         filtered_states.insert(state);
                     }
                 }

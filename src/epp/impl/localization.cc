@@ -17,6 +17,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
+#include <map>
 #include <set>
 #include <stdexcept>
 #include <string>

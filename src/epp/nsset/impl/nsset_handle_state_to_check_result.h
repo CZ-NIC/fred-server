@@ -33,22 +33,22 @@ inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_
         const Fred::NssetHandleState::SyntaxValidity::Enum _handle_validity,
         const Fred::NssetHandleState::Registrability::Enum _handle_in_registry)
 {
-    if(_handle_in_registry == Fred::NssetHandleState::Registrability::registered)
+    if (_handle_in_registry == Fred::NssetHandleState::Registrability::registered)
     {
         return NssetHandleRegistrationObstruction::registered_handle;
     }
 
-    if(_handle_in_registry == Fred::NssetHandleState::Registrability::in_protection_period)
+    if (_handle_in_registry == Fred::NssetHandleState::Registrability::in_protection_period)
     {
         return NssetHandleRegistrationObstruction::protected_handle;
     }
 
-    if(_handle_validity == Fred::NssetHandleState::SyntaxValidity::invalid)
+    if (_handle_validity == Fred::NssetHandleState::SyntaxValidity::invalid)
     {
         return NssetHandleRegistrationObstruction::invalid_handle;
     }
 
-    if(_handle_in_registry == Fred::NssetHandleState::Registrability::unregistered)
+    if (_handle_in_registry == Fred::NssetHandleState::Registrability::unregistered)
     {
         return Nullable<NssetHandleRegistrationObstruction::Enum>();
     }

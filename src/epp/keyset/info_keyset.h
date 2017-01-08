@@ -22,6 +22,8 @@
 #include "src/epp/keyset/impl/info_keyset_data.h"
 #include "src/fredlib/opcontext.h"
 
+#include <string>
+
 namespace Epp {
 namespace Keyset {
 

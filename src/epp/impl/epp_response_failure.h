@@ -41,12 +41,12 @@ class EppResponseFailure : std::exception
 public:
 
     /** Every EppResponse needs a valid EppResultFailure */
-    EppResponseFailure(EppResultFailure _epp_result)
+    explicit EppResponseFailure(EppResultFailure _epp_result)
     {
         epp_results_.push_back(_epp_result);
     }
 
-    virtual ~EppResponseFailure() throw ()
+    virtual ~EppResponseFailure() throw()
     { }
 
     EppResponseFailure& add(const EppResultFailure& _epp_result)

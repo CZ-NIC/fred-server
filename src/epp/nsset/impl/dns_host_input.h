@@ -36,8 +36,8 @@ namespace Nsset {
  * DNS host data.
  */
 struct DnsHostInput {
-    std::string fqdn;/**< nameserver host name*/
-    std::vector<boost::optional<boost::asio::ip::address> > inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host, non-initialized if value is invalid*/
+    std::string fqdn; /**< nameserver host name */
+    std::vector<boost::optional<boost::asio::ip::address> > inet_addr; /**< list of IPv4 or IPv6 addresses of the nameserver host, non-initialized if value is invalid */
 
     /**
      * Constructor initializing all attributes.

@@ -14,6 +14,9 @@
 #include "util/map_at.h"
 
 #include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace Epp {
 namespace Keyset {

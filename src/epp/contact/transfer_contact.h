@@ -19,9 +19,10 @@
 #ifndef TRANSFER_CONTACT_H_A01B6F5659C348CB9F8372FEBD555CDB
 #define TRANSFER_CONTACT_H_A01B6F5659C348CB9F8372FEBD555CDB
 
+#include "src/epp/contact/transfer_contact_localized.h"
 #include "src/fredlib/opcontext.h"
 
-#include "src/epp/contact/transfer_contact_localized.h"
+#include <string>
 
 namespace Epp {
 namespace Contact {

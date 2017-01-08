@@ -17,6 +17,9 @@
 
 #include <boost/mpl/assert.hpp>
 
+#include <string>
+#include <vector>
+
 namespace Epp {
 namespace Contact {
 
