@@ -94,10 +94,6 @@ unsigned long long domain_transfer_impl(
         throw ObjectStatusProhibitsOperation();
     }
 
-    if(domain_data_before_transfer.authinfopw != _authinfopw) {
-        throw AuthorizationInformationError();
-    }
-
     try {
         return
             Fred::TransferDomain(
