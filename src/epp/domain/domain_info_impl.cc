@@ -47,10 +47,12 @@ DomainInfoOutputData domain_info_impl(
         {
             typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
             ObjectStatesData domain_states_data = Fred::GetObjectStates(info_domain_data.id).exec(_ctx);
-            for (ObjectStatesData::const_iterator data_ptr = domain_states_data.begin();
-                 data_ptr != domain_states_data.end(); ++data_ptr)
+            for (ObjectStatesData::const_iterator object_state_ptr = domain_states_data.begin();
+                 object_state_ptr != domain_states_data.end(); ++object_state_ptr)
             {
-                domain_info_output_data.states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(data_ptr->state_name));
+                if (object_state_ptr->is_external) {
+                    domain_info_output_data.states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(object_state_ptr->state_name));
+                }
             }
         }
 
