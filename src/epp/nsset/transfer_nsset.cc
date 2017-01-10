@@ -65,14 +65,6 @@ unsigned long long transfer_nsset(
 
     const Fred::InfoNssetData nsset_data_before_transfer = Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
 
-    //set of authinfopw
-    std::set<std::string> nsset_tech_c_authinfo;
-    nsset_tech_c_authinfo.insert(nsset_data_before_transfer.authinfopw);
-    BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_c, nsset_data_before_transfer.tech_contacts)
-    {
-        nsset_tech_c_authinfo.insert(Fred::InfoContactById(tech_c.id).exec(_ctx).info_contact_data.authinfopw);
-    }
-
     const std::string session_registrar_handle = Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data.handle;
 
     if (nsset_data_before_transfer.sponsoring_registrar_handle == session_registrar_handle) {
@@ -89,10 +81,6 @@ unsigned long long transfer_nsset(
         nsset_states_before_transfer.presents(Fred::Object_State::delete_candidate))
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
-    }
-
-    if (nsset_tech_c_authinfo.find(_authinfopw) == nsset_tech_c_authinfo.end()) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
 
     try {
