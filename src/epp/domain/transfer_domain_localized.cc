@@ -12,7 +12,6 @@
 #include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/util.h"
-#include "src/fredlib/poll/create_transfer_domain_poll_message.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -57,8 +56,6 @@ EppResponseSuccessLocalized transfer_domain_localized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _lang);
-
-        Fred::Poll::CreateTransferDomainPollMessage(post_transfer_history_id).exec(ctx);
 
         ctx.commit_transaction();
 
