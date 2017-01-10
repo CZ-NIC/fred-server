@@ -3099,14 +3099,15 @@ ccReg::Response* ccReg_EPP_i::KeySetDelete(
     try {
         const Epp::RegistrarSessionData registrar_session_data = Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        const Epp::EppResponseSuccessLocalized epp_response_success_localized = Epp::Keyset::delete_keyset_localized(
-                Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
-                registrar_session_data.registrar_id,
-                registrar_session_data.language,
-                server_transaction_handle,
-                epp_request_params.client_transaction_id,
-                disable_epp_notifier_,
-                disable_epp_notifier_cltrid_prefix_);
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Keyset::delete_keyset_localized(
+                        Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
+                        registrar_session_data.registrar_id,
+                        registrar_session_data.language,
+                        server_transaction_handle,
+                        epp_request_params.client_transaction_id,
+                        disable_epp_notifier_,
+                        disable_epp_notifier_cltrid_prefix_);
 
         ccReg::Response_var return_value =
                 new ccReg::Response(

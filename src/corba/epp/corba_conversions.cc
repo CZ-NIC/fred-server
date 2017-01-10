@@ -202,7 +202,7 @@ namespace Corba {
             const std::string& _server_transaction_handle,
             ccReg::Response& _dst)
     {
-        const Epp::EppResultSuccessLocalized& epp_result = _epp_response.epp_result();
+        const Epp::EppResultSuccessLocalized epp_result = _epp_response.epp_result();
 
         CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), _dst.code);
         _dst.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
@@ -215,7 +215,7 @@ namespace Corba {
     {
         ccReg::Response response;
 
-        const Epp::EppResultSuccessLocalized& epp_result = _epp_response.epp_result();
+        const Epp::EppResultSuccessLocalized epp_result = _epp_response.epp_result();
 
         CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), response.code);
         response.svTRID = wrap_string_to_corba_string(_server_transaction_handle);

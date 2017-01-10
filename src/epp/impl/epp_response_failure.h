@@ -41,7 +41,7 @@ class EppResponseFailure : std::exception
 public:
 
     /** Every EppResponse needs a valid EppResultFailure */
-    explicit EppResponseFailure(EppResultFailure _epp_result)
+    explicit EppResponseFailure(const EppResultFailure& _epp_result)
     {
         epp_results_.push_back(_epp_result);
     }

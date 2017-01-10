@@ -42,7 +42,7 @@ class EppResponseSuccess : std::exception
 public:
 
     /** Every EppResponse needs a valid EppResultSuccess */
-    explicit EppResponseSuccess(EppResultSuccess _epp_result)
+    explicit EppResponseSuccess(const EppResultSuccess& _epp_result)
         : epp_result_(_epp_result)
     { }
 
