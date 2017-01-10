@@ -18,7 +18,8 @@
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/poll/create_transfer_domain_poll_message.h"
+#include "src/fredlib/poll/create_epp_action_poll_message_impl.h"
+#include "src/fredlib/poll/message_types.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
 #include "src/fredlib/zone/zone.h"
@@ -112,7 +113,9 @@ unsigned long long transfer_domain(
                 _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>()
             ).exec(_ctx);
 
-        Fred::Poll::CreateTransferDomainPollMessage(post_transfer_history_id).exec(_ctx);
+        Fred::Poll::CreateEppActionPollMessage(post_transfer_history_id,
+                                               Fred::Poll::domain,
+                                               Fred::Poll::TRANSFER_DOMAIN).exec(_ctx);
 
         return post_transfer_history_id;
 
