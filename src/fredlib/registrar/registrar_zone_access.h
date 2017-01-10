@@ -16,26 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- *  registrar zone access
- */
-
-#ifndef REGISTRAR_ZONE_ACCESS_H_2753b3b14fbc4ef09d5b28192fb7e0bf
-#define REGISTRAR_ZONE_ACCESS_H_2753b3b14fbc4ef09d5b28192fb7e0bf
-
+#ifndef REGISTRAR_ZONE_ACCESS_H_10675EA02C1D4994B3D25C4098D07F3D
+#define REGISTRAR_ZONE_ACCESS_H_10675EA02C1D4994B3D25C4098D07F3D
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include "src/fredlib/opcontext.h"
 
-namespace Fred
-{
-    /**
-     * check if registrar have allowed access to the zone
-     */
-    bool is_zone_accessible_by_registrar(unsigned long long registrar_id,
-            unsigned long long zone_id,
-            boost::gregorian::date _local_today, OperationContext& ctx);
-}//namespace Fred
+namespace Fred {
+
+/**
+ * check if the registrar has an access to the zone granted
+ */
+bool is_zone_accessible_by_registrar(
+        unsigned long long _registrar_id,
+        unsigned long long _zone_id,
+        boost::gregorian::date _local_today,
+        OperationContext& _ctx);
+
+} // namespace Fred
 
 #endif
