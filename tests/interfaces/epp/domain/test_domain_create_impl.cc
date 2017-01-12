@@ -459,7 +459,7 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_period_modulo, HasDomainData)
         BOOST_CHECK(ex.get().size() == 1);
         BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_period);
         BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_range);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::period_policy);
     }
     catch(...)
     {

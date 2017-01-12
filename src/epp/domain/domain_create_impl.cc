@@ -160,7 +160,7 @@ DomainCreateResult domain_create_impl(
         parameter_value_policy_error.add(
             Error::of_scalar_parameter(
                 Param::domain_period,
-                Reason::period_range));
+                Reason::period_policy));
     }
 
     //check expiration date of ENUM domain validation

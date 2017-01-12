@@ -127,7 +127,7 @@ DomainRenewResult domain_renew_impl(
     if(domain_registration_in_months % zone_data.ex_period_min != 0)
     {
         throw ParameterValuePolicyError().add(Error::of_scalar_parameter(
-            Param::domain_period, Reason::period_range));
+            Param::domain_period, Reason::period_policy));
     }
 
     //check if domain renew is possible
