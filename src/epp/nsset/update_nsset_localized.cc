@@ -42,7 +42,6 @@ EppResponseSuccessLocalized update_nsset_localized(
         const UpdateNssetInputData& _data,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
-        const bool _epp_update_nsset_enqueue_check,
         const SessionLang::Enum _lang,
         const std::string& _server_transaction_handle,
         const std::string& _client_transaction_handle,

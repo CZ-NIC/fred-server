@@ -43,7 +43,6 @@ EppResponseSuccessLocalized update_domain_localized(
         const std::vector<EnumValidationExtension>& _enum_validation_list,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
-        bool _epp_update_domain_enqueue_check,
         SessionLang::Enum _lang,
         const std::string& _server_transaction_handle,
         const std::string& _client_transaction_handle,
