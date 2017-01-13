@@ -192,13 +192,13 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_no_dot, HasDomainData)
         );
         BOOST_ERROR("exception expected");
     }
-    catch(const Epp::ParameterValueSyntaxError& ex)
+    catch(const Epp::ParameterValuePolicyError& ex)
     {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueSyntaxError");
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
         BOOST_CHECK(ex.get().size() == 1);
         BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
         BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::bad_format_fqdn);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::not_applicable_domain);
     }
     catch(...)
     {
