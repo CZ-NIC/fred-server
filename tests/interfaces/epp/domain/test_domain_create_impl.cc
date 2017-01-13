@@ -58,10 +58,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_zone, HasDomainData)
 {
-    domain1_create_input_data.fqdn = domain1_create_input_data.fqdn + std::string("c");
+    domain1_create_input_data.fqdn = domain1_create_input_data.fqdn + "c";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -88,10 +88,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_zone, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_cz, HasDomainData)
 {
-    domain1_create_input_data.fqdn = std::string("cz");
+    domain1_create_input_data.fqdn = "cz";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -150,8 +150,8 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_2dot_cz, HasDomainData)
 {
     domain1_create_input_data.fqdn = "..cz";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -178,10 +178,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_2dot_cz, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(fqdn_syntax_front_hyphen, HasDomainData)
 {
-    domain1_create_input_data.fqdn = std::string("-") + domain1_create_input_data.fqdn;
+    domain1_create_input_data.fqdn = "-" + domain1_create_input_data.fqdn;
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -208,10 +208,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_front_hyphen, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(fqdn_syntax_front_dot, HasDomainData)
 {
-    domain1_create_input_data.fqdn = std::string(".") + domain1_create_input_data.fqdn;
+    domain1_create_input_data.fqdn = "." + domain1_create_input_data.fqdn;
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -238,10 +238,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_front_dot, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(fqdn_syntax_double_dot, HasDomainData)
 {
-    domain1_create_input_data.fqdn = std::string("testdomain1..cz");
+    domain1_create_input_data.fqdn = "testdomain1..cz";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -268,10 +268,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_double_dot, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(fqdn_syntax_no_dot, HasDomainData)
 {
-    domain1_create_input_data.fqdn = std::string("testdomain1");
+    domain1_create_input_data.fqdn = "testdomain1";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -317,8 +317,8 @@ BOOST_FIXTURE_TEST_CASE(create_fqdn_blacklisted, HasDomainData)
         " VALUES ($1::text,$2::text,CURRENT_TIMESTAMP,NULL)",
             Database::query_param_list(domain1_create_input_data.fqdn)("test"));
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.fqdn " << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -358,10 +358,10 @@ BOOST_FIXTURE_TEST_CASE(create_fail_registrar_zone_access, HasDomainDataAndRegis
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_nsset, HasDomainData)
 {
-    domain1_create_input_data.nsset = domain1_create_input_data.nsset + std::string("NONEXISTING");
+    domain1_create_input_data.nsset = domain1_create_input_data.nsset + "NONEXISTING";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.nsset ") << domain1_create_input_data.nsset);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.nsset " << domain1_create_input_data.nsset);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -388,10 +388,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_nsset, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_keyset, HasDomainData)
 {
-    domain1_create_input_data.keyset = domain1_create_input_data.keyset + std::string("NONEXISTING");
+    domain1_create_input_data.keyset = domain1_create_input_data.keyset + "NONEXISTING";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.keyset ") << domain1_create_input_data.keyset);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.keyset " << domain1_create_input_data.keyset);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -418,10 +418,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_keyset, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_empty_registrant, HasDomainData)
 {
-    domain1_create_input_data.registrant = std::string("");
+    domain1_create_input_data.registrant = "";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.registrant ") << domain1_create_input_data.registrant);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.registrant " << domain1_create_input_data.registrant);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -448,10 +448,10 @@ BOOST_FIXTURE_TEST_CASE(create_empty_registrant, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrant, HasDomainData)
 {
-    domain1_create_input_data.registrant = domain1_create_input_data.registrant + std::string("NONEXISTING");
+    domain1_create_input_data.registrant = domain1_create_input_data.registrant + "NONEXISTING";
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.registrant ") << domain1_create_input_data.registrant);
-    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << info_registrar_data_.id);
+    BOOST_TEST_MESSAGE("domain1_create_input_data.registrant " << domain1_create_input_data.registrant);
+    BOOST_TEST_MESSAGE("info_registrar_data_.id " << info_registrar_data_.id);
 
     try{
         Epp::domain_create_impl(
@@ -559,7 +559,7 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_period_modulo, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_empty_valexdate_enum, HasDomainData)
 {
-    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
     domain1_create_input_data.enum_validation_list = std::vector<Epp::ENUMValidationExtension>();
 
     BOOST_CHECK_THROW(
@@ -576,7 +576,7 @@ BOOST_FIXTURE_TEST_CASE(create_empty_valexdate_enum, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, HasDomainData)
 {
-    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
     domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension());
 
@@ -627,7 +627,7 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_today, HasDomainData)
     const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
     const boost::gregorian::date current_local_date = current_local_time.date();
 
-    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
     domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension(current_local_date, false));//yesterday
 
@@ -662,7 +662,7 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_yesterday, HasDomainData)
     const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
     const boost::gregorian::date current_local_date = current_local_time.date();
 
-    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
     domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension(current_local_date - boost::gregorian::days(1), false));//yesterday
 
@@ -697,7 +697,7 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_7m, HasDomainData)
     const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
     const boost::gregorian::date current_local_date = current_local_time.date();
 
-    domain1_create_input_data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
+    domain1_create_input_data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
     domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension(current_local_date + boost::gregorian::months(7), false));//7 months
 
@@ -726,7 +726,7 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_7m, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_nonexistent_admin, HasDomainData)
 {
-    domain1_create_input_data.admin_contacts.push_back(*domain1_create_input_data.admin_contacts.rbegin() + std::string("NONEXISTING"));
+    domain1_create_input_data.admin_contacts.push_back(*domain1_create_input_data.admin_contacts.rbegin() + "NONEXISTING");
 
     try{
         Epp::domain_create_impl(
@@ -780,7 +780,7 @@ BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, HasDomainData)
 
 BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)
 {
-    domain1_create_input_data.authinfo = boost::optional<std::string>(std::string(""));
+    domain1_create_input_data.authinfo = boost::optional<std::string>("");
 
     Epp::domain_create_impl(
         ctx,
@@ -804,10 +804,10 @@ BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)
     BOOST_CHECK(info_data.authinfopw.find_first_not_of(Fred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
     BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
 
-    BOOST_TEST_MESSAGE(std::string("info_data.admin_contacts.size(): ")<< info_data.admin_contacts.size());
+    BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(0));
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(1));
+    BOOST_TEST_MESSAGE("domain1_create_input_data.admin_contacts " + domain1_create_input_data.admin_contacts.at(0));
+    BOOST_TEST_MESSAGE("domain1_create_input_data.admin_contacts " + domain1_create_input_data.admin_contacts.at(1));
 
     BOOST_CHECK(info_data.admin_contacts.size() == domain1_create_input_data.admin_contacts.size());
     BOOST_CHECK(std::equal (domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end(),
@@ -841,10 +841,10 @@ BOOST_FIXTURE_TEST_CASE(create_authinfo_not_set, HasDomainData)
     BOOST_CHECK(info_data.authinfopw.find_first_not_of(Fred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
     BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
 
-    BOOST_TEST_MESSAGE(std::string("info_data.admin_contacts.size(): ")<< info_data.admin_contacts.size());
+    BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(0));
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(1));
+    BOOST_TEST_MESSAGE("domain1_create_input_data.admin_contacts " + domain1_create_input_data.admin_contacts.at(0));
+    BOOST_TEST_MESSAGE("domain1_create_input_data.admin_contacts " + domain1_create_input_data.admin_contacts.at(1));
 
     BOOST_CHECK(info_data.admin_contacts.size() == domain1_create_input_data.admin_contacts.size());
     BOOST_CHECK(std::equal (domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end(),
@@ -874,13 +874,13 @@ BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
     BOOST_CHECK(info_data.nsset.get_value().handle == domain1_create_input_data.nsset);
     BOOST_CHECK(info_data.keyset.get_value().handle == domain1_create_input_data.keyset);
     BOOST_CHECK(info_data.authinfopw == domain1_create_input_data.authinfo);
-    BOOST_TEST_MESSAGE(std::string("info_data.expiration_date: ") << info_data.expiration_date << std::string(" expected_expiration_date_utc: ") << expected_expiration_date_utc);
+    BOOST_TEST_MESSAGE("info_data.expiration_date: " << info_data.expiration_date << " expected_expiration_date_utc: " << expected_expiration_date_utc);
     BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
 
-    BOOST_TEST_MESSAGE(std::string("info_data.admin_contacts.size(): ")<< info_data.admin_contacts.size());
+    BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
 
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(0));
-    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.admin_contacts ") + domain1_create_input_data.admin_contacts.at(1));
+    BOOST_TEST_MESSAGE("domain1_create_input_data.admin_contacts " + domain1_create_input_data.admin_contacts.at(0));
+    BOOST_TEST_MESSAGE("domain1_create_input_data.admin_contacts " + domain1_create_input_data.admin_contacts.at(1));
 
     BOOST_CHECK(info_data.admin_contacts.size() == domain1_create_input_data.admin_contacts.size());
     BOOST_CHECK(std::equal (domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end(),
