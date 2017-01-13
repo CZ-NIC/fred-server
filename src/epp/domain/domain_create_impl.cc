@@ -57,8 +57,11 @@ DomainCreateResult domain_create_impl(
         throw AuthErrorServerClosingConnection();
     }
 
+    const Fred::Domain::DomainRegistrability::Enum domain_registrability
+        = Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _data.fqdn);
+
     //check fqdn has known zone
-    if(Fred::CheckDomain(_data.fqdn).is_bad_zone(_ctx))
+    if(domain_registrability == Fred::Domain::DomainRegistrability::zone_not_in_registry)
     {
         throw ParameterValuePolicyError().add(Error::of_scalar_parameter(
             Param::domain_fqdn, Reason::not_applicable_domain));
@@ -71,9 +74,6 @@ DomainCreateResult domain_create_impl(
         throw ParameterValueSyntaxError().add(Error::of_scalar_parameter(
             Param::domain_fqdn, Reason::bad_format_fqdn));
     }
-
-    const Fred::Domain::DomainRegistrability::Enum domain_registrability
-        = Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _data.fqdn);
 
     //check fqdn is not already registered
     if(domain_registrability == Fred::Domain::DomainRegistrability::registered)
