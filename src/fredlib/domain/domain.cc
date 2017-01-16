@@ -47,12 +47,15 @@ DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(
     if (Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx)) {
         return DomainRegistrability::zone_not_in_registry;
     }
-    else if (Fred::CheckDomain(domain_fqdn).is_registered(ctx)) {
+
+    if (Fred::CheckDomain(domain_fqdn).is_registered(ctx)) {
         return DomainRegistrability::registered;
     }
-    else if (Fred::CheckDomain(domain_fqdn).is_blacklisted(ctx)) {
+
+    if (Fred::CheckDomain(domain_fqdn).is_blacklisted(ctx)) {
         return DomainRegistrability::blacklisted;
     }
+
     return DomainRegistrability::available;
 }
 
