@@ -86,7 +86,7 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_zone, HasDomainData)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(create_invalid_cz_zone, HasDomainData)
+BOOST_FIXTURE_TEST_CASE(create_invalid_cz, HasDomainData)
 {
     domain1_create_input_data.fqdn = std::string("cz");
 
@@ -116,7 +116,7 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_cz_zone, HasDomainData)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(fqdn_syntax_dot_cz, HasDomainData)
+BOOST_FIXTURE_TEST_CASE(create_invalid_dot_cz, HasDomainData)
 {
     domain1_create_input_data.fqdn = std::string(".cz");
 
@@ -132,13 +132,13 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_dot_cz, HasDomainData)
         );
         BOOST_ERROR("exception expected");
     }
-    catch(const Epp::ParameterValueSyntaxError& ex)
+    catch(const Epp::ParameterValuePolicyError& ex)
     {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueSyntaxError");
+        BOOST_TEST_MESSAGE("Epp::ParameterValuePolicyError");
         BOOST_CHECK(ex.get().size() == 1);
         BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
         BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::bad_format_fqdn);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::not_applicable_domain);
     }
     catch(...)
     {
