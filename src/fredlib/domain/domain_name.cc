@@ -88,6 +88,22 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
     return true;
 }
 
+bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& fqdn) {
+    static const boost::regex rfc1123_2_1_name_syntax(
+            "^([a-z0-9]([-a-z0-9]*[a-z0-9])*[.]?)+$");
+    return boost::regex_match(fqdn, rfc1123_2_1_name_syntax);
+
+}
+
+bool domain_name_rfc1123_2_1_syntax_check(const std::string& fqdn) {
+    return
+        general_domain_name_syntax_check(fqdn) &&
+        domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(fqdn);
+}
+
+DomainNameValidator::DomainNameValidator(const bool _is_system_registrar)
+    : is_system_registrar_(_is_system_registrar)
+{ }
 
 //domain name validator
 DomainNameValidator& DomainNameValidator::set_zone_name(const DomainName& _zone_name) {
@@ -156,6 +172,10 @@ DomainNameValidator& DomainNameValidator::add(const std::string& checker_name)
 
 DomainNameValidator& DomainNameValidator::set_checker_names(const std::vector<std::string>& checker_names)
 {
+    if (is_system_registrar_) {
+        return *this;
+    }
+
     for(std::vector<std::string>::const_iterator i = checker_names.begin(); i != checker_names.end() ; ++i){}
     FactoryHaveSupersetOfKeysChecker<Fred::Domain::DomainNameCheckerFactory>
         ::KeyVector required_keys = checker_names;
@@ -169,6 +189,10 @@ DomainNameValidator& DomainNameValidator::set_checker_names(const std::vector<st
 bool DomainNameValidator::exec(const DomainName& _fqdn, int top_labels_to_skip) {
 
     DomainName labels_to_check = _fqdn.get_subdomains(top_labels_to_skip);
+
+    if (is_system_registrar_) {
+        return true; // validation ok
+    }
 
     for(std::vector<std::string>::const_iterator ci = checker_name_vector_.begin(); ci !=checker_name_vector_.end(); ++ci)
     {

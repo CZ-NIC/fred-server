@@ -34,8 +34,8 @@
 
 namespace Fred
 {
-    CheckDomain::CheckDomain(const std::string& fqdn)
-    : fqdn_(fqdn)
+    CheckDomain::CheckDomain(const std::string& fqdn, const bool _is_system_registrar)
+    : fqdn_(fqdn), is_system_registrar_(_is_system_registrar)
     {}
 
     bool CheckDomain::is_invalid_syntax() const
@@ -53,7 +53,9 @@ namespace Fred
         try
         {
             //check general domain name syntax
-            if(!Domain::general_domain_name_syntax_check(fqdn_)) return true;
+            if(!Domain::domain_name_rfc1123_2_1_syntax_check(fqdn_)) {
+                return true;
+            }
 
             //remove optional root dot from fqdn
             std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
@@ -77,12 +79,11 @@ namespace Fred
             }
 
             //domain_name_validation
-            if(!Fred::Domain::DomainNameValidator()
-                .set_checker_names(Fred::Domain::get_domain_name_validation_config_for_zone(ctx,zone.name))
+            if(!Fred::Domain::DomainNameValidator(is_system_registrar_)
+                .set_checker_names(Fred::Domain::get_domain_name_validation_config_for_zone(ctx, zone.name))
                 .set_zone_name(Fred::Domain::DomainName(zone.name))
                 .set_ctx(ctx)
-                .exec(Fred::Domain::DomainName(fqdn_)
-                    , std::count(zone.name.begin(), zone.name.end(),'.')+1)//skip zone labels
+                .exec(Fred::Domain::DomainName(fqdn_), std::count(zone.name.begin(), zone.name.end(), '.') + 1) // skip zone labels
             )
             {
                 return true;

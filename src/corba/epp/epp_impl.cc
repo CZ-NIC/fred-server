@@ -677,7 +677,6 @@ ccReg_EPP_i::ccReg_EPP_i(
     , unsigned rifd_session_registrar_max
     , bool rifd_epp_update_domain_keyset_clear
     , bool rifd_epp_operations_charging
-    , bool _allow_idn
     , bool epp_update_contact_enqueue_check
 )
 
@@ -701,7 +700,6 @@ ccReg_EPP_i::ccReg_EPP_i(
     , rifd_session_registrar_max_(rifd_session_registrar_max)
     , rifd_epp_update_domain_keyset_clear_(rifd_epp_update_domain_keyset_clear)
     , rifd_epp_operations_charging_(rifd_epp_operations_charging),
-    allow_idn_(_allow_idn),
     epp_update_contact_enqueue_check_(epp_update_contact_enqueue_check),
     db_disconnect_guard_(),
     regMan(),
@@ -791,20 +789,6 @@ int ccReg_EPP_i::GetRegistrarLang(
   unsigned long long clientID)
 {
   return epp_sessions.get_registrar_lang(clientID);
-}
-
-bool ccReg_EPP_i::idn_allowed(EPPAction& action) const {
-    DBSharedPtr db = action.getDB();
-    if (!db.get()) {
-        throw Fred::SQL_ERROR();
-    }
-
-    // system registrar has IDN always allowed
-    if (db->GetRegistrarSystem(action.getRegistrar())) {
-        return true;
-    } else {
-        return this->allow_idn_;
-    }
 }
 
 // Load table to memory for speed
@@ -3539,7 +3523,6 @@ ccReg_EPP_i::ObjectSendAuthInfo(
         short act, const char * table, const char *fname, const char *name,
         const ccReg::EppParams &params)
 {
-    int zone = 0;
     int id = 0;
     std::string FQDN(name);
     boost::to_lower(FQDN);
@@ -3555,8 +3538,6 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
     std::auto_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
     std::vector<std::string> dev_null;
-
-    const Fred::Zone::Zone* temp_zone = NULL;
 
     switch (act) {
         case EPP_ContactSendAuthInfo:
@@ -3580,41 +3561,23 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                 code=COMMAND_OBJECT_NOT_EXIST;
             break;
         case EPP_DomainSendAuthInfo:
+            {
+                const Database::Result db_result = Database::Manager::acquire().exec_params(
+                        "SELECT id FROM object_registry ore "
+                        "WHERE ore.type = get_object_type_id('domain'::text) "
+                          "AND ore.name = $1::text "
+                          "AND ore.erdate IS NULL",
+                        Database::query_param_list(FQDN));
 
-            // static check of fqdn format (no db)
-            try {
-                zm->parseDomainName(FQDN, dev_null, idn_allowed(action));
-            } catch(Fred::Zone::INVALID_DOMAIN_NAME&) {
-                zone = -1;
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_fqdn, 1,
-                        REASON_MSG_BAD_FORMAT_FQDN);
-            }
-
-            // if fqdn is ok (see catch block above) ...
-            if(zone != -1) {
-                temp_zone = zm->findApplicableZone(FQDN);
-            }
-            // no zone was found for given fqdn
-            if(temp_zone == NULL) {
-                zone = 0;
-                code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
-                        ccReg::domain_fqdn, 1,
-                        REASON_MSG_NOT_APPLICABLE_DOMAIN);
-
-            // bingo, we got the zone
-            } else {
-                zone = temp_zone->getId();
-                // safety measure
-                temp_zone = NULL;
-                LOG(WARNING_LOG, "domain in zone %s", name);
-            }
-
-            // we still don't know whether the name is actually in register
-            if(zone > 0) {
-                if ( (id = action.getDB()->GetDomainID(FQDN.c_str(), GetZoneEnum(action.getDB(), zone) ) ) == 0) {
-                    LOG( WARNING_LOG , "domain [%s] NOT_EXIST" , name );
-                    code= COMMAND_OBJECT_NOT_EXIST;
+                if (db_result.size() == 1) {
+                    id = boost::numeric_cast<int>(static_cast<unsigned long long>(db_result[0][0]));
+                }
+                else if (db_result.size() < 1) {
+                    LOG(WARNING_LOG, "domain [%s] NOT_EXIST", name);
+                    code = COMMAND_OBJECT_NOT_EXIST;
+                }
+                else { // db_result.size() > 1
+                    ServerInternalError("ObjectSendAuthInfo");
                 }
             }
 

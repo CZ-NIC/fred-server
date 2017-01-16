@@ -61,7 +61,6 @@ private:
   unsigned rifd_session_registrar_max_;
   bool rifd_epp_update_domain_keyset_clear_;
   bool rifd_epp_operations_charging_;
-  const bool allow_idn_;
   const bool epp_update_contact_enqueue_check_;
 
   DBSharedPtr  db_disconnect_guard_;
@@ -96,7 +95,6 @@ public:
           , unsigned rifd_session_registrar_max
           , bool rifd_epp_update_domain_keyset_clear
           , bool rifd_epp_operations_charging
-          , bool _allow_idn
           , bool epp_update_contact_enqueue_check
           );
   virtual ~ccReg_EPP_i();

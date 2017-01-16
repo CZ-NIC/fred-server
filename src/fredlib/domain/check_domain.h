@@ -39,12 +39,13 @@ namespace Fred
     class CheckDomain : public Util::Printable
     {
         const std::string fqdn_;/**< domain identifier */
+        bool is_system_registrar_;
     public:
         /**
         * check domain constructor
         * @param fqdn a fully qualified domain name.
         */
-        CheckDomain(const std::string& fqdn);
+        CheckDomain(const std::string& fqdn, bool is_system_registrar = false);
 
         /**
         * check domain name syntax.

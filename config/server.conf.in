@@ -129,8 +129,6 @@ session_registrar_max = 5
 epp_update_domain_keyset_clear = true
 # Turn on/off domain create/renew operation credit charging
 epp_operations_charging = @EPP_OPERATIONS_CHARGING@
-# $EXPERIMENTAL$ Turn on/off IDN support
-allow_idn = false
 # Turn on/off contact check (semi-automatic) after data change
 epp_update_contact_enqueue_check = false
 

@@ -30,7 +30,6 @@
 #include <string>
 
 namespace Fred {
-
 namespace Domain {
 
 /**
@@ -58,10 +57,14 @@ struct DomainFqdnSyntaxValidity {
  *
  * \param ctx  operation context
  * \param domain_fqdn  fully qualified domain name
+ * \param is_system_registrar  fully qualified domain name
  *
  * \return  domain name syntax validity
  */
-DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(OperationContext& ctx, const std::string& domain_fqdn);
+DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(
+        OperationContext& ctx,
+        const std::string& domain_fqdn,
+        bool is_system_registrar = false);
 
 /**
  * \brief  Returns whether the domain identified by its FQDN is generally registrable, blacklisted or not in zone.
@@ -73,15 +76,18 @@ DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(OperationContext&
  *
  * \param ctx  operation context
  * \param domain_fqdn  fully qualified domain name
+ * \param is_registrar_system  if true, will return results appropriate for system registrar
  *
  * \return  domain registrability status.  Does NOT include advanced FQDN syntax check.
  *
  * \throw  ExceptionInvalidFqdn
  */
-DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(OperationContext& ctx, const std::string& domain_fqdn);
+DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(
+        OperationContext& ctx,
+        const std::string& domain_fqdn,
+        bool is_registrar_system = false);
 
-}
-
-}
+} // namespace Fred::Domain
+} // namespace Fred
 
 #endif

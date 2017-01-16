@@ -853,6 +853,29 @@ BOOST_FIXTURE_TEST_CASE(create_authinfo_not_set, HasDomainData)
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 }
 
+BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar, HasDomainDataAndSystemRegistrar)
+{
+    domain1_create_input_data.fqdn = std::string("fr--ed.cz");
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << system_registrar_data_.id);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.system ") << system_registrar_data_.system.get_value_or(false));
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            system_registrar_data_.id,
+            42
+        );
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 {
     Epp::domain_create_impl(
