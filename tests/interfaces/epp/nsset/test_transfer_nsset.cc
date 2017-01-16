@@ -155,13 +155,13 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_nsset_with_server
 
 struct has_nsset_and_another_registrar : has_nsset, has_another_registrar { };
 
-bool transfer_fail_authinfo_error_exception(const Epp::EppResponseFailure& e) {
+bool transfer_fail_authinfopw_error_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::invalid_authorization_information);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfo_error, has_nsset_and_another_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfopw_error, has_nsset_and_another_registrar)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::transfer_nsset(
@@ -172,7 +172,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfo_error, has_nsset_and_another_regi
             42
         ),
         Epp::EppResponseFailure,
-        transfer_fail_authinfo_error_exception
+        transfer_fail_authinfopw_error_exception
     );
 }
 

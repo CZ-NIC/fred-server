@@ -45,7 +45,7 @@ struct InfoNssetOutputData {
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
-    boost::optional<std::string> auth_info_pw;
+    boost::optional<std::string> authinfopw;
     std::vector<DnsHostOutput> dns_hosts;
     std::vector<std::string> tech_contacts;
     short tech_check_level;
@@ -60,7 +60,7 @@ struct InfoNssetOutputData {
         const boost::posix_time::ptime& _crdate,
         const Nullable<boost::posix_time::ptime>& _last_update,
         const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const boost::optional<std::string>& _auth_info_pw,
+        const boost::optional<std::string>& _authinfopw,
         const std::vector<DnsHostOutput>& _dns_hosts,
         const std::vector<std::string>& _tech_contacts,
         short _tech_check_level
@@ -74,7 +74,7 @@ struct InfoNssetOutputData {
         crdate(_crdate),
         last_update(_last_update),
         last_transfer(_last_transfer),
-        auth_info_pw(_auth_info_pw),
+        authinfopw(_authinfopw),
         dns_hosts(_dns_hosts),
         tech_contacts(_tech_contacts),
         tech_check_level(_tech_check_level)

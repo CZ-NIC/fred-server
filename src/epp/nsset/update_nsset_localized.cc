@@ -17,7 +17,6 @@
  */
 
 #include "src/epp/nsset/update_nsset_localized.h"
-#include "src/epp/nsset/update_nsset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
@@ -25,7 +24,11 @@
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
+#include "src/epp/nsset/impl/update_nsset_input_data.h"
+#include "src/epp/nsset/update_nsset.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -40,18 +43,14 @@ namespace Nsset {
 
 EppResponseSuccessLocalized update_nsset_localized(
         const UpdateNssetInputData& _data,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle,
-        const std::string& _client_transaction_handle,
-        const bool _epp_notification_disabled,
-        const std::string& _client_transaction_handles_prefix_not_to_nofify)
+        const SessionData& _session_data,
+        const NotificationData& _notification_data,
+        const Optional<unsigned long long>& _logd_request_id)
 {
     try {
         Logging::Context logging_ctx1("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::UpdateNsset)));
 
         Fred::OperationContextCreator ctx;
@@ -60,25 +59,22 @@ EppResponseSuccessLocalized update_nsset_localized(
                 update_nsset(
                         ctx,
                         _data,
-                        _registrar_id,
+                        _session_data.registrar_id,
                         _logd_request_id);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang);
+                        _session_data.lang);
 
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
                 Notification::updated,
                 nsset_new_hisotry_id,
-                _registrar_id,
-                _server_transaction_handle,
-                _client_transaction_handle,
-                _epp_notification_disabled,
-                _client_transaction_handles_prefix_not_to_nofify);
+                _session_data,
+                _notification_data);
 
         return epp_response_success_localized;
 
@@ -89,7 +85,7 @@ EppResponseSuccessLocalized update_nsset_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -97,7 +93,7 @@ EppResponseSuccessLocalized update_nsset_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -105,7 +101,7 @@ EppResponseSuccessLocalized update_nsset_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

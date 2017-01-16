@@ -19,52 +19,18 @@
 #ifndef CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
 #define CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
-#include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
+#include "src/epp/nsset/impl/check_nsset_localized_response.h"
+#include "src/epp/impl/session_data.h"
 
-#include <boost/optional.hpp>
-
-#include <map>
 #include <set>
 #include <string>
 
 namespace Epp {
 namespace Nsset {
 
-struct NssetHandleLocalizedRegistrationObstruction
-{
-    const NssetHandleRegistrationObstruction::Enum state;
-    const std::string description;
-
-    NssetHandleLocalizedRegistrationObstruction(
-        const NssetHandleRegistrationObstruction::Enum _state,
-        const std::string& _description)
-    :
-        state(_state),
-        description(_description)
-    { }
-};
-
-struct CheckNssetLocalizedResponse
-{
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> > nsset_statuses;
-
-    CheckNssetLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const std::map<std::string, boost::optional<NssetHandleLocalizedRegistrationObstruction> >& _nsset_statuses)
-    :
-        epp_response_success_localized(_epp_response_success_localized),
-        nsset_statuses(_nsset_statuses)
-    { }
-};
-
 CheckNssetLocalizedResponse check_nsset_localized(
         const std::set<std::string>& _nsset_handles,
-        unsigned long long _registrar_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle);
+        const SessionData& _session_data);
 
 } // namespace Epp::Nsset
 } // namespace Epp

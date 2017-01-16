@@ -24,42 +24,31 @@ namespace Epp {
 namespace Keyset {
 
 CreateKeysetLocalizedResponse create_keyset_localized(
-        const std::string& _keyset_handle,
-        const Optional<std::string>& _auth_info_pw,
-        const std::vector<std::string>& _tech_contacts,
-        const std::vector<Keyset::DsRecord>& _ds_records,
-        const std::vector<Keyset::DnsKey>& _dns_keys,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle,
-        const std::string& _client_transaction_handle,
-        const bool _epp_notification_disabled,
-        const std::string& _dont_notify_client_transaction_handles_with_this_prefix)
+        const CreateKeysetInputData& _create_keyset_input_data,
+        const SessionData& _session_data,
+        const NotificationData& _notification_data,
+        const Optional<unsigned long long>& _logd_request_id)
 {
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CreateKeyset)));
 
         Fred::OperationContextCreator ctx;
 
         const CreateKeysetResult result =
             create_keyset(
-                    ctx, _keyset_handle,
-                    _auth_info_pw,
-                    _tech_contacts,
-                    _ds_records,
-                    _dns_keys,
-                    _registrar_id,
+                    ctx,
+                    _create_keyset_input_data,
+                    _session_data.registrar_id,
                     _logd_request_id);
 
         const CreateKeysetLocalizedResponse create_keyset_localized_response(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang),
+                        _session_data.lang),
                 result.crdate);
 
         ctx.commit_transaction();
@@ -67,11 +56,8 @@ CreateKeysetLocalizedResponse create_keyset_localized(
         conditionally_enqueue_notification(
                 Notification::created,
                 result.create_history_id,
-                _registrar_id,
-                _server_transaction_handle,
-                _client_transaction_handle,
-                _epp_notification_disabled,
-                _dont_notify_client_transaction_handles_with_this_prefix);
+                _session_data,
+                _notification_data);
 
         return create_keyset_localized_response;
 
@@ -82,7 +68,7 @@ CreateKeysetLocalizedResponse create_keyset_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -90,7 +76,7 @@ CreateKeysetLocalizedResponse create_keyset_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -98,7 +84,7 @@ CreateKeysetLocalizedResponse create_keyset_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

@@ -20,7 +20,8 @@
 #define TRANSFER_DOMAIN_LOCALIZED_H_35B028F1145C40FA8AA305D6AA0B4A3B
 
 #include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 #include "util/optional_value.h"
 
 #include <string>
@@ -31,13 +32,9 @@ namespace Domain {
 EppResponseSuccessLocalized transfer_domain_localized(
         const std::string& _domain_fqdn,
         const std::string& _authinfopw,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle,
-        const std::string& _client_transaction_handle,
-        bool _epp_notification_disabled,
-        const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
+        const SessionData& _session_data,
+        const NotificationData& _notification_data,
+        const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Domain
 } // namespace Epp

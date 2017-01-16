@@ -1581,6 +1581,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/epp_extended_error_localized.h \
 		src/epp/impl/epp_extended_error_localized.cc \
 		src/epp/impl/epp_result_code.h \
+		src/epp/impl/notification_data.h \
+		src/epp/impl/session_data.h \
 		src/epp/impl/conditionally_enqueue_notification.h \
 		src/epp/impl/conditionally_enqueue_notification.cc \
 		src/epp/contact/create_contact_localized.cc \
@@ -1648,7 +1650,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/impl/domain_registration_obstruction.h \
 		src/epp/keyset/impl/dns_key.cc \
 		src/epp/keyset/impl/dns_key.h \
-		src/epp/keyset/ds_record.h \
+		src/epp/keyset/impl/ds_record.h \
 		src/epp/keyset/impl/info_keyset_data.h \
 		src/epp/keyset/info_keyset.cc \
 		src/epp/keyset/info_keyset.h \
@@ -2510,6 +2512,8 @@ tests_interfaces_test_admin_notification_LDADD = \
 # tests/interfaces/test-epp
 #
 tests_interfaces_test_epp_SOURCES = \
+		src/epp/impl/session_data.h \
+		src/epp/impl/notification_data.h \
 		tests/interfaces/epp/util.h \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
@@ -2893,6 +2897,8 @@ tests_test_blocking_LDADD = \
 # tests/test_fredlib
 #
 tests_test_fredlib_SOURCES = \
+		src/epp/impl/notification_data.h \
+		src/epp/impl/session_data.h \
 		tests/fredlib/main.cc \
 		tests/fredlib/registrar/test_registrar_zone_access.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \

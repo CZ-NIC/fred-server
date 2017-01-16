@@ -104,7 +104,7 @@ struct KeysetCreateData
     std::string keyset_handle;
     unsigned long long registrar_id;
     std::string registrar_handle;
-    Optional< std::string > auth_info_pw;
+    Optional< std::string > authinfopw;
     std::vector< std::string > tech_contacts;
     std::vector< Epp::Keyset::DsRecord > ds_records;
     std::vector< Epp::Keyset::DnsKey > dns_keys;
@@ -131,11 +131,12 @@ KeysetCreateData create_successfully_by(const Test::ObjectsProvider &objects_pro
         BOOST_CHECK(is_nondecreasing(Epp::Keyset::min_number_of_dns_keys, data.dns_keys.size(), Epp::Keyset::max_number_of_dns_keys));
         const Epp::Keyset::CreateKeysetResult result = Epp::Keyset::create_keyset(
             ctx,
-            data.keyset_handle,
-            data.auth_info_pw,
-            data.tech_contacts,
-            data.ds_records,
-            data.dns_keys,
+            Epp::Keyset::CreateKeysetInputData(
+                data.keyset_handle,
+                data.authinfopw,
+                data.tech_contacts,
+                data.ds_records,
+                data.dns_keys),
             data.registrar_id,
             logd_request_id);
         BOOST_REQUIRE(0 < result.id);
@@ -165,9 +166,9 @@ void check_created_keyset(const KeysetCreateData &data)
         BOOST_CHECK(info_data.handle == data.keyset_handle);
         BOOST_CHECK(info_data.creating_registrar_handle == data.registrar_handle);
         BOOST_CHECK(info_data.sponsoring_registrar_handle == data.registrar_handle);
-        BOOST_REQUIRE(info_data.auth_info_pw);
-        BOOST_CHECK(!info_data.auth_info_pw.value().empty());
-        BOOST_CHECK(!data.auth_info_pw.isset() || (info_data.auth_info_pw.value() == data.auth_info_pw.get_value()));
+        BOOST_REQUIRE(info_data.authinfopw);
+        BOOST_CHECK(!info_data.authinfopw.value().empty());
+        BOOST_CHECK(!data.authinfopw.isset() || (info_data.authinfopw.value() == data.authinfopw.get_value()));
         BOOST_CHECK(info_data.tech_contacts.size() == data.tech_contacts.size());
         BOOST_CHECK(!info_data.tech_contacts.empty());
         for (std::vector< std::string >::const_iterator tech_contact_ptr = data.tech_contacts.begin();
@@ -208,13 +209,14 @@ void create_by_invalid_registrar(const KeysetCreateData &data)
     static const unsigned long long invalid_registrar_id = 0;
     static const unsigned long long logd_request_id = 12346;
     BOOST_CHECK_EXCEPTION(
-        Epp::Keyset::create_keyset(
+            Epp::Keyset::create_keyset(
             ctx,
-            data.keyset_handle,
-            data.auth_info_pw,
-            data.tech_contacts,
-            data.ds_records,
-            data.dns_keys,
+            Epp::Keyset::CreateKeysetInputData(
+                data.keyset_handle,
+                data.authinfopw,
+                data.tech_contacts,
+                data.ds_records,
+                data.dns_keys),
             invalid_registrar_id,
             logd_request_id),
         Epp::EppResponseFailure,
@@ -242,11 +244,12 @@ void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &d
     BOOST_CHECK_EXCEPTION(
         Epp::Keyset::create_keyset(
             ctx,
-            data.keyset_handle,
-            data.auth_info_pw,
-            data.tech_contacts,
-            data.ds_records,
-            data.dns_keys,
+            Epp::Keyset::CreateKeysetInputData(
+                data.keyset_handle,
+                data.authinfopw,
+                data.tech_contacts,
+                data.ds_records,
+                data.dns_keys),
             registrar_id,
             logd_request_id),
         Epp::EppResponseFailure,
@@ -330,11 +333,12 @@ void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &da
     BOOST_CHECK_EXCEPTION(
         Epp::Keyset::create_keyset(
             ctx,
-            data.keyset_handle,
-            data.auth_info_pw,
-            data.tech_contacts,
-            data.ds_records,
-            data.dns_keys,
+            Epp::Keyset::CreateKeysetInputData(
+                data.keyset_handle,
+                data.authinfopw,
+                data.tech_contacts,
+                data.ds_records,
+                data.dns_keys),
             registrar_id,
             logd_request_id),
         Epp::EppResponseFailure,
@@ -363,11 +367,12 @@ void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data
     BOOST_CHECK_EXCEPTION(
         Epp::Keyset::create_keyset(
             ctx,
-            invalid_keyset_handle,
-            data.auth_info_pw,
-            data.tech_contacts,
-            data.ds_records,
-            data.dns_keys,
+            Epp::Keyset::CreateKeysetInputData(
+                invalid_keyset_handle,
+                data.authinfopw,
+                data.tech_contacts,
+                data.ds_records,
+                data.dns_keys),
             registrar_id,
             logd_request_id),
         Epp::EppResponseFailure,

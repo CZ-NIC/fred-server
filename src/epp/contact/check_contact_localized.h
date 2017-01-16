@@ -19,52 +19,18 @@
 #ifndef CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 #define CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
-#include "src/epp/contact/impl/contact_handle_registration_obstruction.h"
+#include "src/epp/contact/impl/check_contact_localized_response.h"
+#include "src/epp/impl/session_data.h"
 
-#include <boost/optional.hpp>
-
-#include <map>
 #include <set>
 #include <string>
 
 namespace Epp {
 namespace Contact {
 
-struct ContactHandleLocalizedRegistrationObstruction
-{
-    const ContactHandleRegistrationObstruction::Enum state;
-    const std::string description;
-
-    ContactHandleLocalizedRegistrationObstruction(
-        const ContactHandleRegistrationObstruction::Enum _state,
-        const std::string& _description
-    ) :
-       state(_state),
-       description(_description)
-    { }
-};
-
-struct CheckContactLocalizedResponse
-{
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> > contact_statuses;
-
-    CheckContactLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> >& _contact_statuses)
-    :
-        epp_response_success_localized(_epp_response_success_localized),
-        contact_statuses(_contact_statuses)
-    { }
-};
-
 CheckContactLocalizedResponse check_contact_localized(
         const std::set<std::string>& _contact_handles,
-        unsigned long long _registrar_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle);
+        const SessionData& _session_data);
 
 } // namespace Epp::Contact
 } // namespace Epp

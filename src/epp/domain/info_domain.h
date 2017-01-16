@@ -51,7 +51,7 @@ struct InfoDomainOutputData {
     Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
     Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
     boost::gregorian::date exdate;
-    boost::optional<std::string> auth_info_pw; ///< Password for keyset transfer
+    boost::optional<std::string> authinfopw; ///< Password for keyset transfer
     std::set<std::string> admin; ///< List of contacts identifier
     Nullable<EnumValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE

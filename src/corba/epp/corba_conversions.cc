@@ -454,7 +454,7 @@ namespace Corba {
         dst.vat               = convert_contact_update_or_delete_string(src.VAT);
         dst.ident             = convert_contact_update_or_delete_string(src.ident);
         dst.ident_type        = unwrap_identtyp(src.identtype);
-        dst.auth_info_pw      = convert_contact_update_or_delete_string(src.AuthInfoPw);
+        dst.authinfopw      = convert_contact_update_or_delete_string(src.AuthInfoPw);
         dst.disclose          = unwrap_ContactChange_to_ContactDisclose(src);
     }
 
@@ -559,7 +559,7 @@ namespace Corba {
         dst.VAT = wrap_Nullable_string_to_string(src.VAT);
         dst.ident = wrap_Nullable_string_to_string(src.ident);
         dst.identtype = wrap_identtyp(src.identtype);
-        dst.AuthInfoPw = Corba::wrap_string_to_corba_string(src.auth_info_pw ? src.auth_info_pw.value() : std::string());
+        dst.AuthInfoPw = Corba::wrap_string_to_corba_string(src.authinfopw ? src.authinfopw.value() : std::string());
 
         if (!src.disclose.is_initialized()) {
             dst.DiscloseFlag           = ccReg::DISCL_EMPTY;
@@ -618,7 +618,7 @@ namespace Corba {
         // XXX IDL nonsense
         result.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_input.last_transfer);
 
-        result.AuthInfoPw = Corba::wrap_string_to_corba_string(_input.auth_info_pw ? _input.auth_info_pw.value() : std::string());
+        result.AuthInfoPw = Corba::wrap_string_to_corba_string(_input.authinfopw ? _input.authinfopw.value() : std::string());
 
         {
             result.dns.length( _input.dns_host.size() );
@@ -660,7 +660,7 @@ namespace Corba {
         return result;
     }
 
-    static ccReg::CheckAvail wrap_contact_handle_check_result(const boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction >& _obstruction) {
+    static ccReg::CheckAvail wrap_contact_handle_check_result(const boost::optional< Epp::Contact::ContactHandleRegistrationObstructionLocalized >& _obstruction) {
         if (!_obstruction.is_initialized()) {
             return ccReg::NotExist;
         }
@@ -675,7 +675,7 @@ namespace Corba {
         throw std::runtime_error("unknown_contact_state");
     }
 
-    static ccReg::CheckAvail wrap_nsset_handle_check_result(const boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction>& _obstruction) {
+    static ccReg::CheckAvail wrap_nsset_handle_check_result(const boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized>& _obstruction) {
 
         if(!_obstruction.is_initialized()) {
             return ccReg::NotExist;
@@ -748,7 +748,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string, boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction > >& contact_handle_check_results
+        const std::map<std::string, boost::optional< Epp::Contact::ContactHandleRegistrationObstructionLocalized > >& contact_handle_check_results
     ) {
         ccReg::CheckResp result;
         result.length(contact_handles.size());
@@ -759,7 +759,7 @@ namespace Corba {
             it != contact_handles.end();
             ++it, ++i
         ) {
-            const boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction > check_result = map_at(contact_handle_check_results, *it);
+            const boost::optional< Epp::Contact::ContactHandleRegistrationObstructionLocalized > check_result = map_at(contact_handle_check_results, *it);
 
             result[i].avail = wrap_contact_handle_check_result(check_result);
             result[i].reason = wrap_string_to_corba_string(check_result.is_initialized() ? check_result.get().description : "");
@@ -861,7 +861,7 @@ namespace Corba {
         _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
         _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);
         _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);
-        _dst.AuthInfoPw = wrap_string_to_corba_string(_src.auth_info_pw ? _src.auth_info_pw.value() : std::string());
+        _dst.AuthInfoPw = wrap_string_to_corba_string(_src.authinfopw ? _src.authinfopw.value() : std::string());
         _dst.dsrec.length(0); // has to be empty
         wrap_Epp_InfoKeysetOutputData_DnsKeys(_src.dns_keys, _dst.dnsk);
         wrap_Epp_InfoKeysetOutputData_TechContacts(_src.tech_contacts, _dst.tech);
@@ -872,7 +872,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& nsset_handles,
-        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction> >& nsset_handle_check_results
+        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized> >& nsset_handle_check_results
     ) {
         ccReg::CheckResp result;
         result.length( nsset_handles.size() );
@@ -883,7 +883,7 @@ namespace Corba {
             it != nsset_handles.end();
             ++it, ++i
         ) {
-            const boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction> check_result = map_at(nsset_handle_check_results, *it);
+            const boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized> check_result = map_at(nsset_handle_check_results, *it);
 
             result[i].avail = wrap_nsset_handle_check_result( check_result );
             result[i].reason = Corba::wrap_string_to_corba_string( !check_result.is_initialized() ? "" : check_result.get().description );

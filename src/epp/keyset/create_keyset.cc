@@ -219,11 +219,7 @@ Success check_dns_keys(const std::vector<Keyset::DnsKey>& _dns_keys,
 
 CreateKeysetResult create_keyset(
         Fred::OperationContext& _ctx,
-        const std::string& _keyset_handle,
-        const Optional<std::string>& _auth_info_pw,
-        const std::vector<std::string>& _tech_contacts,
-        const std::vector<Keyset::DsRecord>& _ds_records,
-        const std::vector<Keyset::DnsKey>& _dns_keys,
+        const CreateKeysetInputData& _input,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id)
 {
@@ -238,17 +234,17 @@ CreateKeysetResult create_keyset(
         EppResultFailure policy_errors      = EppResultFailure(EppResultCode::parameter_value_policy_error);
         EppResultFailure syntax_errors      = EppResultFailure(EppResultCode::parameter_value_syntax_error);
 
-        if (!check_keyset_handle(_keyset_handle, _ctx, existing_objects, policy_errors, syntax_errors)) {
+        if (!check_keyset_handle(_input.keyset_handle, _ctx, existing_objects, policy_errors, syntax_errors)) {
             _ctx.get_log().info("check_keyset_handle failure");
         }
-        if (!check_tech_contacts(_tech_contacts, _ctx, missing_parameters, policy_errors)) {
+        if (!check_tech_contacts(_input.tech_contacts, _ctx, missing_parameters, policy_errors)) {
             _ctx.get_log().info("check_tech_contacts failure");
         }
         if (!check_ds_records< Keyset::min_number_of_ds_records,
-                               Keyset::max_number_of_ds_records >(_ds_records, policy_errors)) {
+                               Keyset::max_number_of_ds_records >(_input.ds_records, policy_errors)) {
             _ctx.get_log().info("check_ds_records failure");
         }
-        if (!check_dns_keys(_dns_keys, _ctx, missing_parameters, policy_errors)) {
+        if (!check_dns_keys(_input.dns_keys, _ctx, missing_parameters, policy_errors)) {
             _ctx.get_log().info("check_dns_keys failure");
         }
 
@@ -308,8 +304,8 @@ CreateKeysetResult create_keyset(
 
     try {
         std::vector< Fred::DnsKey > dns_keys;
-        for (std::vector< Keyset::DnsKey >::const_iterator dns_key_ptr = _dns_keys.begin();
-             dns_key_ptr != _dns_keys.end(); ++dns_key_ptr)
+        for (std::vector< Keyset::DnsKey >::const_iterator dns_key_ptr = _input.dns_keys.begin();
+             dns_key_ptr != _input.dns_keys.end(); ++dns_key_ptr)
         {
             dns_keys.push_back(Fred::DnsKey(dns_key_ptr->get_flags(),
                                             dns_key_ptr->get_protocol(),
@@ -317,11 +313,11 @@ CreateKeysetResult create_keyset(
                                             dns_key_ptr->get_key()));
         }
         const Fred::CreateKeyset::Result op_result = Fred::CreateKeyset(
-            _keyset_handle,
+            _input.keyset_handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
-            _auth_info_pw,
+            _input.authinfopw,
             dns_keys,
-            _tech_contacts).exec(_ctx, _logd_request_id, "UTC");
+            _input.tech_contacts).exec(_ctx, _logd_request_id, "UTC");
 
         CreateKeysetResult result;
         result.id = op_result.create_object_result.object_id,

@@ -275,7 +275,7 @@ CreateDomainResult create_domain(
             _data.fqdn,
             session_registrar.handle,
             _data.registrant,
-            _data.authinfo ? Optional<std::string>(*_data.authinfo) : Optional<std::string>(),
+            _data.authinfopw ? Optional<std::string>(*_data.authinfopw) : Optional<std::string>(),
             _data.nsset.empty()
                 ? Optional<Nullable<std::string> >()
                 : Optional<Nullable<std::string> >(_data.nsset),

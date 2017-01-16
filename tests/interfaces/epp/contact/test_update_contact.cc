@@ -85,7 +85,7 @@ void set_correct_data_2(Epp::Contact::ContactChange &data)
     data.vat          = "MyVATstring";
     data.ident        = "CZ0123456789";
     data.ident_type   = Epp::Contact::ContactChange::IdentType::op;
-    data.auth_info_pw = "a6tg85jk57yu97";
+    data.authinfopw = "a6tg85jk57yu97";
     data.disclose     = get_all_items();
 }
 
@@ -402,7 +402,7 @@ static void check_equal(
     BOOST_CHECK_EQUAL(info_after.ssntype,
                       !update.ident_type.isnull() ? ident_type_to_string(update.ident_type.get_value())
                                                   : info_before.ssntype);
-    BOOST_CHECK_EQUAL(info_after.authinfopw, get_new_value(update.auth_info_pw, info_before.authinfopw));
+    BOOST_CHECK_EQUAL(info_after.authinfopw, get_new_value(update.authinfopw, info_before.authinfopw));
     BOOST_CHECK_EQUAL(info_after.disclosename,
                       updated< Epp::Contact::ContactDisclose::Item::name         >(update, info_before.disclosename));
     BOOST_CHECK_EQUAL(info_after.discloseorganization,

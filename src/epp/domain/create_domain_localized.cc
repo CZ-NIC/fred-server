@@ -27,20 +27,16 @@ namespace Epp {
 namespace Domain {
 
 CreateDomainLocalizedResponse create_domain_localized(
-        const CreateDomainInputData& _data,
-        const unsigned long long _registrar_id,
+        const CreateDomainInputData& _create_domain_input_data,
+        const SessionData& _session_data,
+        const NotificationData& _notification_data,
         const Optional<unsigned long long>& _logd_request_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle,
-        const std::string& _client_transaction_handle,
-        const bool _epp_notification_disabled,
-        const std::string& _client_transaction_handles_prefix_not_to_nofify,
         const bool _rifd_epp_operations_charging)
 {
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CreateDomain)));
 
         Fred::OperationContextCreator ctx;
@@ -48,33 +44,33 @@ CreateDomainLocalizedResponse create_domain_localized(
         const CreateDomainResult create_domain_result(
                 create_domain(
                         ctx,
-                        _data,
-                        _registrar_id,
+                        _create_domain_input_data,
+                        _session_data.registrar_id,
                         _logd_request_id));
 
         const CreateDomainLocalizedResponse create_domain_localized_response(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang),
+                        _session_data.lang),
                 create_domain_result.crtime,
                 create_domain_result.exdate);
 
         if (_rifd_epp_operations_charging
-                && Fred::InfoRegistrarById(_registrar_id).exec(ctx)
+                && Fred::InfoRegistrarById(_session_data.registrar_id).exec(ctx)
                    .info_registrar_data.system.get_value_or(false) == false)
         {
             create_domain_bill_item(
-                    _data.fqdn,
+                    _create_domain_input_data.fqdn,
                     create_domain_result.crtime,
-                    _registrar_id,
+                    _session_data.registrar_id,
                     create_domain_result.id,
                     ctx);
 
             renew_domain_bill_item(
-                    _data.fqdn,
+                    _create_domain_input_data.fqdn,
                     create_domain_result.crtime,
-                    _registrar_id,
+                    _session_data.registrar_id,
                     create_domain_result.id,
                     create_domain_result.length_of_domain_registration_in_years,
                     create_domain_result.old_exdate,
@@ -87,11 +83,8 @@ CreateDomainLocalizedResponse create_domain_localized(
         conditionally_enqueue_notification(
                 Notification::created,
                 create_domain_result.create_history_id,
-                _registrar_id,
-                _server_transaction_handle,
-                _client_transaction_handle,
-                _epp_notification_disabled,
-                _client_transaction_handles_prefix_not_to_nofify);
+                _session_data,
+                _notification_data);
 
         return create_domain_localized_response;
 
@@ -101,7 +94,7 @@ CreateDomainLocalizedResponse create_domain_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::billing_failure)),
-                _lang);
+                _session_data.lang);
     }
     catch (const EppResponseFailure& e) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -109,7 +102,7 @@ CreateDomainLocalizedResponse create_domain_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -117,7 +110,7 @@ CreateDomainLocalizedResponse create_domain_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         Fred::OperationContextCreator exception_localization_ctx;
@@ -125,7 +118,7 @@ CreateDomainLocalizedResponse create_domain_localized(
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

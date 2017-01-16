@@ -19,7 +19,7 @@
 #ifndef INFO_KEYSET_DATA_H_22BCA2CEF9D4405C8BE709B0EA5107C5
 #define INFO_KEYSET_DATA_H_22BCA2CEF9D4405C8BE709B0EA5107C5
 
-#include "src/epp/keyset/ds_record.h"
+#include "src/epp/keyset/impl/ds_record.h"
 #include "src/epp/keyset/impl/dns_key.h"
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
@@ -49,7 +49,7 @@ struct InfoKeysetOutputData
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable< boost::posix_time::ptime > last_update; ///< Date and time of last change
     Nullable< boost::posix_time::ptime > last_transfer; ///< Date and time of last transfer
-    boost::optional<std::string> auth_info_pw; ///< Password for keyset transfer
+    boost::optional<std::string> authinfopw; ///< Password for keyset transfer
     DsRecords ds_records; ///< List of ds records
     DnsKeys dns_keys; ///< List of dnskeys
     TechContacts tech_contacts; ///< List of technical contacts identifier

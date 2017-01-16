@@ -468,7 +468,7 @@ unsigned long long update_contact(
         set_ContactUpdate_member(_change.email,        update, &Fred::UpdateContactByHandle::set_email);
         set_ContactUpdate_member(_change.notify_email, update, &Fred::UpdateContactByHandle::set_notifyemail);
         set_ContactUpdate_member(_change.vat,          update, &Fred::UpdateContactByHandle::set_vat);
-        set_ContactUpdate_member(_change.auth_info_pw, update, &Fred::UpdateContactByHandle::set_authinfo);
+        set_ContactUpdate_member(_change.authinfopw, update, &Fred::UpdateContactByHandle::set_authinfo);
 
         {
             const Ident ident(_change.ident, _change.ident_type);

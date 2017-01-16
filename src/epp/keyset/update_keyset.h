@@ -19,7 +19,7 @@
 #ifndef UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
 #define UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
 
-#include "src/epp/keyset/impl/info_keyset_data.h"
+#include "src/epp/keyset/impl/update_keyset_input_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
@@ -39,14 +39,7 @@ struct UpdateKeysetResult
 
 UpdateKeysetResult update_keyset(
         Fred::OperationContext& _ctx,
-        const std::string& _keyset_handle,
-        const Optional<std::string>& _auth_info_pw,
-        const std::vector<std::string>& _tech_contacts_add,
-        const std::vector<std::string>& _tech_contacts_rem,
-        const std::vector<Keyset::DsRecord>& _ds_records_add,
-        const std::vector<Keyset::DsRecord>& _ds_records_rem,
-        const std::vector<Keyset::DnsKey>& _dns_keys_add,
-        const std::vector<Keyset::DnsKey>& _dns_keys_rem,
+        const UpdateKeysetInputData& _update_keyset_input_data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
 

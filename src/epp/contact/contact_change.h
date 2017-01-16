@@ -56,7 +56,7 @@ struct ContactChange
         };
     };
     Nullable< IdentType::Enum > ident_type;
-    boost::optional< Nullable< std::string > > auth_info_pw;
+    boost::optional< Nullable< std::string > > authinfopw;
     boost::optional< ContactDisclose > disclose;
     struct Value
     {

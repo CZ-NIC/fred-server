@@ -74,7 +74,7 @@ void set_correct_contact_data(Epp::Contact::ContactChange &contact_data)
     contact_data.vat               = "MyVATstring";
     contact_data.ident             = "";
     contact_data.ident_type        = Nullable< Epp::Contact::ContactChange::IdentType::Enum >();
-    contact_data.auth_info_pw      = "authInfo123";
+    contact_data.authinfopw      = "authInfo123";
     contact_data.disclose          = set_all_disclose_flags(true);
 }
 
@@ -127,7 +127,7 @@ void check_equal(const Epp::Contact::CreateContactInputData &create_data, const 
         : ident_type_to_string(create_data.identtype.get_value()),
             info_data.ssntype.get_value_or_default());
 
-    BOOST_CHECK_EQUAL(create_data.authinfo ? *create_data.authinfo : std::string("not set"), info_data.authinfopw);
+    BOOST_CHECK_EQUAL(create_data.authinfopw ? *create_data.authinfopw : std::string("not set"), info_data.authinfopw);
     BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::name         >(create_data), info_data.disclosename);
     BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::organization >(create_data), info_data.discloseorganization);
     BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::address      >(create_data), info_data.discloseaddress);

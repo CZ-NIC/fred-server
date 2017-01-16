@@ -19,11 +19,9 @@
 #ifndef CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 #define CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 
-#include "src/epp/keyset/impl/info_keyset_data.h"
+#include "src/epp/keyset/impl/create_keyset_input_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string>
 #include <vector>
@@ -40,11 +38,7 @@ struct CreateKeysetResult
 
 CreateKeysetResult create_keyset(
         Fred::OperationContext& _ctx,
-        const std::string& _keyset_handle,
-        const Optional<std::string>& _auth_info_pw,
-        const std::vector<std::string>& _tech_contacts,
-        const std::vector<Keyset::DsRecord>& _ds_records,
-        const std::vector<Keyset::DnsKey>& _dns_keys,
+        const CreateKeysetInputData& _create_keyset_input_data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
 

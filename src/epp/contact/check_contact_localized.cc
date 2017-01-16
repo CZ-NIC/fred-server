@@ -20,6 +20,7 @@
 #include "src/epp/contact/check_contact.h"
 
 #include "src/epp/contact/impl/contact_handle_registration_obstruction.h"
+#include "src/epp/contact/impl/contact_handle_registration_obstruction_localized.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
@@ -30,6 +31,7 @@
 #include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
+#include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -48,37 +50,35 @@ namespace Epp {
 namespace Contact {
 
 typedef std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > HandleToObstruction;
-typedef std::map<std::string, boost::optional<ContactHandleLocalizedRegistrationObstruction> > HandleToLocalizedObstruction;
+typedef std::map<std::string, boost::optional<ContactHandleRegistrationObstructionLocalized> > HandleToLocalizedObstruction;
 
 CheckContactLocalizedResponse check_contact_localized(
         const std::set<std::string>& _contact_handles,
-        const unsigned long long _registrar_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle)
+        const SessionData& _session_data)
 {
     Fred::OperationContextCreator ctx;
 
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckContact)));
 
         const HandleToObstruction check_contact_results =
                 check_contact(
                         ctx,
                         _contact_handles,
-                        _registrar_id);
+                        _session_data.registrar_id);
 
         return CheckContactLocalizedResponse(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang),
-                localize_check_results<ContactHandleRegistrationObstruction, ContactHandleLocalizedRegistrationObstruction, boost::optional>(
+                        _session_data.lang),
+                localize_check_results<ContactHandleRegistrationObstruction, ContactHandleRegistrationObstructionLocalized, boost::optional>(
                         ctx,
                         check_contact_results,
-                        _lang));
+                        _session_data.lang));
 
     }
     catch (const EppResponseFailure& e) {
@@ -86,21 +86,21 @@ CheckContactLocalizedResponse check_contact_localized(
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("check_contact_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         ctx.get_log().info("unexpected exception in check_contact_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

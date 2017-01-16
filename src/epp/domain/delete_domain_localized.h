@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2017  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -20,7 +20,8 @@
 #define DELETE_DOMAIN_LOCALIZED_H_7881B671649445C0BD9D46F87C8643B8
 
 #include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 
 #include <string>
 
@@ -29,12 +30,8 @@ namespace Domain {
 
 EppResponseSuccessLocalized delete_domain_localized(
         const std::string& _domain_fqdn,
-        unsigned long long _registrar_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle,
-        const std::string& _client_transaction_handle,
-        bool _epp_notification_disabled,
-        const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
+        const SessionData& _session_data,
+        const NotificationData& _notification_data);
 
 } // namespace Epp::Domain
 } // namespace Epp

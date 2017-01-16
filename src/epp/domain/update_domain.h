@@ -20,6 +20,7 @@
 #define UPDATE_DOMAIN_H_2D1D225B719341E0B0F4384B04E36D74
 
 #include "src/epp/contact/update_contact.h"
+#include "src/epp/domain/impl/update_domain_input_data.h"
 #include "src/epp/domain/impl/domain_enum_validation.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -33,15 +34,7 @@ namespace Domain {
 
 unsigned long long update_domain(
         Fred::OperationContext& _ctx,
-        const std::string& _domain_fqdn,
-        const Optional<std::string>& _registrant_chg,
-        const Optional<std::string>& _auth_info_pw_chg,
-        const Optional<Nullable<std::string> >& _nsset_chg,
-        const Optional<Nullable<std::string> >& _keyset_chg,
-        const std::vector<std::string>& _admin_contacts_add,
-        const std::vector<std::string>& _admin_contacts_rem,
-        const std::vector<std::string>& _tmpcontacts_rem,
-        const std::vector<EnumValidationExtension>& _enum_validation_list,
+        const UpdateDomainInputData& _update_domain_input_data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
         bool _rifd_epp_update_domain_keyset_clear);

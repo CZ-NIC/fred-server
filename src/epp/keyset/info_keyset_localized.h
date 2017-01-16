@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2017  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -19,87 +19,17 @@
 #ifndef INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 #define INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/object_states_localized.h"
-#include "src/epp/impl/session_lang.h"
-#include "src/epp/keyset/impl/info_keyset_data.h"
-#include "src/fredlib/object/object_state.h"
-#include "util/db/nullable.h"
-
-#include <boost/optional.hpp>
+#include "src/epp/keyset/impl/info_keyset_localized_response.h"
+#include "src/epp/impl/session_data.h"
 
 #include <string>
 
 namespace Epp {
 namespace Keyset {
 
-struct InfoKeysetLocalizedOutputData
-{
-    std::string handle; ///< Keyset handle
-    std::string roid; ///< Keyset identifier - repository ID
-    std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
-    std::string creating_registrar_handle; ///< Registrar identifier, which created contact
-    Nullable<std::string> last_update_registrar_handle; ///< Registrar identifier, which realized changes
-    ObjectStatesLocalized localized_states; ///< Keyset states list
-    boost::posix_time::ptime crdate; ///< Creation date and time
-    Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
-    Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
-    boost::optional<std::string> auth_info_pw; ///< Password for keyset transfer
-    InfoKeysetOutputData::DsRecords ds_records; ///< List of ds records
-    InfoKeysetOutputData::DnsKeys dns_keys; ///< List of dnskeys
-    InfoKeysetOutputData::TechContacts tech_contacts; ///< List of technical contacts identifier
-
-    InfoKeysetLocalizedOutputData(
-        const std::string& _handle,
-        const std::string& _roid,
-        const std::string& _sponsoring_registrar_handle,
-        const std::string& _creating_registrar_handle,
-        const Nullable<std::string>& _last_update_registrar_handle,
-        const ObjectStatesLocalized& _localized_states,
-        const boost::posix_time::ptime& _crdate,
-        const Nullable<boost::posix_time::ptime>& _last_update,
-        const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const boost::optional<std::string>& _auth_info_pw,
-        const InfoKeysetOutputData::DsRecords& _ds_records,
-        const InfoKeysetOutputData::DnsKeys& _dns_keys,
-        const InfoKeysetOutputData::TechContacts& _tech_contacts)
-    :
-        handle(_handle),
-        roid(_roid),
-        sponsoring_registrar_handle(_sponsoring_registrar_handle),
-        creating_registrar_handle(_creating_registrar_handle),
-        last_update_registrar_handle(_last_update_registrar_handle),
-        localized_states(_localized_states),
-        crdate(_crdate),
-        last_update(_last_update),
-        last_transfer(_last_transfer),
-        auth_info_pw(_auth_info_pw),
-        ds_records(_ds_records),
-        dns_keys(_dns_keys),
-        tech_contacts(_tech_contacts)
-    { }
-
-};
-
-struct InfoKeysetLocalizedResponse
-{
-    EppResponseSuccessLocalized epp_response_success_localized;
-    InfoKeysetLocalizedOutputData data;
-
-    InfoKeysetLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const InfoKeysetLocalizedOutputData& _data)
-    :
-        epp_response_success_localized(_epp_response_success_localized),
-        data(_data)
-    { }
-};
-
 InfoKeysetLocalizedResponse info_keyset_localized(
         const std::string& _keyset_handle,
-        unsigned long long _registrar_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle);
+        const SessionData& _session_data);
 
 } // namespace Epp::Keyset
 } // namespace Epp

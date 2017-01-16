@@ -19,89 +19,17 @@
 #ifndef INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 #define INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
-#include "src/epp/nsset/impl/dns_host_output.h"
-#include "src/fredlib/opcontext.h"
-#include "util/db/nullable.h"
+#include "src/epp/impl/session_data.h"
+#include "src/epp/nsset/impl/info_nsset_localized_response.h"
 
-#include <boost/asio/ip/address.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/optional.hpp>
-
-#include <map>
 #include <string>
-#include <vector>
 
 namespace Epp {
 namespace Nsset {
 
-struct InfoNssetLocalizedOutputData
-{
-    std::string handle;
-    std::string roid;
-    std::string sponsoring_registrar_handle;
-    std::string creating_registrar_handle;
-    Nullable<std::string> last_update_registrar_handle;
-    std::map<std::string, std::string> localized_external_states;
-    boost::posix_time::ptime crdate;
-    Nullable<boost::posix_time::ptime> last_update;
-    Nullable<boost::posix_time::ptime> last_transfer;
-    boost::optional<std::string> auth_info_pw;
-    std::vector<DnsHostOutput> dns_host;
-    std::vector<std::string> tech_contacts;
-    short tech_check_level;
-
-    InfoNssetLocalizedOutputData(
-        const std::string& _handle,
-        const std::string& _roid,
-        const std::string& _sponsoring_registrar_handle,
-        const std::string& _creating_registrar_handle,
-        const Nullable<std::string>& _last_update_registrar_handle,
-        const std::map<std::string, std::string>& _localized_external_states,
-        const boost::posix_time::ptime& _crdate,
-        const Nullable<boost::posix_time::ptime>& _last_update,
-        const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const boost::optional<std::string>& _auth_info_pw,
-        const std::vector<DnsHostOutput>& _dns_host,
-        const std::vector<std::string>& _tech_contacts,
-        short _tech_check_level)
-    :
-        handle(_handle),
-        roid(_roid),
-        sponsoring_registrar_handle(_sponsoring_registrar_handle),
-        creating_registrar_handle(_creating_registrar_handle),
-        last_update_registrar_handle(_last_update_registrar_handle),
-        localized_external_states(_localized_external_states),
-        crdate(_crdate),
-        last_update(_last_update),
-        last_transfer(_last_transfer),
-        auth_info_pw(_auth_info_pw),
-        dns_host(_dns_host),
-        tech_contacts(_tech_contacts),
-        tech_check_level(_tech_check_level)
-    { }
-};
-
-struct InfoNssetLocalizedResponse
-{
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const InfoNssetLocalizedOutputData data;
-
-    InfoNssetLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const InfoNssetLocalizedOutputData& _data)
-    :
-        epp_response_success_localized(_epp_response_success_localized),
-        data(_data)
-    { }
-};
-
 InfoNssetLocalizedResponse info_nsset_localized(
         const std::string& _handle,
-        unsigned long long _registrar_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle);
+        const SessionData& _session_data);
 
 } // namespace Epp::Nsset
 } // namespace Epp

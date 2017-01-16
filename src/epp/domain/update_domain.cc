@@ -60,15 +60,7 @@ public:
 
 unsigned long long update_domain(
         Fred::OperationContext& _ctx,
-        const std::string& _domain_fqdn,
-        const Optional<std::string>& _registrant_chg,
-        const Optional<std::string>& _auth_info_pw_chg,
-        const Optional<Nullable<std::string> >& _nsset_chg,
-        const Optional<Nullable<std::string> >& _keyset_chg,
-        const std::vector<std::string>& _admin_contacts_add,
-        const std::vector<std::string>& _admin_contacts_rem,
-        const std::vector<std::string>& _tmpcontacts_rem,
-        const std::vector<EnumValidationExtension>& _enum_validation_list,
+        const UpdateDomainInputData& _input,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id,
         bool _rifd_epp_update_domain_keyset_clear)
@@ -121,16 +113,16 @@ unsigned long long update_domain(
 
     if (zone_data.is_enum) {
 
-        if (!_enum_validation_list.empty()) {
+        if (!_input.enum_validation_list.empty()) {
 
-            req_enum_valexdate = _enum_validation_list.rbegin()->get_valexdate();
+            req_enum_valexdate = _input.enum_validation_list.rbegin()->get_valexdate();
 
             if (req_enum_valexdate.get_value().is_special())
             {
                 parameter_value_range_errors.add_extended_error(
                         EppExtendedError::of_vector_parameter(
                                 Param::domain_ext_val_date,
-                                boost::numeric_cast<unsigned short>(_enum_validation_list.size() - 1),
+                                boost::numeric_cast<unsigned short>(_input.enum_validation_list.size() - 1),
                                 Reason::valexpdate_not_valid));
             }
             else {
@@ -151,24 +143,24 @@ unsigned long long update_domain(
                     parameter_value_range_errors.add_extended_error(
                             EppExtendedError::of_vector_parameter(
                                     Param::domain_ext_val_date,
-                                    boost::numeric_cast<unsigned short>(_enum_validation_list.size() - 1),
+                                    boost::numeric_cast<unsigned short>(_input.enum_validation_list.size() - 1),
                                     Reason::valexpdate_not_valid));
                 }
             }
 
-            enum_publish_flag = _enum_validation_list.rbegin()->get_publish();
+            enum_publish_flag = _input.enum_validation_list.rbegin()->get_publish();
         }
     }
     else { // not enum
         for (
-            std::vector<EnumValidationExtension>::const_iterator enum_validation_list_item_ptr = _enum_validation_list.begin();
-            enum_validation_list_item_ptr != _enum_validation_list.end();
+            std::vector<EnumValidationExtension>::const_iterator enum_validation_list_item_ptr = _input.enum_validation_list.begin();
+            enum_validation_list_item_ptr != _input.enum_validation_list.end();
             ++enum_validation_list_item_ptr)
         {
             parameter_value_range_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_ext_val_date,
-                            enum_validation_list_item_ptr - _enum_validation_list.begin(),
+                            enum_validation_list_item_ptr - _input.enum_validation_list.begin(),
                             Reason::valexpdate_not_used));
         }
     }
@@ -210,8 +202,8 @@ unsigned long long update_domain(
 
     std::set<std::string> admin_contact_add_duplicity;
     for (
-        std::vector<std::string>::const_iterator admin_contact_add_iter = _admin_contacts_add.begin();
-        admin_contact_add_iter != _admin_contacts_add.end();
+        std::vector<std::string>::const_iterator admin_contact_add_iter = _input.admin_contacts_add.begin();
+        admin_contact_add_iter != _input.admin_contacts_add.end();
         ++admin_contact_add_iter)
     {
         if (Fred::Contact::get_handle_registrability(_ctx, *admin_contact_add_iter) != Fred::ContactHandleState::Registrability::registered)
@@ -219,7 +211,7 @@ unsigned long long update_domain(
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_admin_add,
-                            admin_contact_add_iter - _admin_contacts_add.begin(),
+                            admin_contact_add_iter - _input.admin_contacts_add.begin(),
                             Reason::admin_notexist));
         }
         else if (
@@ -232,7 +224,7 @@ unsigned long long update_domain(
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_admin_add,
-                            admin_contact_add_iter - _admin_contacts_add.begin(),
+                            admin_contact_add_iter - _input.admin_contacts_add.begin(),
                             Reason::admin_exist));
         }
         else if (admin_contact_add_duplicity.insert(boost::algorithm::to_upper_copy(*admin_contact_add_iter)).second == false)
@@ -240,15 +232,15 @@ unsigned long long update_domain(
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_admin_add,
-                            admin_contact_add_iter - _admin_contacts_add.begin(),
+                            admin_contact_add_iter - _input.admin_contacts_add.begin(),
                             Reason::duplicated_contact));
         }
     }
 
     std::set<std::string> admin_contact_rem_duplicity;
     for (
-        std::vector<std::string>::const_iterator admin_contact_rem_iter = _admin_contacts_rem.begin();
-        admin_contact_rem_iter != _admin_contacts_rem.end();
+        std::vector<std::string>::const_iterator admin_contact_rem_iter = _input.admin_contacts_rem.begin();
+        admin_contact_rem_iter != _input.admin_contacts_rem.end();
         ++admin_contact_rem_iter)
     {
         if (Fred::Contact::get_handle_registrability(_ctx, *admin_contact_rem_iter) != Fred::ContactHandleState::Registrability::registered)
@@ -256,7 +248,7 @@ unsigned long long update_domain(
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_admin_rem,
-                            admin_contact_rem_iter - _admin_contacts_rem.begin(),
+                            admin_contact_rem_iter - _input.admin_contacts_rem.begin(),
                             Reason::admin_notexist));
         }
         else if (
@@ -269,7 +261,7 @@ unsigned long long update_domain(
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_admin_rem,
-                            admin_contact_rem_iter - _admin_contacts_rem.begin(),
+                            admin_contact_rem_iter - _input.admin_contacts_rem.begin(),
                             Reason::admin_not_assigned));
         }
         else if (admin_contact_rem_duplicity.insert(boost::algorithm::to_upper_copy(*admin_contact_rem_iter)).second == false)
@@ -277,26 +269,26 @@ unsigned long long update_domain(
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_admin_rem,
-                            admin_contact_rem_iter - _admin_contacts_rem.begin(),
+                            admin_contact_rem_iter - _input.admin_contacts_rem.begin(),
                             Reason::duplicated_contact));
         }
     }
 
     for (
-        std::vector<std::string>::const_iterator tmpcontact_rem = _tmpcontacts_rem.begin();
-        tmpcontact_rem != _tmpcontacts_rem.end();
+        std::vector<std::string>::const_iterator tmpcontact_rem = _input.tmpcontacts_rem.begin();
+        tmpcontact_rem != _input.tmpcontacts_rem.end();
         ++tmpcontact_rem)
     {
         parameter_value_policy_errors.add_extended_error(
                 EppExtendedError::of_vector_parameter(
                         Param::domain_tmpcontact,
-                        tmpcontact_rem - _tmpcontacts_rem.begin(),
+                        tmpcontact_rem - _input.tmpcontacts_rem.begin(),
                         Reason::tmpcontacts_obsolete));
     }
 
-    if (_nsset_chg.isset()
-    && !_nsset_chg.get_value().isnull()
-    && (Fred::Nsset::get_handle_registrability(_ctx, _nsset_chg.get_value().get_value())
+    if (_input.nsset_chg.isset()
+    && !_input.nsset_chg.get_value().isnull()
+    && (Fred::Nsset::get_handle_registrability(_ctx, _input.nsset_chg.get_value().get_value())
         != Fred::NssetHandleState::Registrability::registered))
     {
         parameter_value_policy_errors.add_extended_error(
@@ -305,9 +297,9 @@ unsigned long long update_domain(
                         Reason::nsset_notexist));
     }
 
-    if (_keyset_chg.isset()
-    && !_keyset_chg.get_value().isnull()
-    && (Fred::Keyset::get_handle_registrability(_ctx, _keyset_chg.get_value().get_value())
+    if (_input.keyset_chg.isset()
+    && !_input.keyset_chg.get_value().isnull()
+    && (Fred::Keyset::get_handle_registrability(_ctx, _input.keyset_chg.get_value().get_value())
         != Fred::Keyset::HandleState::registered))
     {
         parameter_value_policy_errors.add_extended_error(
@@ -316,7 +308,7 @@ unsigned long long update_domain(
                         Reason::keyset_notexist));
     }
 
-    if (_registrant_chg.isset())
+    if (_input.registrant_chg.isset())
     {
         if (!is_system_registrar) {
             if (domain_states.presents(Fred::Object_State::server_registrant_change_prohibited)) {
@@ -324,7 +316,7 @@ unsigned long long update_domain(
             }
         }
 
-        if (Fred::Contact::get_handle_registrability(_ctx, _registrant_chg.get_value()) != Fred::ContactHandleState::Registrability::registered)
+        if (Fred::Contact::get_handle_registrability(_ctx, _input.registrant_chg.get_value()) != Fred::ContactHandleState::Registrability::registered)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_scalar_parameter(
@@ -338,22 +330,22 @@ unsigned long long update_domain(
     }
 
     const Optional<Nullable<std::string> >& keyset_chg =
-        (_nsset_chg.isset() && !_keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear)
+        (_input.nsset_chg.isset() && !_input.keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear)
             ? Optional<Nullable<std::string> >(Nullable<std::string>())
-            : _keyset_chg; // TODO if nsset set, but same as current one?
+            : _input.keyset_chg; // TODO if nsset set, but same as current one?
 
     const std::string registrar_handle =
         Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
 
     Fred::UpdateDomain update_domain = Fred::UpdateDomain(
-        _domain_fqdn,
+        _input.domain_fqdn,
         registrar_handle,
-        _registrant_chg,
-        _auth_info_pw_chg,
-        _nsset_chg,
+        _input.registrant_chg,
+        _input.authinfopw_chg,
+        _input.nsset_chg,
         keyset_chg,
-        _admin_contacts_add,
-        _admin_contacts_rem,
+        _input.admin_contacts_add,
+        _input.admin_contacts_rem,
         Optional<boost::gregorian::date>(), // expiration_date
         req_enum_valexdate,
         enum_publish_flag,

@@ -24,6 +24,7 @@
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
+#include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
@@ -45,33 +46,31 @@ namespace Nsset {
 
 CheckNssetLocalizedResponse check_nsset_localized(
         const std::set<std::string>& _nsset_handles,
-        const unsigned long long _registrar_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle)
+        const SessionData& _session_data)
 {
     Fred::OperationContextCreator ctx;
 
     try {
         Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckNsset)));
 
         const std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset_results =
                 check_nsset(
                         ctx,
                         _nsset_handles,
-                        _registrar_id);
+                        _session_data.registrar_id);
 
         return CheckNssetLocalizedResponse(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang),
-                localize_check_results<NssetHandleRegistrationObstruction, NssetHandleLocalizedRegistrationObstruction, boost::optional>(
+                        _session_data.lang),
+                localize_check_results<NssetHandleRegistrationObstruction, NssetHandleRegistrationObstructionLocalized, boost::optional>(
                         ctx,
                         check_nsset_results,
-                        _lang));
+                        _session_data.lang));
 
     }
     catch (const EppResponseFailure& e) {
@@ -79,21 +78,21 @@ CheckNssetLocalizedResponse check_nsset_localized(
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("check_nsset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         ctx.get_log().info("unexpected exception in check_nsset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

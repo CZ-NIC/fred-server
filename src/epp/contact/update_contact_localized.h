@@ -21,7 +21,8 @@
 
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 #include "util/optional_value.h"
 
 #include <string>
@@ -33,14 +34,10 @@ namespace Contact {
 EppResponseSuccessLocalized update_contact_localized(
         const std::string& _contact_handle,
         const ContactChange& _data,
-        unsigned long long _registrar_id,
+        const SessionData& _session_data,
+        const NotificationData& _notification_data,
         const Optional<unsigned long long>& _logd_request_id,
-        bool _epp_update_contact_enqueue_check,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle,
-        const std::string& _client_transaction_handle,
-        bool _epp_notification_disabled,
-        const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
+        bool _epp_update_contact_enqueue_check);
 
 } // namespace Epp::Contact
 } // namespace Epp

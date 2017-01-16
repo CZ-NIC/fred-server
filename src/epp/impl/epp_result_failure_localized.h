@@ -19,10 +19,9 @@
 #ifndef EPP_RESULT_FAILURE_LOCALIZED_H_F6024F1DD96944B58A9E6F191A9DB2A6
 #define EPP_RESULT_FAILURE_LOCALIZED_H_F6024F1DD96944B58A9E6F191A9DB2A6
 
-#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_extended_error_localized.h"
+#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/session_lang.h"
-
 #include "src/fredlib/opcontext.h"
 
 #include <boost/optional.hpp>

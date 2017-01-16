@@ -75,7 +75,7 @@ InfoNssetOutputData info_nsset(
 
         const std::string callers_registrar_handle = Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
         const bool callers_is_sponsoring_registrar = info_nsset_data.sponsoring_registrar_handle == callers_registrar_handle;
-        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
+        const bool authinfopw_has_to_be_hidden = !callers_is_sponsoring_registrar;
 
         return InfoNssetOutputData(
             info_nsset_data.handle,
@@ -87,8 +87,8 @@ InfoNssetOutputData info_nsset(
             info_nsset_data.creation_time,
             info_nsset_data.update_time,
             info_nsset_data.transfer_time,
-            // show object authinfo only to sponsoring registrar
-            authinfo_has_to_be_hidden ? boost::optional<std::string>() : info_nsset_data.authinfopw,
+            // show object authinfopw only to sponsoring registrar
+            authinfopw_has_to_be_hidden ? boost::optional<std::string>() : info_nsset_data.authinfopw,
             make_epp_dnshosts_output(info_nsset_data.dns_hosts),
             tech_contacts,
             info_nsset_data.tech_check_level.get_value_or(0)

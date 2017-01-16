@@ -182,11 +182,11 @@ InfoContactOutputData info_contact(
         output_data.VAT               = info.vat;
         output_data.personal_id       = get_personal_id(info.ssn, info.ssntype);
 
-        // show object authinfo only to sponsoring registrar
+        // show object authinfopw only to sponsoring registrar
         const std::string callers_registrar_handle = Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
         const bool callers_is_sponsoring_registrar = info.sponsoring_registrar_handle == callers_registrar_handle;
-        const bool authinfo_has_to_be_hidden = !callers_is_sponsoring_registrar;
-        output_data.auth_info_pw      = authinfo_has_to_be_hidden ? boost::optional<std::string>() : info.authinfopw;
+        const bool authinfopw_has_to_be_hidden = !callers_is_sponsoring_registrar;
+        output_data.authinfopw      = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : info.authinfopw;
 
         return output_data;
 

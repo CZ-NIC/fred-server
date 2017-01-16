@@ -330,7 +330,7 @@ unsigned long long update_nsset(
 
         Fred::UpdateNsset update(_data.handle,
             logged_in_registrar.handle,
-            _data.authinfo,
+            _data.authinfopw,
             make_fred_dns_hosts(_data.dns_hosts_add),
             dns_hosts_rem,
             _data.tech_contacts_add,

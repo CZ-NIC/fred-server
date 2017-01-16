@@ -20,7 +20,8 @@
 #define DELETE_CONTACT_LOCALIZED_H_4DDDFFEC71B342668A5C34F8785EDDB7
 
 #include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 
 #include <string>
 
@@ -29,12 +30,8 @@ namespace Contact {
 
 EppResponseSuccessLocalized delete_contact_localized(
         const std::string& _contact_handle,
-        unsigned long long _registrar_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle,
-        const std::string& _client_transaction_handle,
-        bool _epp_notification_disabled,
-        const std::string& _dont_notify_client_transaction_handles_with_this_prefix);
+        const SessionData& _session_data,
+        const NotificationData& _notification_data);
 
 } // namespace Epp::Contact
 } // namespace Epp

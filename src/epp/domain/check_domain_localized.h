@@ -13,45 +13,24 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ * along with FRED.  If not, see <http://www.gnu.or/licenses/>.
  */
 
 #ifndef CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 #define CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 
-#include "src/epp/domain/impl/domain_registration_obstruction.h"
-#include "src/epp/impl/action.h"
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/domain/impl/check_domain_localized_response.h"
+#include "src/epp/impl/session_data.h"
 
-#include <boost/optional.hpp>
-
-#include <map>
 #include <set>
 #include <string>
 
 namespace Epp {
 namespace Domain {
 
-struct CheckDomainLocalizedResponse
-{
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> > domain_fqdn_to_domain_localized_registration_obstruction;
-
-    CheckDomainLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction)
-    :
-        epp_response_success_localized(_epp_response_success_localized),
-        domain_fqdn_to_domain_localized_registration_obstruction(_domain_fqdn_to_domain_localized_registration_obstruction)
-    { }
-};
-
 CheckDomainLocalizedResponse check_domain_localized(
         const std::set<std::string>& _domain_fqdns,
-        unsigned long long _registrar_id,
-        SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle);
+        const SessionData& _session_data);
 
 } // namespace Epp::Domain
 } // namespace Epp

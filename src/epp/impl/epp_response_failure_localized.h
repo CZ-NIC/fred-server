@@ -20,10 +20,8 @@
 #define EPP_RESPONSE_FAILURE_LOCALIZED_H_2206E3966B8346719CBDBBFD6A2DC0EB
 
 #include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/session_lang.h"
-
 #include "src/epp/impl/epp_result_failure_localized.h"
-
+#include "src/epp/impl/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <vector>

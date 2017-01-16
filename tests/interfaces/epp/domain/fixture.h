@@ -430,7 +430,7 @@ struct HasDataForUpdateDomain : HasInfoDomainData {
     const std::string new_nsset_handle_;
     const std::string new_keyset_handle_;
     Optional<std::string> registrant_chg_;
-    Optional<std::string> auth_info_pw_chg_;
+    Optional<std::string> authinfopw_chg_;
     Optional<Nullable<std::string> > nsset_chg_;
     Optional<Nullable<std::string> > keyset_chg_;
     std::vector<std::string> admin_contacts_add_;
@@ -468,8 +468,9 @@ struct HasDataForUpdateDomain : HasInfoDomainData {
             .set_tech_contacts( boost::assign::list_of(tech_handle) )
             .exec(ctx);
 
+
         registrant_chg_ = Optional<std::string>(new_registrant_handle_);
-        auth_info_pw_chg_ = Optional<std::string>(new_auth_info_pw_);
+        authinfopw_chg_ = Optional<std::string>(new_authinfopw_);
 
         nsset_chg_ = Optional<Nullable<std::string> >(new_nsset_handle_);
         keyset_chg_ = Optional<Nullable<std::string> >(new_keyset_handle_);

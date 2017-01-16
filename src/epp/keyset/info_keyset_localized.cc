@@ -28,6 +28,8 @@
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/localization.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
@@ -44,17 +46,15 @@ namespace Keyset {
 
 InfoKeysetLocalizedResponse info_keyset_localized(
         const std::string& _keyset_handle,
-        const unsigned long long _registrar_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle)
+        const SessionData& _session_data)
 {
     // since no changes are comitted this transaction is reused for everything
     Fred::OperationContextCreator ctx;
 
     try {
         Logging::Context logging_ctx1("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoKeyset)));
 
         Fred::OperationContextCreator ctx;
@@ -62,7 +62,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                 info_keyset(
                         ctx,
                         _keyset_handle,
-                        _registrar_id);
+                        _session_data.registrar_id);
 
         const InfoKeysetLocalizedOutputData info_keyset_localized_output_data =
                 InfoKeysetLocalizedOutputData(
@@ -71,11 +71,11 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                         info_keyset_data.sponsoring_registrar_handle,
                         info_keyset_data.creating_registrar_handle,
                         info_keyset_data.last_update_registrar_handle,
-                        localize_object_states(ctx, info_keyset_data.states, _lang),
+                        localize_object_states(ctx, info_keyset_data.states, _session_data.lang),
                         info_keyset_data.crdate,
                         info_keyset_data.last_update,
                         info_keyset_data.last_transfer,
-                        info_keyset_data.auth_info_pw,
+                        info_keyset_data.authinfopw,
                         info_keyset_data.ds_records,
                         info_keyset_data.dns_keys,
                         info_keyset_data.tech_contacts);
@@ -84,7 +84,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang),
+                        _session_data.lang),
                 info_keyset_localized_output_data);
 
     }
@@ -93,21 +93,21 @@ InfoKeysetLocalizedResponse info_keyset_localized(
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("info_keyset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         ctx.get_log().info("unexpected exception in info_keyset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

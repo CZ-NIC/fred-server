@@ -62,7 +62,7 @@ struct InfoContactOutputData
     Nullable< std::string > notify_email;
     Nullable< std::string > VAT;
     boost::optional< Fred::PersonalIdUnion > personal_id;
-    boost::optional< std::string > auth_info_pw;
+    boost::optional< std::string > authinfopw;
     boost::optional< ContactDisclose > disclose;
 };
 

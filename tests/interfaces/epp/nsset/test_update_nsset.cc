@@ -275,9 +275,9 @@ void check_after_update_data(const Epp::Nsset::UpdateNssetInputData& update_data
 
     BOOST_CHECK_EQUAL( boost::to_upper_copy( update_data.handle ), info_data.handle );
 
-    if(update_data.authinfo.isset())
+    if(update_data.authinfopw.isset())
     {
-        BOOST_CHECK_EQUAL( update_data.authinfo.get_value(), info_data.authinfopw );
+        BOOST_CHECK_EQUAL( update_data.authinfopw.get_value(), info_data.authinfopw );
     }
 
     //tech contacts to add are added before removal of technical contacts to remove

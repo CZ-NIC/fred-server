@@ -124,7 +124,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string, boost::optional< Epp::Contact::ContactHandleLocalizedRegistrationObstruction > >& contact_handle_check_results
+        const std::map<std::string, boost::optional< Epp::Contact::ContactHandleRegistrationObstructionLocalized > >& contact_handle_check_results
     );
 
     /**
@@ -146,7 +146,7 @@ namespace Corba {
      */
     ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& nsset_handles,
-        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleLocalizedRegistrationObstruction> >& nsset_handle_check_results
+        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized> >& nsset_handle_check_results
     );
 
     /**

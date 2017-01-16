@@ -40,10 +40,10 @@ InfoKeysetOutputData info_keyset(
         result.crdate = data.creation_time;
         result.last_update = data.update_time;
         result.last_transfer = data.transfer_time;
-        // show object authinfo only to sponsoring registrar
+        // show object authinfopw only to sponsoring registrar
         if (Fred::InfoRegistrarByHandle(data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id ==
             _registrar_id) {
-            result.auth_info_pw = data.authinfopw;
+            result.authinfopw = data.authinfopw;
         }
         // result.ds_records = ... // Fred::InfoKeysetData doesn't contain any ds record informations
         {

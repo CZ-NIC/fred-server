@@ -24,6 +24,8 @@
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
@@ -46,25 +48,23 @@ namespace Nsset {
 
 InfoNssetLocalizedResponse info_nsset_localized(
         const std::string& _nsset_handle,
-        const unsigned long long _registrar_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle)
+        const SessionData& _session_data)
 {
     // since no changes are comitted this transaction is reused for everything
     Fred::OperationContextCreator ctx;
 
     try {
         Logging::Context logging_ctx1("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoNsset)));
 
         InfoNssetOutputData info_nsset_output_data =
                 info_nsset(
                         ctx,
                         _nsset_handle,
-                        _lang,
-                        _registrar_id);
+                        _session_data.lang,
+                        _session_data.registrar_id);
 
         // hide internal states
         {
@@ -100,11 +100,11 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         info_nsset_output_data.sponsoring_registrar_handle,
                         info_nsset_output_data.creating_registrar_handle,
                         info_nsset_output_data.last_update_registrar_handle,
-                        localize_object_states_deprecated(ctx, info_nsset_output_data.states, _lang),
+                        localize_object_states_deprecated(ctx, info_nsset_output_data.states, _session_data.lang),
                         info_nsset_output_data.crdate,
                         info_nsset_output_data.last_update,
                         info_nsset_output_data.last_transfer,
-                        info_nsset_output_data.auth_info_pw,
+                        info_nsset_output_data.authinfopw,
                         info_nsset_output_data.dns_hosts,
                         info_nsset_output_data.tech_contacts,
                         info_nsset_output_data.tech_check_level);
@@ -113,7 +113,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang),
+                        _session_data.lang),
                 info_nsset_localized_output_data);
 
     }
@@ -122,21 +122,21 @@ InfoNssetLocalizedResponse info_nsset_localized(
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("info_nsset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         ctx.get_log().info("unexpected exception in info_nsset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

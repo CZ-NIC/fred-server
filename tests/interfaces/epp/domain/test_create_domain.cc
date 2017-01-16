@@ -832,9 +832,9 @@ BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, HasDomainData)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)
+BOOST_FIXTURE_TEST_CASE(create_empty_authinfopw, HasDomainData)
 {
-    domain1_create_input_data.authinfo = boost::optional<std::string>("");
+    domain1_create_input_data.authinfopw = boost::optional<std::string>("");
 
     Epp::Domain::create_domain(
         ctx,
@@ -875,9 +875,9 @@ BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 }
 
-BOOST_FIXTURE_TEST_CASE(create_authinfo_not_set, HasDomainData)
+BOOST_FIXTURE_TEST_CASE(create_authinfopw_not_set, HasDomainData)
 {
-    domain1_create_input_data.authinfo = boost::optional<std::string>();
+    domain1_create_input_data.authinfopw = boost::optional<std::string>();
 
     Epp::Domain::create_domain(
         ctx,

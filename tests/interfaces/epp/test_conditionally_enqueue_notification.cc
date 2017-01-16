@@ -16,20 +16,18 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#include <boost/test/unit_test.hpp>
-
-#include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/util.h"
 #include "tests/setup/fixtures.h"
 
-#include "src/epp/impl/conditionally_enqueue_notification.h"
-
 #include "src/corba/mailer_manager.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
+#include "src/epp/impl/session_lang.h"
 #include "src/fredlib/notifier/process_one_notification_request.h"
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestEpp)
 BOOST_AUTO_TEST_SUITE(ConditionallyEnqueueNotification)
@@ -104,6 +102,7 @@ template<bool SystemReg>struct has_updated_contact_and_empty_notification_queue 
     unsigned long long registrar_id;
     static const bool epp_notification_disabled = true;
     static const bool epp_notification_enabled = false;
+    static const Epp::SessionLang::Enum epp_session_lange_default = Epp::SessionLang::en;
 
     has_updated_contact_and_empty_notification_queue()
     :
@@ -136,14 +135,16 @@ typedef has_updated_contact_and_empty_notification_queue<false> has_nonsystem_re
 BOOST_FIXTURE_TEST_CASE(notification_created, has_nonsystem_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
-        Notification::updated,
-        post_update_contact_history_id,
-        registrar_id,
-        "srv-trx-007",
-        "cl-trx-007",
-        epp_notification_enabled,
-        "somethingElseAndNotMatching"
-    );
+            Notification::updated,
+            post_update_contact_history_id,
+            Epp::SessionData(
+                    registrar_id,
+                    epp_session_lange_default,
+                    "srv-trx-007"),
+            Epp::NotificationData(
+                    "cl-trx-007",
+                    epp_notification_enabled,
+                    "somethingElseAndNotMatching"));
 
     Fred::OperationContextCreator ctx;
 
@@ -155,14 +156,16 @@ BOOST_FIXTURE_TEST_CASE(notification_created, has_nonsystem_registrar_updated_co
 BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonsystem_registrar, has_nonsystem_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
-        Notification::updated,
-        post_update_contact_history_id,
-        registrar_id,
-        "srv-trx-007",
-        "DOnotNOTIFY-cl-trx-007",
-        epp_notification_enabled,
-        "DOnotNOTIFY"
-    );
+            Notification::updated,
+            post_update_contact_history_id,
+            Epp::SessionData(
+                    registrar_id,
+                    epp_session_lange_default,
+                    "srv-trx-007"),
+            Epp::NotificationData(
+                    "DOnotNOTIFY-cl-trx-007",
+                    epp_notification_enabled,
+                    "DOnotNOTIFY"));
 
     Fred::OperationContextCreator ctx;
 
@@ -174,14 +177,16 @@ BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonsystem_registrar, has
 BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonmatching_prefix, has_system_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
-        Notification::updated,
-        post_update_contact_history_id,
-        registrar_id,
-        "srv-trx-007",
-        "DOnotNOTIFY-cl-trx-007",
-        epp_notification_enabled,
-        "somethingElseAndNotMatching"
-    );
+            Notification::updated,
+            post_update_contact_history_id,
+            Epp::SessionData(
+                    registrar_id,
+                    epp_session_lange_default,
+                    "srv-trx-007"),
+            Epp::NotificationData(
+                    "DOnotNOTIFY-cl-trx-007",
+                    epp_notification_enabled,
+                    "somethingElseAndNotMatching"));
 
     Fred::OperationContextCreator ctx;
 
@@ -193,14 +198,16 @@ BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonmatching_prefix, has_
 BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_sys_reg_and_prefix, has_system_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
-        Notification::updated,
-        post_update_contact_history_id,
-        registrar_id,
-        "srv-trx-007",
-        "DOnotNOTIFY-cl-trx-007",
-        epp_notification_enabled,
-        "DOnotNOTIFY"
-    );
+            Notification::updated,
+            post_update_contact_history_id,
+            Epp::SessionData(
+                    registrar_id,
+                    epp_session_lange_default,
+                    "srv-trx-007"),
+            Epp::NotificationData(
+                    "DOnotNOTIFY-cl-trx-007",
+                    epp_notification_enabled,
+                    "DOnotNOTIFY"));
 
     Fred::OperationContextCreator ctx;
 
@@ -212,14 +219,16 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_sys_reg_and_prefix, 
 BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_config, has_nonsystem_registrar_updated_contact_and_empty_notification_queue)
 {
     Epp::conditionally_enqueue_notification(
-        Notification::updated,
-        post_update_contact_history_id,
-        registrar_id,
-        "srv-trx-007",
-        "DOnotNOTIFY-cl-trx-007",
-        epp_notification_disabled,
-        "somethingElseAndNotMatching"
-    );
+            Notification::updated,
+            post_update_contact_history_id,
+            Epp::SessionData(
+                    registrar_id,
+                    epp_session_lange_default,
+                    "srv-trx-007"),
+            Epp::NotificationData(
+                    "DOnotNOTIFY-cl-trx-007",
+                    epp_notification_disabled,
+                    "somethingElseAndNotMatching"));
 
     Fred::OperationContextCreator ctx;
 

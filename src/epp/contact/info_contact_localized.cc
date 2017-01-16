@@ -30,6 +30,8 @@
 #include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
+#include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/opcontext.h"
@@ -81,24 +83,22 @@ private:
 
 InfoContactLocalizedResponse info_contact_localized(
         const std::string& _contact_handle,
-        const unsigned long long _registrar_id,
-        const SessionLang::Enum _lang,
-        const std::string& _server_transaction_handle)
+        const SessionData& _session_data)
 {
     // since no changes are comitted this transaction is reused for everything
     Fred::OperationContextCreator ctx;
 
     try {
         Logging::Context logging_ctx1("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoContact)));
 
         const InfoContactOutputData info_contact_output_data =
                 info_contact(
                         ctx,
                         _contact_handle,
-                        _registrar_id);
+                        _session_data.registrar_id);
 
         InfoContactLocalizedOutputData info_contact_localized_output_data(info_contact_output_data.disclose);
         info_contact_localized_output_data.handle                       = info_contact_output_data.handle;
@@ -123,7 +123,7 @@ InfoContactLocalizedResponse info_contact_localized(
                 filtered_states.insert(ok_state_name);
             }
             info_contact_localized_output_data.localized_external_states =
-                    localize_object_states_deprecated(ctx, filtered_states, _lang);
+                    localize_object_states_deprecated(ctx, filtered_states, _session_data.lang);
         }
 
         info_contact_localized_output_data.crdate            = info_contact_output_data.crdate;
@@ -170,13 +170,13 @@ InfoContactLocalizedResponse info_contact_localized(
                 throw std::runtime_error("Invalid ident type.");
             }
         }
-        info_contact_localized_output_data.auth_info_pw      = info_contact_output_data.auth_info_pw;
+        info_contact_localized_output_data.authinfopw      = info_contact_output_data.authinfopw;
 
         return InfoContactLocalizedResponse(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _lang),
+                        _session_data.lang),
                 info_contact_localized_output_data);
     }
     catch (const EppResponseFailure& e) {
@@ -184,21 +184,21 @@ InfoContactLocalizedResponse info_contact_localized(
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
-                _lang);
+                _session_data.lang);
     }
     catch (const std::exception& e) {
         ctx.get_log().info(std::string("info_contact_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
     catch (...) {
         ctx.get_log().info("unexpected exception in info_contact_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _lang);
+                _session_data.lang);
     }
 }
 

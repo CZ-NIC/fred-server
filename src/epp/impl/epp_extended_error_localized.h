@@ -20,7 +20,7 @@
 #define EPP_EXTENDED_ERROR_LOCALIZED_H_537A3FC8B8834EB3B7C1EECC479E746E
 
 #include "src/epp/impl/epp_extended_error.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/impl/session_data.h"
 
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/param.h"

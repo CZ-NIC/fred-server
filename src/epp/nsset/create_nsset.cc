@@ -221,7 +221,7 @@ CreateNssetResult create_nsset(
         const Fred::CreateNsset::Result create_data = Fred::CreateNsset(
             _data.handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
-            _data.authinfo ? Optional<std::string>(*_data.authinfo) : Optional<std::string>(),
+            _data.authinfopw ? Optional<std::string>(*_data.authinfopw) : Optional<std::string>(),
             _data.get_nsset_tech_check_level(),
             make_fred_dns_hosts(_data.dns_hosts),
             _data.tech_contacts,

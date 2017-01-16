@@ -21,7 +21,6 @@
 
 #include "src/epp/impl/epp_result_success.h"
 #include "src/epp/impl/session_lang.h"
-
 #include "src/fredlib/opcontext.h"
 
 #include <boost/optional.hpp>
