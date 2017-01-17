@@ -145,6 +145,7 @@ const std::string DNCHECK_SINGLE_DIGIT_LABELS_ONLY="dncheck_single_digit_labels_
 const std::string DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY="dncheck_letters_digits_hyphen_chars_only";
 const std::string DNCHECK_NO_LABEL_BEGINNING_HYPHEN="dncheck_no_label_beginning_hyphen";
 const std::string DNCHECK_NO_LABEL_ENDING_HYPHEN="dncheck_no_label_ending_hyphen";
+const std::string DNCHECK_NO_IDN_PUNYCODE="dncheck_no_idn_punycode";
 
 ///trivial checker for testing
 const std::string DNCHECK_NOT_EMPTY_DOMAIN_NAME="dncheck_not_empty_domain_name";

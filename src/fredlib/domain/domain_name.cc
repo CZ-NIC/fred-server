@@ -90,7 +90,7 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
 
 bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& fqdn) {
     static const boost::regex rfc1123_2_1_name_syntax(
-            "^([a-z0-9]([-a-z0-9]*[a-z0-9])*[.]?)+$");
+            "^([A-Za-z0-9]([-A-Za-z0-9]*[A-Za-z0-9])*[.]?)+$");
     return boost::regex_match(fqdn, rfc1123_2_1_name_syntax);
 
 }
@@ -146,18 +146,16 @@ std::string DomainName::get_string() const {
     return boost::join(labels_, ".");
 }
 
-DomainName DomainName::get_subdomains(int _root_length_in_labels) const {
-    if( _root_length_in_labels < 0 || _root_length_in_labels > static_cast<int>(labels_.size()) ) {
+DomainName DomainName::get_subdomains(int _top_labels_to_skip) const {
+    if( _top_labels_to_skip < 0 || _top_labels_to_skip > static_cast<int>(labels_.size()) ) {
         throw ExceptionInvalidLabelCount();
     }
 
     std::vector<std::string> selected_labels;
 
-    selected_labels.assign( labels_.begin(), labels_.end() - _root_length_in_labels );
+    selected_labels.assign( labels_.begin(), labels_.end() - _top_labels_to_skip );
 
     return DomainName(boost::join(selected_labels, "."));
-
-    return *this;
 }
 
 DomainNameValidator& DomainNameValidator::add(const std::string& checker_name)
@@ -390,6 +388,32 @@ public:
         return DNCHECK_NO_LABEL_ENDING_HYPHEN;
     }
 };//class CheckNoEndHyphenSyntax
+
+///prohibit idn punycode ('xn--{punycode}')
+class CheckNoIdnPunycode
+: public DomainNameChecker
+, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoIdnPunycode>
+{
+public:
+    CheckNoIdnPunycode(){}
+
+    bool validate(const DomainName& relative_domain_name)
+    {
+        static const std::string IDN_PUNYCODE_PREFIX("xn--");
+        static const std::vector<std::string> labels = relative_domain_name.get_labels();
+        for (std::vector<std::string>::const_iterator label = labels.begin(); label != labels.end(); ++label) {
+            if (boost::starts_with(*label, IDN_PUNYCODE_PREFIX)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static std::string registration_name()
+    {
+        return DNCHECK_NO_IDN_PUNYCODE;
+    }
+};//class CheckNoConsecutiveHyphensDomainName
 
 void insert_domain_name_checker_name_into_database(Fred::OperationContext& ctx, const std::string& checker_name, const std::string& checker_description)
 {

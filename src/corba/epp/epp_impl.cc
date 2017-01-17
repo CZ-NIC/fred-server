@@ -3570,7 +3570,13 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                         Database::query_param_list(FQDN));
 
                 if (db_result.size() == 1) {
-                    id = boost::numeric_cast<int>(static_cast<unsigned long long>(db_result[0][0]));
+                    try {
+                        id = boost::numeric_cast<int>(static_cast<unsigned long long>(db_result[0][0]));
+                    }
+                    catch (...) {
+                        LOG(WARNING_LOG, "domain [%s] id to int cast failed", name);
+                        ServerInternalError("ObjectSendAuthInfo");
+                    }
                 }
                 else if (db_result.size() < 1) {
                     LOG(WARNING_LOG, "domain [%s] NOT_EXIST", name);
