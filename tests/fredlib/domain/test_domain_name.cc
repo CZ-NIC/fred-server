@@ -101,6 +101,7 @@ BOOST_AUTO_TEST_CASE(test_general_domain_name_syntax_check)
     BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("fred.cz."));
     BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred..cz"));
     BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(".fred.cz"));
+    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(".cz"));
     BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred.cz.."));
     BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
         "0123456789012345678901234567890123456789012345678901234567890123456789.cz"));

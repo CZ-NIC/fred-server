@@ -44,18 +44,18 @@ DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(
        OperationContext& ctx,
        const std::string& domain_fqdn)
 {
+    if (Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx)) {
+        return DomainRegistrability::zone_not_in_registry;
+    }
+
     if (Fred::CheckDomain(domain_fqdn).is_registered(ctx)) {
         return DomainRegistrability::registered;
     }
-    else if (Fred::CheckDomain(domain_fqdn).is_blacklisted(ctx)) {
+
+    if (Fred::CheckDomain(domain_fqdn).is_blacklisted(ctx)) {
         return DomainRegistrability::blacklisted;
     }
-    else if(DomainName(domain_fqdn).get_labels().size() < 2) { // zone (or domain name label) is not present
-        throw ExceptionInvalidFqdn();
-    }
-    else if (Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx)) { // else zone seems to be present but .is_bad_zone
-        return DomainRegistrability::zone_not_in_registry;
-    }
+
     return DomainRegistrability::available;
 }
 

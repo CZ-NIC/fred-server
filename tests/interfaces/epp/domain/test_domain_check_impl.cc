@@ -73,7 +73,6 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasInfoRegistrarData)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
-            ("")
             ("1234567890123456789012345678901234567890123456789012345678901234.cz") // <== 64 chars
             ("-domain.cz")
             ("domain-.cz")
@@ -93,6 +92,9 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasInfoRegistrarData)
     ) {
         BOOST_CHECK(!it->second.isnull()); // isnull() means domain is available (not registered) and its fqdn is valid
         BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == Epp::Domain::DomainRegistrationObstruction::invalid_fqdn));
+        if(!it->second.isnull()) {
+            BOOST_TEST_MESSAGE(it->first << "  DomainRegistrationObstruction: " << it->second.get_value());
+        }
     }
 }
 

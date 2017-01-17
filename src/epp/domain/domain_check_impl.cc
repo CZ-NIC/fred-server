@@ -23,35 +23,29 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
     Fred::OperationContext& _ctx,
     const std::string _domain_fqdn)
 {
-    try {
-        switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn)) {
+    switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn)) {
 
-            case Fred::Domain::DomainRegistrability::registered:
-                return DomainRegistrationObstruction::registered;
+        case Fred::Domain::DomainRegistrability::registered:
+            return DomainRegistrationObstruction::registered;
 
-            case Fred::Domain::DomainRegistrability::blacklisted:
-                return DomainRegistrationObstruction::blacklisted;
+        case Fred::Domain::DomainRegistrability::blacklisted:
+            return DomainRegistrationObstruction::blacklisted;
 
-            case Fred::Domain::DomainRegistrability::zone_not_in_registry:
-                return DomainRegistrationObstruction::zone_not_in_registry;
+        case Fred::Domain::DomainRegistrability::zone_not_in_registry:
+            return DomainRegistrationObstruction::zone_not_in_registry;
 
-            case Fred::Domain::DomainRegistrability::available:
+        case Fred::Domain::DomainRegistrability::available:
 
-                switch (Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _domain_fqdn)) {
-                    case Fred::Domain::DomainFqdnSyntaxValidity::invalid:
-                        return DomainRegistrationObstruction::invalid_fqdn;
-                    case Fred::Domain::DomainFqdnSyntaxValidity::valid:
-                        return Nullable<DomainRegistrationObstruction::Enum>();
-                }
-                throw std::logic_error("Unexpected Fred::Domain::DomainFqdnSyntaxValidity::Enum value.");
-
-        }
-        throw std::logic_error("Unexpected Fred::Domain::DomainRegistrability::Enum value.");
+            switch (Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _domain_fqdn)) {
+                case Fred::Domain::DomainFqdnSyntaxValidity::invalid:
+                    return DomainRegistrationObstruction::invalid_fqdn;
+                case Fred::Domain::DomainFqdnSyntaxValidity::valid:
+                    return Nullable<DomainRegistrationObstruction::Enum>();
+            }
+            throw std::logic_error("Unexpected Fred::Domain::DomainFqdnSyntaxValidity::Enum value.");
 
     }
-    catch (const Fred::Domain::ExceptionInvalidFqdn&) {
-        return DomainRegistrationObstruction::invalid_fqdn;
-    }
+    throw std::logic_error("Unexpected Fred::Domain::DomainRegistrability::Enum value.");
 }
 
 } // namespace Epp::Domain::{anonymous}

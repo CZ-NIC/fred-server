@@ -12,6 +12,7 @@
 
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
@@ -159,7 +160,7 @@ DomainCreateResult domain_create_impl(
         parameter_value_policy_error.add(
             Error::of_scalar_parameter(
                 Param::domain_period,
-                Reason::period_range));
+                Reason::period_policy));
     }
 
     //check expiration date of ENUM domain validation

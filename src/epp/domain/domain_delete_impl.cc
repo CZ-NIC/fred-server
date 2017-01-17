@@ -49,16 +49,8 @@ unsigned long long domain_delete_impl(
         throw AuthorizationError();
     }
 
-    try {
-        if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
-            throw NonexistentHandle();
-        }
-    }
-    catch (const Fred::Domain::ExceptionInvalidFqdn&) {
+    if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
         throw NonexistentHandle();
-    }
-    catch (const NonexistentHandle&) {
-        throw;
     }
 
     const Fred::InfoRegistrarData session_registrar =
