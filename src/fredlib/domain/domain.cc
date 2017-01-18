@@ -28,10 +28,13 @@ namespace Domain {
 
 DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(
        OperationContext& ctx,
-       const std::string& domain_fqdn)
+       const std::string& domain_fqdn,
+       const bool is_system_registrar)
 {
-    if (Fred::CheckDomain(domain_fqdn).is_bad_length(ctx)
-    || Fred::CheckDomain(domain_fqdn).is_invalid_handle(ctx)) {
+    const Fred::CheckDomain domain = Fred::CheckDomain(domain_fqdn, is_system_registrar);
+
+    if (domain.is_bad_length(ctx)
+    || domain.is_invalid_handle(ctx)) {
         return DomainFqdnSyntaxValidity::invalid;
     }
     return DomainFqdnSyntaxValidity::valid;
@@ -42,17 +45,20 @@ DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(
 */
 DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(
        OperationContext& ctx,
-       const std::string& domain_fqdn)
+       const std::string& domain_fqdn,
+       const bool is_system_registrar)
 {
-    if (Fred::CheckDomain(domain_fqdn).is_bad_zone(ctx)) {
+    const Fred::CheckDomain domain = Fred::CheckDomain(domain_fqdn, is_system_registrar);
+
+    if (domain.is_bad_zone(ctx)) {
         return DomainRegistrability::zone_not_in_registry;
     }
 
-    if (Fred::CheckDomain(domain_fqdn).is_registered(ctx)) {
+    if (domain.is_registered(ctx)) {
         return DomainRegistrability::registered;
     }
 
-    if (Fred::CheckDomain(domain_fqdn).is_blacklisted(ctx)) {
+    if (domain.is_blacklisted(ctx)) {
         return DomainRegistrability::blacklisted;
     }
 

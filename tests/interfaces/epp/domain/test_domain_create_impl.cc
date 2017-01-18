@@ -853,6 +853,60 @@ BOOST_FIXTURE_TEST_CASE(create_authinfo_not_set, HasDomainData)
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 }
 
+BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_success, HasDomainDataAndSystemRegistrar)
+{
+    domain1_create_input_data.fqdn = std::string("xn--j--ra-xqa.cz"); // já--ra.cz
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << system_registrar_data_.id);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.system ") << system_registrar_data_.system.get_value_or(false));
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            system_registrar_data_.id,
+            42
+        );
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_fail, HasDomainDataAndSystemRegistrar)
+{
+    domain1_create_input_data.fqdn = "-" + domain1_create_input_data.fqdn;
+
+    BOOST_TEST_MESSAGE(std::string("domain1_create_input_data.fqdn ") << domain1_create_input_data.fqdn);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << system_registrar_data_.id);
+    BOOST_TEST_MESSAGE(std::string("info_registrar_data_.system ") << system_registrar_data_.system.get_value_or(false));
+
+    try{
+        Epp::domain_create_impl(
+            ctx,
+            domain1_create_input_data,
+            system_registrar_data_.id,
+            42
+        );
+        BOOST_ERROR("exception expected");
+    }
+    catch(const Epp::ParameterValueSyntaxError& ex)
+    {
+        BOOST_TEST_MESSAGE("Epp::ParameterValueSyntaxError");
+        BOOST_CHECK(ex.get().size() == 1);
+        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
+        BOOST_CHECK(ex.get().rbegin()->position == 0);
+        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::bad_format_fqdn);
+    }
+    catch(...)
+    {
+        BOOST_ERROR("unexpected exception type");
+    }
+}
+
+
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 {
     Epp::domain_create_impl(

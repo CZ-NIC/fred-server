@@ -27,12 +27,11 @@
 #include <map>
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
-
-
 
 namespace Epp {
 
@@ -57,8 +56,13 @@ DomainCreateResult domain_create_impl(
         throw AuthErrorServerClosingConnection();
     }
 
+    const Fred::InfoRegistrarData session_registrar =
+        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
+
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
+
     const Fred::Domain::DomainRegistrability::Enum domain_registrability
-        = Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _data.fqdn);
+        = Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _data.fqdn, is_system_registrar);
 
     //check fqdn has known zone
     if(domain_registrability == Fred::Domain::DomainRegistrability::zone_not_in_registry)
@@ -68,8 +72,8 @@ DomainCreateResult domain_create_impl(
     }
 
     //check fqdn syntax
-    if(Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _data.fqdn)
-        != Fred::Domain::DomainFqdnSyntaxValidity::valid )
+    if(Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _data.fqdn, is_system_registrar)
+        != Fred::Domain::DomainFqdnSyntaxValidity::valid)
     {
         throw ParameterValueSyntaxError().add(Error::of_scalar_parameter(
             Param::domain_fqdn, Reason::bad_format_fqdn));
@@ -243,9 +247,6 @@ DomainCreateResult domain_create_impl(
                     (" * ('1 month'::interval))::date ")
             )[0][0]));
 
-        const std::string registrar_handle = Fred::InfoRegistrarById(
-                _registrar_id).exec(_ctx).info_registrar_data.handle;
-
         const Optional<boost::gregorian::date> enum_validation_expiration
         ( zone_data.is_enum
             ?  Optional<boost::gregorian::date>(_data.enum_validation_list.rbegin()->get_valexdate())
@@ -258,7 +259,7 @@ DomainCreateResult domain_create_impl(
 
         const Fred::CreateDomain::Result result = Fred::CreateDomain(
             _data.fqdn,
-            registrar_handle,
+            session_registrar.handle,
             _data.registrant,
             _data.authinfo ? Optional<std::string>(*_data.authinfo) : Optional<std::string>(),
             _data.nsset.empty()
@@ -298,4 +299,4 @@ DomainCreateResult domain_create_impl(
     }
 }
 
-}
+} // namespace Epp

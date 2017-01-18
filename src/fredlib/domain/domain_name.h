@@ -39,6 +39,12 @@ namespace Domain {
 ///checking fqdn length < 255 and label length is from 1 to 63 octets, labels are separated by '.'
 bool general_domain_name_syntax_check(const std::string& fqdn);
 
+/// domain name validity check (LDH + no label beginning or ending with hyphen "-"
+bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& fqdn);
+
+/// check domain name according to RFC1123 section 2.1
+bool domain_name_rfc1123_2_1_syntax_check(const std::string& fqdn);
+
 /**
  * remove optional root dot from fqdn, domain names are considered fully qualified without trailing dot internally
  * optional root dot is required to be accepted by applications according to RFC3696 section 2.
@@ -110,9 +116,12 @@ class DomainNameValidator
 {
     boost::scoped_ptr<DomainName> zone_name_;
     Optional<Fred::OperationContext*> ctx_;
+    const bool is_system_registrar_;
 
     std::vector<std::string> checker_name_vector_;//TODO: std::set might be better here
 public:
+    explicit DomainNameValidator(const bool _is_system_registrar = false);
+
     ///set zone name if checker implementaion need one
     DomainNameValidator& set_zone_name(const DomainName& _zone_name);
     ///set operation context if checker implementaion need one
@@ -136,6 +145,7 @@ const std::string DNCHECK_SINGLE_DIGIT_LABELS_ONLY="dncheck_single_digit_labels_
 const std::string DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY="dncheck_letters_digits_hyphen_chars_only";
 const std::string DNCHECK_NO_LABEL_BEGINNING_HYPHEN="dncheck_no_label_beginning_hyphen";
 const std::string DNCHECK_NO_LABEL_ENDING_HYPHEN="dncheck_no_label_ending_hyphen";
+const std::string DNCHECK_NO_IDN_PUNYCODE="dncheck_no_idn_punycode";
 
 ///trivial checker for testing
 const std::string DNCHECK_NOT_EMPTY_DOMAIN_NAME="dncheck_not_empty_domain_name";

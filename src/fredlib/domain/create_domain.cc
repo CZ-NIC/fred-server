@@ -32,6 +32,8 @@
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/copy_history_impl.h"
+#include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/registrar/info_registrar_data.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
 #include "src/fredlib/object/object_impl.h"
@@ -153,7 +155,7 @@ namespace Fred
                 , &Exception::set_unknown_registrar_handle);
 
             //check general domain name syntax
-            if(!Domain::general_domain_name_syntax_check(fqdn_))
+            if (!Domain::domain_name_rfc1123_2_1_syntax_check(fqdn_))
             {
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
             }
@@ -161,14 +163,21 @@ namespace Fred
             //remove optional root dot from fqdn
             std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn_);
 
+            const InfoRegistrarData info_registrar_data =
+                InfoRegistrarByHandle(registrar_).exec(ctx).info_registrar_data;
+
+            const bool is_system_registrar = info_registrar_data.system.get_value_or(false);
+
+            const CheckDomain domain = CheckDomain(fqdn_, is_system_registrar);
+
             //check zone
-            if(CheckDomain(fqdn_).is_bad_zone(ctx))
+            if(domain.is_bad_zone(ctx))
             {
                 BOOST_THROW_EXCEPTION(Exception().set_unknown_zone_fqdn(fqdn_));
             }
 
             //check domain name
-            if(CheckDomain(fqdn_).is_invalid_handle(ctx))
+            if(domain.is_invalid_handle(ctx))
             {
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
             }
