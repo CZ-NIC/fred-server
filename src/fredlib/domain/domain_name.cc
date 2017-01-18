@@ -90,7 +90,7 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
 
 bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& fqdn) {
     static const boost::regex rfc1123_2_1_name_syntax(
-            "^([A-Za-z0-9]([-A-Za-z0-9]*[A-Za-z0-9])*[.]?)+$");
+            "^([[:alnum:]]([-[:alnum:]]*[[:alnum:]])*[.]?)+$");
     return boost::regex_match(fqdn, rfc1123_2_1_name_syntax);
 
 }
@@ -399,8 +399,8 @@ public:
 
     bool validate(const DomainName& relative_domain_name)
     {
-        static const std::string IDN_PUNYCODE_PREFIX("xn--");
-        static const std::vector<std::string> labels = relative_domain_name.get_labels();
+        const std::string IDN_PUNYCODE_PREFIX("xn--");
+        const std::vector<std::string> labels = relative_domain_name.get_labels(); // get labels (without zone labels)
         for (std::vector<std::string>::const_iterator label = labels.begin(); label != labels.end(); ++label) {
             if (boost::starts_with(*label, IDN_PUNYCODE_PREFIX)) {
                 return false;
