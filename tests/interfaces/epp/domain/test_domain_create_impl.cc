@@ -904,7 +904,6 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_fail, HasDomai
     {
         BOOST_ERROR("unexpected exception type");
     }
-    }
 }
 
 
