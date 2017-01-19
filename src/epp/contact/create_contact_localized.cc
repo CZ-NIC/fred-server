@@ -69,7 +69,7 @@ CreateContactInputData::CreateContactInputData(const ContactChange& src)
     ident(convert(src.ident)),
     identtype(src.ident_type),
     authinfopw(
-        (src.authinfopw ? *src.authinfopw : Nullable<std::string>()).isnull() )
+        (src.authinfopw ? *src.authinfopw : Nullable<std::string>()).isnull()
             ? boost::optional<std::string>()
             : boost::optional<std::string>(convert(src.authinfopw))),
     disclose(src.disclose)

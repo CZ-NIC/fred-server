@@ -58,7 +58,7 @@ InfoDomainOutputData info_domain(
                  object_state_ptr != domain_states_data.end(); ++object_state_ptr)
             {
                 if (object_state_ptr->is_external) {
-                    info_domain_output_data.states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(data_ptr->state_name));
+                    info_domain_output_data.states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(object_state_ptr->state_name));
                 }
             }
         }

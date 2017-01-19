@@ -2786,10 +2786,7 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
                                 Corba::unwrap_string_from_const_char_ptr(_authinfopw),
                                 Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_host),
                                 Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts),
-                                Corba::unwrap_tech_check_level(_tech_check_level),
-                                nsset_level_,
-                                this->nsset_min_hosts_,
-                                this->nsset_max_hosts_),
+                                Corba::unwrap_tech_check_level(_tech_check_level)),
                         Epp::SessionData(
                                 registrar_session_data.registrar_id,
                                 registrar_session_data.language,
@@ -2798,6 +2795,10 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
                                 epp_request_params.client_transaction_id,
                                 disable_epp_notifier_,
                                 disable_epp_notifier_cltrid_prefix_),
+                        Epp::Nsset::CreateNssetConfigData(
+                                nsset_level_,
+                                nsset_min_hosts_,
+                                nsset_max_hosts_),
                         epp_request_params.log_request_id); // XXX get_vlaue_or(0)
 
         ccReg::timestamp_var create_time =
@@ -2849,9 +2850,10 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
                                 Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_rem),
                                 Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_add),
                                 Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_rem),
-                                Corba::unwrap_tech_check_level(_tech_check_level),
-                                this->nsset_min_hosts_,
-                                this->nsset_max_hosts_),
+                                Corba::unwrap_tech_check_level(_tech_check_level)),
+                        Epp::Nsset::UpdateNssetConfigData(
+                                nsset_min_hosts_,
+                                nsset_max_hosts_),
                         Epp::SessionData(
                                 registrar_session_data.registrar_id,
                                 registrar_session_data.language,

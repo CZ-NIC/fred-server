@@ -49,27 +49,24 @@ bool update_nsset_invalid_registrar_exception(const Epp::EppResponseFailure& e) 
 
 BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 {
-
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    const Epp::Nsset::UpdateNssetInputData data(
+    const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle + "*?!",
         Optional<std::string>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>(),
-        nsset_min_hosts,
-        nsset_max_hosts
+        boost::optional<short>()
     );
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
-            data,
-            0,  // <== !!!
-            42 // TODO
+            input_data,
+            config_data,
+            0, // registrar id
+            42 // whatever
         ),
         Epp::EppResponseFailure,
         update_nsset_invalid_registrar_exception
@@ -85,26 +82,24 @@ bool update_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) 
 
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
 {
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    const Epp::Nsset::UpdateNssetInputData data(
+    const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle + "abc",
         Optional<std::string>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>(),
-        nsset_min_hosts,
-        nsset_max_hosts
+        boost::optional<short>()
     );
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
-            data,
+            input_data,
+            config_data,
             registrar.id,
-            42 /* TODO */
+            42 // whatever
         ),
         Epp::EppResponseFailure,
         update_fail_nonexistent_handle_exception
@@ -123,26 +118,24 @@ bool update_fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
 
 BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_registrar)
 {
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    const Epp::Nsset::UpdateNssetInputData data(
+    const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle,
         Optional<std::string>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>(),
-        nsset_min_hosts,
-        nsset_max_hosts
+        boost::optional<short>()
     );
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
-            data,
+            input_data,
+            config_data,
             the_different_registrar.id,
-            42 /* TODO */
+            42 // whatever
         ),
         Epp::EppResponseFailure,
         update_fail_wrong_registrar_exception
@@ -157,26 +150,24 @@ bool update_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_update_prohibited)
 {
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    const Epp::Nsset::UpdateNssetInputData data(
+    const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle,
         Optional<std::string>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>(),
-        nsset_min_hosts,
-        nsset_max_hosts
+        boost::optional<short>()
     );
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
-            data,
+            input_data,
+            config_data,
             registrar.id,
-            42 /* TODO */
+            42 // whatever
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status1_exception
@@ -191,27 +182,24 @@ bool update_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e)
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_candidate)
 {
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    const Epp::Nsset::UpdateNssetInputData data(
+    const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle,
         Optional<std::string>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>(),
-        nsset_min_hosts,
-        nsset_max_hosts
+        boost::optional<short>()
     );
-
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
-            data,
+            input_data,
+            config_data,
             registrar.id,
-            42 /* TODO */
+            42 // whatever
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status2_exception
@@ -226,25 +214,24 @@ bool update_fail_prohibiting_status_request_exception(const Epp::EppResponseFail
 
 BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_delete_candidate_request)
 {
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    const Epp::Nsset::UpdateNssetInputData data(
+    const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle,
         Optional<std::string>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<Epp::Nsset::DnsHostInput>(),
         std::vector<std::string>(),
         std::vector<std::string>(),
-        boost::optional<short>(),
-        nsset_min_hosts,
-        nsset_max_hosts
+        boost::optional<short>()
     );
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
-            data,
+            input_data,
+            config_data,
             registrar.id,
-            42 /* TODO */
+            42 // whatever
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status_request_exception
@@ -406,9 +393,7 @@ void check_after_update_data(const Epp::Nsset::UpdateNssetInputData& update_data
 
 BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 {
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    Epp::Nsset::UpdateNssetInputData data(
+    Epp::Nsset::UpdateNssetInputData input_data(
             nsset.handle,
             "authInfo1234",
             Util::vector_of<Epp::Nsset::DnsHostInput>
@@ -429,19 +414,19 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
             Util::vector_of<std::string>
                 ("TEST-ADMIN-CONTACT2")
                 ("TEST-ADMIN-CONTACT3"),//tech_contacts_rem
-            3,
-            nsset_min_hosts,
-            nsset_max_hosts
+            3
         );
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
 
     try {
         Epp::Nsset::update_nsset(
             ctx,
-            data,
+            input_data,
+            config_data,
             registrar.id,
-            42 /* TODO */
+            42 // whatever
         );
-        check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
+        check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
     }
     catch(const Epp::EppResponseFailure& e)
     {
@@ -464,28 +449,26 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 
 BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_transfer_prohibited_request)
 {
-    static const unsigned int nsset_min_hosts = 2;
-    static const unsigned int nsset_max_hosts = 10;
-    Epp::Nsset::UpdateNssetInputData data(
+    Epp::Nsset::UpdateNssetInputData input_data(
             nsset.handle,
             "authInfo1234",
             std::vector<Epp::Nsset::DnsHostInput>(), //add_dns
             std::vector<Epp::Nsset::DnsHostInput>(), //rem_dns
             std::vector<std::string>(),//0
             std::vector<std::string>(),
-            3,
-            nsset_min_hosts,
-            nsset_max_hosts
+            3
         );
+    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
 
     Epp::Nsset::update_nsset(
         ctx,
-        data,
+        input_data,
+        config_data,
         registrar.id,
-        42 /* TODO */
+        42 // whatever
     );
 
-    check_after_update_data(data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
+    check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
 
     /* now object has the state server_transfer_prohibited itself */
     {

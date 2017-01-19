@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_NSSET_INPUT_DATA_H_330441543C5E4F19818C057877F54560
-#define CREATE_NSSET_INPUT_DATA_H_330441543C5E4F19818C057877F54560
+#ifndef CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
+#define CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
 
 #include "src/epp/nsset/impl/dns_host_input.h"
 
@@ -29,25 +29,19 @@
 namespace Epp {
 namespace Nsset {
 
-struct CreateNssetInputData
+struct CreateNssetConfigData
 {
-    std::string handle;
-    boost::optional<std::string> authinfopw;
-    std::vector<DnsHostInput> dns_hosts;
-    std::vector<std::string> tech_contacts;
-    boost::optional<short> tech_check_level;
+    unsigned int default_tech_check_level;
+    unsigned int min_hosts;
+    unsigned int max_hosts;
 
-    CreateNssetInputData(
-            const std::string& _handle,
-            const boost::optional<std::string>& _authinfopw,
-            const std::vector<DnsHostInput>& _dns_hosts,
-            const std::vector<std::string>& _tech_contacts,
-            const boost::optional<short>& _tech_check_level)
-        : handle(_handle),
-          authinfopw(_authinfopw),
-          dns_hosts(_dns_hosts),
-          tech_contacts(_tech_contacts),
-          tech_check_level(_tech_check_level)
+    CreateNssetConfigData(
+            const unsigned int _default_tech_check_level,
+            const unsigned int _min_hosts,
+            const unsigned int _max_hosts)
+        : default_tech_check_level(_default_tech_check_level),
+          min_hosts(_min_hosts),
+          max_hosts(_max_hosts)
     { }
 };
 

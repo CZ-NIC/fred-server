@@ -19,6 +19,7 @@
 #ifndef CREATE_NSSET_LOCALIZED_H_E012D98CCFF7446FB305B72D2F4B8417
 #define CREATE_NSSET_LOCALIZED_H_E012D98CCFF7446FB305B72D2F4B8417
 
+#include "src/epp/nsset/impl/create_nsset_config_data.h"
 #include "src/epp/nsset/impl/create_nsset_input_data.h"
 #include "src/epp/nsset/impl/create_nsset_localized_response.h"
 #include "src/epp/impl/notification_data.h"
@@ -32,6 +33,7 @@ CreateNssetLocalizedResponse create_nsset_localized(
         const CreateNssetInputData& _create_nsset_input_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data,
+        const CreateNssetConfigData& _config_data,
         const Optional<unsigned long long>& _logd_request_id);
 
 } // namespace Epp::Nsset

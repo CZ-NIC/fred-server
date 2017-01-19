@@ -22,6 +22,7 @@
 #include "src/epp/impl/epp_response_success_localized.h"
 #include "src/epp/impl/notification_data.h"
 #include "src/epp/impl/session_data.h"
+#include "src/epp/nsset/impl/update_nsset_config_data.h"
 #include "src/epp/nsset/impl/update_nsset_input_data.h"
 #include "util/optional_value.h"
 
@@ -29,7 +30,8 @@ namespace Epp {
 namespace Nsset {
 
 EppResponseSuccessLocalized update_nsset_localized(
-        const UpdateNssetInputData& _data,
+        const UpdateNssetInputData& _update_nsset_input_data,
+        const UpdateNssetConfigData& _update_nsset_config_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data,
         const Optional<unsigned long long>& _logd_request_id);

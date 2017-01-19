@@ -19,7 +19,8 @@
 #ifndef UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
 #define UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
 
-#include "src/epp/nsset/update_nsset_localized.h"
+#include "src/epp/nsset/impl/update_nsset_config_data.h"
+#include "src/epp/nsset/impl/update_nsset_input_data.h"
 #include "src/fredlib/opcontext.h"
 
 namespace Epp {
@@ -29,16 +30,11 @@ namespace Nsset {
  * If successful, no exception thrown. In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns new nsset history id
- *
- * @throws AuthErrorServerClosingConnection
- * @throws NonexistentHandle
- * @throws AuthorizationError
- * @throws ObjectStatusProhibitsOperation in case nsset has serverUpdateProhibited or deleteCandidate status (or request)
- * @throws AggregatedParamErrors
  */
 unsigned long long update_nsset(
         Fred::OperationContext& _ctx,
-        const UpdateNssetInputData& _data,
+        const UpdateNssetInputData& _update_nsset_input_data,
+        const UpdateNssetConfigData& _update_nsset_config_data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
 

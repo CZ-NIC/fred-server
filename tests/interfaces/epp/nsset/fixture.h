@@ -149,30 +149,35 @@ struct has_nsset_with_all_data_set : has_registrar {
 struct has_nsset_input_data_set : has_registrar
 {
     Epp::Nsset::CreateNssetInputData nsset_input_data;
+    Epp::Nsset::CreateNssetConfigData nsset_config_data;
+    static const unsigned int nsset_tech_check_level = 3;
+    static const unsigned int default_nsset_tech_check_level = 3;
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
 
     has_nsset_input_data_set()
-    : nsset_input_data(Epp::Nsset::CreateNssetInputData(
-            "NSSET1",
-            boost::optional<std::string>("authInfo123"),
-            Util::vector_of<Epp::Nsset::DnsHostInput>
-                (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
-                    Util::vector_of< boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("11.0.0.3"))
-                        (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
-                (Epp::Nsset::DnsHostInput("c.ns.nic.cz",
-                    Util::vector_of<boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("11.0.0.4"))
-                        (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
-            Util::vector_of<std::string>
-                ("TEST-ADMIN-CONTACT2")
-                ("TEST-ADMIN-CONTACT3"),
-            3,
-            3,
-            nsset_min_hosts,
-            nsset_max_hosts
-        ))
+    : nsset_input_data(
+            Epp::Nsset::CreateNssetInputData(
+                    "NSSET1",
+                    boost::optional<std::string>("authInfo123"),
+                    Util::vector_of<Epp::Nsset::DnsHostInput>
+                        (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
+                            Util::vector_of< boost::optional<boost::asio::ip::address> >
+                                (boost::asio::ip::address::from_string("11.0.0.3"))
+                                (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
+                        (Epp::Nsset::DnsHostInput("c.ns.nic.cz",
+                            Util::vector_of<boost::optional<boost::asio::ip::address> >
+                                (boost::asio::ip::address::from_string("11.0.0.4"))
+                                (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
+                    Util::vector_of<std::string>
+                        ("TEST-ADMIN-CONTACT2")
+                        ("TEST-ADMIN-CONTACT3"),
+                    nsset_tech_check_level)),
+      nsset_config_data(
+            Epp::Nsset::CreateNssetConfigData(
+                    default_nsset_tech_check_level,
+                    nsset_min_hosts,
+                    nsset_max_hosts))
     {
         Fred::Contact::PlaceAddress place;
         place.street1 = "street 1";
@@ -204,30 +209,35 @@ struct has_nsset_input_data_set : has_registrar
 struct has_nsset_with_input_data_set : has_registrar {
     Fred::InfoNssetData nsset;
     Epp::Nsset::CreateNssetInputData nsset_input_data;
+    Epp::Nsset::CreateNssetConfigData nsset_config_data;
+    static const unsigned int nsset_tech_check_level = 3;
+    static const unsigned int default_nsset_tech_check_level = 3;
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
 
     has_nsset_with_input_data_set()
-    : nsset_input_data(Epp::Nsset::CreateNssetInputData(
-            "NSSET1",
-            boost::optional<std::string>("authInfo123"),
-            Util::vector_of<Epp::Nsset::DnsHostInput>
-                (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
-                    Util::vector_of<boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("11.0.0.3"))
-                        (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
-                (Epp::Nsset::DnsHostInput("c.ns.nic.cz",
-                    Util::vector_of<boost::optional<boost::asio::ip::address> >
-                        (boost::asio::ip::address::from_string("11.0.0.4"))
-                        (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
-            Util::vector_of<std::string>
-                ("TEST-ADMIN-CONTACT2")
-                ("TEST-ADMIN-CONTACT3"),
-            3,
-            3,
-            nsset_min_hosts,
-            nsset_max_hosts
-        ))
+    : nsset_input_data(
+            Epp::Nsset::CreateNssetInputData(
+                    "NSSET1",
+                    boost::optional<std::string>("authInfo123"),
+                    Util::vector_of<Epp::Nsset::DnsHostInput>
+                        (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
+                            Util::vector_of<boost::optional<boost::asio::ip::address> >
+                                (boost::asio::ip::address::from_string("11.0.0.3"))
+                                (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
+                        (Epp::Nsset::DnsHostInput("c.ns.nic.cz",
+                            Util::vector_of<boost::optional<boost::asio::ip::address> >
+                                (boost::asio::ip::address::from_string("11.0.0.4"))
+                                (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
+                    Util::vector_of<std::string>
+                        ("TEST-ADMIN-CONTACT2")
+                        ("TEST-ADMIN-CONTACT3"),
+                    nsset_tech_check_level)),
+      nsset_config_data(
+            Epp::Nsset::CreateNssetConfigData(
+                    default_nsset_tech_check_level,
+                    nsset_min_hosts,
+                    nsset_max_hosts))
     {
         Fred::Contact::PlaceAddress place;
         place.street1 = "street 1";
@@ -260,7 +270,7 @@ struct has_nsset_with_input_data_set : has_registrar {
                 )
             .set_authinfo(nsset_input_data.authinfopw ? *nsset_input_data.authinfopw : std::string())
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))
-            .set_tech_check_level(*nsset_input_data.input_tech_check_level)
+            .set_tech_check_level(*nsset_input_data.tech_check_level)
             .exec(ctx);
         nsset = Fred::InfoNssetByHandle(nsset_input_data.handle).exec(ctx).info_nsset_data;
 

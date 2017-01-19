@@ -56,7 +56,8 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_nsset_input_data_set)
         Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
-            0 /* <== !!! */,
+            nsset_config_data,
+            0, // <== !!!
             42
         ),
         Epp::EppResponseFailure,
@@ -78,8 +79,9 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_nsset_input_data_set)
         Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
+            nsset_config_data,
             registrar.id,
-            42 /* TODO */
+            42
         ),
         Epp::EppResponseFailure,
         create_fail_handle_format_exception
@@ -98,8 +100,9 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_nsset_with_input_data_
         Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
+            nsset_config_data,
             registrar.id,
-            42 /* TODO */
+            42
         ),
         Epp::EppResponseFailure,
         create_fail_already_existing_exception
@@ -124,8 +127,9 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_
         Epp::Nsset::create_nsset(
             ctx,
             nsset_input_data,
+            nsset_config_data,
             registrar.id,
-            42 /* TODO */
+            42
         ),
         Epp::EppResponseFailure,
         create_fail_protected_handle_exception
@@ -149,7 +153,7 @@ bool handle_oidhpair_predicate (const std::string& handle, const Fred::ObjectIdH
   return (handle == pair.handle);
 }
 
-void check_equal(const Epp::Nsset::CreateNssetInputData& create_data, const Fred::InfoNssetData& info_data)
+void check_equal(const Epp::Nsset::CreateNssetInputData& create_data, const Epp::Nsset::CreateNssetConfigData& config_data, const Fred::InfoNssetData& info_data)
 {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( create_data.handle ), info_data.handle );
     BOOST_CHECK_EQUAL( *create_data.authinfopw, info_data.authinfopw );
@@ -162,17 +166,19 @@ void check_equal(const Epp::Nsset::CreateNssetInputData& create_data, const Fred
     BOOST_CHECK(std::equal (create_data.tech_contacts.begin(), create_data.tech_contacts.end(),
             info_data.tech_contacts.begin(), handle_oidhpair_predicate));
 
-    BOOST_CHECK_EQUAL( create_data.get_nsset_tech_check_level() , info_data.tech_check_level.get_value_or_default());
+    BOOST_CHECK_EQUAL( create_data.tech_check_level ? *create_data.tech_check_level : boost::numeric_cast<short>(config_data.default_tech_check_level), info_data.tech_check_level.get_value_or_default());
 }
 
 BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_nsset_input_data_set)
 {
-    const Epp::Nsset::CreateNssetResult result = Epp::Nsset::create_nsset(
-        ctx,
-        nsset_input_data,
-        registrar.id,
-        42 /* TODO */
-    );
+    const Epp::Nsset::CreateNssetResult result =
+        Epp::Nsset::create_nsset(
+            ctx,
+            nsset_input_data,
+            nsset_config_data,
+            registrar.id,
+            42
+        );
 
     /* check returned data and db changes */
     {
@@ -188,6 +194,7 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_nsset_input_data_set)
         );
         check_equal(
             nsset_input_data,
+            nsset_config_data,
             check_sample
         );
     }

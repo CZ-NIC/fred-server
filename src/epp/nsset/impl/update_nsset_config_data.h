@@ -16,29 +16,24 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
-#define TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
-
-#include "src/fredlib/opcontext.h"
-
-#include "src/epp/nsset/transfer_nsset_localized.h"
-
-#include <string>
+#ifndef UPDATE_NSSET_CONFIG_DATA_H_C69173EA86384A4E9BDD9545CBF15EF1
+#define UPDATE_NSSET_CONFIG_DATA_H_C69173EA86384A4E9BDD9545CBF15EF1
 
 namespace Epp {
 namespace Nsset {
 
-/**
- * If successful (no exception thrown) state requests of nsset are performed. In case of exception behaviour is undefined and transaction should be rolled back.
- *
- * @returns new history id
- */
-unsigned long long transfer_nsset(
-        Fred::OperationContext& _ctx,
-        const std::string& _nsset_handle,
-        const std::string& _authinfopw,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+struct UpdateNssetConfigData
+{
+    unsigned int min_hosts;
+    unsigned int max_hosts;
+
+    UpdateNssetConfigData(
+            const unsigned int _min_hosts,
+            const unsigned int _max_hosts)
+        : min_hosts(_min_hosts),
+          max_hosts(_max_hosts)
+    { }
+};
 
 } // namespace Epp::Nsset
 } // namespace Epp

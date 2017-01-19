@@ -81,10 +81,6 @@ struct InfoNssetOutputData {
     { }
 };
 
-/**
- * @throws ExceptionAuthErrorServerClosingConnection
- * @throws ExceptionNonexistentHandle
- */
 InfoNssetOutputData info_nsset(
         Fred::OperationContext& _ctx,
         const std::string& _handle,

@@ -39,8 +39,6 @@ struct UpdateNssetInputData
     std::vector<std::string> tech_contacts_add;
     std::vector<std::string> tech_contacts_rem;
     boost::optional<short> tech_check_level;
-    unsigned int config_nsset_min_hosts;
-    unsigned int config_nsset_max_hosts;
 
     UpdateNssetInputData(
             const std::string& _handle,
@@ -49,18 +47,14 @@ struct UpdateNssetInputData
             const std::vector<DnsHostInput>& _dns_hosts_rem,
             const std::vector<std::string>& _tech_contacts_add,
             const std::vector<std::string>& _tech_contacts_rem,
-            const boost::optional<short>& _tech_check_level,
-            const unsigned int _config_nsset_min_hosts,
-            const unsigned int _config_nsset_max_hosts)
+            const boost::optional<short>& _tech_check_level)
         : handle(_handle),
           authinfopw(_authinfopw),
           dns_hosts_add(_dns_hosts_add),
           dns_hosts_rem(_dns_hosts_rem),
           tech_contacts_add(_tech_contacts_add),
           tech_contacts_rem(_tech_contacts_rem),
-          tech_check_level(_tech_check_level),
-          config_nsset_min_hosts(_config_nsset_min_hosts),
-          config_nsset_max_hosts(_config_nsset_max_hosts)
+          tech_check_level(_tech_check_level)
     { }
 };
 

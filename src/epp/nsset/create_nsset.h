@@ -47,7 +47,8 @@ struct CreateNssetResult {
 
 CreateNssetResult create_nsset(
         Fred::OperationContext& _ctx,
-        const CreateNssetInputData& _data,
+        const CreateNssetInputData& _create_nsset_input_data,
+        const CreateNssetConfigData& _create_nsset_config_data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
 

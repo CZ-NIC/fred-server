@@ -30,11 +30,6 @@ namespace Nsset {
  * If successful (no exception thrown) state requests of nsset are performed. In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns last nsset history id before delete
- *
- * @throws AuthErrorServerClosingConnection
- * @throws NonexistentHandle
- * @throws AuthorizationError
- * @throws ObjectStatusProhibitsOperation in case nsset has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long delete_nsset(
         Fred::OperationContext& _ctx,
