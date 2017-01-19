@@ -888,18 +888,22 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_success, HasDo
     BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << system_registrar_data_.id);
     BOOST_TEST_MESSAGE(std::string("info_registrar_data_.system ") << system_registrar_data_.system.get_value_or(false));
 
-    try{
-        Epp::domain_create_impl(
-            ctx,
-            domain1_create_input_data,
-            system_registrar_data_.id,
-            42
-        );
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+    Epp::Domain::create_domain(
+        ctx,
+        domain1_create_input_data,
+        system_registrar_data_.id,
+        42
+    );
+}
+
+bool create_invalid_domain_by_system_registrar_fail_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_syntax_error);
+    BOOST_REQUIRE(e.epp_result().extended_errors());
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_fqdn);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::bad_format_fqdn);
+    return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_fail, HasDomainDataAndSystemRegistrar)
@@ -910,38 +914,28 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_fail, HasDomai
     BOOST_TEST_MESSAGE(std::string("info_registrar_data_.id ") << system_registrar_data_.id);
     BOOST_TEST_MESSAGE(std::string("info_registrar_data_.system ") << system_registrar_data_.system.get_value_or(false));
 
-    try{
-        Epp::domain_create_impl(
+    BOOST_CHECK_EXCEPTION(
+        Epp::Domain::create_domain(
             ctx,
             domain1_create_input_data,
             system_registrar_data_.id,
             42
-        );
-        BOOST_ERROR("exception expected");
-    }
-    catch(const Epp::ParameterValueSyntaxError& ex)
-    {
-        BOOST_TEST_MESSAGE("Epp::ParameterValueSyntaxError");
-        BOOST_CHECK(ex.get().size() == 1);
-        BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_fqdn);
-        BOOST_CHECK(ex.get().rbegin()->position == 0);
-        BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::bad_format_fqdn);
-    }
-    catch(...)
-    {
-        BOOST_ERROR("unexpected exception type");
-    }
+        ),
+        Epp::EppResponseFailure,
+        create_invalid_domain_by_system_registrar_fail_exception
+    );
 }
-
 
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
 {
-    Epp::Domain::create_domain(
-        ctx,
-        domain1_create_input_data,
-        info_registrar_data_.id,
-        42 /* TODO */
-    );
+    BOOST_CHECK_NO_THROW(
+        Epp::Domain::create_domain(
+            ctx,
+            domain1_create_input_data,
+            info_registrar_data_.id,
+            42 /* TODO */
+        );
+    )
 
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
@@ -972,7 +966,6 @@ BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
     BOOST_CHECK(info_data.admin_contacts.size() == domain1_create_input_data.admin_contacts.size());
     BOOST_CHECK(std::equal (domain1_create_input_data.admin_contacts.begin(), domain1_create_input_data.admin_contacts.end(),
             info_data.admin_contacts.begin(), handle_oidhpair_predicate));
-
 
     BOOST_CHECK(info_data.enum_domain_validation.isnull());
 
