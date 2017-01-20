@@ -52,8 +52,7 @@ namespace Fred
     {
         try
         {
-            //check general domain name syntax
-            if(!Domain::domain_name_rfc1123_2_1_syntax_check(fqdn_)) {
+            if(!Domain::is_rfc1123_compliant_host_name(fqdn_)) {
                 return true;
             }
 

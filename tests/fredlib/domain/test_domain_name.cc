@@ -138,6 +138,92 @@ BOOST_AUTO_TEST_CASE(test_general_domain_name_syntax_check)
     ));
 }
 /**
+ * test cases for RFC1123 section 2.1 compliant host name (however, final dot '.' is optional)
+ *
+*/
+BOOST_AUTO_TEST_CASE(test_is_rfc1123_compliant_host_name)
+{
+
+    // *valid names*
+
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("8.4.1.0.6.4.9.7.0.2.4.4.e164.arpa"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.cz"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.cz."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fr--ed.cz."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("xn--jra-ela.cz"));
+
+    // maximal domain name length if final dot ommited
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name(
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "0123456789012345678901234567890123456789012345678901234567890"
+    ));
+
+    // maximal domain name length if final dot present
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name(
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "0123456789012345678901234567890123456789012345678901234567890."
+    ));
+
+    // *invalid names*
+
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(""));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(".cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(".fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred..cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred.cz.."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred-.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred.-cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred.cz-"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-fred.fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred-.fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr@ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\\ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\red.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\ned.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\ted.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr;ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("jára.cz"));
+
+    // maximal label length exceeded (second level label)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "0123456789012345678901234567890123456789012345678901234567890123.cz"));
+
+    // maximal label length exceeded (top level label, final dot ommited)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "cz.0123456789012345678901234567890123456789012345678901234567890123"));
+
+    // maximal label length exceeded (top level label, final dot present)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "0123456789012345678901234567890123456789012345678901234567890123."
+    ));
+
+    // maximal domain name length exceeded (if final dot ommited)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "01234567890123456789012345678901234567890123456789012345678901"
+    ));
+
+    // maximal domain name length exceeded (if final dot present)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "01234567890123456789012345678901234567890123456789012345678901."
+    ));
+}
+
+/**
  * test cases for specific domain name syntax checkers
  *
 */

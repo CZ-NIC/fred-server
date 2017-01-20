@@ -94,7 +94,7 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
     return true;
 }
 
-bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& _fqdn) {
+bool is_rfc1123_compliant_host_name(const std::string& _fqdn) {
     const int fqdn_min_length = 1;
     const int fqdn_max_length = 255;
     const int label_min_length = 1;
@@ -161,12 +161,6 @@ bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(c
         }
     }
     return true;
-}
-
-bool domain_name_rfc1123_2_1_syntax_check(const std::string& fqdn) {
-    return
-        general_domain_name_syntax_check(fqdn) &&
-        domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(fqdn);
 }
 
 DomainNameValidator::DomainNameValidator(const bool _is_system_registrar)
