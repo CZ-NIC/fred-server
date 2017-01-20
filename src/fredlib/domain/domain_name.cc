@@ -94,11 +94,73 @@ bool general_domain_name_syntax_check(const std::string& fqdn)
     return true;
 }
 
-bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& fqdn) {
-    const boost::regex rfc1123_2_1_name_syntax(
-            "^([[:alnum:]]([-[:alnum:]]*[[:alnum:]])*[.]?)+$");
-    return boost::regex_match(fqdn, rfc1123_2_1_name_syntax);
+bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& _fqdn) {
+    const int fqdn_min_length = 1;
+    const int fqdn_max_length = 255;
+    const int label_min_length = 1;
+    const int label_max_length = 63;
 
+    if (_fqdn.size() < fqdn_min_length)
+    {
+        return false;
+    }
+
+    const int final_dot_addition = (*_fqdn.rbegin() == '.' ? 0 : 1);
+    const int root_label_size = 1;
+    if ((_fqdn.length() + final_dot_addition + root_label_size) > fqdn_max_length)
+    {
+        return false;
+    }
+
+    std::string::size_type label_length = 0;
+    for (std::string::size_type i = 0; i < _fqdn.length(); ++i)
+    {
+        if (_fqdn[i] == '.') // label boundary
+        {
+            if (label_length < label_min_length ||
+                label_length > label_max_length)
+            {
+                return false;
+            }
+            label_length = 0;
+        }
+        else // inside label
+        {
+            if (('A' <= _fqdn[i] && _fqdn[i] <= 'Z') ||
+                ('a' <= _fqdn[i] && _fqdn[i] <= 'z') ||
+                ('0' <= _fqdn[i] && _fqdn[i] <= '9'))
+            {
+                // valid characters
+            }
+            else if (_fqdn[i] == '-')
+            {
+                // '-' invalid at the label start
+                if (label_length == 0)
+                {
+                    return false;
+                }
+                // '-' invalid at the label end
+                if ((i + 1) == _fqdn.length() || // case when final dot is not present
+                    ((i + 1) < _fqdn.length() && _fqdn[i + 1] == '.'))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // invalid character
+                return false;
+            }
+
+            ++label_length;
+            if (label_length < label_min_length ||
+                label_length > label_max_length)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 bool domain_name_rfc1123_2_1_syntax_check(const std::string& fqdn) {

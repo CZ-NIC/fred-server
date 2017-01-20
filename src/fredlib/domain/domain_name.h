@@ -39,7 +39,8 @@ namespace Domain {
 ///checking fqdn length < 255 and label length is from 1 to 63 octets, labels are separated by '.'
 bool general_domain_name_syntax_check(const std::string& fqdn);
 
-/// domain name validity check (LDH + no label beginning or ending with hyphen "-"
+/// returns true if _fqdn is rfc1123 compliant host name (however, final dot is facultative)
+// FIXME function name must be changed, #17906 addresses this
 bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& fqdn);
 
 /// check domain name according to RFC1123 section 2.1
