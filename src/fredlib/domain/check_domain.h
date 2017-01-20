@@ -52,7 +52,7 @@ namespace Fred
         * general domain name syntax check as specified in: RFC1034, RFC1035, RFC2181 and RFC3696
         * @return true if invalid, false if ok
         */
-        bool is_invalid_syntax() const;
+        bool is_invalid_general_syntax() const;
 
 
         /**
@@ -60,7 +60,7 @@ namespace Fred
         * @param ctx an operation context with database and logging interface.
         * @return true if invalid, false if ok
         */
-        bool is_invalid_handle(OperationContext& ctx) const;
+        bool is_invalid_syntax(OperationContext& ctx) const;
 
         /**
         * check if domain have zone found in registry.

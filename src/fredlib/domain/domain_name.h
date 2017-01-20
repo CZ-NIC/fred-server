@@ -37,7 +37,7 @@ namespace Fred {
 namespace Domain {
 
 ///checking fqdn length < 255 and label length is from 1 to 63 octets, labels are separated by '.'
-bool general_domain_name_syntax_check(const std::string& fqdn);
+bool is_general_syntax_compliant_domain_name(const std::string& fqdn);
 
 /// returns true if _fqdn is RFC1123 section 2.1 compliant host name (however, final dot '.' is optional)
 bool is_rfc1123_compliant_host_name(const std::string& fqdn);

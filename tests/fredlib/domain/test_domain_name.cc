@@ -92,45 +92,45 @@ BOOST_AUTO_TEST_CASE(test_DomainName)
  * test cases for general domain name syntax with '.' separator and lengths
  *
 */
-BOOST_AUTO_TEST_CASE(test_general_domain_name_syntax_check)
+BOOST_AUTO_TEST_CASE(test_general_syntax_compliant_domain_name)
 {
 
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("8.4.1.0.6.4.9.7.0.2.4.4.e164.arpa"));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("fred.cz"));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("fred.cz."));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred..cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(".fred.cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(".cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred.cz.."));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
+    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("8.4.1.0.6.4.9.7.0.2.4.4.e164.arpa"));
+    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
+    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("fred.cz"));
+    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("fred.cz."));
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name("fred..cz"));
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(".fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(".cz"));
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name("fred.cz.."));
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
         "0123456789012345678901234567890123456789012345678901234567890123456789.cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
         "cz.0123456789012345678901234567890123456789012345678901234567890123456789"));
     //max lengths
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check(
+    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name(
         "012345678901234567890123456789012345678901234567890123456789012."//63 octets label
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "0123456789012345678901234567890123456789012345678901234567890"
     ));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check(
+    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name(
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "0123456789012345678901234567890123456789012345678901234567890."
     ));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
         "012345678901234567890123456789012345678901234567890123456789012."
         "0123456789012345678901234567890123456789012345678901234567890123."
     ));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "01234567890123456789012345678901234567890123456789012345678901."
     ));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
+    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
@@ -151,6 +151,24 @@ BOOST_AUTO_TEST_CASE(test_is_rfc1123_compliant_host_name)
     BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.cz."));
     BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fr--ed.cz."));
     BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("xn--jra-ela.cz"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.com"));
+
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("127.0.0.1"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2-fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2--fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-om"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.com."));
+
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("127.0.0.1."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2-fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2--fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-om."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m."));
 
     // maximal domain name length if final dot ommited
     BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name(
@@ -221,6 +239,30 @@ BOOST_AUTO_TEST_CASE(test_is_rfc1123_compliant_host_name)
         "012345678901234567890123456789012345678901234567890123456789012."
         "01234567890123456789012345678901234567890123456789012345678901."
     ));
+
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-2fred.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2--fred-.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m-"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m-"));
+
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-2fred.com."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2--fred-.com."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m-."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m-."));
+
+    // genzone vulnerability, forbidden characters in NS name (RFC1035, section 5)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred@txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\rtxt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\ntxt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\ttxt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\"txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred(txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred)txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\\txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred;txt.com"));
 }
 
 /**

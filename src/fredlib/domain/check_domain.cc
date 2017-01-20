@@ -38,17 +38,12 @@ namespace Fred
     : fqdn_(fqdn), is_system_registrar_(_is_system_registrar)
     {}
 
-    bool CheckDomain::is_invalid_syntax() const
+    bool CheckDomain::is_invalid_general_syntax() const
     {
-        if(Domain::general_domain_name_syntax_check(fqdn_))
-        {
-            return false;
-        }
-
-        return true;
+        return !Domain::is_general_syntax_compliant_domain_name(fqdn_);
     }
 
-    bool CheckDomain::is_invalid_handle(OperationContext& ctx) const
+    bool CheckDomain::is_invalid_syntax(OperationContext& ctx) const
     {
         try
         {
@@ -267,7 +262,7 @@ namespace Fred
     {
         try
         {
-            if(is_invalid_handle(ctx)
+            if(is_invalid_syntax(ctx)
             || is_bad_length(ctx)
             || is_registered(ctx)
             || is_blacklisted(ctx))

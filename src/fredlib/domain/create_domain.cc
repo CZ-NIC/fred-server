@@ -177,7 +177,7 @@ namespace Fred
             }
 
             //check domain name
-            if(domain.is_invalid_handle(ctx))
+            if(domain.is_invalid_syntax(ctx))
             {
                 BOOST_THROW_EXCEPTION(Exception().set_invalid_fqdn_syntax(fqdn_));
             }

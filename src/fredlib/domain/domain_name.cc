@@ -41,7 +41,7 @@ namespace Domain {
 
 FACTORY_MODULE_INIT_DEFI(domain_name_validator)
 
-bool general_domain_name_syntax_check(const std::string& fqdn)
+bool is_general_syntax_compliant_domain_name(const std::string& fqdn)
 {
     /* general domain name syntax check as specified
     in: RFC1034, RFC1035, RFC2181 and RFC3696
@@ -187,7 +187,7 @@ void DomainName::init(const char* const _fqdn) {
     }
     std::string temp_fqdn(_fqdn);
 
-    if( general_domain_name_syntax_check (temp_fqdn) == false) {
+    if(!is_general_syntax_compliant_domain_name(temp_fqdn)) {
         throw ExceptionInvalidFqdn();
     }
 

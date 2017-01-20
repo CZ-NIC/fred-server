@@ -34,7 +34,7 @@ DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(
     const Fred::CheckDomain domain = Fred::CheckDomain(domain_fqdn, is_system_registrar);
 
     if (domain.is_bad_length(ctx)
-    || domain.is_invalid_handle(ctx)) {
+    || domain.is_invalid_syntax(ctx)) {
         return DomainFqdnSyntaxValidity::invalid;
     }
     return DomainFqdnSyntaxValidity::valid;
