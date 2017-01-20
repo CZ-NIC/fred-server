@@ -38,11 +38,6 @@ namespace Fred
     : fqdn_(fqdn), is_system_registrar_(_is_system_registrar)
     {}
 
-    bool CheckDomain::is_invalid_general_syntax() const
-    {
-        return !Domain::is_general_syntax_compliant_domain_name(fqdn_);
-    }
-
     bool CheckDomain::is_invalid_syntax(OperationContext& ctx) const
     {
         try

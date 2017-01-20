@@ -454,7 +454,7 @@ NSSetSeq Server_impl::get_nssets_by_ns(
                     .exec(ctx, get_output_timezone());
         if (nss_info.empty())
         {
-            if (Fred::CheckDomain(handle).is_invalid_general_syntax())
+            if (Fred::CheckDomain(handle).is_invalid_syntax(ctx))
             {
                 throw InvalidHandle();
             }
@@ -520,7 +520,7 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
         }
         else
         {
-            if (Fred::CheckDomain(fqdn).is_invalid_general_syntax())
+            if (Fred::CheckDomain(fqdn).is_invalid_syntax(ctx))
             {
                 throw InvalidHandle();
             }
@@ -739,7 +739,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
     {
         try
         {
-            if (check_domain.is_invalid_general_syntax())
+            if (check_domain.is_invalid_syntax(ctx))
             {
                 throw InvalidLabel();
             }

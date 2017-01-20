@@ -88,55 +88,7 @@ BOOST_AUTO_TEST_CASE(test_DomainName)
     }
     BOOST_CHECK( exception_thrown_from_get_subdomains_when_negative_input_given );
 }
-/**
- * test cases for general domain name syntax with '.' separator and lengths
- *
-*/
-BOOST_AUTO_TEST_CASE(test_general_syntax_compliant_domain_name)
-{
 
-    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("8.4.1.0.6.4.9.7.0.2.4.4.e164.arpa"));
-    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
-    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("fred.cz"));
-    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name("fred.cz."));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name("fred..cz"));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(".fred.cz"));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(".cz"));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name("fred.cz.."));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
-        "0123456789012345678901234567890123456789012345678901234567890123456789.cz"));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
-        "cz.0123456789012345678901234567890123456789012345678901234567890123456789"));
-    //max lengths
-    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name(
-        "012345678901234567890123456789012345678901234567890123456789012."//63 octets label
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "0123456789012345678901234567890123456789012345678901234567890"
-    ));
-    BOOST_CHECK(Fred::Domain::is_general_syntax_compliant_domain_name(
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "0123456789012345678901234567890123456789012345678901234567890."
-    ));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "0123456789012345678901234567890123456789012345678901234567890123."
-    ));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "01234567890123456789012345678901234567890123456789012345678901."
-    ));
-    BOOST_CHECK(!Fred::Domain::is_general_syntax_compliant_domain_name(
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "01234567890123456789012345678901234567890123456789012345678901"
-    ));
-}
 /**
  * test cases for RFC1123 section 2.1 compliant host name (however, final dot '.' is optional)
  *
@@ -310,13 +262,6 @@ BOOST_AUTO_TEST_CASE(test_domain_name_validator)
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
     BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.10.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
     BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.a.0.2.4.e164.arpa"), 5) );
-
-    //general LDH rule
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5));
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2.cz"), 1));
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1a.cz"), 1));
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1~a.cz"), 1));
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("fred@.cz"), 1));
 
     //combined
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fred.cz"), 1));

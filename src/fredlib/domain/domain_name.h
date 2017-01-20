@@ -36,9 +36,6 @@
 namespace Fred {
 namespace Domain {
 
-///checking fqdn length < 255 and label length is from 1 to 63 octets, labels are separated by '.'
-bool is_general_syntax_compliant_domain_name(const std::string& fqdn);
-
 /// returns true if _fqdn is RFC1123 section 2.1 compliant host name (however, final dot '.' is optional)
 bool is_rfc1123_compliant_host_name(const std::string& fqdn);
 
@@ -139,9 +136,6 @@ typedef Util::Factory<DomainNameChecker, Util::ClassCreator<DomainNameChecker> >
 const std::string DNCHECK_NO_CONSECUTIVE_HYPHENS="dncheck_no_consecutive_hyphens";
 const std::string DNCHECK_RFC1035_PREFERRED_SYNTAX="dncheck_rfc1035_preferred_syntax";
 const std::string DNCHECK_SINGLE_DIGIT_LABELS_ONLY="dncheck_single_digit_labels_only";
-const std::string DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY="dncheck_letters_digits_hyphen_chars_only";
-const std::string DNCHECK_NO_LABEL_BEGINNING_HYPHEN="dncheck_no_label_beginning_hyphen";
-const std::string DNCHECK_NO_LABEL_ENDING_HYPHEN="dncheck_no_label_ending_hyphen";
 const std::string DNCHECK_NO_IDN_PUNYCODE="dncheck_no_idn_punycode";
 
 ///trivial checker for testing
