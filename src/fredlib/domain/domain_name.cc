@@ -43,68 +43,37 @@ FACTORY_MODULE_INIT_DEFI(domain_name_validator)
 
 bool is_rfc1123_compliant_host_name(const std::string& _fqdn) {
     const int fqdn_min_length = 1;
-    const int fqdn_max_length = 255;
+    const int fqdn_max_length = 253; // 253 + 1 for "optional final dot" + 1 for "empty root label" = 255
     const int label_min_length = 1;
     const int label_max_length = 63;
 
-    if (_fqdn.size() < fqdn_min_length)
+    const std::string letter_digit_hyphen_dot = "ABCDEFGHIJKLMNOPQRSTUVWXYZzabcdefghijklmnopqrstuvwxyz0123456789-.";
+    const std::string label_delimiter = ".";
+
+    const std::string fqdn = Fred::Zone::rem_trailing_dot(_fqdn);
+
+    if ((fqdn.length() < fqdn_min_length) ||
+        (fqdn.length() > fqdn_max_length))
     {
         return false;
     }
 
-    const int final_dot_addition = (*_fqdn.rbegin() == '.' ? 0 : 1);
-    const int root_label_size = 1;
-    if ((_fqdn.length() + final_dot_addition + root_label_size) > fqdn_max_length)
+    if (fqdn.find_first_not_of(letter_digit_hyphen_dot) != std::string::npos)
     {
         return false;
     }
 
-    std::string::size_type label_length = 0;
-    for (std::string::size_type i = 0; i < _fqdn.length(); ++i)
-    {
-        if (_fqdn[i] == '.') // label boundary
-        {
-            if (label_length < label_min_length ||
-                label_length > label_max_length)
-            {
-                return false;
-            }
-            label_length = 0;
-        }
-        else // inside label
-        {
-            if (('A' <= _fqdn[i] && _fqdn[i] <= 'Z') ||
-                ('a' <= _fqdn[i] && _fqdn[i] <= 'z') ||
-                ('0' <= _fqdn[i] && _fqdn[i] <= '9'))
-            {
-                // valid characters
-            }
-            else if (_fqdn[i] == '-')
-            {
-                // '-' invalid at the label start
-                if (label_length == 0)
-                {
-                    return false;
-                }
-                // '-' invalid at the label end
-                if ((i + 1) == _fqdn.length() || // case when final dot is not present
-                    ((i + 1) < _fqdn.length() && _fqdn[i + 1] == '.'))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // invalid character
-                return false;
-            }
+    std::vector<std::string> labels;
+    boost::split(labels, fqdn, boost::is_any_of(label_delimiter));
 
-            ++label_length;
-            if (label_length < label_min_length ||
-                label_length > label_max_length)
-            {
-                return false;
-            }
+    for (std::vector<std::string>::const_iterator label = labels.begin(); label != labels.end(); ++label)
+    {
+        if ((label->length() < label_min_length) ||
+            (label->length() > label_max_length) ||
+            (boost::starts_with(*label, "-")) ||
+            (boost::ends_with(*label, "-")))
+        {
+            return false;
         }
     }
     return true;
