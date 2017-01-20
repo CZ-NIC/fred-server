@@ -11,6 +11,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/check_registrar.h"
 #include "src/fredlib/domain/check_domain.h"
+#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/contact/check_contact.h"
@@ -739,13 +740,16 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
     {
         try
         {
-            if (check_domain.is_invalid_syntax(ctx))
-            {
+            if (!Fred::Domain::is_rfc1123_compliant_host_name(handle)) {
                 throw InvalidLabel();
             }
             if (check_domain.is_bad_zone(ctx))
             {
                 throw UnmanagedZone();
+            }
+            if (check_domain.is_invalid_syntax(ctx))
+            {
+                throw InvalidLabel();
             }
             if (check_domain.is_bad_length(ctx))
             {
