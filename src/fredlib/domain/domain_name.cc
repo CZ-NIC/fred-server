@@ -43,7 +43,7 @@ FACTORY_MODULE_INIT_DEFI(domain_name_validator)
 
 bool is_rfc1123_compliant_host_name(const std::string& _fqdn) {
     const int fqdn_min_length = 1;
-    const int fqdn_max_length = 253; // 253 + 1 for "optional final dot" + 1 for "empty root label" = 255
+    const int fqdn_max_length = 253; // 253 + 1 for "optional final dot" + 1 for "empty root label size" = 255
     const int label_min_length = 1;
     const int label_max_length = 63;
 
