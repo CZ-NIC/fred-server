@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(test_is_rfc1123_compliant_host_name)
     BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\ted.cz"));
     BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr;ed.cz"));
     BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
-    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("jára.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("j\xc3\xa1ra.cz"));
 
     // maximal label length exceeded (second level label)
     BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
