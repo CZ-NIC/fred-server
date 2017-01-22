@@ -11,6 +11,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/check_registrar.h"
 #include "src/fredlib/domain/check_domain.h"
+#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/contact/check_contact.h"
@@ -454,7 +455,7 @@ NSSetSeq Server_impl::get_nssets_by_ns(
                     .exec(ctx, get_output_timezone());
         if (nss_info.empty())
         {
-            if (Fred::CheckDomain(handle).is_invalid_syntax())
+            if (Fred::CheckDomain(handle).is_invalid_syntax(ctx))
             {
                 throw InvalidHandle();
             }
@@ -520,7 +521,7 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
         }
         else
         {
-            if (Fred::CheckDomain(fqdn).is_invalid_syntax())
+            if (Fred::CheckDomain(fqdn).is_invalid_syntax(ctx))
             {
                 throw InvalidHandle();
             }
@@ -739,13 +740,16 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
     {
         try
         {
-            if (check_domain.is_invalid_syntax())
-            {
+            if (!Fred::Domain::is_rfc1123_compliant_host_name(handle)) {
                 throw InvalidLabel();
             }
             if (check_domain.is_bad_zone(ctx))
             {
                 throw UnmanagedZone();
+            }
+            if (check_domain.is_invalid_syntax(ctx))
+            {
+                throw InvalidLabel();
             }
             if (check_domain.is_bad_length(ctx))
             {
@@ -779,7 +783,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                                 .info_domain_data,
                             ctx);
                 }
-                if (Fred::CheckDomain(handle).is_invalid_handle(ctx))
+                if (Fred::CheckDomain(handle).is_invalid_syntax(ctx))
                 {
                     throw InvalidLabel();
                 }

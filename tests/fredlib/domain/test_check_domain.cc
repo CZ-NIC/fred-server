@@ -118,8 +118,7 @@ BOOST_FIXTURE_TEST_SUITE(TestCheckDomain, check_domain_fixture)
 BOOST_AUTO_TEST_CASE(check_domain_name_true)
 {
     Fred::OperationContextCreator ctx;
-    BOOST_CHECK(Fred::CheckDomain(std::string("-..")+test_domain_name).is_invalid_syntax());
-    BOOST_CHECK(Fred::CheckDomain(std::string("-")+test_domain_name).is_invalid_handle(ctx));
+    BOOST_CHECK(Fred::CheckDomain(std::string("-")+test_domain_name).is_invalid_syntax(ctx));
     BOOST_CHECK(Fred::CheckDomain(std::string("testfred")+xmark+".czz").is_bad_zone(ctx));
     BOOST_CHECK(Fred::CheckDomain(std::string("testfred")+xmark+".czz.cz").is_bad_length(ctx));
     BOOST_CHECK(Fred::CheckDomain(blacklisted_domain_name).is_blacklisted(ctx));
@@ -137,8 +136,7 @@ BOOST_AUTO_TEST_CASE(check_domain_name_true)
 BOOST_AUTO_TEST_CASE(check_domain_name_false)
 {
     Fred::OperationContextCreator ctx;
-    BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_syntax());
-    BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_handle(ctx));
+    BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_invalid_syntax(ctx));
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_bad_zone(ctx));
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_bad_length(ctx));
     BOOST_CHECK(!Fred::CheckDomain(test_domain_name).is_blacklisted(ctx));

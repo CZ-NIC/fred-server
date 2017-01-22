@@ -59,7 +59,6 @@ BOOST_AUTO_TEST_CASE(test_DomainName)
 
     /// get_subdomains
     Fred::Domain::DomainName temp2("relative.zone1.zone2");
-    Fred::Domain::DomainName temp3("dummy_valid_string");
 
     try {
         temp2.get_subdomains(2);
@@ -88,55 +87,135 @@ BOOST_AUTO_TEST_CASE(test_DomainName)
     }
     BOOST_CHECK( exception_thrown_from_get_subdomains_when_negative_input_given );
 }
+
 /**
- * test cases for general domain name syntax with '.' separator and lengths
+ * test cases for RFC1123 section 2.1 compliant host name (however, final dot '.' is optional)
  *
 */
-BOOST_AUTO_TEST_CASE(test_general_domain_name_syntax_check)
+BOOST_AUTO_TEST_CASE(test_is_rfc1123_compliant_host_name)
 {
 
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("8.4.1.0.6.4.9.7.0.2.4.4.e164.arpa"));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("fred.cz"));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check("fred.cz."));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred..cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(".fred.cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(".cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check("fred.cz.."));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
-        "0123456789012345678901234567890123456789012345678901234567890123456789.cz"));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
-        "cz.0123456789012345678901234567890123456789012345678901234567890123456789"));
-    //max lengths
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check(
-        "012345678901234567890123456789012345678901234567890123456789012."//63 octets label
+    // *valid names*
+
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("8.4.1.0.6.4.9.7.0.2.4.4.e164.arpa"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.cz"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.cz."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fr--ed.cz."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("xn--jra-ela.cz"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.com"));
+
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("127.0.0.1"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2-fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2--fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.com"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-om"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m"));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("fred.com."));
+
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("127.0.0.1."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2-fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2--fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.com."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-om."));
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m."));
+
+    // maximal domain name length if final dot ommited
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name(
+        "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "0123456789012345678901234567890123456789012345678901234567890"
     ));
-    BOOST_CHECK(Fred::Domain::general_domain_name_syntax_check(
+
+    // maximal domain name length if final dot present
+    BOOST_CHECK(Fred::Domain::is_rfc1123_compliant_host_name(
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "0123456789012345678901234567890123456789012345678901234567890."
     ));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
+
+    // *invalid names*
+
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(""));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(".cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(".fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred..cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred.cz.."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred-.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred.-cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred.cz-"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-fred.fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred-.fred.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr@ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\\ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\red.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\ned.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr\ted.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fr;ed.cz"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("Donald\\032E\\.\\032Eastlake\\0323rd.example."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("j\xc3\xa1ra.cz"));
+
+    // maximal label length exceeded (second level label)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "0123456789012345678901234567890123456789012345678901234567890123.cz"));
+
+    // maximal label length exceeded (top level label, final dot ommited)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "cz.0123456789012345678901234567890123456789012345678901234567890123"));
+
+    // maximal label length exceeded (top level label, final dot present)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
         "012345678901234567890123456789012345678901234567890123456789012."
         "0123456789012345678901234567890123456789012345678901234567890123."
     ));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "012345678901234567890123456789012345678901234567890123456789012."
-        "01234567890123456789012345678901234567890123456789012345678901."
-    ));
-    BOOST_CHECK(!Fred::Domain::general_domain_name_syntax_check(
+
+    // maximal domain name length exceeded (if final dot ommited)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "012345678901234567890123456789012345678901234567890123456789012."
         "01234567890123456789012345678901234567890123456789012345678901"
     ));
+
+    // maximal domain name length exceeded (if final dot present)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name(
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "012345678901234567890123456789012345678901234567890123456789012."
+        "01234567890123456789012345678901234567890123456789012345678901."
+    ));
+
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-2fred.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2--fred-.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m-"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m-"));
+
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("-2fred.com."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2--fred-.com."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.c-o-m-."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m."));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("2---fred.-c-o-m-."));
+
+    // genzone vulnerability, forbidden characters in NS name (RFC1035, section 5)
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred@txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\rtxt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\ntxt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\ttxt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\"txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred(txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred)txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred\\txt.com"));
+    BOOST_CHECK(!Fred::Domain::is_rfc1123_compliant_host_name("fred;txt.com"));
 }
+
 /**
  * test cases for specific domain name syntax checkers
  *
@@ -158,23 +237,16 @@ BOOST_AUTO_TEST_CASE(test_domain_name_validator)
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.com"), 0) );
     BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("2fred.cz"), 1) );
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("-fred.cz"), 1) );
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred-.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred.fred.com"), 1) );
     BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("2fred.fred.cz"), 1) );
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("-fred.fred.cz"), 1) );
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("fred-.fred.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red.fred.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.fred.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).exec(DomainName("f--red5.f--red5.cz"), 1) );
 
     //no '--' checks
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fred-.fred.cz"), 1) );
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d-.fred.cz"), 1) );
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d--.fred.cz"), 1) );
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d.fre-d.cz"), 1) );
     BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fre-d.fre--d.cz"), 1) );
 
@@ -182,13 +254,6 @@ BOOST_AUTO_TEST_CASE(test_domain_name_validator)
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
     BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.10.0.6.4.9.7.4.0.2.4.e164.arpa"), 5) );
     BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_SINGLE_DIGIT_LABELS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.a.0.2.4.e164.arpa"), 5) );
-
-    //general LDH rule
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("8.4.1.0.6.4.9.7.4.0.2.4.e164.arpa"), 5));
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("-fred.fred-.2fred.fred2.-Fred.Fred-.2Fred.Fred2.cz"), 1));
-    BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1a.cz"), 1));
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("1~a.cz"), 1));
-    BOOST_CHECK( !DomainNameValidator().add(Fred::Domain::DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY).exec(DomainName("fred@.cz"), 1));
 
     //combined
     BOOST_CHECK(  DomainNameValidator().add(Fred::Domain::DNCHECK_RFC1035_PREFERRED_SYNTAX).add(Fred::Domain::DNCHECK_NO_CONSECUTIVE_HYPHENS).exec(DomainName("fred.cz"), 1));

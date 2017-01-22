@@ -48,19 +48,11 @@ namespace Fred
         CheckDomain(const std::string& fqdn, bool is_system_registrar = false);
 
         /**
-        * check domain name syntax.
-        * general domain name syntax check as specified in: RFC1034, RFC1035, RFC2181 and RFC3696
-        * @return true if invalid, false if ok
-        */
-        bool is_invalid_syntax() const;
-
-
-        /**
-        * check general domain name syntax, domain have zone found in registry and zone specific rules.
+        * check domain name syntax (RFC1123), domain have zone (found in registry) and zone specific rules.
         * @param ctx an operation context with database and logging interface.
         * @return true if invalid, false if ok
         */
-        bool is_invalid_handle(OperationContext& ctx) const;
+        bool is_invalid_syntax(OperationContext& ctx) const;
 
         /**
         * check if domain have zone found in registry.

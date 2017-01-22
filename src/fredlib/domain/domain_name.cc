@@ -41,70 +41,42 @@ namespace Domain {
 
 FACTORY_MODULE_INIT_DEFI(domain_name_validator)
 
-bool general_domain_name_syntax_check(const std::string& fqdn)
-{
-    /* general domain name syntax check as specified
-    in: RFC1034, RFC1035, RFC2181 and RFC3696
-    label may contain anything, except of label separator '.'
-    in case of need to have '.' in a label, there have to be some kind of escaping
-    e.g. RFC4343 section 2.1. Escaping Unusual DNS Label Octets */
+bool is_rfc1123_compliant_host_name(const std::string& _fqdn) {
+    const int fqdn_min_length = 1;
+    const int fqdn_max_length = 253; // 253 + 1 for "optional final dot" + 1 for "empty root label size" = 255
+    const int label_min_length = 1;
+    const int label_max_length = 63;
 
-    if(fqdn.empty()) {
-        return false;//we need some domain
-    }
-    if(*fqdn.begin() == '.') {
-        return false;//fqdn have to start with label
-    }
-    //full domain name length, is limited to 255 octets
-    //every label including the root label need one octet for label length
-    //number of length octets corresponds to number of '.' separators
-    //when fqdn ends with '.' it need one extra octet for length of the root label
-    //when fqdn don't ends with '.' it need two extra octet for length of last label and length of the root label
-    if(*fqdn.rbegin() == '.' ? fqdn.length() > 254 : fqdn.length() > 253) {
-        return false;
-    }
+    const std::string letter_digit_hyphen_dot = "ABCDEFGHIJKLMNOPQRSTUVWXYZzabcdefghijklmnopqrstuvwxyz0123456789-.";
+    const std::string label_delimiter = ".";
 
-    //check the length of labels
-    unsigned long long label_octet_counter = 0;
-    for(std::string::const_iterator i = fqdn.begin(); i != fqdn.end(); ++i)
-    {
-        if(*i == '.')
-        {//found separator
-            if((label_octet_counter < 1) //label is too short
-                || (label_octet_counter > 63))//or label is too long
-            {
-                return false;
-            }
-            else
-            {
-                label_octet_counter = 0;
-            }
-        }
-        else
-        {//found label character
-            ++label_octet_counter;
-        }
-    }//for fqdn
-    //if fqdn ends with optional root dot then label_octet_counter equals 0 at the end, ok
-    if(label_octet_counter > 63)//or label is too long
+    const std::string fqdn = Fred::Zone::rem_trailing_dot(_fqdn);
+
+    if ((fqdn.length() < fqdn_min_length) ||
+        (fqdn.length() > fqdn_max_length))
     {
         return false;
     }
 
+    if (fqdn.find_first_not_of(letter_digit_hyphen_dot) != std::string::npos)
+    {
+        return false;
+    }
+
+    std::vector<std::string> labels;
+    boost::split(labels, fqdn, boost::is_any_of(label_delimiter));
+
+    for (std::vector<std::string>::const_iterator label = labels.begin(); label != labels.end(); ++label)
+    {
+        if ((label->length() < label_min_length) ||
+            (label->length() > label_max_length) ||
+            (boost::starts_with(*label, "-")) ||
+            (boost::ends_with(*label, "-")))
+        {
+            return false;
+        }
+    }
     return true;
-}
-
-bool domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(const std::string& fqdn) {
-    const boost::regex rfc1123_2_1_name_syntax(
-            "^([[:alnum:]]([-[:alnum:]]*[[:alnum:]])*[.]?)+$");
-    return boost::regex_match(fqdn, rfc1123_2_1_name_syntax);
-
-}
-
-bool domain_name_rfc1123_2_1_syntax_check(const std::string& fqdn) {
-    return
-        general_domain_name_syntax_check(fqdn) &&
-        domain_name_ldh_and_no_label_beginning_or_ending_with_hyphen_syntax_check(fqdn);
 }
 
 DomainNameValidator::DomainNameValidator(const bool _is_system_registrar)
@@ -131,7 +103,7 @@ void DomainName::init(const char* const _fqdn) {
     }
     std::string temp_fqdn(_fqdn);
 
-    if( general_domain_name_syntax_check (temp_fqdn) == false) {
+    if(!is_rfc1123_compliant_host_name(temp_fqdn)) {
         throw ExceptionInvalidFqdn();
     }
 
@@ -328,78 +300,6 @@ public:
         return DNCHECK_SINGLE_DIGIT_LABELS_ONLY;
     }
 };//class CheckSingleDigitLabelsSyntax
-
-///check that domain name labels contains only letters , digits or hyphens
-///regardless of character position in the label
-class CheckLettersDigitsHyphenCharsOnly
-: public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckLettersDigitsHyphenCharsOnly>
-{
-public:
-    CheckLettersDigitsHyphenCharsOnly(){}
-
-    bool validate(const DomainName& relative_domain_name)
-    {
-        const boost::regex DNCHECK_LETTER_DIGIT_HYPHEN_LABELS(
-                "([-A-Za-z0-9]{1,63}[.])*"//optional non-highest-level labels
-                "([-A-Za-z0-9]{1,63})"//mandatory highest-level label
-        );
-        return boost::regex_match(relative_domain_name.get_string(), DNCHECK_LETTER_DIGIT_HYPHEN_LABELS);
-    }
-
-    static std::string registration_name()
-    {
-        return DNCHECK_LETTERS_DIGITS_HYPHEN_CHARS_ONLY;
-    }
-};//class CheckSingleDigitLabelsSyntax
-
-///check domain name for no hyphen at the start of the label
-class CheckNoLabelBeginningHyphen
-: public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoLabelBeginningHyphen>
-{
-public:
-    CheckNoLabelBeginningHyphen() {}
-
-    bool validate(const DomainName& relative_domain_name)
-    {
-        //label starting by '-' prohibited
-        if (!relative_domain_name.get_string().empty() && *relative_domain_name.get_string().begin() == '-') {
-            return false;
-        }
-        const boost::regex NO_NEXT_START_HYPHEN_SYNTAX("[.][-]");
-        return !boost::regex_search(relative_domain_name.get_string(), NO_NEXT_START_HYPHEN_SYNTAX);
-    }
-
-    static std::string registration_name()
-    {
-        return DNCHECK_NO_LABEL_BEGINNING_HYPHEN;
-    }
-};//class CheckNoStartHyphenSyntax
-
-///check domain name for no hyphen at the end of the label
-class CheckNoLabelEndingHyphen
-: public DomainNameChecker
-, public Util::FactoryAutoRegister<DomainNameChecker, CheckNoLabelEndingHyphen>
-{
-public:
-    CheckNoLabelEndingHyphen() {}
-
-    bool validate(const DomainName& relative_domain_name)
-    {
-        //label ending by '-' prohibited
-        if (!relative_domain_name.get_string().empty() && *relative_domain_name.get_string().rbegin() == '-') {
-            return false;
-        }
-        const boost::regex NO_NEXT_END_HYPHEN_SYNTAX("[-][.]");
-        return !boost::regex_search(relative_domain_name.get_string(), NO_NEXT_END_HYPHEN_SYNTAX);
-    }
-
-    static std::string registration_name()
-    {
-        return DNCHECK_NO_LABEL_ENDING_HYPHEN;
-    }
-};//class CheckNoEndHyphenSyntax
 
 ///prohibit idn punycode ('xn--{punycode}')
 class CheckNoIdnPunycode
