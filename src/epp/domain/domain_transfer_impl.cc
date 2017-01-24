@@ -23,6 +23,7 @@
 #include "src/fredlib/zone/zone.h"
 
 #include <boost/date_time/gregorian/greg_date.hpp>
+#include <string>
 
 namespace Epp {
 
@@ -63,12 +64,12 @@ unsigned long long domain_transfer_impl(
         throw NonexistentHandle();
     }
 
-    const std::string session_registrar_handle =
-        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data.handle;
+    const Fred::InfoRegistrarData session_registrar =
+        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
     const Fred::InfoDomainData domain_data_before_transfer = Fred::InfoDomainByHandle(_domain_fqdn).set_lock().exec(_ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_transfer.sponsoring_registrar_handle ==
-                                          session_registrar_handle);
+                                          session_registrar.handle);
 
     if(is_sponsoring_registrar) {
         throw ObjectNotEligibleForTransfer();
@@ -78,19 +79,21 @@ unsigned long long domain_transfer_impl(
     Fred::LockObjectStateRequestLock(domain_data_before_transfer.id).exec(_ctx);
     Fred::PerformObjectStateRequest(domain_data_before_transfer.id).exec(_ctx);
 
-    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_transfer.id).exec(_ctx));
-
-    if (domain_states.presents(Fred::Object_State::server_transfer_prohibited) ||
-        domain_states.presents(Fred::Object_State::delete_candidate))
-    {
-        throw ObjectStatusProhibitsOperation();
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
+    if (!is_system_registrar) {
+        const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_transfer.id).exec(_ctx));
+        if (domain_states.presents(Fred::Object_State::server_transfer_prohibited) ||
+            domain_states.presents(Fred::Object_State::delete_candidate))
+        {
+            throw ObjectStatusProhibitsOperation();
+        }
     }
 
     try {
         return
             Fred::TransferDomain(
                 domain_data_before_transfer.id,
-                session_registrar_handle,
+                session_registrar.handle,
                 _authinfopw,
                 _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>()
             ).exec(_ctx);
