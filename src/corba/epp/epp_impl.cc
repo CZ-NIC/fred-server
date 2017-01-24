@@ -119,11 +119,13 @@
 #include "src/epp/impl/disclose_policy.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
-#include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/epp/contact/contact_corba_conversions.h"
 #include "src/corba/epp/corba_conversions.h"
-#include "src/corba/epp/domain/check_domain_corba_conversions.h"
-#include "src/corba/epp/domain/info_domain_corba_conversions.h"
+#include "src/corba/epp/domain/domain_corba_conversions.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
+#include "src/corba/epp/keyset/keyset_corba_conversions.h"
+#include "src/corba/epp/nsset/nsset_corba_conversions.h"
+#include "src/corba/util/corba_conversions_string.h"
 #include "util/util.h"
 
 struct NotificationParams //for enqueue_notification call in ~EPPAction()

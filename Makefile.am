@@ -1538,6 +1538,14 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
 		src/corba/epp/epp_impl.h \
+		src/corba/epp/contact/contact_corba_conversions.cc \
+		src/corba/epp/contact/contact_corba_conversions.h \
+		src/corba/epp/domain/domain_corba_conversions.cc \
+		src/corba/epp/domain/domain_corba_conversions.h \
+		src/corba/epp/keyset/keyset_corba_conversions.cc \
+		src/corba/epp/keyset/keyset_corba_conversions.h \
+		src/corba/epp/nsset/nsset_corba_conversions.cc \
+		src/corba/epp/nsset/nsset_corba_conversions.h \
 		src/corba/epp/corba_conversions.h \
 		src/corba/epp/corba_conversions.cc \
 		src/corba/epp/messages.cc \
@@ -1549,10 +1557,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/action.h \
 		src/corba/epp/reason.h \
 		src/corba/epp/response.h \
-		src/corba/epp/domain/check_domain_corba_conversions.h \
-		src/corba/epp/domain/check_domain_corba_conversions.cc \
-		src/corba/epp/domain/info_domain_corba_conversions.h \
-		src/corba/epp/domain/info_domain_corba_conversions.cc \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
 		src/epp/impl/disclose_policy.h \

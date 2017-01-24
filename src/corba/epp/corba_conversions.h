@@ -16,16 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef CORBA_CONVERSIONS_H_0DA22651C0FF48C5A0AF69E77BB4A561
 #define CORBA_CONVERSIONS_H_0DA22651C0FF48C5A0AF69E77BB4A561
-
-
-#include <vector>
-#include <boost/optional.hpp>
 
 #include "src/epp/nsset/impl/dns_host_input.h"
 #include "src/corba/EPP.hh"
@@ -44,125 +36,79 @@
 #include "src/epp/nsset/delete_nsset_localized.h"
 #include "src/epp/domain/impl/domain_registration_time.h"
 #include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/old_utils/util.h"
+#include "util/corba_conversion.h"
+
+#include <string>
+#include <vector>
 
 namespace Corba {
 
-    std::vector<std::string> unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact&  in);
-
-    std::vector<Epp::Nsset::DnsHostInput> unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
-
-    Epp::Contact::CreateContactInputData unwrap_contact_create_input_data(const char* const handle, const ccReg::ContactChange& c);
-
-    /**
-     * Unwrapper for attributes which can be empty with special meaning
-     *
-     * @param _src string to be unwrapped, should not be NULL
-     *
-     * @return Optional() if input string empty, else unwrapped input
-     */
-    Optional<std::string> unwrap_string_for_change_to_Optional_string_no_trim(const char* _src);
-    Optional<std::string> unwrap_string_for_change_to_Optional_string(const char* _src);
-
-    /**
-     * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
-     *
-     * @param _src string to be unwrapped, should not be NULL
-     *
-     * @return Optional() if input string empty, empty string if input contains special control char, unwrapped input in other cases
-     */
-    Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string_no_trim(const char* _src);
-    Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string(const char* _src);
-
-    /**
-     * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
-     *
-     * @param _src string to be unwrapped, should not be NULL
-     *
-     * @return empty string if input string empty, Optinal(Nullable()) if input ocntains special control char, unwrapped input in other cases
-     */
-    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(const char* _src);
-
-    void unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::ContactChange& dst);
-
-    std::vector<std::string> unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
-
-    std::vector< std::string > unwrap_TechContact_to_vector_string(const ccReg::TechContact& _tech_contacts);
-
-    std::vector< Epp::Keyset::DsRecord > unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(
-        const ccReg::DSRecord& _ds_records);
-
-    void unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str& _src, Epp::Keyset::DsRecord& _dst);
-
-    std::vector< Epp::Keyset::DnsKey > unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(
-        const ccReg::DNSKey& _dns_keys);
-
-    void unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str& _src, Epp::Keyset::DnsKey& _dst);
-
-    Epp::RequestParams unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
-
-    boost::optional<short> unwrap_tech_check_level(CORBA::Short level);
-
-    void wrap_Epp_EppResponseSuccessLocalized(
-            const Epp::EppResponseSuccessLocalized& _input,
-            const std::string& _server_transaction_handle,
-            ccReg::Response& _dst);
-
-    ccReg::Response wrap_Epp_EppResponseSuccessLocalized(
-            const Epp::EppResponseSuccessLocalized& _input,
-            const std::string& _server_transaction_handle);
-
-    ccReg::EPP::EppError wrap_Epp_EppResponseFailureLocalized(
-            const Epp::EppResponseFailureLocalized& _epp_response_failure,
-            const std::string& _server_transaction_handle);
-
-    void wrap_InfoContactLocalizedOutputData(const Epp::Contact::InfoContactLocalizedOutputData& src, ccReg::Contact& dst);
-
-    ccReg::NSSet wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input );
-
-    /**
-     * @returns data ordered the same way as input contact_handles
-     */
-    ccReg::CheckResp wrap_localized_check_info(
-        const std::vector<std::string>& contact_handles,
-        const std::map<std::string, boost::optional< Epp::Contact::ContactHandleRegistrationObstructionLocalized > >& contact_handle_check_results
-    );
-
-    /**
-     * @returns data ordered the same way as input handles
-     */
-    void wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
-        const std::vector< std::string >& handles,
-        const Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
-        ccReg::CheckResp& dst);
-
-    void wrap_Epp_ObjectStatesLocalized(const Epp::ObjectStatesLocalized& _src, ccReg::Status& _dst);
-
-    void wrap_Epp_InfoKeysetOutputData_TechContacts(const Epp::Keyset::InfoKeysetOutputData::TechContacts& _src, ccReg::TechContact& _dst);
-
-    void wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(const Epp::Keyset::InfoKeysetLocalizedOutputData& _src, ccReg::KeySet& _dst);
-
-    /**
-     * @returns data ordered the same way as input nsset_handles
-     */
-    ccReg::CheckResp wrap_localized_check_info(
-        const std::vector<std::string>& nsset_handles,
-        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized> >& nsset_handle_check_results
-    );
-
-    /**
-     * length of domain registration period
-     */
-    Epp::Domain::DomainRegistrationTime unwrap_domain_registration_period(const ccReg::Period_str& period);
-
-    /**
-     * domain administrative contacts unwrapper
-     */
-    std::vector<std::string> unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact & in);
-
-    /**
-     * ENUM validation list unwrapper
-     */
-    std::vector<Epp::Domain::EnumValidationExtension> unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext);
+template <class TARGET_INTEGRAL_TYPE, class SOURCE_INTEGRAL_TYPE>
+TARGET_INTEGRAL_TYPE
+wrap_int(SOURCE_INTEGRAL_TYPE src)
+{
+    TARGET_INTEGRAL_TYPE dst;
+    CorbaConversion::wrap_int(src, dst);
+    return dst;
 }
+
+CORBA::String_var
+wrap_Nullable_string_to_string(const Nullable<std::string>& src);
+
+CORBA::String_var
+wrap_boost_posix_time_ptime_to_string(const boost::posix_time::ptime& _src);
+
+CORBA::String_var
+wrap_Nullable_boost_posix_time_ptime_to_string(const Nullable<boost::posix_time::ptime>& _src);
+
+/**
+ * Unwrapper for attributes which can be empty with special meaning
+ *
+ * @param _src string to be unwrapped, should not be NULL
+ *
+ * @return Optional() if input string empty, else unwrapped input
+ */
+Optional<std::string>
+unwrap_string_for_change_to_Optional_string(const char* _src);
+
+/**
+ * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
+ *
+ * @param _src string to be unwrapped, should not be NULL
+ *
+ * @return Optional() if input string empty, empty string if input contains special control char, unwrapped input in other cases
+ */
+Optional<std::string>
+unwrap_string_for_change_or_remove_to_Optional_string(const char* _src);
+
+std::vector<std::string>
+unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
+
+Epp::RequestParams
+unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
+
+void
+wrap_Epp_EppResponseSuccessLocalized(
+        const Epp::EppResponseSuccessLocalized& _input,
+        const std::string& _server_transaction_handle,
+        ccReg::Response& _dst);
+
+ccReg::Response
+wrap_Epp_EppResponseSuccessLocalized(
+        const Epp::EppResponseSuccessLocalized& _input,
+        const std::string& _server_transaction_handle);
+
+ccReg::EPP::EppError
+wrap_Epp_EppResponseFailureLocalized(
+        const Epp::EppResponseFailureLocalized& _epp_response_failure,
+        const std::string& _server_transaction_handle);
+
+void
+wrap_Epp_ObjectStatesLocalized(
+        const Epp::ObjectStatesLocalized& _src,
+        ccReg::Status& _dst);
+
+} // namespace Corba
 
 #endif
