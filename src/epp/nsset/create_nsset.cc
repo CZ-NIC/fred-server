@@ -157,7 +157,7 @@ CreateNssetResult create_nsset(
         {
             const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(_input.dns_hosts.at(i).fqdn);
 
-            if (!Fred::Domain::is_rfc1123_compliant_host_name(_data.dns_hosts.at(i).fqdn))
+            if (!Fred::Domain::is_rfc1123_compliant_host_name(_input.dns_hosts.at(i).fqdn))
             {
                 parameter_value_policy_error.add_extended_error(
                         EppExtendedError::of_vector_parameter(
