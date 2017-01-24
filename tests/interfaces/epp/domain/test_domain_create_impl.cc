@@ -792,9 +792,14 @@ BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
 
+    //warning: timestamp conversion using local system timezone
+    const boost::gregorian::date current_local_date = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+        boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]))).date();
 
-    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
-            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '1 year'::interval)::date")[0][0]));
+    const boost::gregorian::date expected_expiration_date_local = boost::gregorian::from_simple_string(
+        static_cast<std::string>(ctx.get_conn().exec_params("select ($1::date + '1 year'::interval)::date",
+                Database::query_param_list(current_local_date))[0][0]));
 
     BOOST_CHECK(info_data.fqdn == domain1_create_input_data.fqdn);
     BOOST_CHECK(info_data.registrant.handle == domain1_create_input_data.registrant);
@@ -802,7 +807,7 @@ BOOST_FIXTURE_TEST_CASE(create_empty_authinfo, HasDomainData)
     BOOST_CHECK(info_data.keyset.get_value().handle == domain1_create_input_data.keyset);
     BOOST_CHECK(info_data.authinfopw.length() == 8);
     BOOST_CHECK(info_data.authinfopw.find_first_not_of(Fred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
-    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
 
     BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
 
@@ -830,8 +835,14 @@ BOOST_FIXTURE_TEST_CASE(create_authinfo_not_set, HasDomainData)
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
 
-    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
-            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '1 year'::interval)::date")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::gregorian::date current_local_date = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+        boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]))).date();
+
+    const boost::gregorian::date expected_expiration_date_local = boost::gregorian::from_simple_string(
+        static_cast<std::string>(ctx.get_conn().exec_params("select ($1::date + '1 year'::interval)::date",
+                Database::query_param_list(current_local_date))[0][0]));
 
     BOOST_CHECK(info_data.fqdn == domain1_create_input_data.fqdn);
     BOOST_CHECK(info_data.registrant.handle == domain1_create_input_data.registrant);
@@ -839,7 +850,7 @@ BOOST_FIXTURE_TEST_CASE(create_authinfo_not_set, HasDomainData)
     BOOST_CHECK(info_data.keyset.get_value().handle == domain1_create_input_data.keyset);
     BOOST_CHECK(info_data.authinfopw.length() == 8);
     BOOST_CHECK(info_data.authinfopw.find_first_not_of(Fred::get_chars_allowed_in_generated_authinfopw()) == std::string::npos);
-    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
 
     BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
 
@@ -920,16 +931,22 @@ BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
     BOOST_TEST_MESSAGE(info_data.to_string());
 
 
-    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
-            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '1 year'::interval)::date")[0][0]));
+    //warning: timestamp conversion using local system timezone
+    const boost::gregorian::date current_local_date = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+        boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]))).date();
+
+    const boost::gregorian::date expected_expiration_date_local = boost::gregorian::from_simple_string(
+        static_cast<std::string>(ctx.get_conn().exec_params("select ($1::date + '1 year'::interval)::date",
+                Database::query_param_list(current_local_date))[0][0]));
 
     BOOST_CHECK(info_data.fqdn == domain1_create_input_data.fqdn);
     BOOST_CHECK(info_data.registrant.handle == domain1_create_input_data.registrant);
     BOOST_CHECK(info_data.nsset.get_value().handle == domain1_create_input_data.nsset);
     BOOST_CHECK(info_data.keyset.get_value().handle == domain1_create_input_data.keyset);
     BOOST_CHECK(info_data.authinfopw == domain1_create_input_data.authinfo);
-    BOOST_TEST_MESSAGE("info_data.expiration_date: " << info_data.expiration_date << " expected_expiration_date_utc: " << expected_expiration_date_utc);
-    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
+    BOOST_TEST_MESSAGE("info_data.expiration_date: " << info_data.expiration_date << " expected_expiration_date_local: " << expected_expiration_date_local);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
 
     BOOST_TEST_MESSAGE("info_data.admin_contacts.size(): "<< info_data.admin_contacts.size());
 
