@@ -25,6 +25,7 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <stdlib.h>
 #include <string.h>
@@ -110,6 +111,7 @@
 #include "src/epp/nsset/transfer_nsset_localized.h"
 #include "src/epp/nsset/update_nsset_localized.h"
 
+#include "src/epp/poll/poll_acknowledgement_localized.h"
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
 #include "src/epp/session_lang.h"
@@ -1457,48 +1459,95 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
 
 }
 
-ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
-  const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID,
-  const ccReg::EppParams &params)
-{
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
 
-  LOG(
-      NOTICE_LOG,
-      "PollAcknowledgement: clientID -> %llu clTRID [%s] msgID -> %s",
-       params.loginID, static_cast<const char*>(params.clTRID), msgID
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_PollAcknowledgement,static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  try {
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-        Fred::Poll::Manager::create(a.getDB())
-    );
-    pollMan->setMessageSeen(STR_TO_ID(msgID), a.getRegistrar());
-    /// convert count of messages and next message id to string
-    count = pollMan->getMessageCount(a.getRegistrar());
-    if (!count) a.NoMessage();
-    std::stringstream buffer;
-    buffer << pollMan->getNextMessageId(a.getRegistrar());
-    newmsgID = CORBA::string_dup(buffer.str().c_str());
-    return a.getRet()._retn();
-  }
-  catch (Fred::NOT_FOUND) {
-    // message id not found
-    a.failed(SetErrorReason(
-            a.getErrors(),COMMAND_PARAMETR_ERROR,
-            ccReg::poll_msgID,1,REASON_MSG_MSGID_NOTEXIST,a.getLang()
-        ));
-  }
-  catch (ccReg::EPP::NoMessages) {throw;}
-  catch (...) {a.failedInternal("Connection problems");}
-  // previous commands throw exception so this code
-  // will never be called
-  return NULL;
+ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
+    const char* _msg_id,
+    CORBA::ULongLong& _count,
+    CORBA::String_out _next_msg_id,
+    const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
+
+        // what to do with the exception?  parameter_value_range_error, move down?
+        unsigned long long message_id = boost::lexical_cast<unsigned long long>(Corba::unwrap_string_from_const_char_ptr(_msg_id));
+
+        const Epp::Poll::PollAcknowledgementLocalizedResponse poll_acknowledgement_response =
+            Epp::Poll::poll_acknowledgement_localized(
+                message_id,
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle);
+
+        // get actual results and wrap them for CORBA
+        CORBA::String_var next_msg_id =
+            Corba::wrap_string_to_corba_string(poll_acknowledgement_response.poll_acknowledgement_localized_output_data.next_message_id);
+
+        // is this correct?
+        _count = poll_acknowledgement_response.poll_acknowledgement_localized_output_data.count;
+
+
+        ccReg::Response_var return_value = new ccReg::Response(
+            Corba::wrap_Epp_EppResponseSuccessLocalized(
+                poll_acknowledgement_response.epp_response_success_localized,
+                server_transaction_handle));
+
+        _next_msg_id = next_msg_id._retn();
+        return return_value._retn();
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
+
+    return NULL; // unreachable
 }
+
+// ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
+//   const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID,
+//   const ccReg::EppParams &params)
+// {
+//   Logging::Context::clear();
+//   Logging::Context ctx("rifd");
+//   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
+//   ConnectionReleaser releaser;
+
+//   LOG(
+//       NOTICE_LOG,
+//       "PollAcknowledgement: clientID -> %llu clTRID [%s] msgID -> %s",
+//        params.loginID, static_cast<const char*>(params.clTRID), msgID
+//   );
+//   // start EPP action - this will handle all init stuff
+//   EPPAction a(this, params.loginID, EPP_PollAcknowledgement,static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+//   try {
+//     std::auto_ptr<Fred::Poll::Manager> pollMan(
+//         Fred::Poll::Manager::create(a.getDB())
+//     );
+//     pollMan->setMessageSeen(STR_TO_ID(msgID), a.getRegistrar());
+//     /// convert count of messages and next message id to string
+//     count = pollMan->getMessageCount(a.getRegistrar());
+//     if (!count) a.NoMessage();
+//     std::stringstream buffer;
+//     buffer << pollMan->getNextMessageId(a.getRegistrar());
+//     newmsgID = CORBA::string_dup(buffer.str().c_str());
+//     return a.getRet()._retn();
+//   }
+//   catch (Fred::NOT_FOUND) {
+//     // message id not found
+//     a.failed(SetErrorReason(
+//             a.getErrors(),COMMAND_PARAMETR_ERROR,
+//             ccReg::poll_msgID,1,REASON_MSG_MSGID_NOTEXIST,a.getLang()
+//         ));
+//   }
+//   catch (ccReg::EPP::NoMessages) {throw;}
+//   catch (...) {a.failedInternal("Connection problems");}
+//   // previous commands throw exception so this code
+//   // will never be called
+//   return NULL;
+// }
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
   CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate,

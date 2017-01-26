@@ -1619,6 +1619,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain.cc \
 		src/epp/domain/check_domain.h \
+		src/epp/poll/poll_acknowledgement_localized.cc \
+		src/epp/poll/poll_acknowledgement_localized.h \
+		src/epp/poll/poll_acknowledgement.cc \
+		src/epp/poll/poll_acknowledgement.h \
 		src/epp/domain/delete_domain_localized.cc \
 		src/epp/domain/delete_domain_localized.h \
 		src/epp/domain/delete_domain.cc \
