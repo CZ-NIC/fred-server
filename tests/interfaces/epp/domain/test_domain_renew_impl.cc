@@ -614,19 +614,18 @@ BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
 
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle((*domain2_renew_input_data).fqdn).exec(ctx, "UTC").info_domain_data;
 
-    const boost::gregorian::date expected_expiration_date_utc = boost::gregorian::from_simple_string(
-            static_cast<std::string>(ctx.get_conn().exec("select (CURRENT_DATE + '2 year'::interval)::date")[0][0]));
-
-    BOOST_TEST_MESSAGE(std::string("info_data.expiration_date: ") << info_data.expiration_date << std::string(" expected_expiration_date_utc: ") << expected_expiration_date_utc);
-    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_utc);
-
     //warning: timestamp conversion using local system timezone
-    const boost::posix_time::ptime expected_expiration_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
-            boost::posix_time::ptime(expected_expiration_date_utc));
-    const boost::gregorian::date expected_expiration_local_date = expected_expiration_local_time.date();
+    const boost::gregorian::date current_local_date = boost::date_time::c_local_adjustor<ptime>::utc_to_local(
+        boost::posix_time::time_from_string(static_cast<std::string>(ctx.get_conn().exec(
+            "SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]))).date();
 
-    BOOST_TEST_MESSAGE(std::string("renew_result.exdate: ") << renew_result.exdate << std::string(" expected_expiration_local_date: ") << expected_expiration_local_date);
-    BOOST_CHECK(renew_result.exdate == expected_expiration_local_date);
+    const boost::gregorian::date expected_expiration_date_local = boost::gregorian::from_simple_string(
+        static_cast<std::string>(ctx.get_conn().exec_params("select ($1::date + '2 year'::interval)::date",
+                Database::query_param_list(current_local_date))[0][0]));
+
+    BOOST_TEST_MESSAGE(std::string("info_data.expiration_date: ") << info_data.expiration_date << std::string(" expected_expiration_date_local: ") << expected_expiration_date_local);
+    BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
+    BOOST_CHECK(renew_result.exdate == expected_expiration_date_local);
 }
 
 BOOST_AUTO_TEST_SUITE_END();
