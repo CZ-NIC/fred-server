@@ -1506,49 +1506,6 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
     return NULL; // unreachable
 }
 
-// ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
-//   const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID,
-//   const ccReg::EppParams &params)
-// {
-//   Logging::Context::clear();
-//   Logging::Context ctx("rifd");
-//   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-//   ConnectionReleaser releaser;
-
-//   LOG(
-//       NOTICE_LOG,
-//       "PollAcknowledgement: clientID -> %llu clTRID [%s] msgID -> %s",
-//        params.loginID, static_cast<const char*>(params.clTRID), msgID
-//   );
-//   // start EPP action - this will handle all init stuff
-//   EPPAction a(this, params.loginID, EPP_PollAcknowledgement,static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-//   try {
-//     std::auto_ptr<Fred::Poll::Manager> pollMan(
-//         Fred::Poll::Manager::create(a.getDB())
-//     );
-//     pollMan->setMessageSeen(STR_TO_ID(msgID), a.getRegistrar());
-//     /// convert count of messages and next message id to string
-//     count = pollMan->getMessageCount(a.getRegistrar());
-//     if (!count) a.NoMessage();
-//     std::stringstream buffer;
-//     buffer << pollMan->getNextMessageId(a.getRegistrar());
-//     newmsgID = CORBA::string_dup(buffer.str().c_str());
-//     return a.getRet()._retn();
-//   }
-//   catch (Fred::NOT_FOUND) {
-//     // message id not found
-//     a.failed(SetErrorReason(
-//             a.getErrors(),COMMAND_PARAMETR_ERROR,
-//             ccReg::poll_msgID,1,REASON_MSG_MSGID_NOTEXIST,a.getLang()
-//         ));
-//   }
-//   catch (ccReg::EPP::NoMessages) {throw;}
-//   catch (...) {a.failedInternal("Connection problems");}
-//   // previous commands throw exception so this code
-//   // will never be called
-//   return NULL;
-// }
-
 ccReg::Response* ccReg_EPP_i::PollRequest(
   CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate,
   ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params
