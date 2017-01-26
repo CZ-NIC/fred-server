@@ -223,58 +223,74 @@ namespace Fred
       {
           try
           {
-            std::stringstream sql;
+            std::ostringstream sql;
             sql << "SELECT dom.name, cor.name, nor.name, r.handle, "
-                << "eh.exdate, dh.exdate, "
-                << "dh.exdate::date + "
-                << "(SELECT val || ' day' FROM enum_parameters WHERE id = "
-                << EP_OUTZONE << ")::interval," // 3
-                << "dh.exdate::date + "
-                << "(SELECT val || ' day' FROM enum_parameters WHERE id = "
-                << EP_DELETE << ")::interval " // 3
-                << "FROM object_registry dom, object_history doh, "
-                << "registrar r, object_registry cor, domain_history dh "
-                << "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
-                << "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
-                << "WHERE dom.historyid=doh.historyid AND doh.clid=r.id "
-                << "AND dom.historyid=dh.historyid AND dh.registrant=cor.id "
-                << "AND dom.id=" << domain;
-            if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
-            if (db->GetSelectRows() != 1) throw SQL_ERROR();
-            params["checkdate"] = to_iso_extended_string(
-              date(day_clock::local_day())
-            );
+                          "eh.exdate, dh.exdate, "
+                          "dh.exdate::date + "
+                              "(SELECT val || ' day' FROM enum_parameters "
+                               "WHERE id = " << EP_OUTZONE << ")::interval,"
+                          "dh.exdate::date + "
+                              "(SELECT val || ' day' FROM enum_parameters "
+                               "WHERE id = " << EP_DELETE << ")::interval "
+                   "FROM object_registry dom, "
+                        "object_history doh, "
+                        "registrar r, "
+                        "object_registry cor, "
+                        "domain_history dh "
+                   "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
+                   "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
+                   "WHERE dom.historyid=doh.historyid AND doh.clid=r.id AND "
+                         "dom.historyid=dh.historyid AND dh.registrant=cor.id AND "
+                         "dom.id=" << domain;
+            if (!db->ExecSelect(sql.str().c_str()))
+            {
+                throw SQL_ERROR();
+            }
+            if (db->GetSelectRows() != 1)
+            {
+                throw SQL_ERROR();
+            }
+            params["checkdate"] = to_iso_extended_string(date(day_clock::local_day()));
             params["domain"] = db->GetFieldValue(0,0);
             params["owner"] = db->GetFieldValue(0,1);
             params["nsset"] = db->GetFieldValue(0,2);
-            date val(MAKE_DATE(0,4));
+            const date val(MAKE_DATE(0,4));
             if (!val.is_special())
+            {
               params["valdate"] = to_iso_extended_string(val);
-            date ex(MAKE_DATE(0,5));
+            }
+            const date ex(MAKE_DATE(0,5));
             params["exdate"] = to_iso_extended_string(ex);
-            date dnsdate(MAKE_DATE(0,6));
+            const date dnsdate(MAKE_DATE(0,6));
             params["dnsdate"] = to_iso_extended_string(dnsdate);
-            date exregdate(MAKE_DATE(0,7));
+            const date exregdate(MAKE_DATE(0,7));
             params["exregdate"] = to_iso_extended_string(exregdate);
+            const date day_before_exregdate = exregdate - boost::gregorian::date_duration(1);
+            params["day_before_exregdate"] = to_iso_extended_string(day_before_exregdate);
             params["statechangedate"] = to_iso_extended_string(stamp.date());
-            std::string regHandle = db->GetFieldValue(0,3);
+            const std::string regHandle = db->GetFieldValue(0,3);
             db->FreeSelect();
             // fill information about registrar, query must be closed
 
-            Registrar::Registrar::AutoPtr regbyhandle ( rm->getRegistrarByHandle(regHandle));
+            const Registrar::Registrar::AutoPtr regbyhandle(rm->getRegistrarByHandle(regHandle));
 
-            std::stringstream reg;
-            if (regbyhandle.get() == 0)
+            std::ostringstream reg;
+            if (regbyhandle.get() == NULL)
+            {
               // fallback to handle instead of error
-              reg << db->GetFieldValue(0,3);
-            else {
+              reg << db->GetFieldValue(0, 3);
+            }
+            else
+            {
               reg << regbyhandle->getName();
               if (!regbyhandle->getURL().empty())
+              {
                 reg << " (" << regbyhandle->getURL() << ")";
+              }
             }
             params["registrar"] = reg.str();
           }//try
-          catch(...)
+          catch (...)
           {
               LOGGER(PACKAGE).error("fillDomainParamsHistory: an error has occured");
               throw SQL_ERROR();
@@ -286,38 +302,48 @@ namespace Fred
         Fred::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
-        std::auto_ptr<Fred::Domain::List> dlist(dm->createList());
+        const std::auto_ptr<Fred::Domain::List> dlist(dm->createList());
         dlist->setIdFilter(domain);
         dlist->reload();
-        if (dlist->getCount() != 1) throw SQL_ERROR();
-        Fred::Domain::Domain *d = dlist->getDomain(0);
+        if (dlist->getCount() != 1)
+        {
+            throw SQL_ERROR();
+        }
+        const Fred::Domain::Domain *const d = dlist->getDomain(0);
         // fill params
-        params["checkdate"] = to_iso_extended_string(
-          date(day_clock::local_day())
-        );
+        params["checkdate"] = to_iso_extended_string(date(day_clock::local_day()));
         params["domain"] = d->getFQDN();
         params["owner"] = d->getRegistrantHandle();
         params["nsset"] = d->getNSSetHandle();
         if (!d->getValExDate().is_special())
+        {
           params["valdate"] = to_iso_extended_string(d->getValExDate());
+        }
         params["exdate"] = to_iso_extended_string(d->getExpirationDate());
         params["dnsdate"] = to_iso_extended_string(d->getOutZoneDate());
         params["exregdate"] = to_iso_extended_string(d->getCancelDate());
+        params["day_before_exregdate"] = to_iso_extended_string(d->getCancelDate() - boost::gregorian::date_duration(1));
         params["statechangedate"] = to_iso_extended_string(stamp.date());
         // fill information about registrar
-        Registrar::Registrar::AutoPtr regbyhandle ( rm->getRegistrarByHandle(d->getRegistrarHandle()));
+        const Registrar::Registrar::AutoPtr regbyhandle(rm->getRegistrarByHandle(d->getRegistrarHandle()));
 
-        std::stringstream reg;
+        std::ostringstream reg;
         if (regbyhandle.get() == 0)
+        {
           // fallback to handle instead of error
-          reg << db->GetFieldValue(0,3);
-        else {
+          reg << db->GetFieldValue(0, 3);
+        }
+        else
+        {
           reg << regbyhandle->getName();
           if (!regbyhandle->getURL().empty())
+          {
             reg << " (" << regbyhandle->getURL() << ")";
+          }
         }
         params["registrar"] = reg.str();
       }
+
       void fillSimpleObjectParams(
         TID id,
         Fred::Mailer::Parameters& params
