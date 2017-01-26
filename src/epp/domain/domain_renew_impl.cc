@@ -60,8 +60,7 @@ DomainRenewResult domain_renew_impl(
     //check fqdn has known zone
     if(domain_registrability == Fred::Domain::DomainRegistrability::zone_not_in_registry)
     {
-        throw ParameterValuePolicyError().add(Error::of_scalar_parameter(
-            Param::domain_fqdn, Reason::not_applicable_domain));
+        throw ObjectDoesNotExist();
     }
 
     //get zone data
