@@ -43,34 +43,31 @@ unsigned long long transfer_contact(
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
-    // TODO optimize out
     const Fred::InfoContactData contact_data_before_transfer =
-        Fred::InfoContactByHandle(_contact_handle)
-            .set_lock()
-            .exec(_ctx).info_contact_data;
+        Fred::InfoContactByHandle(_contact_handle).set_lock().exec(_ctx).info_contact_data;
 
-    const std::string session_registrar_handle =
-        Fred::InfoRegistrarById(_registrar_id)
-            .set_lock()
-            .exec(_ctx).info_registrar_data.handle;
+    const Fred::InfoRegistrarData session_registrar =
+        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (contact_data_before_transfer.sponsoring_registrar_handle ==
-                                          session_registrar_handle);
-
+                                          session_registrar.handle);
     if (is_sponsoring_registrar) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 
-    // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(contact_data_before_transfer.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(contact_data_before_transfer.id).exec(_ctx);
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
+    if (!is_system_registrar) {
+        // do it before any object state related checks
+        Fred::LockObjectStateRequestLock(contact_data_before_transfer.id).exec(_ctx);
+        Fred::PerformObjectStateRequest(contact_data_before_transfer.id).exec(_ctx);
 
-    const Fred::ObjectStatesInfo contact_states_before_transfer(Fred::GetObjectStates(contact_data_before_transfer.id).exec(_ctx));
+        const Fred::ObjectStatesInfo contact_states_before_transfer(Fred::GetObjectStates(contact_data_before_transfer.id).exec(_ctx));
 
-    if (contact_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||
-        contact_states_before_transfer.presents(Fred::Object_State::delete_candidate))
-    {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+        if (contact_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||
+            contact_states_before_transfer.presents(Fred::Object_State::delete_candidate))
+        {
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+        }
     }
 
     if (contact_data_before_transfer.authinfopw != _authinfopw) {
@@ -81,7 +78,7 @@ unsigned long long transfer_contact(
         const unsigned long long post_transfer_history_id =
             Fred::TransferContact(
                 contact_data_before_transfer.id,
-                session_registrar_handle,
+                session_registrar.handle,
                 _authinfopw,
                 _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>()
             ).exec(_ctx);

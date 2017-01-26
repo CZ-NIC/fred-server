@@ -79,26 +79,28 @@ unsigned long long transfer_domain(
         throw;
     }
 
+    const Fred::InfoDomainData domain_data_before_transfer =
+        Fred::InfoDomainByHandle(_domain_fqdn).set_lock().exec(_ctx).info_domain_data;
+
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);
-
     if (is_sponsoring_registrar) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 
-    // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(domain_data_before_transfer.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(domain_data_before_transfer.id).exec(_ctx);
-
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
     if (!is_system_registrar) {
-        const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_transfer.id).exec(_ctx));
+        // do it before any object state related checks
+        Fred::LockObjectStateRequestLock(domain_data_before_transfer.id).exec(_ctx);
+        Fred::PerformObjectStateRequest(domain_data_before_transfer.id).exec(_ctx);
 
-        if (domain_states.presents(Fred::Object_State::server_transfer_prohibited) ||
-            domain_states.presents(Fred::Object_State::delete_candidate))
+        const Fred::ObjectStatesInfo domain_states_before_transfer(Fred::GetObjectStates(domain_data_before_transfer.id).exec(_ctx));
+
+        if (domain_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||
+            domain_states_before_transfer.presents(Fred::Object_State::delete_candidate))
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
