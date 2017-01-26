@@ -55,7 +55,7 @@ namespace Nsset {
 
 CreateNssetResult create_nsset(
         Fred::OperationContext& _ctx,
-        const CreateNssetInputData& _input,
+        const CreateNssetInputData& _nsset_data,
         const CreateNssetConfigData& _nsset_config,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id)
@@ -68,29 +68,29 @@ CreateNssetResult create_nsset(
     }
 
     // check number of technical contacts
-    if (_input.tech_contacts.empty()) {
+    if (_nsset_data.tech_contacts.empty()) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing));
     }
 
-    if (_input.tech_contacts.size() > max_nsset_tech_contacts) {
+    if (_nsset_data.tech_contacts.size() > max_nsset_tech_contacts) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
     }
 
     // check number of nameservers
-    if (_input.dns_hosts.empty()) {
+    if (_nsset_data.dns_hosts.empty()) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing));
     }
 
-    if (_input.dns_hosts.size() < _nsset_config.min_hosts) {
+    if (_nsset_data.dns_hosts.size() < _nsset_config.min_hosts) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
     }
 
-    if (_input.dns_hosts.size() > _nsset_config.max_hosts) {
+    if (_nsset_data.dns_hosts.size() > _nsset_config.max_hosts) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
     }
 
     // check new nsset handle
-    if (Fred::Nsset::get_handle_syntax_validity(_input.handle) != Fred::NssetHandleState::SyntaxValidity::valid)
+    if (Fred::Nsset::get_handle_syntax_validity(_nsset_data.handle) != Fred::NssetHandleState::SyntaxValidity::valid)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_syntax_error)
                                         .add_extended_error(EppExtendedError::of_scalar_parameter(
@@ -100,7 +100,7 @@ CreateNssetResult create_nsset(
     }
 
     {
-        const Fred::NssetHandleState::Registrability::Enum in_registry = Fred::Nsset::get_handle_registrability(_ctx, _input.handle);
+        const Fred::NssetHandleState::Registrability::Enum in_registry = Fred::Nsset::get_handle_registrability(_ctx, _nsset_data.handle);
 
         if (in_registry == Fred::NssetHandleState::Registrability::registered) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_exists));
@@ -118,9 +118,9 @@ CreateNssetResult create_nsset(
     {
         std::set<std::string> tech_contact_duplicity;
         EppResultFailure parameter_value_policy_error(EppResultCode::parameter_value_policy_error);
-        for (std::size_t i = 0; i < _input.tech_contacts.size(); ++i)
+        for (std::size_t i = 0; i < _nsset_data.tech_contacts.size(); ++i)
         {   // check technical contact exists
-            if (Fred::Contact::get_handle_registrability(_ctx, _input.tech_contacts.at(i))
+            if (Fred::Contact::get_handle_registrability(_ctx, _nsset_data.tech_contacts.at(i))
                 != Fred::ContactHandleState::Registrability::registered)
             {
                 parameter_value_policy_error.add_extended_error(
@@ -132,7 +132,7 @@ CreateNssetResult create_nsset(
             else
             {// check technical contact duplicity
                 if (tech_contact_duplicity.insert(boost::algorithm::to_upper_copy(
-                        _input.tech_contacts.at(i))).second == false)
+                        _nsset_data.tech_contacts.at(i))).second == false)
                 {
                     parameter_value_policy_error.add_extended_error(
                             EppExtendedError::of_vector_parameter(
@@ -153,11 +153,11 @@ CreateNssetResult create_nsset(
         std::set<std::string> dns_host_fqdn_duplicity;
         EppResultFailure parameter_value_policy_error(EppResultCode::parameter_value_policy_error);
         std::size_t nsset_ipaddr_position = 0;
-        for (std::size_t i = 0; i < _input.dns_hosts.size(); ++i)
+        for (std::size_t i = 0; i < _nsset_data.dns_hosts.size(); ++i)
         {
-            const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(_input.dns_hosts.at(i).fqdn);
+            const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(_nsset_data.dns_hosts.at(i).fqdn);
 
-            if (!Fred::Domain::is_rfc1123_compliant_host_name(_input.dns_hosts.at(i).fqdn))
+            if (!Fred::Domain::is_rfc1123_compliant_host_name(_nsset_data.dns_hosts.at(i).fqdn))
             {
                 parameter_value_policy_error.add_extended_error(
                         EppExtendedError::of_vector_parameter(
@@ -177,14 +177,14 @@ CreateNssetResult create_nsset(
                 }
             }
 
-            check_disallowed_glue_ipaddrs(_input.dns_hosts.at(i), nsset_ipaddr_position, parameter_value_policy_error, _ctx);
+            check_disallowed_glue_ipaddrs(_nsset_data.dns_hosts.at(i), nsset_ipaddr_position, parameter_value_policy_error, _ctx);
 
             // check nameserver IP addresses
             {
                 std::set<boost::asio::ip::address> dns_host_ip_duplicity;
-                for (std::size_t j = 0; j < _input.dns_hosts.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_position)
+                for (std::size_t j = 0; j < _nsset_data.dns_hosts.at(i).inet_addr.size(); ++j, ++nsset_ipaddr_position)
                 {
-                    const boost::optional<boost::asio::ip::address> dnshostipaddr = _input.dns_hosts.at(i).inet_addr.at(j);
+                    const boost::optional<boost::asio::ip::address> dnshostipaddr = _nsset_data.dns_hosts.at(i).inet_addr.at(j);
                     if (is_prohibited_ip_addr(dnshostipaddr, _ctx))
                     {
                         parameter_value_policy_error.add_extended_error(
@@ -215,8 +215,8 @@ CreateNssetResult create_nsset(
     }
 
     const short nsset_tech_check_level =
-        _input.tech_check_level ? *_input.tech_check_level
-                                : boost::numeric_cast<short>(_nsset_config.default_tech_check_level);
+        _nsset_data.tech_check_level ? *_nsset_data.tech_check_level
+                                     : boost::numeric_cast<short>(_nsset_config.default_tech_check_level);
 
     if (nsset_tech_check_level > max_nsset_tech_check_level ||
         nsset_tech_check_level < min_nsset_tech_check_level)
@@ -227,12 +227,12 @@ CreateNssetResult create_nsset(
     try {
         const Fred::CreateNsset::Result create_data =
                 Fred::CreateNsset(
-                        _input.handle,
+                        _nsset_data.handle,
                         Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
-                        _input.authinfopw ? Optional<std::string>(*_input.authinfopw) : Optional<std::string>(),
+                        _nsset_data.authinfopw ? Optional<std::string>(*_nsset_data.authinfopw) : Optional<std::string>(),
                         nsset_tech_check_level,
-                        make_fred_dns_hosts(_input.dns_hosts),
-                        _input.tech_contacts,
+                        make_fred_dns_hosts(_nsset_data.dns_hosts),
+                        _nsset_data.tech_contacts,
                         _logd_request_id)
                         .exec(_ctx, "UTC");
 

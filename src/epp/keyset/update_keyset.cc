@@ -443,7 +443,7 @@ std::vector< Fred::DnsKey > to_fred(const std::vector< Keyset::DnsKey > &_dns_ke
 
 UpdateKeysetResult update_keyset(
         Fred::OperationContext& _ctx,
-        const UpdateKeysetInputData& _input,
+        const UpdateKeysetInputData& _update_keyset_data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id)
 {
@@ -456,7 +456,7 @@ UpdateKeysetResult update_keyset(
     std::string callers_registrar_handle;
     {
         const Fred::InfoKeysetData keyset_data = check_keyset_handle(
-                _input.keyset_handle,
+                _update_keyset_data.keyset_handle,
                 _registrar_id,
                 _ctx,
                 callers_registrar_handle);
@@ -466,21 +466,21 @@ UpdateKeysetResult update_keyset(
         EppResultFailure policy_errors      = EppResultFailure(EppResultCode::parameter_value_policy_error);
         EppResultFailure syntax_errors      = EppResultFailure(EppResultCode::parameter_value_syntax_error);
 
-        if (!check_tech_contacts(_input.tech_contacts_add, _input.tech_contacts_rem, keyset_data, _ctx, policy_errors)) {
+        if (!check_tech_contacts(_update_keyset_data.tech_contacts_add, _update_keyset_data.tech_contacts_rem, keyset_data, _ctx, policy_errors)) {
             _ctx.get_log().info("check_tech_contacts failure");
         }
 
         if (!check_ds_records<Keyset::min_number_of_ds_records, Keyset::max_number_of_ds_records>(
                     _ctx,
-                    _input.ds_records_add,
-                    _input.ds_records_rem,
+                    _update_keyset_data.ds_records_add,
+                    _update_keyset_data.ds_records_rem,
                     keyset_data,
                     policy_errors))
         {
             _ctx.get_log().info("check_ds_records failure");
         }
 
-        if (!check_dns_keys(_input.dns_keys_add, _input.dns_keys_rem, keyset_data, _ctx, policy_errors)) {
+        if (!check_dns_keys(_update_keyset_data.dns_keys_add, _update_keyset_data.dns_keys_rem, keyset_data, _ctx, policy_errors)) {
             _ctx.get_log().info("check_dns_keys failure");
         }
 
@@ -565,20 +565,20 @@ UpdateKeysetResult update_keyset(
     }
 
     try {
-        const std::vector< Fred::DnsKey > dns_keys_add = to_fred(_input.dns_keys_add);
-        const std::vector< Fred::DnsKey > dns_keys_rem = to_fred(_input.dns_keys_rem);
+        const std::vector< Fred::DnsKey > dns_keys_add = to_fred(_update_keyset_data.dns_keys_add);
+        const std::vector< Fred::DnsKey > dns_keys_rem = to_fred(_update_keyset_data.dns_keys_rem);
         result.update_history_id = Fred::UpdateKeyset(
-            _input.keyset_handle,
+            _update_keyset_data.keyset_handle,
             callers_registrar_handle,
-            _input.authinfopw,
-            _input.tech_contacts_add,
-            _input.tech_contacts_rem,
+            _update_keyset_data.authinfopw,
+            _update_keyset_data.tech_contacts_add,
+            _update_keyset_data.tech_contacts_rem,
             dns_keys_add,
             dns_keys_rem,
             _logd_request_id).exec(_ctx);
-        if (!_input.tech_contacts_rem.empty()) {
+        if (!_update_keyset_data.tech_contacts_rem.empty()) {
             const Fred::InfoKeysetData keyset_data =
-                Fred::InfoKeysetByHandle(_input.keyset_handle).exec(_ctx).info_keyset_data;
+                Fred::InfoKeysetByHandle(_update_keyset_data.keyset_handle).exec(_ctx).info_keyset_data;
             if (keyset_data.tech_contacts.size() < Keyset::min_number_of_tech_contacts) {
                 throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
                                                  .add_extended_error(

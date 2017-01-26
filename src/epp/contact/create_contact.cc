@@ -55,7 +55,7 @@ Optional<std::string> to_db_handle(const Nullable<ContactChange::IdentType::Enum
 CreateContactResult create_contact(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
-        const CreateContactInputData& _data,
+        const CreateContactInputData& _contact_data,
         const unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id)
 {
@@ -94,7 +94,7 @@ CreateContactResult create_contact(
                             Reason::protected_period));
         }
 
-        if (!is_country_code_valid(_ctx, _data.country_code)) {
+        if (!is_country_code_valid(_ctx, _contact_data.country_code)) {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_scalar_parameter(
                             Param::contact_cc,
@@ -108,48 +108,48 @@ CreateContactResult create_contact(
 
     try {
         Fred::Contact::PlaceAddress place;
-        switch (_data.streets.size())
+        switch (_contact_data.streets.size())
         {
-            case 3: place.street3 = _data.streets[2];
-            case 2: place.street2 = _data.streets[1];
-            case 1: place.street1 = _data.streets[0];
+            case 3: place.street3 = _contact_data.streets[2];
+            case 2: place.street2 = _contact_data.streets[1];
+            case 1: place.street1 = _contact_data.streets[0];
             case 0: break;
             default: throw std::runtime_error("Too many streets.");
         }
-        place.city            = _data.city;
-        place.stateorprovince = _data.state_or_province;
-        place.postalcode      = _data.postal_code;
-        place.country         = _data.country_code;
+        place.city            = _contact_data.city;
+        place.stateorprovince = _contact_data.state_or_province;
+        place.postalcode      = _contact_data.postal_code;
+        place.country         = _contact_data.country_code;
 
-        if (_data.disclose.is_initialized()) {
-            _data.disclose->check_validity();
+        if (_contact_data.disclose.is_initialized()) {
+            _contact_data.disclose->check_validity();
         }
 
         const Fred::CreateContact create_contact_op(
             _contact_handle,
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
-            _data.authinfopw ? Optional<std::string>(*_data.authinfopw) : Optional<std::string>() ,
-            _data.name,
-            _data.organization,
+            _contact_data.authinfopw ? Optional<std::string>(*_contact_data.authinfopw) : Optional<std::string>() ,
+            _contact_data.name,
+            _contact_data.organization,
             place,
-            _data.telephone,
-            _data.fax,
-            _data.email,
-            _data.notify_email,
-            _data.VAT,
-            to_db_handle(_data.identtype),
-            _data.ident,
+            _contact_data.telephone,
+            _contact_data.fax,
+            _contact_data.email,
+            _contact_data.notify_email,
+            _contact_data.VAT,
+            to_db_handle(_contact_data.identtype),
+            _contact_data.ident,
             // will be implemented in #13744
             Optional< Fred::ContactAddressList >(),
-            should_item_be_disclosed< ContactDisclose::Item::name         >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::organization >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::address      >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::telephone    >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::fax          >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::email        >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::vat          >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::ident        >(_data.disclose),
-            should_item_be_disclosed< ContactDisclose::Item::notify_email >(_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::name         >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::organization >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::address      >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::telephone    >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::fax          >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::email        >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::vat          >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::ident        >(_contact_data.disclose),
+            should_item_be_disclosed< ContactDisclose::Item::notify_email >(_contact_data.disclose),
             Optional< Nullable< bool > >(),
             _logd_request_id);
         const Fred::CreateContact::Result create_data = create_contact_op.exec(_ctx, "UTC");
