@@ -64,7 +64,7 @@ PollAcknowledgementOutputData poll_acknowledgement(
 
     poll_acknowledgement_output_data.number_of_unseen_messages =
         static_cast<unsigned long long>(number_of_unseen_messages_result[0][0]);
-    if(poll_acknowledgement_output_data.number_of_unseen_messages != 1)
+    if(poll_acknowledgement_output_data.number_of_unseen_messages == 0)
     {
         throw EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully_no_messages));
     }
