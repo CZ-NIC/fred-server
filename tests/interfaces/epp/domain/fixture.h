@@ -47,10 +47,11 @@
 
 #include <boost/asio/ip/address.hpp>
 #include <boost/exception/diagnostic_information.hpp>
-#include <boost/optional/optional.hpp>
+#include <boost/optional.hpp>
 
 #include <string>
 #include <vector>
+#include <set>
 
 std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(const std::vector<Fred::ObjectIdHandlePair>& admin_contacts);
 
@@ -244,9 +245,9 @@ struct HasInfoDomainDataWithServerTransferProhibited : HasObjectWithStatus {
     : HasObjectWithStatus("serverTransferProhibited")
     { }
 };
-struct HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited : HasInfoDomainDataAndDifferentInfoRegistrarData, HasObjectWithStatus {
+struct HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited : HasDifferentInfoRegistrarData, HasObjectWithStatus {
     HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited ()
-    : HasInfoDomainDataAndDifferentInfoRegistrarData(),
+    : HasDifferentInfoRegistrarData(),
       HasObjectWithStatus("serverTransferProhibited")
     { }
 };
