@@ -54,11 +54,12 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollAcknowledgement)));
 
         const PollAcknowledgementOutputData poll_acknowledgement_output_data = poll_acknowledgement(ctx, _message_id, _registrar_id);
+        ctx.commit_transaction();
 
         const PollAcknowledgementLocalizedOutputData poll_acknowledgement_localized_output_data =
             PollAcknowledgementLocalizedOutputData(
-                poll_acknowledgement_output_data.count,
-                poll_acknowledgement_output_data.next_message_id);
+                poll_acknowledgement_output_data.number_of_unseen_messages,
+                poll_acknowledgement_output_data.oldest_unseen_message_id);
 
         return PollAcknowledgementLocalizedResponse(
             EppResponseSuccessLocalized(

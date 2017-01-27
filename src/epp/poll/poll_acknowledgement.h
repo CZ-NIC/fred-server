@@ -28,8 +28,8 @@ namespace Poll {
 
 struct PollAcknowledgementOutputData
 {
-    unsigned long long count;
-    std::string next_message_id;
+    unsigned long long number_of_unseen_messages;
+    std::string oldest_unseen_message_id;
 };
 
 PollAcknowledgementOutputData poll_acknowledgement(

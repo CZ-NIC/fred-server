@@ -41,48 +41,46 @@ PollAcknowledgementOutputData poll_acknowledgement(
 
     PollAcknowledgementOutputData poll_acknowledgement_output_data;
 
-
     Database::ParamQuery mark_message_as_seen;
     mark_message_as_seen("UPDATE message SET seen='t' WHERE id=")
         .param_bigint(_message_id)(" AND clid=")
         .param_bigint(_registrar_id);
 
-    Database::Result updated_rows = _ctx.get_conn().exec_params(mark_message_as_seen);
-    if(updated_rows.rows_affected() != 1)
+    const Database::Result mark_message_result = _ctx.get_conn().exec_params(mark_message_as_seen);
+    if(mark_message_result.rows_affected() != 1)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
     Database::ParamQuery get_number_of_unseen_messages;
     get_number_of_unseen_messages("SELECT COUNT(DISTINCT id) FROM message WHERE clid=")
-        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT(seen)");
+        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen");
 
-    Database::Result number_of_unseen_messages = _ctx.get_conn().exec_params(get_number_of_unseen_messages);
-    if(number_of_unseen_messages.size() != 1)
+    const Database::Result number_of_unseen_messages_result = _ctx.get_conn().exec_params(get_number_of_unseen_messages);
+    if(number_of_unseen_messages_result.size() != 1)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
-    poll_acknowledgement_output_data.count = static_cast<unsigned long long>(number_of_unseen_messages[0][0]);
-    if(poll_acknowledgement_output_data.count != 1)
+    poll_acknowledgement_output_data.number_of_unseen_messages =
+        static_cast<unsigned long long>(number_of_unseen_messages_result[0][0]);
+    if(poll_acknowledgement_output_data.number_of_unseen_messages != 1)
     {
         throw EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully_no_messages));
     }
 
-
     Database::ParamQuery get_oldest_unseen_message_id;
     get_oldest_unseen_message_id("SELECT id FROM message WHERE clid=")
-        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT(seen) ORDER BY id ASC LIMIT 1");
+        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen ORDER BY id ASC LIMIT 1");
 
-    Database::Result oldest_unseen_message_id = _ctx.get_conn().exec_params(get_oldest_unseen_message_id);
-    if(oldest_unseen_message_id.size() == 0)
+    const Database::Result oldest_unseen_message_id_result = _ctx.get_conn().exec_params(get_oldest_unseen_message_id);
+    if(oldest_unseen_message_id_result.size() == 0)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
-    poll_acknowledgement_output_data.next_message_id = boost::lexical_cast<std::string>(oldest_unseen_message_id[0][0]);
-
-
+    poll_acknowledgement_output_data.oldest_unseen_message_id =
+        boost::lexical_cast<std::string>(oldest_unseen_message_id_result[0][0]);
 
     return poll_acknowledgement_output_data;
 }

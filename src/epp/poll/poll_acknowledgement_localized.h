@@ -29,15 +29,15 @@ namespace Poll {
 
 struct PollAcknowledgementLocalizedOutputData
 {
-    unsigned long long count;
-    std::string next_message_id;
+    unsigned long long number_of_unseen_messages;
+    std::string oldest_unseen_message_id;
 
     PollAcknowledgementLocalizedOutputData(
-        unsigned long long _count,
-        const std::string _next_message_id)
+        unsigned long long _number_of_unseen_messages,
+        const std::string& _oldest_unseen_message_id)
     :
-        count(_count),
-        next_message_id(_next_message_id)
+        number_of_unseen_messages(_number_of_unseen_messages),
+        oldest_unseen_message_id(_oldest_unseen_message_id)
     {}
 };
 

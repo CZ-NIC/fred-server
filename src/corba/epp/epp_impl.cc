@@ -1485,11 +1485,9 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
 
         // get actual results and wrap them for CORBA
         CORBA::String_var next_msg_id =
-            Corba::wrap_string_to_corba_string(poll_acknowledgement_response.poll_acknowledgement_localized_output_data.next_message_id);
+            Corba::wrap_string_to_corba_string(poll_acknowledgement_response.poll_acknowledgement_localized_output_data.oldest_unseen_message_id);
 
-        // is this correct?
-        _count = poll_acknowledgement_response.poll_acknowledgement_localized_output_data.count;
-
+        CorbaConversion::wrap_int(poll_acknowledgement_response.poll_acknowledgement_localized_output_data.number_of_unseen_messages, _count);
 
         ccReg::Response_var return_value = new ccReg::Response(
             Corba::wrap_Epp_EppResponseSuccessLocalized(
@@ -1502,8 +1500,6 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
     catch (const Epp::EppResponseFailureLocalized& e) {
         throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-
-    return NULL; // unreachable
 }
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
