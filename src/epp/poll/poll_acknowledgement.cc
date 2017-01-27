@@ -80,7 +80,7 @@ PollAcknowledgementOutputData poll_acknowledgement(
     }
 
     poll_acknowledgement_output_data.oldest_unseen_message_id =
-        boost::lexical_cast<std::string>(oldest_unseen_message_id_result[0][0]);
+        static_cast<std::string>(oldest_unseen_message_id_result[0][0]);
 
     return poll_acknowledgement_output_data;
 }

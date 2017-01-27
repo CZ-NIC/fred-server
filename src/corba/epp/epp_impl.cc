@@ -1484,8 +1484,9 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
                 server_transaction_handle);
 
         // get actual results and wrap them for CORBA
-        CORBA::String_var next_msg_id =
-            Corba::wrap_string_to_corba_string(poll_acknowledgement_response.poll_acknowledgement_localized_output_data.oldest_unseen_message_id);
+        CORBA::String_var next_msg_id = Corba::wrap_string_to_corba_string(poll_acknowledgement_response
+                                                                           .poll_acknowledgement_localized_output_data
+                                                                           .oldest_unseen_message_id);
 
         CorbaConversion::wrap_int(poll_acknowledgement_response.poll_acknowledgement_localized_output_data.number_of_unseen_messages, _count);
 

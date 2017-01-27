@@ -54,20 +54,29 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollAcknowledgement)));
 
         const PollAcknowledgementOutputData poll_acknowledgement_output_data = poll_acknowledgement(ctx, _message_id, _registrar_id);
-        ctx.commit_transaction();
 
         const PollAcknowledgementLocalizedOutputData poll_acknowledgement_localized_output_data =
             PollAcknowledgementLocalizedOutputData(
                 poll_acknowledgement_output_data.number_of_unseen_messages,
                 poll_acknowledgement_output_data.oldest_unseen_message_id);
 
-        return PollAcknowledgementLocalizedResponse(
+        PollAcknowledgementLocalizedResponse ret(
             EppResponseSuccessLocalized(
                 ctx,
                 EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                 _lang),
             poll_acknowledgement_localized_output_data);
 
+        ctx.commit_transaction();
+        return ret;
+    }
+    catch (const EppResponseSuccess& e) {
+        ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
+        ctx.commit_transaction();
+        throw EppResponseSuccessLocalized(
+            ctx,
+            e,
+            _lang);
     }
     catch (const EppResponseFailure& e) {
         ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
