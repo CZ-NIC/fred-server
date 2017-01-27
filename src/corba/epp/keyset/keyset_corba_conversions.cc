@@ -2,7 +2,7 @@
 
 #include "src/corba/epp/corba_conversions.h"
 #include "src/corba/util/corba_conversions_string.h"
-#include "util/corba_conversion.h"
+#include "src/corba/util/corba_conversions_int.h"
 
 #include <vector>
 #include <string>
@@ -27,14 +27,14 @@ void
 unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str& _src, Epp::Keyset::DsRecord& _dst)
 {
     long key_tag;
-    CorbaConversion::unwrap_int(_src.keyTag, key_tag);
+    unwrap_int(_src.keyTag, key_tag);
     long alg;
-    CorbaConversion::unwrap_int(_src.alg, alg);
+    unwrap_int(_src.alg, alg);
     long digest_type;
-    CorbaConversion::unwrap_int(_src.digestType, digest_type);
+    unwrap_int(_src.digestType, digest_type);
     const std::string digest = unwrap_string(_src.digest);
     long max_sig_life;
-    CorbaConversion::unwrap_int(_src.maxSigLife, max_sig_life);
+    unwrap_int(_src.maxSigLife, max_sig_life);
     _dst = Epp::Keyset::DsRecord(key_tag, alg, digest_type, digest, max_sig_life);
 }
 
@@ -61,11 +61,11 @@ void
 unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str& _src, Epp::Keyset::DnsKey& _dst)
 {
     unsigned short flags;
-    CorbaConversion::unwrap_int(_src.flags, flags);
+    unwrap_int(_src.flags, flags);
     unsigned short protocol;
-    CorbaConversion::unwrap_int(_src.protocol, protocol);
+    unwrap_int(_src.protocol, protocol);
     unsigned short alg;
-    CorbaConversion::unwrap_int(_src.alg, alg);
+    unwrap_int(_src.alg, alg);
     const std::string key = unwrap_string(_src.key);
     _dst = Epp::Keyset::DnsKey(flags, protocol, alg, key);
 }
@@ -156,9 +156,9 @@ wrap_Epp_InfoKeysetOutputData_DnsKeys(const Epp::Keyset::InfoKeysetOutputData::D
     for (Epp::Keyset::InfoKeysetOutputData::DnsKeys::const_iterator data_ptr = _src.begin();
          data_ptr != _src.end(); ++data_ptr, ++idx)
     {
-        CorbaConversion::wrap_int(data_ptr->get_flags(),    _dst[idx].flags);
-        CorbaConversion::wrap_int(data_ptr->get_protocol(), _dst[idx].protocol);
-        CorbaConversion::wrap_int(data_ptr->get_alg(),      _dst[idx].alg);
+        wrap_int(data_ptr->get_flags(),    _dst[idx].flags);
+        wrap_int(data_ptr->get_protocol(), _dst[idx].protocol);
+        wrap_int(data_ptr->get_alg(),      _dst[idx].alg);
         _dst[idx].key = data_ptr->get_key().c_str();
     }
 }

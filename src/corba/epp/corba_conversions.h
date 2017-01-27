@@ -39,19 +39,12 @@
 #include "src/old_utils/util.h"
 #include "util/corba_conversion.h"
 
+#include <boost/date_time/posix_time/ptime.hpp>
+
 #include <string>
 #include <vector>
 
 namespace Corba {
-
-template <class TARGET_INTEGRAL_TYPE, class SOURCE_INTEGRAL_TYPE>
-TARGET_INTEGRAL_TYPE
-wrap_int(SOURCE_INTEGRAL_TYPE src)
-{
-    TARGET_INTEGRAL_TYPE dst;
-    CorbaConversion::wrap_int(src, dst);
-    return dst;
-}
 
 CORBA::String_var
 wrap_Nullable_string_to_string(const Nullable<std::string>& src);

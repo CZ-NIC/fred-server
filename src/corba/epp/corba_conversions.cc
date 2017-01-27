@@ -3,6 +3,7 @@
 #include "src/corba/EPP.hh"
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_int.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/error.h"
@@ -17,7 +18,6 @@
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_extended_error_localized.h"
 
-#include "util/corba_conversion.h"
 #include "util/db/nullable.h"
 #include "util/map_at.h"
 #include "util/optional_value.h"
@@ -78,10 +78,10 @@ Epp::RequestParams
 unwrap_EppParams(const ccReg::EppParams& _epp_request_params)
 {
     Epp::RequestParams result;
-    CorbaConversion::unwrap_int(_epp_request_params.loginID, result.session_id);
+    unwrap_int(_epp_request_params.loginID, result.session_id);
     result.client_transaction_id = unwrap_string(_epp_request_params.clTRID);
     unsigned long long log_request_id;
-    CorbaConversion::unwrap_int(_epp_request_params.requestID, log_request_id);
+    unwrap_int(_epp_request_params.requestID, log_request_id);
     if (log_request_id != 0) {
         result.log_request_id = log_request_id;
     }
@@ -151,7 +151,7 @@ wrap_Epp_EppResponseSuccessLocalized(
 {
     const Epp::EppResultSuccessLocalized epp_result = _epp_response.epp_result();
 
-    CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), _dst.code);
+    wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), _dst.code);
     _dst.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
     _dst.msg    = wrap_string_to_corba_string(epp_result.epp_result_description());
 }
@@ -165,7 +165,7 @@ wrap_Epp_EppResponseSuccessLocalized(
 
     const Epp::EppResultSuccessLocalized epp_result = _epp_response.epp_result();
 
-    CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), response.code);
+    wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), response.code);
     response.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
     response.msg    = wrap_string_to_corba_string(epp_result.epp_result_description());
 
@@ -181,7 +181,7 @@ wrap_Epp_EppResponseFailureLocalized(
 
     const Epp::EppResultFailureLocalized& epp_result = _epp_response.epp_result();
 
-    CorbaConversion::wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), result.errCode);
+    wrap_int(Epp::EppResultCode::to_description_db_id(epp_result.epp_result_code()), result.errCode);
     result.svTRID = wrap_string_to_corba_string(_server_transaction_handle);
     result.errMsg = wrap_string_to_corba_string(epp_result.epp_result_description());
 
@@ -198,7 +198,7 @@ wrap_Epp_EppResponseFailureLocalized(
             ++epp_extended_error, ++i)
         {
             result.errorList[i].code = wrap_param_error(epp_extended_error->param());
-            CorbaConversion::wrap_int(epp_extended_error->position(), result.errorList[i].position);
+            wrap_int(epp_extended_error->position(), result.errorList[i].position);
             result.errorList[i].reason = wrap_string_to_corba_string(epp_extended_error->reason_description());
         }
     }

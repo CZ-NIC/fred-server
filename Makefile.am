@@ -201,6 +201,7 @@ noinst_HEADERS = \
 		src/corba/util/corba_conversions_datetime.h \
 		src/corba/util/corba_conversions_nullable_types.h \
 		src/corba/util/corba_conversions_string.h \
+		src/corba/util/corba_conversions_int.h \
 		util/is_equal_optional_nullable.h \
 		tests/fredlib/util.h \
 		tests/fredlib/enum_to_db_handle_conversion.h \
@@ -1559,6 +1560,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/response.h \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
+		src/corba/util/corba_conversions_int.h \
 		src/epp/impl/disclose_policy.h \
 		src/epp/impl/localization.h \
 		src/epp/impl/localization.cc \
@@ -1708,9 +1710,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/transfer_nsset.cc \
 		src/epp/nsset/transfer_nsset.h \
 		src/epp/nsset/impl/nsset.cc \
-		src/epp/nsset/impl/nsset.h \
-		util/corba_conversion.h \
-		util/corba_conversion.cc
+		src/epp/nsset/impl/nsset.h
 
 #
 # src/corba/epp/libepp_impl.a
@@ -2548,8 +2548,6 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/nsset/test_create_nsset.cc \
 		tests/interfaces/epp/nsset/test_update_nsset.cc \
 		tests/interfaces/epp/nsset/test_transfer_nsset.cc \
-		util/corba_conversion.h \
-		util/corba_conversion.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \

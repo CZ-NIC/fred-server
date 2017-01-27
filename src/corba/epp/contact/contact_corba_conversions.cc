@@ -2,6 +2,7 @@
 
 #include "src/corba/epp/corba_conversions.h"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_int.h"
 #include "util/corba_conversion.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
