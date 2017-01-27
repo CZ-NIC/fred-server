@@ -168,11 +168,7 @@ DomainCreateResult domain_create_impl(
     }
 
     //check expiration date of ENUM domain validation
-    if(zone_data.is_enum
-        && (_data.enum_validation_list.empty()
-            || _data.enum_validation_list.rbegin()->get_valexdate().is_special()
-            )
-    )
+    if(zone_data.is_enum && _data.enum_validation_list.empty())
     {
         throw RequiredParameterMissing();
     }

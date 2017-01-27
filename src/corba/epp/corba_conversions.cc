@@ -871,10 +871,18 @@ namespace Corba {
         {
             if (ext[i] >>= enum_ext)
             {
-                ret.push_back(Epp::ENUMValidationExtension(
-                        boost::gregorian::from_simple_string(
-                                Corba::unwrap_string_from_const_char_ptr(enum_ext->valExDate)),
-                        enum_ext->publish == ccReg::DISCL_DISPLAY)
+                const std::string temp_valexdate_string = Corba::unwrap_string_from_const_char_ptr(enum_ext->valExDate);
+                boost::gregorian::date valexdate;
+                try {
+                    valexdate = boost::gregorian::from_simple_string(temp_valexdate_string);
+                }
+                catch(...)
+                {
+                    //conversion errors ignored here, implementation must later handle `not-a-date-time` value correctly
+                }
+
+                ret.push_back(Epp::ENUMValidationExtension(valexdate,
+                    enum_ext->publish == ccReg::DISCL_DISPLAY)
                 );
             }
             else

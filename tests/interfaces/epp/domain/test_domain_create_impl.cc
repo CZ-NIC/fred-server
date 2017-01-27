@@ -573,6 +573,14 @@ BOOST_FIXTURE_TEST_CASE(create_empty_valexdate_enum, HasDomainData)
     );
 }
 
+bool valexpdate_not_valid_exception(const Epp::ParameterValueRangeError& ex) {
+    BOOST_TEST_MESSAGE("Epp::ParameterValueRangeError");
+    BOOST_CHECK(ex.get().size() == 1);
+    BOOST_CHECK(ex.get().rbegin()->param == Epp::Param::domain_ext_val_date);
+    BOOST_CHECK(ex.get().rbegin()->position == 1);
+    BOOST_CHECK(ex.get().rbegin()->reason == Epp::Reason::valexpdate_not_valid);
+    return true;
+}
 
 BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, HasDomainData)
 {
@@ -580,15 +588,14 @@ BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, HasDomainData)
     domain1_create_input_data.enum_validation_list = Util::vector_of<Epp::ENUMValidationExtension>(
             Epp::ENUMValidationExtension());
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::domain_create_impl(
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42 /* TODO */
-        ),
-        Epp::RequiredParameterMissing
-    );
+            42 /* TODO */),
+        Epp::ParameterValueRangeError,
+        valexpdate_not_valid_exception);
 }
 
 BOOST_FIXTURE_TEST_CASE(create_nonempty_valexdate_nonenum, HasDomainData)
