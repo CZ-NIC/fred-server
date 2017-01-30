@@ -122,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE(fail_not_eligible_for_transfer, HasInfoDomainData)
     );
 }
 
-bool fail_prohibiting_status1(const Epp::EppResponseFailure& e) {
+bool fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
@@ -139,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status1, HasInfoDomainDataWithDifferent
             42
         ),
         Epp::EppResponseFailure,
-        fail_prohibiting_status1
+        fail_prohibiting_status1_exception
     );
 }
 
@@ -219,7 +219,7 @@ BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, HasInfoDoma
 {
     const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(info_domain_data_.fqdn).exec(ctx).info_domain_data;
 
-    Epp::Domain::domain_transfer_impl(
+    Epp::Domain::transfer_domain(
         ctx,
         info_domain_data_.fqdn,
         info_domain_data_.authinfopw,

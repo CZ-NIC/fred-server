@@ -175,17 +175,18 @@ bool fail_invalid_zone_exception(const Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(fail_invalid_zone, HasInfoDomainDataOfNonexistentDomain)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::domain_update_impl(
+        Epp::Domain::update_domain(
             ctx,
-            info_domain_data_.fqdn + "c",
-            Optional<std::string>(), // registrant_chg
-            Optional<std::string>(), // auth_info_pw_chg
-            Optional<Nullable<std::string> >(), // nsset_chg
-            Optional<Nullable<std::string> >(), // keyset_chg
-            std::vector<std::string>(), // admin_contacts_add
-            std::vector<std::string>(), // admin_contacts_rem
-            std::vector<std::string>(), // tmpcontacts_rem
-            std::vector<Epp::ENUMValidationExtension>(), // enum_validation_list
+            Epp::Domain::UpdateDomainInputData(
+                info_domain_data_.fqdn + "c",
+                Optional<std::string>(), // registrant_chg
+                Optional<std::string>(), // auth_info_pw_chg
+                Optional<Nullable<std::string> >(), // nsset_chg
+                Optional<Nullable<std::string> >(), // keyset_chg
+                std::vector<std::string>(), // admin_contacts_add
+                std::vector<std::string>(), // admin_contacts_rem
+                std::vector<std::string>(), // tmpcontacts_rem
+                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
             info_registrar_data_.id, // registrar_id
             Optional<unsigned long long>(), // logd_request_id
             true // rifd_epp_update_domain_keyset_clear

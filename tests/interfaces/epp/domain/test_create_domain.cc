@@ -954,7 +954,7 @@ BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
     BOOST_CHECK(info_data.registrant.handle == domain1_create_input_data.registrant);
     BOOST_CHECK(info_data.nsset.get_value().handle == domain1_create_input_data.nsset);
     BOOST_CHECK(info_data.keyset.get_value().handle == domain1_create_input_data.keyset);
-    BOOST_CHECK(info_data.authinfopw == domain1_create_input_data.authinfo);
+    BOOST_CHECK(info_data.authinfopw == domain1_create_input_data.authinfopw);
     BOOST_TEST_MESSAGE("info_data.expiration_date: " << info_data.expiration_date << " expected_expiration_date_local: " << expected_expiration_date_local);
     BOOST_CHECK(info_data.expiration_date == expected_expiration_date_local);
 

@@ -59,12 +59,8 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_registrar_id, HasDomainData)
     );
 }
 bool renew_invalid_fqdn_zone_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
-    BOOST_REQUIRE(e.epp_result().extended_errors());
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::domain_fqdn);
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::not_applicable_domain);
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_REQUIRE(e.epp_result().empty());
     return true;
 }
 
