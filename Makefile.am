@@ -2899,8 +2899,6 @@ tests_test_blocking_LDADD = \
 # tests/test_fredlib
 #
 tests_test_fredlib_SOURCES = \
-		src/epp/impl/notification_data.h \
-		src/epp/impl/session_data.h \
 		tests/fredlib/main.cc \
 		tests/fredlib/registrar/test_registrar_zone_access.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \
