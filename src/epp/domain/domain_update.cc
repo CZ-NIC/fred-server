@@ -102,6 +102,15 @@ LocalizedSuccessResponse domain_update(
             _lang
         );
 
+    } catch(const ZoneAuthorizationError&) {
+        Fred::OperationContextCreator exception_localization_ctx;
+        throw create_localized_fail_response(
+            exception_localization_ctx,
+            Response::authorization_error,
+            std::set<Error>(),
+            _lang
+        );
+
     } catch(const AuthorizationError&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(

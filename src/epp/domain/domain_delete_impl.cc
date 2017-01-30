@@ -46,7 +46,7 @@ unsigned long long domain_delete_impl(
     }
 
     if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
-        throw AuthorizationError();
+        throw ZoneAuthorizationError();
     }
 
     if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {

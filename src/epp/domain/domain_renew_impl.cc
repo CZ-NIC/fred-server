@@ -71,7 +71,7 @@ DomainRenewResult domain_renew_impl(
     if(!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id,
             current_local_date, _ctx))
     {
-        throw AuthorizationError();
+        throw ZoneAuthorizationError();
     }
 
     //check if fqdn is registered
