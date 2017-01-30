@@ -1485,14 +1485,14 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
 
         // get actual results and wrap them for CORBA
         CORBA::String_var next_msg_id = Corba::wrap_string_to_corba_string(poll_acknowledgement_response
-                                                                           .poll_acknowledgement_localized_output_data
+                                                                           .data
                                                                            .oldest_unseen_message_id);
 
-        CorbaConversion::wrap_int(poll_acknowledgement_response.poll_acknowledgement_localized_output_data.number_of_unseen_messages, _count);
+        CorbaConversion::wrap_int(poll_acknowledgement_response.data.number_of_unseen_messages, _count);
 
         ccReg::Response_var return_value = new ccReg::Response(
             Corba::wrap_Epp_EppResponseSuccessLocalized(
-                poll_acknowledgement_response.epp_response_success_localized,
+                poll_acknowledgement_response.epp_response,
                 server_transaction_handle));
 
         _next_msg_id = next_msg_id._retn();

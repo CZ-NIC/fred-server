@@ -43,15 +43,15 @@ struct PollAcknowledgementLocalizedOutputData
 
 struct PollAcknowledgementLocalizedResponse
 {
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const PollAcknowledgementLocalizedOutputData poll_acknowledgement_localized_output_data;
+    const EppResponseSuccessLocalized epp_response;
+    const PollAcknowledgementLocalizedOutputData data;
 
     PollAcknowledgementLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const PollAcknowledgementLocalizedOutputData& _poll_acknowledgement_localized_output_data)
+        const EppResponseSuccessLocalized& _epp_response,
+        const PollAcknowledgementLocalizedOutputData& _data)
     :
-        epp_response_success_localized(_epp_response_success_localized),
-        poll_acknowledgement_localized_output_data(_poll_acknowledgement_localized_output_data)
+        epp_response(_epp_response),
+        data(_data)
     {}
 };
 
