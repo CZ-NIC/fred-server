@@ -66,7 +66,7 @@ PollAcknowledgementOutputData poll_acknowledgement(
         static_cast<unsigned long long>(number_of_unseen_messages_result[0][0]);
     if(poll_acknowledgement_output_data.number_of_unseen_messages == 0)
     {
-        throw EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully_no_messages));
+        return poll_acknowledgement_output_data;
     }
 
     Database::ParamQuery get_oldest_unseen_message_id;

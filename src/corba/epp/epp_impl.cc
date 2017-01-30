@@ -1483,6 +1483,14 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
                 registrar_session_data.language,
                 server_transaction_handle);
 
+        if (poll_acknowledgement_response.data.number_of_unseen_messages == 0)
+        {
+            throw ccReg::EPP::NoMessages(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                         ccReg_EPP_i::GetErrorMessage(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                                                      registrar_session_data.language),
+                                         server_transaction_handle.c_str());
+        }
+
         // get actual results and wrap them for CORBA
         CORBA::String_var next_msg_id = Corba::wrap_string_to_corba_string(poll_acknowledgement_response
                                                                            .data

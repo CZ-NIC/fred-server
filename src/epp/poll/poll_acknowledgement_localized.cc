@@ -70,14 +70,6 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
         ctx.commit_transaction();
         return ret;
     }
-    catch (const EppResponseSuccess& e) {
-        ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
-        ctx.commit_transaction();
-        throw EppResponseSuccessLocalized(
-            ctx,
-            e,
-            _lang);
-    }
     catch (const EppResponseFailure& e) {
         ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
         throw EppResponseFailureLocalized(
