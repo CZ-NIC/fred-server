@@ -41,12 +41,13 @@ PollAcknowledgementOutputData poll_acknowledgement(
 
     PollAcknowledgementOutputData poll_acknowledgement_output_data;
 
-    Database::ParamQuery mark_message_and_get_the_number_of_remaining_ones;
-    mark_message_and_get_the_number_of_remaining_ones("UPDATE message m SET seen='t' WHERE id=")
+    Database::ParamQuery query;
+    query("UPDATE message m SET seen='t' WHERE id=")
         .param_bigint(_message_id)(" AND clid=")
-        .param_bigint(_registrar_id)(" RETURNING (SELECT COUNT(DISTINCT id) FROM message WHERE clid=")
+        .param_bigint(_registrar_id)(" RETURNING (SELECT COUNT(*) FROM message WHERE clid=")
+        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen), (SELECT MIN(id) FROM message WHERE clid=")
         .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen)");
-    const Database::Result query_result = _ctx.get_conn().exec_params(mark_message_and_get_the_number_of_remaining_ones);
+    const Database::Result query_result = _ctx.get_conn().exec_params(query);
     if(query_result.size() != 1)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
@@ -59,18 +60,8 @@ PollAcknowledgementOutputData poll_acknowledgement(
         return poll_acknowledgement_output_data;
     }
 
-    Database::ParamQuery get_oldest_unseen_message_id;
-    get_oldest_unseen_message_id("SELECT id FROM message WHERE clid=")
-        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen ORDER BY id ASC LIMIT 1");
-
-    const Database::Result oldest_unseen_message_id_result = _ctx.get_conn().exec_params(get_oldest_unseen_message_id);
-    if(oldest_unseen_message_id_result.size() == 0)
-    {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
-    }
-
     poll_acknowledgement_output_data.oldest_unseen_message_id =
-        static_cast<std::string>(oldest_unseen_message_id_result[0][0]);
+        static_cast<std::string>(query_result[0][1]);
 
     return poll_acknowledgement_output_data;
 }

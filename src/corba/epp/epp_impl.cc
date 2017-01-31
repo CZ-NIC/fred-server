@@ -1473,7 +1473,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
         const Epp::RegistrarSessionData registrar_session_data =
             Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        std::string message_id = Corba::unwrap_string_from_const_char_ptr(_msg_id);
+        const std::string message_id = Corba::unwrap_string_from_const_char_ptr(_msg_id);
 
         const Epp::Poll::PollAcknowledgementLocalizedResponse poll_acknowledgement_response =
             Epp::Poll::poll_acknowledgement_localized(
