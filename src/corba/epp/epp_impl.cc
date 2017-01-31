@@ -1473,8 +1473,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
         const Epp::RegistrarSessionData registrar_session_data =
             Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        // what to do with the exception?  parameter_value_range_error, move down?
-        unsigned long long message_id = boost::lexical_cast<unsigned long long>(Corba::unwrap_string_from_const_char_ptr(_msg_id));
+        std::string message_id = Corba::unwrap_string_from_const_char_ptr(_msg_id);
 
         const Epp::Poll::PollAcknowledgementLocalizedResponse poll_acknowledgement_response =
             Epp::Poll::poll_acknowledgement_localized(

@@ -49,7 +49,7 @@ PollAcknowledgementOutputData poll_acknowledgement(
     const Database::Result mark_message_result = _ctx.get_conn().exec_params(mark_message_as_seen);
     if(mark_message_result.rows_affected() != 1)
     {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+        throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_range_error));
     }
 
     Database::ParamQuery get_number_of_unseen_messages;

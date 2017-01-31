@@ -40,7 +40,7 @@ namespace Epp {
 namespace Poll {
 
 PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
-    unsigned long long _message_id,
+    const std::string& _message_id,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string& _server_transaction_handle)
@@ -53,7 +53,15 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollAcknowledgement)));
 
-        const PollAcknowledgementOutputData poll_acknowledgement_output_data = poll_acknowledgement(ctx, _message_id, _registrar_id);
+        unsigned long long message_id;
+        try {
+            message_id = boost::lexical_cast<unsigned long long>(_message_id);
+        }
+        catch (const boost::bad_lexical_cast&) {
+            throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_range_error));
+        }
+
+        const PollAcknowledgementOutputData poll_acknowledgement_output_data = poll_acknowledgement(ctx, message_id, _registrar_id);
 
         const PollAcknowledgementLocalizedOutputData poll_acknowledgement_localized_output_data =
             PollAcknowledgementLocalizedOutputData(

@@ -56,7 +56,7 @@ struct PollAcknowledgementLocalizedResponse
 };
 
 PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
-    unsigned long long _message_id,
+    const std::string& _message_id,
     unsigned long long _registrar_id,
     SessionLang::Enum _lang,
     const std::string& _server_transaction_handle);
