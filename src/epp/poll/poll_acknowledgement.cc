@@ -41,29 +41,19 @@ PollAcknowledgementOutputData poll_acknowledgement(
 
     PollAcknowledgementOutputData poll_acknowledgement_output_data;
 
-    Database::ParamQuery mark_message_as_seen;
-    mark_message_as_seen("UPDATE message SET seen='t' WHERE id=")
+    Database::ParamQuery mark_message_and_get_the_number_of_remaining_ones;
+    mark_message_and_get_the_number_of_remaining_ones("UPDATE message m SET seen='t' WHERE id=")
         .param_bigint(_message_id)(" AND clid=")
-        .param_bigint(_registrar_id);
-
-    const Database::Result mark_message_result = _ctx.get_conn().exec_params(mark_message_as_seen);
-    if(mark_message_result.rows_affected() != 1)
+        .param_bigint(_registrar_id)(" RETURNING (SELECT COUNT(DISTINCT id) FROM message WHERE clid=")
+        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen)");
+    const Database::Result query_result = _ctx.get_conn().exec_params(mark_message_and_get_the_number_of_remaining_ones);
+    if(query_result.size() != 1)
     {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_range_error));
-    }
-
-    Database::ParamQuery get_number_of_unseen_messages;
-    get_number_of_unseen_messages("SELECT COUNT(DISTINCT id) FROM message WHERE clid=")
-        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen");
-
-    const Database::Result number_of_unseen_messages_result = _ctx.get_conn().exec_params(get_number_of_unseen_messages);
-    if(number_of_unseen_messages_result.size() != 1)
-    {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
     poll_acknowledgement_output_data.number_of_unseen_messages =
-        static_cast<unsigned long long>(number_of_unseen_messages_result[0][0]);
+        static_cast<unsigned long long>(query_result[0][0]);
     if(poll_acknowledgement_output_data.number_of_unseen_messages == 0)
     {
         return poll_acknowledgement_output_data;

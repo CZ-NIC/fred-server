@@ -58,7 +58,7 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
             message_id = boost::lexical_cast<unsigned long long>(_message_id);
         }
         catch (const boost::bad_lexical_cast&) {
-            throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_range_error));
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
         const PollAcknowledgementOutputData poll_acknowledgement_output_data = poll_acknowledgement(ctx, message_id, _registrar_id);
