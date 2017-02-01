@@ -68,6 +68,7 @@ namespace Corba {
      *
      * @return Optional() if input string empty, empty string if input contains special control char, unwrapped input in other cases
      */
+    Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string_no_trim(const char* _src);
     Optional<std::string> unwrap_string_for_change_or_remove_to_Optional_string(const char* _src);
 
     /**
