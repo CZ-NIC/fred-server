@@ -61,7 +61,7 @@ PollAcknowledgementOutputData poll_acknowledgement(
     }
 
     poll_acknowledgement_output_data.oldest_unseen_message_id =
-        static_cast<std::string>(query_result[0][1]);
+        static_cast<unsigned long long>(query_result[0][1]);
 
     return poll_acknowledgement_output_data;
 }

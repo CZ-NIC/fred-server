@@ -63,10 +63,21 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
 
         const PollAcknowledgementOutputData poll_acknowledgement_output_data = poll_acknowledgement(ctx, message_id, _registrar_id);
 
+        std::string oldest_unseen_message_id;
+        if (poll_acknowledgement_output_data.number_of_unseen_messages > 0)
+        {
+            try {
+                oldest_unseen_message_id = boost::lexical_cast<std::string>(poll_acknowledgement_output_data.oldest_unseen_message_id);
+            }
+            catch (const boost::bad_lexical_cast&) {
+                throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+            }
+        }
+
         const PollAcknowledgementLocalizedOutputData poll_acknowledgement_localized_output_data =
             PollAcknowledgementLocalizedOutputData(
                 poll_acknowledgement_output_data.number_of_unseen_messages,
-                poll_acknowledgement_output_data.oldest_unseen_message_id);
+                oldest_unseen_message_id);
 
         PollAcknowledgementLocalizedResponse ret(
             EppResponseSuccessLocalized(
