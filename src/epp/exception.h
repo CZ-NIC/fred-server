@@ -30,6 +30,7 @@ namespace Epp {
     struct Exception:std::exception { };
 
     struct AuthErrorServerClosingConnection   :Exception { const char* what() const throw() { return "authentication error: server is closing connection"; } };
+    struct ZoneAuthorizationError             :Exception { const char* what() const throw() { return "registrar zone authorization error"; } };
     struct AuthorizationError                 :Exception { const char* what() const throw() { return "authorization error"; } };
     struct AuthorizationInformationError      :Exception { const char* what() const throw() { return "authorization information error"; } };
     struct InvalidSessionLang                 :Exception { const char* what() const throw() { return "invalid session language"; } };

@@ -148,7 +148,7 @@ BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWit
             Optional<unsigned long long>(), // logd_request_id
             true // rifd_epp_update_domain_keyset_clear
         ),
-        Epp::AuthorizationError
+        Epp::ZoneAuthorizationError
     );
 }
 

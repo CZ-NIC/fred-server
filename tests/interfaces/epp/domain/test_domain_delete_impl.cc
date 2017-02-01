@@ -75,7 +75,7 @@ BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWit
             info_domain_data_.fqdn,
             info_registrar_data_.id
         ),
-        Epp::AuthorizationError
+        Epp::ZoneAuthorizationError
     );
 }
 

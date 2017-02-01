@@ -82,7 +82,7 @@ unsigned long long domain_update_impl(
     const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
             Fred::Zone::rem_trailing_dot(_domain_fqdn));
     if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
-        throw AuthorizationError();
+        throw ZoneAuthorizationError();
     }
 
     ParameterValueRangeError parameter_value_range_error;
