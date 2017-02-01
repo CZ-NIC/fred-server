@@ -340,6 +340,15 @@ namespace Corba {
 
     }//namespace Corba::{anonymous}
 
+    Optional<std::string> unwrap_string_for_change_to_Optional_string_no_trim(const char* _src) {
+        const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
+
+        return
+            unwrapped_src.empty()
+            ? Optional<std::string>() // do not set
+            : unwrapped_src;
+    }
+
     Optional<std::string> unwrap_string_for_change_to_Optional_string(const char* _src) {
         const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
 
@@ -381,7 +390,7 @@ namespace Corba {
                 : boost::trim_copy(unwrapped_src);
     }
 
-    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src) {
+    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(const char* _src) {
         const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
 
         /* Defined by convention. Could be substituted by more explicit means in IDL interface
@@ -393,7 +402,7 @@ namespace Corba {
             ? Optional<Nullable<std::string> >() // do not set
             : unwrapped_src.at(0) == char_for_value_deleting
                 ? Optional<Nullable<std::string> >(Nullable<std::string>()) // set NULL
-                : boost::trim_copy(unwrapped_src);
+                : unwrapped_src;
     }
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst)

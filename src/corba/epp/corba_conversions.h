@@ -59,6 +59,7 @@ namespace Corba {
      *
      * @return Optional() if input string empty, else unwrapped input
      */
+    Optional<std::string> unwrap_string_for_change_to_Optional_string_no_trim(const char* _src);
     Optional<std::string> unwrap_string_for_change_to_Optional_string(const char* _src);
 
     /**
@@ -78,7 +79,7 @@ namespace Corba {
      *
      * @return empty string if input string empty, Optinal(Nullable()) if input ocntains special control char, unwrapped input in other cases
      */
-    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src);
+    Optional<Nullable<std::string> > unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(const char* _src);
 
     void unwrap_ContactChange(const ccReg::ContactChange &src, Epp::ContactChange &dst);
 
@@ -97,8 +98,6 @@ namespace Corba {
     void unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str &_src, Epp::KeySet::DnsKey &_dst);
 
     Epp::RequestParams unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
-
-    Optional< std::string > unwrap_string_for_change_to_Optional_string(const char *_src);
 
     boost::optional<short> unwrap_tech_check_level(CORBA::Short level);
 
