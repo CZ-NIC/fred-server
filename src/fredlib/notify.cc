@@ -28,6 +28,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/lexical_cast.hpp>
 
 using namespace Database;
 
@@ -216,32 +217,83 @@ namespace Fred
         sql << "SELECT c.email FROM contact c WHERE c.id=" << contact;
         return getEmailList(sql);
       }
+
+      std::string getParamZone(TID zone_id)
+      {
+        std::ostringstream sql;
+        sql << "SELECT fqdn FROM zone WHERE id=" << zone_id;
+        if (!db->ExecSelect(sql.str().c_str())) {
+            throw SQL_ERROR();
+        }
+        if (db->GetSelectRows() != 1) {
+            throw SQL_ERROR();
+        }
+        const std::string zone_fqdn = db->GetFieldValue(0, 0);
+        db->FreeSelect();
+        return zone_fqdn;
+      }
+
+      void fillDomainParamsAdministratorsHistory(TID domain_id, Fred::Mailer::Parameters& params)
+      {
+        std::ostringstream sql;
+        sql << "SELECT cor.name "
+               "FROM object_registry dor "
+               "JOIN domain_contact_map_history dcmh ON dcmh.historyid=dor.historyid AND dcmh.role=1 "
+               "JOIN object_registry cor ON cor.id=dcmh.contactid "
+               "WHERE dor.id=" << domain_id;
+        if (!db->ExecSelect(sql.str().c_str())) {
+            throw SQL_ERROR();
+        }
+        for (int db_row_idx = 0; db_row_idx < db->GetSelectRows(); ++db_row_idx) {
+            params["administrators." + boost::lexical_cast<std::string>(db_row_idx)] = db->GetFieldValue(db_row_idx, 0);
+        }
+        db->FreeSelect();
+      }
+
+      void fillDomainParamsAdministrators(TID domain_id, Fred::Mailer::Parameters& params)
+      {
+        std::ostringstream sql;
+        sql << "SELECT cor.name "
+               "FROM domain_contact_map dcm "
+               "JOIN object_registry cor ON cor.id=dcm.contactid "
+               "WHERE dcm.domainid=" << domain_id << " AND "
+                     "dcm.role=1";
+        if (!db->ExecSelect(sql.str().c_str())) {
+            throw SQL_ERROR();
+        }
+        for (int db_row_idx = 0; db_row_idx < db->GetSelectRows(); ++db_row_idx) {
+            params["administrators." + boost::lexical_cast<std::string>(db_row_idx)] = db->GetFieldValue(db_row_idx, 0);
+        }
+        db->FreeSelect();
+      }
+
       void fillDomainParamsHistory(
-        TID domain, ptime stamp,
+        TID domain_id,
+        ptime stamp,
         Fred::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
           try
           {
             std::ostringstream sql;
-            sql << "SELECT dom.name, cor.name, nor.name, r.handle, "
-                          "eh.exdate, dh.exdate, "
-                          "dh.exdate::date + "
-                              "(SELECT val || ' day' FROM enum_parameters "
-                               "WHERE id = " << EP_OUTZONE << ")::interval,"
-                          "dh.exdate::date + "
-                              "(SELECT val || ' day' FROM enum_parameters "
-                               "WHERE id = " << EP_DELETE << ")::interval "
-                   "FROM object_registry dom, "
-                        "object_history doh, "
-                        "registrar r, "
-                        "object_registry cor, "
-                        "domain_history dh "
-                   "LEFT JOIN object_registry nor ON (nor.id=dh.nsset) "
-                   "LEFT JOIN enumval_history eh ON (eh.historyid=dh.historyid) "
-                   "WHERE dom.historyid=doh.historyid AND doh.clid=r.id AND "
-                         "dom.historyid=dh.historyid AND dh.registrant=cor.id AND "
-                         "dom.id=" << domain;
+            sql << "SELECT dobr.name,cobr.name,"
+                          "(SELECT name FROM object_registry WHERE id=dh.nsset),"
+                          "r.handle,"
+                          "(SELECT exdate FROM enumval_history WHERE historyid=dobr.historyid),"
+                          "dh.exdate,"
+                          "dh.exdate::date+"
+                              "(SELECT val||'day' FROM enum_parameters "
+                               "WHERE id=" << EP_OUTZONE << ")::interval,"
+                          "dh.exdate::date+"
+                              "(SELECT val||'day' FROM enum_parameters "
+                               "WHERE id=" << EP_DELETE << ")::interval,"
+                          "(SELECT fqdn FROM zone WHERE id=dh.zone) "
+                   "FROM object_registry dobr "
+                   "JOIN object_history doh ON doh.historyid=dobr.historyid "
+                   "JOIN registrar r ON r.id=doh.clid "
+                   "JOIN domain_history dh ON dh.historyid=dobr.historyid "
+                   "JOIN object_registry cobr ON cobr.id=dh.registrant "
+                   "WHERE dobr.id=" << domain_id;
             if (!db->ExecSelect(sql.str().c_str()))
             {
                 throw SQL_ERROR();
@@ -254,6 +306,7 @@ namespace Fred
             params["domain"] = db->GetFieldValue(0,0);
             params["owner"] = db->GetFieldValue(0,1);
             params["nsset"] = db->GetFieldValue(0,2);
+            const std::string regHandle = db->GetFieldValue(0,3);
             const date val(MAKE_DATE(0,4));
             if (!val.is_special())
             {
@@ -265,12 +318,12 @@ namespace Fred
             params["dnsdate"] = to_iso_extended_string(dnsdate);
             const date exregdate(MAKE_DATE(0,7));
             params["exregdate"] = to_iso_extended_string(exregdate);
+            params["zone"] = db->GetFieldValue(0, 8);
+            db->FreeSelect();
+            // fill information about registrar, query must be closed
             const date day_before_exregdate = exregdate - boost::gregorian::date_duration(1);
             params["day_before_exregdate"] = to_iso_extended_string(day_before_exregdate);
             params["statechangedate"] = to_iso_extended_string(stamp.date());
-            const std::string regHandle = db->GetFieldValue(0,3);
-            db->FreeSelect();
-            // fill information about registrar, query must be closed
 
             const Registrar::Registrar::AutoPtr regbyhandle(rm->getRegistrarByHandle(regHandle));
 
@@ -289,6 +342,7 @@ namespace Fred
               }
             }
             params["registrar"] = reg.str();
+            this->fillDomainParamsAdministratorsHistory(domain_id, params);
           }//try
           catch (...)
           {
@@ -298,12 +352,13 @@ namespace Fred
       }//fillDomainParamsHistory
 
       void fillDomainParams(
-        TID domain, ptime stamp,
+        TID domain_id,
+        ptime stamp,
         Fred::Mailer::Parameters& params
       ) throw (SQL_ERROR)
       {
         const std::auto_ptr<Fred::Domain::List> dlist(dm->createList());
-        dlist->setIdFilter(domain);
+        dlist->setIdFilter(domain_id);
         dlist->reload();
         if (dlist->getCount() != 1)
         {
@@ -342,6 +397,9 @@ namespace Fred
           }
         }
         params["registrar"] = reg.str();
+        params["zone"] = this->getParamZone(d->getZoneId());
+        db->FreeSelect();
+        this->fillDomainParamsAdministrators(domain_id, params);
       }
 
       void fillSimpleObjectParams(
