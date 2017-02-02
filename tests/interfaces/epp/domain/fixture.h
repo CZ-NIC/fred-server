@@ -407,7 +407,7 @@ struct HasDataForDomainUpdate : HasInfoDomainData {
 
     HasDataForDomainUpdate()
         : new_registrant_handle_("REGISTRANT2"),
-          new_auth_info_pw_("authinfo"),
+          new_auth_info_pw_(" auth info "),
           new_nsset_handle_("NSSET2"),
           new_keyset_handle_("KEYSET2")
     {
