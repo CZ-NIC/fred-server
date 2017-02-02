@@ -293,6 +293,9 @@ struct HasDomainData : HasInfoRegistrarData {
     const std::string fqdn1;
     const std::string fqdn2;
 
+    const std::string authinfopw1;
+    const std::string authinfopw2;
+
     Epp::DomainCreateInputData domain1_create_input_data;
     Epp::DomainCreateInputData domain2_create_input_data;
 
@@ -318,12 +321,15 @@ struct HasDomainData : HasInfoRegistrarData {
     , fqdn1("testdomain1.cz")
     , fqdn2("testdomain2.cz")
 
-    , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, boost::optional<std::string>("transferheslo"),
+    , authinfopw1("transferheslo")
+    , authinfopw2("transferheslo")
+
+    , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw1),
         Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
         Util::vector_of<std::string>(contact2)(contact3),
         std::vector<Epp::ENUMValidationExtension>())
 
-    , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, boost::optional<std::string>("transferheslo"),
+    , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw2),
             Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
             Util::vector_of<std::string>(contact2)(contact3),
             std::vector<Epp::ENUMValidationExtension>())
@@ -386,6 +392,10 @@ struct HasInfoDomainDataOfDomainWithInvalidFqdn : HasInfoDomainData {
 };
 
 struct HasDataForDomainUpdate : HasInfoDomainData {
+    const std::string new_registrant_handle_;
+    const std::string new_auth_info_pw_;
+    const std::string new_nsset_handle_;
+    const std::string new_keyset_handle_;
     Optional<std::string> registrant_chg_;
     Optional<std::string> auth_info_pw_chg_;
     Optional<Nullable<std::string> > nsset_chg_;
@@ -395,11 +405,15 @@ struct HasDataForDomainUpdate : HasInfoDomainData {
     std::vector<std::string> tmpcontacts_rem_;
     std::vector<Epp::ENUMValidationExtension> enum_validation_list_;
 
-    HasDataForDomainUpdate() {
+    HasDataForDomainUpdate()
+        : new_registrant_handle_("REGISTRANT2"),
+          new_auth_info_pw_("authinfo"),
+          new_nsset_handle_("NSSET2"),
+          new_keyset_handle_("KEYSET2")
+    {
         namespace ip = boost::asio::ip;
 
-        const std::string registrant_handle = "REGISTRANT2";
-        Fred::CreateContact(registrant_handle, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateContact(new_registrant_handle_, info_registrar_data_.handle).exec(ctx);
 
         const std::string admin_handle2 = "ADMIN2";
         Fred::CreateContact(admin_handle2, info_registrar_data_.handle).exec(ctx);
@@ -409,8 +423,7 @@ struct HasDataForDomainUpdate : HasInfoDomainData {
         const std::string tech_handle = "TECH2";
         Fred::CreateContact(tech_handle, info_registrar_data_.handle).exec(ctx);
 
-        const std::string nsset_handle = "NSSET2";
-        Fred::CreateNsset(nsset_handle, info_registrar_data_.handle)
+        Fred::CreateNsset(new_nsset_handle_, info_registrar_data_.handle)
         .set_tech_contacts(Util::vector_of<std::string>(tech_handle))
         .set_dns_hosts(Util::vector_of<Fred::DnsHost>
             (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.3"))(ip::address::from_string("11.1.1.3"))))
@@ -418,19 +431,15 @@ struct HasDataForDomainUpdate : HasInfoDomainData {
             )
         .exec(ctx);
 
-        const std::string keyset_handle = "KEYSET2";
-        Fred::CreateKeyset(keyset_handle, info_registrar_data_.handle)
+        Fred::CreateKeyset(new_keyset_handle_, info_registrar_data_.handle)
             .set_tech_contacts( boost::assign::list_of(tech_handle) )
             .exec(ctx);
 
-        const std::string auth_info_pw = "authinfo";
+        registrant_chg_ = Optional<std::string>(new_registrant_handle_);
+        auth_info_pw_chg_ = Optional<std::string>(new_auth_info_pw_);
 
-
-        registrant_chg_ = Optional<std::string>(registrant_handle);
-        auth_info_pw_chg_ = Optional<std::string>(auth_info_pw);
-
-        nsset_chg_ = Optional<Nullable<std::string> >(nsset_handle);
-        keyset_chg_ = Optional<Nullable<std::string> >(keyset_handle);
+        nsset_chg_ = Optional<Nullable<std::string> >(new_nsset_handle_);
+        keyset_chg_ = Optional<Nullable<std::string> >(new_keyset_handle_);
 
         admin_contacts_add_ = Util::vector_of<std::string>
             (admin_handle2)
