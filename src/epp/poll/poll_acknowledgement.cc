@@ -44,9 +44,9 @@ PollAcknowledgementOutputData poll_acknowledgement(
     Database::ParamQuery query;
     query("UPDATE message m SET seen='t' WHERE id=")
         .param_bigint(_message_id)(" AND clid=")
-        .param_bigint(_registrar_id)(" RETURNING (SELECT COUNT(*) FROM message WHERE clid=")
-        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen), (SELECT MIN(id) FROM message WHERE clid=")
-        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen)");
+        .param_bigint(_registrar_id)(" RETURNING "
+         "(SELECT COUNT(*) FROM message WHERE clid=m.clid AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen),"
+         "(SELECT MIN(id) FROM message WHERE clid=m.clid AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen)");
     const Database::Result query_result = _ctx.get_conn().exec_params(query);
     if(query_result.size() != 1)
     {
