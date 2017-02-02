@@ -503,13 +503,15 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
+    const std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn);
+
     Fred::OperationContextCreator ctx;
     try
     {
-        if (::Whois::nameserver_exists(fqdn,ctx))
+        if (::Whois::nameserver_exists(no_root_dot_fqdn, ctx))
         {
             NameServer temp;
-            temp.fqdn = fqdn;
+            temp.fqdn = no_root_dot_fqdn;
             /*
              * Because of grouping nameservers in NSSet we don't include
              * IP address in output (given nameserver can be in different
@@ -521,7 +523,7 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
         }
         else
         {
-            if (Fred::CheckDomain(fqdn).is_invalid_syntax(ctx))
+            if (Fred::CheckDomain(no_root_dot_fqdn).is_invalid_syntax(ctx))
             {
                 throw InvalidHandle();
             }
