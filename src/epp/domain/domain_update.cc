@@ -93,6 +93,15 @@ LocalizedSuccessResponse domain_update(
             _lang
         );
 
+    } catch(const ObjectDoesNotExist& ) {
+            Fred::OperationContextCreator exception_localization_ctx;
+            throw create_localized_fail_response(
+                exception_localization_ctx,
+                Response::object_not_exist,
+                std::set<Error>(),
+                _lang
+            );
+
     } catch(const NonexistentHandle&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
