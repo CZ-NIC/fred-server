@@ -47,9 +47,6 @@ CreateDomainResult create_domain(
         static_cast<std::string>(_ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
 
     // warning: timestamp conversion using local system timezone
-    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
-    const boost::gregorian::date current_local_date = current_local_time.date();
-
     // check registrar logged in
     if (_registrar_id == 0) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
@@ -100,6 +97,9 @@ CreateDomainResult create_domain(
     // get zone data
     const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
             Fred::Zone::rem_trailing_dot(_data.fqdn));
+
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
 
     // check registrar zone access permission
     if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id,

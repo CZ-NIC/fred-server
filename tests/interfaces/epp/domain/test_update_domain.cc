@@ -180,7 +180,7 @@ BOOST_FIXTURE_TEST_CASE(fail_invalid_zone, HasInfoDomainDataOfNonexistentDomain)
             Epp::Domain::UpdateDomainInputData(
                 info_domain_data_.fqdn + "c",
                 Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // auth_info_pw_chg
+                Optional<std::string>(), // authinfopw_chg
                 Optional<Nullable<std::string> >(), // nsset_chg
                 Optional<Nullable<std::string> >(), // keyset_chg
                 std::vector<std::string>(), // admin_contacts_add
@@ -403,7 +403,13 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForUpdateDomain)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForDomainUpdate)
+bool fail_existing_fqdn_but_spaces_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
+BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForUpdateDomain)
 {
     BOOST_REQUIRE(admin_contacts_add_.size() == 2);
     BOOST_REQUIRE(admin_contacts_rem_.size() == 1);
@@ -411,23 +417,25 @@ BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForDomainUpdate)
 
     const std::string fqdn_with_spaces("  " + info_domain_data_.fqdn + "  ");
 
-    BOOST_CHECK_THROW(
+    BOOST_CHECK_EXCEPTION(
         Epp::Domain::update_domain(
             ctx,
-            fqdn_with_spaces,
-            Optional<std::string>(new_registrant_handle_),
-            Optional<std::string>(new_auth_info_pw_),
-            Optional<Nullable<std::string> >(new_nsset_handle_),
-            Optional<Nullable<std::string> >(new_keyset_handle_),
-            admin_contacts_add_,
-            admin_contacts_rem_,
-            std::vector<std::string>(), // tmpcontacts_rem
-            std::vector<Epp::ENUMValidationExtension>(), // enum_validation_list
+            Epp::Domain::UpdateDomainInputData(
+                fqdn_with_spaces,
+                Optional<std::string>(new_registrant_handle_),
+                Optional<std::string>(new_authinfopw_),
+                Optional<Nullable<std::string> >(new_nsset_handle_),
+                Optional<Nullable<std::string> >(new_keyset_handle_),
+                admin_contacts_add_,
+                admin_contacts_rem_,
+                std::vector<std::string>(), // tmpcontacts_rem
+                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
             info_registrar_data_.id, // registrar_id
             Optional<unsigned long long>(), // logd_request_id
             rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
         ),
-        Epp::ObjectDoesNotExist
+        Epp::EppResponseFailure,
+        fail_existing_fqdn_but_spaces_exception
     );
 }
 

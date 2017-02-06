@@ -217,6 +217,17 @@ unwrap_string_for_change_to_Optional_string(const char* _src)
 }
 
 Optional<std::string>
+unwrap_string_for_change_to_Optional_string_no_trim(const char* _src)
+{
+    const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
+
+    return
+        unwrapped_src.empty()
+        ? Optional<std::string>() // do not set
+        : unwrapped_src;
+}
+
+Optional<std::string>
 unwrap_string_for_change_or_remove_to_Optional_string(const char* _src)
 {
     const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
@@ -231,6 +242,23 @@ unwrap_string_for_change_or_remove_to_Optional_string(const char* _src)
         : unwrapped_src.at(0) == char_for_value_deleting
             ? std::string() // set empty
             : boost::trim_copy(unwrapped_src);
+}
+
+Optional<std::string>
+unwrap_string_for_change_or_remove_to_Optional_string_no_trim(const char* _src)
+{
+    const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
+
+    /* Defined by convention. Could be substituted by more explicit means in IDL interface
+     * (like using _add and _rem elements, not just _chg for all operations). */
+    static const char char_for_value_deleting = '\b';
+
+    return
+        unwrapped_src.empty()
+        ? Optional<std::string>() // do not set
+        : unwrapped_src.at(0) == char_for_value_deleting
+            ? std::string() // set empty
+            : unwrapped_src;
 }
 
 void

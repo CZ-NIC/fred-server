@@ -35,8 +35,6 @@ unsigned long long delete_domain(
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
-
     Fred::Zone::Data zone_data;
     try {
         zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
@@ -49,6 +47,8 @@ unsigned long long delete_domain(
 
         throw;
     }
+
+    boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
     if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));

@@ -48,6 +48,9 @@ namespace Corba {
 Optional<Nullable<std::string> >
 unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src);
 
+Optional<Nullable<std::string> >
+unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(const char* _src);
+
 /**
  * @returns data ordered the same way as input fqdns
  */

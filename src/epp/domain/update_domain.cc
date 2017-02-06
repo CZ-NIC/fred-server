@@ -70,8 +70,6 @@ unsigned long long update_domain(
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    const boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
-
     //check fqdn has known zone
     Fred::Zone::Data zone_data;
     try {

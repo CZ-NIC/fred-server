@@ -65,6 +65,9 @@ wrap_Nullable_boost_posix_time_ptime_to_string(const Nullable<boost::posix_time:
 Optional<std::string>
 unwrap_string_for_change_to_Optional_string(const char* _src);
 
+Optional<std::string>
+unwrap_string_for_change_to_Optional_string_no_trim(const char* _src);
+
 /**
  * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
  *
@@ -74,6 +77,9 @@ unwrap_string_for_change_to_Optional_string(const char* _src);
  */
 Optional<std::string>
 unwrap_string_for_change_or_remove_to_Optional_string(const char* _src);
+
+Optional<std::string>
+unwrap_string_for_change_or_remove_to_Optional_string_no_trim(const char* _src);
 
 std::vector<std::string>
 unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);

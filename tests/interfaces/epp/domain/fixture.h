@@ -353,12 +353,12 @@ struct HasDomainData : HasInfoRegistrarData {
     , authinfopw2("transferheslo")
 
     , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw1),
-        Epp::Domain::DomainRegistrationTime(1, Epp::DomainRegistrationTime::Unit::year),
+        Epp::Domain::DomainRegistrationTime(1, Epp::Domain::DomainRegistrationTime::Unit::year),
         Util::vector_of<std::string>(contact2)(contact3),
         std::vector<Epp::Domain::EnumValidationExtension>())
 
     , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw2),
-            Epp::Domain::DomainRegistrationTime(1, Epp::DomainRegistrationTime::Unit::year),
+            Epp::Domain::DomainRegistrationTime(1, Epp::Domain::DomainRegistrationTime::Unit::year),
             Util::vector_of<std::string>(contact2)(contact3),
             std::vector<Epp::Domain::EnumValidationExtension>())
 
@@ -426,7 +426,7 @@ struct HasInfoDomainDataOfDomainWithInvalidFqdn : HasInfoDomainData {
 
 struct HasDataForUpdateDomain : HasInfoDomainData {
     const std::string new_registrant_handle_;
-    const std::string new_auth_info_pw_;
+    const std::string new_authinfopw_;
     const std::string new_nsset_handle_;
     const std::string new_keyset_handle_;
     Optional<std::string> registrant_chg_;
@@ -438,9 +438,9 @@ struct HasDataForUpdateDomain : HasInfoDomainData {
     std::vector<std::string> tmpcontacts_rem_;
     std::vector<Epp::Domain::EnumValidationExtension> enum_validation_list_;
 
-    HasDataForUpdateDomain() {
+    HasDataForUpdateDomain()
         : new_registrant_handle_("REGISTRANT2"),
-          new_auth_info_pw_(" auth info "),
+          new_authinfopw_(" auth info "),
           new_nsset_handle_("NSSET2"),
           new_keyset_handle_("KEYSET2")
     {
