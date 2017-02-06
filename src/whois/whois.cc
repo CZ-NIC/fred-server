@@ -740,16 +740,12 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
     {
         try
         {
-            if (!Fred::Domain::is_rfc1123_compliant_host_name(handle)) {
+            if (handle.empty() || (handle.length() > 255)) {
                 throw InvalidLabel();
             }
             if (check_domain.is_bad_zone(ctx))
             {
                 throw UnmanagedZone();
-            }
-            if (check_domain.is_invalid_syntax(ctx))
-            {
-                throw InvalidLabel();
             }
             if (check_domain.is_bad_length(ctx))
             {
