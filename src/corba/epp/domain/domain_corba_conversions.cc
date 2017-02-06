@@ -11,7 +11,6 @@
 #include "util/optional_value.h"
 
 #include <boost/optional.hpp>
-#include <boost/algorithm/string/trim.hpp>
 
 #include <map>
 #include <set>
@@ -22,23 +21,6 @@ namespace Corba {
 
 Optional<Nullable<std::string> >
 unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src)
-{
-    const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
-
-    /* Defined by convention. Could be substituted by more explicit means in IDL interface
-     * (like using _add and _rem elements, not just _chg for all operations). */
-    static const char char_for_value_deleting = '\b';
-
-    return
-        unwrapped_src.empty()
-        ? Optional<Nullable<std::string> >() // do not set
-        : unwrapped_src.at(0) == char_for_value_deleting
-            ? Optional<Nullable<std::string> >(Nullable<std::string>()) // set NULL
-            : boost::trim_copy(unwrapped_src);
-}
-
-Optional<Nullable<std::string> >
-unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(const char* _src)
 {
     const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
 
