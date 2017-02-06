@@ -277,6 +277,34 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForDomainUpdate)
     );
 }
 
+BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForDomainUpdate)
+{
+    BOOST_REQUIRE(admin_contacts_add_.size() == 2);
+    BOOST_REQUIRE(admin_contacts_rem_.size() == 1);
+    const bool rifd_epp_update_domain_keyset_clear = false;
+
+    const std::string fqdn_with_spaces("  " + info_domain_data_.fqdn + "  ");
+
+    BOOST_CHECK_THROW(
+        Epp::Domain::domain_update_impl(
+            ctx,
+            fqdn_with_spaces,
+            Optional<std::string>(new_registrant_handle_),
+            Optional<std::string>(new_auth_info_pw_),
+            Optional<Nullable<std::string> >(new_nsset_handle_),
+            Optional<Nullable<std::string> >(new_keyset_handle_),
+            admin_contacts_add_,
+            admin_contacts_rem_,
+            std::vector<std::string>(), // tmpcontacts_rem
+            std::vector<Epp::ENUMValidationExtension>(), // enum_validation_list
+            info_registrar_data_.id, // registrar_id
+            Optional<unsigned long long>(), // logd_request_id
+            rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
+        ),
+        Epp::ObjectDoesNotExist
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE(ok, HasDataForDomainUpdate)
 {
     BOOST_REQUIRE(admin_contacts_add_.size() == 2);

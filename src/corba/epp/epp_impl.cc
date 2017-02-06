@@ -2915,10 +2915,10 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
             Corba::wrap_response(
                 Epp::Domain::domain_update(
                     Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
-                    Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg),
-                    Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw_chg),
-                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_nsset_chg),
-                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_keyset_chg),
+                    Corba::unwrap_string_for_change_to_Optional_string_no_trim(_registrant_chg),
+                    Corba::unwrap_string_for_change_or_remove_to_Optional_string_no_trim(_auth_info_pw_chg),
+                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(_nsset_chg),
+                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(_keyset_chg),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_add),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_rem),
                     Corba::unwrap_ccreg_admincontacts_to_vector_string(_tmpcontacts_rem),
