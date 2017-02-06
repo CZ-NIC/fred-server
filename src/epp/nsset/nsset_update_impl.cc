@@ -233,13 +233,6 @@ unsigned long long nsset_update_impl(
                 const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(
                         _data.dns_hosts_rem.at(i).fqdn);
 
-                if(!Fred::Domain::is_rfc1123_compliant_host_name(_data.dns_hosts_rem.at(i).fqdn))
-                {
-                    ex.add(Error::of_vector_parameter(Param::nsset_dns_name_rem,
-                        boost::numeric_cast<unsigned short>(i),
-                        Reason::bad_dns_name));
-                }
-
                 //dns host fqdn to be removed is NOT assigned to nsset
                 if(nsset_dns_host_fqdn.find(lower_dnshost_fqdn) == nsset_dns_host_fqdn.end())
                 {
