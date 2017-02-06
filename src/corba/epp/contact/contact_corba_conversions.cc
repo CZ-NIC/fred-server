@@ -31,6 +31,25 @@ is_contact_change_string_meaning_not_to_touch(const char *value)
 }
 
 boost::optional<Nullable<std::string> >
+convert_contact_update_or_delete_string(const char* src)
+{
+    const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(src);
+    if (src_has_special_meaning_to_delete) {
+        return Nullable< std::string >();
+    }
+    const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
+    if (src_has_special_meaning_not_to_touch) {
+        return boost::optional< Nullable< std::string > >();
+    }
+    const std::string value_to_set = Corba::unwrap_string(src);
+    const bool value_to_set_means_not_to_touch = value_to_set.empty();
+    if (value_to_set_means_not_to_touch) {
+        return boost::optional< Nullable< std::string > >();
+    }
+    return Nullable< std::string >(value_to_set);
+}
+
+boost::optional<Nullable<std::string> >
 convert_contact_update_or_delete_string_and_trim(const char* src)
 {
     const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(src);
@@ -151,7 +170,7 @@ unwrap_ContactChange(
     dst.vat               = convert_contact_update_or_delete_string_and_trim(src.VAT);
     dst.ident             = convert_contact_update_or_delete_string_and_trim(src.ident);
     dst.ident_type        = unwrap_identtyp(src.identtype);
-    dst.authinfopw        = convert_contact_update_or_delete_string_and_trim(src.AuthInfoPw);
+    dst.authinfopw        = convert_contact_update_or_delete_string(src.AuthInfoPw);
     dst.disclose          = unwrap_ContactChange_to_ContactDisclose(src);
 }
 
