@@ -3295,7 +3295,7 @@ ccReg_EPP_i::KeySetUpdate(
         const std::string keyset_handle =
             Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
         const Optional< std::string > auth_info_pw =
-            Corba::unwrap_string_for_change_to_Optional_string(_auth_info_pw);
+            Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw);
         const std::vector< std::string > tech_contacts_add =
             Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add);
         const std::vector< std::string > tech_contacts_rem =
