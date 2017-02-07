@@ -45,9 +45,9 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
     SessionLang::Enum _lang,
     const std::string& _server_transaction_handle)
 {
-    Fred::OperationContextCreator ctx;
-
     try {
+        Fred::OperationContextCreator ctx;
+
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
@@ -61,22 +61,17 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
-        const PollAcknowledgementOutputData poll_acknowledgement_output_data = poll_acknowledgement(ctx, message_id, _registrar_id);
+        const PollAcknowledgementOutputData output_data = poll_acknowledgement(ctx, message_id, _registrar_id);
 
         std::string oldest_unseen_message_id;
-        if (poll_acknowledgement_output_data.number_of_unseen_messages > 0)
+        if (output_data.number_of_unseen_messages > 0)
         {
-            try {
-                oldest_unseen_message_id = boost::lexical_cast<std::string>(poll_acknowledgement_output_data.oldest_unseen_message_id);
-            }
-            catch (const boost::bad_lexical_cast&) {
-                throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
-            }
+            oldest_unseen_message_id = boost::lexical_cast<std::string>(output_data.oldest_unseen_message_id);
         }
 
-        const PollAcknowledgementLocalizedOutputData poll_acknowledgement_localized_output_data =
+        const PollAcknowledgementLocalizedOutputData localized_output_data =
             PollAcknowledgementLocalizedOutputData(
-                poll_acknowledgement_output_data.number_of_unseen_messages,
+                output_data.number_of_unseen_messages,
                 oldest_unseen_message_id);
 
         PollAcknowledgementLocalizedResponse ret(
@@ -84,12 +79,13 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
                 ctx,
                 EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                 _lang),
-            poll_acknowledgement_localized_output_data);
+            localized_output_data);
 
         ctx.commit_transaction();
         return ret;
     }
     catch (const EppResponseFailure& e) {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
         throw EppResponseFailureLocalized(
             ctx,
@@ -97,6 +93,7 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
             _lang);
     }
     catch (const std::exception& e) {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
         throw EppResponseFailureLocalized(
             ctx,
@@ -104,6 +101,7 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
             _lang);
     }
     catch (...) {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("unexpected exception in poll_acknowledgement_localized function"));
         throw EppResponseFailureLocalized(
             ctx,

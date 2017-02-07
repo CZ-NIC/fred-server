@@ -39,32 +39,36 @@ PollAcknowledgementOutputData poll_acknowledgement(
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    PollAcknowledgementOutputData poll_acknowledgement_output_data;
-
-    Database::ParamQuery query;
-    query("UPDATE message m SET seen='t' WHERE id=")
+    Database::ParamQuery sql_command;
+    sql_command("UPDATE message m SET seen=true WHERE id=")
         .param_bigint(_message_id)(" AND clid=")
         .param_bigint(_registrar_id)(" RETURNING "
          "(SELECT COUNT(*) FROM message WHERE clid=m.clid AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen),"
          "(SELECT MIN(id) FROM message WHERE clid=m.clid AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen)");
-    const Database::Result query_result = _ctx.get_conn().exec_params(query);
-    if(query_result.size() != 1)
+    const Database::Result sql_command_result = _ctx.get_conn().exec_params(sql_command);
+    if (sql_command_result.size() == 0)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
+    else if (sql_command_result.size() > 1)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+    }
+
+    PollAcknowledgementOutputData poll_acknowledgement_output_data;
 
     poll_acknowledgement_output_data.number_of_unseen_messages =
-        static_cast<unsigned long long>(query_result[0][0]);
+        static_cast<unsigned long long>(sql_command_result[0][0]);
     if(poll_acknowledgement_output_data.number_of_unseen_messages == 0)
     {
         return poll_acknowledgement_output_data;
     }
 
     poll_acknowledgement_output_data.oldest_unseen_message_id =
-        static_cast<unsigned long long>(query_result[0][1]);
+        static_cast<unsigned long long>(sql_command_result[0][1]);
 
     return poll_acknowledgement_output_data;
 }
 
 } // namespace Epp::Poll
-} // namespace Poll
+} // namespace Epp

@@ -21,8 +21,6 @@
 
 #include "src/fredlib/opcontext.h"
 
-#include <string>
-
 namespace Epp {
 namespace Poll {
 
