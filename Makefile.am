@@ -2777,6 +2777,7 @@ tests_interfaces_test_public_request_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
 		$(BOOST_DATE_TIME_LIB)\
 		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
