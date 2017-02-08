@@ -30,6 +30,7 @@
 #include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 
+#include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
 

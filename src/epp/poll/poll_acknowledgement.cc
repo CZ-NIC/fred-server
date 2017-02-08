@@ -24,8 +24,6 @@
 #include "src/epp/impl/epp_result_success.h"
 #include "util/db/param_query_composition.h"
 
-#include <boost/lexical_cast.hpp>
-
 namespace Epp {
 namespace Poll {
 
