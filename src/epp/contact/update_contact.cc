@@ -1,6 +1,7 @@
 #include "src/epp/contact/update_contact.h"
 
 #include "src/epp/contact/contact_change.h"
+#include "src/epp/contact/impl/util.h"
 #include "src/epp/impl/disclose_policy.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_code.h"
@@ -446,9 +447,11 @@ unsigned long long update_contact(
         }
     }
 
+    const ContactChange change = trim(_change);
+
     // when deleting or not-changing, no check of data is needed
-    if (ContactChange::does_value_mean< ContactChange::Value::to_set >(_change.country_code)) {
-        if (!is_country_code_valid(_ctx, ContactChange::get_value(_change.country_code))) {
+    if (ContactChange::does_value_mean< ContactChange::Value::to_set >(change.country_code)) {
+        if (!is_country_code_valid(_ctx, ContactChange::get_value(change.country_code))) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
                                              .add_extended_error(
                                                      EppExtendedError::of_scalar_parameter(
@@ -461,17 +464,17 @@ unsigned long long update_contact(
     {
         Fred::UpdateContactByHandle update(_contact_handle, logged_in_registrar.handle);
 
-        set_ContactUpdate_member(_change.name,         update, &Fred::UpdateContactByHandle::set_name);
-        set_ContactUpdate_member(_change.organization, update, &Fred::UpdateContactByHandle::set_organization);
-        set_ContactUpdate_member(_change.telephone,    update, &Fred::UpdateContactByHandle::set_telephone);
-        set_ContactUpdate_member(_change.fax,          update, &Fred::UpdateContactByHandle::set_fax);
-        set_ContactUpdate_member(_change.email,        update, &Fred::UpdateContactByHandle::set_email);
-        set_ContactUpdate_member(_change.notify_email, update, &Fred::UpdateContactByHandle::set_notifyemail);
-        set_ContactUpdate_member(_change.vat,          update, &Fred::UpdateContactByHandle::set_vat);
-        set_ContactUpdate_member(_change.authinfopw, update, &Fred::UpdateContactByHandle::set_authinfo);
+        set_ContactUpdate_member(change.name,         update, &Fred::UpdateContactByHandle::set_name);
+        set_ContactUpdate_member(change.organization, update, &Fred::UpdateContactByHandle::set_organization);
+        set_ContactUpdate_member(change.telephone,    update, &Fred::UpdateContactByHandle::set_telephone);
+        set_ContactUpdate_member(change.fax,          update, &Fred::UpdateContactByHandle::set_fax);
+        set_ContactUpdate_member(change.email,        update, &Fred::UpdateContactByHandle::set_email);
+        set_ContactUpdate_member(change.notify_email, update, &Fred::UpdateContactByHandle::set_notifyemail);
+        set_ContactUpdate_member(change.vat,          update, &Fred::UpdateContactByHandle::set_vat);
+        set_ContactUpdate_member(change.authinfopw, update, &Fred::UpdateContactByHandle::set_authinfo);
 
         {
-            const Ident ident(_change.ident, _change.ident_type);
+            const Ident ident(change.ident, change.ident_type);
             if (ident.does_value_mean< ContactChange::Value::to_set >()) {
                 update.set_personal_id(ident.get());
             }
@@ -480,45 +483,45 @@ unsigned long long update_contact(
             }
         }
 
-        if (_change.disclose.is_initialized()) {
-            _change.disclose->check_validity();
-            set_ContactUpdate_discloseflag_address(_ctx, _change, contact_data_before_update, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::name         >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::organization >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::telephone    >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::fax          >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::email        >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::vat          >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::ident        >(*_change.disclose, update);
-            set_ContactUpdate_discloseflag< ContactDisclose::Item::notify_email >(*_change.disclose, update);
+        if (change.disclose.is_initialized()) {
+            change.disclose->check_validity();
+            set_ContactUpdate_discloseflag_address(_ctx, change, contact_data_before_update, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::name         >(*change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::organization >(*change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::telephone    >(*change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::fax          >(*change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::email        >(*change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::vat          >(*change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::ident        >(*change.disclose, update);
+            set_ContactUpdate_discloseflag< ContactDisclose::Item::notify_email >(*change.disclose, update);
         }
         else {
             const bool address_was_hidden = !contact_data_before_update.discloseaddress;
             if (address_was_hidden) {
                 const bool address_has_to_be_disclosed = should_address_be_disclosed(_ctx,
                                                                                      contact_data_before_update,
-                                                                                     _change);
+                                                                                     change);
                 if (address_has_to_be_disclosed) {
                     update.set_discloseaddress(true);
                 }
             }
         }
 
-        if (has_place_changed(_change, contact_data_before_update.place))
+        if (has_place_changed(change, contact_data_before_update.place))
         {
             Fred::Contact::PlaceAddress new_place;
-            switch (_change.streets.size())
+            switch (change.streets.size())
             {
-                case 3: set_data(_change.streets[2], new_place.street3);
-                case 2: set_data(_change.streets[1], new_place.street2);
-                case 1: set_data(_change.streets[0], new_place.street1);
+                case 3: set_data(change.streets[2], new_place.street3);
+                case 2: set_data(change.streets[1], new_place.street2);
+                case 1: set_data(change.streets[0], new_place.street1);
                 case 0: break;
                 default: throw std::runtime_error("Too many streets.");
             }
-            set_data(_change.city,              new_place.city);
-            set_data(_change.state_or_province, new_place.stateorprovince);
-            set_data(_change.postal_code,       new_place.postalcode);
-            set_data(_change.country_code,      new_place.country);
+            set_data(change.city,              new_place.city);
+            set_data(change.state_or_province, new_place.stateorprovince);
+            set_data(change.postal_code,       new_place.postalcode);
+            set_data(change.country_code,      new_place.country);
             update.set_place(new_place);
         }
 

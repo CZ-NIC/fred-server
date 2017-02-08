@@ -1595,6 +1595,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/create_contact_localized.h \
 		src/epp/contact/create_contact.cc \
 		src/epp/contact/create_contact.h \
+		src/epp/contact/impl/util.cc \
+		src/epp/contact/impl/util.h \
 		src/epp/contact/contact_change.cc \
 		src/epp/contact/update_contact_localized.cc \
 		src/epp/contact/update_contact_localized.h \
@@ -1620,6 +1622,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_disclose.h \
 		src/epp/contact/impl/post_contact_update_hooks.cc \
 		src/epp/contact/impl/post_contact_update_hooks.h \
+		src/epp/contact/impl/create_contact_input_data.cc \
+		src/epp/contact/impl/create_contact_input_data.h \
 		src/epp/domain/check_domain_localized.cc \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain.cc \

@@ -20,11 +20,14 @@
 #define CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
 
 #include "src/epp/contact/contact_disclose.h"
+#include "src/epp/contact/impl/util.h"
 #include "util/db/nullable.h"
+
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/optional.hpp>
 
 #include <string>
 #include <vector>
-#include <boost/optional.hpp>
 
 namespace Epp {
 namespace Contact {
@@ -74,6 +77,8 @@ struct ContactChange
     template < class T >
     static T get_value(const boost::optional< T > &_value);
 };
+
+ContactChange trim(const ContactChange& contact_change_);
 
 } // namespace Epp::Contact
 } // namespace Epp

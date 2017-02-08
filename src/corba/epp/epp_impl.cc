@@ -82,6 +82,7 @@
 
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/contact/delete_contact_localized.h"
+#include "src/epp/contact/impl/create_contact_input_data.h"
 #include "src/epp/contact/impl/post_contact_update_hooks.h"
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/transfer_contact_localized.h"

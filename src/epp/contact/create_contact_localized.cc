@@ -24,61 +24,6 @@
 namespace Epp {
 namespace Contact {
 
-namespace {
-
-std::string convert(const boost::optional<Nullable<std::string> >& src)
-{
-    return ContactChange::does_value_mean<ContactChange::Value::to_set>(src)
-           ? ContactChange::get_value(src)
-           : std::string();
-}
-
-std::string convert(const boost::optional<std::string>& src)
-{
-    return ContactChange::does_value_mean<ContactChange::Value::to_set>(src)
-           ? ContactChange::get_value(src)
-           : std::string();
-}
-
-std::vector<std::string> convert(const std::vector<boost::optional<Nullable<std::string> > >& src)
-{
-    std::vector<std::string> result;
-    result.reserve(src.size());
-    typedef std::vector<boost::optional<Nullable<std::string> > > VectorOfChangeData;
-    for (VectorOfChangeData::const_iterator data_ptr = src.begin(); data_ptr != src.end(); ++data_ptr) {
-        result.push_back(convert(*data_ptr));
-    }
-    return result;
-}
-
-} // namespace Epp::Contact::{anonymous}
-
-CreateContactInputData::CreateContactInputData(const ContactChange& src)
-:   name(convert(src.name)),
-    organization(convert(src.organization)),
-    streets(convert(src.streets)),
-    city(convert(src.city)),
-    state_or_province(convert(src.state_or_province)),
-    postal_code(convert(src.postal_code)),
-    country_code(convert(src.country_code)),
-    telephone(convert(src.telephone)),
-    fax(convert(src.fax)),
-    email(convert(src.email)),
-    notify_email(convert(src.notify_email)),
-    VAT(convert(src.vat)),
-    ident(convert(src.ident)),
-    identtype(src.ident_type),
-    authinfopw(
-        (src.authinfopw ? *src.authinfopw : Nullable<std::string>()).isnull()
-            ? boost::optional<std::string>()
-            : boost::optional<std::string>(convert(src.authinfopw))),
-    disclose(src.disclose)
-{
-    if (disclose.is_initialized()) {
-        disclose->check_validity();
-    }
-}
-
 CreateContactLocalizedResponse create_contact_localized(
         const std::string& _contact_handle,
         const CreateContactInputData& _create_contact_input_data,
