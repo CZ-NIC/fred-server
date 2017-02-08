@@ -747,10 +747,6 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             {
                 throw UnmanagedZone();
             }
-            if (check_domain.is_bad_length(ctx))
-            {
-                throw TooManyLabels();
-            }
             if (::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
                 return Domain(generate_obfuscate_domain_delete_candidate(handle));
@@ -778,6 +774,10 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                                 .exec( ctx, get_output_timezone() )
                                 .info_domain_data,
                             ctx);
+                }
+                if (check_domain.is_bad_length(ctx))
+                {
+                    throw TooManyLabels();
                 }
                 if (Fred::CheckDomain(handle).is_invalid_syntax(ctx))
                 {
