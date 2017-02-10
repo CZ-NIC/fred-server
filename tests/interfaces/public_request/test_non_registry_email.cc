@@ -35,98 +35,95 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
+BOOST_AUTO_TEST_SUITE(NonRegistryEmail)
 
-BOOST_AUTO_TEST_SUITE(TestNonRegistryEmail)
-
-struct non_registry_email_fixture : Test::Fixture::instantiate_db_template
+class non_registry_email_fixture : public Test::Fixture::instantiate_db_template
 {
-private:
-    Fred::OperationContextCreator ctx;
-
 public:
-    Fred::InfoContactData contact;
-    Fred::InfoNssetData nsset;
-    Fred::InfoDomainData domain;
-    Fred::InfoKeysetData keyset;
-    const std::string reason,
-                      email;
-    unsigned long long email_contact_id,
-                      post_contact_id,
-                       email_nsset_id,
-                      post_nsset_id,
-                       email_domain_id,
-                      post_domain_id,
-                       email_keyset_id,
-                      post_keyset_id;
-
     non_registry_email_fixture()
-    : ctx(),
-      contact(Test::contact::make(ctx)),
-      nsset(Test::nsset::make(ctx)),
-      domain(Test::domain::make(ctx)),
-      keyset(Test::keyset::make(ctx)),
-      reason("some reason"),
-      email("some@email.com")
+        : contact(Test::contact::make(ctx)),
+          nsset(Test::nsset::make(ctx)),
+          domain(Test::domain::make(ctx)),
+          keyset(Test::keyset::make(ctx)),
+          reason("some reason"),
+          email("some@email.com")
     {
         ctx.commit_transaction();
-        Registry::PublicRequestImpl::PublicRequest pr;
+        Registry::PublicRequestImpl pr;
         email_contact_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::contact,
+                Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
+                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
                 email);
         post_contact_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::contact,
+                Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
+                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
                 email);
         email_nsset_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::nsset,
+                Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
+                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
                 email);
         post_nsset_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::nsset,
+                Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
+                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
                 email);
         email_domain_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::domain,
+                Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
+                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
                 email);
         post_domain_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::domain,
+                Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
+                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
                 email);
         email_keyset_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::keyset,
+                Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
+                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
                 email);
         post_keyset_id = pr.create_authinfo_request_non_registry_email(
-                Fred::Object_Type::keyset,
+                Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
                 reason,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
+                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
                 email);
     }
+private:
+    Fred::OperationContextCreator ctx;
+public:
+    const Fred::InfoContactData contact;
+    const Fred::InfoNssetData nsset;
+    const Fred::InfoDomainData domain;
+    const Fred::InfoKeysetData keyset;
+    const std::string reason;
+    const std::string email;
+    unsigned long long email_contact_id;
+    unsigned long long post_contact_id;
+    unsigned long long email_nsset_id;
+    unsigned long long post_nsset_id;
+    unsigned long long email_domain_id;
+    unsigned long long post_domain_id;
+    unsigned long long email_keyset_id;
+    unsigned long long post_keyset_id;
 };
 
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_non_registry_email, non_registry_email_fixture)
@@ -154,35 +151,28 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_non_registry_email, non_registry_ema
 BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
 {
     BOOST_CHECK_THROW(
-            Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_non_registry_email(
-                Fred::Object_Type::contact,
+            Registry::PublicRequestImpl().create_authinfo_request_non_registry_email(
+                Registry::PublicRequestImpl::ObjectType::contact,
                 "test handle",
                 "some reason",
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
+                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
                 "some@email.com"),
-            Fred::UnknownObject);
+            Registry::PublicRequestImpl::ObjectNotFound);
 }
 
 BOOST_FIXTURE_TEST_CASE(invalid_email, non_registry_email_fixture)
 {
-    try
-    {
-        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_non_registry_email(
-                Fred::Object_Type::contact,
-                contact.handle,
-                reason,
-                Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
-                "wrongemail");
-        BOOST_ERROR("wrong email exception awaited");
-    }
-    catch (const Fred::CreatePublicRequest::Exception& e)
-    {
-        BOOST_CHECK(e.is_set_wrong_email());
-    }
+    BOOST_CHECK_THROW(
+            Registry::PublicRequestImpl().create_authinfo_request_non_registry_email(
+                    Registry::PublicRequestImpl::ObjectType::contact,
+                    contact.handle,
+                    reason,
+                    Optional<unsigned long long>(),
+                    Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+                    "wrongemail"),
+            Registry::PublicRequestImpl::InvalidContactEmail);
 }
 
-BOOST_AUTO_TEST_SUITE_END() // TestNonRegistryEmail
-
-BOOST_AUTO_TEST_SUITE_END() // TestPublicRequest
+BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest/NonRegistryEmail
+BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest

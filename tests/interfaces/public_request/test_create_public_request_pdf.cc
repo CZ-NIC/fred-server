@@ -21,8 +21,6 @@
 #include "src/fredlib/public_request/create_public_request.h"
 #include "src/fredlib/contact/info_contact_data.h"
 #include "src/fredlib/documents.h"
-// #include "src/fredlib/object_state/perform_object_state_request.h"
-// #include "src/fredlib/object/object_type.h"
 
 #include "tests/setup/fixtures_utils.h"
 #include "tests/setup/fixtures.h"
@@ -32,57 +30,54 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <ostream>
+#include <sstream>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
+BOOST_AUTO_TEST_SUITE(CreatePdf)
 
-BOOST_AUTO_TEST_SUITE(TestCreatePdf)
-
-struct create_pdf_fixture : Test::Fixture::instantiate_db_template
+class create_pdf_fixture : public Test::Fixture::instantiate_db_template
 {
-private:
-    Fred::OperationContextCreator ctx;
-
 public:
-    Fred::InfoContactData contact;
-    Registry::PublicRequestImpl::PublicRequest pr;
-
     create_pdf_fixture()
     : contact(Test::contact::make(ctx))
     {
         ctx.commit_transaction();
     }
+private:
+    Fred::OperationContextCreator ctx;
+public:
+    Fred::InfoContactData contact;
+    Registry::PublicRequestImpl pr;
 };
 
 class FakeGenerator : public Fred::Document::Generator
 {
-    std::ostream input;
 public:
-    FakeGenerator()
-    : input(std::cout.rdbuf()) {}
+    FakeGenerator() {}
 
     virtual ~FakeGenerator() {}
 
     virtual std::ostream& getInput()
     {
-        return input;
+        return buffer;
     }
 
     virtual unsigned long long closeInput()
     {
-        input.flush();
+        buffer.flush();
         return 0;
     }
+private:
+    std::ostringstream buffer;
 };
 
 class FakeManager : public Fred::Document::Manager
 {
+private:
     struct UnexpectedCall : std::exception
     {
-        virtual const char* what() const throw()
-        { return "method must not be called"; }
+        const char* what() const throw() { return "method must not be called"; }
     };
-
 public:
     virtual ~FakeManager() {}
 
@@ -95,7 +90,7 @@ public:
         {
             throw std::invalid_argument("only public request pdf may be created from current context");
         }
-        if (lang != "en" && lang != "cs")
+        if ((lang != "en") && (lang != "cs"))
         {
             throw std::invalid_argument("language code not recognized");
         }
@@ -104,42 +99,38 @@ public:
     }
 
     virtual std::auto_ptr<Fred::Document::Generator> createSavingGenerator(
-        Fred::Document::GenerationType type,
-        const std::string& filename,
-        unsigned filetype,
-        const std::string& lang) const
-    { throw UnexpectedCall(); }
+        Fred::Document::GenerationType, const std::string&, unsigned, const std::string&)const
+    {
+        throw UnexpectedCall();
+    }
 
     virtual void generateDocument(
-        Fred::Document::GenerationType type,
-        std::istream& input,
-        std::ostream& output,
-        const std::string& lang) const
-    { throw UnexpectedCall(); }
+        Fred::Document::GenerationType, std::istream&, std::ostream&, const std::string&)const
+    {
+        throw UnexpectedCall();
+    }
 
     virtual unsigned long long generateDocumentAndSave(
-        Fred::Document::GenerationType type,
-        std::istream& input,
-        const std::string& name,
-        unsigned filetype,
-        const std::string& lang) const
-    { throw UnexpectedCall(); }
+        Fred::Document::GenerationType, std::istream&, const std::string&, unsigned, const std::string&) const
+    {
+        throw UnexpectedCall();
+    }
 };
 
 BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
 {
     Fred::OperationContextCreator ctx;
     unsigned long long block_transfer_post = pr.create_block_unblock_request(
-            Fred::Object_Type::contact,
+            Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Registry::PublicRequestImpl::LETTER_WITH_AUTHENTICATED_SIGNATURE,
-            Registry::PublicRequestImpl::BLOCK_TRANSFER);
-    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
+            Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
+            Registry::PublicRequestImpl::LockRequestType::block_transfer);
     ctx.commit_transaction();
+    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     const std::string buffer_value = pr.create_public_request_pdf(
             block_transfer_post,
-            Registry::PublicRequestImpl::EN,
+            Registry::PublicRequestImpl::Language::en,
             manager).value;
     BOOST_MESSAGE(buffer_value);
 }
@@ -151,7 +142,7 @@ BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 123,
-                Registry::PublicRequestImpl::EN,
+                Registry::PublicRequestImpl::Language::en,
                 manager),
             Registry::PublicRequestImpl::ObjectNotFound);
 }
@@ -160,20 +151,19 @@ BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
 {
     Fred::OperationContextCreator ctx;
     unsigned long long block_transfer_email = pr.create_block_unblock_request(
-            Fred::Object_Type::contact,
+            Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Registry::PublicRequestImpl::EMAIL_WITH_QUALIFIED_CERTIFICATE,
-            Registry::PublicRequestImpl::BLOCK_TRANSFER);
+            Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+            Registry::PublicRequestImpl::LockRequestType::block_transfer);
     boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 block_transfer_email,
-                Registry::PublicRequestImpl::EN,
+                Registry::PublicRequestImpl::Language::en,
                 manager),
             Registry::PublicRequestImpl::InvalidPublicRequestType);
 }
 
-BOOST_AUTO_TEST_SUITE_END() // TestCreatePdf
-
-BOOST_AUTO_TEST_SUITE_END() // TestPublicRequest
+BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest/CreatePdf
+BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest

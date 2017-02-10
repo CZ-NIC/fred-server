@@ -10,39 +10,40 @@
 #include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "src/fredlib/public_request/info_public_request.h"
+#include "util/cfg/handle_registry_args.h"
+#include "util/cfg/config_handler_decl.h"
+#include "util/corba_wrapper_decl.h"
 #include "util/types/stringify.h"
 #include "util/db/query_param.h"
 
 #include <boost/format.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 
 #include <stdexcept>
 #include <sstream>
 #include <string>
 
-namespace Registry
-{
-namespace PublicRequestImpl
-{
+namespace Registry {
+namespace PublicRequestType {
+namespace {
 
-class EnumPublicRequestType : public Fred::PublicRequestTypeIface
+class Common : public Fred::PublicRequestTypeIface
 {
 public:
-    const Fred::PublicRequestTypeIface& iface() const { return *this; }
-
+    const Fred::PublicRequestTypeIface& iface() const { return *static_cast<const Fred::PublicRequestTypeIface*>(this); }
 private:
     PublicRequestTypes get_public_request_types_to_cancel_on_update(
-        Fred::PublicRequest::Status::Enum _old_status,
-        Fred::PublicRequest::Status::Enum _new_status) const
+            Fred::PublicRequest::Status::Enum _old_status,
+            Fred::PublicRequest::Status::Enum _new_status) const
     {
         return PublicRequestTypes();
     }
 };
 
-class AuthinfoAuto : public EnumPublicRequestType
+class AuthinfoAuto : public Common
 {
-public:
+private:
     std::string get_public_request_type() const { return "authinfo_auto_pif"; }
-
     PublicRequestTypes get_public_request_types_to_cancel_on_create() const
     {
         PublicRequestTypes res;
@@ -51,12 +52,10 @@ public:
     }
 };
 
-class AuthinfoEmail : public EnumPublicRequestType
+class AuthinfoEmail : public Common
 {
-public:
-    std::string get_public_request_type() const { return "authinfo_email_pif"; }
-
 private:
+    std::string get_public_request_type() const { return "authinfo_email_pif"; }
     PublicRequestTypes get_public_request_types_to_cancel_on_create() const
     {
         PublicRequestTypes res;
@@ -65,12 +64,10 @@ private:
     }
 };
 
-class AuthinfoPost : public EnumPublicRequestType
+class AuthinfoPost : public Common
 {
-public:
-    std::string get_public_request_type() const { return "authinfo_post_pif"; }
-
 private:
+    std::string get_public_request_type() const { return "authinfo_post_pif"; }
     PublicRequestTypes get_public_request_types_to_cancel_on_create() const
     {
         PublicRequestTypes res;
@@ -79,120 +76,114 @@ private:
     }
 };
 
-class BlockChangesEmail : public EnumPublicRequestType
+class BlockUnblockCommon : public Common
 {
-public:
-    std::string get_public_request_type() const { return "block_changes_email_pif"; }
-
 private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new BlockChangesEmail));
-        return res;
-    }
+    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
 };
 
-class BlockChangesPost : public EnumPublicRequestType
+struct Block
 {
-public:
-    std::string get_public_request_type() const { return "block_changes_post_pif"; }
-
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    struct Changes
     {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new BlockChangesPost));
-        return res;
-    }
+        class ByEmail : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "block_changes_email_pif"; }
+        };
+
+        class ByPost : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "block_changes_post_pif"; }
+        };
+    };
+
+    struct Transfer
+    {
+        class ByEmail : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "block_transfer_email_pif"; }
+        };
+
+        class ByPost : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "block_transfer_post_pif"; }
+        };
+    };
 };
 
-class BlockTransferEmail : public EnumPublicRequestType
+struct Unblock
 {
-public:
-    std::string get_public_request_type() const { return "block_transfer_email_pif"; }
-
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    struct Changes
     {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new BlockTransferEmail));
-        return res;
-    }
+        class ByEmail : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "unblock_changes_email_pif"; }
+        };
+
+        class ByPost : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "unblock_changes_post_pif"; }
+        };
+    };
+
+    struct Transfer
+    {
+        class ByEmail : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "unblock_transfer_email_pif"; }
+        };
+
+        class ByPost : public BlockUnblockCommon
+        {
+        private:
+            std::string get_public_request_type() const { return "unblock_transfer_post_pif"; }
+        };
+    };
 };
 
-class BlockTransferPost : public EnumPublicRequestType
+
+Fred::PublicRequestTypeIface::PublicRequestTypes BlockUnblockCommon::get_public_request_types_to_cancel_on_create()const
 {
-public:
-    std::string get_public_request_type() const { return "block_transfer_post_pif"; }
+    PublicRequestTypes res;
+    res.insert(IfacePtr(new Block::Changes::ByEmail));
+    res.insert(IfacePtr(new Block::Changes::ByPost));
+    res.insert(IfacePtr(new Block::Transfer::ByEmail));
+    res.insert(IfacePtr(new Block::Transfer::ByPost));
+    res.insert(IfacePtr(new Unblock::Changes::ByEmail));
+    res.insert(IfacePtr(new Unblock::Changes::ByPost));
+    res.insert(IfacePtr(new Unblock::Transfer::ByEmail));
+    res.insert(IfacePtr(new Unblock::Transfer::ByPost));
+    return res;
+}
 
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new BlockTransferPost));
-        return res;
-    }
-};
+}//namespace Registry::PublicRequestType::{anonymous}
+}//namespace Registry::PublicRequestType
 
-class UnblockChangesEmail : public EnumPublicRequestType
+namespace {
+
+Fred::Object_Type::Enum to_fred_object_type(PublicRequestImpl::ObjectType::Enum value)
 {
-public:
-    std::string get_public_request_type() const { return "unblock_changes_email_pif"; }
-
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    switch (value)
     {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new UnblockChangesEmail));
-        return res;
+        case PublicRequestImpl::ObjectType::contact: return Fred::Object_Type::contact;
+        case PublicRequestImpl::ObjectType::nsset: return Fred::Object_Type::nsset;
+        case PublicRequestImpl::ObjectType::domain: return Fred::Object_Type::domain;
+        case PublicRequestImpl::ObjectType::keyset: return Fred::Object_Type::keyset;
     }
-};
+    throw std::logic_error("unexpected PublicRequestImpl::ObjectType::Enum value");
+}
 
-class UnblockChangesPost : public EnumPublicRequestType
-{
-public:
-    std::string get_public_request_type() const { return "unblock_changes_post_pif"; }
+}//namespace Registry::{anonymous}
 
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new UnblockChangesPost));
-        return res;
-    }
-};
-
-class UnblockTransferEmail : public EnumPublicRequestType
-{
-public:
-    std::string get_public_request_type() const { return "unblock_transfer_email_pif"; }
-
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new UnblockTransferEmail));
-        return res;
-    }
-};
-
-class UnblockTransferPost : public EnumPublicRequestType
-{
-public:
-    std::string get_public_request_type() const { return "unblock_transfer_post_pif"; }
-
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
-    {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new UnblockTransferPost));
-        return res;
-    }
-};
-
-unsigned long long PublicRequest::create_authinfo_request_registry_email(
-    Fred::Object_Type::Enum object_type,
+unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
+    ObjectType::Enum object_type,
     const std::string& object_handle,
     const std::string& reason,
     const Optional<unsigned long long>& log_request_id,
@@ -200,57 +191,69 @@ unsigned long long PublicRequest::create_authinfo_request_registry_email(
 {
     try
     {
-        unsigned long long present_obj_id;
+        unsigned long long object_id;
         unsigned long long public_request_id;
+        const PublicRequestType::AuthinfoAuto public_request_type;
         {
             Fred::OperationContextCreator ctx;
-            present_obj_id = Fred::get_present_object_id(ctx, object_type, object_handle);
-            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, present_obj_id);
+            object_id = Fred::get_present_object_id(ctx, to_fred_object_type(object_type), object_handle);
+            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
             public_request_id = Fred::CreatePublicRequest(
                     reason,
                     Optional<std::string>(),
-                    Optional<unsigned long long>())
-                .exec(locked_object, AuthinfoAuto(), log_request_id);
+                    Optional<unsigned long long>()).exec(locked_object, public_request_type, log_request_id);
             ctx.commit_transaction();
         }
-        unsigned long long email_id;
         try
         {
-            email_id = Fred::send_authinfo(public_request_id, object_handle, object_type, manager);
+            const unsigned long long email_id =
+                    Fred::send_authinfo(public_request_id, object_handle, to_fred_object_type(object_type), manager);
+            try
+            {
+                Fred::OperationContextCreator ctx;
+                Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
+                Fred::UpdatePublicRequest(
+                        Fred::PublicRequest::Status::answered,
+                        Optional< Nullable< std::string > >(),
+                        Optional< Nullable< std::string > >(),
+                        email_id,
+                        Optional< Nullable< Fred::RegistrarId > >())
+                    .exec(locked_object, public_request_type, log_request_id);
+                ctx.commit_transaction();
+            }
+            catch (...)
+            {
+                LOGGER(PACKAGE).info(boost::format("Request %1% update failed, but email %2% sent") % public_request_id % email_id);
+                //no throw as main part is completed
+            }
+            return public_request_id;
         }
         catch (...)
         {
             Fred::OperationContextCreator ctx;
-            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, present_obj_id);
+            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
             Fred::UpdatePublicRequest(
                     Fred::PublicRequest::Status::invalidated,
                     Optional< Nullable< std::string > >(),
                     Optional< Nullable< std::string > >(),
-                    email_id,
+                    Optional< Nullable< unsigned long long > >(),
                     Optional< Nullable< Fred::RegistrarId > >())
-                .exec(locked_object, AuthinfoAuto(), log_request_id);
+                .exec(locked_object, public_request_type, log_request_id);
             ctx.commit_transaction();
-            throw;
+            try
+            {
+                throw;
+            }
+            catch (const Fred::NoContactEmail&)
+            {
+                throw NoContactEmail();
+            }
         }
-        try
-        {
-            Fred::OperationContextCreator ctx;
-            Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, present_obj_id);
-            Fred::UpdatePublicRequest(
-                    Fred::PublicRequest::Status::answered,
-                    Optional< Nullable< std::string > >(),
-                    Optional< Nullable< std::string > >(),
-                    email_id,
-                    Optional< Nullable< Fred::RegistrarId  > >())
-                .exec(locked_object, AuthinfoAuto(), log_request_id);
-            ctx.commit_transaction();
-        }
-        catch (...)
-        {
-            LOGGER(PACKAGE).info(boost::format("Request %1% update failed, but email %2% sent") % public_request_id % email_id);
-            //no throw as main part is completed
-        }
-        return public_request_id;
+    }
+    catch (const Fred::UnknownObject& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
     }
     catch (const std::exception& e)
     {
@@ -259,37 +262,59 @@ unsigned long long PublicRequest::create_authinfo_request_registry_email(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).info("Unknown error");
+        LOGGER(PACKAGE).error("Unknown error");
         throw;
     }
 }
 
-unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
-    Fred::Object_Type::Enum object_type,
+unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email(
+    ObjectType::Enum object_type,
     const std::string& object_handle,
     const std::string& reason,
     const Optional<unsigned long long>& log_request_id,
-    ConfirmationMethod confirmation_method,
+    ConfirmationMethod::Enum confirmation_method,
     const std::string& specified_email)
 {
     try
     {
         Fred::OperationContextCreator ctx;
         Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(
-            ctx,
-            Fred::get_present_object_id(ctx, object_type, object_handle));
-        unsigned long long request_id;
-        Fred::CreatePublicRequest cpr(reason, specified_email, Optional<unsigned long long>());
-        if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
+                ctx,
+                Fred::get_present_object_id(ctx, to_fred_object_type(object_type), object_handle));
+        const Fred::CreatePublicRequest create_public_request_op(reason, specified_email, Optional<unsigned long long>());
+        switch (confirmation_method)
         {
-            request_id = cpr.exec(locked_object, AuthinfoEmail(), log_request_id);
+            case ConfirmationMethod::email_with_qualified_certificate:
+            {
+                const unsigned long long request_id =
+                        create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoEmail(), log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
+            case ConfirmationMethod::letter_with_authenticated_signature:
+            {
+                const unsigned long long request_id =
+                        create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoPost(), log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
         }
-        else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
+        throw std::runtime_error("unexpected confirmation method");
+    }
+    catch (const Fred::UnknownObject& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
+    }
+    catch (const Fred::CreatePublicRequest::Exception& e)
+    {
+        if (e.is_set_wrong_email())
         {
-            request_id = cpr.exec(locked_object, AuthinfoPost(), log_request_id);
+            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            throw InvalidContactEmail();
         }
-        ctx.commit_transaction();
-        return request_id;
+        LOGGER(PACKAGE).error(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -298,133 +323,131 @@ unsigned long long PublicRequest::create_authinfo_request_non_registry_email(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).info("Unknown error");
+        LOGGER(PACKAGE).error("Unknown error");
         throw;
     }
 }
 
-template<typename EmailInterface, typename PostInterface>
-unsigned long long get_block_id(
-    bool states_are_ok,
-    ConfirmationMethod confirmation_method,
-    const Fred::CreatePublicRequest& request,
-    const Fred::PublicRequestsOfObjectLockGuardByObjectId& locked_object,
-    const Optional<unsigned long long>& log_request_id)
+namespace {
+
+template <typename request>
+const Fred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl::ConfirmationMethod::Enum confirmation_method)
 {
-    unsigned long long request_id;
-    if (! states_are_ok)
+    switch (confirmation_method)
     {
-        throw ObjectAlreadyBlocked();
+        case PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate:
+        {
+            static const typename request::ByEmail public_request_type;
+            return public_request_type.iface();
+        }
+        case PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature:
+        {
+            static const typename request::ByPost public_request_type;
+            return public_request_type.iface();
+        }
     }
-    if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
-    {
-        request_id = request.exec(locked_object, EmailInterface(), log_request_id);
-    }
-    else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
-    {
-        request_id = request.exec(locked_object, PostInterface(), log_request_id);
-    }
-    else
-    {
-        throw std::invalid_argument("Registry::PublicRequest::ConfirmationMethod doesn't contain that value");
-    }
-    return request_id;
+    throw std::runtime_error("unexpected confirmation method");
 }
 
-template<typename EmailInterface, typename PostInterface>
-unsigned long long get_unblock_id(
-    ConfirmationMethod confirmation_method,
-    const Fred::CreatePublicRequest& request,
-    const Fred::PublicRequestsOfObjectLockGuardByObjectId& locked_object,
-    const Optional<unsigned long long>& log_request_id)
-{
-    unsigned long long request_id;
-    if (confirmation_method == EMAIL_WITH_QUALIFIED_CERTIFICATE)
-    {
-        request_id = request.exec(locked_object, EmailInterface(), log_request_id);
-    }
-    else if (confirmation_method == LETTER_WITH_AUTHENTICATED_SIGNATURE)
-    {
-        request_id = request.exec(locked_object, PostInterface(), log_request_id);
-    }
-    else
-    {
-        throw std::invalid_argument("Registry::PublicRequest::ConfirmationMethod doesn't contain that value");
-    }
-    return request_id;
-}
+}//namespace Registry::{anonymous}
 
-unsigned long long PublicRequest::create_block_unblock_request(
-    Fred::Object_Type::Enum object_type,
+unsigned long long PublicRequestImpl::create_block_unblock_request(
+    ObjectType::Enum object_type,
     const std::string& object_handle,
     const Optional<unsigned long long>& log_request_id,
-    ConfirmationMethod confirmation_method,
-    LockRequestType lock_request_type)
+    ConfirmationMethod::Enum confirmation_method,
+    LockRequestType::Enum lock_request_type)
 {
     try
     {
         Fred::OperationContextCreator ctx;
-        unsigned long long object_id = Fred::get_present_object_id(ctx, object_type, object_handle);
+        const unsigned long long object_id = Fred::get_present_object_id(ctx, to_fred_object_type(object_type), object_handle);
         Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
         const Fred::ObjectStatesInfo states(Fred::GetObjectStates(object_id).exec(ctx));
-        unsigned long long request_id;
-        Fred::CreatePublicRequest request = Fred::CreatePublicRequest(
-                Optional<std::string>(),
-                Optional<std::string>(),
-                Optional<unsigned long long>());
-        if (lock_request_type == BLOCK_TRANSFER)
+        switch (lock_request_type)
         {
-            request_id = get_block_id<BlockTransferEmail, BlockTransferPost>(
-                    states.absents(Fred::Object_State::server_transfer_prohibited),
-                    confirmation_method,
-                    request,
-                    locked_object,
-                    log_request_id);
-        }
-        else if (lock_request_type == BLOCK_TRANSFER_AND_UPDATE)
-        {
-            request_id = get_block_id<BlockChangesEmail, BlockChangesPost>(
-                    (states.absents(Fred::Object_State::server_transfer_prohibited) ||
-                     states.absents(Fred::Object_State::server_update_prohibited)),
-                    confirmation_method,
-                    request,
-                    locked_object,
-                    log_request_id);
-        }
-        else if (lock_request_type == UNBLOCK_TRANSFER)
-        {
-            if (states.presents(Fred::Object_State::server_update_prohibited))
-            {
-                throw HasDifferentBlock();
-            }
-            else if (states.absents(Fred::Object_State::server_transfer_prohibited))
-            {
-                throw ObjectNotBlocked();
-            }
-            request_id = get_unblock_id<UnblockTransferEmail, UnblockTransferPost>(
-                    confirmation_method,
-                    request,
-                    locked_object,
-                    log_request_id);
-        }
-        else if (lock_request_type == UNBLOCK_TRANSFER_AND_UPDATE)
-        {
-            if (states.absents(Fred::Object_State::server_update_prohibited))
+            case LockRequestType::block_transfer:
             {
                 if (states.presents(Fred::Object_State::server_transfer_prohibited))
                 {
+                    throw ObjectAlreadyBlocked();
+                }
+                const unsigned long long request_id =
+                        Fred::CreatePublicRequest().exec(
+                                locked_object,
+                                get_public_request_type<PublicRequestType::Block::Transfer>(confirmation_method),
+                                log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
+            case LockRequestType::block_transfer_and_update:
+            {
+                if (states.presents(Fred::Object_State::server_transfer_prohibited) &&
+                    states.presents(Fred::Object_State::server_update_prohibited))
+                {
+                    throw ObjectAlreadyBlocked();
+                }
+                const unsigned long long request_id =
+                        Fred::CreatePublicRequest().exec(
+                                locked_object,
+                                get_public_request_type<PublicRequestType::Block::Changes>(confirmation_method),
+                                log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
+            case LockRequestType::unblock_transfer:
+            {
+                if (states.presents(Fred::Object_State::server_update_prohibited))
+                {
                     throw HasDifferentBlock();
                 }
-                throw ObjectNotBlocked();
+                if (states.absents(Fred::Object_State::server_transfer_prohibited))
+                {
+                    throw ObjectNotBlocked();
+                }
+                const unsigned long long request_id =
+                        Fred::CreatePublicRequest().exec(
+                                locked_object,
+                                get_public_request_type<PublicRequestType::Unblock::Transfer>(confirmation_method),
+                                log_request_id);
+                ctx.commit_transaction();
+                return request_id;
             }
-            request_id = get_unblock_id<UnblockChangesEmail, UnblockChangesPost>(
-                    confirmation_method,
-                    request,
-                    locked_object,
-                    log_request_id);
+            case LockRequestType::unblock_transfer_and_update:
+            {
+                if (states.absents(Fred::Object_State::server_update_prohibited))
+                {
+                    if (states.presents(Fred::Object_State::server_transfer_prohibited))
+                    {
+                        throw HasDifferentBlock();
+                    }
+                    throw ObjectNotBlocked();
+                }
+                const unsigned long long request_id =
+                        Fred::CreatePublicRequest().exec(
+                                locked_object,
+                                get_public_request_type<PublicRequestType::Unblock::Changes>(confirmation_method),
+                                log_request_id);
+                ctx.commit_transaction();
+                return request_id;
+            }
         }
-        ctx.commit_transaction();
-        return request_id;
+        throw std::runtime_error("unexpected lock request type");
+    }
+    catch (const Fred::UnknownObject& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
+    }
+    catch (const Fred::CreatePublicRequest::Exception& e)
+    {
+        if (e.is_set_wrong_email())
+        {
+            LOGGER(PACKAGE).error(boost::diagnostic_information(e));
+            throw InvalidContactEmail();
+        }
+        LOGGER(PACKAGE).error(e.what());
+        throw;
     }
     catch (const std::exception& e)
     {
@@ -433,36 +456,56 @@ unsigned long long PublicRequest::create_block_unblock_request(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).info("Unknown error");
+        LOGGER(PACKAGE).error("Unknown error");
         throw;
     }
-} // create_block_unblock_request
+}
 
-Buffer PublicRequest::create_public_request_pdf(
-    unsigned long long public_request_id,
-    Language lang,
-    boost::shared_ptr<Fred::Document::Manager> manager)
+namespace {
+
+short public_request_type_to_post_type(const std::string& public_request_type)
 {
-    std::stringstream outstr;
-    std::string lang_code;
+    if (public_request_type == PublicRequestType::AuthinfoPost().iface().get_public_request_type())
+    {
+        return 1;
+    }
+    if (public_request_type == PublicRequestType::Block::Transfer::ByPost().iface().get_public_request_type())
+    {
+        return 2;
+    }
+    if (public_request_type == PublicRequestType::Unblock::Transfer::ByPost().iface().get_public_request_type())
+    {
+        return 3;
+    }
+    if (public_request_type == PublicRequestType::Block::Changes::ByPost().iface().get_public_request_type())
+    {
+        return 4;
+    }
+    if (public_request_type == PublicRequestType::Unblock::Changes::ByPost().iface().get_public_request_type())
+    {
+        return 5;
+    }
+    throw PublicRequestImpl::InvalidPublicRequestType();
+}
+
+std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
+{
     switch (lang)
     {
-        case CS:
-            lang_code = "cs";
-            break;
-        case EN:
-            lang_code = "en";
-            break;
-        default:
-            throw std::invalid_argument("language code not found");
+        case PublicRequestImpl::Language::cs: return "cs";
+        case PublicRequestImpl::Language::en: return "en";
     }
+    throw std::invalid_argument("language code not found");
+}
 
-    std::map<std::string, short> post_types;
-    post_types["authinfo_post_pif"] = 1;
-    post_types["block_transfer_post_pif"] = 2;
-    post_types["unblock_transfer_post_pif"] = 3;
-    post_types["block_changes_post_pif"] = 4;
-    post_types["unblock_changes_post_pif"] = 5;
+}//namespace Registry::{anonymous}
+
+PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
+    unsigned long long public_request_id,
+    Language::Enum lang,
+    boost::shared_ptr<Fred::Document::Manager> manager)
+{
+    const std::string lang_code = language_to_lang_code(lang);
 
     Fred::OperationContextCreator ctx;
     std::string create_time, email_to_answer;
@@ -471,55 +514,75 @@ Buffer PublicRequest::create_public_request_pdf(
     {
         Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
         Fred::PublicRequestInfo request_info = Fred::InfoPublicRequest().exec(ctx, locked_request);
-        post_type = post_types.at(request_info.get_type());
+        post_type = public_request_type_to_post_type(request_info.get_type());
         create_time = stringify(request_info.get_create_time().date());
-        email_to_answer = request_info.get_email_to_answer().get_value_or("");
+        email_to_answer = request_info.get_email_to_answer().get_value_or_default();
     }
     catch (const Fred::PublicRequestLockGuardById::Exception&)
     {
         throw ObjectNotFound();
     }
-    catch (const std::out_of_range&)
-    {
-        throw InvalidPublicRequestType();
-    }
 
-    Database::Result type_name = ctx.get_conn().exec_params(
-            "SELECT oreg.type, oreg.name "
+    const Database::Result dbres = ctx.get_conn().exec_params(
+            "SELECT oreg.type,oreg.name "
             "FROM public_request pr "
-                "JOIN public_request_objects_map prom "
-                    "ON prom.request_id = pr.id "
-                "JOIN enum_public_request_type eprt "
-                    "ON eprt.id = pr.request_type "
-                "JOIN object_registry oreg "
-                    "ON oreg.id = prom.object_id "
-            "WHERE pr.id = $1::bigint ",
+            "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
+            "JOIN enum_public_request_type eprt ON eprt.id=pr.request_type "
+            "JOIN object_registry oreg ON oreg.id=prom.object_id "
+            "WHERE pr.id=$1::BIGINT",
             Database::query_param_list(public_request_id));
-    if (type_name.size() != 1)
+    if (dbres.size() != 1)
     {
-        throw ObjectNotFound();
+        if (dbres.size() == 0)
+        {
+            throw ObjectNotFound();
+        }
+        throw std::runtime_error("too many objects associated with this public request");
     }
-    std::auto_ptr<Fred::Document::Generator> g(
+    const unsigned type_id = static_cast<unsigned>(dbres[0][0]);
+    const std::string handle = static_cast<std::string>(dbres[0][1]);
+    std::ostringstream pdf_content;
+    const std::auto_ptr<Fred::Document::Generator> docgen_ptr(
             manager.get()->createOutputGenerator(
                 Fred::Document::GT_PUBLIC_REQUEST_PDF,
-                outstr,
+                pdf_content,
                 lang_code));
-    g->getInput() << "<?xml version='1.0' encoding='utf-8'?>"
+    docgen_ptr->getInput() << "<?xml version='1.0' encoding='utf-8'?>"
         << "<enum_whois>"
         << "<public_request>"
             << "<type>" << post_type << "</type>"
-            << "<handle type='" << static_cast<unsigned>(type_name[0][0]) << "'>"
-            << static_cast<std::string>(type_name[0][1])
+            << "<handle type='" << type_id << "'>"
+            << handle
             << "</handle>"
             << "<date>" << create_time << "</date>"
             << "<id>" << public_request_id << "</id>"
             << "<replymail>" << email_to_answer << "</replymail>"
         << "</public_request>"
         << "</enum_whois>";
-    g->closeInput();
+    docgen_ptr->closeInput();
 
-    return Buffer(outstr.str());
-} // create_public_request_pdf
+    return Buffer(pdf_content.str());
+}
 
-} // namespace Registry
-} // namespace PublicRequestImpl
+boost::shared_ptr<Fred::Mailer::Manager> PublicRequestImpl::get_default_mailer_manager()
+{
+    return boost::shared_ptr<Fred::Mailer::Manager>(
+                   new MailerManager(CorbaContainer::get_instance()->getNS()));
+}
+
+boost::shared_ptr<Fred::Document::Manager> PublicRequestImpl::get_default_document_manager()
+{
+    const HandleRegistryArgs* const args = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
+    return boost::shared_ptr<Fred::Document::Manager>(
+            Fred::Document::Manager::create(
+                    args->docgen_path,
+                    args->docgen_template_path,
+                    args->fileclient_path,
+                    CorbaContainer::get_instance()->getNS()->getHostName()));
+}
+
+PublicRequestImpl::Buffer::Buffer(const std::string& s)
+    : value(s)
+{ }
+
+}//namespace Registry

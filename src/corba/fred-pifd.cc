@@ -26,7 +26,7 @@
 #include "src/corba/admin/admin_impl.h"
 #include "src/corba/whois/whois_impl.h"
 #include "src/corba/whois/whois2_impl.h"
-#include "src/corba/public_request/public_request_impl.h"
+#include "src/corba/public_request/server_i.h"
 #include "src/corba/contact_verification/contact_verification_i.h"
 
 #include <iostream>

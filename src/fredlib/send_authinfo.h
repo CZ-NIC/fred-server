@@ -27,7 +27,7 @@ struct NoContactEmail : std::exception
     }
 };
 
-unsigned long long send_authinfo(
+static unsigned long long send_authinfo(
     const unsigned long long public_request_id,
     const std::string& handle,
     Fred::Object_Type::Enum object_type,

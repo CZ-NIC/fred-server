@@ -45,8 +45,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
-
-BOOST_AUTO_TEST_SUITE(TestRegistryEmail)
+BOOST_AUTO_TEST_SUITE(RegistryEmail)
 
 class FakeMailer : public Fred::Mailer::Manager
 {
@@ -54,42 +53,28 @@ public:
     virtual ~FakeMailer() {}
 
     virtual unsigned long long sendEmail(
-            const std::string& from,
-            const std::string& to,
-            const std::string& subject,
-            const std::string& mailTemplate,
-            const std::map<std::string,std::string>& params,
-            const std::vector<std::string>& handles,
-            const std::vector<unsigned long long>& attach,
-            const std::string& reply_to) throw (Fred::Mailer::NOT_SEND)
+            const std::string&,
+            const std::string&,
+            const std::string&,
+            const std::string&,
+            const std::map<std::string,std::string>&,
+            const std::vector<std::string>&,
+            const std::vector<unsigned long long>&,
+            const std::string&) throw (Fred::Mailer::NOT_SEND)
     {
         return 0;
     }
-    virtual bool checkEmailList(std::string &_email_list) const
+    virtual bool checkEmailList(std::string&) const
     {
         return true;
     }
 };
 
-struct registry_email_fixture : Test::Fixture::instantiate_db_template
+class registry_email_fixture : public Test::Fixture::instantiate_db_template
 {
-private:
-    Fred::OperationContextCreator ctx;
-
 public:
-    Fred::InfoContactData contact;
-    Fred::InfoNssetData nsset;
-    Fred::InfoDomainData domain;
-    Fred::InfoKeysetData keyset;
-    const std::string reason;
-    unsigned long long contact_id;
-    unsigned long long nsset_id;
-    unsigned long long domain_id;
-    unsigned long long keyset_id;
-
     registry_email_fixture()
-    : ctx(),
-      reason("some reason")
+        : reason("some reason")
     {
         Fred::InfoRegistrarData registrar = Test::exec(
                 Test::CreateX_factory<Fred::CreateRegistrar>()
@@ -119,122 +104,123 @@ public:
         boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(
                 new FakeMailer());
 
-        Registry::PublicRequestImpl::PublicRequest pr;
+        Registry::PublicRequestImpl pr;
         contact_id = pr.create_authinfo_request_registry_email(
-                Fred::Object_Type::contact,
+                Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
                 reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
         nsset_id = pr.create_authinfo_request_registry_email(
-                Fred::Object_Type::nsset,
+                Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
                 reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
         domain_id = pr.create_authinfo_request_registry_email(
-                Fred::Object_Type::domain,
+                Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
                 reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
         keyset_id = pr.create_authinfo_request_registry_email(
-                Fred::Object_Type::keyset,
+                Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
                 reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
     }
+    Fred::InfoContactData contact;
+    Fred::InfoNssetData nsset;
+    Fred::InfoDomainData domain;
+    Fred::InfoKeysetData keyset;
+    const std::string reason;
+    unsigned long long contact_id;
+    unsigned long long nsset_id;
+    unsigned long long domain_id;
+    unsigned long long keyset_id;
+private:
+    Fred::OperationContextCreator ctx;
 };
 
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Database::Result request = get_db_public_request(ctx, contact_id, 1, 0, reason);
-    BOOST_CHECK(request.size() == 1);
+    const Database::Result request = get_db_public_request(ctx, contact_id, 1, 0, reason);
+    BOOST_CHECK_EQUAL(request.size(), 1);
 }
 
 BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
 {
     Fred::OperationContextCreator ctx;
-    Fred::InfoContactData contact = Test::contact::make(ctx);
-    Fred::InfoNssetData nsset = Test::nsset::make(ctx);
-    Fred::InfoDomainData domain = Test::domain::make(ctx);
-    Fred::InfoKeysetData keyset = Test::keyset::make(ctx);
+    const Fred::InfoContactData contact = Test::contact::make(ctx);
+    const Fred::InfoNssetData nsset = Test::nsset::make(ctx);
+    const Fred::InfoDomainData domain = Test::domain::make(ctx);
+    const Fred::InfoKeysetData keyset = Test::keyset::make(ctx);
     ctx.commit_transaction();
 
     boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     try
     {
-        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::contact,
+        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+                Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
                 "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::UpdatePublicRequest::Exception& e)
-    {
-        BOOST_CHECK(e.is_set_unknown_email_id());
-    }
+    catch (const Registry::PublicRequestImpl::NoContactEmail&) { }
+
     try
     {
-        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::nsset,
+        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+                Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
                 "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::UpdatePublicRequest::Exception& e)
-    {
-        BOOST_CHECK(e.is_set_unknown_email_id());
-    }
+    catch (const Registry::PublicRequestImpl::NoContactEmail&) { }
+
     try
     {
-        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::domain,
+        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+                Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
                 "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::UpdatePublicRequest::Exception& e)
-    {
-        BOOST_CHECK(e.is_set_unknown_email_id());
-    }
+    catch (const Registry::PublicRequestImpl::NoContactEmail&) { }
+
     try
     {
-        Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::keyset,
+        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+                Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
                 "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
     }
-    catch (const Fred::UpdatePublicRequest::Exception& e)
-    {
-        BOOST_CHECK(e.is_set_unknown_email_id());
-    }
+    catch (const Registry::PublicRequestImpl::NoContactEmail&) { }
 }
 
 BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
 {
     boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     BOOST_CHECK_THROW(
-            Registry::PublicRequestImpl::PublicRequest().create_authinfo_request_registry_email(
-                Fred::Object_Type::contact,
+            Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+                Registry::PublicRequestImpl::ObjectType::contact,
                 "test handle",
                 "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager),
-            Fred::UnknownObject);
+            Registry::PublicRequestImpl::ObjectNotFound);
 }
 
-BOOST_AUTO_TEST_SUITE_END() // TestRegistryEmail
-
-BOOST_AUTO_TEST_SUITE_END() // TestPublicRequest
+BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest/RegistryEmail
+BOOST_AUTO_TEST_SUITE_END()//TestPublicRequest

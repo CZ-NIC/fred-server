@@ -28,6 +28,7 @@
 #include "src/fredlib/documents.h"
 #include "src/fredlib/mailer.h"
 #include "util/optional_value.h"
+#include "src/corba/mailer_manager.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -37,112 +38,144 @@
 #include <string>
 #include <vector>
 
-namespace Registry
-{
-namespace PublicRequestImpl
-{
+namespace Registry {
 
-enum ConfirmationMethod
-{
-    EMAIL_WITH_QUALIFIED_CERTIFICATE,
-    LETTER_WITH_AUTHENTICATED_SIGNATURE
-};
-
-enum LockRequestType
-{
-    BLOCK_TRANSFER,
-    BLOCK_TRANSFER_AND_UPDATE,
-    UNBLOCK_TRANSFER,
-    UNBLOCK_TRANSFER_AND_UPDATE
-};
-
-enum Language
-{
-    CS, EN
-};
-
-struct Buffer
-{
-    std::string value;
-
-    Buffer() {}
-
-    Buffer(const std::string& s)
-    : value(s) {}
-};
-
-struct ObjectAlreadyBlocked : std::exception
-{
-    virtual const char* what() const throw()
-    {
-        return "object is already blocked";
-    }
-};
-
-struct ObjectNotBlocked : std::exception
-{
-    virtual const char* what() const throw()
-    {
-        return "object is not blocked";
-    }
-};
-
-struct HasDifferentBlock : std::exception
-{
-    virtual const char* what() const throw()
-    {
-        return "a different unblock request has to be issued";
-    }
-};
-
-struct ObjectNotFound : std::exception
-{
-    virtual const char* what() const throw()
-    {
-        return "registry object with specified ID does not exist";
-    }
-};
-
-struct InvalidPublicRequestType : std::exception
-{
-    virtual const char* what() const throw()
-    {
-        return "public request is not of post type";
-    }
-};
-
-class PublicRequest
+class PublicRequestImpl
 {
 public:
+    struct ConfirmationMethod
+    {
+        enum Enum
+        {
+            email_with_qualified_certificate,
+            letter_with_authenticated_signature
+        };
+    };
+
+    struct LockRequestType
+    {
+        enum Enum
+        {
+            block_transfer,
+            block_transfer_and_update,
+            unblock_transfer,
+            unblock_transfer_and_update,
+        };
+    };
+
+    struct Language
+    {
+        enum Enum
+        {
+            en,
+            cs
+        };
+    };
+
+    struct ObjectType
+    {
+        enum Enum
+        {
+            contact,
+            nsset,
+            domain,
+            keyset,
+        };
+    };
+
+    struct Buffer
+    {
+        explicit Buffer(const std::string& s);
+        const std::string value;
+    };
+
+    struct ObjectAlreadyBlocked : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "object is already blocked";
+        }
+    };
+
+    struct ObjectNotBlocked : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "object is not blocked";
+        }
+    };
+
+    struct HasDifferentBlock : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "a different unblock request has to be issued";
+        }
+    };
+
+    struct ObjectNotFound : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "registry object with specified ID does not exist";
+        }
+    };
+
+    struct InvalidPublicRequestType : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "public request is not of post type";
+        }
+    };
+
+    struct NoContactEmail : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "no contact email associated with this object";
+        }
+    };
+
+    struct InvalidContactEmail : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "invalid contact email associated with this object";
+        }
+    };
+
     unsigned long long create_authinfo_request_registry_email(
-        Fred::Object_Type::Enum object_type,
+        ObjectType::Enum object_type,
         const std::string& object_handle,
         const std::string& reason,
         const Optional<unsigned long long>& log_request_id,
         boost::shared_ptr<Fred::Mailer::Manager> manager);
 
     unsigned long long create_authinfo_request_non_registry_email(
-        Fred::Object_Type::Enum object_type,
+        ObjectType::Enum object_type,
         const std::string& object_handle,
         const std::string& reason,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmationMethod confirmation_method,
+        ConfirmationMethod::Enum confirmation_method,
         const std::string& specified_email);
 
     unsigned long long create_block_unblock_request(
-        Fred::Object_Type::Enum object_type,
+        ObjectType::Enum object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmationMethod confirmation_method,
-        LockRequestType lock_request_type);
+        ConfirmationMethod::Enum confirmation_method,
+        LockRequestType::Enum lock_request_type);
 
     Buffer create_public_request_pdf(
         unsigned long long public_request_id,
-        Language lang,
+        Language::Enum lang,
         boost::shared_ptr<Fred::Document::Manager> manager);
+
+    static boost::shared_ptr<Fred::Mailer::Manager> get_default_mailer_manager();
+    static boost::shared_ptr<Fred::Document::Manager> get_default_document_manager();
 };
 
-} // namespace PublicRequestImpl
 } // namespace Registry
 
 #endif // PUBLIC_REQUEST_H_75462367

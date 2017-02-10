@@ -1885,8 +1885,10 @@ src_corba_fred_pifd_SOURCES = \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
 		src/public_request/public_request.cc \
 		src/public_request/public_request.h \
-		src/corba/public_request/public_request_impl.cc \
-		src/corba/public_request/public_request_impl.h \
+		src/corba/public_request/server_i.cc \
+		src/corba/public_request/server_i.h \
+		util/corba_conversion.h \
+		util/corba_conversion.cc \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -2766,10 +2768,10 @@ tests_interfaces_test_public_request_LDFLAGS = \
 
 tests_interfaces_test_public_request_LDADD = \
 		src/fredlib/public_request/libpublic_request.a \
-		src/corba/libcorbadatatypes.a \
 		src/fredlib/libfred.a \
 		src/corba/libcorba.a \
 		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
 		src/fredlib/requests/librequests.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
@@ -2990,9 +2992,6 @@ tests_test_fredlib_LDADD = \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/corba/libcorba.a \
-		src/corba/libmailer.a \
-		src/corba/libcorbadatatypes.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \

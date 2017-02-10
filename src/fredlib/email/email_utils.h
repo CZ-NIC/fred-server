@@ -41,7 +41,7 @@ struct FailedToSendMailToRecipient : std::exception
     virtual ~FailedToSendMailToRecipient() throw() {}
 };
 
-void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const EmailData& _data)
+static void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const EmailData& _data)
 {
     std::set<std::string> trimmed_recipient_email_addresses;
     BOOST_FOREACH(const std::string& email, _data.recipient_email_addresses)
@@ -72,7 +72,7 @@ void send_email(boost::shared_ptr<Fred::Mailer::Manager> _mailer, const EmailDat
     }
 }
 
-unsigned long long send_joined_addresses_email(
+static unsigned long long send_joined_addresses_email(
     boost::shared_ptr<Fred::Mailer::Manager> _mailer,
     const EmailData& _data)
 {
