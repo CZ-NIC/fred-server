@@ -22,17 +22,13 @@
  */
 
 #include <string>
-#include <vector>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "src/fredlib/domain/renew_domain.h"
-#include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/copy_history_impl.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/object.h"
-#include "src/fredlib/object/object_impl.h"
 #include "src/fredlib/registrar/registrar_impl.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"

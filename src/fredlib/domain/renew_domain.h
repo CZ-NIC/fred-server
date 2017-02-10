@@ -25,7 +25,6 @@
 #define RENEW_DOMAIN_H_b6cdb6bc48cf4d9eaba249a46ac7f6a7
 
 #include <string>
-#include <vector>
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
