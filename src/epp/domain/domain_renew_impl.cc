@@ -5,7 +5,7 @@
 #include "src/epp/reason.h"
 #include "src/epp/impl/util.h"
 
-#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/renew_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -218,17 +218,16 @@ DomainRenewResult domain_renew_impl(
             ?  Optional<bool>(_data.enum_validation_list.rbegin()->get_publish())
             : Optional<bool>());
 
-        Fred::UpdateDomain update_domain = Fred::UpdateDomain(
-            _data.fqdn, logged_in_registrar.handle)
-                .set_domain_expiration(new_exdate);
+        Fred::RenewDomain renew_domain = Fred::RenewDomain(
+            _data.fqdn, logged_in_registrar.handle, new_exdate);
 
         if(zone_data.is_enum && !_data.enum_validation_list.empty())
         {
-            update_domain.set_enum_validation_expiration(_data.enum_validation_list.rbegin()->get_valexdate())
+            renew_domain.set_enum_validation_expiration(_data.enum_validation_list.rbegin()->get_valexdate())
                 .set_enum_publish_flag(_data.enum_validation_list.rbegin()->get_publish());
         }
 
-        update_domain.exec(_ctx);
+        renew_domain.exec(_ctx);
 
         return DomainRenewResult(
             domain_info_data.id,
@@ -237,7 +236,7 @@ DomainRenewResult domain_renew_impl(
             new_exdate,
             domain_registration_in_months / 12);
 
-    } catch (const Fred::UpdateDomain::Exception& e) {
+    } catch (const Fred::RenewDomain::Exception& e) {
         throw;
     }
 }
