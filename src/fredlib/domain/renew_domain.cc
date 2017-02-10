@@ -56,7 +56,7 @@ namespace Fred
         const boost::gregorian::date& expiration_date,
         const Optional<boost::gregorian::date>& enum_validation_expiration,
         const Optional<bool>& enum_publish_flag,
-        const Optional<unsigned long long> logd_request_id)
+        const Optional<unsigned long long>& logd_request_id)
     : fqdn_(fqdn),
     registrar_(registrar),
     expiration_date_(expiration_date),
