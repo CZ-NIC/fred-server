@@ -227,6 +227,11 @@ DomainRenewResult domain_renew_impl(
                 .set_enum_publish_flag(_data.enum_validation_list.rbegin()->get_publish());
         }
 
+        if(_logd_request_id.isset())
+        {
+            renew_domain.set_logd_request_id(_logd_request_id.get_value());
+        }
+
         renew_domain.exec(_ctx);
 
         return DomainRenewResult(
