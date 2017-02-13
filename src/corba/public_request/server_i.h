@@ -44,13 +44,11 @@ public:
     ::CORBA::ULongLong create_authinfo_request_registry_email(
         ObjectType_PR object_type,
         const char* object_handle,
-        const char* reason,
         NullableULongLong* log_request_id);
 
     ::CORBA::ULongLong create_authinfo_request_non_registry_email(
         ObjectType_PR object_type,
         const char* object_handle,
-        const char* reason,
         NullableULongLong* log_request_id,
         ConfirmationMethod confirmation_method,
         const char* specified_email);

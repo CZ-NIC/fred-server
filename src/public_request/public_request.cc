@@ -185,7 +185,6 @@ Fred::Object_Type::Enum to_fred_object_type(PublicRequestImpl::ObjectType::Enum 
 unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     ObjectType::Enum object_type,
     const std::string& object_handle,
-    const std::string& reason,
     const Optional<unsigned long long>& log_request_id,
     boost::shared_ptr<Fred::Mailer::Manager> manager) // potentially put as member
 {
@@ -199,7 +198,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
             object_id = Fred::get_present_object_id(ctx, to_fred_object_type(object_type), object_handle);
             Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
             public_request_id = Fred::CreatePublicRequest(
-                    reason,
+                    "create_authinfo_request_registry_email call",
                     Optional<std::string>(),
                     Optional<unsigned long long>()).exec(locked_object, public_request_type, log_request_id);
             ctx.commit_transaction();
@@ -270,7 +269,6 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
 unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email(
     ObjectType::Enum object_type,
     const std::string& object_handle,
-    const std::string& reason,
     const Optional<unsigned long long>& log_request_id,
     ConfirmationMethod::Enum confirmation_method,
     const std::string& specified_email)
@@ -281,7 +279,10 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
         Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(
                 ctx,
                 Fred::get_present_object_id(ctx, to_fred_object_type(object_type), object_handle));
-        const Fred::CreatePublicRequest create_public_request_op(reason, specified_email, Optional<unsigned long long>());
+        const Fred::CreatePublicRequest create_public_request_op(
+                "create_authinfo_request_non_registry_email call",
+                specified_email,
+                Optional<unsigned long long>());
         switch (confirmation_method)
         {
             case ConfirmationMethod::email_with_qualified_certificate:

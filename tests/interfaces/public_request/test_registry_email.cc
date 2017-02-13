@@ -70,12 +70,11 @@ public:
     }
 };
 
-class registry_email_fixture : public Test::Fixture::instantiate_db_template
+struct registry_email_fixture : Test::Fixture::instantiate_db_template
 {
-public:
     registry_email_fixture()
-        : reason("some reason")
     {
+        Fred::OperationContextCreator ctx;
         Fred::InfoRegistrarData registrar = Test::exec(
                 Test::CreateX_factory<Fred::CreateRegistrar>()
                     .make(),
@@ -108,25 +107,21 @@ public:
         contact_id = pr.create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
-                reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
         nsset_id = pr.create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
-                reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
         domain_id = pr.create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
-                reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
         keyset_id = pr.create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
-                reason,
                 Optional<unsigned long long>(),
                 mailer_manager);
     }
@@ -134,19 +129,16 @@ public:
     Fred::InfoNssetData nsset;
     Fred::InfoDomainData domain;
     Fred::InfoKeysetData keyset;
-    const std::string reason;
     unsigned long long contact_id;
     unsigned long long nsset_id;
     unsigned long long domain_id;
     unsigned long long keyset_id;
-private:
-    Fred::OperationContextCreator ctx;
 };
 
 BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixture)
 {
     Fred::OperationContextCreator ctx;
-    const Database::Result request = get_db_public_request(ctx, contact_id, 1, 0, reason);
+    const Database::Result request = get_db_public_request(ctx, contact_id, 1, 0);
     BOOST_CHECK_EQUAL(request.size(), 1);
 }
 
@@ -165,7 +157,6 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
         Registry::PublicRequestImpl().create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
-                "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
@@ -177,7 +168,6 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
         Registry::PublicRequestImpl().create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
-                "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
@@ -189,7 +179,6 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
         Registry::PublicRequestImpl().create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
-                "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
@@ -201,7 +190,6 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
         Registry::PublicRequestImpl().create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
-                "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager);
         BOOST_ERROR("exception of no email awaited");
@@ -216,7 +204,6 @@ BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
             Registry::PublicRequestImpl().create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 "test handle",
-                "some reason",
                 Optional<unsigned long long>(),
                 mailer_manager),
             Registry::PublicRequestImpl::ObjectNotFound);

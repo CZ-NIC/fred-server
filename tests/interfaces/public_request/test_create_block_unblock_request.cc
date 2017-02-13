@@ -95,13 +95,13 @@ void make_fake_state_request(
 // email blocks
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_email, lock_request_fixture) // checks for wrong blocks
 {
-    Fred::OperationContextCreator ctx;
-    unsigned long long block_transfer = pr.create_block_unblock_request(
+    const unsigned long long block_transfer = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE_EQUAL(
             get_db_public_request(ctx, block_transfer, 6, 0).size(),
             1);
@@ -112,7 +112,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_email, lock_request
     boost_check_fail_blocks(contact.handle);
 
     // successful unblock
-    unsigned long long unblock_transfer = pr.create_block_unblock_request(
+    const unsigned long long unblock_transfer = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
@@ -125,13 +125,13 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_email, lock_request
 
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_post, lock_request_fixture)
 {
-    Fred::OperationContextCreator ctx;
-    unsigned long long block_transfer = pr.create_block_unblock_request(
+    const unsigned long long block_transfer = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE_EQUAL(
             get_db_public_request(ctx, block_transfer, 7, 0).size(),
             1);
@@ -139,7 +139,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_post, lock_request_
     make_fake_state_request(ctx, contact.id);
     ctx.commit_transaction();
 
-    unsigned long long unblock_transfer = pr.create_block_unblock_request(
+    const unsigned long long unblock_transfer = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
@@ -152,13 +152,13 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_unblock_transfer_post, lock_request_
 
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fixture)
 {
-    Fred::OperationContextCreator ctx;
-    unsigned long long block_transfer = pr.create_block_unblock_request(
+    const unsigned long long block_transfer = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE_EQUAL(
             get_db_public_request(ctx, block_transfer, 6, 0).size(),
             1);
@@ -166,7 +166,7 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fix
     make_fake_state_request(ctx, contact.id);
     ctx.commit_transaction();
 
-    unsigned long long block_update = pr.create_block_unblock_request(
+    const unsigned long long block_update = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
@@ -179,21 +179,19 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_email, lock_request_fix
 
 BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_post, lock_request_fixture)
 {
-    Fred::OperationContextCreator ctx;
-    unsigned long long block_transfer = pr.create_block_unblock_request(
+    const unsigned long long block_transfer = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
-    BOOST_REQUIRE_EQUAL(
-            get_db_public_request(ctx, block_transfer, 7, 0).size(),
-            1);
+    Fred::OperationContextCreator ctx;
+    BOOST_REQUIRE_EQUAL(get_db_public_request(ctx, block_transfer, 7, 0).size(), 1);
 
     make_fake_state_request(ctx, contact.id);
     ctx.commit_transaction();
 
-    unsigned long long block_update = pr.create_block_unblock_request(
+    const unsigned long long block_update = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
@@ -206,13 +204,13 @@ BOOST_FIXTURE_TEST_CASE(block_transfer_then_block_update_post, lock_request_fixt
 
 BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_email, lock_request_fixture)
 {
-    Fred::OperationContextCreator ctx;
-    unsigned long long block_update = pr.create_block_unblock_request(
+    const unsigned long long block_update = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
             Registry::PublicRequestImpl::LockRequestType::block_transfer_and_update);
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE_EQUAL(
             get_db_public_request(ctx, block_update, 4, 0).size(),
             1);
@@ -220,7 +218,7 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_email, lock_request_fix
     make_fake_state_request(ctx, contact.id, true);
     ctx.commit_transaction();
 
-    unsigned long long unblock_update = pr.create_block_unblock_request(
+    const unsigned long long unblock_update = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
@@ -233,13 +231,13 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_email, lock_request_fix
 
 BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_post, lock_request_fixture) // checks for wrong blocks
 {
-    Fred::OperationContextCreator ctx;
-    unsigned long long block_update = pr.create_block_unblock_request(
+    const unsigned long long block_update = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
             Registry::PublicRequestImpl::LockRequestType::block_transfer_and_update);
+    Fred::OperationContextCreator ctx;
     BOOST_REQUIRE_EQUAL(
             get_db_public_request(ctx, block_update, 5, 0).size(),
             1);
@@ -265,7 +263,7 @@ BOOST_FIXTURE_TEST_CASE(block_update_then_unblock_update_post, lock_request_fixt
                 Registry::PublicRequestImpl::LockRequestType::block_transfer_and_update),
             Registry::PublicRequestImpl::ObjectAlreadyBlocked);
 
-    unsigned long long unblock_update = pr.create_block_unblock_request(
+    const unsigned long long unblock_update = pr.create_block_unblock_request(
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),

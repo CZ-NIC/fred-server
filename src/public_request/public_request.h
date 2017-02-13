@@ -148,14 +148,12 @@ public:
     unsigned long long create_authinfo_request_registry_email(
         ObjectType::Enum object_type,
         const std::string& object_handle,
-        const std::string& reason,
         const Optional<unsigned long long>& log_request_id,
         boost::shared_ptr<Fred::Mailer::Manager> manager);
 
     unsigned long long create_authinfo_request_non_registry_email(
         ObjectType::Enum object_type,
         const std::string& object_handle,
-        const std::string& reason,
         const Optional<unsigned long long>& log_request_id,
         ConfirmationMethod::Enum confirmation_method,
         const std::string& specified_email);
