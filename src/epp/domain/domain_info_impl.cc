@@ -4,6 +4,7 @@
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/object/object_state.h"
+#include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object/object_id_handle_pair.h"
 #include "util/db/nullable.h"
@@ -32,7 +33,8 @@ DomainInfoOutputData domain_info_impl(
 
     try {
 
-        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(_domain_fqdn).exec(_ctx, "UTC").info_domain_data;
+        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(
+                Fred::Zone::rem_trailing_dot(_domain_fqdn)).exec(_ctx, "UTC").info_domain_data;
 
         domain_info_output_data.roid = info_domain_data.roid;
         domain_info_output_data.fqdn = info_domain_data.fqdn;

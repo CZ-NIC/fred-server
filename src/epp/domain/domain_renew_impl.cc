@@ -81,7 +81,8 @@ DomainRenewResult domain_renew_impl(
     }
 
     //get domain info data and lock domain for update
-    Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(_data.fqdn)
+    Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(
+            Fred::Zone::rem_trailing_dot(_data.fqdn))
         .set_lock().exec(_ctx,"UTC").info_domain_data;
 
     //check current exdate
