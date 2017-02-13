@@ -17,7 +17,6 @@
  */
 
 #include "src/public_request/public_request.h"
-#include "src/fredlib/object/get_present_object_id.h"
 
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/registrar/info_registrar_data.h"

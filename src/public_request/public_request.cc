@@ -5,7 +5,7 @@
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/get_present_object_id.h"
 #include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/send_authinfo.h"
+#include "src/fredlib/email/email_utils.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
@@ -168,6 +168,124 @@ Fred::PublicRequestTypeIface::PublicRequestTypes BlockUnblockCommon::get_public_
 
 namespace {
 
+struct NoPublicRequest : std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "no public request found";
+    }
+};
+
+unsigned long long send_authinfo(
+    unsigned long long public_request_id,
+    const std::string& handle,
+    Fred::Object_Type::Enum object_type,
+    boost::shared_ptr<Fred::Mailer::Manager> manager)
+{
+    Fred::OperationContextCreator ctx;
+    Fred::Mailer::Parameters email_template_params;
+    {
+        const Database::Result dbres = ctx.get_conn().exec_params(
+                "SELECT create_time FROM public_request "
+                "WHERE id=$1::bigint",
+                Database::query_param_list(public_request_id));
+        if (dbres.size() < 1)
+        {
+            throw NoPublicRequest();
+        }
+        if (1 < dbres.size())
+        {
+            throw std::runtime_error("too many public requests for given id");
+        }
+        email_template_params.insert(Fred::Mailer::Parameters::value_type("reqid", boost::lexical_cast<std::string>(public_request_id)));
+        email_template_params.insert(Fred::Mailer::Parameters::value_type("reqdate", static_cast<std::string>(dbres[0][0])));
+        email_template_params.insert(Fred::Mailer::Parameters::value_type("handle", handle));
+    }
+
+    std::string sql;
+    const std::string object_type_handle = Conversion::Enums::to_db_handle(object_type);
+    switch (object_type)
+    {
+        case Fred::Object_Type::contact:
+            sql = "SELECT o.authinfopw,c.email "
+                  "FROM object o "
+                  "JOIN object_registry obr ON obr.id=o.id "
+                  "JOIN contact c ON c.id=o.id "
+                  "WHERE obr.name=$1::TEXT AND "
+                        "obr.type=get_object_type_id($2::TEXT) AND "
+                        "obr.erdate IS NULL AND "
+                        "c.email IS NOT NULL";
+            email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "1"));
+            break;
+        case Fred::Object_Type::nsset:
+            sql = "SELECT o.authinfopw,c.email "
+                  "FROM object o "
+                  "JOIN object_registry obr ON obr.id=o.id "
+                  "JOIN nsset n ON n.id=o.id "
+                  "JOIN nsset_contact_map ncm ON ncm.nssetid=n.id "
+                  "JOIN contact c ON c.id=ncm.contactid "
+                  "WHERE obr.name=$1::TEXT AND "
+                        "obr.type=get_object_type_id($2::TEXT) AND "
+                        "obr.erdate IS NULL AND "
+                        "c.email IS NOT NULL";
+            email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "2"));
+            break;
+        case Fred::Object_Type::domain:
+            sql = "SELECT o.authinfopw,c.email "
+                  "FROM object o "
+                  "JOIN object_registry obr ON obr.id=o.id "
+                  "JOIN domain d ON d.id=o.id "
+                  "JOIN contact c ON c.id=d.registrant "
+                  "WHERE obr.name=$1::TEXT AND "
+                        "obr.type=get_object_type_id($2::TEXT) AND "
+                        "obr.erdate IS NULL AND "
+                        "c.email IS NOT NULL "
+              "UNION "
+                  "SELECT o.authinfopw,c.email "
+                  "FROM object o "
+                  "JOIN object_registry obr ON obr.id=o.id "
+                  "JOIN domain d ON d.id=o.id "
+                  "JOIN domain_contact_map dcm ON dcm.domainid=d.id "
+                  "JOIN contact c ON c.id=dcm.contactid AND c.id!=d.registrant "
+                  "WHERE obr.name=$1::TEXT AND "
+                        "obr.type=get_object_type_id($2::TEXT) AND "
+                        "obr.erdate IS NULL AND "
+                        "c.email IS NOT NULL AND "
+                        "dcm.role=1";
+            email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "3"));
+            break;
+        case Fred::Object_Type::keyset:
+            sql = "SELECT o.authinfopw,c.email "
+                  "FROM object o "
+                  "JOIN object_registry obr ON obr.id=o.id "
+                  "JOIN keyset k ON k.id=o.id "
+                  "JOIN keyset_contact_map kcm ON kcm.keysetid=k.id "
+                  "JOIN contact c ON c.id=kcm.contactid "
+                  "WHERE obr.name=$1::TEXT AND "
+                        "obr.type=get_object_type_id($2::TEXT) AND "
+                        "obr.erdate IS NULL AND "
+                        "c.email IS NOT NULL";
+            email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "4"));
+            break;
+    }
+    const Database::Result dbres = ctx.get_conn().exec_params(
+            sql,
+            Database::query_param_list(handle)(object_type_handle));
+    if (dbres.size() < 1)
+    {
+        throw PublicRequestImpl::NoContactEmail();
+    }
+
+    email_template_params.insert(Fred::Mailer::Parameters::value_type("authinfo", static_cast<std::string>(dbres[0][0])));
+    std::set<std::string> recipients;
+    for (unsigned idx = 0; idx < dbres.size(); ++idx)
+    {
+        recipients.insert(static_cast<std::string>(dbres[idx][1]));
+    }
+    const Fred::EmailData data(recipients, "sendauthinfo_pif", email_template_params);
+    return Fred::send_joined_addresses_email(manager, data);
+}
+
 Fred::Object_Type::Enum to_fred_object_type(PublicRequestImpl::ObjectType::Enum value)
 {
     switch (value)
@@ -206,7 +324,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
         try
         {
             const unsigned long long email_id =
-                    Fred::send_authinfo(public_request_id, object_handle, to_fred_object_type(object_type), manager);
+                    send_authinfo(public_request_id, object_handle, to_fred_object_type(object_type), manager);
             try
             {
                 Fred::OperationContextCreator ctx;
@@ -239,15 +357,13 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
                     Optional< Nullable< Fred::RegistrarId > >())
                 .exec(locked_object, public_request_type, log_request_id);
             ctx.commit_transaction();
-            try
-            {
-                throw;
-            }
-            catch (const Fred::NoContactEmail&)
-            {
-                throw NoContactEmail();
-            }
+            throw;
         }
+    }
+    catch (const NoPublicRequest& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotFound();
     }
     catch (const Fred::UnknownObject& e)
     {
