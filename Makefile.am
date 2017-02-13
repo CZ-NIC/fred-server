@@ -1535,6 +1535,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/contact/contact_corba_conversions.h \
 		src/corba/epp/domain/domain_corba_conversions.cc \
 		src/corba/epp/domain/domain_corba_conversions.h \
+		src/corba/epp/poll/poll_corba_conversions.cc \
+		src/corba/epp/poll/poll_corba_conversions.h \
 		src/corba/epp/keyset/keyset_corba_conversions.cc \
 		src/corba/epp/keyset/keyset_corba_conversions.h \
 		src/corba/epp/nsset/nsset_corba_conversions.cc \
@@ -1623,6 +1625,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/poll/poll_acknowledgement_localized.h \
 		src/epp/poll/poll_acknowledgement.cc \
 		src/epp/poll/poll_acknowledgement.h \
+		src/epp/poll/poll_request_localized.cc \
+		src/epp/poll/poll_request_localized.h \
+		src/epp/poll/poll_request.cc \
+		src/epp/poll/poll_request.h \
 		src/epp/domain/delete_domain_localized.cc \
 		src/epp/domain/delete_domain_localized.h \
 		src/epp/domain/delete_domain.cc \

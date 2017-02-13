@@ -26,6 +26,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/variant.hpp>
 
 #include <stdlib.h>
 #include <string.h>
@@ -125,6 +126,7 @@
 #include "src/corba/epp/contact/contact_corba_conversions.h"
 #include "src/corba/epp/corba_conversions.h"
 #include "src/corba/epp/domain/domain_corba_conversions.h"
+#include "src/corba/epp/poll/poll_corba_conversions.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/epp/keyset/keyset_corba_conversions.h"
 #include "src/corba/epp/nsset/nsset_corba_conversions.h"
@@ -1490,7 +1492,6 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
                                          server_transaction_handle.c_str());
         }
 
-        // get actual results and wrap them for CORBA
         CORBA::String_var next_msg_id = Corba::wrap_string_to_corba_string(poll_acknowledgement_response
                                                                            .data
                                                                            .oldest_unseen_message_id);
@@ -1511,190 +1512,86 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
 }
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
-  CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate,
-  ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params
-  )
+    CORBA::String_out _msg_id,
+    CORBA::ULongLong& _count,
+    ccReg::timestamp_out _create_time,
+    ccReg::PollType& _type,
+    CORBA::Any_OUT_arg _msg,
+    const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-  LOG(
-      NOTICE_LOG,
-      "PollRequest: clientID -> %llu clTRID [%s]", params.loginID,static_cast<const char*>(params.clTRID)
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  std::auto_ptr<Fred::Poll::Message> m;
-  try {
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-        Fred::Poll::Manager::create(a.getDB())
-    );
-    // fill count
-    count = pollMan->getMessageCount(a.getRegistrar());
-    if (!count) a.NoMessage(); // throw exception NoMessage
-    m.reset(pollMan->getNextMessage(a.getRegistrar()));
-  }
-  catch (ccReg::EPP::NoMessages) {throw;}
-  catch (...) {a.failedInternal("Connection problems");}
-  if (!m.get())
-    a.failedInternal("Cannot get message"); // throw internal exception
-  a.setCode(COMMAND_ACK_MESG);
-  msg = new CORBA::Any;
-  // first fill common fields
-  // transform numeric id to string and fill msgID
-  std::stringstream buffer;
-  buffer << m->getId();
-  msgID = CORBA::string_dup(buffer.str().c_str());
-  // fill qdate
-  qDate = CORBA::string_dup(formatTime(m->getCrTime()).c_str());
-  // Test type of Message object wheter it's one of
-  // MessageEvent, MessageEventReg, MessageTechCheck or MessageLowCredit
-  // check MessageEventReg before MessageEvent because
-  // MessageEvent is ancestor of MessageEventReg
-  Fred::Poll::MessageEventReg *mer =
-      dynamic_cast<Fred::Poll::MessageEventReg *>(m.get());
-  if (mer) {
-    switch (m->getType()) {
-      case Fred::Poll::MT_TRANSFER_CONTACT:
-        type = ccReg::polltype_transfer_contact;
-        break;
-      case Fred::Poll::MT_TRANSFER_NSSET:
-        type = ccReg::polltype_transfer_nsset;
-        break;
-      case Fred::Poll::MT_TRANSFER_DOMAIN:
-        type = ccReg::polltype_transfer_domain;
-        break;
-      case Fred::Poll::MT_TRANSFER_KEYSET:
-        type = ccReg::polltype_transfer_keyset;
-        break;
-      default:
-        a.failedInternal("Invalid message type"); // thow exception
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
+
+        const Epp::Poll::PollRequestLocalizedResponse poll_request_response =
+            Epp::Poll::poll_request_localized(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle);
+
+        struct ConvertorToAny : boost::static_visitor<Corba::AnyType>
+        {
+            Corba::AnyType operator()(const Epp::Poll::TransferEvent& _transfer_event) const
+            {
+                return Corba::wrap_transfer_event_into_any(_transfer_event);
+            }
+
+            Corba::AnyType operator()(const Epp::Poll::MessageEvent& _message_event) const
+            {
+                return Corba::wrap_message_event_into_any(_message_event);
+            }
+
+            Corba::AnyType operator()(const Epp::Poll::LowCreditEvent& _low_credit_event) const
+            {
+                return Corba::wrap_low_credit_event_into_any(_low_credit_event);
+            }
+
+            Corba::AnyType operator()(const Epp::Poll::TechCheckEvent& _tech_check_event) const
+            {
+                return Corba::wrap_tech_check_event_into_any(_tech_check_event);
+            }
+
+            Corba::AnyType operator()(const Epp::Poll::RequestFeeInfoEvent& _request_fee_info_event) const
+            {
+                return Corba::wrap_low_request_fee_info_event_into_any(_request_fee_info_event);
+            }
+
+            Corba::AnyType operator()(const Epp::Poll::UpdateInfoEvent& _update_info_event) const
+            {
+                return Corba::wrap_update_info_event_into_any(_update_info_event);
+            }
+        };
+
+        Corba::AnyType message_and_type;
+        message_and_type = boost::apply_visitor(ConvertorToAny(), poll_request_response.data.message);
+        _msg = message_and_type.any._retn();
+
+        _type = message_and_type.type;
+
+        _create_time = CORBA::string_dup(formatTime(poll_request_response.data.creation_time).c_str());
+
+        CorbaConversion::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
+
+        const std::string msg_id_string = boost::lexical_cast<std::string>(poll_request_response
+                                                                           .data
+                                                                           .message_id);
+        CORBA::String_var msg_id = Corba::wrap_string_to_corba_string(msg_id_string);
+
+        ccReg::Response_var return_value = new ccReg::Response(
+            Corba::wrap_Epp_EppResponseSuccessLocalized(
+                poll_request_response.epp_response,
+                server_transaction_handle));
+
+        _msg_id = msg_id._retn();
+        return return_value._retn();
     }
-    ccReg::PollMsg_HandleDateReg *hdm = new ccReg::PollMsg_HandleDateReg;
-    hdm->handle = CORBA::string_dup(mer->getObjectHandle().c_str());
-    hdm->date = CORBA::string_dup(to_iso_extended_string(mer->getEventDate()).c_str() );
-    hdm->clID = CORBA::string_dup(mer->getRegistrarHandle().c_str());
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageEvent *me =
-      dynamic_cast<Fred::Poll::MessageEvent *>(m.get());
-  if (me) {
-    switch (m->getType()) {
-      case Fred::Poll::MT_IDLE_DELETE_CONTACT:
-      case Fred::Poll::MT_DELETE_CONTACT:
-        type = ccReg::polltype_delete_contact;
-        break;
-      case Fred::Poll::MT_IDLE_DELETE_NSSET:
-        type = ccReg::polltype_delete_nsset;
-        break;
-      case Fred::Poll::MT_IDLE_DELETE_DOMAIN:
-      case Fred::Poll::MT_DELETE_DOMAIN:
-        type = ccReg::polltype_delete_domain;
-        break;
-      case Fred::Poll::MT_IDLE_DELETE_KEYSET:
-        type = ccReg::polltype_delete_keyset;
-        break;
-      case Fred::Poll::MT_IMP_EXPIRATION:
-        type = ccReg::polltype_impexpiration;
-        break;
-      case Fred::Poll::MT_EXPIRATION:
-        type = ccReg::polltype_expiration;
-        break;
-      case Fred::Poll::MT_IMP_VALIDATION:
-        type = ccReg::polltype_impvalidation;
-        break;
-      case Fred::Poll::MT_VALIDATION:
-        type = ccReg::polltype_validation;
-        break;
-      case Fred::Poll::MT_OUTZONE:
-        type = ccReg::polltype_outzone;
-        break;
-      default:
-        a.failedInternal("Invalid message type"); // thow exception
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    ccReg::PollMsg_HandleDate *hdm = new ccReg::PollMsg_HandleDate;
-    hdm->handle = CORBA::string_dup(me->getObjectHandle().c_str());
-    hdm->date = CORBA::string_dup(to_iso_extended_string(me->getEventDate()).c_str() );
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageLowCredit *mlc =
-      dynamic_cast<Fred::Poll::MessageLowCredit *>(m.get());
-  if (mlc) {
-    type = ccReg::polltype_lowcredit;
-    ccReg::PollMsg_LowCredit *hdm = new ccReg::PollMsg_LowCredit;
-    hdm->zone = CORBA::string_dup(mlc->getZone().c_str());
-    hdm->limit = CORBA::string_dup((mlc->getLimit()).get_string(".2f").c_str());
-    hdm->credit = CORBA::string_dup((mlc->getCredit()).get_string(".2f").c_str());
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageTechCheck *mtc =
-      dynamic_cast<Fred::Poll::MessageTechCheck *>(m.get());
-  if (mtc) {
-    type = ccReg::polltype_techcheck;
-    ccReg::PollMsg_Techcheck *hdm = new ccReg::PollMsg_Techcheck;
-    hdm->handle = CORBA::string_dup(mtc->getHandle().c_str());
-    hdm->fqdns.length(mtc->getFQDNS().size());
-    for (unsigned i=0; i<mtc->getFQDNS().size(); i++)
-      hdm->fqdns[i] = mtc->getFQDNS()[i].c_str();
-    hdm->tests.length(mtc->getTests().size());
-    for (unsigned i=0; i<mtc->getTests().size(); i++) {
-      Fred::Poll::MessageTechCheckItem *test = mtc->getTests()[i];
-      hdm->tests[i].testname = CORBA::string_dup(test->getTestname().c_str());
-      hdm->tests[i].status = test->getStatus();
-      hdm->tests[i].note = CORBA::string_dup(test->getNote().c_str());
-    }
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageRequestFeeInfo *mrf =
-      dynamic_cast<Fred::Poll::MessageRequestFeeInfo*>(m.get());
-  if (mrf)
-  {
-      type = ccReg::polltype_request_fee_info;
-      ccReg::PollMsg_RequestFeeInfo *hdm = new ccReg::PollMsg_RequestFeeInfo;
-      hdm->periodFrom = CORBA::string_dup(formatTime(mrf->getPeriodFrom()).c_str());
-      hdm->periodTo = CORBA::string_dup(formatTime(mrf->getPeriodTo() - boost::posix_time::seconds(1)).c_str());
-      hdm->totalFreeCount = mrf->getTotalFreeCount();
-      hdm->usedCount = mrf->getUsedCount();
-      hdm->price = CORBA::string_dup(mrf->getPrice().c_str());
-      *msg <<= hdm;
-      LOGGER(PACKAGE).debug("poll message request_fee_info packed");
-      return a.getRet()._retn();
-  }
-  Fred::Poll::MessageUpdateObject *muo =
-      dynamic_cast<Fred::Poll::MessageUpdateObject*>(m.get());
-  if (muo)
-  {
-      switch (muo->getType())
-      {
-          case Fred::Poll::MT_UPDATE_DOMAIN:
-              type = ccReg::polltype_update_domain;
-              break;
-          case Fred::Poll::MT_UPDATE_NSSET:
-              type = ccReg::polltype_update_nsset;
-              break;
-          case Fred::Poll::MT_UPDATE_KEYSET:
-              type = ccReg::polltype_update_keyset;
-              break;
-      }
-      ccReg::PollMsg_Update *hdm = new ccReg::PollMsg_Update;
-      hdm->opTRID = CORBA::string_dup(muo->getOpTRID().c_str());
-      hdm->pollID = muo->getId();
-      *msg <<= hdm;
-      LOGGER(PACKAGE).debug("poll message update_domain packed");
-      return a.getRet()._retn();
-  }
-  a.failedInternal("Invalid message structure");
-  // previous command throw exception in any case so this code
-  // will never be called
-  return NULL;
 }
-
 
 /*
  * idl method for retrieving old and new data of updated domain
