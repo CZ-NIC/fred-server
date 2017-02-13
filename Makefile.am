@@ -815,6 +815,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/opcontext.h \
 		src/fredlib/contact/copy_contact.h \
 		src/fredlib/contact/copy_contact.cc \
+		src/fredlib/domain/renew_domain.h \
+		src/fredlib/domain/renew_domain.cc \
 		src/fredlib/domain/update_domain.h \
 		src/fredlib/domain/update_domain.cc \
 		src/fredlib/domain/info_domain_data.h \
@@ -2825,6 +2827,7 @@ tests_test_fredlib_SOURCES = \
 		tests/fredlib/contact/test_mojeid_checkers.cc \
 		util/types/birthdate.cc \
 		tests/fredlib/domain/test_update_domain.cc \
+		tests/fredlib/domain/test_renew_domain.cc \
 		tests/fredlib/domain/test_info_domain.cc \
 		tests/fredlib/domain/test_delete_domain.cc \
 		tests/fredlib/domain/test_create_domain.cc \

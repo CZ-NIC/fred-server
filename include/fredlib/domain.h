@@ -27,6 +27,7 @@
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/domain/renew_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/info_domain_diff.h"
 #include "src/fredlib/domain/check_domain.h"
