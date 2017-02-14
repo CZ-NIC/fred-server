@@ -36,6 +36,24 @@ CreatePublicRequest& CreatePublicRequest::set_registrar_id(RegistrarId _id)
     return *this;
 }
 
+namespace {
+
+void check_email_address_format(const std::string& email_address)
+{
+    const unsigned max_length_of_email_address = 255;
+    if (max_length_of_email_address < Util::get_utf8_char_len(email_address))
+    {
+        BOOST_THROW_EXCEPTION(CreatePublicRequest::Exception().set_wrong_email(email_address));
+    }
+    const bool email_address_format_is_valid = DjangoEmailFormat().check(email_address);
+    if (!email_address_format_is_valid)
+    {
+        BOOST_THROW_EXCEPTION(CreatePublicRequest::Exception().set_wrong_email(email_address));
+    }
+}
+
+}//namespace Fred::{anonymous}
+
 PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
                                           const PublicRequestTypeIface &_type,
                                           const Optional< LogRequestId > &_create_log_request_id)const
@@ -46,15 +64,11 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
         Database::query_param_list params(public_request_type);                             // $1::TEXT
         params(_locked_object.get_id())                                                     // $2::BIGINT
               (reason_.isset() ? reason_.get_value() : Database::QPNull);                   // $3::TEXT
-        if (email_to_answer_.isset()) {
-            const std::string& email = email_to_answer_.get_value();
-            if ((Util::get_utf8_char_len(email) <= 255) // 255: db -> public_request -> email_to_answer
-                && DjangoEmailFormat().check(email)) {
-                params(email);                                                              // $4::TEXT
-            }
-            else {
-                BOOST_THROW_EXCEPTION(Exception().set_wrong_email(email));
-            }
+        if (email_to_answer_.isset())
+        {
+            const std::string email_address = email_to_answer_.get_value();
+            check_email_address_format(email_address);
+            params(email_address);                                                          // $4::TEXT
         }
         else {
             params(Database::QPNull);                                                       // $4::TEXT
