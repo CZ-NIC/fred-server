@@ -5,7 +5,6 @@
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/get_present_object_id.h"
 #include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/email/email_utils.h"
 #include "src/fredlib/public_request/public_request_status.h"
 #include "src/fredlib/public_request/public_request_type_iface.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
@@ -18,10 +17,13 @@
 
 #include <boost/format.hpp>
 #include <boost/exception/diagnostic_information.hpp>
+#include <boost/foreach.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
+#include <set>
+#include <map>
 #include <stdexcept>
 #include <sstream>
-#include <string>
 
 namespace Registry {
 namespace PublicRequestType {
@@ -176,6 +178,68 @@ struct NoPublicRequest : std::exception
     }
 };
 
+struct EmailData
+{
+    EmailData(
+            const std::set<std::string>& _recipient_email_addresses,
+            const std::string& _template_name,
+            const std::map<std::string, std::string>& _template_parameters)
+        : recipient_email_addresses(_recipient_email_addresses),
+          template_name(_template_name),
+          template_parameters(_template_parameters)
+    {}
+    const std::set<std::string> recipient_email_addresses;
+    const std::string template_name;
+    const std::map<std::string, std::string> template_parameters;
+};
+
+struct FailedToSendMailToRecipient : std::exception
+{
+    FailedToSendMailToRecipient(
+            const std::string& _failed_recipient,
+            const std::set<std::string>& _skipped_recipients)
+        : failed_recipient(_failed_recipient),
+          skipped_recipients(_skipped_recipients)
+    {}
+    ~FailedToSendMailToRecipient() throw() {}
+    const char* what()const throw() { return "failed to send mail to recipient"; }
+    const std::string failed_recipient;
+    const std::set<std::string> skipped_recipients;
+};
+
+unsigned long long send_joined_addresses_email(
+    boost::shared_ptr<Fred::Mailer::Manager> mailer,
+    const EmailData& data)
+{
+    std::set<std::string> trimmed_recipient_email_addresses;
+    BOOST_FOREACH(const std::string& email, data.recipient_email_addresses)
+    {
+        trimmed_recipient_email_addresses.insert(boost::trim_copy(email));
+    }
+
+    std::ostringstream recipients;
+    for (std::set<std::string>::const_iterator address_ptr = trimmed_recipient_email_addresses.begin();
+         address_ptr != trimmed_recipient_email_addresses.end(); ++address_ptr)
+    {
+        recipients << *address_ptr << ' ';
+    }
+    try
+    {
+        return mailer->sendEmail(
+                "",
+                recipients.str(),
+                "",
+                data.template_name,
+                data.template_parameters,
+                Fred::Mailer::Handles(),
+                Fred::Mailer::Attachments());
+    }
+    catch (const Fred::Mailer::NOT_SEND&)
+    {
+        throw FailedToSendMailToRecipient(recipients.str(), std::set<std::string>());
+    }
+}
+
 unsigned long long send_authinfo(
     unsigned long long public_request_id,
     const std::string& handle,
@@ -282,8 +346,8 @@ unsigned long long send_authinfo(
     {
         recipients.insert(static_cast<std::string>(dbres[idx][1]));
     }
-    const Fred::EmailData data(recipients, "sendauthinfo_pif", email_template_params);
-    return Fred::send_joined_addresses_email(manager, data);
+    const EmailData data(recipients, "sendauthinfo_pif", email_template_params);
+    return send_joined_addresses_email(manager, data);
 }
 
 Fred::Object_Type::Enum to_fred_object_type(PublicRequestImpl::ObjectType::Enum value)
