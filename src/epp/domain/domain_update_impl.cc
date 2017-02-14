@@ -106,7 +106,8 @@ unsigned long long domain_update_impl(
             }
             else {
 
-                Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(_domain_fqdn)
+                Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(
+                        Fred::Zone::rem_trailing_dot(_domain_fqdn))
                     .exec(_ctx,"UTC").info_domain_data;
 
                 const boost::optional<boost::gregorian::date> curr_enum_valexdate
@@ -158,7 +159,7 @@ unsigned long long domain_update_impl(
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
     const Fred::InfoDomainData domain_data_before_update =
-        Fred::InfoDomainByHandle(_domain_fqdn).set_lock().exec(_ctx).info_domain_data;
+        Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_update.sponsoring_registrar_handle ==
                                           session_registrar.handle);

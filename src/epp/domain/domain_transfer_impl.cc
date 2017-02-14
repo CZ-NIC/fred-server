@@ -66,7 +66,8 @@ unsigned long long domain_transfer_impl(
 
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
-    const Fred::InfoDomainData domain_data_before_transfer = Fred::InfoDomainByHandle(_domain_fqdn).set_lock().exec(_ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_before_transfer = Fred::InfoDomainByHandle(
+            Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);
