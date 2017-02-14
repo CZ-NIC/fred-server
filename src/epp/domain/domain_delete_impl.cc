@@ -39,9 +39,9 @@ unsigned long long domain_delete_impl(
             Fred::Zone::rem_trailing_dot(_domain_fqdn));
     } catch (const Fred::Zone::Exception& e) {
         if(e.is_set_unknown_zone_in_fqdn()) {
-            throw NonexistentHandle();
+            throw ObjectDoesNotExist();
         }
-        /* in the improbable case that exception is incorrectly set */
+
         throw;
     }
 
@@ -49,21 +49,31 @@ unsigned long long domain_delete_impl(
         throw ZoneAuthorizationError();
     }
 
-    if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
-        throw NonexistentHandle();
+    Fred::InfoDomainData domain_data_before_delete;
+    try
+    {
+        domain_data_before_delete = Fred::InfoDomainByHandle(
+                Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
+    }
+    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    {
+        if(ex.is_set_unknown_fqdn())
+        {
+            throw ObjectDoesNotExist();
+        }
+
+        throw;
     }
 
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
-    const Fred::InfoDomainData domain_data_before_delete = Fred::InfoDomainByHandle(
-            Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_delete.sponsoring_registrar_handle ==
                                           session_registrar.handle);
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
-    const bool is_operation_permitted = (is_sponsoring_registrar || is_system_registrar);
+    const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
 
-    if (!is_operation_permitted) {
+    if (!is_registrar_authorized) {
         throw AuthorizationError();
     }
 

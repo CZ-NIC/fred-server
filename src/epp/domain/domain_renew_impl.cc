@@ -8,6 +8,7 @@
 #include "src/fredlib/domain/renew_domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/domain.h"
+#include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
 #include "src/fredlib/zone/zone.h"
@@ -54,18 +55,19 @@ DomainRenewResult domain_renew_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    const Fred::Domain::DomainRegistrability::Enum domain_registrability
-        = Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _data.fqdn);
-
-    //check fqdn has known zone
-    if(domain_registrability == Fred::Domain::DomainRegistrability::zone_not_in_registry)
-    {
-        throw ObjectDoesNotExist();
-    }
-
     //get zone data
-    const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
+    //check fqdn has known zone
+    Fred::Zone::Data zone_data;
+    try {
+        zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
             Fred::Zone::rem_trailing_dot(_data.fqdn));
+    } catch (const Fred::Zone::Exception& e) {
+        if(e.is_set_unknown_zone_in_fqdn()) {
+            throw ObjectDoesNotExist();
+        }
+
+        throw;
+    }
 
     //check registrar zone access permission
     if(!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id,
@@ -74,16 +76,23 @@ DomainRenewResult domain_renew_impl(
         throw ZoneAuthorizationError();
     }
 
-    //check if fqdn is registered
-    if(domain_registrability != Fred::Domain::DomainRegistrability::registered)
+    //check if fqdn is registered and get domain info data and lock domain for update
+    Fred::InfoDomainData domain_info_data;
+    try
     {
-        throw ObjectDoesNotExist();
+        domain_info_data =  Fred::InfoDomainByHandle(
+                Fred::Zone::rem_trailing_dot(_data.fqdn))
+            .set_lock().exec(_ctx,"UTC").info_domain_data;
     }
+    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    {
+        if(ex.is_set_unknown_fqdn())
+        {
+            throw ObjectDoesNotExist();
+        }
 
-    //get domain info data and lock domain for update
-    Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(
-            Fred::Zone::rem_trailing_dot(_data.fqdn))
-        .set_lock().exec(_ctx,"UTC").info_domain_data;
+        throw;
+    }
 
     //check current exdate
     try

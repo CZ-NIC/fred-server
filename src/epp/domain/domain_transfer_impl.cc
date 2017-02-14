@@ -50,7 +50,7 @@ unsigned long long domain_transfer_impl(
             Fred::Zone::rem_trailing_dot(_domain_fqdn));
     } catch (const Fred::Zone::Exception& e) {
         if(e.is_set_unknown_zone_in_fqdn()) {
-            throw NonexistentHandle();
+            throw ObjectDoesNotExist();
         }
         /* in the improbable case that exception is incorrectly set */
         throw;
@@ -60,14 +60,23 @@ unsigned long long domain_transfer_impl(
         throw AuthorizationError();
     }
 
-    if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
-        throw NonexistentHandle();
+    Fred::InfoDomainData domain_data_before_transfer;
+    try
+    {
+        domain_data_before_transfer = Fred::InfoDomainByHandle(
+                Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
     }
+    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    {
+        if(ex.is_set_unknown_fqdn())
+        {
+            throw ObjectDoesNotExist();
+        }
 
+        throw;
+    }
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
-    const Fred::InfoDomainData domain_data_before_transfer = Fred::InfoDomainByHandle(
-            Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);
@@ -100,7 +109,7 @@ unsigned long long domain_transfer_impl(
             ).exec(_ctx);
 
     } catch (const Fred::UnknownDomainId&) {
-        throw NonexistentHandle();
+        throw ObjectDoesNotExist();
 
     } catch (const Fred::IncorrectAuthInfoPw&) {
         throw AuthorizationInformationError();
