@@ -1,7 +1,6 @@
 #include "src/corba/public_request/server_i.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/public_request/public_request.h"
-#include "src/fredlib/object/get_present_object_id.h"
 #include "src/fredlib/public_request/create_public_request.h"
 #include "src/fredlib/mailer.h"
 #include "src/fredlib/documents.h"

@@ -21,30 +21,27 @@
  *  header of get_objects_id method
  */
 
-#ifndef GET_PRESENT_OBJECT_ID_H_72462423417
-#define GET_PRESENT_OBJECT_ID_H_72462423417
+#ifndef GET_ID_OF_REGISTERED_H_72462423417
+#define GET_ID_OF_REGISTERED_H_72462423417
 
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/opcontext.h"
 
 #include <string>
+#include <exception>
 
-namespace Fred
-{
+namespace Fred {
 
 struct UnknownObject : std::exception
 {
-    virtual const char* what() const throw()
-    {
-        return "unknown registry object type or handle";
-    }
+    const char* what() const throw();
 };
 
-unsigned long long get_present_object_id(
+template <Object_Type::Enum object_type>
+unsigned long long get_id_of_registered(
         OperationContext& ctx,
-        Object_Type::Enum object_type,
         const std::string& handle);
 
-}
+}//namespace Fred
 
-#endif // GET_PRESENT_OBJECT_ID_H_72462423417
+#endif//GET_ID_OF_REGISTERED_H_72462423417
