@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoRegistrarData)
             info_registrar_data_.id,
             42
         ),
-        Epp::NonexistentHandle
+        Epp::ObjectDoesNotExist
     );
 }
 

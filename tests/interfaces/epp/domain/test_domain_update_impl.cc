@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoDomainDataOfNonexistentD
             Optional<unsigned long long>(), // logd_request_id
             true // rifd_epp_update_domain_keyset_clear
         ),
-        Epp::NonexistentHandle
+        Epp::ObjectDoesNotExist
     );
 }
 
@@ -192,7 +192,7 @@ BOOST_FIXTURE_TEST_CASE(fail_invalid_handle, HasInfoDomainDataOfDomainWithInvali
             Optional<unsigned long long>(), // logd_request_id
             true // rifd_epp_update_domain_keyset_clear
         ),
-        Epp::NonexistentHandle
+        Epp::ObjectDoesNotExist
     );
 }
 

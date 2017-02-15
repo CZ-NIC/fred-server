@@ -51,7 +51,7 @@ BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoDomainDataOfNonexistentD
             info_domain_data_.fqdn,
             info_registrar_data_.id
         ),
-        Epp::NonexistentHandle
+        Epp::ObjectDoesNotExist
     );
 }
 
