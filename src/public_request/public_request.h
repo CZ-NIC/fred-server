@@ -43,12 +43,12 @@ namespace Registry {
 class PublicRequestImpl
 {
 public:
-    struct ConfirmationMethod
+    struct ConfirmedBy
     {
         enum Enum
         {
-            email_with_qualified_certificate,
-            letter_with_authenticated_signature
+            email,
+            letter
         };
     };
 
@@ -155,14 +155,14 @@ public:
         ObjectType::Enum object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmationMethod::Enum confirmation_method,
+        ConfirmedBy::Enum confirmation_method,
         const std::string& specified_email);
 
     unsigned long long create_block_unblock_request(
         ObjectType::Enum object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        ConfirmationMethod::Enum confirmation_method,
+        ConfirmedBy::Enum confirmation_method,
         LockRequestType::Enum lock_request_type);
 
     Buffer create_public_request_pdf(

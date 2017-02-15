@@ -50,14 +50,14 @@ public:
         ObjectType_PR object_type,
         const char* object_handle,
         NullableULongLong* log_request_id,
-        ConfirmationMethod confirmation_method,
+        ConfirmedBy confirmation_method,
         const char* specified_email);
 
     ::CORBA::ULongLong create_block_unblock_request(
         ObjectType_PR object_type,
         const char* object_handle,
         NullableULongLong* log_request_id,
-        ConfirmationMethod confirmation_method,
+        ConfirmedBy confirmation_method,
         LockRequestType lock_request_type);
 
     Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Language lang);

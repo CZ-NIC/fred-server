@@ -84,17 +84,16 @@ Server_i::Server_i()
 
 namespace {
 
-PublicRequestImpl::ConfirmationMethod::Enum unwrap_confirmationmethod_to_confirmationmethod(
-        ConfirmationMethod confirmation_method)
+PublicRequestImpl::ConfirmedBy::Enum unwrap_confirmedby_to_confirmedby(ConfirmedBy confirmation_method)
 {
     switch (confirmation_method)
     {
-        case EMAIL_WITH_QUALIFIED_CERTIFICATE :
-            return PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate;
-        case LETTER_WITH_AUTHENTICATED_SIGNATURE :
-            return PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature;
+        case SIGNED_EMAIL:
+            return PublicRequestImpl::ConfirmedBy::email;
+        case NOTARIZED_LETTER:
+            return PublicRequestImpl::ConfirmedBy::letter;
     }
-    throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ConfirmationMethod");
+    throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ConfirmedBy");
 }
 
 }//namespace Registry::PublicRequest::{anonymous}
@@ -103,7 +102,7 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
     ObjectType_PR object_type,
     const char* object_handle,
     NullableULongLong* log_request_id,
-    ConfirmationMethod confirmation_method,
+    ConfirmedBy confirmation_method,
     const char* specified_email)
 {
     try
@@ -112,7 +111,7 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
                 unwrap_objecttype_pr_to_objecttype(object_type),
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                unwrap_confirmationmethod_to_confirmationmethod(confirmation_method),
+                unwrap_confirmedby_to_confirmedby(confirmation_method),
                 Corba::unwrap_string_from_const_char_ptr(specified_email));
         CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
@@ -164,7 +163,7 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
     ObjectType_PR object_type,
     const char* object_handle,
     NullableULongLong* log_request_id,
-    ConfirmationMethod confirmation_method,
+    ConfirmedBy confirmation_method,
     LockRequestType lock_request_type)
 {
     try
@@ -173,7 +172,7 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
                 unwrap_objecttype_pr_to_objecttype(object_type),
                 Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
-                unwrap_confirmationmethod_to_confirmationmethod(confirmation_method),
+                unwrap_confirmedby_to_confirmedby(confirmation_method),
                 unwrap_lockrequesttype_to_lockrequesttype(lock_request_type));
         CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);

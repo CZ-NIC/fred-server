@@ -124,7 +124,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
+            Registry::PublicRequestImpl::ConfirmedBy::letter,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
     ctx.commit_transaction();
     boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
@@ -154,7 +154,7 @@ BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
             Registry::PublicRequestImpl::ObjectType::contact,
             contact.handle,
             Optional<unsigned long long>(),
-            Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+            Registry::PublicRequestImpl::ConfirmedBy::email,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
     boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(

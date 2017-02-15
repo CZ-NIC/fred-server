@@ -461,7 +461,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     ObjectType::Enum object_type,
     const std::string& object_handle,
     const Optional<unsigned long long>& log_request_id,
-    ConfirmationMethod::Enum confirmation_method,
+    ConfirmedBy::Enum confirmation_method,
     const std::string& specified_email)
 {
     try
@@ -476,14 +476,14 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
                 Optional<unsigned long long>());
         switch (confirmation_method)
         {
-            case ConfirmationMethod::email_with_qualified_certificate:
+            case ConfirmedBy::email:
             {
                 const unsigned long long request_id =
                         create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoEmail(), log_request_id);
                 ctx.commit_transaction();
                 return request_id;
             }
-            case ConfirmationMethod::letter_with_authenticated_signature:
+            case ConfirmedBy::letter:
             {
                 const unsigned long long request_id =
                         create_public_request_op.exec(locked_object, PublicRequestType::AuthinfoPost(), log_request_id);
@@ -523,16 +523,16 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
 namespace {
 
 template <typename request>
-const Fred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl::ConfirmationMethod::Enum confirmation_method)
+const Fred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl::ConfirmedBy::Enum confirmation_method)
 {
     switch (confirmation_method)
     {
-        case PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate:
+        case PublicRequestImpl::ConfirmedBy::email:
         {
             static const typename request::ByEmail public_request_type;
             return public_request_type.iface();
         }
-        case PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature:
+        case PublicRequestImpl::ConfirmedBy::letter:
         {
             static const typename request::ByPost public_request_type;
             return public_request_type.iface();
@@ -547,7 +547,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
     ObjectType::Enum object_type,
     const std::string& object_handle,
     const Optional<unsigned long long>& log_request_id,
-    ConfirmationMethod::Enum confirmation_method,
+    ConfirmedBy::Enum confirmation_method,
     LockRequestType::Enum lock_request_type)
 {
     try

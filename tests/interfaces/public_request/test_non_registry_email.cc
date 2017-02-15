@@ -52,49 +52,49 @@ public:
                 Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+                Registry::PublicRequestImpl::ConfirmedBy::email,
                 email);
         post_contact_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
+                Registry::PublicRequestImpl::ConfirmedBy::letter,
                 email);
         email_nsset_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+                Registry::PublicRequestImpl::ConfirmedBy::email,
                 email);
         post_nsset_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
+                Registry::PublicRequestImpl::ConfirmedBy::letter,
                 email);
         email_domain_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+                Registry::PublicRequestImpl::ConfirmedBy::email,
                 email);
         post_domain_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
+                Registry::PublicRequestImpl::ConfirmedBy::letter,
                 email);
         email_keyset_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+                Registry::PublicRequestImpl::ConfirmedBy::email,
                 email);
         post_keyset_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::letter_with_authenticated_signature,
+                Registry::PublicRequestImpl::ConfirmedBy::letter,
                 email);
     }
 private:
@@ -144,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
                 Registry::PublicRequestImpl::ObjectType::contact,
                 "test handle",
                 Optional<unsigned long long>(),
-                Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+                Registry::PublicRequestImpl::ConfirmedBy::email,
                 "some@email.com"),
             Registry::PublicRequestImpl::ObjectNotFound);
 }
@@ -156,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE(invalid_email, non_registry_email_fixture)
                     Registry::PublicRequestImpl::ObjectType::contact,
                     contact.handle,
                     Optional<unsigned long long>(),
-                    Registry::PublicRequestImpl::ConfirmationMethod::email_with_qualified_certificate,
+                    Registry::PublicRequestImpl::ConfirmedBy::email,
                     "wrongemail"),
             Registry::PublicRequestImpl::InvalidContactEmail);
 }
