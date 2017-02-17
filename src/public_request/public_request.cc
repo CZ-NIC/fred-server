@@ -26,142 +26,141 @@
 #include <sstream>
 
 namespace Registry {
+
 namespace PublicRequestType {
 namespace {
 
-class Common : public Fred::PublicRequestTypeIface
+template <class T>
+struct ImplementedBy
 {
-public:
-    const Fred::PublicRequestTypeIface& iface() const { return *static_cast<const Fred::PublicRequestTypeIface*>(this); }
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_update(
-            Fred::PublicRequest::Status::Enum _old_status,
-            Fred::PublicRequest::Status::Enum _new_status) const
+    template <const char* name>
+    class Named : public Fred::PublicRequestTypeIface
     {
-        return PublicRequestTypes();
-    }
+    public:
+        typedef T Type;
+        Named():implementation_() { }
+        std::string get_public_request_type() const { return name; }
+    private:
+        PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+        {
+            return implementation_.template get_public_request_types_to_cancel_on_create<Named>();
+        }
+        PublicRequestTypes get_public_request_types_to_cancel_on_update(
+                Fred::PublicRequest::Status::Enum _old_status,
+                Fred::PublicRequest::Status::Enum _new_status)const
+        {
+            return implementation_.template get_public_request_types_to_cancel_on_update<Named>(
+                    _old_status,
+                    _new_status);
+        }
+        const Type implementation_;
+    };
 };
 
-class AuthinfoAuto : public Common
+
+struct AuthinfoImplementation
 {
-private:
-    std::string get_public_request_type() const { return "authinfo_auto_pif"; }
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    template <typename T>
+    Fred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create()const
     {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new AuthinfoAuto));
+        Fred::PublicRequestTypeIface::PublicRequestTypes res;
+        res.insert(Fred::PublicRequestTypeIface::IfacePtr(new T));
         return res;
     }
-};
-
-class AuthinfoEmail : public Common
-{
-private:
-    std::string get_public_request_type() const { return "authinfo_email_pif"; }
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    template <typename T>
+    Fred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
+            Fred::PublicRequest::Status::Enum,
+            Fred::PublicRequest::Status::Enum)const
     {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new AuthinfoEmail));
-        return res;
-    }
+        return Fred::PublicRequestTypeIface::PublicRequestTypes();
+    };
 };
 
-class AuthinfoPost : public Common
+typedef ImplementedBy<AuthinfoImplementation> AuthinfoPublicRequest;
+
+extern const char authinfo_auto_pif[] = "authinfo_auto_pif";
+typedef AuthinfoPublicRequest::Named<authinfo_auto_pif> AuthinfoAuto;
+
+extern const char authinfo_email_pif[] = "authinfo_email_pif";
+typedef AuthinfoPublicRequest::Named<authinfo_email_pif> AuthinfoEmail;
+
+extern const char authinfo_post_pif[] = "authinfo_post_pif";
+typedef AuthinfoPublicRequest::Named<authinfo_post_pif> AuthinfoPost;
+
+
+Fred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_request_types_to_cancel_on_create();
+
+struct BlockUnblockImplementation
 {
-private:
-    std::string get_public_request_type() const { return "authinfo_post_pif"; }
-    PublicRequestTypes get_public_request_types_to_cancel_on_create() const
+    template <typename>
+    Fred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_create()const
     {
-        PublicRequestTypes res;
-        res.insert(IfacePtr(new AuthinfoPost));
-        return res;
+        return get_block_unblock_public_request_types_to_cancel_on_create();
     }
+    template <typename T>
+    Fred::PublicRequestTypeIface::PublicRequestTypes get_public_request_types_to_cancel_on_update(
+            Fred::PublicRequest::Status::Enum,
+            Fred::PublicRequest::Status::Enum)const
+    {
+        return Fred::PublicRequestTypeIface::PublicRequestTypes();
+    };
 };
 
-class BlockUnblockCommon : public Common
-{
-private:
-    PublicRequestTypes get_public_request_types_to_cancel_on_create()const;
-};
+extern const char block_changes_email_pif[] = "block_changes_email_pif";
+extern const char block_changes_post_pif[] = "block_changes_post_pif";
+
+extern const char block_transfer_email_pif[] = "block_transfer_email_pif";
+extern const char block_transfer_post_pif[] = "block_transfer_post_pif";
+
+extern const char unblock_changes_email_pif[] = "unblock_changes_email_pif";
+extern const char unblock_changes_post_pif[] = "unblock_changes_post_pif";
+
+extern const char unblock_transfer_email_pif[] = "unblock_transfer_email_pif";
+extern const char unblock_transfer_post_pif[] = "unblock_transfer_post_pif";
 
 struct Block
 {
+    typedef ImplementedBy<BlockUnblockImplementation> PublicRequest;
     struct Changes
     {
-        class ByEmail : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "block_changes_email_pif"; }
-        };
-
-        class ByPost : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "block_changes_post_pif"; }
-        };
+        typedef PublicRequest::Named<block_changes_email_pif> ByEmail;
+        typedef PublicRequest::Named<block_changes_post_pif> ByPost;
     };
 
     struct Transfer
     {
-        class ByEmail : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "block_transfer_email_pif"; }
-        };
-
-        class ByPost : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "block_transfer_post_pif"; }
-        };
+        typedef PublicRequest::Named<block_transfer_email_pif> ByEmail;
+        typedef PublicRequest::Named<block_transfer_post_pif> ByPost;
     };
 };
 
 struct Unblock
 {
+    typedef ImplementedBy<BlockUnblockImplementation> PublicRequest;
     struct Changes
     {
-        class ByEmail : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "unblock_changes_email_pif"; }
-        };
-
-        class ByPost : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "unblock_changes_post_pif"; }
-        };
+        typedef PublicRequest::Named<unblock_changes_email_pif> ByEmail;
+        typedef PublicRequest::Named<unblock_changes_post_pif> ByPost;
     };
 
     struct Transfer
     {
-        class ByEmail : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "unblock_transfer_email_pif"; }
-        };
-
-        class ByPost : public BlockUnblockCommon
-        {
-        private:
-            std::string get_public_request_type() const { return "unblock_transfer_post_pif"; }
-        };
+        typedef PublicRequest::Named<unblock_transfer_email_pif> ByEmail;
+        typedef PublicRequest::Named<unblock_transfer_post_pif> ByPost;
     };
 };
 
-
-Fred::PublicRequestTypeIface::PublicRequestTypes BlockUnblockCommon::get_public_request_types_to_cancel_on_create()const
+Fred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_request_types_to_cancel_on_create()
 {
-    PublicRequestTypes res;
-    res.insert(IfacePtr(new Block::Changes::ByEmail));
-    res.insert(IfacePtr(new Block::Changes::ByPost));
-    res.insert(IfacePtr(new Block::Transfer::ByEmail));
-    res.insert(IfacePtr(new Block::Transfer::ByPost));
-    res.insert(IfacePtr(new Unblock::Changes::ByEmail));
-    res.insert(IfacePtr(new Unblock::Changes::ByPost));
-    res.insert(IfacePtr(new Unblock::Transfer::ByEmail));
-    res.insert(IfacePtr(new Unblock::Transfer::ByPost));
+    Fred::PublicRequestTypeIface::PublicRequestTypes res;
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Block::Changes::ByEmail));
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Block::Changes::ByPost));
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Block::Transfer::ByEmail));
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Block::Transfer::ByPost));
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Unblock::Changes::ByEmail));
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Unblock::Changes::ByPost));
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Unblock::Transfer::ByEmail));
+    res.insert(Fred::PublicRequestTypeIface::IfacePtr(new Unblock::Transfer::ByPost));
     return res;
 }
 
@@ -530,12 +529,12 @@ const Fred::PublicRequestTypeIface& get_public_request_type(PublicRequestImpl::C
         case PublicRequestImpl::ConfirmedBy::email:
         {
             static const typename request::ByEmail public_request_type;
-            return public_request_type.iface();
+            return static_cast<const Fred::PublicRequestTypeIface&>(public_request_type);
         }
         case PublicRequestImpl::ConfirmedBy::letter:
         {
             static const typename request::ByPost public_request_type;
-            return public_request_type.iface();
+            return static_cast<const Fred::PublicRequestTypeIface&>(public_request_type);
         }
     }
     throw std::runtime_error("unexpected confirmation method");
@@ -655,27 +654,29 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
 
 namespace {
 
+std::map<std::string, unsigned char> get_public_request_type_to_post_type_dictionary()
+{
+    std::map<std::string, unsigned char> dictionary;
+    if (dictionary.insert(std::make_pair(PublicRequestType::AuthinfoPost().get_public_request_type(), 1)).second &&
+        dictionary.insert(std::make_pair(PublicRequestType::Block::Transfer::ByPost().get_public_request_type(), 2)).second &&
+        dictionary.insert(std::make_pair(PublicRequestType::Unblock::Transfer::ByPost().get_public_request_type(), 3)).second &&
+        dictionary.insert(std::make_pair(PublicRequestType::Block::Changes::ByPost().get_public_request_type(), 4)).second &&
+        dictionary.insert(std::make_pair(PublicRequestType::Unblock::Changes::ByPost().get_public_request_type(), 5)).second)
+    {
+        return dictionary;
+    }
+    throw std::logic_error("duplicate public request type");
+}
+
 short public_request_type_to_post_type(const std::string& public_request_type)
 {
-    if (public_request_type == PublicRequestType::AuthinfoPost().iface().get_public_request_type())
+    typedef std::map<std::string, unsigned char> Dictionary;
+    static const Dictionary dictionary = get_public_request_type_to_post_type_dictionary();
+    const Dictionary::const_iterator result_ptr = dictionary.find(public_request_type);
+    const bool key_found = result_ptr != dictionary.end();
+    if (key_found)
     {
-        return 1;
-    }
-    if (public_request_type == PublicRequestType::Block::Transfer::ByPost().iface().get_public_request_type())
-    {
-        return 2;
-    }
-    if (public_request_type == PublicRequestType::Unblock::Transfer::ByPost().iface().get_public_request_type())
-    {
-        return 3;
-    }
-    if (public_request_type == PublicRequestType::Block::Changes::ByPost().iface().get_public_request_type())
-    {
-        return 4;
-    }
-    if (public_request_type == PublicRequestType::Unblock::Changes::ByPost().iface().get_public_request_type())
-    {
-        return 5;
+        return result_ptr->second;
     }
     throw PublicRequestImpl::InvalidPublicRequestType();
 }
