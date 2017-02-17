@@ -94,9 +94,9 @@ unsigned long long update_nsset(
     const bool is_sponsoring_registrar = (nsset_data_before_update.sponsoring_registrar_handle ==
                                           logged_in_registrar.handle);
     const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
-    const bool operation_is_permitted = (is_sponsoring_registrar || is_system_registrar);
+    const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
 
-    if (!operation_is_permitted) {
+    if (!is_registrar_authorized) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
                                          .add_extended_error(
                                                  EppExtendedError::of_scalar_parameter(

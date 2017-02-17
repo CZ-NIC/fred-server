@@ -40,8 +40,8 @@ Fred::InfoKeysetData check_keyset_handle(
             Fred::InfoKeysetByHandle(_keyset_handle).set_lock().exec(_ctx).info_keyset_data;
         const bool is_sponsoring_registrar = (keyset_data.sponsoring_registrar_handle == callers_registrar.handle);
         const bool is_system_registrar = callers_registrar.system.get_value_or(false);
-        const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
-        if (!is_operation_permitted) {
+        const bool is_registrar_authorized = (is_system_registrar || is_sponsoring_registrar);
+        if (!is_registrar_authorized) {
             _ctx.get_log().info("check_keyset_handle failure: registrar not authorized for this operation");
             throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
         }

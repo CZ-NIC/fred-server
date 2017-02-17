@@ -69,9 +69,9 @@ unsigned long long delete_nsset(
     const bool is_sponsoring_registrar = (nsset_data_before_delete.sponsoring_registrar_handle ==
                                           logged_in_registrar.handle);
 
-    const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
+    const bool is_registrar_authorized = (is_system_registrar || is_sponsoring_registrar);
 
-    if (!is_operation_permitted) {
+    if (!is_registrar_authorized) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
                                          .add_extended_error(
                                                  EppExtendedError::of_scalar_parameter(
