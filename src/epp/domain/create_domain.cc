@@ -300,7 +300,7 @@ CreateDomainResult create_domain(
             result.creation_time,
             current_local_date,
             domain_expiration_date,
-            domain_registration_in_months / 12);
+            domain_registration_in_months);
 
     }
     catch (const Fred::CreateDomain::Exception& e) {

@@ -269,7 +269,8 @@ RenewDomainResult renew_domain(
             current_utc_time,
             info_domain_data.expiration_date,
             new_exdate,
-            domain_registration_in_months / 12);
+            domain_registration_in_months);
+
     }
     catch (const Fred::RenewDomain::Exception& e)
     {

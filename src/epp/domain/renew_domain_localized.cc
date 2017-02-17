@@ -68,7 +68,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
                     renew_domain_result.curent_time,
                     _session_data.registrar_id,
                     renew_domain_result.domain_id,
-                    renew_domain_result.length_of_domain_registration_in_years,
+                    renew_domain_result.length_of_domain_registration_in_months,
                     renew_domain_result.old_exdate,
                     renew_domain_result.exdate,
                     ctx);

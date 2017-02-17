@@ -72,7 +72,7 @@ CreateDomainLocalizedResponse create_domain_localized(
                     create_domain_result.crtime,
                     _session_data.registrar_id,
                     create_domain_result.id,
-                    create_domain_result.length_of_domain_registration_in_years,
+                    create_domain_result.length_of_domain_registration_in_months,
                     create_domain_result.old_exdate,
                     create_domain_result.exdate,
                     ctx);
