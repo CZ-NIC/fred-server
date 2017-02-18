@@ -29,20 +29,20 @@
 namespace Epp {
 namespace Domain {
 
-void create_domain_bill_item(const std::string& fqdn,
-        const boost::posix_time::ptime& domain_create_timestamp_utc,
-        unsigned long long sponsoring_registrar_id,
-        unsigned long long created_domain_id,
-        Fred::OperationContext& ctx);
+void create_domain_bill_item(const std::string& _fqdn,
+        const boost::posix_time::ptime& _domain_create_timestamp_utc,
+        unsigned long long _sponsoring_registrar_id,
+        unsigned long long _created_domain_id,
+        Fred::OperationContext& _ctx);
 
-void renew_domain_bill_item(const std::string& fqdn,
-        const boost::posix_time::ptime& domain_renew_timestamp_utc,
-        unsigned long long sponsoring_registrar_id,
-        unsigned long long renewed_domain_id,
-        int length_of_domain_registration_in_months,
-        const boost::gregorian::date& old_domain_expiration_date_local,
-        const boost::gregorian::date& domain_expiration_date_local,
-        Fred::OperationContext& ctx);
+void renew_domain_bill_item(const std::string& _fqdn,
+        const boost::posix_time::ptime& _domain_renew_timestamp_utc,
+        unsigned long long _sponsoring_registrar_id,
+        unsigned long long _renewed_domain_id,
+        int _length_of_domain_registration_in_months,
+        const boost::gregorian::date& _old_domain_expiration_date_local,
+        const boost::gregorian::date& _domain_expiration_date_local,
+        Fred::OperationContext& _ctx);
 
 } // namespace Epp::Domain
 } // namespace Epp
