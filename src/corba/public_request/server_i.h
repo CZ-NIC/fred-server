@@ -42,25 +42,25 @@ public:
     virtual ~Server_i() {}
 
     ::CORBA::ULongLong create_authinfo_request_registry_email(
-        ObjectType_PR object_type,
+        ObjectType_PR::Type object_type,
         const char* object_handle,
         NullableULongLong* log_request_id);
 
     ::CORBA::ULongLong create_authinfo_request_non_registry_email(
-        ObjectType_PR object_type,
+        ObjectType_PR::Type object_type,
         const char* object_handle,
         NullableULongLong* log_request_id,
-        ConfirmedBy confirmation_method,
+        ConfirmedBy::Type confirmation_method,
         const char* specified_email);
 
     ::CORBA::ULongLong create_block_unblock_request(
-        ObjectType_PR object_type,
+        ObjectType_PR::Type object_type,
         const char* object_handle,
         NullableULongLong* log_request_id,
-        ConfirmedBy confirmation_method,
-        LockRequestType lock_request_type);
+        ConfirmedBy::Type confirmation_method,
+        LockRequestType::Type lock_request_type);
 
-    Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Language lang);
+    Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Language::Type lang);
 
 private:
     const std::auto_ptr<PublicRequestImpl> pimpl_;

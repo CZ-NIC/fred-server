@@ -14,14 +14,14 @@ namespace Registry {
 namespace PublicRequest {
 namespace {
 
-PublicRequestImpl::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(ObjectType_PR object_type)
+PublicRequestImpl::ObjectType::Enum unwrap_objecttype_pr_to_objecttype(ObjectType_PR::Type object_type)
 {
     switch (object_type)
     {
-        case contact: return PublicRequestImpl::ObjectType::contact;
-        case nsset: return PublicRequestImpl::ObjectType::nsset;
-        case domain: return PublicRequestImpl::ObjectType::domain;
-        case keyset: return PublicRequestImpl::ObjectType::keyset;
+        case ObjectType_PR::contact: return PublicRequestImpl::ObjectType::contact;
+        case ObjectType_PR::nsset: return PublicRequestImpl::ObjectType::nsset;
+        case ObjectType_PR::domain: return PublicRequestImpl::ObjectType::domain;
+        case ObjectType_PR::keyset: return PublicRequestImpl::ObjectType::keyset;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ObjectType_PR");
 }
@@ -45,7 +45,7 @@ Server_i::Server_i()
 }
 
 ::CORBA::ULongLong Server_i::create_authinfo_request_registry_email(
-    ObjectType_PR object_type,
+    ObjectType_PR::Type object_type,
     const char* object_handle,
     NullableULongLong* log_request_id)
 {
@@ -84,13 +84,13 @@ Server_i::Server_i()
 
 namespace {
 
-PublicRequestImpl::ConfirmedBy::Enum unwrap_confirmedby_to_confirmedby(ConfirmedBy confirmation_method)
+PublicRequestImpl::ConfirmedBy::Enum unwrap_confirmedby_to_confirmedby(ConfirmedBy::Type confirmation_method)
 {
     switch (confirmation_method)
     {
-        case SIGNED_EMAIL:
+        case ConfirmedBy::signed_email:
             return PublicRequestImpl::ConfirmedBy::email;
-        case NOTARIZED_LETTER:
+        case ConfirmedBy::notarized_letter:
             return PublicRequestImpl::ConfirmedBy::letter;
     }
     throw std::invalid_argument("value doesn't exist in Registry::PublicRequest::ConfirmedBy");
@@ -99,10 +99,10 @@ PublicRequestImpl::ConfirmedBy::Enum unwrap_confirmedby_to_confirmedby(Confirmed
 }//namespace Registry::PublicRequest::{anonymous}
 
 CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
-    ObjectType_PR object_type,
+    ObjectType_PR::Type object_type,
     const char* object_handle,
     NullableULongLong* log_request_id,
-    ConfirmedBy confirmation_method,
+    ConfirmedBy::Type confirmation_method,
     const char* specified_email)
 {
     try
@@ -141,17 +141,17 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
 
 namespace {
 
-PublicRequestImpl::LockRequestType::Enum unwrap_lockrequesttype_to_lockrequesttype(LockRequestType lock_request_type)
+PublicRequestImpl::LockRequestType::Enum unwrap_lockrequesttype_to_lockrequesttype(LockRequestType::Type lock_request_type)
 {
     switch (lock_request_type)
     {
-        case BLOCK_TRANSFER:
+        case LockRequestType::block_transfer:
             return PublicRequestImpl::LockRequestType::block_transfer;
-        case BLOCK_TRANSFER_AND_UPDATE:
+        case LockRequestType::block_transfer_and_update:
             return PublicRequestImpl::LockRequestType::block_transfer_and_update;
-        case UNBLOCK_TRANSFER:
+        case LockRequestType::unblock_transfer:
             return PublicRequestImpl::LockRequestType::unblock_transfer;
-        case UNBLOCK_TRANSFER_AND_UPDATE:
+        case LockRequestType::unblock_transfer_and_update:
             return PublicRequestImpl::LockRequestType::unblock_transfer_and_update;
     }
     throw std::invalid_argument("value doesn't exist in LockRequestType");
@@ -160,11 +160,11 @@ PublicRequestImpl::LockRequestType::Enum unwrap_lockrequesttype_to_lockrequestty
 }//namespace Registry::PublicRequest::{anonymous}
 
 CORBA::ULongLong Server_i::create_block_unblock_request(
-    ObjectType_PR object_type,
+    ObjectType_PR::Type object_type,
     const char* object_handle,
     NullableULongLong* log_request_id,
-    ConfirmedBy confirmation_method,
-    LockRequestType lock_request_type)
+    ConfirmedBy::Type confirmation_method,
+    LockRequestType::Type lock_request_type)
 {
     try
     {
@@ -217,12 +217,12 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
 
 namespace {
 
-PublicRequestImpl::Language::Enum unwrap_language_to_language(Language lang)
+PublicRequestImpl::Language::Enum unwrap_language_to_language(Language::Type lang)
 {
     switch (lang)
     {
-        case CS: return PublicRequestImpl::Language::cs;
-        case EN: return PublicRequestImpl::Language::en;
+        case Language::cs: return PublicRequestImpl::Language::cs;
+        case Language::en: return PublicRequestImpl::Language::en;
     }
     throw std::invalid_argument("language code not found");
 }
@@ -239,7 +239,7 @@ void wrap_buffer(const PublicRequestImpl::Buffer& src, Buffer_var& dst)
 
 }//namespace Registry::PublicRequest::{anonymous}
 
-Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Language lang)
+Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, Language::Type lang)
 {
     try
     {
