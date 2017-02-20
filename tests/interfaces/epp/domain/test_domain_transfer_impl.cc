@@ -49,12 +49,26 @@ BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, HasInfoDomainDa
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoRegistrarData)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_transfer_impl(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
+            "abc-it-doesnt-matter-operation-should-fail-even-sooner",
+            info_registrar_data_.id,
+            42
+        ),
+        Epp::ObjectDoesNotExist
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
+{
+    BOOST_CHECK_THROW(
+        Epp::Domain::domain_transfer_impl(
+            ctx,
+            info_enum_domain_data_.fqdn,
             "abc-it-doesnt-matter-operation-should-fail-even-sooner",
             info_registrar_data_.id,
             42
