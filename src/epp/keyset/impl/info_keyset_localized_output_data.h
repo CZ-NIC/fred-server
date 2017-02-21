@@ -20,7 +20,7 @@
 #define INFO_KEYSET_LOCALIZED_OUTPUT_DATA_H_62737710C6CF40C6AFAEE43C59253E0B
 
 #include "src/epp/impl/object_states_localized.h"
-#include "src/epp/keyset/impl/info_keyset_data.h"
+#include "src/epp/keyset/impl/info_keyset_output_data.h"
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
 

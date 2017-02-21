@@ -19,22 +19,32 @@
 #ifndef NSSET_CORBA_CONVERSION_H_24B9C847E8DA44528A04856129CF17AB
 #define NSSET_CORBA_CONVERSION_H_24B9C847E8DA44528A04856129CF17AB
 
+#include "src/corba/EPP.hh"
+#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
+#include "src/epp/nsset/impl/nsset_handle_registration_obstruction_localized.h"
+
+#include <map>
+#include <string>
+#include <vector>
+
 #include <boost/optional.hpp>
 
-#include <vector>
-#include <string>
-#include <map>
 
 namespace Corba {
+
 
 std::vector<std::string>
 unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact& in);
 
+
 std::vector<Epp::Nsset::DnsHostInput>
 unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
 
+
 boost::optional<short>
 unwrap_tech_check_level(CORBA::Short level);
+
 
 /**
  * @returns data ordered the same way as input nsset_handles
@@ -42,11 +52,15 @@ unwrap_tech_check_level(CORBA::Short level);
 ccReg::CheckResp
 wrap_localized_check_info(
         const std::vector<std::string>& nsset_handles,
-        const std::map<std::string, boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized> >& nsset_handle_check_results);
+        const std::map<std::string,
+                boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized> >& nsset_handle_check_results);
+
 
 ccReg::NSSet
 wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input);
 
+
 } // namespace Corba
+
 
 #endif

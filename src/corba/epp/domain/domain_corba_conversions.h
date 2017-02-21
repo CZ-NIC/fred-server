@@ -27,8 +27,8 @@
 #include "src/epp/domain/info_domain_localized.h"
 
 #include "util/corba_conversion.h"
-#include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/optional_value.h"
 
 #include <boost/optional.hpp>
 
@@ -48,18 +48,22 @@ namespace Corba {
 Optional<Nullable<std::string> >
 unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src);
 
+
 /**
  * @returns data ordered the same way as input fqdns
  */
 ccReg::CheckResp
 wrap_Epp_Domain_CheckDomainLocalizedResponse(
         const std::vector<std::string>& _domain_fqdns,
-        const std::map<std::string, boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction);
+        const std::map<std::string,
+                boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction);
+
 
 void
 wrap_Epp_Domain_InfoDomainLocalizedOutputData(
         const Epp::Domain::InfoDomainLocalizedOutputData& _src,
         ccReg::Domain& _dst);
+
 
 /**
  * length of domain registration period
@@ -67,17 +71,20 @@ wrap_Epp_Domain_InfoDomainLocalizedOutputData(
 Epp::Domain::DomainRegistrationTime
 unwrap_domain_registration_period(const ccReg::Period_str& period);
 
+
 /**
  * domain administrative contacts unwrapper
  */
 std::vector<std::string>
 unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact& in);
 
+
 /**
  * ENUM validation list unwrapper
  */
 std::vector<Epp::Domain::EnumValidationExtension>
 unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext);
+
 
 } // namespace Corba
 

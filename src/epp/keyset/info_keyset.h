@@ -19,7 +19,7 @@
 #ifndef INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 #define INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 
-#include "src/epp/keyset/impl/info_keyset_data.h"
+#include "src/epp/keyset/impl/info_keyset_output_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <string>

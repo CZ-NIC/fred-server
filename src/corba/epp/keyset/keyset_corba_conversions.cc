@@ -1,30 +1,19 @@
 #include "src/corba/EPP.hh"
 
 #include "src/corba/epp/corba_conversions.h"
-#include "src/corba/util/corba_conversions_string.h"
 #include "src/corba/util/corba_conversions_int.h"
+#include "src/corba/util/corba_conversions_string.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace Corba {
-
-std::vector<std::string>
-unwrap_TechContact_to_vector_string(const ccReg::TechContact& _tech_contacts)
-{
-    std::vector< std::string > result;
-    result.reserve(_tech_contacts.length());
-
-    for(CORBA::ULong idx = 0; idx < _tech_contacts.length(); ++idx) {
-        result.push_back(unwrap_string_from_const_char_ptr(_tech_contacts[idx]));
-    }
-    return result;
-}
-
 namespace {
 
 void
-unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str& _src, Epp::Keyset::DsRecord& _dst)
+unwrap_ccReg_DSRecord_str(
+        const ccReg::DSRecord_str& _src,
+        Epp::Keyset::DsRecord& _dst)
 {
     long key_tag;
     unwrap_int(_src.keyTag, key_tag);
@@ -38,27 +27,11 @@ unwrap_ccReg_DSRecord_str(const ccReg::DSRecord_str& _src, Epp::Keyset::DsRecord
     _dst = Epp::Keyset::DsRecord(key_tag, alg, digest_type, digest, max_sig_life);
 }
 
-} // namespace {anonymous}
-
-std::vector<Epp::Keyset::DsRecord>
-unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(
-        const ccReg::DSRecord& _ds_records)
-{
-    std::vector< Epp::Keyset::DsRecord > result;
-    result.reserve(_ds_records.length());
-
-    for(CORBA::ULong idx = 0; idx < _ds_records.length(); ++idx) {
-        Epp::Keyset::DsRecord ds_record;
-        unwrap_ccReg_DSRecord_str(_ds_records[idx], ds_record);
-        result.push_back(ds_record);
-    }
-    return result;
-}
-
-namespace {
 
 void
-unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str& _src, Epp::Keyset::DnsKey& _dst)
+unwrap_ccReg_DNSKey_str(
+        const ccReg::DNSKey_str& _src,
+        Epp::Keyset::DnsKey& _dst)
 {
     unsigned short flags;
     unwrap_int(_src.flags, flags);
@@ -70,69 +43,31 @@ unwrap_ccReg_DNSKey_str(const ccReg::DNSKey_str& _src, Epp::Keyset::DnsKey& _dst
     _dst = Epp::Keyset::DnsKey(flags, protocol, alg, key);
 }
 
-} // namespace {anonymous}
-
-std::vector<Epp::Keyset::DnsKey>
-unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(
-        const ccReg::DNSKey& _dns_keys)
-{
-    std::vector< Epp::Keyset::DnsKey > result;
-    result.reserve(_dns_keys.length());
-
-    for(CORBA::ULong idx = 0; idx < _dns_keys.length(); ++idx) {
-        Epp::Keyset::DnsKey dns_key;
-        unwrap_ccReg_DNSKey_str(_dns_keys[idx], dns_key);
-        result.push_back(dns_key);
-    }
-    return result;
-}
-
-namespace {
 
 ccReg::CheckAvail
 wrap_keyset_handle_check_result(
         const Nullable<Epp::Keyset::CheckKeysetLocalizedResponse::Result>& _check_result)
 {
-    if (_check_result.isnull()) {
+    if (_check_result.isnull())
+    {
         return ccReg::NotExist;
     }
 
     switch (_check_result.get_value().state)
     {
-        case Epp::Keyset::KeysetHandleRegistrationObstruction::invalid_handle   : return ccReg::BadFormat;
-        case Epp::Keyset::KeysetHandleRegistrationObstruction::protected_handle : return ccReg::DelPeriod;
-        case Epp::Keyset::KeysetHandleRegistrationObstruction::registered_handle: return ccReg::Exist;
+        case Epp::Keyset::KeysetHandleRegistrationObstruction::invalid_handle:
+            return ccReg::BadFormat;
+
+        case Epp::Keyset::KeysetHandleRegistrationObstruction::protected_handle:
+            return ccReg::DelPeriod;
+
+        case Epp::Keyset::KeysetHandleRegistrationObstruction::registered_handle:
+            return ccReg::Exist;
     }
 
     throw std::runtime_error("unknown keyset handle check result");
 }
 
-} // namespace {anonymouse}
-
-void
-wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
-        const std::vector<std::string>& handles,
-        const Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
-        ccReg::CheckResp& dst)
-{
-    dst.length(handles.size());
-
-    typedef std::vector< std::string > Handles;
-    ::size_t idx = 0;
-    for (Handles::const_iterator handle_ptr = handles.begin(); handle_ptr != handles.end(); ++handle_ptr, ++idx)
-    {
-        typedef Epp::Keyset::CheckKeysetLocalizedResponse::Results CheckResults;
-        const CheckResults::const_iterator result_ptr = check_results.find(*handle_ptr);
-        if (result_ptr == check_results.end()) {
-            throw std::out_of_range("handle " + (*handle_ptr) + " not found");
-        }
-        dst[idx].avail = wrap_keyset_handle_check_result(result_ptr->second);
-        dst[idx].reason = result_ptr->second.isnull() ? ""
-                                                      : result_ptr->second.get_value().description.c_str();
-    }
-}
-
-namespace {
 
 void
 wrap_Epp_InfoKeysetOutputData_TechContacts(
@@ -148,8 +83,11 @@ wrap_Epp_InfoKeysetOutputData_TechContacts(
     }
 }
 
+
 void
-wrap_Epp_InfoKeysetOutputData_DnsKeys(const Epp::Keyset::InfoKeysetOutputData::DnsKeys& _src, ccReg::DNSKey& _dst)
+wrap_Epp_InfoKeysetOutputData_DnsKeys(
+        const Epp::Keyset::InfoKeysetOutputData::DnsKeys& _src,
+        ccReg::DNSKey& _dst)
 {
     _dst.length(_src.size());
     ::size_t idx = 0;
@@ -163,7 +101,86 @@ wrap_Epp_InfoKeysetOutputData_DnsKeys(const Epp::Keyset::InfoKeysetOutputData::D
     }
 }
 
-} // namespace {anonymous}
+} // namespace Corba::{anonymous}
+
+std::vector<std::string>
+unwrap_TechContact_to_vector_string(const ccReg::TechContact& _tech_contacts)
+{
+    std::vector<std::string> result;
+    result.reserve(_tech_contacts.length());
+
+    for (CORBA::ULong idx = 0; idx < _tech_contacts.length(); ++idx)
+    {
+        result.push_back(unwrap_string_from_const_char_ptr(_tech_contacts[idx]));
+    }
+
+    return result;
+}
+
+
+std::vector<Epp::Keyset::DsRecord>
+unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(const ccReg::DSRecord& _ds_records)
+{
+    std::vector<Epp::Keyset::DsRecord> result;
+    result.reserve(_ds_records.length());
+
+    for (CORBA::ULong idx = 0; idx < _ds_records.length(); ++idx)
+    {
+        Epp::Keyset::DsRecord ds_record;
+        unwrap_ccReg_DSRecord_str(_ds_records[idx], ds_record);
+        result.push_back(ds_record);
+    }
+
+    return result;
+}
+
+
+std::vector<Epp::Keyset::DnsKey>
+unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(const ccReg::DNSKey& _dns_keys)
+{
+    std::vector<Epp::Keyset::DnsKey> result;
+    result.reserve(_dns_keys.length());
+
+    for (CORBA::ULong idx = 0; idx < _dns_keys.length(); ++idx)
+    {
+        Epp::Keyset::DnsKey dns_key;
+        unwrap_ccReg_DNSKey_str(_dns_keys[idx], dns_key);
+        result.push_back(dns_key);
+    }
+
+    return result;
+}
+
+
+void
+wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
+        const std::vector<std::string>& handles,
+        const Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
+        ccReg::CheckResp& dst)
+{
+    dst.length(handles.size());
+
+    typedef std::vector<std::string> Handles;
+
+    ::size_t idx = 0;
+    for (Handles::const_iterator handle_ptr = handles.begin();
+         handle_ptr != handles.end();
+         ++handle_ptr, ++idx)
+    {
+        typedef Epp::Keyset::CheckKeysetLocalizedResponse::Results CheckResults;
+
+        const CheckResults::const_iterator result_ptr = check_results.find(*handle_ptr);
+        if (result_ptr == check_results.end())
+        {
+            throw std::out_of_range("handle " + (*handle_ptr) + " not found");
+        }
+        dst[idx].avail = wrap_keyset_handle_check_result(result_ptr->second);
+        dst[idx].reason = result_ptr->second.isnull()
+                                  ? ""
+                                  : result_ptr->second.get_value().description.c_str();
+    }
+}
+
 
 void
 wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
@@ -185,4 +202,5 @@ wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
     wrap_Epp_InfoKeysetOutputData_TechContacts(_src.tech_contacts, _dst.tech);
 }
 
-} // namespace Corba
+
+} // namespace Cobra

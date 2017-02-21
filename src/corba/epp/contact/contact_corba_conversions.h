@@ -22,19 +22,22 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/contact/contact_change.h"
-#include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/impl/contact_handle_registration_obstruction_localized.h"
+#include "src/epp/contact/info_contact_localized.h"
 
 #include <boost/optional.hpp>
 
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace Corba {
 
 void
-unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::ContactChange& dst);
+unwrap_ContactChange(
+        const ccReg::ContactChange& src,
+        Epp::Contact::ContactChange& dst);
+
 
 /**
  * @returns data ordered the same way as input contact_handles
@@ -42,12 +45,15 @@ unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::ContactChang
 ccReg::CheckResp
 wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string, boost::optional<Epp::Contact::ContactHandleRegistrationObstructionLocalized> >& contact_handle_check_results);
+        const std::map<std::string,
+                boost::optional<Epp::Contact::ContactHandleRegistrationObstructionLocalized> >& contact_handle_check_results);
+
 
 void
 wrap_InfoContactLocalizedOutputData(
         const Epp::Contact::InfoContactLocalizedOutputData& src,
         ccReg::Contact& dst);
+
 
 } // namespace Corba
 

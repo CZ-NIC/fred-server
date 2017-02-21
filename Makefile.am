@@ -1661,7 +1661,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/impl/dns_key.cc \
 		src/epp/keyset/impl/dns_key.h \
 		src/epp/keyset/impl/ds_record.h \
-		src/epp/keyset/impl/info_keyset_data.h \
+		src/epp/keyset/impl/info_keyset_output_data.h \
 		src/epp/keyset/info_keyset.cc \
 		src/epp/keyset/info_keyset.h \
 		src/epp/keyset/info_keyset_localized.cc \
