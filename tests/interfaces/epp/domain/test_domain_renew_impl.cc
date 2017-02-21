@@ -92,6 +92,21 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn, HasDomainData)
     );
 }
 
+BOOST_FIXTURE_TEST_CASE(renew_invalid_enum_fqdn, HasDomainData)
+{
+    (*domain2_renew_input_data).fqdn = "5.1.3.5.0.2.4.e164.arpa";
+
+    BOOST_CHECK_THROW(
+        Epp::domain_renew_impl(
+            ctx,
+            *domain2_renew_input_data,
+            info_registrar_data_.id,
+            42
+        ),
+        Epp::ObjectDoesNotExist
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE(renew_invalid_curexpdate, HasDomainData)
 {
     (*domain2_renew_input_data).current_exdate = boost::gregorian::to_iso_extended_string(

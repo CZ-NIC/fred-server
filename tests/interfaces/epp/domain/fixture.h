@@ -45,6 +45,9 @@
 #include "util/db/nullable.h"
 #include "util/util.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+
 #include <boost/asio/ip/address.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/optional.hpp>
@@ -106,6 +109,7 @@ struct HasSystemRegistrar : virtual Test::autorollbacking_context {
 
 struct HasInfoDomainData : HasInfoRegistrarData {
     Fred::InfoDomainData info_domain_data_;
+    Fred::InfoDomainData info_enum_domain_data_;
 
     HasInfoDomainData() {
         namespace ip = boost::asio::ip;
@@ -140,6 +144,13 @@ struct HasInfoDomainData : HasInfoRegistrarData {
 
         info_domain_data_ = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
 
+        const std::string enum_fqdn = "5.5.1.3.5.0.2.4.e164.arpa";
+        Fred::CreateDomain(enum_fqdn, info_registrar_data_.handle, registrant_handle)
+            .set_enum_validation_expiration(info_domain_data_.creation_time.date() + boost::gregorian::months(3))
+            .set_nsset(nsset_handle).set_keyset(keyset_handle).set_admin_contacts(admin_contacts).exec(ctx);
+
+        info_enum_domain_data_ = Fred::InfoDomainByHandle(enum_fqdn).exec(ctx, "UTC").info_domain_data;
+
         ctx.get_conn().exec_params(
             "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
                 "SELECT $1::bigint, z.id, NOW() "
@@ -147,6 +158,15 @@ struct HasInfoDomainData : HasInfoRegistrarData {
                     "WHERE z.fqdn = $2::text",
             Database::query_param_list(info_registrar_data_.id)
             ("cz")
+        );
+
+        ctx.get_conn().exec_params(
+            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
+                "SELECT $1::bigint, z.id, NOW() "
+                    "FROM zone z "
+                    "WHERE z.fqdn = $2::text",
+            Database::query_param_list(info_registrar_data_.id)
+            ("0.2.4.e164.arpa")
         );
     }
 };
@@ -277,6 +297,13 @@ struct HasInfoDomainDataOfNonexistentDomain : HasInfoDomainData {
     }
 };
 
+struct HasInfoDomainDataOfNonexistentEnumDomain : HasInfoDomainData {
+    HasInfoDomainDataOfNonexistentEnumDomain() {
+        const std::string nonexistent_domain_fqdn = "5.1.3.5.0.2.4.e164.arpa";
+        info_enum_domain_data_.fqdn = nonexistent_domain_fqdn;
+    }
+};
+
 struct HasDomainData : HasInfoRegistrarData {
     const std::string contact1;
     const std::string contact2;
@@ -292,6 +319,7 @@ struct HasDomainData : HasInfoRegistrarData {
 
     const std::string fqdn1;
     const std::string fqdn2;
+    const std::string enum_fqdn;
 
     const std::string authinfopw1;
     const std::string authinfopw2;
@@ -320,6 +348,7 @@ struct HasDomainData : HasInfoRegistrarData {
 
     , fqdn1("testdomain1.cz")
     , fqdn2("testdomain2.cz")
+    , enum_fqdn("5.5.1.3.5.0.2.4.e164.arpa")
 
     , authinfopw1("transferheslo")
     , authinfopw2("transferheslo")
@@ -351,9 +380,14 @@ struct HasDomainData : HasInfoRegistrarData {
         Fred::CreateKeyset(keyset1, info_registrar_data_.handle).exec(ctx);
         Fred::CreateKeyset(keyset2, info_registrar_data_.handle).exec(ctx);
 
+        Fred::CreateDomain::Result create_result_fqdn2 =
         Fred::CreateDomain(fqdn2, info_registrar_data_.handle, contact1)
         .set_admin_contacts(Util::vector_of<std::string>(contact2)(contact3))
         .set_nsset(nsset1).set_keyset(keyset1).exec(ctx);
+
+        Fred::CreateDomain(enum_fqdn, info_registrar_data_.handle, contact1)
+            .set_enum_validation_expiration(create_result_fqdn2.creation_time.date() + boost::gregorian::months(3))
+            .set_nsset(nsset1).set_keyset(keyset1).set_admin_contacts(Util::vector_of<std::string>(contact2)(contact3)).exec(ctx);
 
         domain2_renew_input_data = Epp::DomainRenewInputData(fqdn2,
                 boost::gregorian::to_iso_extended_string(Fred::InfoDomainByHandle(fqdn2).exec(ctx).info_domain_data.expiration_date),

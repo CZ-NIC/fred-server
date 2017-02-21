@@ -79,7 +79,7 @@ LocalizedSuccessResponse domain_transfer(
             _lang
         );
 
-    } catch(const NonexistentHandle&) {
+    } catch(const ObjectDoesNotExist&) {
         Fred::OperationContextCreator exception_localization_ctx;
         throw create_localized_fail_response(
             exception_localization_ctx,

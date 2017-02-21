@@ -43,7 +43,7 @@ BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoDomainDataOfNonexistentDomain)
 {
     BOOST_CHECK_THROW(
         Epp::Domain::domain_delete_impl(
@@ -51,7 +51,19 @@ BOOST_FIXTURE_TEST_CASE(fail_nonexistent_handle, HasInfoDomainDataOfNonexistentD
             info_domain_data_.fqdn,
             info_registrar_data_.id
         ),
-        Epp::NonexistentHandle
+        Epp::ObjectDoesNotExist
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
+{
+    BOOST_CHECK_THROW(
+        Epp::Domain::domain_delete_impl(
+            ctx,
+            info_enum_domain_data_.fqdn,
+            info_registrar_data_.id
+        ),
+        Epp::ObjectDoesNotExist
     );
 }
 

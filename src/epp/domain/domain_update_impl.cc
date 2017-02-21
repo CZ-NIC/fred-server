@@ -73,14 +73,19 @@ unsigned long long domain_update_impl(
     const boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
     //check fqdn has known zone
-    if(Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn)
-        == Fred::Domain::DomainRegistrability::zone_not_in_registry)
-    {
-        throw ObjectDoesNotExist();
+    Fred::Zone::Data zone_data;
+    try {
+        zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
+            Fred::Zone::rem_trailing_dot(_domain_fqdn));
+    } catch (const Fred::Zone::Exception& e) {
+        if(e.is_set_unknown_zone_in_fqdn()) {
+            throw ObjectDoesNotExist();
+        }
+
+        throw;
     }
 
-    const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-            Fred::Zone::rem_trailing_dot(_domain_fqdn));
+
     if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
         throw ZoneAuthorizationError();
     }
@@ -108,7 +113,7 @@ unsigned long long domain_update_impl(
 
                 Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(
                         Fred::Zone::rem_trailing_dot(_domain_fqdn))
-                    .exec(_ctx,"UTC").info_domain_data;
+                    .set_lock().exec(_ctx,"UTC").info_domain_data;
 
                 const boost::optional<boost::gregorian::date> curr_enum_valexdate
                     = domain_info_data.enum_domain_validation.isnull()
@@ -152,21 +157,32 @@ unsigned long long domain_update_impl(
         throw parameter_value_range_error;
     }
 
-    if (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn) != Fred::Domain::DomainRegistrability::registered) {
-        throw NonexistentHandle();
+    Fred::InfoDomainData domain_data_before_update;
+    try
+    {
+        domain_data_before_update = Fred::InfoDomainByHandle(
+                Fred::Zone::rem_trailing_dot(_domain_fqdn))
+            .set_lock().exec(_ctx, "UTC").info_domain_data;
+    }
+    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    {
+        if(ex.is_set_unknown_fqdn())
+        {
+            throw ObjectDoesNotExist();
+        }
+
+        throw;
     }
 
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
-    const Fred::InfoDomainData domain_data_before_update =
-        Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_update.sponsoring_registrar_handle ==
                                           session_registrar.handle);
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
-    const bool is_operation_permitted = (is_sponsoring_registrar || is_system_registrar);
+    const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
 
-    if (!is_operation_permitted) {
+    if (!is_registrar_authorized) {
         throw AuthorizationError();
     }
 
@@ -343,7 +359,7 @@ unsigned long long domain_update_impl(
     catch(const Fred::UpdateDomain::Exception& e) {
 
         if (e.is_set_unknown_domain_fqdn()) {
-            throw NonexistentHandle();
+            throw ObjectDoesNotExist();
         }
 
         if (e.is_set_unknown_registrar_handle()) {
