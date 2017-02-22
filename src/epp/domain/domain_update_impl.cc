@@ -90,6 +90,24 @@ unsigned long long domain_update_impl(
         throw ZoneAuthorizationError();
     }
 
+
+    Fred::InfoDomainData domain_data_before_update;
+    try
+    {
+        domain_data_before_update = Fred::InfoDomainByHandle(
+                Fred::Zone::rem_trailing_dot(_domain_fqdn))
+            .set_lock().exec(_ctx, "UTC").info_domain_data;
+    }
+    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    {
+        if(ex.is_set_unknown_fqdn())
+        {
+            throw ObjectDoesNotExist();
+        }
+
+        throw;
+    }
+
     ParameterValueRangeError parameter_value_range_error;
     ParameterValuePolicyError parameter_value_policy_error;
 
@@ -111,15 +129,11 @@ unsigned long long domain_update_impl(
             }
             else {
 
-                Fred::InfoDomainData domain_info_data =  Fred::InfoDomainByHandle(
-                        Fred::Zone::rem_trailing_dot(_domain_fqdn))
-                    .set_lock().exec(_ctx,"UTC").info_domain_data;
-
                 const boost::optional<boost::gregorian::date> curr_enum_valexdate
-                    = domain_info_data.enum_domain_validation.isnull()
+                    = domain_data_before_update.enum_domain_validation.isnull()
                         ? boost::optional<boost::gregorian::date>()
                         : boost::optional<boost::gregorian::date>(
-                            domain_info_data.enum_domain_validation.get_value().validation_expiration);
+                            domain_data_before_update.enum_domain_validation.get_value().validation_expiration);
 
                 if(is_new_enum_domain_validation_expiration_date_invalid(
                     req_enum_valexdate.get_value(),
@@ -155,23 +169,6 @@ unsigned long long domain_update_impl(
 
     if (!parameter_value_range_error.is_empty()) {
         throw parameter_value_range_error;
-    }
-
-    Fred::InfoDomainData domain_data_before_update;
-    try
-    {
-        domain_data_before_update = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_domain_fqdn))
-            .set_lock().exec(_ctx, "UTC").info_domain_data;
-    }
-    catch(const Fred::InfoDomainByHandle::Exception& ex)
-    {
-        if(ex.is_set_unknown_fqdn())
-        {
-            throw ObjectDoesNotExist();
-        }
-
-        throw;
     }
 
     const Fred::InfoRegistrarData session_registrar =
