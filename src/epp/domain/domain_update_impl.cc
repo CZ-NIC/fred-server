@@ -37,14 +37,16 @@ namespace {
 
 template <class T>
 class MatchesHandle {
-    std::string handle_;
+    std::string upper_case_handle_;
 
 public:
-    MatchesHandle(const std::string& _handle) : handle_(_handle) {}
+    MatchesHandle(const std::string& _handle)
+    : upper_case_handle_(boost::algorithm::to_upper_copy(_handle))
+    {}
 
     bool operator()(const T& item) const
     {
-        return item.handle == handle_;
+        return item.handle == upper_case_handle_;
     }
 };
 
