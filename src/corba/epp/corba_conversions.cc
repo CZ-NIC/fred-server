@@ -22,8 +22,6 @@
 #include "util/map_at.h"
 #include "util/optional_value.h"
 
-#include "src/old_utils/util.h" // for convert_rfc3339_timestamp() // FIXME replace with info_domain_corba_conversions.cc version
-
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/integer_traits.hpp>
@@ -36,10 +34,7 @@
 #include <vector>
 
 namespace Corba {
-
-
 namespace {
-
 
 // represents RFC3339 time offset
 // append to boost::posix_time::to_iso_extended_string() to get RFC3339 timestamp
@@ -104,11 +99,7 @@ wrap_Nullable_string_to_string(const Nullable<std::string>& src)
 CORBA::String_var
 wrap_boost_posix_time_ptime_to_string(const boost::posix_time::ptime& _src)
 {
-    static const unsigned size_enough_for_string_representation_of_time = 100;//2016-04-18T13:00:00+02:00
-    char time[size_enough_for_string_representation_of_time];
-    const std::string iso_extended_time = boost::posix_time::to_iso_extended_string(_src);
-    convert_rfc3339_timestamp(time, size_enough_for_string_representation_of_time, iso_extended_time.c_str()); // FIXME use boost variant
-    return const_cast< const char* >(time);
+    return convert_time_to_local_rfc3339(_src).c_str();
 }
 
 CORBA::String_var

@@ -2488,7 +2488,7 @@ ccReg::Response* ccReg_EPP_i::ContactCreate(
 
         ccReg::timestamp_var create_time =
                 Corba::wrap_string_to_corba_string(
-                        formatTime(create_contact_localized_response.crdate));
+                        Corba::convert_time_to_local_rfc3339(create_contact_localized_response.crdate));
 
         ccReg::Response_var return_value =
                 new ccReg::Response(
@@ -2806,7 +2806,7 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
 
         ccReg::timestamp_var create_time =
                 Corba::wrap_string_to_corba_string(
-                        formatTime(create_nsset_localized_response.crdate));
+                        Corba::convert_time_to_local_rfc3339(create_nsset_localized_response.crdate));
 
         ccReg::Response_var return_value =
                 new ccReg::Response(
@@ -3078,7 +3078,7 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
 
         ccReg::timestamp_var create_time =
                 Corba::wrap_string_to_corba_string(
-                        formatTime(create_domain_localized_response.crtime));
+                        Corba::convert_time_to_local_rfc3339(create_domain_localized_response.crtime));
 
         ccReg::timestamp_var exdate =
                 Corba::wrap_string_to_corba_string(
@@ -3320,7 +3320,9 @@ ccReg::Response* ccReg_EPP_i::KeySetCreate(
                                 disable_epp_notifier_cltrid_prefix_),
                         epp_request_params.log_request_id);
 
-        ccReg::timestamp_var create_time = formatTime(create_keyset_localized_response.crdate).c_str();
+        ccReg::timestamp_var create_time =
+                Corba::wrap_string_to_corba_string(
+                        Corba::convert_time_to_local_rfc3339(create_keyset_localized_response.crdate));
 
         ccReg::Response_var return_value =
                 new ccReg::Response(
