@@ -74,7 +74,7 @@ unsigned long long update_domain(
     Fred::Zone::Data zone_data;
     try {
         zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-            Fred::Zone::rem_trailing_dot(_domain_fqdn));
+            Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn));
     } catch (const Fred::Zone::Exception& e) {
         if(e.is_set_unknown_zone_in_fqdn()) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
@@ -82,6 +82,8 @@ unsigned long long update_domain(
 
         throw;
     }
+
+    const boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
 
     if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
@@ -91,7 +93,7 @@ unsigned long long update_domain(
     try
     {
         info_domain_data_before_update = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_domain_fqdn))
+                Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn))
             .set_lock().exec(_ctx, "UTC").info_domain_data;
     }
     catch(const Fred::InfoDomainByHandle::Exception& ex)

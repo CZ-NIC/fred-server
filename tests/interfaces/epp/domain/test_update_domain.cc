@@ -113,17 +113,18 @@ bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e)
 BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::domain_update_impl(
+        Epp::Domain::update_domain(
             ctx,
-            info_enum_domain_data_.fqdn,
-            Optional<std::string>(), // registrant_chg
-            Optional<std::string>(), // auth_info_pw_chg
-            Optional<Nullable<std::string> >(), // nsset_chg
-            Optional<Nullable<std::string> >(), // keyset_chg
-            std::vector<std::string>(), // admin_contacts_add
-            std::vector<std::string>(), // admin_contacts_rem
-            std::vector<std::string>(), // tmpcontacts_rem
-            std::vector<Epp::ENUMValidationExtension>(), // enum_validation_list
+            Epp::Domain::UpdateDomainInputData(
+                info_enum_domain_data_.fqdn,
+                Optional<std::string>(), // registrant_chg
+                Optional<std::string>(), // auth_info_pw_chg
+                Optional<Nullable<std::string> >(), // nsset_chg
+                Optional<Nullable<std::string> >(), // keyset_chg
+                std::vector<std::string>(), // admin_contacts_add
+                std::vector<std::string>(), // admin_contacts_rem
+                std::vector<std::string>(), // tmpcontacts_rem
+                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
             info_registrar_data_.id, // registrar_id
             Optional<unsigned long long>(), // logd_request_id
             true // rifd_epp_update_domain_keyset_clear
@@ -142,23 +143,25 @@ bool fail_enum_domain_does_not_exist_wih_valexdate_exception(const Epp::EppRespo
 BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist_wih_valexdate, HasInfoDomainDataOfNonexistentEnumDomain)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::domain_update_impl(
+        Epp::Domain::update_domain(
             ctx,
-            info_enum_domain_data_.fqdn,
-            Optional<std::string>(), // registrant_chg
-            Optional<std::string>(), // auth_info_pw_chg
-            Optional<Nullable<std::string> >(), // nsset_chg
-            Optional<Nullable<std::string> >(), // keyset_chg
-            std::vector<std::string>(), // admin_contacts_add
-            std::vector<std::string>(), // admin_contacts_rem
-            std::vector<std::string>(), // tmpcontacts_rem
-            std::vector<Epp::ENUMValidationExtension>(1,
-                Epp::ENUMValidationExtension(
-                    info_enum_domain_data_.enum_domain_validation.get_value().validation_expiration
-                    + boost::gregorian::months(1)
-                    , false)), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
+            Epp::Domain::UpdateDomainInputData(
+                info_enum_domain_data_.fqdn,
+                Optional<std::string>(), // registrant_chg
+                Optional<std::string>(), // auth_info_pw_chg
+                Optional<Nullable<std::string> >(), // nsset_chg
+                Optional<Nullable<std::string> >(), // keyset_chg
+                std::vector<std::string>(), // admin_contacts_add
+                std::vector<std::string>(), // admin_contacts_rem
+                std::vector<std::string>(), // tmpcontacts_rem
+                std::vector<Epp::Domain::EnumValidationExtension>(
+                    1,
+                    Epp::Domain::EnumValidationExtension(
+                        info_enum_domain_data_.enum_domain_validation.get_value().validation_expiration
+                            + boost::gregorian::months(1),
+                        false))), // enum_validation_list
+            info_registrar_data_.id,     // registrar_id
+            Optional<unsigned long long>(),     // logd_request_id
             true // rifd_epp_update_domain_keyset_clear
         ),
         Epp::EppResponseFailure,

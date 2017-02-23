@@ -69,7 +69,7 @@ RenewDomainResult renew_domain(
     catch (const Fred::Zone::Exception& e)
     {
         if(e.is_set_unknown_zone_in_fqdn()) {
-            throw ObjectDoesNotExist();
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
         throw;
@@ -86,7 +86,7 @@ RenewDomainResult renew_domain(
     Fred::InfoDomainData info_domain_data;
     try
     {
-        info_domain_data = Fred::Domain::InfoDomainByHandle(
+        info_domain_data = Fred::InfoDomainByHandle(
                     Fred::Zone::rem_trailing_dot(_data.fqdn))
                .set_lock()
                .exec(_ctx, "UTC")

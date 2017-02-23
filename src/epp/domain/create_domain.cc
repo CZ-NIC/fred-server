@@ -42,11 +42,6 @@ CreateDomainResult create_domain(
 {
     EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
-    // start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
-    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
-        static_cast<std::string>(_ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
-
-    // warning: timestamp conversion using local system timezone
     // check registrar logged in
     if (_registrar_id == 0) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
@@ -98,6 +93,11 @@ CreateDomainResult create_domain(
     const Fred::Zone::Data zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
             Fred::Zone::rem_trailing_dot(_data.fqdn));
 
+    // start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+        static_cast<std::string>(_ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+
+    // warning: timestamp conversion using local system timezone
     const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
     const boost::gregorian::date current_local_date = current_local_time.date();
 

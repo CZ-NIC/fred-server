@@ -118,6 +118,7 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn, HasDomainData)
         renew_invalid_fqdn_exception
     );
 }
+
 bool renew_invalid_enum_fqdn_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
@@ -129,14 +130,14 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_enum_fqdn, HasDomainData)
     (*domain2_renew_input_data).fqdn = "5.1.3.5.0.2.4.e164.arpa";
 
     BOOST_CHECK_EXCEPTION(
-        Epp::domain_renew_impl(
+        Epp::Domain::renew_domain(
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
             42
         ),
         Epp::EppResponseFailure,
-        renew_invalid_enum_fqdn_exception,
+        renew_invalid_enum_fqdn_exception
     );
 }
 

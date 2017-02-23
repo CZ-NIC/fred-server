@@ -59,6 +59,7 @@ BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, HasInfoDomainDa
         fail_auth_error_srvr_closing_connection_exception
     );
 }
+
 bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
@@ -89,7 +90,7 @@ bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e)
 BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::domain_transfer_impl(
+        Epp::Domain::transfer_domain(
             ctx,
             info_enum_domain_data_.fqdn,
             "abc-it-doesnt-matter-operation-should-fail-even-sooner",
@@ -97,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNone
             42
         ),
         Epp::EppResponseFailure,
-        fail_enum_domain_does_not_exist_exception,
+        fail_enum_domain_does_not_exist_exception
     );
 }
 

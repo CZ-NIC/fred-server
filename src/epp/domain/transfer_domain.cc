@@ -66,8 +66,8 @@ unsigned long long transfer_domain(
     Fred::InfoDomainData domain_data_before_transfer;
     try
     {
-        domain_data_before_transfer = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
+        domain_data_before_transfer = Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(_domain_fqdn))
+                                              .set_lock().exec(_ctx).info_domain_data;
     }
     catch(const Fred::InfoDomainByHandle::Exception& ex)
     {
@@ -78,9 +78,6 @@ unsigned long long transfer_domain(
 
         throw;
     }
-
-    const Fred::InfoDomainData domain_data_before_transfer =
-        Fred::InfoDomainByHandle(_domain_fqdn).set_lock().exec(_ctx).info_domain_data;
 
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;

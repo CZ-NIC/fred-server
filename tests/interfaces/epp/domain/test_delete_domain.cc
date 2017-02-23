@@ -73,6 +73,25 @@ BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoDomainDataOfNonexiste
     );
 }
 
+bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+    BOOST_CHECK(e.epp_result().empty());
+    return true;
+}
+
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
+{
+    BOOST_CHECK_EXCEPTION(
+        Epp::Domain::delete_domain(
+            ctx,
+            info_enum_domain_data_.fqdn,
+            info_registrar_data_.id
+        ),
+        Epp::EppResponseFailure,
+        fail_enum_domain_does_not_exist_exception
+    );
+}
+
 bool fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
     BOOST_REQUIRE(e.epp_result().extended_errors());
@@ -81,18 +100,6 @@ bool fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::unauthorized_registrar);
     return true;
-}
-
-BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
-{
-    BOOST_CHECK_THROW(
-        Epp::Domain::domain_delete_impl(
-            ctx,
-            info_enum_domain_data_.fqdn,
-            info_registrar_data_.id
-        ),
-        Epp::ObjectDoesNotExist
-    );
 }
 
 BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
