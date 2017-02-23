@@ -429,16 +429,16 @@ PollRequestOutputData poll_request(
                                      " JOIN message m ON m.id=t.id"
                                      " JOIN messagetype mt on mt.id=m.msgtype");
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
+    PollRequestOutputData poll_request_output_data;
     if (sql_query_result.size() == 0)
     {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
+        poll_request_output_data.number_of_unseen_messages = 0;
+        return poll_request_output_data;
     }
     if (sql_query_result.size() > 1)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
-
-    PollRequestOutputData poll_request_output_data;
 
     poll_request_output_data.message_id = static_cast<unsigned long long>(sql_query_result[0][0]);
     poll_request_output_data.creation_time =

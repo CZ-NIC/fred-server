@@ -1532,6 +1532,14 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
                 registrar_session_data.language,
                 server_transaction_handle);
 
+        if (poll_request_response.data.number_of_unseen_messages == 0)
+        {
+            throw ccReg::EPP::NoMessages(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                         ccReg_EPP_i::GetErrorMessage(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                                                      registrar_session_data.language),
+                                         server_transaction_handle.c_str());
+        }
+
         struct ConvertorToAny : boost::static_visitor<Corba::AnyType>
         {
             Corba::AnyType operator()(const Epp::Poll::TransferEvent& _transfer_event) const
