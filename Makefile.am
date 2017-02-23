@@ -807,14 +807,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/obj_types.h \
 		src/fredlib/object_states.cc \
 		src/fredlib/object_states.h \
-		src/fredlib/contact_diff.cc \
-		src/fredlib/contact_diff.h \
-		src/fredlib/domain_diff.cc \
-		src/fredlib/domain_diff.h \
-		src/fredlib/nsset_diff.cc \
-		src/fredlib/nsset_diff.h \
-		src/fredlib/keyset_diff.cc \
-		src/fredlib/keyset_diff.h \
 		src/fredlib/common_diff.cc \
 		src/fredlib/common_diff.h \
 		src/fredlib/reminder.cc \
