@@ -41,7 +41,10 @@ TransferEvent get_transfer_event(
               "JOIN object_history oh ON oh.historyid=pe.objid "
               "JOIN registrar r ON r.id=oh.clid "
               "JOIN object_registry obr ON obr.id=oh.id "
-              "WHERE pe.msgid=").param_bigint(_message_id);
+              "JOIN message m ON m.id=pe.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE pe.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
@@ -165,9 +168,9 @@ MessageEvent get_message_event_validation(
             ret.message = specific_message;
             break;
         }
-        case MessageType::outzone:
+        case MessageType::imp_validation:
         {
-            const MessageEvent::Data<MessageEvent::outzone> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::imp_validation> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
@@ -240,9 +243,9 @@ MessageEvent get_message_event_rest(
             ret.message = specific_message;
             break;
         }
-        case MessageType::imp_validation:
+        case MessageType::outzone:
         {
-            const MessageEvent::Data<MessageEvent::imp_validation> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::outzone> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
@@ -462,7 +465,7 @@ PollRequestOutputData poll_request(
             poll_request_output_data.message = get_message_event_delete(_ctx, poll_request_output_data.message_id, message_type);
             break;
         case MessageType::validation:
-        case MessageType::outzone:
+        case MessageType::imp_validation:
             poll_request_output_data.message = get_message_event_validation(_ctx, poll_request_output_data.message_id, message_type);
             break;
         case MessageType::idle_delete_contact:
@@ -471,7 +474,7 @@ PollRequestOutputData poll_request(
         case MessageType::idle_delete_keyset:
         case MessageType::imp_expiration:
         case MessageType::expiration:
-        case MessageType::imp_validation:
+        case MessageType::outzone:
             poll_request_output_data.message = get_message_event_rest(_ctx, poll_request_output_data.message_id, message_type);
             break;
         case MessageType::credit:

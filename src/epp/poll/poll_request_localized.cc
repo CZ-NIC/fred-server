@@ -62,7 +62,7 @@ PollRequestLocalizedResponse poll_request_localized(
         PollRequestLocalizedResponse ret(
             EppResponseSuccessLocalized(
                 ctx,
-                EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully_ack_to_dequeue)),
                 _lang),
             localized_output_data);
 
