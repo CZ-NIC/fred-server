@@ -3103,7 +3103,7 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
 }
 
 ccReg::Response* ccReg_EPP_i::DomainRenew(
-        const char* _domian_fqdn,
+        const char* _domain_fqdn,
         const char* curExpDate,
         const ccReg::Period_str& period,
         ccReg::timestamp_out _exdate,
@@ -3122,7 +3122,7 @@ ccReg::Response* ccReg_EPP_i::DomainRenew(
         const Epp::Domain::RenewDomainLocalizedResponse renew_domain_localized_response =
                 renew_domain_localized(
                         Epp::Domain::RenewDomainInputData(
-                                Corba::unwrap_string_from_const_char_ptr(_domian_fqdn),
+                                Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
                                 Corba::unwrap_string_from_const_char_ptr(curExpDate),
                                 Corba::unwrap_domain_registration_period(period),
                                 Corba::unwrap_enum_validation_extension_list(_enum_validation_extension_list)),

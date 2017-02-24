@@ -1,3 +1,5 @@
+#include "src/corba/epp/contact/contact_corba_conversions.h"
+
 #include "src/corba/EPP.hh"
 
 #include "src/corba/epp/corba_conversions.h"
@@ -10,6 +12,7 @@
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/optional.hpp>
+
 #include <map>
 #include <string>
 #include <vector>

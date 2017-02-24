@@ -46,6 +46,18 @@
 
 namespace Corba {
 
+
+/**
+ * Converts and formats time
+ *
+ * @param _utc_ptime time in UTC
+ *
+ * @return time converted to local time zone, with seconds fraction trimmed, formatted as RFC3339 string
+ */
+std::string
+convert_time_to_local_rfc3339(const boost::posix_time::ptime& _utc_ptime);
+
+
 CORBA::String_var
 wrap_Nullable_string_to_string(const Nullable<std::string>& src);
 
@@ -111,17 +123,6 @@ void
 wrap_Epp_ObjectStatesLocalized(
         const Epp::ObjectStatesLocalized& _src,
         ccReg::Status& _dst);
-
-
-/**
- * Converts and formats time
- *
- * @param _utc_ptime time in UTC
- *
- * @return time converted to local time zone, with seconds fraction trimmed, formatted as RFC3339 string
- */
-std::string
-convert_time_to_local_rfc3339(const boost::posix_time::ptime& _utc_ptime);
 
 
 } // namespace Corba

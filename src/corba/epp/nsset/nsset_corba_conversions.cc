@@ -1,3 +1,5 @@
+#include "src/corba/epp/nsset/nsset_corba_conversions.h"
+
 #include "src/corba/epp/corba_conversions.h"
 
 #include "src/corba/EPP.hh"

@@ -40,12 +40,6 @@ std::vector<Epp::Keyset::DsRecord>
 unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(const ccReg::DSRecord& _ds_records);
 
 
-void
-unwrap_ccReg_DSRecord_str(
-        const ccReg::DSRecord_str& _src,
-        Epp::Keyset::DsRecord& _dst);
-
-
 std::vector<Epp::Keyset::DnsKey>
 unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(const ccReg::DNSKey& _dns_keys);
 
@@ -58,12 +52,6 @@ wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
         const std::vector<std::string>& handles,
         const Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
         ccReg::CheckResp& dst);
-
-
-void
-wrap_Epp_InfoKeysetOutputData_TechContacts(
-        const Epp::Keyset::InfoKeysetOutputData::TechContacts& _src,
-        ccReg::TechContact& _dst);
 
 
 void

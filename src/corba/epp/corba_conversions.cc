@@ -1,9 +1,9 @@
 #include "src/corba/epp/corba_conversions.h"
 
-#include "src/corba/EPP.hh"
 #include "src/corba/epp/epp_legacy_compatibility.h"
-#include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_int.h"
+#include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/error.h"
@@ -12,11 +12,11 @@
 #include "src/epp/keyset/info_keyset_localized.h"
 #include "src/epp/nsset/info_nsset_localized.h"
 
+#include "src/epp/impl/epp_extended_error_localized.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/epp_result_failure_localized.h"
 #include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_extended_error_localized.h"
+#include "src/epp/impl/epp_result_failure_localized.h"
 
 #include "util/db/nullable.h"
 #include "util/map_at.h"
@@ -29,12 +29,133 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/optional.hpp>
 
-#include <string>
 #include <set>
+#include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace Corba {
+
 namespace {
+
+/**
+ * @throws std::logic_error
+ */
+ccReg::ParamError
+wrap_param_error(Epp::Param::Enum _param)
+{
+
+    switch (_param)
+    {
+        case Epp::Param::poll_msg_id:
+            return ccReg::poll_msgID;
+
+        case Epp::Param::contact_handle:
+            return ccReg::contact_handle;
+
+        case Epp::Param::contact_cc:
+            return ccReg::contact_cc;
+
+        case Epp::Param::nsset_handle:
+            return ccReg::nsset_handle;
+
+        case Epp::Param::nsset_tech:
+            return ccReg::nsset_tech;
+
+        case Epp::Param::nsset_dns_name:
+            return ccReg::nsset_dns_name;
+
+        case Epp::Param::nsset_dns_addr:
+            return ccReg::nsset_dns_addr;
+
+        case Epp::Param::nsset_dns_name_add:
+            return ccReg::nsset_dns_name_add;
+
+        case Epp::Param::nsset_dns_name_rem:
+            return ccReg::nsset_dns_name_rem;
+
+        case Epp::Param::nsset_tech_add:
+            return ccReg::nsset_tech_add;
+
+        case Epp::Param::nsset_tech_rem:
+            return ccReg::nsset_tech_rem;
+
+        case Epp::Param::domain_fqdn:
+            return ccReg::domain_fqdn;
+
+        case Epp::Param::domain_registrant:
+            return ccReg::domain_registrant;
+
+        case Epp::Param::domain_nsset:
+            return ccReg::domain_nsset;
+
+        case Epp::Param::domain_keyset:
+            return ccReg::domain_keyset;
+
+        case Epp::Param::domain_period:
+            return ccReg::domain_period;
+
+        case Epp::Param::domain_admin:
+            return ccReg::domain_admin;
+
+        case Epp::Param::domain_tmpcontact:
+            return ccReg::domain_tmpcontact;
+
+        case Epp::Param::domain_ext_val_date:
+            return ccReg::domain_ext_valDate;
+
+        case Epp::Param::domain_ext_val_date_missing:
+            return ccReg::domain_ext_valDate_missing;
+
+        case Epp::Param::domain_cur_exp_date:
+            return ccReg::domain_curExpDate;
+
+        case Epp::Param::domain_admin_add:
+            return ccReg::domain_admin_add;
+
+        case Epp::Param::domain_admin_rem:
+            return ccReg::domain_admin_rem;
+
+        case Epp::Param::keyset_handle:
+            return ccReg::keyset_handle;
+
+        case Epp::Param::keyset_tech:
+            return ccReg::keyset_tech;
+
+        case Epp::Param::keyset_dsrecord:
+            return ccReg::keyset_dsrecord;
+
+        case Epp::Param::keyset_dsrecord_add:
+            return ccReg::keyset_dsrecord_add;
+
+        case Epp::Param::keyset_dsrecord_rem:
+            return ccReg::keyset_dsrecord_rem;
+
+        case Epp::Param::keyset_tech_add:
+            return ccReg::keyset_tech_add;
+
+        case Epp::Param::keyset_tech_rem:
+            return ccReg::keyset_tech_rem;
+
+        case Epp::Param::registrar_autor:
+            return ccReg::registrar_autor;
+
+        case Epp::Param::keyset_dnskey:
+            return ccReg::keyset_dnskey;
+
+        case Epp::Param::keyset_dnskey_add:
+            return ccReg::keyset_dnskey_add;
+
+        case Epp::Param::keyset_dnskey_rem:
+            return ccReg::keyset_dnskey_rem;
+    }
+
+    throw std::logic_error("Unexpected Epp::Param::Enum value.");
+}
+
+
+} // namespace Corba::{anonymous}
+
 
 // represents RFC3339 time offset
 // append to boost::posix_time::to_iso_extended_string() to get RFC3339 timestamp
@@ -42,10 +163,11 @@ struct TimeZoneOffset
 {
     boost::optional<boost::posix_time::time_duration> time_zone_offset_;
 
+
     explicit TimeZoneOffset(const boost::posix_time::ptime& _utc_time)
     {
         time_zone_offset_ =
-                boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_time) - _utc_time;
+            boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_time) - _utc_time;
     }
 
     std::string to_rfc3339_string()
@@ -69,10 +191,8 @@ struct TimeZoneOffset
             return std::string("-00:00");
         }
     }
+
 };
-
-
-} // namespace Corba::{anonymous}
 
 std::string
 convert_time_to_local_rfc3339(const boost::posix_time::ptime& _utc_ptime)
@@ -115,8 +235,9 @@ unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles)
 
     result.reserve(handles.length());
 
-    for(CORBA::ULong i = 0; i < handles.length(); ++i) {
-        result.push_back(unwrap_string_from_const_char_ptr(handles[i]) );
+    for (CORBA::ULong i = 0; i < handles.length(); ++i)
+    {
+        result.push_back(unwrap_string_from_const_char_ptr(handles[i]));
     }
 
     return result;
@@ -130,66 +251,13 @@ unwrap_EppParams(const ccReg::EppParams& _epp_request_params)
     result.client_transaction_id = unwrap_string(_epp_request_params.clTRID);
     unsigned long long log_request_id;
     unwrap_int(_epp_request_params.requestID, log_request_id);
-    if (log_request_id != 0) {
+    if (log_request_id != 0)
+    {
         result.log_request_id = log_request_id;
     }
+
     return result;
 }
-
-struct ExceptionInvalidIdentType {};
-
-struct ExceptionInvalidParam {};
-
-namespace {
-
-/**
- * @throws ExceptionInvalidParam
- */
-ccReg::ParamError
-wrap_param_error(Epp::Param::Enum _param)
-{
-
-    switch(_param) {
-        case Epp::Param::poll_msg_id:            return ccReg::poll_msgID;
-        case Epp::Param::contact_handle:         return ccReg::contact_handle;
-        case Epp::Param::contact_cc:             return ccReg::contact_cc;
-        case Epp::Param::nsset_handle:           return ccReg::nsset_handle;
-        case Epp::Param::nsset_tech:             return ccReg::nsset_tech;
-        case Epp::Param::nsset_dns_name:         return ccReg::nsset_dns_name;
-        case Epp::Param::nsset_dns_addr:         return ccReg::nsset_dns_addr;
-        case Epp::Param::nsset_dns_name_add:     return ccReg::nsset_dns_name_add;
-        case Epp::Param::nsset_dns_name_rem:     return ccReg::nsset_dns_name_rem;
-        case Epp::Param::nsset_tech_add:         return ccReg::nsset_tech_add;
-        case Epp::Param::nsset_tech_rem:         return ccReg::nsset_tech_rem;
-        case Epp::Param::domain_fqdn:            return ccReg::domain_fqdn;
-        case Epp::Param::domain_registrant:      return ccReg::domain_registrant;
-        case Epp::Param::domain_nsset:           return ccReg::domain_nsset;
-        case Epp::Param::domain_keyset:          return ccReg::domain_keyset;
-        case Epp::Param::domain_period:          return ccReg::domain_period;
-        case Epp::Param::domain_admin:           return ccReg::domain_admin;
-        case Epp::Param::domain_tmpcontact:      return ccReg::domain_tmpcontact;
-        case Epp::Param::domain_ext_val_date:    return ccReg::domain_ext_valDate;
-        case Epp::Param::domain_ext_val_date_missing: return ccReg::domain_ext_valDate_missing;
-        case Epp::Param::domain_cur_exp_date:    return ccReg::domain_curExpDate;
-        case Epp::Param::domain_admin_add:       return ccReg::domain_admin_add;
-        case Epp::Param::domain_admin_rem:       return ccReg::domain_admin_rem;
-        case Epp::Param::keyset_handle:          return ccReg::keyset_handle;
-        case Epp::Param::keyset_tech:            return ccReg::keyset_tech;
-        case Epp::Param::keyset_dsrecord:        return ccReg::keyset_dsrecord;
-        case Epp::Param::keyset_dsrecord_add:    return ccReg::keyset_dsrecord_add;
-        case Epp::Param::keyset_dsrecord_rem:    return ccReg::keyset_dsrecord_rem;
-        case Epp::Param::keyset_tech_add:        return ccReg::keyset_tech_add;
-        case Epp::Param::keyset_tech_rem:        return ccReg::keyset_tech_rem;
-        case Epp::Param::registrar_autor:        return ccReg::registrar_autor;
-        case Epp::Param::keyset_dnskey:          return ccReg::keyset_dnskey;
-        case Epp::Param::keyset_dnskey_add:      return ccReg::keyset_dnskey_add;
-        case Epp::Param::keyset_dnskey_rem:      return ccReg::keyset_dnskey_rem;
-    };
-
-    throw ExceptionInvalidParam();
-}
-
-} // namespace {anonymous}
 
 void
 wrap_Epp_EppResponseSuccessLocalized(
@@ -234,22 +302,26 @@ wrap_Epp_EppResponseFailureLocalized(
     result.errMsg = wrap_string_to_corba_string(epp_result.epp_result_description());
 
     const boost::optional<std::set<Epp::EppExtendedErrorLocalized> >& epp_extended_errors =
-            epp_result.extended_errors();
+        epp_result.extended_errors();
 
-    if(epp_extended_errors) {
+    if (epp_extended_errors)
+    {
         const std::set<Epp::EppExtendedErrorLocalized>::size_type size = epp_extended_errors->size();
         result.errorList.length(size);
 
         int i = 0;
-        for(std::set<Epp::EppExtendedErrorLocalized>::const_iterator epp_extended_error = epp_extended_errors->begin();
-            epp_extended_error != epp_extended_errors->end();
-            ++epp_extended_error, ++i)
+        for (std::set<Epp::EppExtendedErrorLocalized>::const_iterator epp_extended_error =
+                 epp_extended_errors->begin();
+             epp_extended_error != epp_extended_errors->end();
+             ++epp_extended_error, ++i)
         {
             result.errorList[i].code = wrap_param_error(epp_extended_error->param());
             wrap_int(epp_extended_error->position(), result.errorList[i].position);
-            result.errorList[i].reason = wrap_string_to_corba_string(epp_extended_error->reason_description());
+            result.errorList[i].reason =
+                wrap_string_to_corba_string(epp_extended_error->reason_description());
         }
     }
+
     return result;
 }
 
@@ -258,10 +330,9 @@ unwrap_string_for_change_to_Optional_string(const char* _src)
 {
     const std::string unwrapped_src = unwrap_string_from_const_char_ptr(_src);
 
-    return
-        unwrapped_src.empty()
-        ? Optional<std::string>() // do not set
-        : unwrapped_src;
+    return unwrapped_src.empty()
+                   ? Optional<std::string>() // do not set
+                   : unwrapped_src;
 }
 
 Optional<std::string>
@@ -273,21 +344,24 @@ unwrap_string_for_change_or_remove_to_Optional_string(const char* _src)
      * (like using _add and _rem elements, not just _chg for all operations). */
     static const char char_for_value_deleting = '\b';
 
-    return
-        unwrapped_src.empty()
-        ? Optional<std::string>() // do not set
-        : unwrapped_src.at(0) == char_for_value_deleting
-            ? std::string() // set empty
-            : unwrapped_src;
+    return unwrapped_src.empty()
+                   ? Optional<std::string>() // do not set
+                   : unwrapped_src.at(0) == char_for_value_deleting
+                             ? std::string() // set empty
+                             : unwrapped_src;
 }
 
 void
-wrap_Epp_ObjectStatesLocalized(const Epp::ObjectStatesLocalized& _src, ccReg::Status& _dst)
+wrap_Epp_ObjectStatesLocalized(
+        const Epp::ObjectStatesLocalized& _src,
+        ccReg::Status& _dst)
 {
-    if (_src.descriptions.empty()) {
+    if (_src.descriptions.empty())
+    {
         _dst.length(1);
         _dst[0].value = "ok";
         _dst[0].text = _src.success_state_localized_description.c_str();
+
         return;
     }
     _dst.length(_src.descriptions.size());
