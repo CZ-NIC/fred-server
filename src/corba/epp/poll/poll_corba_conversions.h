@@ -26,29 +26,29 @@
 namespace Corba
 {
 
-struct AnyType
+struct PollMessage
 {
     CORBA::Any_var any;
     ccReg::PollType type;
 };
 
-AnyType wrap_transfer_event_into_any(const Epp::Poll::TransferEvent& _src);
+PollMessage wrap_transfer_event_into_any(const Epp::Poll::TransferEvent& _src);
 template<typename Flag>
-AnyType wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src);
+PollMessage wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src);
 
-AnyType wrap_message_event_into_any(const Epp::Poll::MessageEvent& _src);
+PollMessage wrap_message_event_into_any(const Epp::Poll::MessageEvent& _src);
 template<typename Flag>
-AnyType wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data<Flag>& _src);
+PollMessage wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data<Flag>& _src);
 
-AnyType wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src);
+PollMessage wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src);
 
-AnyType wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfoEvent& _src);
+PollMessage wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfoEvent& _src);
 
-AnyType wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src);
+PollMessage wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src);
 
-AnyType wrap_update_info_event_into_any(const Epp::Poll::UpdateInfoEvent& _src);
+PollMessage wrap_update_info_event_into_any(const Epp::Poll::UpdateInfoEvent& _src);
 template<typename Flag>
-AnyType wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src);
+PollMessage wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src);
 
 } // namespace Corba
 

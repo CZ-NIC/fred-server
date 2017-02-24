@@ -62,27 +62,27 @@ inline std::string to_db_handle(Epp::Poll::MessageType::Enum value)
 {
     switch (value)
     {
-    case Epp::Poll::MessageType::credit: return "credit";
-    case Epp::Poll::MessageType::techcheck: return "techcheck";
-    case Epp::Poll::MessageType::transfer_contact: return "transfer_contact";
-    case Epp::Poll::MessageType::transfer_nsset: return "transfer_nsset";
-    case Epp::Poll::MessageType::transfer_domain: return "transfer_domain";
-    case Epp::Poll::MessageType::idle_delete_contact: return "idle_delete_contact";
-    case Epp::Poll::MessageType::idle_delete_nsset: return "idle_delete_nsset";
-    case Epp::Poll::MessageType::idle_delete_domain: return "idle_delete_domain";
-    case Epp::Poll::MessageType::imp_expiration: return "imp_expiration";
-    case Epp::Poll::MessageType::expiration: return "expiration";
-    case Epp::Poll::MessageType::imp_validation: return "imp_validation";
-    case Epp::Poll::MessageType::validation: return "validation";
-    case Epp::Poll::MessageType::outzone: return "outzone";
-    case Epp::Poll::MessageType::transfer_keyset: return "transfer_keyset";
-    case Epp::Poll::MessageType::idle_delete_keyset: return "idle_delete_keyset";
-    case Epp::Poll::MessageType::request_fee_info: return "request_fee_info";
-    case Epp::Poll::MessageType::update_domain: return "update_domain";
-    case Epp::Poll::MessageType::update_nsset: return "update_nsset";
-    case Epp::Poll::MessageType::update_keyset: return "update_keyset";
-    case Epp::Poll::MessageType::delete_contact: return "delete_contact";
-    case Epp::Poll::MessageType::delete_domain: return "delete_domain";
+        case Epp::Poll::MessageType::credit: return "credit";
+        case Epp::Poll::MessageType::techcheck: return "techcheck";
+        case Epp::Poll::MessageType::transfer_contact: return "transfer_contact";
+        case Epp::Poll::MessageType::transfer_nsset: return "transfer_nsset";
+        case Epp::Poll::MessageType::transfer_domain: return "transfer_domain";
+        case Epp::Poll::MessageType::idle_delete_contact: return "idle_delete_contact";
+        case Epp::Poll::MessageType::idle_delete_nsset: return "idle_delete_nsset";
+        case Epp::Poll::MessageType::idle_delete_domain: return "idle_delete_domain";
+        case Epp::Poll::MessageType::imp_expiration: return "imp_expiration";
+        case Epp::Poll::MessageType::expiration: return "expiration";
+        case Epp::Poll::MessageType::imp_validation: return "imp_validation";
+        case Epp::Poll::MessageType::validation: return "validation";
+        case Epp::Poll::MessageType::outzone: return "outzone";
+        case Epp::Poll::MessageType::transfer_keyset: return "transfer_keyset";
+        case Epp::Poll::MessageType::idle_delete_keyset: return "idle_delete_keyset";
+        case Epp::Poll::MessageType::request_fee_info: return "request_fee_info";
+        case Epp::Poll::MessageType::update_domain: return "update_domain";
+        case Epp::Poll::MessageType::update_nsset: return "update_nsset";
+        case Epp::Poll::MessageType::update_keyset: return "update_keyset";
+        case Epp::Poll::MessageType::delete_contact: return "delete_contact";
+        case Epp::Poll::MessageType::delete_domain: return "delete_domain";
     }
     throw std::invalid_argument("value does not exist in Epp::Poll::MessageType::Enum");
 }

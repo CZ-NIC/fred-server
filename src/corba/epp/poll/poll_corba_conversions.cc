@@ -37,10 +37,10 @@ std::string formatTime(const boost::posix_time::ptime& tm) {
    return buffer;
 }
 
-struct TransferEventWrapper : boost::static_visitor<AnyType>
+struct TransferEventWrapper : boost::static_visitor<PollMessage>
 {
     template<typename Flag>
-    AnyType operator()(const Epp::Poll::TransferEvent::Data<Flag>& _src) const
+    PollMessage operator()(const Epp::Poll::TransferEvent::Data<Flag>& _src) const
     {
         return wrap_transfer_event_data_into_any(_src);
     }
@@ -75,20 +75,20 @@ struct TransferTypes<Epp::Poll::TransferEvent::transfer_keyset>
 } // namespace Corba::{anonymous}
 
 template<typename Flag>
-AnyType wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src)
+PollMessage wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src)
 {
-    ccReg::PollMsg_HandleDateReg_var hdm = new ccReg::PollMsg_HandleDateReg;
-    hdm->date = CORBA::string_dup(to_iso_extended_string(_src.transfer_date).c_str());
-    hdm->handle = CORBA::string_dup(_src.handle.c_str());
-    hdm->clID = CORBA::string_dup(_src.client_id.c_str());
-    AnyType ret;
+    ccReg::PollMsg_HandleDateReg hdm;
+    hdm.date = CORBA::string_dup(to_iso_extended_string(_src.transfer_date).c_str());
+    hdm.handle = CORBA::string_dup(_src.handle.c_str());
+    hdm.clID = CORBA::string_dup(_src.client_id.c_str());
+    PollMessage ret;
     ret.any = new CORBA::Any;
     ret.any <<= hdm;
     ret.type = TransferTypes<Flag>::value;
     return ret;
 }
 
-AnyType wrap_transfer_event_into_any(const Epp::Poll::TransferEvent& _src)
+PollMessage wrap_transfer_event_into_any(const Epp::Poll::TransferEvent& _src)
 {
     return boost::apply_visitor(TransferEventWrapper(), _src.message);
 }
@@ -96,10 +96,10 @@ AnyType wrap_transfer_event_into_any(const Epp::Poll::TransferEvent& _src)
 namespace
 {
 
-struct MessageEventWrapper : boost::static_visitor<AnyType>
+struct MessageEventWrapper : boost::static_visitor<PollMessage>
 {
     template<typename Flag>
-    AnyType operator()(const Epp::Poll::MessageEvent::Data<Flag>& _src) const
+    PollMessage operator()(const Epp::Poll::MessageEvent::Data<Flag>& _src) const
     {
         return wrap_message_event_data_into_any(_src);
     }
@@ -174,67 +174,67 @@ struct MessageTypes<Epp::Poll::MessageEvent::imp_validation>
 } // namespace Corba::{anonymous}
 
 template<typename Flag>
-AnyType wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data<Flag>& _src)
+PollMessage wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data<Flag>& _src)
 {
-    ccReg::PollMsg_HandleDateReg_var hdm = new ccReg::PollMsg_HandleDateReg;
-    hdm->date = CORBA::string_dup(to_iso_extended_string(_src.date).c_str());
-    hdm->handle = CORBA::string_dup(_src.handle.c_str());
-    AnyType ret;
+    ccReg::PollMsg_HandleDateReg hdm;
+    hdm.date = CORBA::string_dup(to_iso_extended_string(_src.date).c_str());
+    hdm.handle = CORBA::string_dup(_src.handle.c_str());
+    PollMessage ret;
     ret.any = new CORBA::Any;
     ret.any <<= hdm;
     ret.type = MessageTypes<Flag>::value;
     return ret;
 }
 
-AnyType wrap_message_event_into_any(const Epp::Poll::MessageEvent& _src)
+PollMessage wrap_message_event_into_any(const Epp::Poll::MessageEvent& _src)
 {
     return boost::apply_visitor(MessageEventWrapper(), _src.message);
 }
 
-AnyType wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src)
+PollMessage wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src)
 {
-    ccReg::PollMsg_LowCredit_var hdm = new ccReg::PollMsg_LowCredit;
-    hdm->zone = CORBA::string_dup(_src.zone.c_str());
-    hdm->limit = CORBA::string_dup(_src.credit.get_string(".2f").c_str());
-    hdm->credit = CORBA::string_dup(_src.limit.get_string(".2f").c_str());
-    AnyType ret;
+    ccReg::PollMsg_LowCredit hdm;
+    hdm.zone = CORBA::string_dup(_src.zone.c_str());
+    hdm.limit = CORBA::string_dup(_src.credit.get_string(".2f").c_str());
+    hdm.credit = CORBA::string_dup(_src.limit.get_string(".2f").c_str());
+    PollMessage ret;
     ret.any = new CORBA::Any;
     ret.any <<= hdm;
     ret.type = ccReg::polltype_lowcredit;
     return ret;
 }
 
-AnyType wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src)
+PollMessage wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src)
 {
-    ccReg::PollMsg_Techcheck_var hdm = new ccReg::PollMsg_Techcheck;
-    hdm->handle = CORBA::string_dup(_src.handle.c_str());
-    hdm->fqdns.length(_src.fqdns.size());
+    ccReg::PollMsg_Techcheck hdm;
+    hdm.handle = CORBA::string_dup(_src.handle.c_str());
+    hdm.fqdns.length(_src.fqdns.size());
     for (std::size_t i = 0; i < _src.fqdns.size(); ++i)
     {
-        hdm->fqdns[i] = CORBA::string_dup(_src.fqdns[i].c_str());
+        hdm.fqdns[i] = CORBA::string_dup(_src.fqdns[i].c_str());
     }
     for (std::size_t i = 0; i < _src.tests.size(); ++i)
     {
-        hdm->tests[i].testname = CORBA::string_dup(_src.tests[i].testname.c_str());
-        hdm->tests[i].status = _src.tests[i].status;
-        hdm->tests[i].note = CORBA::string_dup(_src.tests[i].note.c_str());
+        hdm.tests[i].testname = CORBA::string_dup(_src.tests[i].testname.c_str());
+        hdm.tests[i].status = _src.tests[i].status;
+        hdm.tests[i].note = CORBA::string_dup(_src.tests[i].note.c_str());
     }
-    AnyType ret;
+    PollMessage ret;
     ret.any = new CORBA::Any;
     ret.any <<= hdm;
     ret.type = ccReg::polltype_techcheck;
     return ret;
 }
 
-AnyType wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfoEvent& _src)
+PollMessage wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfoEvent& _src)
 {
-    ccReg::PollMsg_RequestFeeInfo_var hdm = new ccReg::PollMsg_RequestFeeInfo;
-    hdm->periodFrom = CORBA::string_dup(formatTime(_src.from).c_str());
-    hdm->periodTo = CORBA::string_dup(formatTime(_src.to - boost::posix_time::seconds(1)).c_str());
-    CorbaConversion::wrap_int(_src.free_count, hdm->totalFreeCount);
-    CorbaConversion::wrap_int(_src.used_count, hdm->usedCount);
-    hdm->price = CORBA::string_dup(_src.price.get_string(".2f").c_str());
-    AnyType ret;
+    ccReg::PollMsg_RequestFeeInfo hdm;
+    hdm.periodFrom = CORBA::string_dup(formatTime(_src.from).c_str());
+    hdm.periodTo = CORBA::string_dup(formatTime(_src.to - boost::posix_time::seconds(1)).c_str());
+    CorbaConversion::wrap_int(_src.free_count, hdm.totalFreeCount);
+    CorbaConversion::wrap_int(_src.used_count, hdm.usedCount);
+    hdm.price = CORBA::string_dup(_src.price.get_string(".2f").c_str());
+    PollMessage ret;
     ret.any = new CORBA::Any;
     ret.any <<= hdm;
     ret.type = ccReg::polltype_request_fee_info;
@@ -244,10 +244,10 @@ AnyType wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfo
 namespace
 {
 
-struct UpdateInfoEventWrapper : boost::static_visitor<AnyType>
+struct UpdateInfoEventWrapper : boost::static_visitor<PollMessage>
 {
     template<typename Flag>
-    AnyType operator()(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src) const
+    PollMessage operator()(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src) const
     {
         return wrap_update_info_event_data_into_any(_src);
     }
@@ -276,19 +276,19 @@ struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::update_nsset>
 } // namespace Corba::{anonymous}
 
 template<typename Flag>
-AnyType wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src)
+PollMessage wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src)
 {
-    ccReg::PollMsg_Update_var hdm = new ccReg::PollMsg_Update;
-    hdm->opTRID = CORBA::string_dup(Util::make_svtrid(_src.transaction_id).c_str());
-    CorbaConversion::wrap_int(_src.poll_id, hdm->pollID);
-    AnyType ret;
+    ccReg::PollMsg_Update hdm;
+    hdm.opTRID = CORBA::string_dup(Util::make_svtrid(_src.transaction_id).c_str());
+    CorbaConversion::wrap_int(_src.poll_id, hdm.pollID);
+    PollMessage ret;
     ret.any = new CORBA::Any;
     ret.any <<= hdm;
     ret.type = UpdateInfoTypes<Flag>::value;
     return ret;
 }
 
-AnyType wrap_update_info_event_into_any(const Epp::Poll::UpdateInfoEvent& _src)
+PollMessage wrap_update_info_event_into_any(const Epp::Poll::UpdateInfoEvent& _src)
 {
     return boost::apply_visitor(UpdateInfoEventWrapper(), _src.message);
 }

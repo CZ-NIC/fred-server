@@ -1540,40 +1540,40 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
                                          server_transaction_handle.c_str());
         }
 
-        struct ConvertorToAny : boost::static_visitor<Corba::AnyType>
+        struct ConvertorToAny : boost::static_visitor<Corba::PollMessage>
         {
-            Corba::AnyType operator()(const Epp::Poll::TransferEvent& _transfer_event) const
+            Corba::PollMessage operator()(const Epp::Poll::TransferEvent& _transfer_event) const
             {
                 return Corba::wrap_transfer_event_into_any(_transfer_event);
             }
 
-            Corba::AnyType operator()(const Epp::Poll::MessageEvent& _message_event) const
+            Corba::PollMessage operator()(const Epp::Poll::MessageEvent& _message_event) const
             {
                 return Corba::wrap_message_event_into_any(_message_event);
             }
 
-            Corba::AnyType operator()(const Epp::Poll::LowCreditEvent& _low_credit_event) const
+            Corba::PollMessage operator()(const Epp::Poll::LowCreditEvent& _low_credit_event) const
             {
                 return Corba::wrap_low_credit_event_into_any(_low_credit_event);
             }
 
-            Corba::AnyType operator()(const Epp::Poll::TechCheckEvent& _tech_check_event) const
+            Corba::PollMessage operator()(const Epp::Poll::TechCheckEvent& _tech_check_event) const
             {
                 return Corba::wrap_tech_check_event_into_any(_tech_check_event);
             }
 
-            Corba::AnyType operator()(const Epp::Poll::RequestFeeInfoEvent& _request_fee_info_event) const
+            Corba::PollMessage operator()(const Epp::Poll::RequestFeeInfoEvent& _request_fee_info_event) const
             {
                 return Corba::wrap_low_request_fee_info_event_into_any(_request_fee_info_event);
             }
 
-            Corba::AnyType operator()(const Epp::Poll::UpdateInfoEvent& _update_info_event) const
+            Corba::PollMessage operator()(const Epp::Poll::UpdateInfoEvent& _update_info_event) const
             {
                 return Corba::wrap_update_info_event_into_any(_update_info_event);
             }
         };
 
-        Corba::AnyType message_and_type;
+        Corba::PollMessage message_and_type;
         message_and_type = boost::apply_visitor(ConvertorToAny(), poll_request_response.data.message);
         _msg = message_and_type.any._retn();
 

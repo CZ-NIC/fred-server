@@ -36,7 +36,7 @@ TransferEvent get_transfer_event(
     MessageType::Enum _message_type)
 {
     Database::ParamQuery sql_query;
-    sql_query("SELECT oh.trdate::date AS transfer_date, obr.name AS handle, r.handle AS client_id "
+    sql_query("SELECT oh.trdate::date, obr.name, r.handle "
               "FROM poll_eppaction pe "
               "JOIN object_history oh ON oh.historyid=pe.objid "
               "JOIN registrar r ON r.id=oh.clid "
@@ -63,26 +63,26 @@ TransferEvent get_transfer_event(
         {
             const TransferEvent::Data<TransferEvent::transfer_contact> specific_message = { transfer_date, handle, client_id };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::transfer_nsset:
         {
             const TransferEvent::Data<TransferEvent::transfer_nsset> specific_message = { transfer_date, handle, client_id };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::transfer_domain:
         {
             const TransferEvent::Data<TransferEvent::transfer_domain> specific_message = { transfer_date, handle, client_id };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::transfer_keyset:
         {
             const TransferEvent::Data<TransferEvent::transfer_keyset> specific_message = { transfer_date, handle, client_id };
             ret.message = specific_message;
+            break;
         }
-        break;
     }
 
     return ret;
@@ -94,12 +94,12 @@ MessageEvent get_message_event_delete(
     MessageType::Enum _message_type)
 {
     Database::ParamQuery sql_query;
-    sql_query("SELECT obr.erdate::date AS date, obr.name AS handle "
+    sql_query("SELECT obr.erdate::date, obr.name "
               "FROM poll_eppaction pe "
               "JOIN object_registry obr ON obr.historyid=pe.objid "
-              "WHERE pe.msgid=").param_bigint(_message_id);
+              "WHERE obr.erdate IS NOT NULL AND pe.msgid=").param_bigint(_message_id);
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
-    if (sql_query_result.size() == 0 || sql_query_result[0][0].isnull())
+    if (sql_query_result.size() == 0)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
@@ -118,14 +118,14 @@ MessageEvent get_message_event_delete(
         {
             const MessageEvent::Data<MessageEvent::delete_domain> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::delete_contact:
         {
             const MessageEvent::Data<MessageEvent::delete_contact> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
     }
 
     return ret;
@@ -137,7 +137,7 @@ MessageEvent get_message_event_validation(
     MessageType::Enum _message_type)
 {
     Database::ParamQuery sql_query;
-    sql_query("SELECT COALESCE(eh.exdate::date, os.valid_from::date) AS date, obr.name AS handle "
+    sql_query("SELECT COALESCE(eh.exdate::date, os.valid_from::date), obr.name "
               "FROM poll_statechange ps "
               "JOIN object_state os ON os.id=ps.stateid "
               "JOIN object_registry obr ON obr.id=os.object_id "
@@ -163,14 +163,14 @@ MessageEvent get_message_event_validation(
         {
             const MessageEvent::Data<MessageEvent::validation> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::outzone:
         {
             const MessageEvent::Data<MessageEvent::outzone> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
     }
 
     return ret;
@@ -182,7 +182,7 @@ MessageEvent get_message_event_rest(
     MessageType::Enum _message_type)
 {
     Database::ParamQuery sql_query;
-    sql_query("SELECT COALESCE(dh.exdate::date, os.valid_from::date) AS date, obr.name AS handle "
+    sql_query("SELECT COALESCE(dh.exdate::date, os.valid_from::date), obr.name "
               "FROM poll_statechange ps "
               "JOIN object_state os ON os.id=ps.stateid "
               "JOIN object_registry obr ON obr.id=os.object_id "
@@ -208,44 +208,44 @@ MessageEvent get_message_event_rest(
         {
             const MessageEvent::Data<MessageEvent::idle_delete_contact> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::idle_delete_nsset:
         {
             const MessageEvent::Data<MessageEvent::idle_delete_nsset> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::idle_delete_domain:
         {
             const MessageEvent::Data<MessageEvent::idle_delete_domain> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::idle_delete_keyset:
         {
             const MessageEvent::Data<MessageEvent::idle_delete_keyset> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::imp_expiration:
         {
             const MessageEvent::Data<MessageEvent::imp_expiration> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::expiration:
         {
             const MessageEvent::Data<MessageEvent::expiration> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::imp_validation:
         {
             const MessageEvent::Data<MessageEvent::imp_validation> specific_message = { date, handle };
             ret.message = specific_message;
+            break;
         }
-        break;
     }
 
     return ret;
@@ -285,9 +285,9 @@ TechCheckEvent get_tech_check_event(
 {
     // perhaps these two queries should be merged into one... TODO
     Database::ParamQuery handle_fqdns_query;
-    handle_fqdns_query("SELECT obr.name AS handle, "
+    handle_fqdns_query("SELECT obr.name, "
                        "UNNEST(CASE WHEN ARRAY_LENGTH(cn.extra_fqdns, 1) IS NOT NULL "
-                       "THEN cn.extra_fqdns ELSE ARRAY[NULL::VARCHAR] END) AS fqdns "
+                       "THEN cn.extra_fqdns ELSE ARRAY[NULL::VARCHAR] END) "
                        "FROM poll_techcheck pt "
                        "JOIN check_nsset cn ON cn.id=pt.cnid "
                        "JOIN nsset_history nh ON nh.historyid=cn.nsset_hid "
@@ -391,20 +391,20 @@ UpdateInfoEvent get_update_info_event(
         {
             const UpdateInfoEvent::Data<UpdateInfoEvent::update_domain> specific_message = { transaction_id, _message_id };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::update_nsset:
         {
             const UpdateInfoEvent::Data<UpdateInfoEvent::update_nsset> specific_message = { transaction_id, _message_id };
             ret.message = specific_message;
+            break;
         }
-        break;
         case MessageType::update_keyset:
         {
             const UpdateInfoEvent::Data<UpdateInfoEvent::update_keyset> specific_message = { transaction_id, _message_id };
             ret.message = specific_message;
+            break;
         }
-        break;
     }
 
     return ret;

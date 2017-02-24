@@ -47,12 +47,12 @@ PollAcknowledgementLocalizedResponse poll_acknowledgement_localized(
     const std::string& _server_transaction_handle)
 {
     try {
-        Fred::OperationContextCreator ctx;
-
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
         Logging::Context logging_ctx3(_server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollAcknowledgement)));
+
+        Fred::OperationContextCreator ctx;
 
         unsigned long long message_id;
         try {
