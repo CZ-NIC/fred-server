@@ -56,33 +56,33 @@ TransferEvent get_transfer_event(
     }
 
     const boost::gregorian::date transfer_date = boost::gregorian::from_string(static_cast<std::string>(sql_query_result[0][0]));
-    const std::string handle = static_cast<std::string>(sql_query_result[0][1]);
-    const std::string client_id = static_cast<std::string>(sql_query_result[0][2]);
+    const std::string name = static_cast<std::string>(sql_query_result[0][1]);
+    const std::string handle = static_cast<std::string>(sql_query_result[0][2]);
 
     TransferEvent ret;
     switch(_message_type)
     {
         case MessageType::transfer_contact:
         {
-            const TransferEvent::Data<TransferEvent::transfer_contact> specific_message = { transfer_date, handle, client_id };
+            const TransferEvent::Data<TransferEvent::transfer_contact> specific_message = { transfer_date, name, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::transfer_nsset:
         {
-            const TransferEvent::Data<TransferEvent::transfer_nsset> specific_message = { transfer_date, handle, client_id };
+            const TransferEvent::Data<TransferEvent::transfer_nsset> specific_message = { transfer_date, name, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::transfer_domain:
         {
-            const TransferEvent::Data<TransferEvent::transfer_domain> specific_message = { transfer_date, handle, client_id };
+            const TransferEvent::Data<TransferEvent::transfer_domain> specific_message = { transfer_date, name, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::transfer_keyset:
         {
-            const TransferEvent::Data<TransferEvent::transfer_keyset> specific_message = { transfer_date, handle, client_id };
+            const TransferEvent::Data<TransferEvent::transfer_keyset> specific_message = { transfer_date, name, handle };
             ret.message = specific_message;
             break;
         }
@@ -289,7 +289,7 @@ TechCheckEvent get_tech_check_event(
     // perhaps these two queries should be merged into one... TODO
     Database::ParamQuery handle_fqdns_query;
     handle_fqdns_query("SELECT obr.name, "
-                       "UNNEST(CASE WHEN ARRAY_LENGTH(cn.extra_fqdns, 1) IS NOT NULL "
+                       "UNNEST(CASE WHEN COALESCE(ARRAY_LENGTH(cn.extra_fqdns, 1), 0) <> 0 "
                        "THEN cn.extra_fqdns ELSE ARRAY[NULL::VARCHAR] END) "
                        "FROM poll_techcheck pt "
                        "JOIN check_nsset cn ON cn.id=pt.cnid "
@@ -428,9 +428,9 @@ PollRequestOutputData poll_request(
     Database::ParamQuery sql_query;
     sql_query("SELECT m.id, mt.name, m.crdate, t.count "
               "FROM (SELECT min(id) AS id, count(*) FROM message WHERE clid=")
-        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen) AS t"
-                                     " JOIN message m ON m.id=t.id"
-                                     " JOIN messagetype mt on mt.id=m.msgtype");
+        .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen) AS t "
+              "JOIN message m ON m.id=t.id "
+              "JOIN messagetype mt on mt.id=m.msgtype");
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     PollRequestOutputData poll_request_output_data;
     if (sql_query_result.size() == 0)

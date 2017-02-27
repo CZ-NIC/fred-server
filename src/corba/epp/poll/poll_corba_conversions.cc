@@ -78,8 +78,8 @@ template<typename Flag>
 PollMessage wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src)
 {
     CORBA::String_var date = Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.transfer_date));
-    CORBA::String_var handle = Corba::wrap_string_to_corba_string(_src.handle);
-    CORBA::String_var clID = Corba::wrap_string_to_corba_string(_src.client_id);
+    CORBA::String_var handle = Corba::wrap_string_to_corba_string(_src.name);
+    CORBA::String_var clID = Corba::wrap_string_to_corba_string(_src.handle);
     ccReg::PollMsg_HandleDateReg hdm;
     hdm.date = date._retn();
     hdm.handle = handle._retn();
