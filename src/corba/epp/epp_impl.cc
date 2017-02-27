@@ -131,6 +131,7 @@
 #include "src/corba/epp/keyset/keyset_corba_conversions.h"
 #include "src/corba/epp/nsset/nsset_corba_conversions.h"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_int.h"
 #include "util/util.h"
 
 #include "src/epp/contact/check_contact_config_data.h"
@@ -1496,7 +1497,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
                                                                            .data
                                                                            .oldest_unseen_message_id);
 
-        CorbaConversion::wrap_int(poll_acknowledgement_response.data.number_of_unseen_messages, _count);
+        Corba::wrap_int(poll_acknowledgement_response.data.number_of_unseen_messages, _count);
 
         ccReg::Response_var return_value = new ccReg::Response(
             Corba::wrap_Epp_EppResponseSuccessLocalized(
@@ -1582,7 +1583,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         ccReg::timestamp_var create_time =
             Corba::wrap_string_to_corba_string(formatTime(poll_request_response.data.creation_time));
 
-        CorbaConversion::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
+        Corba::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
 
         const std::string msg_id_string = boost::lexical_cast<std::string>(poll_request_response
                                                                            .data

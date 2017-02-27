@@ -17,7 +17,7 @@
  */
 
 #include "src/corba/epp/poll/poll_corba_conversions.h"
-#include "util/corba_conversion.h"
+#include "src/corba/util/corba_conversions_int.h"
 #include "util/util.h"
 
 #include <boost/variant.hpp>
@@ -246,8 +246,8 @@ PollMessage wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFee
     ccReg::PollMsg_RequestFeeInfo hdm;
     hdm.periodFrom = periodFrom._retn();
     hdm.periodTo = periodTo._retn();
-    CorbaConversion::wrap_int(_src.free_count, hdm.totalFreeCount);
-    CorbaConversion::wrap_int(_src.used_count, hdm.usedCount);
+    Corba::wrap_int(_src.free_count, hdm.totalFreeCount);
+    Corba::wrap_int(_src.used_count, hdm.usedCount);
     hdm.price = price._retn();
     PollMessage ret;
     ret.content = new CORBA::Any;
@@ -296,7 +296,7 @@ PollMessage wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEven
     CORBA::String_var opTRID = Corba::wrap_string_to_corba_string(Util::make_svtrid(_src.transaction_id));
     ccReg::PollMsg_Update hdm;
     hdm.opTRID = opTRID._retn();
-    CorbaConversion::wrap_int(_src.poll_id, hdm.pollID);
+    Corba::wrap_int(_src.poll_id, hdm.pollID);
     PollMessage ret;
     ret.content = new CORBA::Any;
     ret.content <<= hdm;
