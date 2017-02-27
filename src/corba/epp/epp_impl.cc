@@ -1575,11 +1575,12 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
 
         Corba::PollMessage message_and_type;
         message_and_type = boost::apply_visitor(ConvertorToAny(), poll_request_response.data.message);
-        _msg = message_and_type.any._retn();
+        _msg = message_and_type.content._retn();
 
         _type = message_and_type.type;
 
-        _create_time = CORBA::string_dup(formatTime(poll_request_response.data.creation_time).c_str());
+        ccReg::timestamp_var create_time =
+            Corba::wrap_string_to_corba_string(formatTime(poll_request_response.data.creation_time));
 
         CorbaConversion::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
 
@@ -1593,6 +1594,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
                 poll_request_response.epp_response,
                 server_transaction_handle));
 
+        _create_time = create_time._retn();
         _msg_id = msg_id._retn();
         return return_value._retn();
     }

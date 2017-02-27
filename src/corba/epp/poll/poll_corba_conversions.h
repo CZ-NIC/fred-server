@@ -28,7 +28,7 @@ namespace Corba
 
 struct PollMessage
 {
-    CORBA::Any_var any;
+    CORBA::Any_var content;
     ccReg::PollType type;
 };
 

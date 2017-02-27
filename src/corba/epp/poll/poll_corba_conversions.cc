@@ -77,13 +77,16 @@ struct TransferTypes<Epp::Poll::TransferEvent::transfer_keyset>
 template<typename Flag>
 PollMessage wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src)
 {
+    CORBA::String_var date = Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.transfer_date));
+    CORBA::String_var handle = Corba::wrap_string_to_corba_string(_src.handle);
+    CORBA::String_var clID = Corba::wrap_string_to_corba_string(_src.client_id);
     ccReg::PollMsg_HandleDateReg hdm;
-    hdm.date = CORBA::string_dup(to_iso_extended_string(_src.transfer_date).c_str());
-    hdm.handle = CORBA::string_dup(_src.handle.c_str());
-    hdm.clID = CORBA::string_dup(_src.client_id.c_str());
+    hdm.date = date._retn();
+    hdm.handle = handle._retn();
+    hdm.clID = clID._retn();
     PollMessage ret;
-    ret.any = new CORBA::Any;
-    ret.any <<= hdm;
+    ret.content = new CORBA::Any;
+    ret.content <<= hdm;
     ret.type = TransferTypes<Flag>::value;
     return ret;
 }
@@ -176,12 +179,14 @@ struct MessageTypes<Epp::Poll::MessageEvent::imp_validation>
 template<typename Flag>
 PollMessage wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data<Flag>& _src)
 {
+    CORBA::String_var date = Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.date));
+    CORBA::String_var handle = Corba::wrap_string_to_corba_string(_src.handle);
     ccReg::PollMsg_HandleDateReg hdm;
-    hdm.date = CORBA::string_dup(to_iso_extended_string(_src.date).c_str());
-    hdm.handle = CORBA::string_dup(_src.handle.c_str());
+    hdm.date = date._retn();
+    hdm.handle = handle._retn();
     PollMessage ret;
-    ret.any = new CORBA::Any;
-    ret.any <<= hdm;
+    ret.content = new CORBA::Any;
+    ret.content <<= hdm;
     ret.type = MessageTypes<Flag>::value;
     return ret;
 }
@@ -193,50 +198,60 @@ PollMessage wrap_message_event_into_any(const Epp::Poll::MessageEvent& _src)
 
 PollMessage wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src)
 {
+    CORBA::String_var zone = Corba::wrap_string_to_corba_string(_src.zone);
+    CORBA::String_var limit = Corba::wrap_string_to_corba_string(_src.credit.get_string(".2f"));
+    CORBA::String_var credit = Corba::wrap_string_to_corba_string(_src.limit.get_string(".2f"));
     ccReg::PollMsg_LowCredit hdm;
-    hdm.zone = CORBA::string_dup(_src.zone.c_str());
-    hdm.limit = CORBA::string_dup(_src.credit.get_string(".2f").c_str());
-    hdm.credit = CORBA::string_dup(_src.limit.get_string(".2f").c_str());
+    hdm.zone = zone._retn();
+    hdm.limit = limit._retn();
+    hdm.credit = credit._retn();
     PollMessage ret;
-    ret.any = new CORBA::Any;
-    ret.any <<= hdm;
+    ret.content = new CORBA::Any;
+    ret.content <<= hdm;
     ret.type = ccReg::polltype_lowcredit;
     return ret;
 }
 
 PollMessage wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src)
 {
+    CORBA::String_var handle = Corba::wrap_string_to_corba_string(_src.handle);
     ccReg::PollMsg_Techcheck hdm;
-    hdm.handle = CORBA::string_dup(_src.handle.c_str());
+    hdm.handle = handle._retn();
     hdm.fqdns.length(_src.fqdns.size());
     for (std::size_t i = 0; i < _src.fqdns.size(); ++i)
     {
-        hdm.fqdns[i] = CORBA::string_dup(_src.fqdns[i].c_str());
+        CORBA::String_var fqdns_entry = Corba::wrap_string_to_corba_string(_src.fqdns[i]);
+        hdm.fqdns[i] = fqdns_entry._retn();
     }
     for (std::size_t i = 0; i < _src.tests.size(); ++i)
     {
-        hdm.tests[i].testname = CORBA::string_dup(_src.tests[i].testname.c_str());
+        CORBA::String_var testname_entry = Corba::wrap_string_to_corba_string(_src.tests[i].testname);
+        CORBA::String_var note_entry = Corba::wrap_string_to_corba_string(_src.tests[i].note);
+        hdm.tests[i].testname = testname_entry._retn();
         hdm.tests[i].status = _src.tests[i].status;
-        hdm.tests[i].note = CORBA::string_dup(_src.tests[i].note.c_str());
+        hdm.tests[i].note = note_entry._retn();
     }
     PollMessage ret;
-    ret.any = new CORBA::Any;
-    ret.any <<= hdm;
+    ret.content = new CORBA::Any;
+    ret.content <<= hdm;
     ret.type = ccReg::polltype_techcheck;
     return ret;
 }
 
 PollMessage wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfoEvent& _src)
 {
+    CORBA::String_var periodFrom = Corba::wrap_string_to_corba_string(formatTime(_src.from));
+    CORBA::String_var periodTo = Corba::wrap_string_to_corba_string(formatTime(_src.to - boost::posix_time::seconds(1)));
+    CORBA::String_var price = Corba::wrap_string_to_corba_string(_src.price.get_string(".2f"));
     ccReg::PollMsg_RequestFeeInfo hdm;
-    hdm.periodFrom = CORBA::string_dup(formatTime(_src.from).c_str());
-    hdm.periodTo = CORBA::string_dup(formatTime(_src.to - boost::posix_time::seconds(1)).c_str());
+    hdm.periodFrom = periodFrom._retn();
+    hdm.periodTo = periodTo._retn();
     CorbaConversion::wrap_int(_src.free_count, hdm.totalFreeCount);
     CorbaConversion::wrap_int(_src.used_count, hdm.usedCount);
-    hdm.price = CORBA::string_dup(_src.price.get_string(".2f").c_str());
+    hdm.price = price._retn();
     PollMessage ret;
-    ret.any = new CORBA::Any;
-    ret.any <<= hdm;
+    ret.content = new CORBA::Any;
+    ret.content <<= hdm;
     ret.type = ccReg::polltype_request_fee_info;
     return ret;
 }
@@ -278,12 +293,13 @@ struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::update_nsset>
 template<typename Flag>
 PollMessage wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src)
 {
+    CORBA::String_var opTRID = Corba::wrap_string_to_corba_string(Util::make_svtrid(_src.transaction_id));
     ccReg::PollMsg_Update hdm;
-    hdm.opTRID = CORBA::string_dup(Util::make_svtrid(_src.transaction_id).c_str());
+    hdm.opTRID = opTRID._retn();
     CorbaConversion::wrap_int(_src.poll_id, hdm.pollID);
     PollMessage ret;
-    ret.any = new CORBA::Any;
-    ret.any <<= hdm;
+    ret.content = new CORBA::Any;
+    ret.content <<= hdm;
     ret.type = UpdateInfoTypes<Flag>::value;
     return ret;
 }
