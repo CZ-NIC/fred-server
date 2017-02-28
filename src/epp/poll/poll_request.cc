@@ -294,64 +294,73 @@ LowCreditEvent get_low_credit_event(
     return ret;
 }
 
+std::vector<Test> get_tech_check_event_tests(
+    Fred::OperationContext& _ctx,
+    unsigned long long _message_id,
+    MessageType::Enum _message_type)
+{
+    Database::ParamQuery sql_query;
+    sql_query("SELECT ct.name, cr.status, cr.note "
+              "FROM poll_techcheck pt "
+              "JOIN check_result cr ON cr.checkid=pt.cnid "
+              "JOIN check_test ct ON ct.id=cr.testid "
+              "JOIN message m ON m.id=pt.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE pt.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
+    const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
+    if (sql_query_result.size() == 0)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
+    }
+
+    std::vector<Test> ret;
+    for (std::size_t i = 0; i < sql_query_result.size(); ++i)
+    {
+        Test test;
+        test.testname = static_cast<std::string>(sql_query_result[i][0]);
+        test.status = static_cast<int>(sql_query_result[i][1]);
+        test.note = static_cast<std::string>(sql_query_result[i][2]);
+        ret.push_back(test);
+    }
+
+    return ret;
+}
+
 TechCheckEvent get_tech_check_event(
     Fred::OperationContext& _ctx,
     unsigned long long _message_id,
     MessageType::Enum _message_type)
 {
-    // perhaps these two queries should be merged into one... TODO
-    Database::ParamQuery handle_fqdns_query;
-    handle_fqdns_query("SELECT obr.name, "
-                       "UNNEST(CASE WHEN COALESCE(ARRAY_LENGTH(cn.extra_fqdns, 1), 0) > 0 "
-                       "THEN cn.extra_fqdns ELSE ARRAY[NULL::VARCHAR] END) "
-                       "FROM poll_techcheck pt "
-                       "JOIN check_nsset cn ON cn.id=pt.cnid "
-                       "JOIN nsset_history nh ON nh.historyid=cn.nsset_hid "
-                       "JOIN object_registry obr ON obr.id=nh.id "
-                       "JOIN message m ON m.id=pt.msgid "
-                       "JOIN messagetype mt ON mt.id=m.msgtype "
-                       "WHERE pt.msgid=").param_bigint(_message_id)(" AND mt.name=")
-                       .param_text(Conversion::Enums::to_db_handle(_message_type));
-    const Database::Result handle_fqdns_query_result = _ctx.get_conn().exec_params(handle_fqdns_query);
-    if (handle_fqdns_query_result.size() == 0)
-    {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
-    }
-
-    // the following query is a way too slow... TODO
-    Database::ParamQuery tests_query;
-    tests_query("SELECT ct.name, cr.status, cr.note "
-                "FROM poll_techcheck pt "
-                "JOIN check_result cr ON cr.checkid=pt.cnid "
-                "JOIN check_test ct ON ct.id=cr.testid "
-                "JOIN message m ON m.id=pt.msgid "
-                "JOIN messagetype mt ON mt.id=m.msgtype "
-                "WHERE pt.msgid=").param_bigint(_message_id)(" AND mt.name=")
-                .param_text(Conversion::Enums::to_db_handle(_message_type));
-    const Database::Result tests_query_result = _ctx.get_conn().exec_params(tests_query);
-    if (tests_query_result.size() == 0)
+    Database::ParamQuery sql_query;
+    sql_query("SELECT obr.name, "
+              "UNNEST(CASE WHEN COALESCE(ARRAY_LENGTH(cn.extra_fqdns, 1), 0) > 0 "
+              "THEN cn.extra_fqdns ELSE ARRAY[NULL::VARCHAR] END) "
+              "FROM poll_techcheck pt "
+              "JOIN check_nsset cn ON cn.id=pt.cnid "
+              "JOIN nsset_history nh ON nh.historyid=cn.nsset_hid "
+              "JOIN object_registry obr ON obr.id=nh.id "
+              "JOIN message m ON m.id=pt.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE pt.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
+    const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
+    if (sql_query_result.size() == 0)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
     TechCheckEvent ret;
-    ret.handle = static_cast<std::string>(handle_fqdns_query_result[0][0]);
-    if (! handle_fqdns_query_result[0][0].isnull())
+    ret.handle = static_cast<std::string>(sql_query_result[0][0]);
+    if (! sql_query_result[0][0].isnull())
     {
-        for (std::size_t i = 0; i < handle_fqdns_query_result.size(); ++i)
+        for (std::size_t i = 0; i < sql_query_result.size(); ++i)
         {
-            ret.fqdns.push_back(static_cast<std::string>(handle_fqdns_query_result[i][1]));
+            ret.fqdns.push_back(static_cast<std::string>(sql_query_result[i][1]));
         }
     }
 
-    for (std::size_t i = 0; i < tests_query_result.size(); ++i)
-    {
-        Test test;
-        test.testname = static_cast<std::string>(tests_query_result[i][0]);
-        test.status = static_cast<int>(tests_query_result[i][1]);
-        test.note = static_cast<std::string>(tests_query_result[i][2]);
-        ret.tests.push_back(test);
-    }
+    ret.tests = get_tech_check_event_tests(_ctx, _message_id, _message_type);
 
     return ret;
 }
