@@ -43,8 +43,8 @@ struct TransferEvent
     struct Data
     {
         boost::gregorian::date transfer_date;
-        std::string name;
-        std::string handle;
+        std::string object_handle;
+        std::string dst_registrar_handle;
     };
 
     typedef boost::variant<

@@ -1581,7 +1581,8 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         _type = message_and_type.type;
 
         ccReg::timestamp_var create_time =
-            Corba::wrap_string_to_corba_string(formatTime(poll_request_response.data.creation_time));
+            Corba::wrap_string_to_corba_string(
+                Corba::convert_time_to_local_rfc3339(poll_request_response.data.creation_time));
 
         Corba::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
 
