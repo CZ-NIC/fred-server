@@ -35,7 +35,7 @@ public:
     EppResponseFailureLocalized(
             Fred::OperationContext& _ctx,
             const EppResponseFailure& _epp_response,
-            const Epp::SessionLang::Enum& _session_lang);
+            Epp::SessionLang::Enum _session_lang);
 
     virtual ~EppResponseFailureLocalized() throw()
     { }

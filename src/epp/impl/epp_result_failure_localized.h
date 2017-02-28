@@ -39,7 +39,7 @@ public:
     EppResultFailureLocalized(
             Fred::OperationContext& _ctx,
             const EppResultFailure& _epp_result,
-            const SessionLang::Enum& _session_lang);
+            SessionLang::Enum _session_lang);
 
     virtual const char* c_str() const throw() {
         return epp_result_description_.c_str();

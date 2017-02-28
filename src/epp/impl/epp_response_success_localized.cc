@@ -15,7 +15,7 @@ namespace Epp {
 EppResponseSuccessLocalized::EppResponseSuccessLocalized(
         Fred::OperationContext& _ctx,
         const EppResponseSuccess& _epp_response,
-        const Epp::SessionLang::Enum& _session_lang)
+        const Epp::SessionLang::Enum _session_lang)
     : epp_response_(_epp_response),
       epp_result_(EppResultSuccessLocalized(_ctx, _epp_response.epp_result(), _session_lang))
 { }

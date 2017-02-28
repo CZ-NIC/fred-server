@@ -14,7 +14,7 @@ namespace Epp {
 EppResponseFailureLocalized::EppResponseFailureLocalized(
         Fred::OperationContext& _ctx,
         const EppResponseFailure& _epp_response,
-        const Epp::SessionLang::Enum& _session_lang)
+        const Epp::SessionLang::Enum _session_lang)
     : epp_response_(_epp_response)
 {
 

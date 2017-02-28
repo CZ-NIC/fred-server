@@ -18,8 +18,8 @@ bool has_extended_error(
 
 bool has_extended_error_with_param_reason(
         const EppResultFailure& _epp_result_failure,
-        const Param::Enum& _param,
-        const Reason::Enum& _reason)
+        const Param::Enum _param,
+        const Reason::Enum _reason)
 {
     const EppExtendedError epp_extended_error =
                    EppExtendedError::of_scalar_parameter(
@@ -31,9 +31,9 @@ bool has_extended_error_with_param_reason(
 
 bool has_extended_error_with_param_index_reason(
         const EppResultFailure& _epp_result_failure,
-        const Param::Enum& _param,
+        const Param::Enum _param,
         unsigned short _index,
-        const Reason::Enum& _reason)
+        const Reason::Enum _reason)
 {
     const EppExtendedError epp_extended_error =
                    EppExtendedError::of_vector_parameter(
@@ -46,8 +46,8 @@ bool has_extended_error_with_param_index_reason(
 
 std::set<EppExtendedError> extended_errors_with_param_reason(
         const EppResultFailure& _epp_result_failure,
-        const Param::Enum& _param,
-        const Reason::Enum& _reason)
+        const Param::Enum _param,
+        const Reason::Enum _reason)
 {
     std::set<EppExtendedError> extended_errors_with_param_reason;
     if (_epp_result_failure.extended_errors()) {

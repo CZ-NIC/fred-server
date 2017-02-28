@@ -122,19 +122,19 @@ bool has_extended_error(
 
 bool has_extended_error_with_param_reason(
         const EppResultFailure& _epp_result_failure,
-        const Param::Enum& _param,
-        const Reason::Enum& _reason);
+        Param::Enum _param,
+        Reason::Enum _reason);
 
 bool has_extended_error_with_param_index_reason(
         const EppResultFailure& _epp_result_failure,
-        const Param::Enum& _param,
+        Param::Enum _param,
         unsigned short _index,
-        const Reason::Enum& _reason);
+        Reason::Enum _reason);
 
 std::set<EppExtendedError> extended_errors_with_param_reason(
         const EppResultFailure& _epp_result_failure,
-        const Param::Enum& _param,
-        const Reason::Enum& _reason);
+        Param::Enum _param,
+        Reason::Enum _reason);
 
 } // namespace Epp
 
