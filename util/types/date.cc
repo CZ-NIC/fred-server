@@ -134,40 +134,6 @@ bool operator!=(const Date &_left, const Date &_right) {
 
 
 /*
- * date math operator 
- */
-
-Date operator+(const Date& _d, Days _days) {
-  return Date(_d.value + days((Days::value_type)_days));
-}
-
-
-Date operator+(const Date& _d, Months _months) {
-  return Date(_d.value + months((Months::value_type)_months));
-}
-
-
-Date operator+(const Date& _d, Years _years) {
-  return Date(_d.value + years((Years::value_type)_years));
-}
-
-
-Date operator-(const Date& _d, Days _days) {
-  return Date(_d.value - days((Days::value_type)_days));
-}
-
-
-Date operator-(const Date& _d, Months _months) {
-  return Date(_d.value - months((Months::value_type)_months));
-}
-
-
-Date operator-(const Date& _d, Years _years) {
-  return Date(_d.value - years((Years::value_type)_years));
-}
-
-
-/*
  * date output operator
  */
 
