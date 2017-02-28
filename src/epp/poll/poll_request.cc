@@ -100,7 +100,10 @@ MessageEvent get_message_event_delete(
     sql_query("SELECT obr.erdate::date, obr.name "
               "FROM poll_eppaction pe "
               "JOIN object_registry obr ON obr.historyid=pe.objid "
-              "WHERE obr.erdate IS NOT NULL AND pe.msgid=").param_bigint(_message_id);
+              "JOIN message m ON m.id=pe.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE obr.erdate IS NOT NULL AND pe.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
@@ -144,8 +147,11 @@ MessageEvent get_message_event_validation(
               "FROM poll_statechange ps "
               "JOIN object_state os ON os.id=ps.stateid "
               "JOIN object_registry obr ON obr.id=os.object_id "
+              "JOIN message m ON m.id=pe.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
               "LEFT JOIN enumval_history eh ON eh.historyid=os.ohid_from "
-              "WHERE pe.msgid=").param_bigint(_message_id);
+              "WHERE pe.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
@@ -189,8 +195,11 @@ MessageEvent get_message_event_rest(
               "FROM poll_statechange ps "
               "JOIN object_state os ON os.id=ps.stateid "
               "JOIN object_registry obr ON obr.id=os.object_id "
+              "JOIN message m ON m.id=pe.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
               "LEFT JOIN domain_history dh ON dh.historyid=os.ohid_from "
-              "WHERE pe.msgid=").param_bigint(_message_id);
+              "WHERE pe.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
@@ -256,14 +265,17 @@ MessageEvent get_message_event_rest(
 
 LowCreditEvent get_low_credit_event(
     Fred::OperationContext& _ctx,
-    unsigned long long _message_id)
+    unsigned long long _message_id,
+    MessageType::Enum _message_type)
 {
     Database::ParamQuery sql_query;
     sql_query("SELECT z.fqdn, pc.credit, pc.credlimit "
               "FROM poll_credit pc "
               "JOIN zone z ON z.id=pc.zone "
-              "WHERE pc.msgid=")
-        .param_bigint(_message_id);
+              "JOIN message m ON m.id=pc.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE pc.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
@@ -284,7 +296,8 @@ LowCreditEvent get_low_credit_event(
 
 TechCheckEvent get_tech_check_event(
     Fred::OperationContext& _ctx,
-    unsigned long long _message_id)
+    unsigned long long _message_id,
+    MessageType::Enum _message_type)
 {
     // perhaps these two queries should be merged into one... TODO
     Database::ParamQuery handle_fqdns_query;
@@ -295,7 +308,10 @@ TechCheckEvent get_tech_check_event(
                        "JOIN check_nsset cn ON cn.id=pt.cnid "
                        "JOIN nsset_history nh ON nh.historyid=cn.nsset_hid "
                        "JOIN object_registry obr ON obr.id=nh.id "
-                       "WHERE pt.msgid=").param_bigint(_message_id);
+                       "JOIN message m ON m.id=pt.msgid "
+                       "JOIN messagetype mt ON mt.id=m.msgtype "
+                       "WHERE pt.msgid=").param_bigint(_message_id)(" AND mt.name=")
+                       .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result handle_fqdns_query_result = _ctx.get_conn().exec_params(handle_fqdns_query);
     if (handle_fqdns_query_result.size() == 0)
     {
@@ -308,7 +324,10 @@ TechCheckEvent get_tech_check_event(
                 "FROM poll_techcheck pt "
                 "JOIN check_result cr ON cr.checkid=pt.cnid "
                 "JOIN check_test ct ON ct.id=cr.testid "
-                "WHERE pt.msgid=").param_bigint(_message_id);
+                "JOIN message m ON m.id=pt.msgid "
+                "JOIN messagetype mt ON mt.id=m.msgtype "
+                "WHERE pt.msgid=").param_bigint(_message_id)(" AND mt.name=")
+                .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result tests_query_result = _ctx.get_conn().exec_params(tests_query);
     if (tests_query_result.size() == 0)
     {
@@ -339,12 +358,16 @@ TechCheckEvent get_tech_check_event(
 
 RequestFeeInfoEvent get_request_fee_info_event(
     Fred::OperationContext& _ctx,
-    unsigned long long _message_id)
+    unsigned long long _message_id,
+    MessageType::Enum _message_type)
 {
     Database::ParamQuery sql_query;
-    sql_query("SELECT period_from, period_to, total_free_count, used_count, price "
-              "FROM poll_request_fee "
-              "WHERE msgid=").param_bigint(_message_id);
+    sql_query("SELECT prf.period_from, prf.period_to, prf.total_free_count, prf.used_count, prf.price "
+              "FROM poll_request_fee prf "
+              "JOIN message m ON m.id=prf.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE prf.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
@@ -374,7 +397,10 @@ UpdateInfoEvent get_update_info_event(
               "FROM poll_eppaction pe "
               "JOIN history h1 ON h1.next=pe.objid "
               "JOIN history h2 ON h2.id=h1.next "
-              "WHERE pe.msgid=").param_bigint(_message_id);
+              "JOIN message m ON m.id=pe.msgid "
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE pe.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
@@ -478,13 +504,13 @@ PollRequestOutputData poll_request(
             poll_request_output_data.message = get_message_event_rest(_ctx, poll_request_output_data.message_id, message_type);
             break;
         case MessageType::credit:
-            poll_request_output_data.message = get_low_credit_event(_ctx, poll_request_output_data.message_id);
+            poll_request_output_data.message = get_low_credit_event(_ctx, poll_request_output_data.message_id, message_type);
             break;
         case MessageType::techcheck:
-            poll_request_output_data.message = get_tech_check_event(_ctx, poll_request_output_data.message_id);
+            poll_request_output_data.message = get_tech_check_event(_ctx, poll_request_output_data.message_id, message_type);
             break;
         case MessageType::request_fee_info:
-            poll_request_output_data.message = get_request_fee_info_event(_ctx, poll_request_output_data.message_id);
+            poll_request_output_data.message = get_request_fee_info_event(_ctx, poll_request_output_data.message_id, message_type);
             break;
         case MessageType::update_domain:
         case MessageType::update_nsset:
