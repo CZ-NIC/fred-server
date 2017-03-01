@@ -45,7 +45,13 @@ unsigned long long transfer_domain(
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    boost::gregorian::date current_local_date = boost::posix_time::microsec_clock::local_time().date();
+    // start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
+    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
+        static_cast<std::string>(_ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+
+    // warning: timestamp conversion using local system timezone
+    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::gregorian::date current_local_date = current_local_time.date();
 
     Fred::Zone::Data zone_data;
     try {
