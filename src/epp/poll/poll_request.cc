@@ -360,7 +360,7 @@ TechCheckEvent get_tech_check_event(
 
     TechCheckEvent ret;
     ret.handle = static_cast<std::string>(sql_query_result[0][0]);
-    if (! sql_query_result[0][0].isnull())
+    if (!sql_query_result[0][1].isnull())
     {
         for (std::size_t i = 0; i < sql_query_result.size(); ++i)
         {
@@ -504,15 +504,15 @@ PollRequestOutputData poll_request(
         case MessageType::transfer_domain:
         case MessageType::transfer_keyset:
             poll_request_output_data.message = get_transfer_event(_ctx, poll_request_output_data.message_id, message_type);
-            break;
+            return poll_request_output_data;
         case MessageType::delete_domain:
         case MessageType::delete_contact:
             poll_request_output_data.message = get_message_event_delete(_ctx, poll_request_output_data.message_id, message_type);
-            break;
+            return poll_request_output_data;
         case MessageType::validation:
         case MessageType::imp_validation:
             poll_request_output_data.message = get_message_event_validation(_ctx, poll_request_output_data.message_id, message_type);
-            break;
+            return poll_request_output_data;
         case MessageType::idle_delete_contact:
         case MessageType::idle_delete_nsset:
         case MessageType::idle_delete_domain:
@@ -521,26 +521,23 @@ PollRequestOutputData poll_request(
         case MessageType::expiration:
         case MessageType::outzone:
             poll_request_output_data.message = get_message_event_rest(_ctx, poll_request_output_data.message_id, message_type);
-            break;
+            return poll_request_output_data;
         case MessageType::credit:
             poll_request_output_data.message = get_low_credit_event(_ctx, poll_request_output_data.message_id, message_type);
-            break;
+            return poll_request_output_data;
         case MessageType::techcheck:
             poll_request_output_data.message = get_tech_check_event(_ctx, poll_request_output_data.message_id, message_type);
-            break;
+            return poll_request_output_data;
         case MessageType::request_fee_info:
             poll_request_output_data.message = get_request_fee_info_event(_ctx, poll_request_output_data.message_id, message_type);
-            break;
+            return poll_request_output_data;
         case MessageType::update_domain:
         case MessageType::update_nsset:
         case MessageType::update_keyset:
             poll_request_output_data.message = get_update_info_event(_ctx, poll_request_output_data.message_id, message_type);
-            break;
-        default:
-            throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+            return poll_request_output_data;
     }
-
-    return poll_request_output_data;
+    throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
 }
 
 } // namespace Epp::Poll
