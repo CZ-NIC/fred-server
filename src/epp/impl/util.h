@@ -24,7 +24,6 @@
 
 #include <string>
 
-// TODO fredlib_modification mozna by vsechno tohle casem melo byt soucasti fredlibu
 namespace Epp {
 
 inline bool is_country_code_valid(Fred::OperationContext& ctx, const std::string& cc) {

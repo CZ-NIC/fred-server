@@ -32,11 +32,14 @@ namespace Contact {
 boost::optional<std::string>
 trim(const boost::optional<std::string>& src);
 
+
 boost::optional<Nullable<std::string> >
 trim(const boost::optional<Nullable<std::string> >& src);
 
+
 std::vector<boost::optional<Nullable<std::string> > >
 trim(const std::vector<boost::optional<Nullable<std::string> > >& src);
+
 
 } // namespace Epp::Contact
 } // namespace Epp

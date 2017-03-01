@@ -19,8 +19,8 @@
 #ifndef INFO_CONTACT_LOCALIZED_H_1AA5F0561FEF4660B5392F22BD64435C
 #define INFO_CONTACT_LOCALIZED_H_1AA5F0561FEF4660B5392F22BD64435C
 
-#include "src/epp/contact/impl/info_contact_localized_response.h"
 #include "src/epp/contact/contact_disclose.h"
+#include "src/epp/contact/impl/info_contact_localized_response.h"
 #include "src/epp/impl/notification_data.h"
 #include "src/epp/impl/session_data.h"
 #include "src/fredlib/opcontext.h"
@@ -33,6 +33,7 @@ namespace Contact {
 InfoContactLocalizedResponse info_contact_localized(
         const std::string& _contact_handle,
         const SessionData& _session_data);
+
 
 } // namespace Epp::Contact
 } // namespace Epp

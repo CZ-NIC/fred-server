@@ -19,9 +19,9 @@
 #ifndef DNS_HOST_OUTPUT_H_AF9BB4F2EDD64A929920CF34924B88BA
 #define DNS_HOST_OUTPUT_H_AF9BB4F2EDD64A929920CF34924B88BA
 
+#include <boost/asio/ip/address.hpp>
 #include <string>
 #include <vector>
-#include <boost/asio/ip/address.hpp>
 
 namespace Epp {
 namespace Nsset {
@@ -29,19 +29,26 @@ namespace Nsset {
 /**
  * DNS host output data for nsset info.
  */
-struct DnsHostOutput {
-    std::string fqdn;/**< nameserver host name*/
-    std::vector<boost::asio::ip::address> inet_addr;/**< list of IPv4 or IPv6 addresses of the nameserver host*/
+struct DnsHostOutput
+{
+    std::string fqdn; /**< nameserver host name*/
+    std::vector<boost::asio::ip::address> inet_addr; /**< list of IPv4 or IPv6 addresses of the nameserver host*/
+
 
     /**
      * Constructor initializing all attributes.
      * @param _fqdn nameserver name
      * @param _inet_addr addresses of the nameserver
      */
-    DnsHostOutput(const std::string& _fqdn, const std::vector<boost::asio::ip::address>& _inet_addr)
-    :   fqdn(_fqdn),
-        inet_addr(_inet_addr)
-    {}
+    DnsHostOutput(
+            const std::string& _fqdn,
+            const std::vector<boost::asio::ip::address>& _inet_addr)
+        : fqdn(_fqdn),
+          inet_addr(_inet_addr)
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

@@ -21,15 +21,15 @@
 
 #include "src/epp/contact/contact_disclose.h"
 #include "src/epp/impl/session_lang.h"
-#include "src/fredlib/opcontext.h"
 #include "src/fredlib/contact/info_contact_data.h"
+#include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
 
 namespace Epp {
@@ -37,33 +37,38 @@ namespace Contact {
 
 struct InfoContactOutputData
 {
-    explicit InfoContactOutputData(const boost::optional< ContactDisclose >& _disclose);
+
+
+    explicit InfoContactOutputData(const boost::optional<ContactDisclose>& _disclose);
+
+
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
-    Nullable< std::string > last_update_registrar_handle;
-    std::set< std::string > states;
+    Nullable<std::string> last_update_registrar_handle;
+    std::set<std::string> states;
     boost::posix_time::ptime crdate;
-    Nullable< boost::posix_time::ptime > last_update;
-    Nullable< boost::posix_time::ptime > last_transfer;
-    Nullable< std::string > name;
-    Nullable< std::string > organization;
-    Nullable< std::string > street1;
-    Nullable< std::string > street2;
-    Nullable< std::string > street3;
-    Nullable< std::string > city;
-    Nullable< std::string > state_or_province;
-    Nullable< std::string > postal_code;
-    Nullable< std::string > country_code;
-    Nullable< std::string > telephone;
-    Nullable< std::string > fax;
-    Nullable< std::string > email;
-    Nullable< std::string > notify_email;
-    Nullable< std::string > VAT;
-    boost::optional< Fred::PersonalIdUnion > personal_id;
-    boost::optional< std::string > authinfopw;
-    boost::optional< ContactDisclose > disclose;
+    Nullable<boost::posix_time::ptime> last_update;
+    Nullable<boost::posix_time::ptime> last_transfer;
+    Nullable<std::string> name;
+    Nullable<std::string> organization;
+    Nullable<std::string> street1;
+    Nullable<std::string> street2;
+    Nullable<std::string> street3;
+    Nullable<std::string> city;
+    Nullable<std::string> state_or_province;
+    Nullable<std::string> postal_code;
+    Nullable<std::string> country_code;
+    Nullable<std::string> telephone;
+    Nullable<std::string> fax;
+    Nullable<std::string> email;
+    Nullable<std::string> notify_email;
+    Nullable<std::string> VAT;
+    boost::optional<Fred::PersonalIdUnion> personal_id;
+    boost::optional<std::string> authinfopw;
+    boost::optional<ContactDisclose> disclose;
+
 };
 
 /**
@@ -74,6 +79,7 @@ InfoContactOutputData info_contact(
         Fred::OperationContext& _ctx,
         const std::string& _handle,
         unsigned long long _session_registrar_id);
+
 
 } // namespace Epp::Contact
 } // namespace Epp

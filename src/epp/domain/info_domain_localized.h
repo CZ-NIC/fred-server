@@ -30,6 +30,7 @@ InfoDomainLocalizedResponse info_domain_localized(
         const std::string& _domain_fqdn,
         const SessionData& _session_data);
 
+
 } // namespace Epp::Domain
 } // namespace Epp
 

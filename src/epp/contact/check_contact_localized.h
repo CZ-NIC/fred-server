@@ -32,6 +32,7 @@ CheckContactLocalizedResponse check_contact_localized(
         const std::set<std::string>& _contact_handles,
         const SessionData& _session_data);
 
+
 } // namespace Epp::Contact
 } // namespace Epp
 

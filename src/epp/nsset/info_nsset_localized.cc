@@ -17,7 +17,6 @@
  */
 
 #include "src/epp/nsset/info_nsset_localized.h"
-#include "src/epp/nsset/info_nsset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
@@ -28,6 +27,7 @@
 #include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
+#include "src/epp/nsset/info_nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/opcontext.h"
@@ -37,11 +37,11 @@
 #include <boost/format/free_funcs.hpp>
 
 #include <algorithm>
+#include <boost/foreach.hpp>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <boost/foreach.hpp>
 
 namespace Epp {
 namespace Nsset {
@@ -53,7 +53,8 @@ InfoNssetLocalizedResponse info_nsset_localized(
     // since no changes are comitted this transaction is reused for everything
     Fred::OperationContextCreator ctx;
 
-    try {
+    try
+    {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -73,13 +74,14 @@ InfoNssetLocalizedResponse info_nsset_localized(
             // TODO udelat pres ziskani externich stavu, zatim na to neni ve fredlibu rozhrani
             // TODO Fred::GetObjectStates pro "handle"
             const std::vector<Fred::ObjectStateData> state_definitions =
-                Fred::GetObjectStates(
-                    Fred::InfoNssetByHandle(info_nsset_output_data.handle).exec(ctx).info_nsset_data.id
-                ).exec(ctx);
+                    Fred::GetObjectStates(
+                            Fred::InfoNssetByHandle(info_nsset_output_data.handle).exec(ctx).info_nsset_data.id)
+                            .exec(ctx);
 
-            BOOST_FOREACH(const std::string& state, info_nsset_output_data.states) {
-                BOOST_FOREACH(const Fred::ObjectStateData& state_def, state_definitions) {
-                    if (state_def.is_external) {
+            BOOST_FOREACH(const std::string & state, info_nsset_output_data.states) {
+                BOOST_FOREACH(const Fred::ObjectStateData & state_def, state_definitions) {
+                    if (state_def.is_external)
+                    {
                         filtered_states.insert(state);
                     }
                 }
@@ -89,7 +91,8 @@ InfoNssetLocalizedResponse info_nsset_localized(
         }
 
         /* XXX HACK: OK state */
-        if (info_nsset_output_data.states.empty()) {
+        if (info_nsset_output_data.states.empty())
+        {
             info_nsset_output_data.states.insert("ok");
         }
 
@@ -117,21 +120,24 @@ InfoNssetLocalizedResponse info_nsset_localized(
                 info_nsset_localized_output_data);
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         ctx.get_log().info(std::string("info_nsset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         ctx.get_log().info(std::string("info_nsset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         ctx.get_log().info("unexpected exception in info_nsset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
@@ -139,6 +145,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

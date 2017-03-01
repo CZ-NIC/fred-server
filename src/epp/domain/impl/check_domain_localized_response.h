@@ -33,14 +33,22 @@ namespace Domain {
 struct CheckDomainLocalizedResponse
 {
     const EppResponseSuccessLocalized epp_response_success_localized;
-    const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> > domain_fqdn_to_domain_localized_registration_obstruction;
+    const std::map<std::string,
+            boost::optional<DomainLocalizedRegistrationObstruction> >
+            domain_fqdn_to_domain_localized_registration_obstruction;
+
 
     CheckDomainLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const std::map<std::string, boost::optional<DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction)
+            const std::map<std::string,
+                    boost::optional<DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction)
         : epp_response_success_localized(_epp_response_success_localized),
-          domain_fqdn_to_domain_localized_registration_obstruction(_domain_fqdn_to_domain_localized_registration_obstruction)
-    { }
+          domain_fqdn_to_domain_localized_registration_obstruction(
+                  _domain_fqdn_to_domain_localized_registration_obstruction)
+    {
+    }
+
+
 };
 
 } // namespace Epp::Domain

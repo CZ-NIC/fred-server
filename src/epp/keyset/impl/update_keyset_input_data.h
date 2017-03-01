@@ -19,8 +19,8 @@
 #ifndef UPDATE_KEYSET_INPUT_DATA_H_849E3328720B4BAB83CC01909130F3EB
 #define UPDATE_KEYSET_INPUT_DATA_H_849E3328720B4BAB83CC01909130F3EB
 
-#include "src/epp/keyset/impl/ds_record.h"
 #include "src/epp/keyset/impl/dns_key.h"
+#include "src/epp/keyset/impl/ds_record.h"
 #include "util/optional_value.h"
 
 #include <string>
@@ -40,6 +40,7 @@ struct UpdateKeysetInputData
     const std::vector<Keyset::DnsKey>& dns_keys_add;
     const std::vector<Keyset::DnsKey>& dns_keys_rem;
 
+
     UpdateKeysetInputData(
             const std::string& _keyset_handle,
             const Optional<std::string>& _authinfopw,
@@ -57,7 +58,9 @@ struct UpdateKeysetInputData
           ds_records_rem(_ds_records_rem),
           dns_keys_add(_dns_keys_add),
           dns_keys_rem(_dns_keys_rem)
-    { }
+    {
+    }
+
 
 };
 

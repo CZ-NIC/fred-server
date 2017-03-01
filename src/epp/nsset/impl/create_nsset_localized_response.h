@@ -31,12 +31,16 @@ struct CreateNssetLocalizedResponse
     const EppResponseSuccessLocalized epp_response_success_localized;
     const boost::posix_time::ptime crdate;
 
+
     CreateNssetLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
             const boost::posix_time::ptime& _crdate)
         : epp_response_success_localized(_epp_response_success_localized),
           crdate(_crdate)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

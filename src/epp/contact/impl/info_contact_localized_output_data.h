@@ -66,15 +66,21 @@ struct InfoContactLocalizedOutputData
             ico,
             mpsv,
             birthday
+
         };
+
     };
+
     Nullable<IdentType::Enum> identtype;
     boost::optional<std::string> authinfopw;
     boost::optional<ContactDisclose> disclose;
 
+
     explicit InfoContactLocalizedOutputData(const boost::optional<ContactDisclose>& _disclose)
-    :   disclose(_disclose)
-    { }
+        : disclose(_disclose)
+    {
+    }
+
 };
 
 } // namespace Epp::Contact

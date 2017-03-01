@@ -17,7 +17,6 @@
  */
 
 #include "src/epp/keyset/check_keyset_localized.h"
-#include "src/epp/keyset/check_keyset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
@@ -31,6 +30,7 @@
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
+#include "src/epp/keyset/check_keyset.h"
 #include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -53,44 +53,50 @@ CheckKeysetLocalizedResponse check_keyset_localized(
 {
     Fred::OperationContextCreator ctx;
 
-    try {
+    try
+    {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckKeyset)));
 
-        const std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> > check_keyset_results =
-                check_keyset(
-                        ctx,
-                        _keyset_handles,
-                        _session_data.registrar_id);
+        const std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> >
+                check_keyset_results =
+                        check_keyset(
+                                ctx,
+                                _keyset_handles,
+                                _session_data.registrar_id);
 
         return CheckKeysetLocalizedResponse(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
-                localize_check_results<KeysetHandleRegistrationObstruction, CheckKeysetLocalizedResponse::Result, Nullable>(
+                localize_check_results<KeysetHandleRegistrationObstruction,
+                        CheckKeysetLocalizedResponse::Result, Nullable>(
                         ctx,
                         check_keyset_results,
                         _session_data.lang));
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         ctx.get_log().info(std::string("check_keyset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         ctx.get_log().info(std::string("check_keyset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         ctx.get_log().info("unexpected exception in check_keyset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
@@ -98,6 +104,7 @@ CheckKeysetLocalizedResponse check_keyset_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

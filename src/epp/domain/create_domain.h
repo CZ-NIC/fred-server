@@ -28,7 +28,8 @@
 namespace Epp {
 namespace Domain {
 
-struct CreateDomainResult {
+struct CreateDomainResult
+{
     const unsigned long long id;
     const unsigned long long create_history_id;
     const boost::posix_time::ptime crtime;
@@ -36,21 +37,24 @@ struct CreateDomainResult {
     const boost::gregorian::date exdate;
     const unsigned length_of_domain_registration_in_months;
 
+
     CreateDomainResult(
-        unsigned long long _domain_id,
-        const unsigned long long _create_history_id,
-        const boost::posix_time::ptime& _domain_crdate,
-        const boost::gregorian::date& _old_exdate,
-        const boost::gregorian::date& _exdate,
-        const unsigned _length_of_domain_registration_in_months
-    ) :
-        id(_domain_id),
-        create_history_id(_create_history_id),
-        crtime(_domain_crdate),
-        old_exdate(_old_exdate),
-        exdate(_exdate),
-        length_of_domain_registration_in_months(_length_of_domain_registration_in_months)
-    { }
+            unsigned long long _domain_id,
+            const unsigned long long _create_history_id,
+            const boost::posix_time::ptime& _domain_crdate,
+            const boost::gregorian::date& _old_exdate,
+            const boost::gregorian::date& _exdate,
+            const unsigned _length_of_domain_registration_in_months)
+        : id(_domain_id),
+          create_history_id(_create_history_id),
+          crtime(_domain_crdate),
+          old_exdate(_old_exdate),
+          exdate(_exdate),
+          length_of_domain_registration_in_months(_length_of_domain_registration_in_months)
+    {
+    }
+
+
 };
 
 CreateDomainResult create_domain(
@@ -58,6 +62,7 @@ CreateDomainResult create_domain(
         const CreateDomainInputData& _data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
+
 
 } // namespace Epp::Domain
 } // namespace Epp

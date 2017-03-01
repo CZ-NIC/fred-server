@@ -185,12 +185,12 @@ std::map<std::string, O<T> > localize_check_results(
         const reason = check_result->second;
 
         // ...decorate with reason_description_localized
-        const O<T>
-        reason_description_localized = reason.isnull()
-            ? O<T>()
-            : O<T>(T(
-                    reason.get_value(),
-                    reasons_descriptions_localized.at(reason.get_value())));
+        const O<T> reason_description_localized =
+                reason.isnull()
+                        ? O<T>()
+                        : O<T>(T(
+                                  reason.get_value(),
+                                  reasons_descriptions_localized.at(reason.get_value())));
 
         localized_results.insert(std::make_pair(handle, reason_description_localized));
     }

@@ -35,6 +35,7 @@ struct DomainRegistrationObstruction
         blacklisted,
         zone_not_in_registry,
         invalid_fqdn
+
     };
 
     /**
@@ -42,29 +43,49 @@ struct DomainRegistrationObstruction
      */
     static Reason::Enum to_reason(Enum value)
     {
-        switch (value) {
-            case registered:           return Reason::existing;
-            case blacklisted:          return Reason::blacklisted_domain;
-            case zone_not_in_registry: return Reason::not_applicable_domain;
-            case invalid_fqdn:         return Reason::invalid_handle;
+        switch (value)
+        {
+            case registered:
+                return Reason::existing;
+
+            case blacklisted:
+                return Reason::blacklisted_domain;
+
+            case zone_not_in_registry:
+                return Reason::not_applicable_domain;
+
+            case invalid_fqdn:
+                return Reason::invalid_handle;
         }
         throw MissingLocalizedDescription();
     }
+
 
     /**
      * @throws MissingLocalizedDescription
      */
     static DomainRegistrationObstruction::Enum from_reason(const Reason::Enum value)
     {
-        switch (value) {
-            case Reason::existing:              return DomainRegistrationObstruction::registered;
-            case Reason::blacklisted_domain:    return DomainRegistrationObstruction::blacklisted;
-            case Reason::not_applicable_domain: return DomainRegistrationObstruction::zone_not_in_registry;
-            case Reason::invalid_handle:        return DomainRegistrationObstruction::invalid_fqdn;
+        switch (value)
+        {
+            case Reason::existing:
+                return DomainRegistrationObstruction::registered;
+
+            case Reason::blacklisted_domain:
+                return DomainRegistrationObstruction::blacklisted;
+
+            case Reason::not_applicable_domain:
+                return DomainRegistrationObstruction::zone_not_in_registry;
+
+            case Reason::invalid_handle:
+                return DomainRegistrationObstruction::invalid_fqdn;
+
             default:
                 throw MissingLocalizedDescription();
         }
     }
+
+
 };
 
 struct DomainLocalizedRegistrationObstruction
@@ -72,13 +93,16 @@ struct DomainLocalizedRegistrationObstruction
     const DomainRegistrationObstruction::Enum state;
     const std::string description;
 
+
     DomainLocalizedRegistrationObstruction(
-        const DomainRegistrationObstruction::Enum state,
-        const std::string& description)
-    :
-       state(state),
-       description(description)
-    { }
+            const DomainRegistrationObstruction::Enum state,
+            const std::string& description)
+        : state(state),
+          description(description)
+    {
+    }
+
+
 };
 
 } // namespace Epp::Domain

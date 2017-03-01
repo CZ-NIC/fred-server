@@ -1,6 +1,6 @@
 #include "src/epp/domain/delete_domain_localized.h"
-#include "src/epp/domain/delete_domain.h"
 
+#include "src/epp/domain/delete_domain.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
@@ -28,7 +28,8 @@ EppResponseSuccessLocalized delete_domain_localized(
         const SessionData& _session_data,
         const NotificationData& _notification_data)
 {
-    try {
+    try
+    {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -37,16 +38,16 @@ EppResponseSuccessLocalized delete_domain_localized(
         Fred::OperationContextCreator ctx;
 
         const unsigned long long last_history_id_before_delete =
-                delete_domain(
-                        ctx,
-                        _domain_fqdn,
-                        _session_data.registrar_id);
+            delete_domain(
+                    ctx,
+                    _domain_fqdn,
+                    _session_data.registrar_id);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
-                EppResponseSuccessLocalized(
-                        ctx,
-                        EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _session_data.lang);
+            EppResponseSuccessLocalized(
+                    ctx,
+                    EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
+                    _session_data.lang);
 
         ctx.commit_transaction();
 
@@ -59,7 +60,8 @@ EppResponseSuccessLocalized delete_domain_localized(
         return epp_response_success_localized;
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("delete_domain_localized: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -67,7 +69,8 @@ EppResponseSuccessLocalized delete_domain_localized(
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("delete_domain_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -75,7 +78,8 @@ EppResponseSuccessLocalized delete_domain_localized(
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info("unexpected exception in delete_domain_localized function");
         throw EppResponseFailureLocalized(
@@ -84,6 +88,7 @@ EppResponseSuccessLocalized delete_domain_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Domain
 } // namespace Epp

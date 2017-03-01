@@ -19,8 +19,8 @@
 #ifndef INFO_NSSET_LOCALIZED_RESPONSE_H_D099C8B7E81A43C2BEB4E7193E57E8FC
 #define INFO_NSSET_LOCALIZED_RESPONSE_H_D099C8B7E81A43C2BEB4E7193E57E8FC
 
-#include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
 #include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
 
 namespace Epp {
 namespace Nsset {
@@ -30,13 +30,16 @@ struct InfoNssetLocalizedResponse
     const EppResponseSuccessLocalized epp_response_success_localized;
     const InfoNssetLocalizedOutputData data;
 
+
     InfoNssetLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const InfoNssetLocalizedOutputData& _data)
-    :
-        epp_response_success_localized(_epp_response_success_localized),
-        data(_data)
-    { }
+            const EppResponseSuccessLocalized& _epp_response_success_localized,
+            const InfoNssetLocalizedOutputData& _data)
+        : epp_response_success_localized(_epp_response_success_localized),
+          data(_data)
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

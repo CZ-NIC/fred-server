@@ -22,15 +22,15 @@
 namespace Epp {
 namespace Keyset {
 
-//allowed values from interval <min, max>
+// allowed values from interval <min, max>
 const unsigned min_number_of_tech_contacts =  1;
 const unsigned max_number_of_tech_contacts = 10;
 
-//allowed values from interval <min, max>
+// allowed values from interval <min, max>
 const unsigned min_number_of_dns_keys =  1;
 const unsigned max_number_of_dns_keys = 10;
 
-//allowed values from interval <min, max>
+// allowed values from interval <min, max>
 const unsigned min_number_of_ds_records = 0;
 const unsigned max_number_of_ds_records = 0;
 

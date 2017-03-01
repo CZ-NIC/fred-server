@@ -60,7 +60,9 @@ struct CreateDomainInputData
           period(_period),
           admin_contacts(_admin_contacts),
           enum_validation_list(_enum_validation_list)
-    { }
+    {
+    }
+
 };
 
 } // namespace Epp::Domain

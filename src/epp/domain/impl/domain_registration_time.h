@@ -29,7 +29,13 @@ class DomainRegistrationTime
 public:
     struct Unit
     {
-        enum Enum {month, year};
+        enum Enum
+        {
+            month,
+            year
+
+        };
+
     };
 
 private:
@@ -38,11 +44,13 @@ private:
 
 public:
     DomainRegistrationTime(
-      int _length_of_domain_registration,
-      Unit::Enum _unit_of_domain_registration_time)
-    : length_of_domain_registration(_length_of_domain_registration),
-      unit_of_domain_registration_time(_unit_of_domain_registration_time)
-    { }
+            int _length_of_domain_registration,
+            Unit::Enum _unit_of_domain_registration_time)
+        : length_of_domain_registration(_length_of_domain_registration),
+          unit_of_domain_registration_time(_unit_of_domain_registration_time)
+    {
+    }
+
 
     int get_length_of_domain_registration_in_months() const
     {
@@ -51,13 +59,18 @@ public:
         {
             case Unit::month:
                 return length_of_domain_registration;
+
                 break;
+
             case Unit::year:
                 return length_of_domain_registration * months_in_year;
+
                 break;
-        };
-        throw std::runtime_error("internal error");//unreachable
+        }
+        throw std::runtime_error("internal error"); // unreachable
     }
+
+
 };
 
 } // namespace Epp::Domain

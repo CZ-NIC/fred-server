@@ -17,7 +17,6 @@
  */
 
 #include "src/epp/nsset/create_nsset_localized.h"
-#include "src/epp/nsset/create_nsset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
@@ -27,6 +26,7 @@
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/notification_data.h"
 #include "src/epp/impl/session_data.h"
+#include "src/epp/nsset/create_nsset.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -46,7 +46,8 @@ CreateNssetLocalizedResponse create_nsset_localized(
         const CreateNssetConfigData& _create_nsset_config_data,
         const Optional<unsigned long long>& _logd_request_id)
 {
-    try {
+    try
+    {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -80,7 +81,8 @@ CreateNssetLocalizedResponse create_nsset_localized(
         return create_nsset_localized_response;
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("create_nsset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -88,7 +90,8 @@ CreateNssetLocalizedResponse create_nsset_localized(
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("create_nsset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -96,7 +99,8 @@ CreateNssetLocalizedResponse create_nsset_localized(
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info("unexpected exception in create_nsset_localized function");
         throw EppResponseFailureLocalized(
@@ -105,6 +109,7 @@ CreateNssetLocalizedResponse create_nsset_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

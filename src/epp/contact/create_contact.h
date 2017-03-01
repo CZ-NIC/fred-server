@@ -32,17 +32,24 @@ namespace Contact {
 
 struct CreateContactResult
 {
-    CreateContactResult(unsigned long long _contact_id,
-        unsigned long long _create_history_id,
-        const boost::posix_time::ptime& _contact_crdate)
-    :   id(_contact_id),
-        create_history_id(_create_history_id),
-        crdate(_contact_crdate)
-    { }
+
+
+    CreateContactResult(
+            unsigned long long _contact_id,
+            unsigned long long _create_history_id,
+            const boost::posix_time::ptime& _contact_crdate)
+        : id(_contact_id),
+          create_history_id(_create_history_id),
+          crdate(_contact_crdate)
+    {
+    }
+
+
     const unsigned long long id;
     const unsigned long long create_history_id;
     // TODO guarantee non-special
     const boost::posix_time::ptime crdate;
+
 };
 
 CreateContactResult create_contact(
@@ -51,6 +58,7 @@ CreateContactResult create_contact(
         const CreateContactInputData& _data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
+
 
 } // namespace Epp::Contact
 } // namespace Epp

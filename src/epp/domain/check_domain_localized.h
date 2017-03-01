@@ -32,6 +32,7 @@ CheckDomainLocalizedResponse check_domain_localized(
         const std::set<std::string>& _domain_fqdns,
         const SessionData& _session_data);
 
+
 } // namespace Epp::Domain
 } // namespace Epp
 

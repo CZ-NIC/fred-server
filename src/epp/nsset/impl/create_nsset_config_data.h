@@ -35,6 +35,7 @@ struct CreateNssetConfigData
     unsigned int min_hosts;
     unsigned int max_hosts;
 
+
     CreateNssetConfigData(
             const unsigned int _default_tech_check_level,
             const unsigned int _min_hosts,
@@ -42,7 +43,10 @@ struct CreateNssetConfigData
         : default_tech_check_level(_default_tech_check_level),
           min_hosts(_min_hosts),
           max_hosts(_max_hosts)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

@@ -31,12 +31,16 @@ struct NssetHandleRegistrationObstructionLocalized
     const NssetHandleRegistrationObstruction::Enum state;
     const std::string description;
 
+
     NssetHandleRegistrationObstructionLocalized(
             const NssetHandleRegistrationObstruction::Enum _state,
             const std::string& _description)
         : state(_state),
           description(_description)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

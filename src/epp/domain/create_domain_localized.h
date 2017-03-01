@@ -21,8 +21,8 @@
 
 #include "src/epp/domain/impl/create_domain_input_data.h"
 #include "src/epp/domain/impl/create_domain_localized_response.h"
-#include "src/epp/impl/session_data.h"
 #include "src/epp/impl/notification_data.h"
+#include "src/epp/impl/session_data.h"
 #include "util/optional_value.h"
 
 namespace Epp {
@@ -34,6 +34,7 @@ CreateDomainLocalizedResponse create_domain_localized(
         const NotificationData& _notification_data,
         const Optional<unsigned long long>& _logd_request_id,
         bool _rifd_epp_operations_charging);
+
 
 } // namespace Epp::Domain
 } // namespace Epp

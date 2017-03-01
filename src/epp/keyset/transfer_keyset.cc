@@ -33,35 +33,43 @@ unsigned long long transfer_keyset(
         const Optional<unsigned long long>& _logd_request_id)
 {
     static const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (_registrar_id == invalid_registrar_id)
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
-    try {
+    try
+    {
         const Fred::InfoKeysetData keyset_data_before_transfer =
-            Fred::InfoKeysetByHandle(_keyset_handle)
-                .set_lock()
-                .exec(_ctx).info_keyset_data;
+                Fred::InfoKeysetByHandle(_keyset_handle)
+                        .set_lock()
+                        .exec(_ctx)
+                        .info_keyset_data;
 
         const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id)
-            .set_lock()
-            .exec(_ctx).info_registrar_data;
+                Fred::InfoRegistrarById(_registrar_id)
+                        .set_lock()
+                        .exec(_ctx)
+                        .info_registrar_data;
 
         const bool is_sponsoring_registrar = (keyset_data_before_transfer.sponsoring_registrar_handle ==
                                               session_registrar.handle);
 
-        if (is_sponsoring_registrar) {
+        if (is_sponsoring_registrar)
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
         }
 
         const bool is_system_registrar = session_registrar.system.get_value_or(false);
-        if (!is_system_registrar) {
+        if (!is_system_registrar)
+        {
             // do it before any object state related checks
             Fred::LockObjectStateRequestLock(keyset_data_before_transfer.id).exec(_ctx);
             Fred::PerformObjectStateRequest(keyset_data_before_transfer.id).exec(_ctx);
 
-            const Fred::ObjectStatesInfo keyset_states_before_transfer(Fred::GetObjectStates(keyset_data_before_transfer.id).exec(_ctx));
+            const Fred::ObjectStatesInfo keyset_states_before_transfer(Fred::GetObjectStates(
+                            keyset_data_before_transfer.id).exec(_ctx));
 
             if (keyset_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||
                 keyset_states_before_transfer.presents(Fred::Object_State::delete_candidate))
@@ -70,41 +78,50 @@ unsigned long long transfer_keyset(
             }
         }
 
-        if (keyset_data_before_transfer.authinfopw != _authinfopw) {
+        if (keyset_data_before_transfer.authinfopw != _authinfopw)
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
         }
 
         const unsigned long long post_transfer_history_id =
-            Fred::TransferKeyset(
-                    keyset_data_before_transfer.id,
-                    session_registrar.handle,
-                    _authinfopw,
-                    _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable< unsigned long long >())
-            .exec(_ctx);
+                Fred::TransferKeyset(
+                        keyset_data_before_transfer.id,
+                        session_registrar.handle,
+                        _authinfopw,
+                        _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>())
+                        .exec(_ctx);
 
-        Fred::Poll::CreateEppActionPollMessage(post_transfer_history_id,
-                                               Fred::Poll::keyset,
-                                               Fred::Poll::TRANSFER_KEYSET).exec(_ctx);
+        Fred::Poll::CreateEppActionPollMessage(
+                post_transfer_history_id,
+                Fred::Poll::keyset,
+                Fred::Poll::TRANSFER_KEYSET)
+                .exec(_ctx);
 
         return post_transfer_history_id;
 
     }
-    catch (const Fred::InfoKeysetByHandle::Exception &e) {
-        if (e.is_set_unknown_handle()) {
+    catch (const Fred::InfoKeysetByHandle::Exception& e)
+    {
+        if (e.is_set_unknown_handle())
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
         throw;
     }
-    catch (const Fred::UnknownKeysetId&) {
+    catch (const Fred::UnknownKeysetId&)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
-    catch (const Fred::IncorrectAuthInfoPw&) {
+    catch (const Fred::IncorrectAuthInfoPw&)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
-    catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
+    catch (const Fred::NewRegistrarIsAlreadySponsoring&)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 }
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

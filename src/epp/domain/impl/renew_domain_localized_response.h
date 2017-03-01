@@ -31,12 +31,16 @@ struct RenewDomainLocalizedResponse
     const EppResponseSuccessLocalized epp_response_success_localized;
     const boost::gregorian::date expiration_date;
 
+
     RenewDomainLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
             const boost::gregorian::date& _expiration_date)
         : epp_response_success_localized(_epp_response_success_localized),
           expiration_date(_expiration_date)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Domain

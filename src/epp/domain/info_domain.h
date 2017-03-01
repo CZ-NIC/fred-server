@@ -35,7 +35,9 @@
 namespace Epp {
 namespace Domain {
 
-struct InfoDomainOutputData {
+struct InfoDomainOutputData
+{
+
     typedef std::set<Fred::Object_State::Enum> States;
 
     std::string roid; ///< Domain repository ID
@@ -55,6 +57,7 @@ struct InfoDomainOutputData {
     std::set<std::string> admin; ///< List of contacts identifier
     Nullable<EnumValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
+
 };
 
 /**
@@ -64,6 +67,7 @@ InfoDomainOutputData info_domain(
         Fred::OperationContext& _ctx,
         const std::string& _domain_fqdn,
         unsigned long long _session_registrar_id);
+
 
 } // namespace Epp::Domain
 } // namespace Epp

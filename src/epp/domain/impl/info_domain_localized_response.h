@@ -30,12 +30,16 @@ struct InfoDomainLocalizedResponse
     const EppResponseSuccessLocalized epp_response_success_localized;
     const InfoDomainLocalizedOutputData info_domain_localized_output_data;
 
+
     InfoDomainLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
             const InfoDomainLocalizedOutputData& _info_domain_localized_output_data)
         : epp_response_success_localized(_epp_response_success_localized),
           info_domain_localized_output_data(_info_domain_localized_output_data)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Domain

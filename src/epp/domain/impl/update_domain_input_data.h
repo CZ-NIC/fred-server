@@ -40,6 +40,7 @@ struct UpdateDomainInputData
     const std::vector<std::string>& tmpcontacts_rem;
     const std::vector<EnumValidationExtension>& enum_validation_list;
 
+
     UpdateDomainInputData(
             const std::string& _domain_fqdn,
             const Optional<std::string>& _registrant_chg,
@@ -59,7 +60,10 @@ struct UpdateDomainInputData
           admin_contacts_rem(_admin_contacts_rem),
           tmpcontacts_rem(_tmpcontacts_rem),
           enum_validation_list(_enum_validation_list)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Domain

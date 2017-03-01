@@ -39,6 +39,7 @@ std::string convert(const boost::optional<std::string>& src)
            : std::string();
 }
 
+
 std::string convert(const boost::optional<Nullable<std::string> >& src)
 {
     return ContactChange::does_value_mean<ContactChange::Value::to_set>(src)
@@ -46,18 +47,23 @@ std::string convert(const boost::optional<Nullable<std::string> >& src)
            : std::string();
 }
 
+
 std::vector<std::string> convert(const std::vector<boost::optional<Nullable<std::string> > >& src)
 {
     std::vector<std::string> result;
     result.reserve(src.size());
+
     typedef std::vector<boost::optional<Nullable<std::string> > > VectorOfChangeData;
-    for (VectorOfChangeData::const_iterator data_ptr = src.begin(); data_ptr != src.end(); ++data_ptr) {
+    for (VectorOfChangeData::const_iterator data_ptr = src.begin(); data_ptr != src.end(); ++data_ptr)
+    {
         result.push_back(convert(*data_ptr));
     }
     return result;
 }
 
+
 } // namespace Epp::Contact::{anonymous}
+
 
 CreateContactInputData::CreateContactInputData(const ContactChange& src)
     : name(convert(trim(src.name))),
@@ -75,14 +81,16 @@ CreateContactInputData::CreateContactInputData(const ContactChange& src)
       ident(convert(trim(src.ident))),
       identtype(src.ident_type),
       authinfopw((src.authinfopw && (*src.authinfopw).isnull())
-                          ? boost::optional<std::string>()
-                          : boost::optional<std::string>(convert(src.authinfopw))),
+              ? boost::optional<std::string>()
+              : boost::optional<std::string>(convert(src.authinfopw))),
       disclose(src.disclose)
 {
-    if (disclose.is_initialized()) {
+    if (disclose.is_initialized())
+    {
         disclose->check_validity();
     }
 }
+
 
 } // namespace Epp::Contact
 } // namespace Epp

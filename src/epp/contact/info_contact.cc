@@ -137,56 +137,57 @@ InfoContactOutputData info_contact(
         const Fred::InfoContactData info = Fred::InfoContactByHandle(_handle).exec(_ctx, "UTC").info_contact_data;
 
         InfoContactOutputData output_data(get_discloseflags(info));
-        output_data.handle            = info.handle;
-        output_data.roid              = info.roid;
-        output_data.sponsoring_registrar_handle  = info.sponsoring_registrar_handle;
-        output_data.creating_registrar_handle    = info.create_registrar_handle;
+        output_data.handle = info.handle;
+        output_data.roid = info.roid;
+        output_data.sponsoring_registrar_handle = info.sponsoring_registrar_handle;
+        output_data.creating_registrar_handle = info.create_registrar_handle;
         output_data.last_update_registrar_handle = info.update_registrar_handle;
-        output_data.states            = convert_object_states(Fred::GetObjectStates(info.id).exec(_ctx));
-        output_data.crdate            = info.creation_time;
-        output_data.last_update       = info.update_time;
-        output_data.last_transfer     = info.transfer_time;
-        output_data.name              = info.name;
-        output_data.organization      = info.organization;
-        output_data.street1           = info.place.isnull()
-                ? Nullable< std::string >()
-                : info.place.get_value().street1;
-        output_data.street2           = info.place.isnull()
-                ? Nullable< std::string >()
-                : !info.place.get_value().street2.isset()
-                    ? Nullable< std::string >()
-                    : info.place.get_value().street2.get_value();
-        output_data.street3           = info.place.isnull()
-                ? Nullable< std::string >()
-                : !info.place.get_value().street3.isset()
-                    ? Nullable< std::string >()
-                    : info.place.get_value().street3.get_value();
-        output_data.city              = info.place.isnull()
-                ? Nullable< std::string >()
-                : info.place.get_value().city;
+        output_data.states = convert_object_states(Fred::GetObjectStates(info.id).exec(_ctx));
+        output_data.crdate = info.creation_time;
+        output_data.last_update = info.update_time;
+        output_data.last_transfer = info.transfer_time;
+        output_data.name = info.name;
+        output_data.organization = info.organization;
+        output_data.street1 = info.place.isnull()
+                                      ? Nullable<std::string>()
+                                      : info.place.get_value().street1;
+        output_data.street2 = info.place.isnull()
+                                      ? Nullable<std::string>()
+                                      : !info.place.get_value().street2.isset()
+                                                ? Nullable<std::string>()
+                                                : info.place.get_value().street2.get_value();
+        output_data.street3 = info.place.isnull()
+                                      ? Nullable<std::string>()
+                                      : !info.place.get_value().street3.isset()
+                                                ? Nullable<std::string>()
+                                                : info.place.get_value().street3.get_value();
+        output_data.city = info.place.isnull()
+                                   ? Nullable<std::string>()
+                                   : info.place.get_value().city;
         output_data.state_or_province = info.place.isnull()
-                ? Nullable< std::string >()
-                : info.place.get_value().stateorprovince.isset()
-                    ? info.place.get_value().stateorprovince.get_value()
-                    : Nullable< std::string >();
-        output_data.postal_code       = info.place.isnull()
-                ? Nullable< std::string >()
-                : info.place.get_value().postalcode;
-        output_data.country_code      = info.place.isnull()
-                ? Nullable< std::string >()
-                : info.place.get_value().country;
-        output_data.telephone         = info.telephone;
-        output_data.fax               = info.fax;
-        output_data.email             = info.email;
-        output_data.notify_email      = info.notifyemail;
-        output_data.VAT               = info.vat;
-        output_data.personal_id       = get_personal_id(info.ssn, info.ssntype);
+                                                ? Nullable<std::string>()
+                                                : info.place.get_value().stateorprovince.isset()
+                                                          ? info.place.get_value().stateorprovince.get_value()
+                                                          : Nullable<std::string>();
+        output_data.postal_code = info.place.isnull()
+                                          ? Nullable<std::string>()
+                                          : info.place.get_value().postalcode;
+        output_data.country_code = info.place.isnull()
+                                           ? Nullable<std::string>()
+                                           : info.place.get_value().country;
+        output_data.telephone = info.telephone;
+        output_data.fax = info.fax;
+        output_data.email = info.email;
+        output_data.notify_email = info.notifyemail;
+        output_data.VAT = info.vat;
+        output_data.personal_id = get_personal_id(info.ssn, info.ssntype);
 
         // show object authinfopw only to sponsoring registrar
-        const std::string callers_registrar_handle = Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
-        const bool callers_is_sponsoring_registrar = info.sponsoring_registrar_handle == callers_registrar_handle;
-        const bool authinfopw_has_to_be_hidden = !callers_is_sponsoring_registrar;
-        output_data.authinfopw      = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : info.authinfopw;
+        const std::string session_registrar_handle =
+            Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool authinfopw_has_to_be_hidden = info.sponsoring_registrar_handle !=
+                                                 session_registrar_handle;
+        output_data.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : info.authinfopw;
 
         return output_data;
 

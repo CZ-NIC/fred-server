@@ -36,28 +36,38 @@ struct CheckKeysetLocalizedResponse
         KeysetHandleRegistrationObstruction::Enum state;
         std::string description;
 
+
         Result()
-        { }
+        {
+        }
+
 
         Result(
                 const KeysetHandleRegistrationObstruction::Enum _state,
                 const std::string& _description)
             : state(_state),
               description(_description)
-        { }
+        {
+        }
+
+
     };
 
     typedef std::map<std::string, Nullable<Result> > Results;
+
 
     CheckKeysetLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
             const Results& _results)
         : epp_response_success_localized(_epp_response_success_localized),
           results(_results)
-    { }
+    {
+    }
+
 
     EppResponseSuccessLocalized epp_response_success_localized;
     Results results;
+
 };
 
 } // namespace Epp::Keyset

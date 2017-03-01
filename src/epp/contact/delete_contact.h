@@ -41,6 +41,7 @@ unsigned long long delete_contact(
         const std::string& _handle,
         unsigned long long _registrar_id);
 
+
 } // namespace Epp::Contact
 } // namespace Epp
 

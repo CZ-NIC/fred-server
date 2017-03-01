@@ -30,12 +30,15 @@ struct InfoContactLocalizedResponse
     const EppResponseSuccessLocalized epp_response_success_localized;
     const InfoContactLocalizedOutputData data;
 
+
     InfoContactLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
             const InfoContactLocalizedOutputData& _data)
         : epp_response_success_localized(_epp_response_success_localized),
           data(_data)
-    { }
+    {
+    }
+
 };
 
 } // namespace Epp::Contact

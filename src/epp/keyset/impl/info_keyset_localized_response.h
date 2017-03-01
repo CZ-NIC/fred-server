@@ -30,12 +30,16 @@ struct InfoKeysetLocalizedResponse
     EppResponseSuccessLocalized epp_response_success_localized;
     InfoKeysetLocalizedOutputData data;
 
+
     InfoKeysetLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
             const InfoKeysetLocalizedOutputData& _data)
         : epp_response_success_localized(_epp_response_success_localized),
           data(_data)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Keyset

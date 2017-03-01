@@ -37,6 +37,7 @@ std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > che
         const std::set<std::string>& _contact_handles,
         unsigned long long _registrar_id);
 
+
 } // namespace Epp::Contact
 } // namespace Epp
 

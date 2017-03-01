@@ -35,6 +35,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
         const Optional<unsigned long long>& _logd_request_id,
         bool _rifd_epp_operations_charging);
 
+
 } // namespace Epp::Domain
 } // namespace Epp
 

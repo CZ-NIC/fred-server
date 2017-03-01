@@ -17,8 +17,8 @@
  */
 
 #include "src/epp/domain/check_domain_localized.h"
-#include "src/epp/domain/check_domain.h"
 
+#include "src/epp/domain/check_domain.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
@@ -49,7 +49,8 @@ CheckDomainLocalizedResponse check_domain_localized(
 {
     Fred::OperationContextCreator ctx;
 
-    try {
+    try
+    {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -66,27 +67,31 @@ CheckDomainLocalizedResponse check_domain_localized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
-                localize_check_results<DomainRegistrationObstruction, DomainLocalizedRegistrationObstruction, boost::optional>(
+                localize_check_results<DomainRegistrationObstruction, DomainLocalizedRegistrationObstruction,
+                        boost::optional>(
                         ctx,
                         check_domain_results,
                         _session_data.lang));
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         ctx.get_log().info(std::string("check_domain_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         ctx.get_log().info(std::string("check_domain_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         ctx.get_log().info("unexpected exception in check_domain_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
@@ -95,6 +100,7 @@ CheckDomainLocalizedResponse check_domain_localized(
     }
 
 }
+
 
 } // namespace Epp::Domain
 } // namespace Epp

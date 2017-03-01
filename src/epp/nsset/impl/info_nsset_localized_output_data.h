@@ -48,6 +48,7 @@ struct InfoNssetLocalizedOutputData
     std::vector<std::string> tech_contacts;
     short tech_check_level;
 
+
     InfoNssetLocalizedOutputData(
             const std::string& _handle,
             const std::string& _roid,
@@ -75,7 +76,10 @@ struct InfoNssetLocalizedOutputData
           dns_host(_dns_host),
           tech_contacts(_tech_contacts),
           tech_check_level(_tech_check_level)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

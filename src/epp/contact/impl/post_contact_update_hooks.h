@@ -27,12 +27,12 @@
 namespace Epp {
 namespace Contact {
 
-    void post_contact_update_hooks(
+void post_contact_update_hooks(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const Optional<unsigned long long>& _logd_requst_id,
-        bool _epp_update_contact_enqueue_check
-    );
+        bool _epp_update_contact_enqueue_check);
+
 
 } // namespace Epp::Contact
 } // namespace Epp

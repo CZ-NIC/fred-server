@@ -33,6 +33,7 @@ EppResponseSuccessLocalized delete_domain_localized(
         const SessionData& _session_data,
         const NotificationData& _notification_data);
 
+
 } // namespace Epp::Domain
 } // namespace Epp
 

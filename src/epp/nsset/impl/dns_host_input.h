@@ -23,11 +23,11 @@
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
+#include <boost/asio/ip/address.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/optional.hpp>
 #include <string>
 #include <vector>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/asio/ip/address.hpp>
-#include <boost/optional.hpp>
 
 namespace Epp {
 namespace Nsset {
@@ -35,19 +35,26 @@ namespace Nsset {
 /**
  * DNS host data.
  */
-struct DnsHostInput {
+struct DnsHostInput
+{
     std::string fqdn; /**< nameserver host name */
     std::vector<boost::optional<boost::asio::ip::address> > inet_addr; /**< list of IPv4 or IPv6 addresses of the nameserver host, non-initialized if value is invalid */
+
 
     /**
      * Constructor initializing all attributes.
      * @param _fqdn nameserver name
      * @param _inet_addr addresses of the nameserver, non-initialized if value is invalid
      */
-    DnsHostInput(const std::string& _fqdn, const std::vector<boost::optional<boost::asio::ip::address> >& _inet_addr)
-    :   fqdn(_fqdn),
-        inet_addr(_inet_addr)
-    { }
+    DnsHostInput(
+            const std::string& _fqdn,
+            const std::vector<boost::optional<boost::asio::ip::address> >& _inet_addr)
+        : fqdn(_fqdn),
+          inet_addr(_inet_addr)
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

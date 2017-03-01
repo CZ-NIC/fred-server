@@ -38,33 +38,48 @@
 namespace Epp {
 namespace Nsset {
 
-bool is_prohibited_ip_addr(const boost::optional<boost::asio::ip::address>& ipaddr, Fred::OperationContext& ctx);
-std::vector<boost::asio::ip::address> make_ipaddrs(const std::vector<boost::optional<boost::asio::ip::address> >& inet_addr);
+bool is_prohibited_ip_addr(
+        const boost::optional<boost::asio::ip::address>& ipaddr,
+        Fred::OperationContext& ctx);
+
+
+std::vector<boost::asio::ip::address> make_ipaddrs(
+        const std::vector<boost::optional<boost::asio::ip::address> >& inet_addr);
+
+
 std::vector<Fred::DnsHost> make_fred_dns_hosts(const std::vector<DnsHostInput>& data);
+
+
 std::vector<DnsHostOutput> make_epp_dnshosts_output(const std::vector<Fred::DnsHost>& data);
 
-//check that nameserver fqdn is in zone managed by registry to allow presence of nameserver IP addresses viz rfc1035#section-3.3.11
-template <class T> void check_disallowed_glue_ipaddrs(
-    const DnsHostInput& _nsdata, std::size_t _current_nsset_ipaddr_position, T& _parameter_value_policy_error, Fred::OperationContext& _ctx)
+
+// check that nameserver fqdn is in zone managed by registry to allow presence of nameserver IP addresses viz rfc1035#section-3.3.11
+template <class T>
+void check_disallowed_glue_ipaddrs(
+        const DnsHostInput& _nsdata,
+        std::size_t _current_nsset_ipaddr_position,
+        T& _parameter_value_policy_error,
+        Fred::OperationContext& _ctx)
 {
     if (_nsdata.inet_addr.size() > 0)
     {
         const std::string lower_dnshost_fqdn = boost::algorithm::to_lower_copy(_nsdata.fqdn);
         try
         {
-            Fred::Zone::find_zone_in_fqdn(_ctx,
-                Fred::Zone::rem_trailing_dot(lower_dnshost_fqdn));
+            Fred::Zone::find_zone_in_fqdn(
+                    _ctx,
+                    Fred::Zone::rem_trailing_dot(lower_dnshost_fqdn));
         }
-        catch(const Fred::Zone::Exception& e)
+        catch (const Fred::Zone::Exception& e)
         {
             if (e.is_set_unknown_zone_in_fqdn()
-                && (e.get_unknown_zone_in_fqdn() == (Fred::Zone::rem_trailing_dot(lower_dnshost_fqdn)) ))
+                && (e.get_unknown_zone_in_fqdn() == (Fred::Zone::rem_trailing_dot(lower_dnshost_fqdn))))
             {
-                //zone not found
+                // zone not found
                 std::size_t nsset_glue_ipaddr_to_position = _current_nsset_ipaddr_position;
-                for(std::size_t j = 0; j < _nsdata.inet_addr.size(); ++j, ++nsset_glue_ipaddr_to_position)
+                for (std::size_t j = 0; j < _nsdata.inet_addr.size(); ++j, ++nsset_glue_ipaddr_to_position)
                 {
-                    //ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
+                    // ex.add(Error::of_vector_parameter(Param::nsset_dns_addr,
                     //    boost::numeric_cast<unsigned short>(nsset_glue_ipaddr_to_position),
                     //    Reason::ip_glue_not_allowed));
                     _parameter_value_policy_error.add_extended_error(
@@ -75,10 +90,13 @@ template <class T> void check_disallowed_glue_ipaddrs(
                 }
             }
             else
+            {
                 throw;
+            }
         }
     }
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -35,6 +35,7 @@ CreateContactLocalizedResponse create_contact_localized(
         const NotificationData& _notification_data,
         const Optional<unsigned long long>& _logd_request_id);
 
+
 } // namespace Epp::Contact
 } // namespace Epp
 

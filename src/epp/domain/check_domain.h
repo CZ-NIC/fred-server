@@ -40,6 +40,7 @@ std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_doma
         const std::set<std::string>& _domain_fqdns,
         unsigned long long _registrar_id);
 
+
 } // namespace Epp::Domain
 } // namespace Epp
 

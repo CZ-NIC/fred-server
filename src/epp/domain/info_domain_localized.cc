@@ -17,8 +17,8 @@
  */
 
 #include "src/epp/domain/info_domain_localized.h"
-#include "src/epp/domain/info_domain.h"
 
+#include "src/epp/domain/info_domain.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
@@ -52,7 +52,8 @@ InfoDomainLocalizedResponse info_domain_localized(
     // since no changes are comitted this transaction is reused for everything
     Fred::OperationContextCreator ctx;
 
-    try {
+    try
+    {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -92,21 +93,24 @@ InfoDomainLocalizedResponse info_domain_localized(
                 info_domain_localized_output_data);
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         ctx.get_log().info(std::string("info_domain_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         ctx.get_log().info(std::string("info_domain_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         ctx.get_log().info("unexpected exception in info_domain_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
@@ -115,6 +119,7 @@ InfoDomainLocalizedResponse info_domain_localized(
     }
 
 }
+
 
 } // namespace Epp::Domain
 } // namespace Epp

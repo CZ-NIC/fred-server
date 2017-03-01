@@ -40,6 +40,7 @@ struct UpdateNssetInputData
     std::vector<std::string> tech_contacts_rem;
     boost::optional<short> tech_check_level;
 
+
     UpdateNssetInputData(
             const std::string& _handle,
             const Optional<std::string>& _authinfopw,
@@ -55,7 +56,10 @@ struct UpdateNssetInputData
           tech_contacts_add(_tech_contacts_add),
           tech_contacts_rem(_tech_contacts_rem),
           tech_check_level(_tech_check_level)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

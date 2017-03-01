@@ -56,33 +56,41 @@ unsigned long long transfer_nsset(
         const Optional<unsigned long long>& _logd_request_id)
 {
     static const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (_registrar_id == invalid_registrar_id)
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if ( Fred::Nsset::get_handle_registrability(_ctx, _nsset_handle) != Fred::NssetHandleState::Registrability::registered ) {
+    if (Fred::Nsset::get_handle_registrability(
+                _ctx,
+                _nsset_handle) != Fred::NssetHandleState::Registrability::registered)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
     const Fred::InfoNssetData nsset_data_before_transfer =
-        Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
+            Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
 
     const Fred::InfoRegistrarData session_registrar =
-        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
+            Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (nsset_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);
-    if (is_sponsoring_registrar) {
+    if (is_sponsoring_registrar)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
-    if (!is_system_registrar) {
+    if (!is_system_registrar)
+    {
         // do it before any object state related checks
         Fred::LockObjectStateRequestLock(nsset_data_before_transfer.id).exec(_ctx);
         Fred::PerformObjectStateRequest(nsset_data_before_transfer.id).exec(_ctx);
 
-        const Fred::ObjectStatesInfo nsset_states_before_transfer(Fred::GetObjectStates(nsset_data_before_transfer.id).exec(_ctx));
+        const Fred::ObjectStatesInfo nsset_states_before_transfer(Fred::GetObjectStates(
+                nsset_data_before_transfer.id).exec(_ctx));
 
         if (nsset_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||
             nsset_states_before_transfer.presents(Fred::Object_State::delete_candidate))
@@ -91,32 +99,39 @@ unsigned long long transfer_nsset(
         }
     }
 
-    try {
+    try
+    {
         unsigned long long post_transfer_history_id =
-            Fred::TransferNsset(
-                    nsset_data_before_transfer.id,
-                    session_registrar.handle,
-                    _authinfopw,
-                    _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>())
-            .exec(_ctx);
+                Fred::TransferNsset(
+                        nsset_data_before_transfer.id,
+                        session_registrar.handle,
+                        _authinfopw,
+                        _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>())
+                        .exec(_ctx);
 
-        Fred::Poll::CreateEppActionPollMessage(post_transfer_history_id,
-                                               Fred::Poll::nsset,
-                                               Fred::Poll::TRANSFER_NSSET).exec(_ctx);
+        Fred::Poll::CreateEppActionPollMessage(
+                post_transfer_history_id,
+                Fred::Poll::nsset,
+                Fred::Poll::TRANSFER_NSSET)
+                .exec(_ctx);
 
         return post_transfer_history_id;
 
     }
-    catch (const Fred::UnknownNssetId&) {
+    catch (const Fred::UnknownNssetId&)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
-    catch (const Fred::IncorrectAuthInfoPw&) {
+    catch (const Fred::IncorrectAuthInfoPw&)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
     }
-    catch (const Fred::NewRegistrarIsAlreadySponsoring&) {
+    catch (const Fred::NewRegistrarIsAlreadySponsoring&)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_is_not_eligible_for_transfer));
     }
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

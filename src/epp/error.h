@@ -19,44 +19,61 @@
 #ifndef ERROR_H_F4329EF82684498C981B740316398B93
 #define ERROR_H_F4329EF82684498C981B740316398B93
 
-#include "src/epp/impl/reason.h"
 #include "src/epp/impl/param.h"
+#include "src/epp/impl/reason.h"
 
 namespace Epp {
 
 class Error
 {
 public:
-    static Error of_scalar_parameter(Param::Enum _param, Reason::Enum _reason)
+    static Error of_scalar_parameter(
+            Param::Enum _param,
+            Reason::Enum _reason)
     {
         return Error(_param, position_of_scalar_parameter, _reason);
     }
-    static Error of_vector_parameter(Param::Enum _param, unsigned short _index, Reason::Enum _reason)
+
+
+    static Error of_vector_parameter(
+            Param::Enum _param,
+            unsigned short _index,
+            Reason::Enum _reason)
     {
         return Error(_param, position_of_first_element_of_vector_parameter + _index, _reason);
     }
+
+
     Param::Enum param;
     unsigned short position;
     Reason::Enum reason;
-    //Only intended for std::set usage - ordering definition is irrelevant.
-    bool operator<(const Error &_b)const
+
+    // Only intended for std::set usage - ordering definition is irrelevant.
+    bool operator<(const Error& _b) const
     {
-        const Error &_a = *this;
+        const Error& _a = *this;
         return (_a.param < _b.param) ||
                ((_a.param == _b.param) && (_a.position < _b.position)) ||
                ((_a.param == _b.param) && (_a.position == _b.position) && (_a.reason < _b.reason));
     }
+
+
 private:
-    Error(Param::Enum _param, unsigned short _position, Reason::Enum _reason)
-    :   param(_param),
-        position(_position),
-        reason(_reason)
-    { }
+    Error(
+            Param::Enum _param,
+            unsigned short _position,
+            Reason::Enum _reason)
+        : param(_param),
+          position(_position),
+          reason(_reason)
+    {
+    }
+
 
     static const unsigned short position_of_scalar_parameter = 0;
     static const unsigned short position_of_first_element_of_vector_parameter = 1;
 };
 
-}//namespace Epp
+} // namespace Epp
 
 #endif

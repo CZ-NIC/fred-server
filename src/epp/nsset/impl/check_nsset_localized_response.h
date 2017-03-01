@@ -34,13 +34,17 @@ struct CheckNssetLocalizedResponse
     const EppResponseSuccessLocalized epp_response_success_localized;
     const std::map<std::string, boost::optional<NssetHandleRegistrationObstructionLocalized> > nsset_statuses;
 
+
     CheckNssetLocalizedResponse(
-        const EppResponseSuccessLocalized& _epp_response_success_localized,
-        const std::map<std::string, boost::optional<NssetHandleRegistrationObstructionLocalized> >& _nsset_statuses)
-    :
-        epp_response_success_localized(_epp_response_success_localized),
-        nsset_statuses(_nsset_statuses)
-    { }
+            const EppResponseSuccessLocalized& _epp_response_success_localized,
+            const std::map<std::string,
+                    boost::optional<NssetHandleRegistrationObstructionLocalized> >& _nsset_statuses)
+        : epp_response_success_localized(_epp_response_success_localized),
+          nsset_statuses(_nsset_statuses)
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

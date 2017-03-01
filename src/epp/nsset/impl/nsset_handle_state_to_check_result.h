@@ -56,6 +56,7 @@ inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_
     throw std::runtime_error("invalid NssetHandleState");
 }
 
+
 } // namespace Epp::Nsset
 } // namespace Epp
 

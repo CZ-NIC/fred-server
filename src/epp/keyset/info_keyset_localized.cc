@@ -17,7 +17,6 @@
  */
 
 #include "src/epp/keyset/info_keyset_localized.h"
-#include "src/epp/keyset/info_keyset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
@@ -30,6 +29,7 @@
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/notification_data.h"
 #include "src/epp/impl/session_data.h"
+#include "src/epp/keyset/info_keyset.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
@@ -51,7 +51,8 @@ InfoKeysetLocalizedResponse info_keyset_localized(
     // since no changes are comitted this transaction is reused for everything
     Fred::OperationContextCreator ctx;
 
-    try {
+    try
+    {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -88,21 +89,24 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                 info_keyset_localized_output_data);
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         ctx.get_log().info(std::string("info_keyset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         ctx.get_log().info(std::string("info_keyset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         ctx.get_log().info("unexpected exception in info_keyset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
@@ -110,6 +114,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

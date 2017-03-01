@@ -44,6 +44,7 @@ unsigned long long delete_domain(
         const std::string& _domain_fqdn,
         unsigned long long _registrar_id);
 
+
 } // namespace Epp::Domain
 } // namespace Epp
 

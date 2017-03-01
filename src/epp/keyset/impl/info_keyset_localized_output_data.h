@@ -47,6 +47,7 @@ struct InfoKeysetLocalizedOutputData
     InfoKeysetOutputData::DnsKeys dns_keys; ///< List of dnskeys
     InfoKeysetOutputData::TechContacts tech_contacts; ///< List of technical contacts identifier
 
+
     InfoKeysetLocalizedOutputData(
             const std::string& _handle,
             const std::string& _roid,
@@ -74,7 +75,9 @@ struct InfoKeysetLocalizedOutputData
           ds_records(_ds_records),
           dns_keys(_dns_keys),
           tech_contacts(_tech_contacts)
-    { }
+    {
+    }
+
 
 };
 

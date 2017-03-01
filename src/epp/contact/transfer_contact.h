@@ -45,6 +45,7 @@ unsigned long long transfer_contact(
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
 
+
 } // namespace Epp::Contact
 } // namespace Epp
 

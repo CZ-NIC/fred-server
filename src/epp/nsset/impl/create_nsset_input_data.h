@@ -37,6 +37,7 @@ struct CreateNssetInputData
     std::vector<std::string> tech_contacts;
     boost::optional<short> tech_check_level;
 
+
     CreateNssetInputData(
             const std::string& _handle,
             const boost::optional<std::string>& _authinfopw,
@@ -48,7 +49,10 @@ struct CreateNssetInputData
           dns_hosts(_dns_hosts),
           tech_contacts(_tech_contacts),
           tech_check_level(_tech_check_level)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

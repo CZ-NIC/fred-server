@@ -31,12 +31,16 @@ struct CreateKeysetLocalizedResponse
     EppResponseSuccessLocalized epp_response_success_localized;
     boost::posix_time::ptime crdate;
 
+
     CreateKeysetLocalizedResponse(
             const EppResponseSuccessLocalized& _response,
             const boost::posix_time::ptime& _crdate)
         : epp_response_success_localized(_response),
           crdate(_crdate)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Keyset

@@ -28,7 +28,8 @@
 namespace Epp {
 namespace Domain {
 
-struct RenewDomainResult {
+struct RenewDomainResult
+{
     const unsigned long long domain_id;
     const unsigned long long domain_history_id;
     const boost::posix_time::ptime curent_time;
@@ -36,21 +37,24 @@ struct RenewDomainResult {
     const boost::gregorian::date exdate;
     const unsigned length_of_domain_registration_in_months;
 
+
     RenewDomainResult(
-        const unsigned long long _domain_id,
-        const unsigned long long _domain_history_id,
-        const boost::posix_time::ptime& _curent_time,
-        const boost::gregorian::date& _old_exdate,
-        const boost::gregorian::date& _exdate,
-        const unsigned _length_of_domain_registration_in_months
-    ) :
-        domain_id(_domain_id),
-        domain_history_id(_domain_history_id),
-        curent_time(_curent_time),
-        old_exdate(_old_exdate),
-        exdate(_exdate),
-        length_of_domain_registration_in_months(_length_of_domain_registration_in_months)
-    { }
+            const unsigned long long _domain_id,
+            const unsigned long long _domain_history_id,
+            const boost::posix_time::ptime& _curent_time,
+            const boost::gregorian::date& _old_exdate,
+            const boost::gregorian::date& _exdate,
+            const unsigned _length_of_domain_registration_in_months)
+        : domain_id(_domain_id),
+          domain_history_id(_domain_history_id),
+          curent_time(_curent_time),
+          old_exdate(_old_exdate),
+          exdate(_exdate),
+          length_of_domain_registration_in_months(_length_of_domain_registration_in_months)
+    {
+    }
+
+
 };
 
 RenewDomainResult renew_domain(
@@ -58,6 +62,7 @@ RenewDomainResult renew_domain(
         const RenewDomainInputData& _data,
         unsigned long long _registrar_id,
         const Optional<unsigned long long>& _logd_request_id);
+
 
 } // namespace Epp::Domain
 } // namespace Epp

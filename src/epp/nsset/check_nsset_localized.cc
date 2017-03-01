@@ -17,7 +17,6 @@
  */
 
 #include "src/epp/nsset/check_nsset_localized.h"
-#include "src/epp/nsset/check_nsset.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/epp_response_failure.h"
@@ -26,6 +25,7 @@
 #include "src/epp/impl/localization.h"
 #include "src/epp/impl/session_data.h"
 #include "src/epp/impl/util.h"
+#include "src/epp/nsset/check_nsset.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -50,7 +50,8 @@ CheckNssetLocalizedResponse check_nsset_localized(
 {
     Fred::OperationContextCreator ctx;
 
-    try {
+    try
+    {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -71,23 +72,25 @@ CheckNssetLocalizedResponse check_nsset_localized(
                         ctx,
                         check_nsset_results,
                         _session_data.lang));
-
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         ctx.get_log().info(std::string("check_nsset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         ctx.get_log().info(std::string("check_nsset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         ctx.get_log().info("unexpected exception in check_nsset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
@@ -95,6 +98,7 @@ CheckNssetLocalizedResponse check_nsset_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

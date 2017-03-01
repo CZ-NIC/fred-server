@@ -21,21 +21,24 @@
 
 #include "src/fredlib/opcontext.h"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string>
 
 namespace Epp {
 namespace Domain {
 
-void create_domain_bill_item(const std::string& _fqdn,
+void create_domain_bill_item(
+        const std::string& _fqdn,
         const boost::posix_time::ptime& _domain_create_timestamp_utc,
         unsigned long long _sponsoring_registrar_id,
         unsigned long long _created_domain_id,
         Fred::OperationContext& _ctx);
 
-void renew_domain_bill_item(const std::string& _fqdn,
+
+void renew_domain_bill_item(
+        const std::string& _fqdn,
         const boost::posix_time::ptime& _domain_renew_timestamp_utc,
         unsigned long long _sponsoring_registrar_id,
         unsigned long long _renewed_domain_id,
@@ -43,6 +46,7 @@ void renew_domain_bill_item(const std::string& _fqdn,
         const boost::gregorian::date& _old_domain_expiration_date_local,
         const boost::gregorian::date& _domain_expiration_date_local,
         Fred::OperationContext& _ctx);
+
 
 } // namespace Epp::Domain
 } // namespace Epp

@@ -28,13 +28,13 @@
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
-#include <boost/mpl/assert.hpp>
-#include <boost/date_time/gregorian/greg_date.hpp>
 #include <boost/cast.hpp>
+#include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/mpl/assert.hpp>
 
 #include <set>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace Epp {
 namespace Domain {
@@ -42,18 +42,25 @@ namespace Domain {
 namespace {
 
 template <class T>
-class MatchesHandle {
+class MatchesHandle
+{
     std::string upper_case_handle_;
 
 public:
+
+
     explicit MatchesHandle(const std::string& _handle)
-    : upper_case_handle_(boost::algorithm::to_upper_copy(_handle))
-    { }
+        : upper_case_handle_(boost::algorithm::to_upper_copy(_handle))
+    {
+    }
+
 
     bool operator()(const T& item) const
     {
         return item.handle == upper_case_handle_;
     }
+
+
 };
 
 } // namespace Epp::Domain::{anonymous}
@@ -66,17 +73,24 @@ unsigned long long update_domain(
         bool _rifd_epp_update_domain_keyset_clear)
 {
     const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (!registrar_is_authenticated)
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
-    //check fqdn has known zone
+    // check fqdn has known zone
     Fred::Zone::Data zone_data;
-    try {
-        zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-            Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn));
-    } catch (const Fred::Zone::Exception& e) {
-        if(e.is_set_unknown_zone_in_fqdn()) {
+    try
+    {
+        zone_data = Fred::Zone::find_zone_in_fqdn(
+                _ctx,
+                Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn));
+    }
+    catch (const Fred::Zone::Exception& e)
+    {
+        if (e.is_set_unknown_zone_in_fqdn())
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
@@ -84,27 +98,35 @@ unsigned long long update_domain(
     }
 
     // start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
-    const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
-        static_cast<std::string>(_ctx.get_conn().exec("SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
+    const boost::posix_time::ptime current_utc_time =
+            boost::posix_time::time_from_string(
+                    static_cast<std::string>(_ctx.get_conn().exec(
+                            "SELECT CURRENT_TIMESTAMP AT TIME ZONE 'UTC'")[0][0]));
 
     // warning: timestamp conversion using local system timezone
-    const boost::posix_time::ptime current_local_time = boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+    const boost::posix_time::ptime current_local_time =
+            boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
+
     const boost::gregorian::date current_local_date = current_local_time.date();
 
-    if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
+    if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx))
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
     }
 
     Fred::InfoDomainData info_domain_data_before_update;
     try
     {
-        info_domain_data_before_update = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn))
-            .set_lock().exec(_ctx, "UTC").info_domain_data;
+        info_domain_data_before_update =
+                Fred::InfoDomainByHandle(
+                        Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn))
+                        .set_lock()
+                        .exec(_ctx, "UTC")
+                        .info_domain_data;
     }
-    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    catch (const Fred::InfoDomainByHandle::Exception& ex)
     {
-        if(ex.is_set_unknown_fqdn())
+        if (ex.is_set_unknown_fqdn())
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
@@ -117,9 +139,11 @@ unsigned long long update_domain(
     Optional<boost::gregorian::date> req_enum_valexdate;
     Optional<bool> enum_publish_flag;
 
-    if (zone_data.is_enum) {
+    if (zone_data.is_enum)
+    {
 
-        if (!_update_domain_data.enum_validation_list.empty()) {
+        if (!_update_domain_data.enum_validation_list.empty())
+        {
 
             req_enum_valexdate = _update_domain_data.enum_validation_list.rbegin()->get_valexdate();
 
@@ -128,28 +152,33 @@ unsigned long long update_domain(
                 parameter_value_range_errors.add_extended_error(
                         EppExtendedError::of_vector_parameter(
                                 Param::domain_ext_val_date,
-                                boost::numeric_cast<unsigned short>(_update_domain_data.enum_validation_list.size() - 1),
+                                boost::numeric_cast<unsigned short>(
+                                        _update_domain_data.enum_validation_list.size() - 1),
                                 Reason::valexpdate_not_valid));
             }
-            else {
+            else
+            {
 
-                const boost::optional<boost::gregorian::date> curr_enum_valexdate
-                    = info_domain_data_before_update.enum_domain_validation.isnull()
-                        ? boost::optional<boost::gregorian::date>()
-                        : boost::optional<boost::gregorian::date>(
-                            info_domain_data_before_update.enum_domain_validation.get_value().validation_expiration);
+                const boost::optional<boost::gregorian::date> curr_enum_valexdate =
+                        info_domain_data_before_update.enum_domain_validation.isnull()
+                                ? boost::optional<boost::gregorian::date>()
+                                : boost::optional<boost::gregorian::date>(
+                                          info_domain_data_before_update.enum_domain_validation
+                                                  .get_value()
+                                                  .validation_expiration);
 
                 if (is_new_enum_domain_validation_expiration_date_invalid(
-                    req_enum_valexdate.get_value(),
-                    current_local_date,
-                    zone_data.enum_validation_period,
-                    curr_enum_valexdate,
-                    _ctx))
+                            req_enum_valexdate.get_value(),
+                            current_local_date,
+                            zone_data.enum_validation_period,
+                            curr_enum_valexdate,
+                            _ctx))
                 {
                     parameter_value_range_errors.add_extended_error(
                             EppExtendedError::of_vector_parameter(
                                     Param::domain_ext_val_date,
-                                    boost::numeric_cast<unsigned short>(_update_domain_data.enum_validation_list.size() - 1),
+                                    boost::numeric_cast<unsigned short>(
+                                            _update_domain_data.enum_validation_list.size() - 1),
                                     Reason::valexpdate_not_valid));
                 }
             }
@@ -157,9 +186,11 @@ unsigned long long update_domain(
             enum_publish_flag = _update_domain_data.enum_validation_list.rbegin()->get_publish();
         }
     }
-    else { // not enum
+    else   // not enum
+    {
         for (
-            std::vector<EnumValidationExtension>::const_iterator enum_validation_list_item_ptr = _update_domain_data.enum_validation_list.begin();
+            std::vector<EnumValidationExtension>::const_iterator enum_validation_list_item_ptr =
+                _update_domain_data.enum_validation_list.begin();
             enum_validation_list_item_ptr != _update_domain_data.enum_validation_list.end();
             ++enum_validation_list_item_ptr)
         {
@@ -171,7 +202,8 @@ unsigned long long update_domain(
         }
     }
 
-    if (!parameter_value_range_errors.empty()) {
+    if (!parameter_value_range_errors.empty())
+    {
         throw parameter_value_range_errors;
     }
 
@@ -183,7 +215,8 @@ unsigned long long update_domain(
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
     const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
 
-    if (!is_registrar_authorized) {
+    if (!is_registrar_authorized)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
                                          .add_extended_error(
                                                  EppExtendedError::of_scalar_parameter(
@@ -196,7 +229,8 @@ unsigned long long update_domain(
     Fred::PerformObjectStateRequest(info_domain_data_before_update.id).exec(_ctx);
     const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data_before_update.id).exec(_ctx));
 
-    if (!is_system_registrar) {
+    if (!is_system_registrar)
+    {
         if (domain_states.presents(Fred::Object_State::server_update_prohibited) ||
             domain_states.presents(Fred::Object_State::delete_candidate))
         {
@@ -208,11 +242,14 @@ unsigned long long update_domain(
 
     std::set<std::string> admin_contact_add_duplicity;
     for (
-        std::vector<std::string>::const_iterator admin_contact_add_iter = _update_domain_data.admin_contacts_add.begin();
+        std::vector<std::string>::const_iterator admin_contact_add_iter =
+            _update_domain_data.admin_contacts_add.begin();
         admin_contact_add_iter != _update_domain_data.admin_contacts_add.end();
         ++admin_contact_add_iter)
     {
-        if (Fred::Contact::get_handle_registrability(_ctx, *admin_contact_add_iter) != Fred::ContactHandleState::Registrability::registered)
+        if (Fred::Contact::get_handle_registrability(
+                    _ctx,
+                    *admin_contact_add_iter) != Fred::ContactHandleState::Registrability::registered)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -221,11 +258,10 @@ unsigned long long update_domain(
                             Reason::admin_notexist));
         }
         else if (
-            std::find_if(
-                info_domain_data_before_update.admin_contacts.begin(),
-                info_domain_data_before_update.admin_contacts.end(),
-                MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_add_iter)
-            ) != info_domain_data_before_update.admin_contacts.end())
+            std::find_if(info_domain_data_before_update.admin_contacts.begin(),
+                         info_domain_data_before_update.admin_contacts.end(),
+                         MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_add_iter))
+            != info_domain_data_before_update.admin_contacts.end())
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -233,7 +269,7 @@ unsigned long long update_domain(
                             admin_contact_add_iter - _update_domain_data.admin_contacts_add.begin(),
                             Reason::admin_exist));
         }
-        else if (admin_contact_add_duplicity.insert(boost::algorithm::to_upper_copy(*admin_contact_add_iter)).second == false)
+        else if (!admin_contact_add_duplicity.insert(boost::algorithm::to_upper_copy(*admin_contact_add_iter)).second)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -245,11 +281,13 @@ unsigned long long update_domain(
 
     std::set<std::string> admin_contact_rem_duplicity;
     for (
-        std::vector<std::string>::const_iterator admin_contact_rem_iter = _update_domain_data.admin_contacts_rem.begin();
+        std::vector<std::string>::const_iterator admin_contact_rem_iter =
+            _update_domain_data.admin_contacts_rem.begin();
         admin_contact_rem_iter != _update_domain_data.admin_contacts_rem.end();
         ++admin_contact_rem_iter)
     {
-        if (Fred::Contact::get_handle_registrability(_ctx, *admin_contact_rem_iter) != Fred::ContactHandleState::Registrability::registered)
+        if (Fred::Contact::get_handle_registrability(_ctx, *admin_contact_rem_iter)
+                != Fred::ContactHandleState::Registrability::registered)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -258,11 +296,10 @@ unsigned long long update_domain(
                             Reason::admin_notexist));
         }
         else if (
-            std::find_if(
-                info_domain_data_before_update.admin_contacts.begin(),
-                info_domain_data_before_update.admin_contacts.end(),
-                MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_rem_iter)
-            ) == info_domain_data_before_update.admin_contacts.end())
+            std::find_if(info_domain_data_before_update.admin_contacts.begin(),
+                         info_domain_data_before_update.admin_contacts.end(),
+                         MatchesHandle<Fred::ObjectIdHandlePair>(*admin_contact_rem_iter))
+            == info_domain_data_before_update.admin_contacts.end())
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -270,7 +307,7 @@ unsigned long long update_domain(
                             admin_contact_rem_iter - _update_domain_data.admin_contacts_rem.begin(),
                             Reason::admin_not_assigned));
         }
-        else if (admin_contact_rem_duplicity.insert(boost::algorithm::to_upper_copy(*admin_contact_rem_iter)).second == false)
+        else if (!admin_contact_rem_duplicity.insert(boost::algorithm::to_upper_copy(*admin_contact_rem_iter)).second)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -280,10 +317,9 @@ unsigned long long update_domain(
         }
     }
 
-    for (
-        std::vector<std::string>::const_iterator tmpcontact_rem = _update_domain_data.tmpcontacts_rem.begin();
-        tmpcontact_rem != _update_domain_data.tmpcontacts_rem.end();
-        ++tmpcontact_rem)
+    for (std::vector<std::string>::const_iterator tmpcontact_rem = _update_domain_data.tmpcontacts_rem.begin();
+         tmpcontact_rem != _update_domain_data.tmpcontacts_rem.end();
+         ++tmpcontact_rem)
     {
         parameter_value_policy_errors.add_extended_error(
                 EppExtendedError::of_vector_parameter(
@@ -293,9 +329,11 @@ unsigned long long update_domain(
     }
 
     if (_update_domain_data.nsset_chg.isset()
-    && !_update_domain_data.nsset_chg.get_value().isnull()
-    && (Fred::Nsset::get_handle_registrability(_ctx, _update_domain_data.nsset_chg.get_value().get_value())
-        != Fred::NssetHandleState::Registrability::registered))
+        && !_update_domain_data.nsset_chg.get_value().isnull()
+        && (Fred::Nsset::get_handle_registrability(
+                    _ctx,
+                    _update_domain_data.nsset_chg.get_value().get_value())
+            != Fred::NssetHandleState::Registrability::registered))
     {
         parameter_value_policy_errors.add_extended_error(
                 EppExtendedError::of_scalar_parameter(
@@ -304,9 +342,11 @@ unsigned long long update_domain(
     }
 
     if (_update_domain_data.keyset_chg.isset()
-    && !_update_domain_data.keyset_chg.get_value().isnull()
-    && (Fred::Keyset::get_handle_registrability(_ctx, _update_domain_data.keyset_chg.get_value().get_value())
-        != Fred::Keyset::HandleState::registered))
+        && !_update_domain_data.keyset_chg.get_value().isnull()
+        && (Fred::Keyset::get_handle_registrability(
+                    _ctx,
+                    _update_domain_data.keyset_chg.get_value().get_value())
+            != Fred::Keyset::HandleState::registered))
     {
         parameter_value_policy_errors.add_extended_error(
                 EppExtendedError::of_scalar_parameter(
@@ -316,13 +356,18 @@ unsigned long long update_domain(
 
     if (_update_domain_data.registrant_chg.isset())
     {
-        if (!is_system_registrar) {
-            if (domain_states.presents(Fred::Object_State::server_registrant_change_prohibited)) {
+        if (!is_system_registrar)
+        {
+            if (domain_states.presents(Fred::Object_State::server_registrant_change_prohibited))
+            {
                 throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
             }
         }
 
-        if (Fred::Contact::get_handle_registrability(_ctx, _update_domain_data.registrant_chg.get_value()) != Fred::ContactHandleState::Registrability::registered)
+        if (Fred::Contact::get_handle_registrability(
+                    _ctx,
+                    _update_domain_data.registrant_chg.get_value())
+            != Fred::ContactHandleState::Registrability::registered)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_scalar_parameter(
@@ -331,50 +376,56 @@ unsigned long long update_domain(
         }
     }
 
-    if (!parameter_value_policy_errors.empty()) {
+    if (!parameter_value_policy_errors.empty())
+    {
         throw EppResponseFailure(parameter_value_policy_errors);
     }
 
     const Optional<Nullable<std::string> >& keyset_chg =
-        (_update_domain_data.nsset_chg.isset() && !_update_domain_data.keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear)
-            ? Optional<Nullable<std::string> >(Nullable<std::string>())
-            : _update_domain_data.keyset_chg; // TODO if nsset set, but same as current one?
+            (_update_domain_data.nsset_chg.isset() && !_update_domain_data.keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear)
+                    ? Optional<Nullable<std::string> >(Nullable<std::string>())
+                    : _update_domain_data.keyset_chg; // TODO if nsset set, but same as current one?
 
     const std::string registrar_handle =
         Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
 
-    Fred::UpdateDomain update_domain = Fred::UpdateDomain(
-        _update_domain_data.domain_fqdn,
-        registrar_handle,
-        _update_domain_data.registrant_chg,
-        _update_domain_data.authinfopw_chg,
-        _update_domain_data.nsset_chg,
-        keyset_chg,
-        _update_domain_data.admin_contacts_add,
-        _update_domain_data.admin_contacts_rem,
-        Optional<boost::gregorian::date>(), // expiration_date
-        req_enum_valexdate,
-        enum_publish_flag,
-        _logd_request_id
-    );
+    Fred::UpdateDomain update_domain =
+            Fred::UpdateDomain(
+                    _update_domain_data.domain_fqdn,
+                    registrar_handle,
+                    _update_domain_data.registrant_chg,
+                    _update_domain_data.authinfopw_chg,
+                    _update_domain_data.nsset_chg,
+                    keyset_chg,
+                    _update_domain_data.admin_contacts_add,
+                    _update_domain_data.admin_contacts_rem,
+                    Optional<boost::gregorian::date>(), // expiration_date
+                    req_enum_valexdate,
+                    enum_publish_flag,
+                    _logd_request_id);
 
-    try {
+    try
+    {
         const unsigned long long domain_new_history_id = update_domain.exec(_ctx);
         return domain_new_history_id;
 
     }
-    catch(const Fred::UpdateDomain::Exception& e) {
+    catch (const Fred::UpdateDomain::Exception& e)
+    {
 
-        if (e.is_set_unknown_domain_fqdn()) {
+        if (e.is_set_unknown_domain_fqdn())
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
 
-        if (e.is_set_unknown_registrar_handle()) {
+        if (e.is_set_unknown_registrar_handle())
+        {
             // TODO
         }
 
 
-        if (e.is_set_invalid_expiration_date()) {
+        if (e.is_set_invalid_expiration_date())
+        {
             // TODO
         }
 
@@ -385,6 +436,7 @@ unsigned long long update_domain(
     }
 
 }
+
 
 } // namespace Epp::Domain
 } // namespace Epp

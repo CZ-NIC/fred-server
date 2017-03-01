@@ -39,6 +39,7 @@ EppResponseSuccessLocalized update_contact_localized(
         const Optional<unsigned long long>& _logd_request_id,
         bool _epp_update_contact_enqueue_check);
 
+
 } // namespace Epp::Contact
 } // namespace Epp
 

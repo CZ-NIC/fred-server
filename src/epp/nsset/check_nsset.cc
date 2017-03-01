@@ -35,21 +35,23 @@ std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check
         unsigned long long _registrar_id)
 {
     const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (_registrar_id == invalid_registrar_id)
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
     std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > result;
 
-    BOOST_FOREACH(const std::string& handle, _nsset_handles) {
+    BOOST_FOREACH(const std::string & handle, _nsset_handles) {
         result[handle] = nsset_handle_state_to_check_result(
-            Fred::Nsset::get_handle_syntax_validity(handle),
-            Fred::Nsset::get_handle_registrability(_ctx, handle)
-        );
+                Fred::Nsset::get_handle_syntax_validity(handle),
+                Fred::Nsset::get_handle_registrability(_ctx, handle));
     }
 
     return result;
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

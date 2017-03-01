@@ -43,24 +43,6 @@ public:
         : epp_result_code_(_epp_result_code)
     { }
 
-    //EppResultFailure& add_error(const EppExtendedError& _error)
-    //{
-    //    if (!errors_) {
-    //        errors_ = std::set<EppError>();
-    //    }
-    //    errors_->insert(_error);
-    //    return *this;
-    //}
-
-    //EppResultFailure& add_errors_(const std::set<EppExtendedError>& _errors)
-    //{
-    //    if (!errors_) {
-    //        errors_ = std::set<EppError>();
-    //    }
-    //    errors_->insert(_errors.begin(), _errors.end());
-    //    return *this;
-    //}
-
     EppResultFailure& add_extended_error(const EppExtendedError& _error)
     {
         if (!extended_errors_) {
@@ -78,11 +60,6 @@ public:
         extended_errors_->insert(_errors.begin(), _errors.end());
         return *this;
     }
-
-    //const boost::optional<std::set<EppExtendedError> >& errors() const
-    //{
-    //    return errors_;
-    //}
 
     const boost::optional<std::set<EppExtendedError> >& extended_errors() const
     {
@@ -111,7 +88,6 @@ protected:
 
 private:
 
-    //boost::optional<std::set<EppError> > errors_; ///< represents STD 69 response result's value
     boost::optional<std::set<EppExtendedError> > extended_errors_; ///< represents STD 69 response result's extValue
 
 };

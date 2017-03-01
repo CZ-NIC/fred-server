@@ -24,7 +24,7 @@
 
 #ifndef EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
 #define EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
-#endif// EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
+#endif // EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
 
 namespace Epp {
 namespace Contact {
@@ -38,22 +38,38 @@ public:
         {
             hide,
             disclose,
+
         };
+
     };
-    explicit ContactDisclose(Flag::Enum _meaning):meaning_(_meaning) { }
-    bool does_present_item_mean_to_disclose()const
+
+
+    explicit ContactDisclose(Flag::Enum _meaning)
+        : meaning_(_meaning)
+    {
+    }
+
+
+    bool does_present_item_mean_to_disclose() const
     {
         switch (meaning_)
         {
-            case Flag::hide:     return false;
-            case Flag::disclose: return true;
+            case Flag::hide:
+                return false;
+
+            case Flag::disclose:
+                return true;
         }
         throw std::runtime_error("invalid value of Epp::ContactDisclose::Flag::Enum");
     }
-    bool does_present_item_mean_to_hide()const
+
+
+    bool does_present_item_mean_to_hide() const
     {
         return !this->does_present_item_mean_to_disclose();
     }
+
+
     struct Item
     {
         enum Enum
@@ -67,43 +83,58 @@ public:
             vat,
             ident,
             notify_email,
+
         };
+
     };
-    template< Item::Enum ITEM >
-    bool presents()const
+
+    template <Item::Enum ITEM>
+    bool presents() const
     {
         const bool item_found = items_.find(ITEM) != items_.end();
         return item_found;
     }
-    template< Item::Enum ITEM >
-    bool should_be_disclosed(bool the_default_policy_is_to_disclose)const
+
+
+    template <Item::Enum ITEM>
+    bool should_be_disclosed(bool the_default_policy_is_to_disclose) const
     {
-        if (this->does_present_item_mean_to_disclose()) {
-            return the_default_policy_is_to_disclose || this->presents< ITEM >();
+        if (this->does_present_item_mean_to_disclose())
+        {
+            return the_default_policy_is_to_disclose || this->presents<ITEM>();
         }
-        return the_default_policy_is_to_disclose && !this->presents< ITEM >();
+        return the_default_policy_is_to_disclose && !this->presents<ITEM>();
     }
-    template< Item::Enum ITEM >
+
+
+    template <Item::Enum ITEM>
     ContactDisclose& add()
     {
         items_.insert(ITEM);
         return *this;
     }
-    bool is_empty()const
+
+
+    bool is_empty() const
     {
         return items_.empty();
     }
-    void check_validity()const
+
+
+    void check_validity() const
     {
 #ifndef EMPTY_CONTACT_DISCLOSE_ELEMENT_ALLOWED
-        if (this->is_empty()) {
+        if (this->is_empty())
+        {
             throw std::runtime_error("At least one disclose flag has to be set.");
         }
 #endif
     }
+
+
 private:
     Flag::Enum meaning_;
-    std::set< Item::Enum > items_;
+    std::set<Item::Enum> items_;
 };
 
 } // namespace Epp::Contact

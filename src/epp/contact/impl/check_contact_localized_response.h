@@ -33,14 +33,19 @@ namespace Contact {
 struct CheckContactLocalizedResponse
 {
     const EppResponseSuccessLocalized epp_response_success_localized;
-    const std::map<std::string, boost::optional<ContactHandleRegistrationObstructionLocalized> > contact_statuses;
+    const std::map<std::string,
+            boost::optional<ContactHandleRegistrationObstructionLocalized> > contact_statuses;
+
 
     CheckContactLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const std::map<std::string, boost::optional<ContactHandleRegistrationObstructionLocalized> >& _contact_statuses)
+            const std::map<std::string,
+                    boost::optional<ContactHandleRegistrationObstructionLocalized> >& _contact_statuses)
         : epp_response_success_localized(_epp_response_success_localized),
           contact_statuses(_contact_statuses)
-    { }
+    {
+    }
+
 };
 
 } // namespace Epp::Contact

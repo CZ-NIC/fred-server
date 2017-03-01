@@ -45,11 +45,15 @@ unsigned long long delete_nsset(
         const unsigned long long _registrar_id)
 {
 
-    if ( _registrar_id == 0 ) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (_registrar_id == 0)
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if ( Fred::Nsset::get_handle_registrability(_ctx, _handle) != Fred::NssetHandleState::Registrability::registered ) {
+    if (Fred::Nsset::get_handle_registrability(_ctx, _handle)
+        != Fred::NssetHandleState::Registrability::registered)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
@@ -71,20 +75,24 @@ unsigned long long delete_nsset(
 
     const bool is_registrar_authorized = (is_system_registrar || is_sponsoring_registrar);
 
-    if (!is_registrar_authorized) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error)
-                                         .add_extended_error(
-                                                 EppExtendedError::of_scalar_parameter(
-                                                         Param::registrar_autor,
-                                                         Reason::unauthorized_registrar)));
+    if (!is_registrar_authorized)
+    {
+        throw EppResponseFailure(
+                EppResultFailure(EppResultCode::authorization_error)
+                .add_extended_error(
+                        EppExtendedError::of_scalar_parameter(
+                                Param::registrar_autor,
+                                Reason::unauthorized_registrar)));
     }
 
     // do it before any object state related checks
     Fred::LockObjectStateRequestLock(nsset_data_before_delete.id).exec(_ctx);
     Fred::PerformObjectStateRequest(nsset_data_before_delete.id).exec(_ctx);
 
-    const Fred::ObjectStatesInfo nsset_states_before_delete(Fred::GetObjectStates(nsset_data_before_delete.id).exec(_ctx));
-    if (!is_system_registrar) {
+    const Fred::ObjectStatesInfo nsset_states_before_delete(Fred::GetObjectStates(
+                    nsset_data_before_delete.id).exec(_ctx));
+    if (!is_system_registrar)
+    {
         if (nsset_states_before_delete.presents(Fred::Object_State::server_update_prohibited) ||
             nsset_states_before_delete.presents(Fred::Object_State::server_delete_prohibited) ||
             nsset_states_before_delete.presents(Fred::Object_State::delete_candidate))
@@ -98,20 +106,25 @@ unsigned long long delete_nsset(
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_association_prohibits_operation));
     }
 
-    try {
+    try
+    {
 
         Fred::DeleteNssetByHandle(_handle).exec(_ctx);
 
         return nsset_data_before_delete.historyid;
 
-    } catch(const Fred::DeleteNssetByHandle::Exception& e) {
+    }
+    catch (const Fred::DeleteNssetByHandle::Exception& e)
+    {
 
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
-        if ( e.is_set_unknown_nsset_handle() ) {
+        if (e.is_set_unknown_nsset_handle())
+        {
             throw;
         }
 
-        if ( e.is_set_object_linked_to_nsset_handle() ) {
+        if (e.is_set_object_linked_to_nsset_handle())
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
 
@@ -119,6 +132,7 @@ unsigned long long delete_nsset(
         throw;
     }
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

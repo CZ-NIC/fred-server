@@ -21,8 +21,8 @@
 
 #include "src/epp/impl/epp_response_success_localized.h"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string>
 
@@ -35,6 +35,7 @@ struct CreateDomainLocalizedResponse
     const boost::posix_time::ptime crtime;
     const boost::gregorian::date expiration_date;
 
+
     CreateDomainLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
             const boost::posix_time::ptime& _crtime,
@@ -42,7 +43,9 @@ struct CreateDomainLocalizedResponse
         : epp_response_success_localized(_epp_response_success_localized),
           crtime(_crtime),
           expiration_date(_expiration_date)
-    { }
+    {
+    }
+
 };
 
 } // namespace Epp::Domain

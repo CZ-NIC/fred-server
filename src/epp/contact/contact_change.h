@@ -34,19 +34,19 @@ namespace Contact {
 
 struct ContactChange
 {
-    boost::optional< Nullable< std::string > > name;
-    boost::optional< Nullable< std::string > > organization;
-    std::vector< boost::optional< Nullable< std::string > > > streets;
-    boost::optional< Nullable< std::string > > city;
-    boost::optional< Nullable< std::string > > state_or_province;
-    boost::optional< Nullable< std::string > > postal_code;
-    boost::optional< std::string > country_code;
-    boost::optional< Nullable< std::string > > telephone;
-    boost::optional< Nullable< std::string > > fax;
-    boost::optional< Nullable< std::string > > email;
-    boost::optional< Nullable< std::string > > notify_email;
-    boost::optional< Nullable< std::string > > vat;
-    boost::optional< Nullable< std::string > > ident;
+    boost::optional<Nullable<std::string> > name;
+    boost::optional<Nullable<std::string> > organization;
+    std::vector<boost::optional<Nullable<std::string> > > streets;
+    boost::optional<Nullable<std::string> > city;
+    boost::optional<Nullable<std::string> > state_or_province;
+    boost::optional<Nullable<std::string> > postal_code;
+    boost::optional<std::string> country_code;
+    boost::optional<Nullable<std::string> > telephone;
+    boost::optional<Nullable<std::string> > fax;
+    boost::optional<Nullable<std::string> > email;
+    boost::optional<Nullable<std::string> > notify_email;
+    boost::optional<Nullable<std::string> > vat;
+    boost::optional<Nullable<std::string> > ident;
     struct IdentType
     {
         enum Enum
@@ -56,11 +56,14 @@ struct ContactChange
             ico,
             mpsv,
             birthday
+
         };
+
     };
-    Nullable< IdentType::Enum > ident_type;
-    boost::optional< Nullable< std::string > > authinfopw;
-    boost::optional< ContactDisclose > disclose;
+
+    Nullable<IdentType::Enum> ident_type;
+    boost::optional<Nullable<std::string> > authinfopw;
+    boost::optional<ContactDisclose> disclose;
     struct Value
     {
         enum Meaning
@@ -68,17 +71,27 @@ struct ContactChange
             to_set,
             to_delete,
             not_to_touch,
+
         };
+
     };
-    template < Value::Meaning MEANING, class T >
-    static bool does_value_mean(const T &_value);
-    template < class T >
-    static T get_value(const boost::optional< Nullable< T > > &_value);
-    template < class T >
-    static T get_value(const boost::optional< T > &_value);
+
+    template <Value::Meaning MEANING, class T>
+    static bool does_value_mean(const T& _value);
+
+
+    template <class T>
+    static T get_value(const boost::optional<Nullable<T> >& _value);
+
+
+    template <class T>
+    static T get_value(const boost::optional<T>& _value);
+
+
 };
 
 ContactChange trim(const ContactChange& contact_change_);
+
 
 } // namespace Epp::Contact
 } // namespace Epp

@@ -27,12 +27,16 @@ struct UpdateNssetConfigData
     unsigned int min_hosts;
     unsigned int max_hosts;
 
+
     UpdateNssetConfigData(
             const unsigned int _min_hosts,
             const unsigned int _max_hosts)
         : min_hosts(_min_hosts),
           max_hosts(_max_hosts)
-    { }
+    {
+    }
+
+
 };
 
 } // namespace Epp::Nsset

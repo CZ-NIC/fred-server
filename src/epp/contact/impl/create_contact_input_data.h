@@ -49,8 +49,12 @@ struct CreateContactInputData
     boost::optional<std::string> authinfopw;
     boost::optional<ContactDisclose> disclose;
 
+
     explicit CreateContactInputData(const ContactChange& src);
+
+
 };
+
 
 } // namespace Epp::Contact
 } // namespace Epp

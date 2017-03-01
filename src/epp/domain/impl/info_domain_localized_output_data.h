@@ -36,6 +36,7 @@ namespace Domain {
 
 struct InfoDomainLocalizedOutputData
 {
+
     typedef std::set<Fred::Object_State::Enum> States;
 
     std::string roid; ///< Domain repository ID
@@ -55,6 +56,7 @@ struct InfoDomainLocalizedOutputData
     std::set<std::string> admin; ///< List of contacts identifier
     Nullable<EnumValidationExtension> ext_enum_domain_validation; ///< ENUM domain validation extension info
     std::set<std::string> tmpcontact; ///< List of contacts identifier OBSOLETE
+
 
     InfoDomainLocalizedOutputData(
             const std::string _roid,
@@ -91,7 +93,9 @@ struct InfoDomainLocalizedOutputData
           admin(_admin),
           ext_enum_domain_validation(_ext_enum_domain_validation),
           tmpcontact(_tmpcontact)
-    { }
+    {
+    }
+
 
 };
 

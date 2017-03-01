@@ -16,8 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/epp/nsset/transfer_nsset_localized.h"
 #include "src/epp/nsset/transfer_nsset.h"
+#include "src/epp/nsset/transfer_nsset_localized.h"
 
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
@@ -45,7 +45,8 @@ EppResponseSuccessLocalized transfer_nsset_localized(
         const NotificationData& _notification_data,
         const Optional<unsigned long long>& _logd_request_id)
 {
-    try {
+    try
+    {
         Logging::Context logging_ctx1("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -78,7 +79,8 @@ EppResponseSuccessLocalized transfer_nsset_localized(
         return epp_response_success_localized;
 
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("transfer_nsset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -86,15 +88,19 @@ EppResponseSuccessLocalized transfer_nsset_localized(
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info(std::string("transfer_nsset_localized failure: ") + e.what());
+        exception_localization_ctx.get_log().info(
+                std::string("transfer_nsset_localized failure: ") +
+                e.what());
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info("unexpected exception in transfer_nsset_localized function");
         throw EppResponseFailureLocalized(
@@ -103,6 +109,7 @@ EppResponseSuccessLocalized transfer_nsset_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -2,11 +2,11 @@
 
 #include "src/epp/domain/impl/domain_registration_obstruction.h"
 #include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
+#include "src/epp/impl/epp_result_failure.h"
+#include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/domain_name.h"
-#include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "util/idn_utils.h"
@@ -24,7 +24,8 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
         Fred::OperationContext& _ctx,
         const std::string& _domain_fqdn)
 {
-    switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn)) {
+    switch (Fred::Domain::get_domain_registrability_by_domain_fqdn(_ctx, _domain_fqdn))
+    {
 
         case Fred::Domain::DomainRegistrability::registered:
             return DomainRegistrationObstruction::registered;
@@ -37,9 +38,11 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
 
         case Fred::Domain::DomainRegistrability::available:
 
-            switch (Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _domain_fqdn)) {
+            switch (Fred::Domain::get_domain_fqdn_syntax_validity(_ctx, _domain_fqdn))
+            {
                 case Fred::Domain::DomainFqdnSyntaxValidity::invalid:
                     return DomainRegistrationObstruction::invalid_fqdn;
+
                 case Fred::Domain::DomainFqdnSyntaxValidity::valid:
                     return Nullable<DomainRegistrationObstruction::Enum>();
             }
@@ -48,6 +51,7 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
     }
     throw std::logic_error("Unexpected Fred::Domain::DomainRegistrability::Enum value.");
 }
+
 
 } // namespace Epp::Domain::{anonymous}
 
@@ -58,18 +62,23 @@ std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_doma
 {
 
     const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (!registrar_is_authenticated)
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
-    std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > domain_fqdn_to_domain_registration_obstruction;
+    std::map<std::string,
+            Nullable<DomainRegistrationObstruction::Enum> > domain_fqdn_to_domain_registration_obstruction;
 
-    BOOST_FOREACH(const std::string& domain_fqdn, _domain_fqdns) {
-        domain_fqdn_to_domain_registration_obstruction[domain_fqdn] = domain_get_registration_obstruction_by_fqdn(_ctx, domain_fqdn);
+    BOOST_FOREACH(const std::string & domain_fqdn, _domain_fqdns) {
+        domain_fqdn_to_domain_registration_obstruction[domain_fqdn] =
+                domain_get_registration_obstruction_by_fqdn(_ctx, domain_fqdn);
     }
 
     return domain_fqdn_to_domain_registration_obstruction;
 }
+
 
 } // namespace Epp::Domain
 } // namespace Epp

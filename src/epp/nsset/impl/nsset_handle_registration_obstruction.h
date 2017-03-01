@@ -36,6 +36,7 @@ struct NssetHandleRegistrationObstruction
         invalid_handle,
         protected_handle,
         registered_handle
+
     };
 
     /**
@@ -45,12 +46,18 @@ struct NssetHandleRegistrationObstruction
     {
         switch (value)
         {
-            case invalid_handle:    return Reason::invalid_handle;
-            case registered_handle: return Reason::existing;
-            case protected_handle:  return Reason::protected_period;
+            case invalid_handle:
+                return Reason::invalid_handle;
+
+            case registered_handle:
+                return Reason::existing;
+
+            case protected_handle:
+                return Reason::protected_period;
         }
         throw MissingLocalizedDescription();
     }
+
 
     /**
      * @throws MissingLocalizedDescription
@@ -59,13 +66,21 @@ struct NssetHandleRegistrationObstruction
     {
         switch (value)
         {
-            case Reason::invalid_handle:   return invalid_handle;
-            case Reason::existing:         return registered_handle;
-            case Reason::protected_period: return protected_handle;
+            case Reason::invalid_handle:
+                return invalid_handle;
+
+            case Reason::existing:
+                return registered_handle;
+
+            case Reason::protected_period:
+                return protected_handle;
+
             default:
                 throw MissingLocalizedDescription();
         }
     }
+
+
 };
 
 } // namespace Epp::Nsset

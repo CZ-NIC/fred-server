@@ -32,6 +32,7 @@ struct KeysetHandleRegistrationObstruction
         invalid_handle,
         protected_handle,
         registered_handle
+
     };
 
     /**
@@ -41,12 +42,18 @@ struct KeysetHandleRegistrationObstruction
     {
         switch (value)
         {
-            case KeysetHandleRegistrationObstruction::invalid_handle:    return Reason::invalid_handle;
-            case KeysetHandleRegistrationObstruction::registered_handle: return Reason::existing;
-            case KeysetHandleRegistrationObstruction::protected_handle:  return Reason::protected_period;
+            case KeysetHandleRegistrationObstruction::invalid_handle:
+                return Reason::invalid_handle;
+
+            case KeysetHandleRegistrationObstruction::registered_handle:
+                return Reason::existing;
+
+            case KeysetHandleRegistrationObstruction::protected_handle:
+                return Reason::protected_period;
         }
         throw MissingLocalizedDescription();
     }
+
 
     /**
      * @throws MissingLocalizedDescription
@@ -55,16 +62,24 @@ struct KeysetHandleRegistrationObstruction
     {
         switch (value)
         {
-            case Reason::invalid_handle:   return KeysetHandleRegistrationObstruction::invalid_handle;
-            case Reason::existing:         return KeysetHandleRegistrationObstruction::registered_handle;
-            case Reason::protected_period: return KeysetHandleRegistrationObstruction::protected_handle;
+            case Reason::invalid_handle:
+                return KeysetHandleRegistrationObstruction::invalid_handle;
+
+            case Reason::existing:
+                return KeysetHandleRegistrationObstruction::registered_handle;
+
+            case Reason::protected_period:
+                return KeysetHandleRegistrationObstruction::protected_handle;
+
             default:
                 throw MissingLocalizedDescription();
         }
     }
+
+
 };
 
-}//namespace Epp::Keyset
-}//namespace Epp
+} // namespace Epp::Keyset
+} // namespace Epp
 
 #endif

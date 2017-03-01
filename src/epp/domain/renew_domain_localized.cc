@@ -1,7 +1,7 @@
 #include "src/epp/domain/renew_domain_localized.h"
-#include "src/epp/domain/renew_domain.h"
 
 #include "src/epp/domain/impl/domain_billing.h"
+#include "src/epp/domain/renew_domain.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/impl/epp_response_failure.h"
@@ -36,7 +36,8 @@ RenewDomainLocalizedResponse renew_domain_localized(
         const Optional<unsigned long long>& _logd_request_id,
         const bool _rifd_epp_operations_charging)
 {
-    try {
+    try
+    {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
         Logging::Context logging_ctx3(_session_data.server_transaction_handle);
@@ -59,9 +60,8 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 renew_domain_result.exdate);
 
         // tmp billing impl
-        if (_rifd_epp_operations_charging
-                && Fred::InfoRegistrarById(_session_data.registrar_id).exec(ctx)
-                    .info_registrar_data.system.get_value_or(false) == false)
+        if (_rifd_epp_operations_charging &&
+            !Fred::InfoRegistrarById(_session_data.registrar_id).exec(ctx).info_registrar_data.system.get_value_or(false))
         {
             renew_domain_bill_item(
                     _data.fqdn,
@@ -85,14 +85,16 @@ RenewDomainLocalizedResponse renew_domain_localized(
         return renew_domain_localized_response;
 
     }
-    catch (const BillingFailure&) {
+    catch (const BillingFailure&)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         throw EppResponseFailureLocalized(
                 exception_localization_ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::billing_failure)),
                 _session_data.lang);
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("renew_domain_localized: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -100,7 +102,8 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 e,
                 _session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info(std::string("renew_domain_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
@@ -108,7 +111,8 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         Fred::OperationContextCreator exception_localization_ctx;
         exception_localization_ctx.get_log().info("unexpected exception in renew_domain_localized function");
         throw EppResponseFailureLocalized(
@@ -117,6 +121,7 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 _session_data.lang);
     }
 }
+
 
 } // namespace Epp::Domain
 } // namespace Epp

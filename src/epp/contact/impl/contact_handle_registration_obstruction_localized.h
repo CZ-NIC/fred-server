@@ -31,13 +31,17 @@ struct ContactHandleRegistrationObstructionLocalized
     const ContactHandleRegistrationObstruction::Enum state;
     const std::string description;
 
+
     ContactHandleRegistrationObstructionLocalized(
             const ContactHandleRegistrationObstruction::Enum _state,
             const std::string& _description)
         : state(_state),
           description(_description)
-    { }
+    {
+    }
+
 };
+
 
 } // namespace Epp::Contact
 } // namespace Epp
