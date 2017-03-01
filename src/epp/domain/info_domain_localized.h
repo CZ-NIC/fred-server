@@ -20,7 +20,6 @@
 #define INFO_DOMAIN_LOCALIZED_H_23BA4FC5083B45F2AB3100C54E6AF3F6
 
 #include "src/epp/domain/impl/info_domain_localized_response.h"
-#include "src/epp/impl/notification_data.h"
 #include "src/epp/impl/session_data.h"
 
 namespace Epp {
