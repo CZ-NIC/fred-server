@@ -60,7 +60,7 @@ TransferEvent get_transfer_event(
     const std::string dst_registrar_handle = static_cast<std::string>(sql_query_result[0][2]);
 
     TransferEvent ret;
-    switch(_message_type)
+    switch (_message_type)
     {
         case MessageType::transfer_contact:
         {
@@ -86,6 +86,8 @@ TransferEvent get_transfer_event(
             ret.message = specific_message;
             break;
         }
+        default:
+            throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
     return ret;
@@ -118,7 +120,7 @@ MessageEvent get_message_event_delete(
     const std::string handle = static_cast<std::string>(sql_query_result[0][1]);
 
     MessageEvent ret;
-    switch(_message_type)
+    switch (_message_type)
     {
         case MessageType::delete_domain:
         {
@@ -132,6 +134,8 @@ MessageEvent get_message_event_delete(
             ret.message = specific_message;
             break;
         }
+        default:
+            throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
     return ret;
@@ -166,7 +170,7 @@ MessageEvent get_message_event_validation(
     const std::string handle = static_cast<std::string>(sql_query_result[0][1]);
 
     MessageEvent ret;
-    switch(_message_type)
+    switch (_message_type)
     {
         case MessageType::validation:
         {
@@ -180,6 +184,8 @@ MessageEvent get_message_event_validation(
             ret.message = specific_message;
             break;
         }
+        default:
+            throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
     return ret;
@@ -214,7 +220,7 @@ MessageEvent get_message_event_rest(
     const std::string handle = static_cast<std::string>(sql_query_result[0][1]);
 
     MessageEvent ret;
-    switch(_message_type)
+    switch (_message_type)
     {
         case MessageType::idle_delete_contact:
         {
@@ -258,6 +264,8 @@ MessageEvent get_message_event_rest(
             ret.message = specific_message;
             break;
         }
+        default:
+            throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
     return ret;
@@ -420,10 +428,10 @@ UpdateInfoEvent get_update_info_event(
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
-    unsigned long long transaction_id = static_cast<unsigned long long>(sql_query_result[0][0]);
+    const unsigned long long transaction_id = static_cast<unsigned long long>(sql_query_result[0][0]);
 
     UpdateInfoEvent ret;
-    switch(_message_type)
+    switch (_message_type)
     {
         case MessageType::update_domain:
         {
@@ -443,6 +451,8 @@ UpdateInfoEvent get_update_info_event(
             ret.message = specific_message;
             break;
         }
+        default:
+            throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
     return ret;
@@ -483,11 +493,11 @@ PollRequestOutputData poll_request(
         boost::posix_time::time_from_string(static_cast<std::string>(sql_query_result[0][2]));
     poll_request_output_data.number_of_unseen_messages = static_cast<unsigned long long>(sql_query_result[0][3]);
 
-    MessageType::Enum message_type =
+    const MessageType::Enum message_type =
         Conversion::Enums::from_db_handle<MessageType>(static_cast<std::string>(sql_query_result[0][1]));
 
     Database::ParamQuery specific_message_query;
-    switch(message_type)
+    switch (message_type)
     {
         case MessageType::transfer_contact:
         case MessageType::transfer_nsset:

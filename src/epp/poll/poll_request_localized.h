@@ -56,8 +56,8 @@ struct PollRequestLocalizedOutputData
 
 struct PollRequestLocalizedResponse
 {
-    const EppResponseSuccessLocalized epp_response;
-    const PollRequestLocalizedOutputData data;
+    EppResponseSuccessLocalized epp_response;
+    PollRequestLocalizedOutputData data;
 
     PollRequestLocalizedResponse(
         const EppResponseSuccessLocalized& _epp_response,

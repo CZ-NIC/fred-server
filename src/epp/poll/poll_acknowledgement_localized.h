@@ -43,8 +43,8 @@ struct PollAcknowledgementLocalizedOutputData
 
 struct PollAcknowledgementLocalizedResponse
 {
-    const EppResponseSuccessLocalized epp_response;
-    const PollAcknowledgementLocalizedOutputData data;
+    EppResponseSuccessLocalized epp_response;
+    PollAcknowledgementLocalizedOutputData data;
 
     PollAcknowledgementLocalizedResponse(
         const EppResponseSuccessLocalized& _epp_response,

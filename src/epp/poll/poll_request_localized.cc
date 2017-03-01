@@ -50,7 +50,6 @@ PollRequestLocalizedResponse poll_request_localized(
         Fred::OperationContextCreator ctx;
 
         const PollRequestOutputData output_data = poll_request(ctx, _registrar_id);
-        // NoMessages in the layer above; I guess it should be done without an exception
 
         const PollRequestLocalizedOutputData localized_output_data =
             PollRequestLocalizedOutputData(
