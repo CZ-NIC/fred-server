@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2017  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,10 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_NSSET_INPUT_DATA_H_330441543C5E4F19818C057877F54560
-#define CREATE_NSSET_INPUT_DATA_H_330441543C5E4F19818C057877F54560
+#ifndef UPDATE_NSSET_INPUT_DATA_H_3F2F31DCCD7B40A69412F2CC09D32AC7
+#define UPDATE_NSSET_INPUT_DATA_H_3F2F31DCCD7B40A69412F2CC09D32AC7
 
-#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/nsset/dns_host_input.h"
+#include "util/optional_value.h"
 
 #include <boost/optional.hpp>
 
@@ -29,25 +30,31 @@
 namespace Epp {
 namespace Nsset {
 
-struct CreateNssetInputData
+struct UpdateNssetInputData
 {
     std::string handle;
-    boost::optional<std::string> authinfopw;
-    std::vector<DnsHostInput> dns_hosts;
-    std::vector<std::string> tech_contacts;
+    Optional<std::string> authinfopw;
+    std::vector<DnsHostInput> dns_hosts_add;
+    std::vector<DnsHostInput> dns_hosts_rem;
+    std::vector<std::string> tech_contacts_add;
+    std::vector<std::string> tech_contacts_rem;
     boost::optional<short> tech_check_level;
 
 
-    CreateNssetInputData(
+    UpdateNssetInputData(
             const std::string& _handle,
-            const boost::optional<std::string>& _authinfopw,
-            const std::vector<DnsHostInput>& _dns_hosts,
-            const std::vector<std::string>& _tech_contacts,
+            const Optional<std::string>& _authinfopw,
+            const std::vector<DnsHostInput>& _dns_hosts_add,
+            const std::vector<DnsHostInput>& _dns_hosts_rem,
+            const std::vector<std::string>& _tech_contacts_add,
+            const std::vector<std::string>& _tech_contacts_rem,
             const boost::optional<short>& _tech_check_level)
         : handle(_handle),
           authinfopw(_authinfopw),
-          dns_hosts(_dns_hosts),
-          tech_contacts(_tech_contacts),
+          dns_hosts_add(_dns_hosts_add),
+          dns_hosts_rem(_dns_hosts_rem),
+          tech_contacts_add(_tech_contacts_add),
+          tech_contacts_rem(_tech_contacts_rem),
           tech_check_level(_tech_check_level)
     {
     }

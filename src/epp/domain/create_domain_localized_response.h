@@ -16,38 +16,39 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CHECK_NSSET_LOCALIZED_RESPONSE_H_A69185DF33EA4E5C975C9A0D75875D70
-#define CHECK_NSSET_LOCALIZED_RESPONSE_H_A69185DF33EA4E5C975C9A0D75875D70
+#ifndef CREATE_DOMAIN_LOCALIZED_RESPONSE_H_13DE8F1A56F34C89AAA5567A8696FB50
+#define CREATE_DOMAIN_LOCALIZED_RESPONSE_H_13DE8F1A56F34C89AAA5567A8696FB50
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/nsset/impl/nsset_handle_registration_obstruction_localized.h"
+#include "src/epp/epp_response_success_localized.h"
 
-#include <boost/optional.hpp>
+#include <boost/date_time/gregorian/greg_date.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <map>
+#include <string>
 
 namespace Epp {
-namespace Nsset {
+namespace Domain {
 
-struct CheckNssetLocalizedResponse
+struct CreateDomainLocalizedResponse
 {
     const EppResponseSuccessLocalized epp_response_success_localized;
-    const std::map<std::string, boost::optional<NssetHandleRegistrationObstructionLocalized> > nsset_statuses;
+    const boost::posix_time::ptime crtime;
+    const boost::gregorian::date expiration_date;
 
 
-    CheckNssetLocalizedResponse(
+    CreateDomainLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const std::map<std::string,
-                    boost::optional<NssetHandleRegistrationObstructionLocalized> >& _nsset_statuses)
+            const boost::posix_time::ptime& _crtime,
+            const boost::gregorian::date& _expiration_date)
         : epp_response_success_localized(_epp_response_success_localized),
-          nsset_statuses(_nsset_statuses)
+          crtime(_crtime),
+          expiration_date(_expiration_date)
     {
     }
 
-
 };
 
-} // namespace Epp::Nsset
+} // namespace Epp::Domain
 } // namespace Epp
 
 #endif

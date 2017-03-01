@@ -19,8 +19,8 @@
 #ifndef CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
 #define CHECK_NSSET_LOCALIZED_H_E0D532AC33D449DFB84FB3F0E2204B1F
 
-#include "src/epp/nsset/impl/check_nsset_localized_response.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/nsset/check_nsset_localized_response.h"
+#include "src/epp/session_data.h"
 
 #include <set>
 #include <string>

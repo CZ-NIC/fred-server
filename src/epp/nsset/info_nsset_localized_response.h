@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2016  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,39 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_DOMAIN_LOCALIZED_RESPONSE_H_13DE8F1A56F34C89AAA5567A8696FB50
-#define CREATE_DOMAIN_LOCALIZED_RESPONSE_H_13DE8F1A56F34C89AAA5567A8696FB50
+#ifndef INFO_NSSET_LOCALIZED_RESPONSE_H_D099C8B7E81A43C2BEB4E7193E57E8FC
+#define INFO_NSSET_LOCALIZED_RESPONSE_H_D099C8B7E81A43C2BEB4E7193E57E8FC
 
-#include "src/epp/impl/epp_response_success_localized.h"
-
-#include <boost/date_time/gregorian/greg_date.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-#include <string>
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
 
 namespace Epp {
-namespace Domain {
+namespace Nsset {
 
-struct CreateDomainLocalizedResponse
+struct InfoNssetLocalizedResponse
 {
     const EppResponseSuccessLocalized epp_response_success_localized;
-    const boost::posix_time::ptime crtime;
-    const boost::gregorian::date expiration_date;
+    const InfoNssetLocalizedOutputData data;
 
 
-    CreateDomainLocalizedResponse(
+    InfoNssetLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const boost::posix_time::ptime& _crtime,
-            const boost::gregorian::date& _expiration_date)
+            const InfoNssetLocalizedOutputData& _data)
         : epp_response_success_localized(_epp_response_success_localized),
-          crtime(_crtime),
-          expiration_date(_expiration_date)
+          data(_data)
     {
     }
 
+
 };
 
-} // namespace Epp::Domain
+} // namespace Epp::Nsset
 } // namespace Epp
 
 #endif

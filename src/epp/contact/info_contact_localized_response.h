@@ -16,33 +16,32 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_KEYSET_LOCALIZED_RESPONSE_H_A13CF66F8D7442B98DCD1BF959DEFC6C
-#define INFO_KEYSET_LOCALIZED_RESPONSE_H_A13CF66F8D7442B98DCD1BF959DEFC6C
+#ifndef INFO_CONTACT_LOCALIZED_RESPONSE_H_B1A92D8D6FC04366A0327A5E73AB558C
+#define INFO_CONTACT_LOCALIZED_RESPONSE_H_B1A92D8D6FC04366A0327A5E73AB558C
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/keyset/impl/info_keyset_localized_output_data.h"
+#include "src/epp/contact/impl/info_contact_localized_output_data.h"
+#include "src/epp/epp_response_success_localized.h"
 
 namespace Epp {
-namespace Keyset {
+namespace Contact {
 
-struct InfoKeysetLocalizedResponse
+struct InfoContactLocalizedResponse
 {
-    EppResponseSuccessLocalized epp_response_success_localized;
-    InfoKeysetLocalizedOutputData data;
+    const EppResponseSuccessLocalized epp_response_success_localized;
+    const InfoContactLocalizedOutputData data;
 
 
-    InfoKeysetLocalizedResponse(
+    InfoContactLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const InfoKeysetLocalizedOutputData& _data)
+            const InfoContactLocalizedOutputData& _data)
         : epp_response_success_localized(_epp_response_success_localized),
           data(_data)
     {
     }
 
-
 };
 
-} // namespace Epp::Keyset
+} // namespace Epp::Contact
 } // namespace Epp
 
 #endif

@@ -20,7 +20,7 @@
 #define INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
 
 #include "src/epp/nsset/impl/dns_host_output.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 

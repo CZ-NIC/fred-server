@@ -16,34 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_CONTACT_LOCALIZED_RESPONSE_H_7DE146BBC2C54A25BD837091FA3DC853
-#define CREATE_CONTACT_LOCALIZED_RESPONSE_H_7DE146BBC2C54A25BD837091FA3DC853
+#ifndef INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
+#define INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
 
-#include "src/epp/impl/epp_response_success_localized.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "src/epp/domain/impl/info_domain_localized_output_data.h"
+#include "src/epp/epp_response_success_localized.h"
 
 namespace Epp {
-namespace Contact {
+namespace Domain {
 
-struct CreateContactLocalizedResponse
+struct InfoDomainLocalizedResponse
 {
     const EppResponseSuccessLocalized epp_response_success_localized;
-    const boost::posix_time::ptime crdate;
+    const InfoDomainLocalizedOutputData info_domain_localized_output_data;
 
 
-    CreateContactLocalizedResponse(
+    InfoDomainLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const boost::posix_time::ptime& _crdate)
+            const InfoDomainLocalizedOutputData& _info_domain_localized_output_data)
         : epp_response_success_localized(_epp_response_success_localized),
-          crdate(_crdate)
+          info_domain_localized_output_data(_info_domain_localized_output_data)
     {
     }
 
+
 };
 
-
-} // namespace Epp::Contact
+} // namespace Epp::Domain
 } // namespace Epp
 
 #endif

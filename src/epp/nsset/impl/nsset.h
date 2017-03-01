@@ -23,7 +23,7 @@
 #include "src/epp/impl/epp_extended_error.h"
 #include "src/epp/impl/param.h"
 #include "src/epp/impl/reason.h"
-#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/nsset/dns_host_input.h"
 #include "src/epp/nsset/impl/dns_host_output.h"
 #include "src/fredlib/nsset/nsset_dns_host.h"
 #include "src/fredlib/opexception.h"

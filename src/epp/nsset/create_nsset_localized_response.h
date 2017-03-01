@@ -16,33 +16,27 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
-#define CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
+#ifndef CREATE_NSSET_LOCALIZED_RESPONSE_H_9E03EC15923F4F67AD05A50326FA8A15
+#define CREATE_NSSET_LOCALIZED_RESPONSE_H_9E03EC15923F4F67AD05A50326FA8A15
 
-#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/epp_response_success_localized.h"
 
-#include <boost/optional.hpp>
-
-#include <string>
-#include <vector>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
 namespace Nsset {
 
-struct CreateNssetConfigData
+struct CreateNssetLocalizedResponse
 {
-    unsigned int default_tech_check_level;
-    unsigned int min_hosts;
-    unsigned int max_hosts;
+    const EppResponseSuccessLocalized epp_response_success_localized;
+    const boost::posix_time::ptime crdate;
 
 
-    CreateNssetConfigData(
-            const unsigned int _default_tech_check_level,
-            const unsigned int _min_hosts,
-            const unsigned int _max_hosts)
-        : default_tech_check_level(_default_tech_check_level),
-          min_hosts(_min_hosts),
-          max_hosts(_max_hosts)
+    CreateNssetLocalizedResponse(
+            const EppResponseSuccessLocalized& _epp_response_success_localized,
+            const boost::posix_time::ptime& _crdate)
+        : epp_response_success_localized(_epp_response_success_localized),
+          crdate(_crdate)
     {
     }
 

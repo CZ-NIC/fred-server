@@ -21,7 +21,7 @@
 
 #include "src/epp/impl/epp_response_success.h"
 #include "src/epp/impl/epp_result_success_localized.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <vector>

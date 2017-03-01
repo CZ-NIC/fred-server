@@ -20,7 +20,7 @@
 #define EPP_RESULT_SUCCESS_LOCALIZED_H_2B0481DFEC544E119EC86D0C318C9920
 
 #include "src/epp/impl/epp_result_success.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "src/fredlib/opcontext.h"
 
 #include <boost/optional.hpp>

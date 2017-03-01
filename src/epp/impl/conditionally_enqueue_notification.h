@@ -21,8 +21,8 @@
 
 #include <string>
 
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/notifier/event_on_object_enum.h"
 
 namespace Epp {

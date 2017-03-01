@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016  CZ.NIC, z.s.p.o.
+ * Copyright (C) 2017  CZ.NIC, z.s.p.o.
  *
  * This file is part of FRED.
  *
@@ -16,27 +16,30 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRANSFER_KEYSET_LOCALIZED_H_49BA69E2FC3645A09CA592D1E3FDD10A
-#define TRANSFER_KEYSET_LOCALIZED_H_49BA69E2FC3645A09CA592D1E3FDD10A
+#ifndef SESSION_DATA_H_983E625F4846434DBC860960DE80C9E9
+#define SESSION_DATA_H_983E625F4846434DBC860960DE80C9E9
 
-#include "src/epp/epp_response_success_localized.h"
-#include "src/epp/notification_data.h"
-#include "src/epp/session_data.h"
-#include "util/optional_value.h"
+#include "src/epp/session_lang.h"
 
 #include <string>
 
 namespace Epp {
-namespace Keyset {
 
-EppResponseSuccessLocalized transfer_keyset_localized(
-        const std::string& _keyset_handle,
-        const std::string& _authinfopw,
-        const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id);
+struct SessionData {
+    unsigned long long registrar_id;
+    Epp::SessionLang::Enum lang;
+    const std::string server_transaction_handle;
 
-} // namespace Epp::Keyset
+    SessionData(
+            unsigned long long _registrar_id,
+            Epp::SessionLang::Enum _lang,
+            const std::string& _server_transaction_handle)
+        : registrar_id(_registrar_id),
+          lang(_lang),
+          server_transaction_handle(_server_transaction_handle)
+    { }
+};
+
 } // namespace Epp
 
 #endif

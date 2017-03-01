@@ -19,9 +19,9 @@
 #ifndef DELETE_CONTACT_LOCALIZED_H_4DDDFFEC71B342668A5C34F8785EDDB7
 #define DELETE_CONTACT_LOCALIZED_H_4DDDFFEC71B342668A5C34F8785EDDB7
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 
 #include <string>
 

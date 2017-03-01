@@ -19,7 +19,7 @@
 #ifndef REGISTRAR_SESSION_DATA_H_A3D31CFA54E64CDE926827804909B0B3
 #define REGISTRAR_SESSION_DATA_H_A3D31CFA54E64CDE926827804909B0B3
 
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 
 namespace Epp {
 

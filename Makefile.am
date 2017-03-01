@@ -239,7 +239,7 @@ noinst_HEADERS = \
 		src/fredlib/object/object_type.h \
 		src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h \
 		src/epp/impl/exception.h \
-		src/epp/impl/session_lang.h \
+		src/epp/session_lang.h \
 		src/epp/contact/contact_change.h \
 		src/epp/impl/get_registrar_session_data.h \
 		src/corba/epp/epp_legacy_compatibility.h \
@@ -277,7 +277,7 @@ noinst_HEADERS = \
 		src/fredlib/nsset/handle_state.h \
 		src/fredlib/keyset/handle_state.h \
 		src/epp/nsset/impl/dns_host_output.h \
-		src/epp/nsset/impl/dns_host_input.h \
+		src/epp/nsset/dns_host_input.h \
 		src/epp/nsset/impl/nsset_handle_state_to_check_result.h \
 		src/epp/nsset/impl/nsset_constants.h \
 		tests/interfaces/epp/nsset/fixture.h
@@ -1565,8 +1565,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/epp_response_failure_localized.h \
 		src/epp/impl/epp_response_failure_localized.cc \
 		src/epp/impl/epp_response_success.h \
-		src/epp/impl/epp_response_success_localized.h \
-		src/epp/impl/epp_response_success_localized.cc \
+		src/epp/epp_response_success_localized.h \
+		src/epp/epp_response_success_localized.cc \
 		src/epp/impl/epp_result_failure.h \
 		src/epp/impl/epp_result_failure.cc \
 		src/epp/impl/epp_result_failure_localized.h \
@@ -1579,8 +1579,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/impl/epp_extended_error_localized.h \
 		src/epp/impl/epp_extended_error_localized.cc \
 		src/epp/impl/epp_result_code.h \
-		src/epp/impl/notification_data.h \
-		src/epp/impl/session_data.h \
+		src/epp/notification_data.h \
+		src/epp/session_data.h \
 		src/epp/impl/conditionally_enqueue_notification.h \
 		src/epp/impl/conditionally_enqueue_notification.cc \
 		src/epp/contact/create_contact_localized.cc \
@@ -1614,8 +1614,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/contact_disclose.h \
 		src/epp/contact/impl/post_contact_update_hooks.cc \
 		src/epp/contact/impl/post_contact_update_hooks.h \
-		src/epp/contact/impl/create_contact_input_data.cc \
-		src/epp/contact/impl/create_contact_input_data.h \
+		src/epp/contact/create_contact_input_data.cc \
+		src/epp/contact/create_contact_input_data.h \
 		src/epp/domain/check_domain_localized.cc \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain.cc \
@@ -2512,8 +2512,8 @@ tests_interfaces_test_admin_notification_LDADD = \
 # tests/interfaces/test-epp
 #
 tests_interfaces_test_epp_SOURCES = \
-		src/epp/impl/session_data.h \
-		src/epp/impl/notification_data.h \
+		src/epp/session_data.h \
+		src/epp/notification_data.h \
 		tests/interfaces/epp/util.h \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \

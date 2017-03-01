@@ -4,7 +4,7 @@
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "src/epp/impl/util.h"
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/object_state/get_object_state_descriptions.h"

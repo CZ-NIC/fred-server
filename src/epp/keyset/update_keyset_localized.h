@@ -19,10 +19,10 @@
 #ifndef UPDATE_KEYSET_LOCALIZED_H_D8C319D4188D49BBB144814D6A67970C
 #define UPDATE_KEYSET_LOCALIZED_H_D8C319D4188D49BBB144814D6A67970C
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
-#include "src/epp/keyset/impl/update_keyset_input_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
+#include "src/epp/keyset/update_keyset_input_data.h"
 #include "util/optional_value.h"
 
 namespace Epp {

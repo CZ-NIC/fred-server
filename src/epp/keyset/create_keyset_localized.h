@@ -19,10 +19,10 @@
 #ifndef CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
 #define CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
 
-#include "src/epp/keyset/impl/create_keyset_localized_response.h"
-#include "src/epp/keyset/impl/create_keyset_input_data.h"
-#include "src/epp/impl/session_data.h"
-#include "src/epp/impl/notification_data.h"
+#include "src/epp/keyset/create_keyset_localized_response.h"
+#include "src/epp/keyset/create_keyset_input_data.h"
+#include "src/epp/session_data.h"
+#include "src/epp/notification_data.h"
 #include "util/optional_value.h"
 
 #include <string>

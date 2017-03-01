@@ -19,10 +19,10 @@
 #ifndef CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 #define CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 
-#include "src/epp/domain/impl/create_domain_input_data.h"
-#include "src/epp/domain/impl/create_domain_localized_response.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/domain/create_domain_input_data.h"
+#include "src/epp/domain/create_domain_localized_response.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 namespace Epp {

@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/epp/contact/impl/create_contact_input_data.h"
+#include "src/epp/contact/create_contact_input_data.h"
 
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/impl/util.h"

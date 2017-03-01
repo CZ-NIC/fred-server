@@ -16,30 +16,34 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SESSION_DATA_H_983E625F4846434DBC860960DE80C9E9
-#define SESSION_DATA_H_983E625F4846434DBC860960DE80C9E9
+#ifndef CREATE_KEYSET_LOCALIZED_RESPONSE_H_859B9F43B50F46A0B71ACE42F26B8302
+#define CREATE_KEYSET_LOCALIZED_RESPONSE_H_859B9F43B50F46A0B71ACE42F26B8302
 
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/epp_response_success_localized.h"
 
-#include <string>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
+namespace Keyset {
 
-struct SessionData {
-    unsigned long long registrar_id;
-    Epp::SessionLang::Enum lang;
-    const std::string server_transaction_handle;
+struct CreateKeysetLocalizedResponse
+{
+    EppResponseSuccessLocalized epp_response_success_localized;
+    boost::posix_time::ptime crdate;
 
-    SessionData(
-            unsigned long long _registrar_id,
-            Epp::SessionLang::Enum _lang,
-            const std::string& _server_transaction_handle)
-        : registrar_id(_registrar_id),
-          lang(_lang),
-          server_transaction_handle(_server_transaction_handle)
-    { }
+
+    CreateKeysetLocalizedResponse(
+            const EppResponseSuccessLocalized& _response,
+            const boost::posix_time::ptime& _crdate)
+        : epp_response_success_localized(_response),
+          crdate(_crdate)
+    {
+    }
+
+
 };
 
+} // namespace Epp::Keyset
 } // namespace Epp
 
 #endif

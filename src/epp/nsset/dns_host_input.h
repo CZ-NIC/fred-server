@@ -19,7 +19,7 @@
 #ifndef DNS_HOST_INPUT_H_5AECF83B2E1642388AB0A8C400CD4083
 #define DNS_HOST_INPUT_H_5AECF83B2E1642388AB0A8C400CD4083
 
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 

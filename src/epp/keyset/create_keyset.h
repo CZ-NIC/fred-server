@@ -19,7 +19,7 @@
 #ifndef CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 #define CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 
-#include "src/epp/keyset/impl/create_keyset_input_data.h"
+#include "src/epp/keyset/create_keyset_input_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 

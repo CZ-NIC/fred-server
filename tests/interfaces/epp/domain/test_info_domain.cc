@@ -26,7 +26,7 @@
 #include "src/epp/domain/info_domain.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>

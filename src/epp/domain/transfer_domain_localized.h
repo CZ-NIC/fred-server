@@ -19,9 +19,9 @@
 #ifndef TRANSFER_DOMAIN_LOCALIZED_H_35B028F1145C40FA8AA305D6AA0B4A3B
 #define TRANSFER_DOMAIN_LOCALIZED_H_35B028F1145C40FA8AA305D6AA0B4A3B
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 #include <string>

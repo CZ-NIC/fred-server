@@ -19,9 +19,9 @@
 #ifndef DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
 #define DELETE_KEYSET_LOCALIZED_H_8DB04AC4562642F192AACBA17210E895
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_data.h"
-#include "src/epp/impl/notification_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/session_data.h"
+#include "src/epp/notification_data.h"
 
 #include <string>
 

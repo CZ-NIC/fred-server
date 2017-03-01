@@ -20,7 +20,7 @@
 #define INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
 
 #include "src/epp/contact/contact_disclose.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "src/fredlib/contact/info_contact_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"

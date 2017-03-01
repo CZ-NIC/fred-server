@@ -19,8 +19,8 @@
 #ifndef CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 #define CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 
-#include "src/epp/contact/impl/check_contact_localized_response.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/contact/check_contact_localized_response.h"
+#include "src/epp/session_data.h"
 
 #include <set>
 #include <string>

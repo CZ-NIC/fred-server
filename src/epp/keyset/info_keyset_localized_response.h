@@ -16,33 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
-#define INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
+#ifndef INFO_KEYSET_LOCALIZED_RESPONSE_H_A13CF66F8D7442B98DCD1BF959DEFC6C
+#define INFO_KEYSET_LOCALIZED_RESPONSE_H_A13CF66F8D7442B98DCD1BF959DEFC6C
 
-#include "src/epp/domain/impl/info_domain_localized_output_data.h"
-#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/keyset/impl/info_keyset_localized_output_data.h"
 
 namespace Epp {
-namespace Domain {
+namespace Keyset {
 
-struct InfoDomainLocalizedResponse
+struct InfoKeysetLocalizedResponse
 {
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const InfoDomainLocalizedOutputData info_domain_localized_output_data;
+    EppResponseSuccessLocalized epp_response_success_localized;
+    InfoKeysetLocalizedOutputData data;
 
 
-    InfoDomainLocalizedResponse(
+    InfoKeysetLocalizedResponse(
             const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const InfoDomainLocalizedOutputData& _info_domain_localized_output_data)
+            const InfoKeysetLocalizedOutputData& _data)
         : epp_response_success_localized(_epp_response_success_localized),
-          info_domain_localized_output_data(_info_domain_localized_output_data)
+          data(_data)
     {
     }
 
 
 };
 
-} // namespace Epp::Domain
+} // namespace Epp::Keyset
 } // namespace Epp
 
 #endif

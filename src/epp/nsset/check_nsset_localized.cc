@@ -23,7 +23,7 @@
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/localization.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/session_data.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/check_nsset.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"

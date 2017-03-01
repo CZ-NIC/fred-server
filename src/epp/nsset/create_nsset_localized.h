@@ -19,11 +19,11 @@
 #ifndef CREATE_NSSET_LOCALIZED_H_E012D98CCFF7446FB305B72D2F4B8417
 #define CREATE_NSSET_LOCALIZED_H_E012D98CCFF7446FB305B72D2F4B8417
 
-#include "src/epp/nsset/impl/create_nsset_config_data.h"
-#include "src/epp/nsset/impl/create_nsset_input_data.h"
-#include "src/epp/nsset/impl/create_nsset_localized_response.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/nsset/create_nsset_config_data.h"
+#include "src/epp/nsset/create_nsset_input_data.h"
+#include "src/epp/nsset/create_nsset_localized_response.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 namespace Epp {

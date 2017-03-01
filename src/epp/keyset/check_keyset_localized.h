@@ -19,8 +19,8 @@
 #ifndef CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
 #define CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
 
-#include "src/epp/keyset/impl/check_keyset_localized_response.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/keyset/check_keyset_localized_response.h"
+#include "src/epp/session_data.h"
 
 #include <set>
 

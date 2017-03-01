@@ -19,11 +19,11 @@
 #ifndef UPDATE_NSSET_LOCALIZED_H_EF8D30BE9BAF43968D5E49305821ECA2
 #define UPDATE_NSSET_LOCALIZED_H_EF8D30BE9BAF43968D5E49305821ECA2
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
-#include "src/epp/nsset/impl/update_nsset_config_data.h"
-#include "src/epp/nsset/impl/update_nsset_input_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
+#include "src/epp/nsset/update_nsset_config_data.h"
+#include "src/epp/nsset/update_nsset_input_data.h"
 #include "util/optional_value.h"
 
 namespace Epp {

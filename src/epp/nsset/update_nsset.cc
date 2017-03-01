@@ -23,7 +23,7 @@
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/util.h"
-#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/nsset/dns_host_input.h"
 #include "src/epp/nsset/impl/nsset.h"
 #include "src/epp/nsset/impl/nsset_constants.h"
 #include "src/fredlib/contact/check_contact.h"

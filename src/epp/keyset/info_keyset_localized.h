@@ -19,8 +19,8 @@
 #ifndef INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 #define INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 
-#include "src/epp/keyset/impl/info_keyset_localized_response.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/keyset/info_keyset_localized_response.h"
+#include "src/epp/session_data.h"
 
 #include <string>
 

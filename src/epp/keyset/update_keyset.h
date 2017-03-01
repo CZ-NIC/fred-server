@@ -19,7 +19,7 @@
 #ifndef UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
 #define UPDATE_KEYSET_H_F61394277C224F9DAD449E23FBBA054E
 
-#include "src/epp/keyset/impl/update_keyset_input_data.h"
+#include "src/epp/keyset/update_keyset_input_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 

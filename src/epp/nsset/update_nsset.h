@@ -19,8 +19,8 @@
 #ifndef UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
 #define UPDATE_NSSET_H_A39C4BFF30BD43699F6D06CC93A6B4EC
 
-#include "src/epp/nsset/impl/update_nsset_config_data.h"
-#include "src/epp/nsset/impl/update_nsset_input_data.h"
+#include "src/epp/nsset/update_nsset_config_data.h"
+#include "src/epp/nsset/update_nsset_input_data.h"
 #include "src/fredlib/opcontext.h"
 
 namespace Epp {

@@ -16,12 +16,12 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NSSET_CORBA_CONVERSION_H_24B9C847E8DA44528A04856129CF17AB
-#define NSSET_CORBA_CONVERSION_H_24B9C847E8DA44528A04856129CF17AB
+#ifndef NSSET_CORBA_CONVERSIONS_H_633A57753B864E5AB914C633E34A8E9B
+#define NSSET_CORBA_CONVERSIONS_H_633A57753B864E5AB914C633E34A8E9B
 
 #include "src/corba/EPP.hh"
 
-#include "src/epp/nsset/impl/dns_host_input.h"
+#include "src/epp/nsset/dns_host_input.h"
 #include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
 #include "src/epp/nsset/impl/nsset_handle_registration_obstruction_localized.h"

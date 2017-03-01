@@ -1,7 +1,7 @@
 #include "src/epp/impl/conditionally_enqueue_notification.h"
 
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/notifier/enqueue_notification.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/registrar/info_registrar.h"

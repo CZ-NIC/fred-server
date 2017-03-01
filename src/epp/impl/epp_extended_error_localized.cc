@@ -1,6 +1,6 @@
 #include "src/epp/impl/epp_extended_error_localized.h"
 #include "src/epp/impl/epp_extended_error.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "src/epp/impl/localization.h"
 #include "src/fredlib/opcontext.h"
 

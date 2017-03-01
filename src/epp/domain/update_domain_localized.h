@@ -19,10 +19,10 @@
 #ifndef UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 #define UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 
-#include "src/epp/domain/impl/update_domain_input_data.h"
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/domain/update_domain_input_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 #include <string>

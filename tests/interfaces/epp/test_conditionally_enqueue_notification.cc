@@ -22,9 +22,9 @@
 
 #include "src/corba/mailer_manager.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
+#include "src/epp/session_lang.h"
 #include "src/fredlib/notifier/process_one_notification_request.h"
 
 #include <boost/test/unit_test.hpp>

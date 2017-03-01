@@ -19,9 +19,9 @@
 #ifndef TRANSFER_CONTACT_LOCALIZED_H_24DC8E8F98A248C4B25980228AD6AB69
 #define TRANSFER_CONTACT_LOCALIZED_H_24DC8E8F98A248C4B25980228AD6AB69
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 #include <string>

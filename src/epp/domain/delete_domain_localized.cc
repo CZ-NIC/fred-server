@@ -6,7 +6,7 @@
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_failure_localized.h"
 #include "src/epp/impl/epp_response_success.h"
-#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/epp_response_success_localized.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_success.h"

@@ -16,26 +16,33 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INFO_NSSET_LOCALIZED_RESPONSE_H_D099C8B7E81A43C2BEB4E7193E57E8FC
-#define INFO_NSSET_LOCALIZED_RESPONSE_H_D099C8B7E81A43C2BEB4E7193E57E8FC
+#ifndef CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
+#define CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
+#include "src/epp/nsset/dns_host_input.h"
+
+#include <boost/optional.hpp>
+
+#include <string>
+#include <vector>
 
 namespace Epp {
 namespace Nsset {
 
-struct InfoNssetLocalizedResponse
+struct CreateNssetConfigData
 {
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const InfoNssetLocalizedOutputData data;
+    unsigned int default_tech_check_level;
+    unsigned int min_hosts;
+    unsigned int max_hosts;
 
 
-    InfoNssetLocalizedResponse(
-            const EppResponseSuccessLocalized& _epp_response_success_localized,
-            const InfoNssetLocalizedOutputData& _data)
-        : epp_response_success_localized(_epp_response_success_localized),
-          data(_data)
+    CreateNssetConfigData(
+            const unsigned int _default_tech_check_level,
+            const unsigned int _min_hosts,
+            const unsigned int _max_hosts)
+        : default_tech_check_level(_default_tech_check_level),
+          min_hosts(_min_hosts),
+          max_hosts(_max_hosts)
     {
     }
 

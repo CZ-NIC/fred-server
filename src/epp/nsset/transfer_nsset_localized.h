@@ -19,9 +19,9 @@
 #ifndef TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
 #define TRANSFER_NSSET_LOCALIZED_H_B9B03599028B45F59A9D714CD01E1696
 
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 #include <string>

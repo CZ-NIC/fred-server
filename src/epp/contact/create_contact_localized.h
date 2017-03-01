@@ -19,10 +19,10 @@
 #ifndef CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
 #define CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
 
-#include "src/epp/contact/impl/create_contact_input_data.h"
-#include "src/epp/contact/impl/create_contact_localized_response.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/contact/create_contact_input_data.h"
+#include "src/epp/contact/create_contact_localized_response.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 namespace Epp {

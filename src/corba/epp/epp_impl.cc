@@ -51,8 +51,8 @@
 #include "reason.h"    // reason messages code
 
 #include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/session_data.h"
-#include "src/epp/impl/notification_data.h"
+#include "src/epp/session_data.h"
+#include "src/epp/notification_data.h"
 
 // logger
 #include "src/old_utils/log.h"
@@ -82,7 +82,7 @@
 
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/contact/delete_contact_localized.h"
-#include "src/epp/contact/impl/create_contact_input_data.h"
+#include "src/epp/contact/create_contact_input_data.h"
 #include "src/epp/contact/impl/post_contact_update_hooks.h"
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/transfer_contact_localized.h"
@@ -112,7 +112,7 @@
 
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/param.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "src/epp/impl/get_registrar_session_data.h"
 #include "src/epp/impl/registrar_session_data.h"
 #include "src/epp/impl/request_params.h"

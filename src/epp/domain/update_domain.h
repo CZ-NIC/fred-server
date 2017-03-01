@@ -21,7 +21,7 @@
 
 #include "src/epp/contact/update_contact.h"
 #include "src/epp/domain/impl/domain_enum_validation.h"
-#include "src/epp/domain/impl/update_domain_input_data.h"
+#include "src/epp/domain/update_domain_input_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"

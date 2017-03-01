@@ -19,8 +19,8 @@
 #ifndef CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 #define CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 
-#include "src/epp/domain/impl/check_domain_localized_response.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/domain/check_domain_localized_response.h"
+#include "src/epp/session_data.h"
 
 #include <set>
 #include <string>

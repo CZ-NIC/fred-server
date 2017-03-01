@@ -19,8 +19,8 @@
 #ifndef INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 #define INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 
-#include "src/epp/impl/session_data.h"
-#include "src/epp/nsset/impl/info_nsset_localized_response.h"
+#include "src/epp/session_data.h"
+#include "src/epp/nsset/info_nsset_localized_response.h"
 
 #include <string>
 

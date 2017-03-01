@@ -20,9 +20,9 @@
 #define UPDATE_CONTACT_LOCALIZED_H_3265A4F7B3D6435FBB17D88760C1AAED
 
 #include "src/epp/contact/contact_change.h"
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 #include <string>

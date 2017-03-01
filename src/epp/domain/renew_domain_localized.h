@@ -19,10 +19,10 @@
 #ifndef RENEW_DOMAIN_LOCALIZED_H_AADAB1519F8C4D6BAA4E0766858D8E49
 #define RENEW_DOMAIN_LOCALIZED_H_AADAB1519F8C4D6BAA4E0766858D8E49
 
-#include "src/epp/domain/impl/renew_domain_input_data.h"
-#include "src/epp/domain/impl/renew_domain_localized_response.h"
-#include "src/epp/impl/notification_data.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/domain/renew_domain_input_data.h"
+#include "src/epp/domain/renew_domain_localized_response.h"
+#include "src/epp/notification_data.h"
+#include "src/epp/session_data.h"
 #include "util/optional_value.h"
 
 namespace Epp {

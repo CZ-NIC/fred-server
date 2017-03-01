@@ -16,34 +16,34 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_KEYSET_LOCALIZED_RESPONSE_H_859B9F43B50F46A0B71ACE42F26B8302
-#define CREATE_KEYSET_LOCALIZED_RESPONSE_H_859B9F43B50F46A0B71ACE42F26B8302
+#ifndef CREATE_CONTACT_LOCALIZED_RESPONSE_H_7DE146BBC2C54A25BD837091FA3DC853
+#define CREATE_CONTACT_LOCALIZED_RESPONSE_H_7DE146BBC2C54A25BD837091FA3DC853
 
-#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/epp_response_success_localized.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
-namespace Keyset {
+namespace Contact {
 
-struct CreateKeysetLocalizedResponse
+struct CreateContactLocalizedResponse
 {
-    EppResponseSuccessLocalized epp_response_success_localized;
-    boost::posix_time::ptime crdate;
+    const EppResponseSuccessLocalized epp_response_success_localized;
+    const boost::posix_time::ptime crdate;
 
 
-    CreateKeysetLocalizedResponse(
-            const EppResponseSuccessLocalized& _response,
+    CreateContactLocalizedResponse(
+            const EppResponseSuccessLocalized& _epp_response_success_localized,
             const boost::posix_time::ptime& _crdate)
-        : epp_response_success_localized(_response),
+        : epp_response_success_localized(_epp_response_success_localized),
           crdate(_crdate)
     {
     }
 
-
 };
 
-} // namespace Epp::Keyset
+
+} // namespace Epp::Contact
 } // namespace Epp
 
 #endif

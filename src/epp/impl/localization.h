@@ -22,7 +22,7 @@
 #include "src/epp/error.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/object_states_localized.h"
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 
 #include "src/fredlib/opcontext.h"
 
