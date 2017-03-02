@@ -1,5 +1,6 @@
 #include "src/epp/domain/create_domain.h"
 
+#include "src/epp/domain/impl/domain_billing.h"
 #include "src/epp/error.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_code.h"
@@ -39,7 +40,8 @@ CreateDomainResult create_domain(
         Fred::OperationContext& _ctx,
         const CreateDomainInputData& _data,
         const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const Optional<unsigned long long>& _logd_request_id,
+        const bool _rifd_epp_operations_charging)
 {
     EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
@@ -310,6 +312,26 @@ CreateDomainResult create_domain(
             throw std::runtime_error("domain create failed");
         }
 
+        if (_rifd_epp_operations_charging && !is_system_registrar)
+        {
+            create_domain_bill_item(
+                    _data.fqdn,
+                    result.creation_time,
+                    _registrar_id,
+                    result.create_object_result.object_id,
+                    _ctx);
+
+            renew_domain_bill_item(
+                    _data.fqdn,
+                    result.creation_time,
+                    _registrar_id,
+                    result.create_object_result.object_id,
+                    domain_registration_in_months,
+                    current_local_date,
+                    domain_expiration_date,
+                    _ctx);
+        }
+
         return CreateDomainResult(
                 result.create_object_result.object_id,
                 result.create_object_result.history_id,
@@ -329,6 +351,10 @@ CreateDomainResult create_domain(
 
         // in the improbable case that exception is incorrectly set
         throw;
+    }
+    catch (const BillingFailure&)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::billing_failure));
     }
 }
 

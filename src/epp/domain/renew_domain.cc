@@ -1,12 +1,12 @@
 #include "src/epp/domain/renew_domain.h"
 
+#include "src/epp/domain/impl/domain_billing.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_code.h"
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/exception.h"
 #include "src/epp/impl/reason.h"
 #include "src/epp/impl/util.h"
-
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/info_domain.h"
@@ -16,10 +16,7 @@
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/info_registrar.h"
-#include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
-#include "src/fredlib/registrar/registrar_zone_access.h"
-#include "src/fredlib/zone/zone.h"
 #include "src/fredlib/zone/zone.h"
 #include "util/db/param_query_composition.h"
 #include "util/map_at.h"
@@ -44,7 +41,8 @@ RenewDomainResult renew_domain(
         Fred::OperationContext& _ctx,
         const RenewDomainInputData& _data,
         const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const Optional<unsigned long long>& _logd_request_id,
+        const bool _rifd_epp_operations_charging)
 {
     // start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
     const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
@@ -234,13 +232,13 @@ RenewDomainResult renew_domain(
     }
 
     // check sponsoring or system registrar
-    const Fred::InfoRegistrarData logged_in_registrar = Fred::InfoRegistrarById(_registrar_id)
-                                                        .set_lock( /* TODO lock registrar for share */)
-                                                        .exec(_ctx)
-                                                        .info_registrar_data;
+    const Fred::InfoRegistrarData session_registrar =
+            Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
 
-    if (info_domain_data.sponsoring_registrar_handle != logged_in_registrar.handle &&
-        !logged_in_registrar.system.get_value_or_default())
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
+
+    if (info_domain_data.sponsoring_registrar_handle != session_registrar.handle &&
+        !is_system_registrar)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
     }
@@ -251,7 +249,7 @@ RenewDomainResult renew_domain(
 
     const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data.id).exec(_ctx));
 
-    if (!logged_in_registrar.system.get_value_or_default() &&
+    if (!session_registrar.system.get_value_or_default() &&
             (domain_states.presents(Fred::Object_State::server_renew_prohibited)
             ||
             domain_states.presents(Fred::Object_State::delete_candidate)))
@@ -268,7 +266,7 @@ RenewDomainResult renew_domain(
     {
         Fred::RenewDomain renew_domain = Fred::RenewDomain(
                 _data.fqdn,
-                logged_in_registrar.handle,
+                session_registrar.handle,
                 new_exdate);
 
         if (zone_data.is_enum && !_data.enum_validation_list.empty())
@@ -284,6 +282,20 @@ RenewDomainResult renew_domain(
 
         unsigned long long renewed_domain_history_id = renew_domain.exec(_ctx);
 
+        if (_rifd_epp_operations_charging &&
+            !is_system_registrar)
+        {
+            renew_domain_bill_item(
+                    _data.fqdn,
+                    current_utc_time,
+                    _registrar_id,
+                    info_domain_data.id,
+                    domain_registration_in_months,
+                    info_domain_data.expiration_date,
+                    new_exdate,
+                    _ctx);
+        }
+
         return RenewDomainResult(
                 info_domain_data.id,
                 renewed_domain_history_id,
@@ -296,6 +308,10 @@ RenewDomainResult renew_domain(
     catch (const Fred::RenewDomain::Exception& e)
     {
         throw;
+    }
+    catch (const BillingFailure&)
+    {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::billing_failure));
     }
 }
 

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -52,11 +48,10 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_registrar_id, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             0,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_invalid_registrar_id_exception
-    );
+        renew_invalid_registrar_id_exception);
 }
 bool renew_invalid_fqdn_zone_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
@@ -73,11 +68,10 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn_zone, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_invalid_fqdn_zone_exception
-    );
+        renew_invalid_fqdn_zone_exception);
 }
 
 bool renew_fail_registrar_zone_access_exception(const Epp::EppResponseFailure& e) {
@@ -93,11 +87,10 @@ BOOST_FIXTURE_TEST_CASE(renew_fail_registrar_zone_access, HasDomainDataAndRegist
             ctx,
             *domain2_renew_input_data,
             registrar_data_not_in_zone_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_fail_registrar_zone_access_exception
-    );
+        renew_fail_registrar_zone_access_exception);
 }
 bool renew_invalid_fqdn_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
@@ -112,11 +105,10 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_fqdn, HasDomainData)
             ctx,
             domain1_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_invalid_fqdn_exception
-    );
+        renew_invalid_fqdn_exception);
 }
 
 bool renew_invalid_enum_fqdn_exception(const Epp::EppResponseFailure& e) {
@@ -134,11 +126,10 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_enum_fqdn, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_invalid_enum_fqdn_exception
-    );
+        renew_invalid_enum_fqdn_exception);
 }
 
 bool renew_invalid_curexpdate_exception(const Epp::EppResponseFailure& e) {
@@ -161,11 +152,10 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_curexpdate, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_invalid_curexpdate_exception
-    );
+        renew_invalid_curexpdate_exception);
 }
 
 bool renew_neg_period_exception(const Epp::EppResponseFailure& e) {
@@ -187,11 +177,10 @@ BOOST_FIXTURE_TEST_CASE(renew_neg_period, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_neg_period_exception
-    );
+        renew_neg_period_exception);
 }
 
 bool renew_small_period_exception(const Epp::EppResponseFailure& e) {
@@ -213,11 +202,10 @@ BOOST_FIXTURE_TEST_CASE(renew_small_period, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_small_period_exception
-    );
+        renew_small_period_exception);
 }
 
 bool renew_big_period_exception(const Epp::EppResponseFailure& e) {
@@ -239,11 +227,10 @@ BOOST_FIXTURE_TEST_CASE(renew_big_period, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_big_period_exception
-    );
+        renew_big_period_exception);
 }
 
 bool renew_modulo_period_exception(const Epp::EppResponseFailure& e) {
@@ -265,11 +252,10 @@ BOOST_FIXTURE_TEST_CASE(renew_modulo_period, HasDomainData)
             ctx,
             (*domain2_renew_input_data),
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_modulo_period_exception
-    );
+        renew_modulo_period_exception);
 }
 
 BOOST_FIXTURE_TEST_CASE(renew_empty_valexdate_enum, HasDomainData)
@@ -288,8 +274,8 @@ BOOST_FIXTURE_TEST_CASE(renew_empty_valexdate_enum, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
 
@@ -298,9 +284,8 @@ BOOST_FIXTURE_TEST_CASE(renew_empty_valexdate_enum, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        )
-    );
+            42,
+            false)); // billing off
 }
 
 bool renew_special_valexdate_enum_exception(const Epp::EppResponseFailure& e) {
@@ -329,8 +314,8 @@ BOOST_FIXTURE_TEST_CASE(renew_special_valexdate_enum, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
     (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
@@ -341,11 +326,10 @@ BOOST_FIXTURE_TEST_CASE(renew_special_valexdate_enum, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_special_valexdate_enum_exception
-    );
+        renew_special_valexdate_enum_exception);
 }
 
 bool renew_yesterday_enum_valexdate_exception(const Epp::EppResponseFailure& e) {
@@ -374,8 +358,8 @@ BOOST_FIXTURE_TEST_CASE(renew_yesterday_enum_valexdate, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
     (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
@@ -386,11 +370,10 @@ BOOST_FIXTURE_TEST_CASE(renew_yesterday_enum_valexdate, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_yesterday_enum_valexdate_exception
-    );
+        renew_yesterday_enum_valexdate_exception);
 }
 
 bool renew_today_enum_valexdate_exception(const Epp::EppResponseFailure& e) {
@@ -419,8 +402,8 @@ BOOST_FIXTURE_TEST_CASE(renew_today_enum_valexdate, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
     (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
@@ -431,11 +414,10 @@ BOOST_FIXTURE_TEST_CASE(renew_today_enum_valexdate, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_today_enum_valexdate_exception
-    );
+        renew_today_enum_valexdate_exception);
 }
 
 BOOST_FIXTURE_TEST_CASE(renew_tomorrow_enum_valexdate, HasDomainData)
@@ -454,8 +436,8 @@ BOOST_FIXTURE_TEST_CASE(renew_tomorrow_enum_valexdate, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
     (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
@@ -466,8 +448,8 @@ BOOST_FIXTURE_TEST_CASE(renew_tomorrow_enum_valexdate, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ));
+            42,
+            false)); // billing off
 }
 
 BOOST_FIXTURE_TEST_CASE(renew_max_enum_valexdate, HasDomainData)
@@ -491,8 +473,8 @@ BOOST_FIXTURE_TEST_CASE(renew_max_enum_valexdate, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
     (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
@@ -503,8 +485,8 @@ BOOST_FIXTURE_TEST_CASE(renew_max_enum_valexdate, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ));
+            42,
+            false)); // billing off
 }
 
 bool renew_long_enum_valexdate_exception(const Epp::EppResponseFailure& e) {
@@ -538,8 +520,8 @@ BOOST_FIXTURE_TEST_CASE(renew_long_enum_valexdate, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     (*domain2_renew_input_data).fqdn = domain1_create_input_data.fqdn;
     (*domain2_renew_input_data).enum_validation_list = Util::vector_of<Epp::Domain::EnumValidationExtension>(
@@ -550,11 +532,10 @@ BOOST_FIXTURE_TEST_CASE(renew_long_enum_valexdate, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_long_enum_valexdate_exception
-    );
+        renew_long_enum_valexdate_exception);
 }
 
 bool renew_nonempty_valexdate_nonenum_exception(const Epp::EppResponseFailure& e) {
@@ -577,11 +558,10 @@ BOOST_FIXTURE_TEST_CASE(renew_nonempty_valexdate_nonenum, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_nonempty_valexdate_nonenum_exception
-    );
+        renew_nonempty_valexdate_nonenum_exception);
 }
 
 bool renew_status_prohibited_exception(const Epp::EppResponseFailure& e) {
@@ -607,10 +587,10 @@ BOOST_FIXTURE_TEST_CASE(renew_status_prohibited, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42),
-            Epp::EppResponseFailure,
-            renew_status_prohibited_exception
-        );
+            42,
+            true), // billing on
+        Epp::EppResponseFailure,
+        renew_status_prohibited_exception);
 }
 
 bool renew_status_delete_exception(const Epp::EppResponseFailure& e) {
@@ -637,10 +617,10 @@ BOOST_FIXTURE_TEST_CASE(renew_status_delete, HasDomainData)
             ctx,
             *domain2_renew_input_data,
             info_registrar_data_.id,
-            42),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        renew_status_delete_exception
-    );
+        renew_status_delete_exception);
 }
 
 BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
@@ -650,8 +630,8 @@ BOOST_FIXTURE_TEST_CASE(renew_ok, HasDomainData)
         ctx,
         *domain2_renew_input_data,
         info_registrar_data_.id,
-        42
-    );
+        42,
+        false); // billing off
 
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle((*domain2_renew_input_data).fqdn).exec(ctx, "UTC").info_domain_data;
 

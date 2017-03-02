@@ -61,7 +61,8 @@ CreateDomainResult create_domain(
         Fred::OperationContext& _ctx,
         const CreateDomainInputData& _data,
         unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const Optional<unsigned long long>& _logd_request_id,
+        bool _rifd_epp_operations_charging);
 
 
 } // namespace Epp::Domain

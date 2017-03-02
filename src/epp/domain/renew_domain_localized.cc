@@ -1,6 +1,5 @@
 #include "src/epp/domain/renew_domain_localized.h"
 
-#include "src/epp/domain/impl/domain_billing.h"
 #include "src/epp/domain/renew_domain.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
@@ -50,7 +49,8 @@ RenewDomainLocalizedResponse renew_domain_localized(
                         ctx,
                         _data,
                         _session_data.registrar_id,
-                        _logd_request_id));
+                        _logd_request_id,
+                        _rifd_epp_operations_charging));
 
         const RenewDomainLocalizedResponse renew_domain_localized_response(
                 EppResponseSuccessLocalized(
@@ -58,21 +58,6 @@ RenewDomainLocalizedResponse renew_domain_localized(
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
                         _session_data.lang),
                 renew_domain_result.exdate);
-
-        // tmp billing impl
-        if (_rifd_epp_operations_charging &&
-            !Fred::InfoRegistrarById(_session_data.registrar_id).exec(ctx).info_registrar_data.system.get_value_or(false))
-        {
-            renew_domain_bill_item(
-                    _data.fqdn,
-                    renew_domain_result.curent_time,
-                    _session_data.registrar_id,
-                    renew_domain_result.domain_id,
-                    renew_domain_result.length_of_domain_registration_in_months,
-                    renew_domain_result.old_exdate,
-                    renew_domain_result.exdate,
-                    ctx);
-        }
 
         ctx.commit_transaction();
 
@@ -84,14 +69,6 @@ RenewDomainLocalizedResponse renew_domain_localized(
 
         return renew_domain_localized_response;
 
-    }
-    catch (const BillingFailure&)
-    {
-        Fred::OperationContextCreator exception_localization_ctx;
-        throw EppResponseFailureLocalized(
-                exception_localization_ctx,
-                EppResponseFailure(EppResultFailure(EppResultCode::billing_failure)),
-                _session_data.lang);
     }
     catch (const EppResponseFailure& e)
     {

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -30,11 +26,11 @@
 #include "src/fredlib/object/generate_authinfo_password.h"
 #include "src/fredlib/object/object_id_handle_pair.h"
 
-#include <vector>
-#include <string>
 #include <algorithm>
 #include <boost/foreach.hpp>
 #include <boost/test/unit_test.hpp>
+#include <string>
+#include <vector>
 
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(CreateDomain)
@@ -57,11 +53,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, HasDomainData)
             ctx,
             domain1_create_input_data,
             0,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_registrar_id_exception
-    );
+        create_invalid_registrar_id_exception);
 }
 
 bool create_invalid_fqdn_zone_exception(const Epp::EppResponseFailure& e) {
@@ -86,11 +81,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_fqdn_zone, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_fqdn_zone_exception
-    );
+        create_invalid_fqdn_zone_exception);
 }
 
 bool create_invalid_cz_exception(const Epp::EppResponseFailure& e) {
@@ -115,11 +109,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_cz, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_cz_exception
-    );
+        create_invalid_cz_exception);
 }
 
 bool create_invalid_dot_cz_exception(const Epp::EppResponseFailure& e) {
@@ -144,11 +137,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_dot_cz, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_dot_cz_exception
-    );
+        create_invalid_dot_cz_exception);
 }
 
 bool fqdn_syntax_2dot_cz_exception(const Epp::EppResponseFailure& e) {
@@ -173,11 +165,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_2dot_cz, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        fqdn_syntax_2dot_cz_exception
-    );
+        fqdn_syntax_2dot_cz_exception);
 }
 
 bool fqdn_syntax_front_hyphen_exception(const Epp::EppResponseFailure& e) {
@@ -202,11 +193,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_front_hyphen, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        fqdn_syntax_front_hyphen_exception
-    );
+        fqdn_syntax_front_hyphen_exception);
 }
 
 bool fqdn_syntax_front_dot_exception(const Epp::EppResponseFailure& e) {
@@ -231,11 +221,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_front_dot, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        fqdn_syntax_front_dot_exception
-    );
+        fqdn_syntax_front_dot_exception);
 }
 
 bool fqdn_syntax_double_dot_exception(const Epp::EppResponseFailure& e) {
@@ -260,11 +249,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_double_dot, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        fqdn_syntax_double_dot_exception
-    );
+        fqdn_syntax_double_dot_exception);
 }
 
 bool fqdn_syntax_no_dot_exception(const Epp::EppResponseFailure& e) {
@@ -289,11 +277,10 @@ BOOST_FIXTURE_TEST_CASE(fqdn_syntax_no_dot, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        fqdn_syntax_no_dot_exception
-    );
+        fqdn_syntax_no_dot_exception);
 }
 
 bool create_fail_already_existing_exception(const Epp::EppResponseFailure& e) {
@@ -309,11 +296,10 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, HasDomainData)
             ctx,
             domain2_create_input_data,
             info_registrar_data_.id,
-            42 /* TODO */
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_fail_already_existing_exception
-    );
+        create_fail_already_existing_exception);
 }
 
 bool create_fqdn_blacklisted_exception(const Epp::EppResponseFailure& e) {
@@ -341,11 +327,10 @@ BOOST_FIXTURE_TEST_CASE(create_fqdn_blacklisted, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_fqdn_blacklisted_exception
-    );
+        create_fqdn_blacklisted_exception);
 }
 
 bool create_fail_registrar_zone_access_exception(const Epp::EppResponseFailure& e) {
@@ -361,11 +346,10 @@ BOOST_FIXTURE_TEST_CASE(create_fail_registrar_zone_access, HasDomainDataAndRegis
             ctx,
             domain1_create_input_data,
             registrar_data_not_in_zone_.id,
-            42 /* TODO */
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_fail_registrar_zone_access_exception
-    );
+        create_fail_registrar_zone_access_exception);
 }
 
 bool create_invalid_nsset_exception(const Epp::EppResponseFailure& e) {
@@ -390,11 +374,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_nsset, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_nsset_exception
-    );
+        create_invalid_nsset_exception);
 }
 
 bool create_invalid_keyset_exception(const Epp::EppResponseFailure& e) {
@@ -419,11 +402,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_keyset, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_keyset_exception
-    );
+        create_invalid_keyset_exception);
 }
 
 bool create_empty_registrant_exception(const Epp::EppResponseFailure& e) {
@@ -448,11 +430,10 @@ BOOST_FIXTURE_TEST_CASE(create_empty_registrant, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_empty_registrant_exception
-    );
+        create_empty_registrant_exception);
 }
 
 bool create_invalid_registrant_exception(const Epp::EppResponseFailure& e) {
@@ -477,11 +458,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrant, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_registrant_exception
-    );
+        create_invalid_registrant_exception);
 }
 
 bool create_invalid_period_negative_exception(const Epp::EppResponseFailure& e) {
@@ -503,11 +483,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_period_negative, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_period_negative_exception
-    );
+        create_invalid_period_negative_exception);
 }
 
 bool create_invalid_period_toolong_exception(const Epp::EppResponseFailure& e) {
@@ -529,11 +508,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_period_toolong, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_period_toolong_exception
-    );
+        create_invalid_period_toolong_exception);
 }
 
 bool create_invalid_period_modulo_exception(const Epp::EppResponseFailure& e) {
@@ -555,11 +533,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_period_modulo, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_period_modulo_exception
-    );
+        create_invalid_period_modulo_exception);
 }
 
 bool create_empty_valexdate_enum_exception(const Epp::EppResponseFailure& e) {
@@ -578,11 +555,10 @@ BOOST_FIXTURE_TEST_CASE(create_empty_valexdate_enum, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42 /* TODO */
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_empty_valexdate_enum_exception
-    );
+        create_empty_valexdate_enum_exception);
 }
 
 bool create_special_valexdate_enum_exception(const Epp::EppResponseFailure& e) {
@@ -606,11 +582,10 @@ BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42 /* TODO */
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_special_valexdate_enum_exception
-    );
+        create_special_valexdate_enum_exception);
 }
 
 bool create_nonempty_valexdate_nonenum_exception(const Epp::EppResponseFailure& e) {
@@ -633,11 +608,10 @@ BOOST_FIXTURE_TEST_CASE(create_nonempty_valexdate_nonenum, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_nonempty_valexdate_nonenum_exception
-    );
+        create_nonempty_valexdate_nonenum_exception);
 }
 
 bool create_enum_valexdate_today_exception(const Epp::EppResponseFailure& e) {
@@ -667,11 +641,10 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_today, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_enum_valexdate_today_exception
-    );
+        create_enum_valexdate_today_exception);
 }
 
 bool create_enum_valexdate_yesterday_exception(const Epp::EppResponseFailure& e) {
@@ -701,11 +674,10 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_yesterday, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_enum_valexdate_yesterday_exception
-    );
+        create_enum_valexdate_yesterday_exception);
 }
 
 bool create_enum_valexdate_7m_exception(const Epp::EppResponseFailure& e) {
@@ -735,11 +707,10 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_7m, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_enum_valexdate_7m_exception
-    );
+        create_enum_valexdate_7m_exception);
 }
 
 bool create_nonexistent_admin_exception(const Epp::EppResponseFailure& e) {
@@ -761,11 +732,10 @@ BOOST_FIXTURE_TEST_CASE(create_nonexistent_admin, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_nonexistent_admin_exception
-    );
+        create_nonexistent_admin_exception);
 }
 
 bool create_duplicated_admin_exception(const Epp::EppResponseFailure& e) {
@@ -787,11 +757,10 @@ BOOST_FIXTURE_TEST_CASE(create_duplicated_admin, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_duplicated_admin_exception
-    );
+        create_duplicated_admin_exception);
 }
 
 BOOST_FIXTURE_TEST_CASE(create_empty_authinfopw, HasDomainData)
@@ -802,8 +771,8 @@ BOOST_FIXTURE_TEST_CASE(create_empty_authinfopw, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42 /* TODO */
-    );
+        42,
+        false); // billing off
 
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
@@ -845,8 +814,8 @@ BOOST_FIXTURE_TEST_CASE(create_authinfopw_not_set, HasDomainData)
         ctx,
         domain1_create_input_data,
         info_registrar_data_.id,
-        42 /* TODO */
-    );
+        42,
+        false); // billing off
 
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
@@ -892,8 +861,8 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_success, HasDo
         ctx,
         domain1_create_input_data,
         system_registrar_data_.id,
-        42
-    );
+        42,
+        true); // billing on
 }
 
 bool create_invalid_domain_by_system_registrar_fail_exception(const Epp::EppResponseFailure& e) {
@@ -919,11 +888,10 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_domain_by_system_registrar_fail, HasDomai
             ctx,
             domain1_create_input_data,
             system_registrar_data_.id,
-            42
-        ),
+            42,
+            true), // billing on
         Epp::EppResponseFailure,
-        create_invalid_domain_by_system_registrar_fail_exception
-    );
+        create_invalid_domain_by_system_registrar_fail_exception);
 }
 
 BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
@@ -933,9 +901,8 @@ BOOST_FIXTURE_TEST_CASE(create_ok, HasDomainData)
             ctx,
             domain1_create_input_data,
             info_registrar_data_.id,
-            42 /* TODO */
-        );
-    )
+            42,
+            false)); // billing off
 
     Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(domain1_create_input_data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
