@@ -1631,6 +1631,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/poll/poll_request.h \
 		src/epp/poll/poll_request_get_update_domain_details.cc \
 		src/epp/poll/poll_request_get_update_domain_details.h \
+		src/epp/poll/poll_request_get_update_keyset_details.cc \
+		src/epp/poll/poll_request_get_update_keyset_details.h \
+		src/epp/poll/poll_request_get_update_nsset_details.cc \
+		src/epp/poll/poll_request_get_update_nsset_details.h \
 		src/epp/domain/delete_domain_localized.cc \
 		src/epp/domain/delete_domain_localized.h \
 		src/epp/domain/delete_domain.cc \

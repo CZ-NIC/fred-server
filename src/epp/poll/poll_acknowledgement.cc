@@ -33,7 +33,8 @@ PollAcknowledgementOutputData poll_acknowledgement(
     unsigned long long _registrar_id)
 {
     const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated) {
+    if (!registrar_is_authenticated)
+    {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 

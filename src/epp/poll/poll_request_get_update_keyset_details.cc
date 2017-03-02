@@ -16,7 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/epp/poll/poll_request_get_update_domain_details.h"
+#include "src/epp/poll/poll_request_get_update_keyset_details.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_success.h"
 #include "src/epp/impl/epp_result_code.h"
@@ -27,7 +27,7 @@
 namespace Epp {
 namespace Poll {
 
-PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
+PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
     Fred::OperationContext& _ctx,
     unsigned long long _message_id,
     unsigned long long _registrar_id)
@@ -41,11 +41,11 @@ PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
     Database::ParamQuery sql_query;
     sql_query("SELECT h1.id, h1.next "
               "FROM poll_eppaction pea "
-              "JOIN domain_history dh ON dh.historyid=pea.objid "
+              "JOIN keyset_history kh ON kh.historyid=pea.objid "
               "JOIN history h1 ON h1.next=pea.objid "
               "JOIN message m ON m.id=pea.msgid "
               "JOIN messagetype mt ON mt.id=m.msgtype "
-              "WHERE pea.msgid=").param_bigint(_message_id)(" AND mt.name='update_domain'");
+              "WHERE pea.msgid=").param_bigint(_message_id)(" AND mt.name='update_keyset'");
 
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
@@ -60,12 +60,12 @@ PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
     const unsigned long long old_history_id = static_cast<unsigned long long>(sql_query_result[0][0]);
     const unsigned long long new_history_id = static_cast<unsigned long long>(sql_query_result[0][1]);
 
-    PollRequestUpdateDomainOutputData ret;
+    PollRequestUpdateKeysetOutputData ret;
     try {
-        ret.old_data = Fred::InfoDomainHistoryByHistoryid(old_history_id).exec(_ctx);
-        ret.new_data = Fred::InfoDomainHistoryByHistoryid(new_history_id).exec(_ctx);
+        ret.old_data = Fred::InfoKeysetHistoryByHistoryid(old_history_id).exec(_ctx);
+        ret.new_data = Fred::InfoKeysetHistoryByHistoryid(new_history_id).exec(_ctx);
     }
-    catch(const Fred::InfoDomainHistoryByHistoryid::Exception&) {
+    catch(const Fred::InfoKeysetHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 

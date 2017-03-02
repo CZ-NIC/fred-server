@@ -472,10 +472,11 @@ PollRequestOutputData poll_request(
 
     Database::ParamQuery sql_query;
     sql_query("SELECT m.id, mt.name, m.crdate, t.count "
-              "FROM (SELECT min(id) AS id, count(*) FROM message WHERE clid=")
+              "FROM (SELECT min(id) AS id, count(*) AS cnt FROM message WHERE clid=")
         .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen) AS t "
               "JOIN message m ON m.id=t.id "
-              "JOIN messagetype mt ON mt.id=m.msgtype FOR SHARE OF m");
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "FOR SHARE OF m");
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     PollRequestOutputData poll_request_output_data;
     if (sql_query_result.size() == 0)
