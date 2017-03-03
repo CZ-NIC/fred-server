@@ -44,6 +44,7 @@ namespace Epp
         unsigned long long sponsoring_registrar_id,
         unsigned long long renewed_domain_id,
         int length_of_domain_registration_in_years,
+        const boost::gregorian::date& old_domain_expiration_date_local,
         const boost::gregorian::date& domain_expiration_date_local,
         Fred::OperationContext& ctx);
 }

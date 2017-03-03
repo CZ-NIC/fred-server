@@ -35,6 +35,7 @@ struct DomainRenewResult {
     const unsigned long long domain_id;
     const unsigned long long domain_history_id;
     const boost::posix_time::ptime curent_time;
+    const boost::gregorian::date old_exdate;
     const boost::gregorian::date exdate;
     const unsigned length_of_domain_registration_in_years;
 
@@ -42,12 +43,14 @@ struct DomainRenewResult {
         const unsigned long long _domain_id,
         const unsigned long long _domain_history_id,
         const boost::posix_time::ptime& _curent_time,
+        const boost::gregorian::date& _old_exdate,
         const boost::gregorian::date& _exdate,
         const unsigned _length_of_domain_registration_in_years
     ) :
         domain_id(_domain_id),
         domain_history_id(_domain_history_id),
         curent_time(_curent_time),
+        old_exdate(_old_exdate),
         exdate(_exdate),
         length_of_domain_registration_in_years(_length_of_domain_registration_in_years)
     { }

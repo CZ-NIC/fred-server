@@ -280,6 +280,7 @@ DomainCreateResult domain_create_impl(
             result.create_object_result.object_id,
             result.create_object_result.history_id,
             result.creation_time,
+            current_local_date,
             domain_expiration_date,
             domain_registration_in_months / 12);
 
