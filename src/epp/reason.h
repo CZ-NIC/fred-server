@@ -91,7 +91,8 @@ struct Reason
         no_dnskey_dsrecord          = 62,
         duplicated_dns_name         = 63,
         admin_not_assigned          = 64,
-        tmpcontacts_obsolete        = 65
+        tmpcontacts_obsolete        = 65,
+        period_too_short            = 66
     };
     static bool is_valid(Enum value)
     {
@@ -162,6 +163,7 @@ struct Reason
             case duplicated_dns_name:
             case admin_not_assigned:
             case tmpcontacts_obsolete:
+            case period_too_short:
                 return true;
         }
         return false;
