@@ -142,6 +142,12 @@
                 //read csv file
                 csv_file_stream.read(&csv_file_content[0], csv_file_content.size());
 
+                //remove UTF-8 BOM
+                if (boost::starts_with(csv_file_content, "\xEF\xBB\xBF"))
+                {
+                    csv_file_content.erase(0,3);
+                }
+
                 //parse csv
                 std::vector<std::vector<std::string> > csv_data = Util::CsvParser(csv_file_content).parse();
 
