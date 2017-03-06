@@ -11,7 +11,7 @@ struct get_nameserver_by_fqdn_fixture
     const std::string test_nameserver_fqdn;
 
     get_nameserver_by_fqdn_fixture()
-    : test_nameserver_fqdn("test_nameserver")
+    : test_nameserver_fqdn("test-nameserver.cz")
     {
         Fred::OperationContextCreator ctx;
         const Fred::InfoRegistrarData registrar = Test::registrar::make(ctx);
@@ -42,6 +42,19 @@ BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn, get_nameserver_by_fqdn_fixture)
      * ip_addresses are not tested as they are not added to nameserver
      */
 }
+
+BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_root_dot_query, get_nameserver_by_fqdn_fixture)
+{
+    Fred::OperationContextCreator ctx;
+    BOOST_REQUIRE(Whois::nameserver_exists(test_nameserver_fqdn, ctx));
+
+    Registry::WhoisImpl::NameServer ns = impl.get_nameserver_by_fqdn(test_nameserver_fqdn + ".");
+    BOOST_CHECK(ns.fqdn == test_nameserver_fqdn);
+    /*
+     * ip_addresses are not tested as they are not added to nameserver
+     */
+}
+
 
 BOOST_FIXTURE_TEST_CASE(get_nameserver_by_fqdn_no_ns, whois_impl_instance_fixture)
 {

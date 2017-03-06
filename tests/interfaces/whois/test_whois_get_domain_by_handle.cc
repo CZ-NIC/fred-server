@@ -89,6 +89,76 @@ BOOST_FIXTURE_TEST_CASE(regular_case, plain_domain_fixture)
     BOOST_CHECK(dom.expire_time_actual.isnull());
 }
 
+
+struct cz_domain_fixture
+: whois_impl_instance_fixture
+{
+    boost::posix_time::ptime now_utc;
+    Fred::InfoDomainData domain;
+    const std::string test_fqdn;
+
+    cz_domain_fixture()
+    : test_fqdn("prvnipad-vodopad.cz")
+    {
+        Fred::OperationContextCreator ctx;
+        domain = Test::exec(
+                Test::CreateX_factory<Fred::CreateDomain>()
+                    .make(Test::registrar::make(ctx).handle,
+                          Test::contact::make(ctx).handle,
+                          test_fqdn)
+                    .set_nsset(Test::nsset::make(ctx).handle)
+                    .set_keyset(Test::keyset::make(ctx).handle)
+                    .set_admin_contacts(
+                        Util::vector_of<std::string>(
+                            Test::contact::make(ctx).handle)),
+                ctx);
+        now_utc = boost::posix_time::time_from_string(
+                static_cast<std::string>(ctx.get_conn()
+                    .exec("SELECT now()::timestamp")[0][0]));
+        ctx.commit_transaction();
+    }
+};
+
+BOOST_FIXTURE_TEST_CASE(root_dot_query_case, cz_domain_fixture)
+{
+    Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(domain.fqdn + ".");
+
+    BOOST_CHECK(dom.changed.isnull());
+    BOOST_CHECK(dom.last_transfer.isnull());
+    BOOST_CHECK(dom.validated_to.isnull());
+    BOOST_CHECK(dom.fqdn                     == domain.fqdn);
+    BOOST_CHECK(dom.registered               == now_utc);
+    BOOST_CHECK(dom.registrant               == domain.registrant.handle);
+    BOOST_CHECK(dom.sponsoring_registrar     == domain.sponsoring_registrar_handle);
+    BOOST_CHECK(dom.expire                   == domain.expiration_date);
+    BOOST_CHECK(dom.fqdn                     == domain.fqdn);
+    BOOST_CHECK(dom.keyset                   == domain.keyset.get_value().handle);
+    BOOST_CHECK(dom.nsset                    == domain.nsset.get_value().handle);
+
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& it, domain.admin_contacts)
+    {
+        BOOST_CHECK(std::find(dom.admin_contacts.begin(), dom.admin_contacts.end(), it.handle) !=
+                        dom.admin_contacts.end());
+    }
+    BOOST_CHECK(domain.admin_contacts.size() == dom.admin_contacts.size());
+
+    Fred::OperationContextCreator ctx;
+    const std::vector<Fred::ObjectStateData> v_osd = Fred::GetObjectStates(domain.id).exec(ctx);
+    BOOST_FOREACH(const Fred::ObjectStateData& it, v_osd)
+    {
+        BOOST_CHECK(std::find(dom.statuses.begin(), dom.statuses.end(), it.state_name) !=
+                        dom.statuses.end());
+    }
+    BOOST_CHECK(v_osd.size() == dom.statuses.size());
+
+    BOOST_CHECK(dom.validated_to_time_estimate.isnull());
+    BOOST_CHECK(dom.validated_to_time_actual.isnull());
+
+    BOOST_CHECK(dom.expire_time_estimate == ::Whois::domain_expiration_datetime_estimate(ctx, domain.expiration_date));
+    BOOST_CHECK(dom.expire_time_actual.isnull());
+}
+
+
 struct update_domain_fixture
 : whois_impl_instance_fixture
 {

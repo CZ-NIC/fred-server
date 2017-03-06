@@ -503,13 +503,15 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
+    const std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(fqdn);
+
     Fred::OperationContextCreator ctx;
     try
     {
-        if (::Whois::nameserver_exists(fqdn,ctx))
+        if (::Whois::nameserver_exists(no_root_dot_fqdn, ctx))
         {
             NameServer temp;
-            temp.fqdn = fqdn;
+            temp.fqdn = no_root_dot_fqdn;
             /*
              * Because of grouping nameservers in NSSet we don't include
              * IP address in output (given nameserver can be in different
@@ -521,7 +523,7 @@ NameServer Server_impl::get_nameserver_by_fqdn(const std::string& fqdn)
         }
         else
         {
-            if (Fred::CheckDomain(fqdn).is_invalid_syntax(ctx))
+            if (Fred::CheckDomain(no_root_dot_fqdn).is_invalid_syntax(ctx))
             {
                 throw InvalidHandle();
             }
@@ -734,13 +736,16 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
+    const std::string no_root_dot_fqdn = Fred::Zone::rem_trailing_dot(handle);
+
     Fred::OperationContextCreator ctx;
-    const Fred::CheckDomain check_domain(handle);
+    const Fred::CheckDomain check_domain(no_root_dot_fqdn);
     try
     {
         try
         {
-            if (handle.empty() || (handle.length() > 255)) {
+            if (handle.empty() || (handle.length() > 255))
+            {
                 throw InvalidLabel();
             }
             if (check_domain.is_bad_zone(ctx))
@@ -749,10 +754,10 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
             }
             if (::Whois::is_domain_delete_pending(handle, ctx, "Europe/Prague"))
             {
-                return Domain(generate_obfuscate_domain_delete_candidate(handle));
+                return Domain(generate_obfuscate_domain_delete_candidate(no_root_dot_fqdn));
             }
             return make_domain_from_info_data(
-                    Fred::InfoDomainByHandle(handle)
+                    Fred::InfoDomainByHandle(no_root_dot_fqdn)
                         .exec( ctx, get_output_timezone() )
                         .info_domain_data,
                     ctx);
@@ -779,7 +784,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                 {
                     throw TooManyLabels();
                 }
-                if (Fred::CheckDomain(handle).is_invalid_syntax(ctx))
+                if (Fred::CheckDomain(no_root_dot_fqdn).is_invalid_syntax(ctx))
                 {
                     throw InvalidLabel();
                 }
