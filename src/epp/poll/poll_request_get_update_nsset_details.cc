@@ -23,9 +23,62 @@
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_success.h"
 #include "util/db/param_query_composition.h"
+#include "src/fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/epp/nsset/impl/nsset.h"
+
+#include <boost/foreach.hpp>
 
 namespace Epp {
 namespace Poll {
+
+namespace {
+
+// could be merged with info_nsset code?
+InfoNssetOutputData get_info_nsset_output_data(
+    Fred::OperationContext& _ctx,
+    unsigned long long _session_registrar_id,
+    unsigned long long _history_id)
+{
+    const Fred::InfoNssetData info_nsset_data = Fred::InfoNssetHistoryByHistoryid(_history_id).exec(_ctx).info_nsset_data;
+
+    std::vector<std::string> tech_contacts;
+    tech_contacts.reserve(info_nsset_data.tech_contacts.size());
+    BOOST_FOREACH(const Fred::ObjectIdHandlePair& tech_contact, info_nsset_data.tech_contacts)
+    {
+        tech_contacts.push_back(tech_contact.handle);
+    }
+
+    const std::vector<Fred::ObjectStateData> object_states_data = Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
+    std::set<std::string> object_states;
+    BOOST_FOREACH(const Fred::ObjectStateData& state, object_states_data)
+    {
+        object_states.insert(state.state_name);
+    }
+
+    const std::string callers_registrar_handle = Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+    const bool callers_is_sponsoring_registrar = info_nsset_data.sponsoring_registrar_handle == callers_registrar_handle;
+    const bool authinfopw_has_to_be_hidden = !callers_is_sponsoring_registrar;
+
+    return InfoNssetOutputData(
+        info_nsset_data.handle,
+        info_nsset_data.roid,
+        info_nsset_data.sponsoring_registrar_handle,
+        info_nsset_data.create_registrar_handle,
+        info_nsset_data.update_registrar_handle,
+        object_states,
+        info_nsset_data.creation_time,
+        info_nsset_data.update_time,
+        info_nsset_data.transfer_time,
+        authinfopw_has_to_be_hidden ? boost::optional<std::string>() : info_nsset_data.authinfopw,
+        Epp::Nsset::make_epp_dnshosts_output(info_nsset_data.dns_hosts),
+        tech_contacts,
+        info_nsset_data.tech_check_level.get_value_or(0)
+    );
+}
+
+}
 
 PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     Fred::OperationContext& _ctx,
@@ -60,16 +113,16 @@ PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     const unsigned long long old_history_id = static_cast<unsigned long long>(sql_query_result[0][0]);
     const unsigned long long new_history_id = static_cast<unsigned long long>(sql_query_result[0][1]);
 
-    PollRequestUpdateNssetOutputData ret;
+
     try {
-        ret.old_data = Fred::InfoNssetHistoryByHistoryid(old_history_id).exec(_ctx);
-        ret.new_data = Fred::InfoNssetHistoryByHistoryid(new_history_id).exec(_ctx);
+        PollRequestUpdateNssetOutputData ret(
+            get_info_nsset_output_data(_ctx, _registrar_id, old_history_id),
+            get_info_nsset_output_data(_ctx, _registrar_id, new_history_id));
+        return ret;
     }
     catch(const Fred::InfoNssetHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
-
-    return ret;
 }
 
 } // namespace Epp::Poll

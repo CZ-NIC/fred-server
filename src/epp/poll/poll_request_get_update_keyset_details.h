@@ -21,14 +21,15 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/keyset/info_keyset.h"
+#include "src/epp/keyset/impl/info_keyset_output_data.h"
 
 namespace Epp {
 namespace Poll {
 
 struct PollRequestUpdateKeysetOutputData
 {
-    Fred::InfoKeysetOutput old_data;
-    Fred::InfoKeysetOutput new_data;
+    Epp::Keyset::InfoKeysetOutputData old_data;
+    Epp::Keyset::InfoKeysetOutputData new_data;
 };
 
 PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
