@@ -175,9 +175,9 @@ RenewDomainResult renew_domain(
                 (" + ").param_bigint(zone_data.ex_period_max)(" * ('1 month'::interval))::date as max_exdate"));
 
     const boost::gregorian::date new_exdate =
-            boost::gregorian::from_simple_string(exdate_result[0]["new_exdate"]);
+            boost::gregorian::from_simple_string(static_cast<std::string>(exdate_result[0]["new_exdate"]));
     const boost::gregorian::date max_exdate =
-            boost::gregorian::from_simple_string(exdate_result[0]["max_exdate"]);
+            boost::gregorian::from_simple_string(static_cast<std::string>(exdate_result[0]["max_exdate"]));
 
     // curExpDate + domain_registration_in_months <= current_local_date + zone.ex_period_max (in months)
     if (new_exdate > max_exdate)
