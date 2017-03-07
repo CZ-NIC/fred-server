@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "src/epp/domain/update_domain.h"
 
 #include "src/epp/domain/domain_enum_validation.h"
@@ -386,13 +404,10 @@ unsigned long long update_domain(
                     ? Optional<Nullable<std::string> >(Nullable<std::string>())
                     : _update_domain_data.keyset_chg; // TODO if nsset set, but same as current one?
 
-    const std::string registrar_handle =
-        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
-
     Fred::UpdateDomain update_domain =
             Fred::UpdateDomain(
                     _update_domain_data.domain_fqdn,
-                    registrar_handle,
+                    session_registrar.handle,
                     _update_domain_data.registrant_chg,
                     _update_domain_data.authinfopw_chg,
                     _update_domain_data.nsset_chg,
