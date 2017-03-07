@@ -16,6 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "src/epp/nsset/impl/get_nsset_info.h"
 #include "src/epp/nsset/info_nsset.h"
 
 #include "src/epp/epp_response_failure.h"
@@ -29,7 +30,6 @@
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/info_nsset_data.h"
 #include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
 #include <boost/foreach.hpp>

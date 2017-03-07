@@ -16,28 +16,26 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_H_EE5157F1F74A49D28A6B8F4CC22BB363
-#define POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_H_EE5157F1F74A49D28A6B8F4CC22BB363
+#ifndef GET_NSSET_INFO_H_78C89C19DFCD4834937B17E5FDFE3CA7
+#define GET_NSSET_INFO_H_78C89C19DFCD4834937B17E5FDFE3CA7
 
-#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/epp/nsset/info_nsset.h"
 
-#include "src/epp/domain/info_domain.h"
+#include <vector>
 
 namespace Epp {
-namespace Poll {
+namespace Nsset {
 
-struct PollRequestUpdateDomainOutputData
-{
-    Epp::Domain::InfoDomainOutputData old_data;
-    Epp::Domain::InfoDomainOutputData new_data;
-};
+InfoNssetOutputData get_nsset_info(
+    const Fred::InfoNssetData& data,
+    const std::vector<Fred::ObjectStateData>& object_states_data,
+    bool authinfopw_has_to_be_hidden);
 
-PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
-    Fred::OperationContext& _ctx,
-    unsigned long long _message_id,
-    unsigned long long _registrar_id);
-
-} // namespace Epp::Poll
+} // namespace Epp::Nsset
 } // namespace Epp
+
 
 #endif

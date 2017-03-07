@@ -16,28 +16,25 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_H_EE5157F1F74A49D28A6B8F4CC22BB363
-#define POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_H_EE5157F1F74A49D28A6B8F4CC22BB363
+#ifndef GET_KEYSET_INFO_H_77F8A11467AE4C6D9F92CA89267E0172
+#define GET_KEYSET_INFO_H_77F8A11467AE4C6D9F92CA89267E0172
 
-#include "src/fredlib/opcontext.h"
+#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/keyset/info_keyset_data.h"
+#include "src/fredlib/object_state/get_object_states.h"
+#include "src/epp/keyset/info_keyset.h"
 
-#include "src/epp/domain/info_domain.h"
+#include <vector>
 
 namespace Epp {
-namespace Poll {
+namespace Keyset {
 
-struct PollRequestUpdateDomainOutputData
-{
-    Epp::Domain::InfoDomainOutputData old_data;
-    Epp::Domain::InfoDomainOutputData new_data;
-};
+InfoKeysetOutputData get_keyset_info(
+    const Fred::InfoKeysetData& data,
+    const std::vector<Fred::ObjectStateData>& object_states_data,
+    bool authinfopw_has_to_be_hidden);
 
-PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
-    Fred::OperationContext& _ctx,
-    unsigned long long _message_id,
-    unsigned long long _registrar_id);
-
-} // namespace Epp::Poll
+} // namespace Epp::Keyset
 } // namespace Epp
 
 #endif

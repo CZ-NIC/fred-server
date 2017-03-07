@@ -34,8 +34,6 @@
 #include "util/db/nullable.h"
 #include "util/enum_conversion.h"
 
-#include <algorithm>
-#include <iterator>
 #include <string>
 #include <vector>
 
@@ -48,7 +46,6 @@ InfoDomainOutputData info_domain(
         const InfoDomainConfigData& _info_domain_config_data,
         const SessionData& _session_data)
 {
-
     if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
@@ -59,7 +56,6 @@ InfoDomainOutputData info_domain(
 
     try
     {
-
         const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(
                 Fred::Zone::rem_trailing_dot(_fqdn)).exec(_ctx, "UTC").info_domain_data;
 
@@ -135,8 +131,6 @@ InfoDomainOutputData info_domain(
         throw;
 
     }
-
-    return info_domain_output_data;
 }
 
 

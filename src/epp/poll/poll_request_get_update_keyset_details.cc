@@ -17,6 +17,8 @@
  */
 
 #include "src/epp/poll/poll_request_get_update_keyset_details.h"
+#include "src/epp/poll/message_type.h"
+#include "src/epp/keyset/impl/get_keyset_info.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_response_success.h"
 #include "src/epp/impl/epp_result_code.h"
@@ -32,60 +34,24 @@ namespace Poll {
 
 namespace {
 
-// this could be shared with info_keyset
 Epp::Keyset::InfoKeysetOutputData get_info_keyset_output_data(
     Fred::OperationContext& _ctx,
     unsigned long long _registrar_id,
     unsigned long long _history_id)
 {
-    Epp::Keyset::InfoKeysetOutputData ret;
-
     const Fred::InfoKeysetData data = Fred::InfoKeysetHistoryByHistoryid(_history_id).exec(_ctx).info_keyset_data;
-    ret.handle = data.handle;
-    ret.roid = data.roid;
-    ret.sponsoring_registrar_handle = data.sponsoring_registrar_handle;
-    ret.creating_registrar_handle = data.create_registrar_handle;
-    ret.last_update_registrar_handle = data.update_registrar_handle;
-    {
-        typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
-        ObjectStatesData keyset_states_data = Fred::GetObjectStates(data.id).exec(_ctx);
-        for (ObjectStatesData::const_iterator data_ptr = keyset_states_data.begin();
-             data_ptr != keyset_states_data.end(); ++data_ptr)
-        {
-            ret.states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(data_ptr->state_name));
-        }
-    }
-    ret.crdate = data.creation_time;
-    ret.last_update = data.update_time;
-    ret.last_transfer = data.transfer_time;
-    if (Fred::InfoRegistrarByHandle(data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id == _registrar_id)
-    {
-        ret.authinfopw = data.authinfopw;
-    }
-    {
-        typedef std::vector<Fred::DnsKey> FredDnsKeys;
-        for (FredDnsKeys::const_iterator data_ptr = data.dns_keys.begin();
-             data_ptr != data.dns_keys.end(); ++data_ptr)
-        {
-            ret.dns_keys.insert(Keyset::DnsKey(data_ptr->get_flags(),
-                                               data_ptr->get_protocol(),
-                                               data_ptr->get_alg(),
-                                               data_ptr->get_key()));
-        }
-    }
-    {
-        typedef std::vector<Fred::ObjectIdHandlePair> FredObjectIdHandle;
-        for (FredObjectIdHandle::const_iterator data_ptr = data.tech_contacts.begin();
-             data_ptr != data.tech_contacts.end(); ++data_ptr)
-        {
-            ret.tech_contacts.insert(data_ptr->handle);
-        }
-    }
 
-    return ret;
+    const std::vector<Fred::ObjectStateData> keyset_states_data = Fred::GetObjectStates(data.id).exec(_ctx);
+
+    const std::string callers_registrar_handle =
+        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
+    const bool callers_is_sponsoring_registrar = data.sponsoring_registrar_handle == callers_registrar_handle;
+    const bool authinfopw_has_to_be_hidden = !callers_is_sponsoring_registrar;
+
+    return Epp::Keyset::get_keyset_info(data, keyset_states_data, authinfopw_has_to_be_hidden);
 }
 
-}
+} // namespace Epp::Poll::{anonymous}
 
 PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
     Fred::OperationContext& _ctx,
@@ -105,14 +71,15 @@ PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
               "JOIN history h1 ON h1.next=pea.objid "
               "JOIN message m ON m.id=pea.msgid "
               "JOIN messagetype mt ON mt.id=m.msgtype "
-              "WHERE pea.msgid=").param_bigint(_message_id)(" AND mt.name='update_keyset'");
+              "WHERE pea.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              .param_text(Conversion::Enums::to_db_handle(Epp::Poll::MessageType::update_keyset));
 
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
-    else if (sql_query_result.size() > 1)
+    if (sql_query_result.size() > 1)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
@@ -125,7 +92,7 @@ PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
         ret.old_data = get_info_keyset_output_data(_ctx, _registrar_id, old_history_id);
         ret.new_data = get_info_keyset_output_data(_ctx, _registrar_id, new_history_id);
     }
-    catch(const Fred::InfoKeysetHistoryByHistoryid::Exception&) {
+    catch (const Fred::InfoKeysetHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
