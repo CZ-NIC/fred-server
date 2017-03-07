@@ -6,7 +6,6 @@
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact_localized.h"
-#include "src/epp/error.h"
 #include "src/epp/param.h"
 #include "src/epp/keyset/check_keyset_localized.h"
 #include "src/epp/keyset/info_keyset_localized.h"

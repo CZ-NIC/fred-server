@@ -19,8 +19,8 @@
 #ifndef EPP_EXTENDED_ERROR_H_99879BF0F9DD4F748F8180F415BB299E
 #define EPP_EXTENDED_ERROR_H_99879BF0F9DD4F748F8180F415BB299E
 
-#include "src/epp/reason.h"
 #include "src/epp/param.h"
+#include "src/epp/reason.h"
 
 namespace Epp {
 
@@ -31,39 +31,58 @@ class EppExtendedError
 {
 
 public:
-
-    static EppExtendedError of_scalar_parameter(Param::Enum _param, Reason::Enum _reason)
+    static EppExtendedError of_scalar_parameter(
+            Param::Enum _param,
+            Reason::Enum _reason)
     {
         return EppExtendedError(_param, position_of_scalar_parameter, _reason);
     }
 
-    static EppExtendedError of_vector_parameter(Param::Enum _param, unsigned short _index, Reason::Enum _reason)
+
+    static EppExtendedError of_vector_parameter(
+            Param::Enum _param,
+            unsigned short _index,
+            Reason::Enum _reason)
     {
         return EppExtendedError(_param, position_of_first_element_of_vector_parameter + _index, _reason);
     }
 
-    Param::Enum param() const {
+
+    Param::Enum param() const
+    {
         return param_;
     }
 
-    unsigned short position() const {
+
+    unsigned short position() const
+    {
         return position_;
     }
 
-    Reason::Enum reason() const {
+
+    Reason::Enum reason() const
+    {
         return reason_;
     }
 
+
     // only intended for std::set usage - ordering definition is irrelevant
-    friend bool operator < (const Epp::EppExtendedError& lhs, const Epp::EppExtendedError& rhs);
+    friend bool operator <(
+            const Epp::EppExtendedError& lhs,
+            const Epp::EppExtendedError& rhs);
+
 
 private:
+    EppExtendedError(
+            Param::Enum _param,
+            unsigned short _position,
+            Reason::Enum _reason)
+        : param_(_param),
+          position_(_position),
+          reason_(_reason)
+    {
+    }
 
-    EppExtendedError(Param::Enum _param, unsigned short _position, Reason::Enum _reason)
-    :   param_(_param),
-        position_(_position),
-        reason_(_reason)
-    { }
 
     Param::Enum param_; ///< represents STD 69 response result extValue's value
     unsigned short position_;

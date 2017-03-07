@@ -19,7 +19,6 @@
 #ifndef NSSET_H_634498071C8843DB8A93086D7746DDE0
 #define NSSET_H_634498071C8843DB8A93086D7746DDE0
 
-#include "src/epp/error.h"
 #include "src/epp/epp_extended_error.h"
 #include "src/epp/param.h"
 #include "src/epp/reason.h"

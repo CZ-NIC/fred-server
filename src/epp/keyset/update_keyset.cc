@@ -1,6 +1,5 @@
 #include "src/epp/keyset/update_keyset.h"
 
-#include "src/epp/error.h"
 #include "src/epp/epp_extended_error.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
@@ -697,8 +696,6 @@ UpdateKeysetResult update_keyset(
 
         if (!policy_errors.empty())
         {
-            std::set<Error> errors;
-
             if (Epp::has_extended_error_with_param_reason(
                         policy_errors,
                         Param::keyset_dsrecord,

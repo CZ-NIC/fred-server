@@ -245,7 +245,6 @@ noinst_HEADERS = \
 		src/corba/epp/epp_legacy_compatibility.h \
 		src/epp/registrar_session_data.h \
 		src/epp/request_params.h \
-		src/epp/error.h \
 		src/epp/epp_response_failure.h \
 		src/epp/epp_response_success.h \
 		src/epp/epp_result_failure.h \
@@ -1560,7 +1559,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/param.h \
 		src/epp/reason.h \
 		src/epp/impl/response.h \
-		src/epp/error.h \
 		src/epp/epp_response_failure.h \
 		src/epp/epp_response_failure_localized.h \
 		src/epp/epp_response_failure_localized.cc \

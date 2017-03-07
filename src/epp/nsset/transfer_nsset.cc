@@ -18,7 +18,6 @@
 
 #include "src/epp/nsset/transfer_nsset.h"
 
-#include "src/epp/error.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
 #include "src/epp/epp_result_failure.h"

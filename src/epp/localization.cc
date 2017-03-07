@@ -1,6 +1,5 @@
 #include "src/epp/localization.h"
 
-#include "src/epp/error.h"
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
 #include "src/epp/epp_result_code.h"

@@ -19,9 +19,9 @@
 #ifndef LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
 #define LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
 
-#include "src/epp/error.h"
 #include "src/epp/epp_result_code.h"
 #include "src/epp/object_states_localized.h"
+#include "src/epp/reason.h"
 #include "src/epp/session_lang.h"
 
 #include "src/fredlib/opcontext.h"
