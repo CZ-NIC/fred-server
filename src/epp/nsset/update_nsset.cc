@@ -103,15 +103,14 @@ unsigned long long update_nsset(
                     _ctx,
                     _update_nsset_data.handle);
 
-    const Fred::InfoRegistrarData logged_in_registrar =
+    const Fred::InfoRegistrarData session_registrar =
             Fred::InfoRegistrarById(_registrar_id)
-                    .set_lock(/* TODO lock registrar for share */)
                     .exec(_ctx)
                     .info_registrar_data;
 
     const bool is_sponsoring_registrar = (nsset_data_before_update.sponsoring_registrar_handle ==
-                                          logged_in_registrar.handle);
-    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
+                                          session_registrar.handle);
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
     const bool is_registrar_authorized = (is_sponsoring_registrar || is_system_registrar);
 
     if (!is_registrar_authorized)
@@ -361,7 +360,7 @@ unsigned long long update_nsset(
         }
 
         Fred::UpdateNsset update(_update_nsset_data.handle,
-                logged_in_registrar.handle,
+                session_registrar.handle,
                 _update_nsset_data.authinfopw,
                 make_fred_dns_hosts(_update_nsset_data.dns_hosts_add),
                 dns_hosts_rem,

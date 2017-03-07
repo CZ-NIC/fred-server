@@ -73,7 +73,7 @@ unsigned long long transfer_nsset(
             Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
 
     const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
+            Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (nsset_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);

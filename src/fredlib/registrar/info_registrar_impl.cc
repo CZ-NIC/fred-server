@@ -103,6 +103,10 @@ namespace Fred
         {
             info_registrar_query(" FOR UPDATE of r ");
         }
+        else
+        {
+            info_registrar_query(" FOR SHARE of r ");
+        }
 
         info_registrar_query(") as tmp");
 

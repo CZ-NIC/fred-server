@@ -49,7 +49,6 @@ unsigned long long transfer_keyset(
 
         const Fred::InfoRegistrarData session_registrar =
                 Fred::InfoRegistrarById(_registrar_id)
-                        .set_lock()
                         .exec(_ctx)
                         .info_registrar_data;
 

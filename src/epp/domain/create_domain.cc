@@ -53,7 +53,7 @@ CreateDomainResult create_domain(
     }
 
     const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
+            Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
 

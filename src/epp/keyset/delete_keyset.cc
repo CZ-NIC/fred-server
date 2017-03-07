@@ -45,11 +45,11 @@ unsigned long long delete_keyset(
     {
         const Fred::InfoKeysetData keyset_data = Fred::InfoKeysetByHandle(_keyset_handle).set_lock()
                                                  .exec(_ctx).info_keyset_data;
-        const Fred::InfoRegistrarData callers_registrar =
+        const Fred::InfoRegistrarData session_registrar =
                 Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
         const bool is_sponsoring_registrar =
-                (keyset_data.sponsoring_registrar_handle == callers_registrar.handle);
-        const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+                (keyset_data.sponsoring_registrar_handle == session_registrar.handle);
+        const bool is_system_registrar = session_registrar.system.get_value_or(false);
         const bool is_registrar_authorized = (is_system_registrar || is_sponsoring_registrar);
         if (!is_registrar_authorized)
         {

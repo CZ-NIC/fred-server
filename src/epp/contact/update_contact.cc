@@ -414,15 +414,14 @@ unsigned long long update_contact(
 
     const Fred::InfoContactData contact_data_before_update = info_contact_by_handle(_contact_handle, _ctx);
 
-    const Fred::InfoRegistrarData logged_in_registrar =
+    const Fred::InfoRegistrarData session_registrar =
             Fred::InfoRegistrarById(_registrar_id)
-                    .set_lock()
                     .exec(_ctx)
                     .info_registrar_data;
 
     const bool is_sponsoring_registrar = (contact_data_before_update.sponsoring_registrar_handle ==
-                                          logged_in_registrar.handle);
-    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
+                                          session_registrar.handle);
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
     const bool operation_is_permitted = (is_sponsoring_registrar || is_system_registrar);
 
     if (!operation_is_permitted) {
@@ -462,7 +461,7 @@ unsigned long long update_contact(
 
     // update itself
     {
-        Fred::UpdateContactByHandle update(_contact_handle, logged_in_registrar.handle);
+        Fred::UpdateContactByHandle update(_contact_handle, session_registrar.handle);
 
         set_ContactUpdate_member(change.name,         update, &Fred::UpdateContactByHandle::set_name);
         set_ContactUpdate_member(change.organization, update, &Fred::UpdateContactByHandle::set_organization);

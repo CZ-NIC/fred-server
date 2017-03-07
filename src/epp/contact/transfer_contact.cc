@@ -47,7 +47,7 @@ unsigned long long transfer_contact(
         Fred::InfoContactByHandle(_contact_handle).set_lock().exec(_ctx).info_contact_data;
 
     const Fred::InfoRegistrarData session_registrar =
-        Fred::InfoRegistrarById(_registrar_id).set_lock().exec(_ctx).info_registrar_data;
+        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (contact_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);

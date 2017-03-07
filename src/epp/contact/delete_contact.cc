@@ -37,15 +37,14 @@ unsigned long long delete_contact(
                     .exec(_ctx)
                     .info_contact_data;
 
-    const Fred::InfoRegistrarData logged_in_registrar =
+    const Fred::InfoRegistrarData session_registrar =
             Fred::InfoRegistrarById(_registrar_id)
-                    .set_lock()
                     .exec(_ctx)
                     .info_registrar_data;
 
-    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
+    const bool is_system_registrar = session_registrar.system.get_value_or(false);
     const bool is_sponsoring_registrar = (contact_data_before_delete.sponsoring_registrar_handle ==
-                                          logged_in_registrar.handle);
+                                          session_registrar.handle);
 
     const bool is_operation_permitted = (is_system_registrar || is_sponsoring_registrar);
 

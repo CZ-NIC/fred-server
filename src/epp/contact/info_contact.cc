@@ -185,6 +185,7 @@ InfoContactOutputData info_contact(
         // show object authinfopw only to sponsoring registrar
         const std::string session_registrar_handle =
             Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+
         const bool authinfopw_has_to_be_hidden = info.sponsoring_registrar_handle !=
                                                  session_registrar_handle;
         output_data.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : info.authinfopw;

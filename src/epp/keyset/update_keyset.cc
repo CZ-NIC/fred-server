@@ -31,17 +31,17 @@ Fred::InfoKeysetData check_keyset_handle(
         const std::string& _keyset_handle,
         unsigned long long _registrar_id,
         Fred::OperationContext& _ctx,
-        std::string& _callers_registrar_handle)
+        std::string& _session_registrar_handle)
 {
     try
     {
-        const Fred::InfoRegistrarData callers_registrar =
+        const Fred::InfoRegistrarData session_registrar =
             Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
         const Fred::InfoKeysetData keyset_data =
             Fred::InfoKeysetByHandle(_keyset_handle).set_lock().exec(_ctx).info_keyset_data;
         const bool is_sponsoring_registrar =
-            (keyset_data.sponsoring_registrar_handle == callers_registrar.handle);
-        const bool is_system_registrar = callers_registrar.system.get_value_or(false);
+            (keyset_data.sponsoring_registrar_handle == session_registrar.handle);
+        const bool is_system_registrar = session_registrar.system.get_value_or(false);
         const bool is_registrar_authorized = (is_system_registrar || is_sponsoring_registrar);
         if (!is_registrar_authorized)
         {
@@ -60,7 +60,7 @@ Fred::InfoKeysetData check_keyset_handle(
                 throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
             }
         }
-        _callers_registrar_handle = callers_registrar.handle;
+        _session_registrar_handle = session_registrar.handle;
         return keyset_data;
     }
     catch (const Fred::InfoKeysetByHandle::Exception& e)
@@ -652,13 +652,13 @@ UpdateKeysetResult update_keyset(
     }
 
     UpdateKeysetResult result;
-    std::string callers_registrar_handle;
+    std::string session_registrar_handle;
     {
         const Fred::InfoKeysetData keyset_data = check_keyset_handle(
                 _update_keyset_data.keyset_handle,
                 _registrar_id,
                 _ctx,
-                callers_registrar_handle);
+                session_registrar_handle);
 
         EppResultFailure existing_objects = EppResultFailure(EppResultCode::object_exists);
         EppResultFailure missing_parameters = EppResultFailure(EppResultCode::required_parameter_missing);
@@ -867,7 +867,7 @@ UpdateKeysetResult update_keyset(
         const std::vector<Fred::DnsKey> dns_keys_rem = to_fred(_update_keyset_data.dns_keys_rem);
         result.update_history_id = Fred::UpdateKeyset(
                 _update_keyset_data.keyset_handle,
-                callers_registrar_handle,
+                session_registrar_handle,
                 _update_keyset_data.authinfopw,
                 _update_keyset_data.tech_contacts_add,
                 _update_keyset_data.tech_contacts_rem,
