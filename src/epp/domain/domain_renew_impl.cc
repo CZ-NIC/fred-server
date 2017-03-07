@@ -223,11 +223,6 @@ DomainRenewResult domain_renew_impl(
     }
 
     try {
-        const Optional<bool> enum_publish_flag
-        ( (zone_data.is_enum && !_data.enum_validation_list.empty())
-            ?  Optional<bool>(_data.enum_validation_list.rbegin()->get_publish())
-            : Optional<bool>());
-
         Fred::RenewDomain renew_domain = Fred::RenewDomain(
             _data.fqdn, logged_in_registrar.handle, new_exdate);
 
@@ -242,11 +237,11 @@ DomainRenewResult domain_renew_impl(
             renew_domain.set_logd_request_id(_logd_request_id.get_value());
         }
 
-        renew_domain.exec(_ctx);
+        unsigned long long renewed_domain_history_id = renew_domain.exec(_ctx);
 
         return DomainRenewResult(
             domain_info_data.id,
-            domain_info_data.historyid,
+            renewed_domain_history_id,
             current_utc_time,
             domain_info_data.expiration_date,
             new_exdate,
