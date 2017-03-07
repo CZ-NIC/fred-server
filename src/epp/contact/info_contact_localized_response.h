@@ -19,7 +19,7 @@
 #ifndef INFO_CONTACT_LOCALIZED_RESPONSE_H_B1A92D8D6FC04366A0327A5E73AB558C
 #define INFO_CONTACT_LOCALIZED_RESPONSE_H_B1A92D8D6FC04366A0327A5E73AB558C
 
-#include "src/epp/contact/impl/info_contact_localized_output_data.h"
+#include "src/epp/contact/info_contact_localized_output_data.h"
 #include "src/epp/epp_response_success_localized.h"
 
 namespace Epp {

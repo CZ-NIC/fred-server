@@ -19,7 +19,7 @@
 #ifndef CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
 #define CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
 
-#include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
+#include "src/epp/nsset/nsset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 
 #include <map>

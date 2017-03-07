@@ -19,8 +19,8 @@
 #ifndef ERROR_H_F4329EF82684498C981B740316398B93
 #define ERROR_H_F4329EF82684498C981B740316398B93
 
-#include "src/epp/impl/param.h"
-#include "src/epp/impl/reason.h"
+#include "src/epp/param.h"
+#include "src/epp/reason.h"
 
 namespace Epp {
 

@@ -1,10 +1,10 @@
 #include "src/epp/contact/delete_contact.h"
 
-#include "src/epp/impl/exception.h"
+#include "src/epp/exception.h"
 
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_code.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/check_contact.h"
@@ -12,7 +12,7 @@
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/epp/impl/util.h"
+#include "src/epp/util.h"
 
 namespace Epp {
 namespace Contact {

@@ -19,7 +19,7 @@
 #ifndef CHECK_DOMAIN_LOCALIZED_RESPONSE_H_EA8DA66B6D34477D9D35E925F78BE8FB
 #define CHECK_DOMAIN_LOCALIZED_RESPONSE_H_EA8DA66B6D34477D9D35E925F78BE8FB
 
-#include "src/epp/domain/impl/domain_registration_obstruction.h"
+#include "src/epp/domain/domain_registration_obstruction.h"
 #include "src/epp/epp_response_success_localized.h"
 
 #include <boost/optional.hpp>

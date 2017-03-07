@@ -19,7 +19,7 @@
 #ifndef CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
 #define CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
 
-#include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
+#include "src/epp/keyset/keyset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 

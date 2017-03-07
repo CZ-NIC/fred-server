@@ -1,9 +1,9 @@
 #include "src/epp/domain/check_domain.h"
 
-#include "src/epp/domain/impl/domain_registration_obstruction.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/domain/domain_registration_obstruction.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/domain_name.h"

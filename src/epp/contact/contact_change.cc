@@ -1,6 +1,6 @@
 #include "src/epp/contact/contact_change.h"
 
-#include "src/epp/contact/impl/util.h"
+#include "src/epp/contact/util.h"
 
 namespace Epp {
 namespace Contact {

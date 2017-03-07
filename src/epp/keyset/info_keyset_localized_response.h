@@ -20,7 +20,7 @@
 #define INFO_KEYSET_LOCALIZED_RESPONSE_H_A13CF66F8D7442B98DCD1BF959DEFC6C
 
 #include "src/epp/epp_response_success_localized.h"
-#include "src/epp/keyset/impl/info_keyset_localized_output_data.h"
+#include "src/epp/keyset/info_keyset_localized_output_data.h"
 
 namespace Epp {
 namespace Keyset {

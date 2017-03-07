@@ -22,9 +22,9 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/nsset/dns_host_input.h"
-#include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
-#include "src/epp/nsset/impl/nsset_handle_registration_obstruction.h"
-#include "src/epp/nsset/impl/nsset_handle_registration_obstruction_localized.h"
+#include "src/epp/nsset/info_nsset_localized_output_data.h"
+#include "src/epp/nsset/nsset_handle_registration_obstruction.h"
+#include "src/epp/nsset/nsset_handle_registration_obstruction_localized.h"
 
 #include <map>
 #include <string>

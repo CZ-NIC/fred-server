@@ -25,9 +25,9 @@
 
 #include "src/epp/contact/create_contact.h"
 #include "src/epp/contact/create_contact_input_data.h"
-#include "src/epp/impl/disclose_policy.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/disclose_policy.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/algorithm/string/case_conv.hpp>

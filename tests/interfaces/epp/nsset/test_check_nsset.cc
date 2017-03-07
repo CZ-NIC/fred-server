@@ -23,8 +23,8 @@
 #include "tests/interfaces/epp/nsset/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
 #include "src/epp/nsset/check_nsset.h"
 
 #include <boost/test/unit_test.hpp>

@@ -20,7 +20,7 @@
 #define UPDATE_DOMAIN_H_2D1D225B719341E0B0F4384B04E36D74
 
 #include "src/epp/contact/update_contact.h"
-#include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/domain/update_domain_input_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"

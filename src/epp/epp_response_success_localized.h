@@ -19,8 +19,8 @@
 #ifndef EPP_RESPONSE_SUCCESS_LOCALIZED_H_CABCE7C3B4504499B9CBAB066076F463
 #define EPP_RESPONSE_SUCCESS_LOCALIZED_H_CABCE7C3B4504499B9CBAB066076F463
 
-#include "src/epp/impl/epp_response_success.h"
-#include "src/epp/impl/epp_result_success_localized.h"
+#include "src/epp/epp_response_success.h"
+#include "src/epp/epp_result_success_localized.h"
 #include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 

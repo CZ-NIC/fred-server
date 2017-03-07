@@ -22,7 +22,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "src/epp/contact/impl/contact_handle_state_to_check_result.h"
+#include "src/epp/contact/contact_handle_state_to_check_result.h"
 
 BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(ContactHandleStateToCheckResult)

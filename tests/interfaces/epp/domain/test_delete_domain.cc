@@ -24,9 +24,9 @@
 #include "tests/interfaces/epp/util.h"
 
 #include "src/epp/domain/delete_domain.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/param.h"
-#include "src/epp/impl/reason.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/param.h"
+#include "src/epp/reason.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>

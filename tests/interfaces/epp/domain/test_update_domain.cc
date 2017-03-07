@@ -23,10 +23,10 @@
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
-#include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/domain/update_domain.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"

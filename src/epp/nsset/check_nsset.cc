@@ -18,10 +18,10 @@
 
 #include "src/epp/nsset/check_nsset.h"
 
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/nsset/impl/nsset_handle_state_to_check_result.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/nsset/nsset_handle_state_to_check_result.h"
 #include "src/fredlib/nsset/check_nsset.h"
 
 #include <boost/foreach.hpp>

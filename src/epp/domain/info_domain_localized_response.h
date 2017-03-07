@@ -19,7 +19,7 @@
 #ifndef INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
 #define INFO_DOMAIN_LOCALIZED_RESPONSE_H_63645EF9A6324C078BE9A40618EF88BA
 
-#include "src/epp/domain/impl/info_domain_localized_output_data.h"
+#include "src/epp/domain/info_domain_localized_output_data.h"
 #include "src/epp/epp_response_success_localized.h"
 
 namespace Epp {

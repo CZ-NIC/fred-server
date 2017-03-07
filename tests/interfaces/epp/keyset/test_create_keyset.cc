@@ -22,12 +22,12 @@
 
 #include "tests/interfaces/epp/keyset/fixture.h"
 
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
 #include "src/epp/keyset/check_keyset.h"
 #include "src/epp/keyset/create_keyset.h"
 #include "src/epp/keyset/delete_keyset.h"
-#include "src/epp/keyset/impl/limits.h"
+#include "src/epp/keyset/limits.h"
 #include "src/epp/keyset/info_keyset.h"
 #include "src/fredlib/registrar/create_registrar.h"
 

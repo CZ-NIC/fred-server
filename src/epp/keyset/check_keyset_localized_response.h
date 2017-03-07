@@ -20,7 +20,7 @@
 #define CHECK_KEYSET_LOCALIZED_RESPONSE_H_78FE1075D188416A874A5A8AF98971CD
 
 #include "src/epp/epp_response_success_localized.h"
-#include "src/epp/keyset/impl/keyset_handle_registration_obstruction.h"
+#include "src/epp/keyset/keyset_handle_registration_obstruction.h"
 #include "util/db/nullable.h"
 
 #include <map>

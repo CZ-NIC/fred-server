@@ -50,7 +50,7 @@
 #include "response.h"  // errors code
 #include "reason.h"    // reason messages code
 
-#include "src/epp/impl/epp_response_failure_localized.h"
+#include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/session_data.h"
 #include "src/epp/notification_data.h"
 
@@ -83,7 +83,7 @@
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/contact/delete_contact_localized.h"
 #include "src/epp/contact/create_contact_input_data.h"
-#include "src/epp/contact/impl/post_contact_update_hooks.h"
+#include "src/epp/contact/update_contact_post_hooks.h"
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/transfer_contact_localized.h"
 #include "src/epp/contact/update_contact_localized.h"
@@ -110,14 +110,14 @@
 #include "src/epp/nsset/transfer_nsset_localized.h"
 #include "src/epp/nsset/update_nsset_localized.h"
 
-#include "src/epp/impl/reason.h"
-#include "src/epp/impl/param.h"
+#include "src/epp/reason.h"
+#include "src/epp/param.h"
 #include "src/epp/session_lang.h"
-#include "src/epp/impl/get_registrar_session_data.h"
-#include "src/epp/impl/registrar_session_data.h"
-#include "src/epp/impl/request_params.h"
-#include "src/epp/impl/localization.h"
-#include "src/epp/impl/disclose_policy.h"
+#include "src/epp/get_registrar_session_data.h"
+#include "src/epp/registrar_session_data.h"
+#include "src/epp/request_params.h"
+#include "src/epp/localization.h"
+#include "src/epp/disclose_policy.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/corba/epp/contact/contact_corba_conversions.h"

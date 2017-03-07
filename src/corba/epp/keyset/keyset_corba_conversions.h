@@ -22,10 +22,10 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/keyset/check_keyset_localized.h"
-#include "src/epp/keyset/impl/dns_key.h"
-#include "src/epp/keyset/impl/ds_record.h"
-#include "src/epp/keyset/impl/info_keyset_localized_output_data.h"
-#include "src/epp/keyset/impl/info_keyset_output_data.h"
+#include "src/epp/keyset/dns_key.h"
+#include "src/epp/keyset/ds_record.h"
+#include "src/epp/keyset/info_keyset_localized_output_data.h"
+#include "src/epp/keyset/info_keyset_output_data.h"
 
 #include <string>
 #include <vector>

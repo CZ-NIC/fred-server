@@ -21,7 +21,7 @@
 #include "tests/setup/fixtures.h"
 
 #include "src/corba/mailer_manager.h"
-#include "src/epp/impl/conditionally_enqueue_notification.h"
+#include "src/epp/conditionally_enqueue_notification.h"
 #include "src/epp/notification_data.h"
 #include "src/epp/session_data.h"
 #include "src/epp/session_lang.h"

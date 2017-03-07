@@ -1,9 +1,9 @@
 #include "src/epp/domain/delete_domain.h"
 
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/util.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/util.h"
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/domain/domain.h"

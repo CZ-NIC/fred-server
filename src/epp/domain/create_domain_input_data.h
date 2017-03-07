@@ -19,8 +19,8 @@
 #ifndef CREATE_DOMAIN_INPUT_DATA_H_F9503633D88E4A2C89BE98249E429A98
 #define CREATE_DOMAIN_INPUT_DATA_H_F9503633D88E4A2C89BE98249E429A98
 
-#include "src/epp/domain/impl/domain_enum_validation.h"
-#include "src/epp/domain/impl/domain_registration_time.h"
+#include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/domain_registration_time.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>

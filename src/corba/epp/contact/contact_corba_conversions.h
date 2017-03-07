@@ -22,7 +22,7 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/contact/contact_change.h"
-#include "src/epp/contact/impl/contact_handle_registration_obstruction_localized.h"
+#include "src/epp/contact/contact_handle_registration_obstruction_localized.h"
 #include "src/epp/contact/info_contact_localized.h"
 
 #include <boost/optional.hpp>

@@ -20,7 +20,7 @@
 #define INFO_NSSET_LOCALIZED_RESPONSE_H_D099C8B7E81A43C2BEB4E7193E57E8FC
 
 #include "src/epp/epp_response_success_localized.h"
-#include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
+#include "src/epp/nsset/info_nsset_localized_output_data.h"
 
 namespace Epp {
 namespace Nsset {

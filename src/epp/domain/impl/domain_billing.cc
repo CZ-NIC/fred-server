@@ -17,7 +17,7 @@
  */
 
 #include "src/epp/domain/impl/domain_billing.h"
-#include "src/epp/impl/exception.h"
+#include "src/epp/exception.h"
 #include "src/fredlib/zone/zone.h"
 #include "util/decimal/decimal.h"
 

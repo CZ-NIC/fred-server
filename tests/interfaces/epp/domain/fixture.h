@@ -24,7 +24,7 @@
 #ifndef FIXTURE_H_389DB6E81FF44407AFC3763706918744
 #define FIXTURE_H_389DB6E81FF44407AFC3763706918744
 
-#include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/domain/create_domain.h"
 #include "src/fredlib/nsset/create_nsset.h"

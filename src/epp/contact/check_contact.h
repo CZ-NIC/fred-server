@@ -19,7 +19,7 @@
 #ifndef CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
 #define CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
 
-#include "src/epp/contact/impl/contact_handle_registration_obstruction.h"
+#include "src/epp/contact/contact_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 
 #include <map>

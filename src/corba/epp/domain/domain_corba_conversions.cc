@@ -5,7 +5,7 @@
 #include "src/corba/epp/corba_conversions.h"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/domain/check_domain_localized.h"
-#include "src/epp/domain/impl/domain_registration_obstruction.h"
+#include "src/epp/domain/domain_registration_obstruction.h"
 #include "util/db/nullable.h"
 #include "util/map_at.h"
 #include "util/optional_value.h"

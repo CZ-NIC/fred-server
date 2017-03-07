@@ -5,9 +5,9 @@
 #include "src/corba/EPP.hh"
 #include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/nsset/dns_host_input.h"
-#include "src/epp/nsset/impl/dns_host_output.h"
-#include "src/epp/nsset/impl/info_nsset_localized_output_data.h"
-#include "src/epp/nsset/impl/nsset_handle_registration_obstruction_localized.h"
+#include "src/epp/nsset/dns_host_output.h"
+#include "src/epp/nsset/info_nsset_localized_output_data.h"
+#include "src/epp/nsset/nsset_handle_registration_obstruction_localized.h"
 #include "src/old_utils/util.h"
 #include "util/map_at.h"
 

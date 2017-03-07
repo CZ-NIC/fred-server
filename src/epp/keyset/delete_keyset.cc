@@ -1,9 +1,9 @@
 #include "src/epp/keyset/delete_keyset.h"
 
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/exception.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/exception.h"
 #include "src/fredlib/keyset/delete_keyset.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/object/object_state.h"

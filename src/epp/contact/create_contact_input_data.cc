@@ -19,7 +19,7 @@
 #include "src/epp/contact/create_contact_input_data.h"
 
 #include "src/epp/contact/contact_change.h"
-#include "src/epp/contact/impl/util.h"
+#include "src/epp/contact/util.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 

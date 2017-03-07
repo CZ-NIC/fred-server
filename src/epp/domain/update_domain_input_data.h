@@ -19,7 +19,7 @@
 #ifndef UPDATE_DOMAIN_INPUT_DATA_H_E0B4BA71C29D44E1ABEBC646702AE2BC
 #define UPDATE_DOMAIN_INPUT_DATA_H_E0B4BA71C29D44E1ABEBC646702AE2BC
 
-#include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 

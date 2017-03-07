@@ -20,7 +20,7 @@
 #define CHECK_DOMAIN_H_29361249D9254622AD544B34701D9E63
 
 #include "src/epp/domain/check_domain_localized.h"
-#include "src/epp/domain/impl/domain_registration_obstruction.h"
+#include "src/epp/domain/domain_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"
 
 #include <map>

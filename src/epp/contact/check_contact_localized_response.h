@@ -19,7 +19,7 @@
 #ifndef CHECK_CONTACT_LOCALIZED_RESPONSE_H_1D58962AC119499B837AB72B6CF42B0B
 #define CHECK_CONTACT_LOCALIZED_RESPONSE_H_1D58962AC119499B837AB72B6CF42B0B
 
-#include "src/epp/contact/impl/contact_handle_registration_obstruction_localized.h"
+#include "src/epp/contact/contact_handle_registration_obstruction_localized.h"
 #include "src/epp/epp_response_success_localized.h"
 
 #include <boost/optional.hpp>

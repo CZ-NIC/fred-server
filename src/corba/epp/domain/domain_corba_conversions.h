@@ -22,8 +22,8 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/domain/check_domain_localized.h"
-#include "src/epp/domain/impl/domain_registration_time.h"
-#include "src/epp/domain/impl/info_domain_localized_output_data.h"
+#include "src/epp/domain/domain_registration_time.h"
+#include "src/epp/domain/info_domain_localized_output_data.h"
 #include "src/epp/domain/info_domain_localized.h"
 
 #include "util/corba_conversion.h"

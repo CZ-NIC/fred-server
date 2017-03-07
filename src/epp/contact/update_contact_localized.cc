@@ -2,21 +2,21 @@
 #include "src/epp/contact/update_contact.h"
 
 #include "src/epp/contact/contact_change.h"
-#include "src/epp/contact/impl/post_contact_update_hooks.h"
-#include "src/epp/impl/action.h"
-#include "src/epp/impl/conditionally_enqueue_notification.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_response_success.h"
+#include "src/epp/contact/update_contact_post_hooks.h"
+#include "src/epp/action.h"
+#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_response_failure_localized.h"
+#include "src/epp/epp_response_success.h"
 #include "src/epp/epp_response_success_localized.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_success.h"
-#include "src/epp/impl/exception.h"
-#include "src/epp/impl/localization.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_success.h"
+#include "src/epp/exception.h"
+#include "src/epp/localization.h"
 #include "src/epp/notification_data.h"
 #include "src/epp/session_data.h"
-#include "src/epp/impl/util.h"
+#include "src/epp/util.h"
 #include "util/log/context.h"
 #include "util/optional_value.h"
 
@@ -58,7 +58,7 @@ EppResponseSuccessLocalized update_contact_localized(
                         _logd_request_id);
 
 
-        post_contact_update_hooks(
+        update_contact_post_hooks(
                 ctx,
                 _contact_handle,
                 _logd_request_id,

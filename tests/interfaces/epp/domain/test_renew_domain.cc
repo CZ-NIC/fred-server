@@ -22,8 +22,8 @@
 #include "src/epp/domain/create_domain.h"
 #include "src/epp/domain/renew_domain.h"
 #include "src/epp/domain/renew_domain_localized.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 

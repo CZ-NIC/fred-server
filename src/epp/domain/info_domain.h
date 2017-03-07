@@ -19,7 +19,7 @@
 #ifndef INFO_DOMAIN_H_A9C7B7C225EB43899886D9EE74F3EF6B
 #define INFO_DOMAIN_H_A9C7B7C225EB43899886D9EE74F3EF6B
 
-#include "src/epp/domain/impl/domain_enum_validation.h"
+#include "src/epp/domain/domain_enum_validation.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"

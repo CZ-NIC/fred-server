@@ -20,8 +20,8 @@
  *  @file
  */
 
-#ifndef TEST_INTERFACE_EPP_FIXTURE_797c9c7aa34e4282b6c545a702cc4c06
-#define TEST_INTERFACE_EPP_FIXTURE_797c9c7aa34e4282b6c545a702cc4c06
+#ifndef FIXTURE_H_F9A390F89F6D4E078F26DB46A61B1BC1
+#define FIXTURE_H_F9A390F89F6D4E078F26DB46A61B1BC1
 
 #include "tests/setup/fixtures.h"
 #include "tests/interfaces/epp/util.h"
@@ -32,7 +32,7 @@
 
 #include "src/epp/nsset/create_nsset_localized.h"
 #include "src/epp/nsset/update_nsset_localized.h"
-#include "src/epp/nsset/impl/nsset.h"
+#include "src/epp/nsset/nsset.h"
 
 struct has_invalid_registrar_id : virtual Test::autocommitting_context {
     static const unsigned long long invalid_registrar_id = 0;

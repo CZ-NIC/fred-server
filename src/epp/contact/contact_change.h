@@ -20,7 +20,7 @@
 #define CONTACT_CHANGE_H_EEBE9D36AFCD48B8BFA4A97DD6F38EA1
 
 #include "src/epp/contact/contact_disclose.h"
-#include "src/epp/contact/impl/util.h"
+#include "src/epp/contact/util.h"
 #include "util/db/nullable.h"
 
 #include <boost/algorithm/string/trim.hpp>

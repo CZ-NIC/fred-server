@@ -23,9 +23,9 @@
 #include "tests/interfaces/epp/util.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/nsset/impl/dns_host_output.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/nsset/dns_host_output.h"
 #include "src/epp/nsset/info_nsset.h"
 
 #include <boost/test/unit_test.hpp>

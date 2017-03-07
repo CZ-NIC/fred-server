@@ -24,9 +24,9 @@
 #include "tests/interfaces/epp/util.h"
 
 #include "src/epp/contact/update_contact.h"
-#include "src/epp/impl/disclose_policy.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/disclose_policy.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>

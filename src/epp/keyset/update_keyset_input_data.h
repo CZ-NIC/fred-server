@@ -19,8 +19,8 @@
 #ifndef UPDATE_KEYSET_INPUT_DATA_H_849E3328720B4BAB83CC01909130F3EB
 #define UPDATE_KEYSET_INPUT_DATA_H_849E3328720B4BAB83CC01909130F3EB
 
-#include "src/epp/keyset/impl/dns_key.h"
-#include "src/epp/keyset/impl/ds_record.h"
+#include "src/epp/keyset/dns_key.h"
+#include "src/epp/keyset/ds_record.h"
 #include "util/optional_value.h"
 
 #include <string>

@@ -21,7 +21,7 @@
  */
 
 #include "tests/interfaces/epp/keyset/fixture.h"
-#include "src/epp/keyset/impl/limits.h"
+#include "src/epp/keyset/limits.h"
 
 namespace Test {
 

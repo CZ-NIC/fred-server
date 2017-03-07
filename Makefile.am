@@ -238,24 +238,24 @@ noinst_HEADERS = \
 		tests/util/corba_conversion_test.idl \
 		src/fredlib/object/object_type.h \
 		src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h \
-		src/epp/impl/exception.h \
+		src/epp/exception.h \
 		src/epp/session_lang.h \
 		src/epp/contact/contact_change.h \
-		src/epp/impl/get_registrar_session_data.h \
+		src/epp/get_registrar_session_data.h \
 		src/corba/epp/epp_legacy_compatibility.h \
-		src/epp/impl/registrar_session_data.h \
-		src/epp/impl/request_params.h \
+		src/epp/registrar_session_data.h \
+		src/epp/request_params.h \
 		src/epp/error.h \
-		src/epp/impl/epp_response_failure.h \
-		src/epp/impl/epp_response_success.h \
-		src/epp/impl/epp_result_failure.h \
-		src/epp/impl/epp_result_success.h \
-		src/epp/impl/epp_result_code.h \
-		src/epp/impl/action.h \
-		src/epp/impl/util.h \
+		src/epp/epp_response_failure.h \
+		src/epp/epp_response_success.h \
+		src/epp/epp_result_failure.h \
+		src/epp/epp_result_success.h \
+		src/epp/epp_result_code.h \
+		src/epp/action.h \
+		src/epp/util.h \
 		src/fredlib/object/states_info.h \
 		src/fredlib/object/object_state.h \
-		src/epp/contact/impl/contact_handle_state_to_check_result.h \
+		src/epp/contact/contact_handle_state_to_check_result.h \
 		src/fredlib/public_request/public_request_status.h \
 		src/fredlib/public_request/get_active_public_request.h \
 		src/fredlib/public_request/info_public_request.h \
@@ -276,10 +276,10 @@ noinst_HEADERS = \
 		src/corba/mojeid/service_name.h \
 		src/fredlib/nsset/handle_state.h \
 		src/fredlib/keyset/handle_state.h \
-		src/epp/nsset/impl/dns_host_output.h \
+		src/epp/nsset/dns_host_output.h \
 		src/epp/nsset/dns_host_input.h \
-		src/epp/nsset/impl/nsset_handle_state_to_check_result.h \
-		src/epp/nsset/impl/nsset_constants.h \
+		src/epp/nsset/nsset_handle_state_to_check_result.h \
+		src/epp/nsset/nsset_constants.h \
 		tests/interfaces/epp/nsset/fixture.h
 
 noinst_LIBRARIES = \
@@ -1553,42 +1553,42 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
 		src/corba/util/corba_conversions_int.h \
-		src/epp/impl/disclose_policy.h \
-		src/epp/impl/localization.h \
-		src/epp/impl/localization.cc \
-		src/epp/impl/object_states_localized.h \
-		src/epp/impl/param.h \
-		src/epp/impl/reason.h \
+		src/epp/disclose_policy.h \
+		src/epp/localization.h \
+		src/epp/localization.cc \
+		src/epp/object_states_localized.h \
+		src/epp/param.h \
+		src/epp/reason.h \
 		src/epp/impl/response.h \
 		src/epp/error.h \
-		src/epp/impl/epp_response_failure.h \
-		src/epp/impl/epp_response_failure_localized.h \
-		src/epp/impl/epp_response_failure_localized.cc \
-		src/epp/impl/epp_response_success.h \
+		src/epp/epp_response_failure.h \
+		src/epp/epp_response_failure_localized.h \
+		src/epp/epp_response_failure_localized.cc \
+		src/epp/epp_response_success.h \
 		src/epp/epp_response_success_localized.h \
 		src/epp/epp_response_success_localized.cc \
-		src/epp/impl/epp_result_failure.h \
-		src/epp/impl/epp_result_failure.cc \
-		src/epp/impl/epp_result_failure_localized.h \
-		src/epp/impl/epp_result_failure_localized.cc \
-		src/epp/impl/epp_result_success.h \
-		src/epp/impl/epp_result_success_localized.h \
-		src/epp/impl/epp_result_success_localized.cc \
-		src/epp/impl/epp_extended_error.h \
-		src/epp/impl/epp_extended_error.cc \
-		src/epp/impl/epp_extended_error_localized.h \
-		src/epp/impl/epp_extended_error_localized.cc \
-		src/epp/impl/epp_result_code.h \
+		src/epp/epp_result_failure.h \
+		src/epp/epp_result_failure.cc \
+		src/epp/epp_result_failure_localized.h \
+		src/epp/epp_result_failure_localized.cc \
+		src/epp/epp_result_success.h \
+		src/epp/epp_result_success_localized.h \
+		src/epp/epp_result_success_localized.cc \
+		src/epp/epp_extended_error.h \
+		src/epp/epp_extended_error.cc \
+		src/epp/epp_extended_error_localized.h \
+		src/epp/epp_extended_error_localized.cc \
+		src/epp/epp_result_code.h \
 		src/epp/notification_data.h \
 		src/epp/session_data.h \
-		src/epp/impl/conditionally_enqueue_notification.h \
-		src/epp/impl/conditionally_enqueue_notification.cc \
+		src/epp/conditionally_enqueue_notification.h \
+		src/epp/conditionally_enqueue_notification.cc \
 		src/epp/contact/create_contact_localized.cc \
 		src/epp/contact/create_contact_localized.h \
 		src/epp/contact/create_contact.cc \
 		src/epp/contact/create_contact.h \
-		src/epp/contact/impl/util.cc \
-		src/epp/contact/impl/util.h \
+		src/epp/contact/util.cc \
+		src/epp/contact/util.h \
 		src/epp/contact/contact_change.cc \
 		src/epp/contact/update_contact_localized.cc \
 		src/epp/contact/update_contact_localized.h \
@@ -1610,10 +1610,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/transfer_contact_localized.h \
 		src/epp/contact/transfer_contact.cc \
 		src/epp/contact/transfer_contact.h \
-		src/epp/contact/impl/contact_handle_registration_obstruction.h \
+		src/epp/contact/contact_handle_registration_obstruction.h \
 		src/epp/contact/contact_disclose.h \
-		src/epp/contact/impl/post_contact_update_hooks.cc \
-		src/epp/contact/impl/post_contact_update_hooks.h \
+		src/epp/contact/update_contact_post_hooks.cc \
+		src/epp/contact/update_contact_post_hooks.h \
 		src/epp/contact/create_contact_input_data.cc \
 		src/epp/contact/create_contact_input_data.h \
 		src/epp/domain/check_domain_localized.cc \
@@ -1634,9 +1634,9 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/transfer_domain.h \
 		src/epp/domain/create_domain_localized.cc \
 		src/epp/domain/create_domain_localized.h \
-		src/epp/domain/impl/domain_registration_time.h \
-		src/epp/domain/impl/domain_enum_validation.h \
-		src/epp/domain/impl/domain_enum_validation.cc \
+		src/epp/domain/domain_registration_time.h \
+		src/epp/domain/domain_enum_validation.h \
+		src/epp/domain/domain_enum_validation.cc \
 		src/epp/domain/create_domain.cc \
 		src/epp/domain/create_domain.h \
 		src/epp/domain/renew_domain.cc \
@@ -1649,11 +1649,11 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/update_domain_localized.h \
 		src/epp/domain/update_domain.cc \
 		src/epp/domain/update_domain.h \
-		src/epp/domain/impl/domain_registration_obstruction.h \
-		src/epp/keyset/impl/dns_key.cc \
-		src/epp/keyset/impl/dns_key.h \
-		src/epp/keyset/impl/ds_record.h \
-		src/epp/keyset/impl/info_keyset_output_data.h \
+		src/epp/domain/domain_registration_obstruction.h \
+		src/epp/keyset/dns_key.cc \
+		src/epp/keyset/dns_key.h \
+		src/epp/keyset/ds_record.h \
+		src/epp/keyset/info_keyset_output_data.h \
 		src/epp/keyset/info_keyset.cc \
 		src/epp/keyset/info_keyset.h \
 		src/epp/keyset/info_keyset_localized.cc \
@@ -1666,10 +1666,10 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/update_keyset.h \
 		src/epp/keyset/update_keyset_localized.cc \
 		src/epp/keyset/update_keyset_localized.h \
-		src/epp/keyset/impl/limits.h \
+		src/epp/keyset/limits.h \
 		src/epp/keyset/check_keyset.cc \
 		src/epp/keyset/check_keyset.h \
-		src/epp/keyset/impl/keyset_handle_registration_obstruction.h \
+		src/epp/keyset/keyset_handle_registration_obstruction.h \
 		src/epp/keyset/check_keyset_localized.cc \
 		src/epp/keyset/check_keyset_localized.h \
 		src/epp/keyset/delete_keyset.cc \
@@ -1684,7 +1684,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/check_nsset_localized.h \
 		src/epp/nsset/check_nsset.cc \
 		src/epp/nsset/check_nsset.h \
-		src/epp/nsset/impl/nsset_handle_registration_obstruction.h\
+		src/epp/nsset/nsset_handle_registration_obstruction.h\
 		src/epp/nsset/info_nsset_localized.cc \
 		src/epp/nsset/info_nsset_localized.h \
 		src/epp/nsset/info_nsset.cc \
@@ -1705,8 +1705,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/transfer_nsset_localized.h \
 		src/epp/nsset/transfer_nsset.cc \
 		src/epp/nsset/transfer_nsset.h \
-		src/epp/nsset/impl/nsset.cc \
-		src/epp/nsset/impl/nsset.h
+		src/epp/nsset/nsset.cc \
+		src/epp/nsset/nsset.h
 
 #
 # src/corba/epp/libepp_impl.a

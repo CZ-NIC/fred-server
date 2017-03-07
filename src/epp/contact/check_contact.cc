@@ -1,9 +1,9 @@
 #include "src/epp/contact/check_contact.h"
 
-#include "src/epp/contact/impl/contact_handle_state_to_check_result.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/contact/contact_handle_state_to_check_result.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
 #include "src/fredlib/contact/check_contact.h"
 
 #include <boost/foreach.hpp>

@@ -19,8 +19,8 @@
 #ifndef CREATE_KEYSET_INPUT_DATA_H_E792AB9CC4F04542B0680C2BC2B7B952
 #define CREATE_KEYSET_INPUT_DATA_H_E792AB9CC4F04542B0680C2BC2B7B952
 
-#include "src/epp/keyset/impl/dns_key.h"
-#include "src/epp/keyset/impl/ds_record.h"
+#include "src/epp/keyset/dns_key.h"
+#include "src/epp/keyset/ds_record.h"
 #include "util/optional_value.h"
 
 #include <string>

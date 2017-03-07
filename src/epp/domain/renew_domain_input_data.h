@@ -19,8 +19,8 @@
 #ifndef RENEW_DOMAIN_INPUT_DATA_H_D65B0A775E5B45A1A12B3920EF972A63
 #define RENEW_DOMAIN_INPUT_DATA_H_D65B0A775E5B45A1A12B3920EF972A63
 
-#include "src/epp/domain/impl/domain_enum_validation.h"
-#include "src/epp/domain/impl/domain_registration_time.h"
+#include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/domain_registration_time.h"
 
 #include <string>
 #include <vector>
