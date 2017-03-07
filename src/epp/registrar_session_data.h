@@ -23,19 +23,23 @@
 
 namespace Epp {
 
-struct RegistrarSessionData {
+struct RegistrarSessionData
+{
     unsigned long long registrar_id;
     SessionLang::Enum language;
 
+
     RegistrarSessionData(
-        unsigned long long _registrar_id,
-        SessionLang::Enum _language)
-    :
-        registrar_id(_registrar_id),
-        language(_language)
-    { }
+            unsigned long long _registrar_id,
+            SessionLang::Enum _language)
+        : registrar_id(_registrar_id),
+          language(_language)
+    {
+    }
+
+
 };
 
-}
+} // namespace Epp
 
 #endif

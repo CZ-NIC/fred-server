@@ -32,7 +32,7 @@
 
 #include "src/epp/nsset/create_nsset_localized.h"
 #include "src/epp/nsset/update_nsset_localized.h"
-#include "src/epp/nsset/nsset.h"
+#include "src/epp/nsset/impl/nsset.h"
 
 struct has_invalid_registrar_id : virtual Test::autocommitting_context {
     static const unsigned long long invalid_registrar_id = 0;

@@ -1,4 +1,4 @@
-#include "src/epp/nsset/nsset.h"
+#include "src/epp/nsset/impl/nsset.h"
 #include <boost/foreach.hpp>
 
 namespace Epp {

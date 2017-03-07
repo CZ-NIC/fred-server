@@ -22,7 +22,7 @@
 #include "src/epp/epp_result_code.h"
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
-#include "src/epp/util.h"
+#include "src/epp/impl/util.h"
 #include "src/fredlib/nsset.h"
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/nsset/delete_nsset.h"

@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-#include "src/epp/nsset/nsset_constants.h"
+#include "src/epp/nsset/impl/limits.h"
 
 #include <boost/program_options.hpp>
 #include <boost/numeric/conversion/cast.hpp>

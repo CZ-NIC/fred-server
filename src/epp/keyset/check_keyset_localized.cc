@@ -18,7 +18,7 @@
 
 #include "src/epp/keyset/check_keyset_localized.h"
 
-#include "src/epp/action.h"
+#include "src/epp/impl/action.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/epp_response_success.h"
@@ -29,7 +29,7 @@
 #include "src/epp/exception.h"
 #include "src/epp/localization.h"
 #include "src/epp/session_data.h"
-#include "src/epp/util.h"
+#include "src/epp/impl/util.h"
 #include "src/epp/keyset/check_keyset.h"
 #include "src/epp/keyset/keyset_handle_registration_obstruction.h"
 #include "src/fredlib/opcontext.h"

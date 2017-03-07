@@ -5,7 +5,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
-#include "src/epp/util.h"
+#include "src/epp/impl/util.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/info_domain.h"

@@ -1,8 +1,8 @@
 #include "src/epp/domain/transfer_domain_localized.h"
 
 #include "src/epp/domain/transfer_domain.h"
-#include "src/epp/action.h"
-#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/epp_response_success.h"
@@ -13,7 +13,7 @@
 #include "src/epp/localization.h"
 #include "src/epp/notification_data.h"
 #include "src/epp/session_data.h"
-#include "src/epp/util.h"
+#include "src/epp/impl/util.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>

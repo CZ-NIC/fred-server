@@ -18,8 +18,8 @@
 
 #include "src/epp/keyset/transfer_keyset_localized.h"
 
-#include "src/epp/action.h"
-#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/epp_response_success.h"

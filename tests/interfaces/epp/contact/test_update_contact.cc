@@ -24,7 +24,7 @@
 #include "tests/interfaces/epp/util.h"
 
 #include "src/epp/contact/update_contact.h"
-#include "src/epp/disclose_policy.h"
+#include "src/epp/impl/disclose_policy.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
 

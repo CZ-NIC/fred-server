@@ -5,7 +5,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
-#include "src/epp/util.h"
+#include "src/epp/impl/util.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/contact/info_contact.h"

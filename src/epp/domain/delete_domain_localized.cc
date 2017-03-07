@@ -1,8 +1,8 @@
 #include "src/epp/domain/delete_domain_localized.h"
 
 #include "src/epp/domain/delete_domain.h"
-#include "src/epp/action.h"
-#include "src/epp/conditionally_enqueue_notification.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/conditionally_enqueue_notification.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/epp_response_success.h"
@@ -11,7 +11,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/epp_result_success.h"
 #include "src/epp/localization.h"
-#include "src/epp/util.h"
+#include "src/epp/impl/util.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>

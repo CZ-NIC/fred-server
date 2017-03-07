@@ -12,7 +12,7 @@
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/epp/util.h"
+#include "src/epp/impl/util.h"
 
 namespace Epp {
 namespace Contact {

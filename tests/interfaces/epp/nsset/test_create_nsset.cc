@@ -24,7 +24,7 @@
 #include "tests/interfaces/epp/util.h"
 
 #include "src/epp/nsset/create_nsset.h"
-#include "src/epp/nsset/nsset.h"
+#include "src/epp/nsset/impl/nsset.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
 

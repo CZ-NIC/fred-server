@@ -117,7 +117,7 @@
 #include "src/epp/registrar_session_data.h"
 #include "src/epp/request_params.h"
 #include "src/epp/localization.h"
-#include "src/epp/disclose_policy.h"
+#include "src/epp/impl/disclose_policy.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/corba/epp/contact/contact_corba_conversions.h"

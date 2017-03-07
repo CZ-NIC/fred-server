@@ -5,7 +5,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
-#include "src/epp/keyset/limits.h"
+#include "src/epp/keyset/impl/limits.h"
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/keyset/check_keyset.h"
 #include "src/fredlib/keyset/create_keyset.h"

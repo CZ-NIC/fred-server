@@ -250,8 +250,8 @@ noinst_HEADERS = \
 		src/epp/epp_result_failure.h \
 		src/epp/epp_result_success.h \
 		src/epp/epp_result_code.h \
-		src/epp/action.h \
-		src/epp/util.h \
+		src/epp/impl/action.h \
+		src/epp/impl/util.h \
 		src/fredlib/object/states_info.h \
 		src/fredlib/object/object_state.h \
 		src/epp/contact/contact_handle_state_to_check_result.h \
@@ -278,7 +278,7 @@ noinst_HEADERS = \
 		src/epp/nsset/dns_host_output.h \
 		src/epp/nsset/dns_host_input.h \
 		src/epp/nsset/nsset_handle_state_to_check_result.h \
-		src/epp/nsset/nsset_constants.h \
+		src/epp/nsset/impl/limits.h \
 		tests/interfaces/epp/nsset/fixture.h
 
 noinst_LIBRARIES = \
@@ -1552,7 +1552,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
 		src/corba/util/corba_conversions_int.h \
-		src/epp/disclose_policy.h \
+		src/epp/impl/disclose_policy.h \
 		src/epp/localization.h \
 		src/epp/localization.cc \
 		src/epp/object_states_localized.h \
@@ -1579,8 +1579,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/epp_result_code.h \
 		src/epp/notification_data.h \
 		src/epp/session_data.h \
-		src/epp/conditionally_enqueue_notification.h \
-		src/epp/conditionally_enqueue_notification.cc \
+		src/epp/impl/conditionally_enqueue_notification.h \
+		src/epp/impl/conditionally_enqueue_notification.cc \
 		src/epp/contact/create_contact_localized.cc \
 		src/epp/contact/create_contact_localized.h \
 		src/epp/contact/create_contact.cc \
@@ -1664,7 +1664,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/update_keyset.h \
 		src/epp/keyset/update_keyset_localized.cc \
 		src/epp/keyset/update_keyset_localized.h \
-		src/epp/keyset/limits.h \
+		src/epp/keyset/impl/limits.h \
 		src/epp/keyset/check_keyset.cc \
 		src/epp/keyset/check_keyset.h \
 		src/epp/keyset/keyset_handle_registration_obstruction.h \
@@ -1703,8 +1703,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/transfer_nsset_localized.h \
 		src/epp/nsset/transfer_nsset.cc \
 		src/epp/nsset/transfer_nsset.h \
-		src/epp/nsset/nsset.cc \
-		src/epp/nsset/nsset.h
+		src/epp/nsset/impl/nsset.cc \
+		src/epp/nsset/impl/nsset.h
 
 #
 # src/corba/epp/libepp_impl.a
