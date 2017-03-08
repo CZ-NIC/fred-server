@@ -134,6 +134,7 @@ namespace Epp
         unsigned long long sponsoring_registrar_id,
         unsigned long long renewed_domain_id,
         int length_of_domain_registration_in_years,
+        const boost::gregorian::date& old_domain_expiration_date_local,
         const boost::gregorian::date& domain_expiration_date_local,
         Fred::OperationContext& ctx)
     {
@@ -233,7 +234,7 @@ namespace Epp
             , Database::query_param_list(renewed_domain_id)
             (sponsoring_registrar_id)(operation_id)(zone_id)
             (length_of_domain_registration_in_years)
-            (boost::date_time::c_local_adjustor<ptime>::utc_to_local(domain_renew_timestamp_utc).date())
+            (old_domain_expiration_date_local)
             (domain_expiration_date_local)
             (registrar_credit_transaction_id)
             );

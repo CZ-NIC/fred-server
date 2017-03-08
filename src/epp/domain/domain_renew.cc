@@ -64,6 +64,7 @@ namespace Epp {
                 _registrar_id,
                 impl_result.domain_id,
                 impl_result.length_of_domain_registration_in_years,
+                impl_result.old_exdate,
                 impl_result.exdate,
                 ctx);
         }
