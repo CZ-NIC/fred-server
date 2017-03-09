@@ -701,12 +701,13 @@ PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
     const std::string lang_code = language_to_lang_code(lang);
 
     Fred::OperationContextCreator ctx;
-    std::string create_time, email_to_answer;
+    std::string create_time;
+    std::string email_to_answer;
     unsigned long long post_type;
     try
     {
         Fred::PublicRequestLockGuardById locked_request(ctx, public_request_id);
-        Fred::PublicRequestInfo request_info = Fred::InfoPublicRequest().exec(ctx, locked_request);
+        const Fred::PublicRequestInfo request_info = Fred::InfoPublicRequest().exec(ctx, locked_request);
         post_type = public_request_type_to_post_type(request_info.get_type());
         create_time = stringify(request_info.get_create_time().date());
         email_to_answer = request_info.get_email_to_answer().get_value_or_default();
@@ -720,7 +721,6 @@ PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
             "SELECT oreg.type,oreg.name "
             "FROM public_request pr "
             "JOIN public_request_objects_map prom ON prom.request_id=pr.id "
-            "JOIN enum_public_request_type eprt ON eprt.id=pr.request_type "
             "JOIN object_registry oreg ON oreg.id=prom.object_id "
             "WHERE pr.id=$1::BIGINT",
             Database::query_param_list(public_request_id));
