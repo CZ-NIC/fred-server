@@ -9,7 +9,7 @@ namespace PublicRequest {
 
 
 
-std::string Status2Str(Status _status);
+std::string Status2Str(Status_PR _status);
 
 std::string ObjectType2Str(ObjectType type);
 
@@ -46,7 +46,7 @@ protected:
     Database::ID create_request_id_;
     Database::ID resolve_request_id_;
     Database::DateTime create_time_;
-    Fred::PublicRequest::Status status_;
+    Fred::PublicRequest::Status_PR status_;
     Database::DateTime resolve_time_;
     std::string reason_;
     std::string email_to_answer_;
@@ -71,7 +71,7 @@ public:
               Fred::PublicRequest::Type _type,
               Database::ID _create_request_id,
               Database::DateTime _create_time,
-              Fred::PublicRequest::Status _status,
+              Fred::PublicRequest::Status_PR _status,
               Database::DateTime _resolve_time,
               std::string _reason,
               std::string _email_to_answer,
@@ -92,9 +92,9 @@ public:
 
     virtual void setType(Fred::PublicRequest::Type _type);
 
-    virtual Fred::PublicRequest::Status getStatus() const;
+    virtual Fred::PublicRequest::Status_PR getStatus() const;
 
-    virtual void setStatus(Fred::PublicRequest::Status _status);
+    virtual void setStatus(Fred::PublicRequest::Status_PR _status);
 
     virtual ptime getCreateTime() const;
 

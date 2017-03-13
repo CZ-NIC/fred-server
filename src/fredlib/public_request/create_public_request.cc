@@ -2,6 +2,10 @@
 #include "src/fredlib/public_request/update_public_request.h"
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "src/fredlib/public_request/public_request_status.h"
+#include "src/fredlib/contact_verification/django_email_format.h"
+#include "util/idn_utils.h"
+
+#include <string>
 
 namespace Fred {
 
@@ -32,6 +36,24 @@ CreatePublicRequest& CreatePublicRequest::set_registrar_id(RegistrarId _id)
     return *this;
 }
 
+namespace {
+
+void check_email_address_format(const std::string& email_address)
+{
+    const unsigned max_length_of_email_address = 255;
+    if (max_length_of_email_address < Util::get_utf8_char_len(email_address))
+    {
+        BOOST_THROW_EXCEPTION(CreatePublicRequest::Exception().set_wrong_email(email_address));
+    }
+    const bool email_address_format_is_valid = DjangoEmailFormat().check(email_address);
+    if (!email_address_format_is_valid)
+    {
+        BOOST_THROW_EXCEPTION(CreatePublicRequest::Exception().set_wrong_email(email_address));
+    }
+}
+
+}//namespace Fred::{anonymous}
+
 PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForUpdate &_locked_object,
                                           const PublicRequestTypeIface &_type,
                                           const Optional< LogRequestId > &_create_log_request_id)const
@@ -41,8 +63,16 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
         const std::string public_request_type = _type.get_public_request_type();
         Database::query_param_list params(public_request_type);                             // $1::TEXT
         params(_locked_object.get_id())                                                     // $2::BIGINT
-              (reason_.isset() ? reason_.get_value() : Database::QPNull)                    // $3::TEXT
-              (email_to_answer_.isset() ? email_to_answer_.get_value() : Database::QPNull); // $4::TEXT
+              (reason_.isset() ? reason_.get_value() : Database::QPNull);                   // $3::TEXT
+        if (email_to_answer_.isset())
+        {
+            const std::string email_address = email_to_answer_.get_value();
+            check_email_address_format(email_address);
+            params(email_address);                                                          // $4::TEXT
+        }
+        else {
+            params(Database::QPNull);                                                       // $4::TEXT
+        }
         if (registrar_id_.isset()) {
             const RegistrarId registrar_id = registrar_id_.get_value();
             const bool registrar_id_exists = static_cast< bool >(_locked_object.get_ctx().get_conn().exec_params(
@@ -63,6 +93,7 @@ PublicRequestId CreatePublicRequest::exec(const LockedPublicRequestsOfObjectForU
             params(Database::QPNull);                                                       // $6::BIGINT
         }
         params(Conversion::Enums::to_db_handle(PublicRequest::Status::active));             // $7::TEXT
+
         const Database::Result res = _locked_object.get_ctx().get_conn().exec_params(
             "WITH request AS ("
                 "INSERT INTO public_request "

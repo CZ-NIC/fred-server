@@ -90,6 +90,9 @@ CLEANFILES = \
 		src/corba/DomainBrowserSK.cc \
 		src/corba/DomainBrowserDynSK.cc \
 		src/corba/DomainBrowser.hh \
+		src/corba/PublicRequestSK.cc \
+		src/corba/PublicRequestDynSK.cc \
+		src/corba/PublicRequest.hh \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/AdminContactVerificationDynSK.cc \
 		src/corba/AdminContactVerificationSK.h \
@@ -315,6 +318,7 @@ noinst_LIBRARIES = \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
 		src/corba/libcorbadomainbrowser.a \
+		src/corba/libcorbapublicrequest.a \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorba_conversion_test.a \
@@ -893,6 +897,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object/generated_authinfo_password.h \
 		src/fredlib/object/generated_authinfo_password.cc \
 		src/fredlib/object/generated_authinfo_password_exception.h \
+		src/fredlib/object/get_id_of_registered.h \
+		src/fredlib/object/get_id_of_registered.cc \
 		src/fredlib/object/transfer_object.h \
 		src/fredlib/object/transfer_object.cc \
 		src/fredlib/object/transfer_object_exception.h \
@@ -1238,6 +1244,7 @@ BUILT_SOURCES = \
 		src/corba/ZoneGeneratorSK.cc \
 		src/corba/ContactVerificationSK.cc \
 		src/corba/DomainBrowserSK.cc \
+		src/corba/PublicRequestSK.cc \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/corba_conversion_testSK.cc \
 		src/corba/NotificationSK.cc
@@ -1371,6 +1378,11 @@ nodist_src_corba_libcorbadomainbrowser_a_SOURCES = \
 		src/corba/DomainBrowserDynSK.cc \
 		src/corba/DomainBrowser.hh
 
+nodist_src_corba_libcorbapublicrequest_a_SOURCES = \
+		src/corba/PublicRequestSK.cc \
+		src/corba/PublicRequestDynSK.cc \
+		src/corba/PublicRequest.hh
+
 nodist_src_corba_libcorba_conversion_test_a_SOURCES = \
 		src/corba/corba_conversion_testSK.cc \
 		src/corba/corba_conversion_testDynSK.cc \
@@ -1409,6 +1421,7 @@ src/corba/ContactVerificationSK.cc: $(IDLDIR)/ContactVerification.idl
 src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
 src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
 src/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
+src/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
 
 src/corba/%.cc:
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $<
@@ -1870,6 +1883,12 @@ src_corba_fred_pifd_SOURCES = \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/contact_verification/public_request_contact_verification_wrapper.h \
+		src/public_request/public_request.cc \
+		src/public_request/public_request.h \
+		src/corba/public_request/server_i.cc \
+		src/corba/public_request/server_i.h \
+		util/corba_conversion.h \
+		util/corba_conversion.cc \
 		src/corba/fred-pifd.cc
 
 src_corba_fred_pifd_LDADD = \
@@ -1891,6 +1910,7 @@ src_corba_fred_pifd_LDADD = \
 		src/corba/libcorbanullabletypes.a \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/libcorbacontactverification.a \
+		src/corba/libcorbapublicrequest.a \
 		src/fredlib/requests/librequests.a \
 		src/fredlib/banking/libbanking.a \
 		src/fredlib/messages/libmessages.a \
@@ -2335,6 +2355,7 @@ SERVER_TESTS = \
 		tests/interfaces/test-admin-notification \
 		tests/interfaces/test-epp \
 		tests/interfaces/test-whois \
+		tests/interfaces/test-public-request \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
@@ -2668,8 +2689,7 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
-		tests/interfaces/domain_browser/test_domain_browser.cc \
-		tests/setup/fixtures.h
+		tests/interfaces/domain_browser/test_domain_browser.cc
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2727,6 +2747,49 @@ tests_test_server_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # tests/test_server
+
+# tests/interfaces/test_public_request
+#
+tests_interfaces_test_public_request_SOURCES = \
+		tests/interfaces/public_request/main.cc \
+		src/public_request/public_request.cc \
+		tests/interfaces/public_request/test_registry_email.cc \
+		tests/interfaces/public_request/test_non_registry_email.cc \
+		tests/interfaces/public_request/test_create_block_unblock_request.cc \
+		tests/interfaces/public_request/test_create_public_request_pdf.cc \
+		tests/interfaces/public_request/fixture_common.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc
+
+tests_interfaces_test_public_request_LDFLAGS = \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_public_request_LDADD = \
+		src/fredlib/public_request/libpublic_request.a \
+		src/fredlib/libfred.a \
+		src/corba/libcorba.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
+		src/fredlib/requests/librequests.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_DATE_TIME_LIB)\
+		$(LIBIDN_CFLAGS) \
+		$(LIBIDN_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/interfaces/test_public_request
 
 
 # tests/test_blocking
@@ -2929,9 +2992,6 @@ tests_test_fredlib_LDADD = \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
 		src/fredlib/public_request/libpublic_request.a \
-		src/corba/libcorba.a \
-		src/corba/libmailer.a \
-		src/corba/libcorbadatatypes.a \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \

@@ -39,10 +39,12 @@ public:
     typedef ::uint64_t LogRequestId;///< logging request identification
     DECLARE_EXCEPTION_DATA(unknown_type, std::string);///< exception members for bad public request type
     DECLARE_EXCEPTION_DATA(unknown_registrar_id, RegistrarId);///< exception members for bad registrar id
+    DECLARE_EXCEPTION_DATA(wrong_email, std::string);///< exception members for bad email
     struct Exception /// Something wrong happened
     :   virtual Fred::OperationException,
         ExceptionData_unknown_type< Exception >,
-        ExceptionData_unknown_registrar_id< Exception >
+        ExceptionData_unknown_registrar_id< Exception >,
+        ExceptionData_wrong_email< Exception >
     {};
 
     /**
