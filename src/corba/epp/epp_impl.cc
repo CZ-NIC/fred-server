@@ -113,13 +113,18 @@
 #include "src/epp/nsset/update_nsset_localized.h"
 
 #include "src/epp/poll/poll_acknowledgement_localized.h"
-#include "src/epp/reason.h"
-#include "src/epp/param.h"
-#include "src/epp/session_lang.h"
-#include "src/epp/get_registrar_session_data.h"
-#include "src/epp/registrar_session_data.h"
-#include "src/epp/request_params.h"
-#include "src/epp/localization.h"
+#include "src/epp/poll/poll_request_localized.h"
+#include "src/epp/poll/poll_request_get_update_domain_details_localized.h"
+#include "src/epp/poll/poll_request_get_update_nsset_details_localized.h"
+#include "src/epp/poll/poll_request_get_update_keyset_details_localized.h"
+
+#include "src/epp/impl/reason.h"
+#include "src/epp/impl/param.h"
+#include "src/epp/impl/session_lang.h"
+#include "src/epp/impl/get_registrar_session_data.h"
+#include "src/epp/impl/registrar_session_data.h"
+#include "src/epp/impl/request_params.h"
+#include "src/epp/impl/localization.h"
 #include "src/epp/impl/disclose_policy.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
@@ -1617,63 +1622,39 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
  */
 void
 ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
-        CORBA::ULongLong _poll_id,
-        ccReg::Domain_out _old_data,
-        ccReg::Domain_out _new_data,
-        const ccReg::EppParams &params)
+    CORBA::ULongLong _message_id,
+    ccReg::Domain_out _old_data,
+    ccReg::Domain_out _new_data,
+    const ccReg::EppParams& _epp_params)
 {
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        Logging::Context::clear();
-        Logging::Context ctx("rifd");
-        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-        Logging::Context ctx3("poll-req-update-domain-details");
-        ConnectionReleaser releaser;
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+        const Epp::Poll::PollRequestUpdateDomainLocalizedResponse domain_update_response =
+            Epp::Poll::poll_request_get_update_domain_details_localized(
+                _message_id,
+                Epp::SessionData(
+                    registrar_session_data.registrar_id,
+                    registrar_session_data.language,
+                    server_transaction_handle));
 
-        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::Domain_var old_data = new ccReg::Domain;
+        Corba::wrap_Epp_Domain_InfoDomainLocalizedOutputData(domain_update_response.data.old_data, old_data);
 
-        _old_data = new ccReg::Domain;
-        _new_data = new ccReg::Domain;
+        ccReg::Domain_var new_data = new ccReg::Domain;
+        Corba::wrap_Epp_Domain_InfoDomainLocalizedOutputData(domain_update_response.data.new_data, new_data);
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result hids = conn.exec_params(
-                "SELECT h1.id as old_hid, h1.next as new_hid"
-                " FROM poll_eppaction pea"
-                " JOIN domain_history dh ON dh.historyid = pea.objid"
-                " JOIN history h1 ON h1.next = pea.objid"
-                " WHERE pea.msgid = $1::bigint",
-                Database::query_param_list(_poll_id));
-
-        if (hids.size() != 1) {
-            throw std::runtime_error("unable to get poll message data");
-        }
-
-        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
-        rmgr->initStates();
-        std::auto_ptr<const Fred::Domain::Domain> old_data = Fred::get_object_by_hid<
-            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
-                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::Domain::Domain> new_data = Fred::get_object_by_hid<
-            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
-                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][1]));
-
-        corba_domain_data_copy(a, rmgr.get(), _old_data, old_data.get());
-        corba_domain_data_copy(a, rmgr.get(), _new_data, new_data.get());
-
-        return;
+        _old_data = old_data._retn();
+        _new_data = new_data._retn();
     }
-    catch (std::exception &ex)
-    {
-        LOGGER(PACKAGE).error(ex.what());
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    catch (...)
-    {
-        LOGGER(PACKAGE).error("unknown error");
-    }
-    this->ServerInternalError(">> PollRequestGetUpdateDomainDetails - failed internal");
 }
-
 
 /*
  * idl method for retrieving old and new data of updated nsset
@@ -1687,63 +1668,36 @@ ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
  */
 void
 ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
-        CORBA::ULongLong _poll_id,
-        ccReg::NSSet_out _old_data,
-        ccReg::NSSet_out _new_data,
-        const ccReg::EppParams &params)
+    CORBA::ULongLong _message_id,
+    ccReg::NSSet_out _old_data,
+    ccReg::NSSet_out _new_data,
+    const ccReg::EppParams &_epp_params)
 {
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        Logging::Context::clear();
-        Logging::Context ctx("rifd");
-        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-        Logging::Context ctx3("poll-req-update-nsset-details");
-        ConnectionReleaser releaser;
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+        const Epp::Poll::PollRequestUpdateNssetLocalizedResponse nsset_update_response =
+            Epp::Poll::poll_request_get_update_nsset_details_localized(
+                _message_id,
+                Epp::SessionData(
+                    registrar_session_data.registrar_id,
+                    registrar_session_data.language,
+                    server_transaction_handle));
 
-        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::NSSet_var old_data = new ccReg::NSSet(Corba::wrap_localized_info_nsset(nsset_update_response.data.old_data));
+        ccReg::NSSet_var new_data = new ccReg::NSSet(Corba::wrap_localized_info_nsset(nsset_update_response.data.new_data));
 
-        _old_data = new ccReg::NSSet;
-        _new_data = new ccReg::NSSet;
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result hids = conn.exec_params(
-                "SELECT h1.id as old_hid, h1.next as new_hid"
-                " FROM poll_eppaction pea"
-                " JOIN nsset_history dh ON dh.historyid = pea.objid"
-                " JOIN history h1 ON h1.next = pea.objid"
-                " WHERE pea.msgid = $1::bigint",
-                Database::query_param_list(_poll_id));
-
-        if (hids.size() != 1) {
-            throw std::runtime_error("unable to get poll message data");
-        }
-
-        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
-        rmgr->initStates();
-        std::auto_ptr<const Fred::Nsset::Nsset> old_data = Fred::get_object_by_hid<
-            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::Nsset::Nsset> new_data = Fred::get_object_by_hid<
-            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][1]));
-
-        corba_nsset_data_copy(a, rmgr.get(), _old_data, old_data.get());
-        corba_nsset_data_copy(a, rmgr.get(), _new_data, new_data.get());
-
-        return;
+        _old_data = old_data._retn();
+        _new_data = new_data._retn();
     }
-    catch (std::exception &ex)
-    {
-        LOGGER(PACKAGE).error(ex.what());
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    catch (...)
-    {
-        LOGGER(PACKAGE).error("unknown error");
-    }
-    this->ServerInternalError(">> PollRequestGetUpdateNssetDetails - failed internal");
 }
-
 
 /*
  * idl method for retrieving old and new data of updated keyset
@@ -1757,63 +1711,39 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
  */
 void
 ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
-        CORBA::ULongLong _poll_id,
-        ccReg::KeySet_out _old_data,
-        ccReg::KeySet_out _new_data,
-        const ccReg::EppParams &params)
+    CORBA::ULongLong _message_id,
+    ccReg::KeySet_out _old_data,
+    ccReg::KeySet_out _new_data,
+    const ccReg::EppParams &_epp_params)
 {
+    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        Logging::Context::clear();
-        Logging::Context ctx("rifd");
-        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-        Logging::Context ctx3("poll-req-update-keyset-details");
-        ConnectionReleaser releaser;
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+        const Epp::Poll::PollRequestUpdateKeysetLocalizedResponse keyset_update_response =
+            Epp::Poll::poll_request_get_update_keyset_details_localized(
+                _message_id,
+                Epp::SessionData(
+                    registrar_session_data.registrar_id,
+                    registrar_session_data.language,
+                    server_transaction_handle));
 
-        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::KeySet_var old_data = new ccReg::KeySet;
+        Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(keyset_update_response.data.old_data, old_data);
 
-        _old_data = new ccReg::KeySet;
-        _new_data = new ccReg::KeySet;
+        ccReg::KeySet_var new_data = new ccReg::KeySet;
+        Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(keyset_update_response.data.new_data, new_data);
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result hids = conn.exec_params(
-                "SELECT h1.id as old_hid, h1.next as new_hid"
-                " FROM poll_eppaction pea"
-                " JOIN keyset_history dh ON dh.historyid = pea.objid"
-                " JOIN history h1 ON h1.next = pea.objid"
-                " WHERE pea.msgid = $1::bigint",
-                Database::query_param_list(_poll_id));
-
-        if (hids.size() != 1) {
-            throw std::runtime_error("unable to get poll message data");
-        }
-
-        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
-        rmgr->initStates();
-        std::auto_ptr<const Fred::Keyset::Keyset> old_data = Fred::get_object_by_hid<
-            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::Keyset::Keyset> new_data = Fred::get_object_by_hid<
-            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][1]));
-
-        corba_keyset_data_copy(a, rmgr.get(), _old_data, old_data.get());
-        corba_keyset_data_copy(a, rmgr.get(), _new_data, new_data.get());
-
-        return;
+        _old_data = old_data._retn();
+        _new_data = new_data._retn();
     }
-    catch (std::exception &ex)
-    {
-        LOGGER(PACKAGE).error(ex.what());
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    catch (...)
-    {
-        LOGGER(PACKAGE).error("unknown error");
-    }
-    this->ServerInternalError(">> PollRequestGetUpdateKeysetDetails - failed internal");
 }
-
 
 ccReg::Response *
 ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &params)

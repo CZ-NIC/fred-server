@@ -58,8 +58,7 @@ struct PollRequestUpdateDomainLocalizedResponse
 
 PollRequestUpdateDomainLocalizedResponse poll_request_get_update_domain_details_localized(
     unsigned long long _message_id,
-    const SessionData& _session_data,
-    const std::string& _server_transaction_handle);
+    const SessionData& _session_data);
 
 } // namespace Epp::Poll
 } // namespace Epp

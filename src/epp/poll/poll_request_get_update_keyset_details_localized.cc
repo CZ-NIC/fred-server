@@ -40,13 +40,12 @@ namespace Poll {
 
 PollRequestUpdateKeysetLocalizedResponse poll_request_get_update_keyset_details_localized(
     unsigned long long _message_id,
-    const SessionData& _session_data,
-    const std::string& _server_transaction_handle)
+    const SessionData& _session_data)
 {
     try {
         Logging::Context logging_ctx("rifd");
         Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
+        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
         Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollResponse)));
 
         Fred::OperationContextCreator ctx;
