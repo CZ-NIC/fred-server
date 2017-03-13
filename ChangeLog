@@ -1,3 +1,19 @@
+2017-03-13 (2.30.0)
+
+  * dedicated interface for public requests (authinfo, object block/unblock requests)
+
+  * contact duplicates merge procedure optimization and improvements
+    * add flag for warning letter sending to comparison
+    * add all contact addresses to comparison
+
+  * fix domain outzone warning e-mail (new template parameter)
+
+  * fix trailing dot in whois (webwhois/rdap backend)
+
+  * fix ShellCmd (occasional select timeout because of SIGCHLD was processed by other thread)
+
+  * fix Optys undelivered messages reports processing (CZ.NIC only)
+
 2016-12-19 (2.29.0)
 
   * epp backend rewrite - domain methods
