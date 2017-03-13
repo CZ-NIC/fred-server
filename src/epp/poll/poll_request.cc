@@ -471,7 +471,7 @@ PollRequestOutputData poll_request(
     }
 
     Database::ParamQuery sql_query;
-    sql_query("SELECT m.id, mt.name, m.crdate, t.count "
+    sql_query("SELECT m.id, mt.name, m.crdate, t.cnt "
               "FROM (SELECT min(id) AS id, count(*) AS cnt FROM message WHERE clid=")
         .param_bigint(_registrar_id)(" AND exdate>CURRENT_TIMESTAMP AND NOT seen) AS t "
               "JOIN message m ON m.id=t.id "

@@ -70,7 +70,7 @@ PollRequestLocalizedResponse poll_request_localized(
     }
     catch (const EppResponseFailure& e) {
         Fred::OperationContextCreator ctx;
-        ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
+        ctx.get_log().info(std::string("poll_request_localized: ") + e.what());
         throw EppResponseFailureLocalized(
             ctx,
             e,
@@ -78,7 +78,7 @@ PollRequestLocalizedResponse poll_request_localized(
     }
     catch (const std::exception& e) {
         Fred::OperationContextCreator ctx;
-        ctx.get_log().info(std::string("poll_acknowledgement_localized: ") + e.what());
+        ctx.get_log().info(std::string("poll_request_localized: ") + e.what());
         throw EppResponseFailureLocalized(
             ctx,
             EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
@@ -86,7 +86,7 @@ PollRequestLocalizedResponse poll_request_localized(
     }
     catch (...) {
         Fred::OperationContextCreator ctx;
-        ctx.get_log().info(std::string("unexpected exception in poll_acknowledgement_localized function"));
+        ctx.get_log().info(std::string("unexpected exception in poll_request_localized function"));
         throw EppResponseFailureLocalized(
             ctx,
             EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
