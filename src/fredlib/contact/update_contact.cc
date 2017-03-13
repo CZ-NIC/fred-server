@@ -146,7 +146,7 @@ namespace Fred
         , const Optional<bool>& disclosevat
         , const Optional<bool>& discloseident
         , const Optional<bool>& disclosenotifyemail
-        , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+        , const Optional< Nullable< bool > > &domain_expiration_warning_letter_enabled
         , const Optional< unsigned long long > &logd_request_id)
     :   registrar_(registrar)
     ,   authinfo_(authinfo)
@@ -169,7 +169,7 @@ namespace Fred
     ,   disclosevat_(disclosevat)
     ,   discloseident_(discloseident)
     ,   disclosenotifyemail_(disclosenotifyemail)
-    ,   domain_expiration_letter_flag_(domain_expiration_letter_flag)
+    ,   domain_expiration_warning_letter_enabled_(domain_expiration_warning_letter_enabled)
     ,   logd_request_id_(logd_request_id)
     {}
 
@@ -333,14 +333,14 @@ namespace Fred
             update_set << update_value(discloseident_,        "discloseident",        set_separator, params);
             update_set << update_value(disclosenotifyemail_,  "disclosenotifyemail",  set_separator, params);
 
-            if (domain_expiration_letter_flag_.isset()) {
-                const Nullable< bool > flag = domain_expiration_letter_flag_.get_value();
+            if (domain_expiration_warning_letter_enabled_.isset()) {
+                const Nullable< bool > domain_expiration_warning_letter_enabled = domain_expiration_warning_letter_enabled_.get_value();
                 update_set << set_separator.get() << "warning_letter=";
-                if (flag.isnull()) {
+                if (domain_expiration_warning_letter_enabled.isnull()) {
                     update_set << "NULL";
                 }
                 else {
-                    update_set << "$" << params.add(flag.get_value());
+                    update_set << "$" << params.add(domain_expiration_warning_letter_enabled.get_value());
                 }
                 update_set << "::boolean";
             }
@@ -592,7 +592,10 @@ namespace Fred
         (std::make_pair("disclosevat",disclosevat_.print_quoted()))
         (std::make_pair("discloseident",discloseident_.print_quoted()))
         (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
-        (std::make_pair("domain_expiration_letter_flag",domain_expiration_letter_flag_.isset() ? domain_expiration_letter_flag_.get_value().print_quoted() : domain_expiration_letter_flag_.print_quoted()))
+        (std::make_pair("domain_expiration_warning_letter_enabled",
+            domain_expiration_warning_letter_enabled_.isset()
+            ? domain_expiration_warning_letter_enabled_.get_value().print_quoted()
+            : domain_expiration_warning_letter_enabled_.print_quoted()))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
     }
@@ -625,7 +628,7 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
-            , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+            , const Optional< Nullable< bool > > &domain_expiration_warning_letter_enabled
             , const Optional< unsigned long long > &logd_request_id)
     : UpdateContact<UpdateContactById>(registrar
               , authinfo
@@ -648,7 +651,7 @@ namespace Fred
               , disclosevat
               , discloseident
               , disclosenotifyemail
-              , domain_expiration_letter_flag
+              , domain_expiration_warning_letter_enabled
               , logd_request_id
               )
     , id_(id)
@@ -768,7 +771,7 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
-            , const Optional< Nullable< bool > > &domain_expiration_letter_flag
+            , const Optional< Nullable< bool > > &domain_expiration_warning_letter_enabled
             , const Optional< unsigned long long > &logd_request_id)
     : UpdateContact<UpdateContactByHandle>(registrar
             , authinfo
@@ -791,7 +794,7 @@ namespace Fred
             , disclosevat
             , discloseident
             , disclosenotifyemail
-            , domain_expiration_letter_flag
+            , domain_expiration_warning_letter_enabled
             , logd_request_id
             )
     , handle_(handle)

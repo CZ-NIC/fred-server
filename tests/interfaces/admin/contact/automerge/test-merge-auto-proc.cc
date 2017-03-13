@@ -96,26 +96,18 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
-    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail;
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
 
-    nemail = Admin::MergeContactAutoProcedure(
+    notification_email = Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             registrar_mc_1_handle)
         .set_dry_run(true)
     .exec(null_stream);
 
-    BOOST_CHECK(nemail.empty());//no notifications
+    BOOST_CHECK(notification_email.empty());//no notifications
 
-    //no changes
-    BOOST_CHECK(diff_contacts().empty());
-    BOOST_CHECK(diff_nssets().empty());
-    BOOST_CHECK(diff_keysets().empty());
-    BOOST_CHECK(diff_domains().empty());
-    BOOST_CHECK(diff_registrars().empty());
-
-
-    nemail = Admin::MergeContactAutoProcedure(
+    notification_email = Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             registrar_mc_1_handle)
@@ -123,14 +115,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
         .set_dry_run(true)
     .exec(null_stream);
 
-    BOOST_CHECK(nemail.empty());//no notifications
-
-    //no changes
-    BOOST_CHECK(diff_contacts().empty());
-    BOOST_CHECK(diff_nssets().empty());
-    BOOST_CHECK(diff_keysets().empty());
-    BOOST_CHECK(diff_domains().empty());
-    BOOST_CHECK(diff_registrars().empty());
+    BOOST_CHECK(notification_email.empty());//no notifications
 
 }
 /**
@@ -161,15 +146,15 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
     std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
-    std::vector<Fred::MergeContactNotificationEmailWithAddr> nemail;
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
 
-    nemail = Admin::MergeContactAutoProcedure(
+    notification_email = Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             registrar_mc_1_handle)
     .exec(null_stream);
 
-    BOOST_CHECK(nemail.size() == 1);//have just 1 group of mergeable contacts with given registrar
+    BOOST_CHECK(notification_email.size() == 1);//have just 1 group of mergeable contacts with given registrar
 
     std::map<std::string, unsigned long long> del_contact_poll_msg = get_del_contact_poll_msg();
 
@@ -218,7 +203,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
         }
         else
         {//destination contact
-            BOOST_CHECK(ci->first == nemail.at(0).email_data.dst_contact_handle);
+            BOOST_CHECK(ci->first == notification_email.at(0).email_data.dst_contact_handle);
 
             /**
              * forbidden state of destination contact
@@ -237,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             , "changed contact  ci->first: " << ci->first << " forbidden_registrar_regex: " << forbidden_registrar_regex.str());
     }
     //check all removed contacts are notified
-    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.removed_list.begin(), nemail.at(0).email_data.removed_list.end()) == removed_contact_handle);
+    BOOST_CHECK(std::set<std::string>(notification_email.at(0).email_data.removed_list.begin(), notification_email.at(0).email_data.removed_list.end()) == removed_contact_handle);
 
     /**
      * forbidden states of linked object (domains are lower case) from fixture setup:
@@ -273,7 +258,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             , "changed nsset  ci->first: " << ci->first << " forbidden_registrar_regex: " << forbidden_registrar_regex.str());
     }
     //check all updated nssets are notified
-    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.nsset_tech_list.begin(), nemail.at(0).email_data.nsset_tech_list.end()) == changed_nsset_handle);
+    BOOST_CHECK(std::set<std::string>(notification_email.at(0).email_data.nsset_tech_list.begin(), notification_email.at(0).email_data.nsset_tech_list.end()) == changed_nsset_handle);
 
     //keyset changes
     std::set<std::string> changed_keyset_handle;
@@ -300,7 +285,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
     }
 
     //check all updated keysets are notified
-    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.keyset_tech_list.begin(), nemail.at(0).email_data.keyset_tech_list.end()) == changed_keyset_handle);
+    BOOST_CHECK(std::set<std::string>(notification_email.at(0).email_data.keyset_tech_list.begin(), notification_email.at(0).email_data.keyset_tech_list.end()) == changed_keyset_handle);
 
     //domain changes
     std::set<std::string> changed_domain_admin_fqdn;
@@ -328,8 +313,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
         , "changed domain  ci->first: " << ci->first << " forbidden_registrar_regex: " << forbidden_registrar_regex.str());
     }
 
-    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_admin_list.begin(), nemail.at(0).email_data.domain_admin_list.end()) == changed_domain_admin_fqdn);
-    BOOST_CHECK(std::set<std::string>(nemail.at(0).email_data.domain_registrant_list.begin(), nemail.at(0).email_data.domain_registrant_list.end()) == changed_domain_owner_fqdn);
+    BOOST_CHECK(std::set<std::string>(notification_email.at(0).email_data.domain_admin_list.begin(), notification_email.at(0).email_data.domain_admin_list.end()) == changed_domain_admin_fqdn);
+    BOOST_CHECK(std::set<std::string>(notification_email.at(0).email_data.domain_registrant_list.begin(), notification_email.at(0).email_data.domain_registrant_list.end()) == changed_domain_owner_fqdn);
 }
 
 

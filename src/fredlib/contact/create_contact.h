@@ -89,6 +89,11 @@ namespace Fred
         Optional<bool> disclosevat_;/**< whether to reveal taxpayer identification number */
         Optional<bool> discloseident_;/**< whether to reveal unambiguous identification number */
         Optional<bool> disclosenotifyemail_;/**< whether to reveal notify email */
+        /** user preference whether to send domain expiration letters for domains linked to this contact.
+         * if TRUE then send domain expiration letters,
+         * if FALSE don't send domain expiration letters,
+         * if is NULL no user preference set */
+        Optional< Nullable< bool > > domain_expiration_warning_letter_enabled_;
         Nullable<unsigned long long> logd_request_id_; /**< id of the new entry in log_entry database table, id is used in other calls to logging within current request */
 
     public:
@@ -152,6 +157,7 @@ namespace Fred
                 , const Optional<bool>& disclosevat
                 , const Optional<bool>& discloseident
                 , const Optional<bool>& disclosenotifyemail
+                , const Optional< Nullable< bool > >& domain_expiration_warning_letter_enabled
                 , const Optional<unsigned long long> logd_request_id
                 );
 
@@ -303,6 +309,13 @@ namespace Fred
         * @return operation instance reference to allow method chaining
         */
         CreateContact& set_disclosenotifyemail(const bool disclosenotifyemail);
+
+        /**
+        * Sets user preference whether to send domain expiration letters for domains linked to this contact.
+        * @param domain_expiration_warning_letter_enabled sets user preference whether to send domain expiration letters for domains linked to this contact into @ref domain_expiration_warning_letter_enabled_ attribute.
+        * @return operation instance reference to allow method chaining
+        */
+        CreateContact& set_domain_expiration_warning_letter_enabled(const Nullable< bool >& domain_expiration_warning_letter_enabled);
 
         /**
         * Sets logger request id

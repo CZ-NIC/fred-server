@@ -71,6 +71,7 @@ namespace Fred
             , const Optional<bool>& disclosevat
             , const Optional<bool>& discloseident
             , const Optional<bool>& disclosenotifyemail
+            , const Optional< Nullable< bool > >& domain_expiration_warning_letter_enabled
             , const Optional<unsigned long long> logd_request_id
             )
     : handle_(handle)
@@ -96,6 +97,7 @@ namespace Fred
     , disclosevat_(disclosevat)
     , discloseident_(discloseident)
     , disclosenotifyemail_(disclosenotifyemail)
+    , domain_expiration_warning_letter_enabled_(domain_expiration_warning_letter_enabled)
     , logd_request_id_(logd_request_id.isset()
             ? Nullable<unsigned long long>(logd_request_id.get_value())
             : Nullable<unsigned long long>())//is NULL if not set
@@ -224,6 +226,12 @@ namespace Fred
     CreateContact& CreateContact::set_disclosenotifyemail(const bool disclosenotifyemail)
     {
         disclosenotifyemail_ = disclosenotifyemail;
+        return *this;
+    }
+
+    CreateContact& CreateContact::set_domain_expiration_warning_letter_enabled(const Nullable< bool >& domain_expiration_warning_letter_enabled)
+    {
+        domain_expiration_warning_letter_enabled_ = domain_expiration_warning_letter_enabled;
         return *this;
     }
 
@@ -453,7 +461,13 @@ namespace Fred
                     val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
                 }
 
-                col_sql <<")";
+                if (domain_expiration_warning_letter_enabled_.isset() && !domain_expiration_warning_letter_enabled_.get_value().isnull()) {
+                    params.push_back(domain_expiration_warning_letter_enabled_.get_value().get_value());
+                    col_sql << col_separator.get() << "warning_letter";
+                    val_sql << val_separator.get() << "$" << params.size() <<"::boolean";
+                }
+
+                col_sql << ")";
                 val_sql << ")";
 
                 if(create_contact_exception.throw_me())
@@ -608,6 +622,10 @@ namespace Fred
         (std::make_pair("disclosevat",disclosevat_.print_quoted()))
         (std::make_pair("discloseident",discloseident_.print_quoted()))
         (std::make_pair("disclosenotifyemail",disclosenotifyemail_.print_quoted()))
+        (std::make_pair("domain_expiration_warning_letter_enabled",
+            domain_expiration_warning_letter_enabled_.isset()
+                ? domain_expiration_warning_letter_enabled_.get_value().print_quoted()
+                : domain_expiration_warning_letter_enabled_.print_quoted()))
         (std::make_pair("logd_request_id",logd_request_id_.print_quoted()))
         );
     }

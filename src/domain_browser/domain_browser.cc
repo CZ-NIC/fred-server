@@ -1698,7 +1698,7 @@ namespace Registry
                 }
 
                 Fred::UpdateContactById(contact_id, update_registrar_)
-                    .set_domain_expiration_letter_flag(send_expiration_letters)
+                    .set_domain_expiration_warning_letter_enabled(send_expiration_letters)
                     .set_logd_request_id(request_id).exec(ctx);
                 ctx.commit_transaction();
             }

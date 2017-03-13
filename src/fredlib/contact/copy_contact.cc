@@ -135,6 +135,7 @@ namespace Fred
           to_optional(old_contact.info_contact_data.disclosevat),
           to_optional(old_contact.info_contact_data.discloseident),
           to_optional(old_contact.info_contact_data.disclosenotifyemail),
+          to_optional(old_contact.info_contact_data.warning_letter),
           to_optional(request_id_));
         try {
             create_contact.exec(_ctx);
