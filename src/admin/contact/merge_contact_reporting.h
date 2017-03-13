@@ -37,7 +37,7 @@ struct MergeContactOperationSummary
     typedef std::map<std::string, OperationCount> RegistrarOperationMap;
     RegistrarOperationMap ops_by_registrar;
 
-    void add_merge_output(const Fred::MergeContactOutput &_merge_data);
+    void add_merge_output(const Fred::MergeContactOutput& _merge_data);
 
     std::string format(OutputIndenter _indenter);
 };
@@ -45,39 +45,59 @@ struct MergeContactOperationSummary
 
 struct MergeContactSummaryInfo
 {
-    unsigned long long merge_set_counter;
-    unsigned long long merge_counter;
-    unsigned long long merge_per_merge_set_counter;
+    unsigned long long merge_sets_total;
+    unsigned long long merge_operations_total;
+    unsigned long long merge_operations_in_current_set;
+    unsigned long long invalid_contacts_total;
+    unsigned long long invalid_contacts_in_current_set;
+    unsigned long long linked_contacts_total;
+    unsigned long long linked_contacts_in_current_set;
 
     MergeContactSummaryInfo()
-        : merge_set_counter(0),
-          merge_counter(0),
-          merge_per_merge_set_counter(0)
+        : merge_sets_total(0),
+          merge_operations_total(0),
+          merge_operations_in_current_set(0),
+          invalid_contacts_total(0),
+          invalid_contacts_in_current_set(0),
+          linked_contacts_total(0),
+          linked_contacts_in_current_set(0)
     {
     }
 
     void inc_merge_set()
     {
-        merge_set_counter += 1;
-        merge_per_merge_set_counter = 0;
+        merge_sets_total++;
+        merge_operations_in_current_set = 0;
     }
 
     void inc_merge_operation()
     {
-        merge_counter += 1;
-        merge_per_merge_set_counter += 1;
+        merge_operations_total++;
+        merge_operations_in_current_set++;
+    }
+
+    void inc_invalid_contacts()
+    {
+        invalid_contacts_total++;
+        invalid_contacts_in_current_set++;
+    }
+
+    void inc_linked_contacts()
+    {
+        linked_contacts_total++;
+        linked_contacts_in_current_set++;
     }
 };
 
 
-std::string format_header(const std::string &_text, OutputIndenter _indenter);
+std::string format_header(const std::string& _text, OutputIndenter _indenter);
 
 
 std::string format_merge_contact_output(
-        const Fred::MergeContactOutput &_merge_data,
-        const std::string &_src_handle,
-        const std::string &_dst_handle,
-        const MergeContactSummaryInfo &_msi,
+        const Fred::MergeContactOutput& _merge_data,
+        const std::string& _src_handle,
+        const std::string& _dst_handle,
+        const MergeContactSummaryInfo& _msi,
         OutputIndenter _indenter);
 
 

@@ -55,11 +55,38 @@ namespace Test {
             ).copy_onlynospaces_args();
         }
     };
+
+    void setup_logging(CfgArgs * cfg_instance_ptr) {
+
+        HandleLoggingArgs* handler_ptr = cfg_instance_ptr->get_handler_ptr_by_type<HandleLoggingArgs>();
+
+        Logging::Log::Type log_type =
+            static_cast<Logging::Log::Type>(handler_ptr->log_type);
+
+        boost::any param;
+        if (log_type == Logging::Log::LT_FILE) {
+            param = handler_ptr->log_file;
+        }
+        if (log_type == Logging::Log::LT_SYSLOG) {
+            param = handler_ptr->log_syslog_facility;
+        }
+
+        Logging::Manager::instance_ref().get(PACKAGE).addHandler(log_type, param);
+
+        Logging::Manager::instance_ref().get(PACKAGE).setLevel(
+            static_cast<Logging::Log::Level>(handler_ptr->log_level)
+        );
+    }
+
 }
 
 struct global_fixture {
     Test::handle_command_line_args handle_admin_db_cmd_line_args;
     Test::Fixture::create_db_template crete_db_template;
+
+    global_fixture() {
+        Test::setup_logging(CfgArgs::instance());
+    }
 };
 
 BOOST_GLOBAL_FIXTURE( global_fixture );
