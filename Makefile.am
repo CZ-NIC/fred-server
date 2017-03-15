@@ -263,6 +263,7 @@ noinst_HEADERS = \
 		tests/interfaces/epp/fixture.h \
 		tests/interfaces/epp/contact/fixture.h \
 		tests/interfaces/epp/domain/fixture.h \
+		tests/interfaces/epp/poll/fixture.h \
 		src/corba/mojeid/mojeid_corba_conversion.h \
 		src/mojeid/mojeid_impl_data.h \
 		src/mojeid/mojeid_public_request.h \
@@ -2570,6 +2571,8 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
+		tests/interfaces/epp/poll/fixture.h \
+		tests/interfaces/epp/poll/test_poll_acknowledgement.cc \
 		tests/setup/fixtures.cc
 
 tests_interfaces_test_epp_LDFLAGS = \
