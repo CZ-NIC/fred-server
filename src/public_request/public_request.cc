@@ -249,8 +249,8 @@ unsigned long long send_authinfo(
     Fred::Mailer::Parameters email_template_params;
     {
         const Database::Result dbres = ctx.get_conn().exec_params(
-                "SELECT create_time FROM public_request "
-                "WHERE id=$1::bigint",
+                "SELECT (create_time AT TIME ZONE 'UTC' AT TIME ZONE 'Europe/Prague')::DATE FROM public_request "
+                "WHERE id=$1::BIGINT",
                 Database::query_param_list(public_request_id));
         if (dbres.size() < 1)
         {
