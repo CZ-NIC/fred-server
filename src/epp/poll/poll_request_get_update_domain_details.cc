@@ -52,7 +52,7 @@ Epp::Domain::InfoDomainOutputData get_info_domain_output_data(
     return Epp::Domain::get_domain_info(info_domain_data, domain_states_data, authinfopw_has_to_be_hidden);
 }
 
-}
+} // namespace Epp::Poll::{anonymous}
 
 PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
     Fred::OperationContext& _ctx,

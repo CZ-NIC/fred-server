@@ -29,23 +29,23 @@ namespace Corba
 namespace
 {
 
-PollMessage wrap_transfer_event_into_any(const Epp::Poll::TransferEvent& _src);
+PollMessage wrap_transfer_event_into_poll_message(const Epp::Poll::TransferEvent& _src);
 template<typename Flag>
-PollMessage wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src);
+PollMessage wrap_transfer_event_data_into_poll_message(const Epp::Poll::TransferEvent::Data<Flag>& _src);
 
-PollMessage wrap_message_event_into_any(const Epp::Poll::MessageEvent& _src);
+PollMessage wrap_message_event_into_poll_message(const Epp::Poll::MessageEvent& _src);
 template<typename Flag>
-PollMessage wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data<Flag>& _src);
+PollMessage wrap_message_event_data_into_poll_message(const Epp::Poll::MessageEvent::Data<Flag>& _src);
 
-PollMessage wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src);
+PollMessage wrap_low_credit_event_into_poll_message(const Epp::Poll::LowCreditEvent& _src);
 
-PollMessage wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfoEvent& _src);
+PollMessage wrap_low_request_fee_info_event_into_poll_message(const Epp::Poll::RequestFeeInfoEvent& _src);
 
-PollMessage wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src);
+PollMessage wrap_tech_check_event_into_poll_message(const Epp::Poll::TechCheckEvent& _src);
 
-PollMessage wrap_update_info_event_into_any(const Epp::Poll::UpdateInfoEvent& _src);
+PollMessage wrap_update_info_event_into_poll_message(const Epp::Poll::UpdateInfoEvent& _src);
 template<typename Flag>
-PollMessage wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src);
+PollMessage wrap_update_info_event_data_into_poll_message(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src);
 
 
 struct TransferEventWrapper : boost::static_visitor<PollMessage>
@@ -53,7 +53,7 @@ struct TransferEventWrapper : boost::static_visitor<PollMessage>
     template<typename Flag>
     PollMessage operator()(const Epp::Poll::TransferEvent::Data<Flag>& _src) const
     {
-        return wrap_transfer_event_data_into_any(_src);
+        return wrap_transfer_event_data_into_poll_message(_src);
     }
 };
 
@@ -84,7 +84,7 @@ struct TransferTypes<Epp::Poll::TransferEvent::transfer_keyset>
 };
 
 template<typename Flag>
-PollMessage wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Data<Flag>& _src)
+PollMessage wrap_transfer_event_data_into_poll_message(const Epp::Poll::TransferEvent::Data<Flag>& _src)
 {
     ccReg::PollMsg_HandleDateReg hdm;
     hdm.date = Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.transfer_date));
@@ -97,7 +97,7 @@ PollMessage wrap_transfer_event_data_into_any(const Epp::Poll::TransferEvent::Da
     return ret;
 }
 
-PollMessage wrap_transfer_event_into_any(const Epp::Poll::TransferEvent& _src)
+PollMessage wrap_transfer_event_into_poll_message(const Epp::Poll::TransferEvent& _src)
 {
     return boost::apply_visitor(TransferEventWrapper(), _src.message);
 }
@@ -107,7 +107,7 @@ struct MessageEventWrapper : boost::static_visitor<PollMessage>
     template<typename Flag>
     PollMessage operator()(const Epp::Poll::MessageEvent::Data<Flag>& _src) const
     {
-        return wrap_message_event_data_into_any(_src);
+        return wrap_message_event_data_into_poll_message(_src);
     }
 };
 
@@ -178,7 +178,7 @@ struct MessageTypes<Epp::Poll::MessageEvent::imp_validation>
 };
 
 template<typename Flag>
-PollMessage wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data<Flag>& _src)
+PollMessage wrap_message_event_data_into_poll_message(const Epp::Poll::MessageEvent::Data<Flag>& _src)
 {
     ccReg::PollMsg_HandleDateReg hdm;
     hdm.date = Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.date));
@@ -190,12 +190,12 @@ PollMessage wrap_message_event_data_into_any(const Epp::Poll::MessageEvent::Data
     return ret;
 }
 
-PollMessage wrap_message_event_into_any(const Epp::Poll::MessageEvent& _src)
+PollMessage wrap_message_event_into_poll_message(const Epp::Poll::MessageEvent& _src)
 {
     return boost::apply_visitor(MessageEventWrapper(), _src.message);
 }
 
-PollMessage wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src)
+PollMessage wrap_low_credit_event_into_poll_message(const Epp::Poll::LowCreditEvent& _src)
 {
     ccReg::PollMsg_LowCredit hdm;
     hdm.zone = Corba::wrap_string_to_corba_string(_src.zone);
@@ -208,7 +208,7 @@ PollMessage wrap_low_credit_event_into_any(const Epp::Poll::LowCreditEvent& _src
     return ret;
 }
 
-PollMessage wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src)
+PollMessage wrap_tech_check_event_into_poll_message(const Epp::Poll::TechCheckEvent& _src)
 {
     ccReg::PollMsg_Techcheck hdm;
     hdm.handle = Corba::wrap_string_to_corba_string(_src.handle);
@@ -230,7 +230,7 @@ PollMessage wrap_tech_check_event_into_any(const Epp::Poll::TechCheckEvent& _src
     return ret;
 }
 
-PollMessage wrap_low_request_fee_info_event_into_any(const Epp::Poll::RequestFeeInfoEvent& _src)
+PollMessage wrap_low_request_fee_info_event_into_poll_message(const Epp::Poll::RequestFeeInfoEvent& _src)
 {
     ccReg::PollMsg_RequestFeeInfo hdm;
     hdm.periodFrom = Corba::wrap_string_to_corba_string(convert_time_to_local_rfc3339(_src.from));
@@ -250,7 +250,7 @@ struct UpdateInfoEventWrapper : boost::static_visitor<PollMessage>
     template<typename Flag>
     PollMessage operator()(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src) const
     {
-        return wrap_update_info_event_data_into_any(_src);
+        return wrap_update_info_event_data_into_poll_message(_src);
     }
 };
 
@@ -275,7 +275,7 @@ struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::update_nsset>
 };
 
 template<typename Flag>
-PollMessage wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src)
+PollMessage wrap_update_info_event_data_into_poll_message(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src)
 {
     ccReg::PollMsg_Update hdm;
     hdm.opTRID = Corba::wrap_string_to_corba_string(Util::make_svtrid(_src.transaction_id));
@@ -287,49 +287,49 @@ PollMessage wrap_update_info_event_data_into_any(const Epp::Poll::UpdateInfoEven
     return ret;
 }
 
-PollMessage wrap_update_info_event_into_any(const Epp::Poll::UpdateInfoEvent& _src)
+PollMessage wrap_update_info_event_into_poll_message(const Epp::Poll::UpdateInfoEvent& _src)
 {
     return boost::apply_visitor(UpdateInfoEventWrapper(), _src.message);
 }
 
+struct ConvertorToPollMessage : boost::static_visitor<Corba::PollMessage>
+{
+    Corba::PollMessage operator()(const Epp::Poll::TransferEvent& _transfer_event) const
+    {
+        return Corba::wrap_transfer_event_into_poll_message(_transfer_event);
+    }
+
+    Corba::PollMessage operator()(const Epp::Poll::MessageEvent& _message_event) const
+    {
+        return Corba::wrap_message_event_into_poll_message(_message_event);
+    }
+
+    Corba::PollMessage operator()(const Epp::Poll::LowCreditEvent& _low_credit_event) const
+    {
+        return Corba::wrap_low_credit_event_into_poll_message(_low_credit_event);
+    }
+
+    Corba::PollMessage operator()(const Epp::Poll::TechCheckEvent& _tech_check_event) const
+    {
+        return Corba::wrap_tech_check_event_into_poll_message(_tech_check_event);
+    }
+
+    Corba::PollMessage operator()(const Epp::Poll::RequestFeeInfoEvent& _request_fee_info_event) const
+    {
+        return Corba::wrap_low_request_fee_info_event_into_poll_message(_request_fee_info_event);
+    }
+
+    Corba::PollMessage operator()(const Epp::Poll::UpdateInfoEvent& _update_info_event) const
+    {
+        return Corba::wrap_update_info_event_into_poll_message(_update_info_event);
+    }
+};
+
 } // namespace Corba::{anonymous}
 
-PollMessage wrap_event_into_any(const Epp::Poll::PollRequestOutputData::Message& _src)
+PollMessage wrap_event_into_poll_message(const Epp::Poll::PollRequestOutputData::Message& _src)
 {
-    struct ConvertorToAny : boost::static_visitor<Corba::PollMessage>
-    {
-        Corba::PollMessage operator()(const Epp::Poll::TransferEvent& _transfer_event) const
-        {
-            return Corba::wrap_transfer_event_into_any(_transfer_event);
-        }
-
-        Corba::PollMessage operator()(const Epp::Poll::MessageEvent& _message_event) const
-        {
-            return Corba::wrap_message_event_into_any(_message_event);
-        }
-
-        Corba::PollMessage operator()(const Epp::Poll::LowCreditEvent& _low_credit_event) const
-        {
-            return Corba::wrap_low_credit_event_into_any(_low_credit_event);
-        }
-
-        Corba::PollMessage operator()(const Epp::Poll::TechCheckEvent& _tech_check_event) const
-        {
-            return Corba::wrap_tech_check_event_into_any(_tech_check_event);
-        }
-
-        Corba::PollMessage operator()(const Epp::Poll::RequestFeeInfoEvent& _request_fee_info_event) const
-        {
-            return Corba::wrap_low_request_fee_info_event_into_any(_request_fee_info_event);
-        }
-
-        Corba::PollMessage operator()(const Epp::Poll::UpdateInfoEvent& _update_info_event) const
-        {
-            return Corba::wrap_update_info_event_into_any(_update_info_event);
-        }
-    };
-
-    boost::apply_visitor(ConvertorToAny(), _src);
+    return boost::apply_visitor(ConvertorToPollMessage(), _src);
 }
 
 } // namespace Corba

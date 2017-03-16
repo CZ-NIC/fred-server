@@ -32,7 +32,7 @@ struct PollMessage
     ccReg::PollType type;
 };
 
-PollMessage wrap_event_into_any(const Epp::Poll::PollRequestOutputData::Message& _src);
+PollMessage wrap_event_into_poll_message(const Epp::Poll::PollRequestOutputData::Message& _src);
 
 } // namespace Corba
 

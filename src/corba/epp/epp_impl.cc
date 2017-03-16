@@ -1220,7 +1220,6 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
 
 }
 
-
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
     const char* _msg_id,
     CORBA::ULongLong& _count,
@@ -1300,7 +1299,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         }
 
         Corba::PollMessage message_and_type;
-        message_and_type = Corba::wrap_event_into_any(poll_request_response.data.message);
+        message_and_type = Corba::wrap_event_into_poll_message(poll_request_response.data.message);
         _msg = message_and_type.content._retn();
 
         _type = message_and_type.type;
