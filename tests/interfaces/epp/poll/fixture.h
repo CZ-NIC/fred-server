@@ -19,33 +19,20 @@
 #ifndef FIXTURE_H_392BF773C44544998E917DB3040CB769
 #define FIXTURE_H_392BF773C44544998E917DB3040CB769
 
-#include "tests/interfaces/epp/util.h"
-#include "tests/setup/fixtures_utils.h"
-#include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/opcontext.h"
 
-struct HasPollInfoMessage : virtual Test::autorollbacking_context
+namespace Test {
+
+unsigned long long get_number_of_unseen_poll_messages(Fred::OperationContext& _ctx);
+
+struct MessageDetail
 {
-    HasPollInfoMessage()
-    {
-        Test::domain domain(ctx);
-        Fred::Poll::CreateUpdateObjectPollMessage(domain.info_data.historyid).exec(ctx);
-    }
+    unsigned long long message_id;
+    unsigned long long registrar_id;
 };
 
-struct HasTwoPollInfoMessages : virtual Test::autorollbacking_context
-{
-    HasTwoPollInfoMessages()
-    {
-        Test::domain domain(ctx);
+MessageDetail get_message_ids(Fred::OperationContext& _ctx);
 
-        Fred::Poll::CreateUpdateObjectPollMessage(domain.info_data.historyid).exec(ctx);
-
-        unsigned long long new_history_id =
-            Fred::UpdateDomain(domain.info_data.fqdn,
-                               domain.info_data.sponsoring_registrar_handle
-                ).set_authinfo("doesntmatter").exec(ctx);
-        Fred::Poll::CreateUpdateObjectPollMessage(new_history_id).exec(ctx);
-    }
-};
+} // namespace Test
 
 #endif

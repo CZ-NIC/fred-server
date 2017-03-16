@@ -911,6 +911,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_delete_contact_poll_message.cc \
 		src/fredlib/poll/create_delete_domain_poll_message.h \
 		src/fredlib/poll/create_delete_domain_poll_message.cc \
+		src/fredlib/poll/create_transfer_keyset_poll_message.h \
+		src/fredlib/poll/create_transfer_keyset_poll_message.cc \
 		src/fredlib/poll/create_transfer_contact_poll_message.h \
 		src/fredlib/poll/create_transfer_contact_poll_message.cc \
 		src/fredlib/poll/create_transfer_nsset_poll_message.h \
@@ -2572,6 +2574,8 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
 		tests/interfaces/epp/poll/fixture.h \
+		tests/interfaces/epp/poll/fixture.cc \
+		tests/interfaces/epp/poll/test_poll_request.cc \
 		tests/interfaces/epp/poll/test_poll_acknowledgement.cc \
 		tests/setup/fixtures.cc
 
