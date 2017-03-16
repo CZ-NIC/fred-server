@@ -211,6 +211,9 @@ int main(int argc, char* argv[])
         // setting up logger
         setup_admin_logging(CfgArgGroups::instance());
 
+        //config dump
+        Logging::Manager::instance_ref().get(PACKAGE).debug(AccumulatedConfig::getInstance().get());
+
         HandleCommandSelectionArgsGrp* selection_ptr
             = CfgArgGroups::instance()->get_handler_ptr_by_type<
                 HandleCommandSelectionArgsGrp>();
