@@ -138,7 +138,7 @@ private:
     std::vector<VMConfigData> data_;
 
 public:
-    static AccumulatedConfig& getInstance()
+    static AccumulatedConfig& get_instance()
     {
         static AccumulatedConfig instance; //lazy init
         return instance;
@@ -259,7 +259,7 @@ struct handler_parse_args
         fa.add_argv(*i);//string
     }//for i
 
-    AccumulatedConfig::getInstance().add(vm);
+    AccumulatedConfig::get_instance().add(vm);
 }
 };//handler_parse_args
 
