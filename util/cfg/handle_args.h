@@ -154,7 +154,7 @@ public:
             {
                 if(it->second.value().type() == typeid(std::string))
                 {
-                    value = boost::any_cast<const std::string&>(it->second.value());
+                    value = boost::any_cast<std::string>(it->second.value());
                 }
                 else if(it->second.value().type() == typeid(unsigned))
                 {
