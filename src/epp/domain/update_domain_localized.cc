@@ -19,6 +19,7 @@
 #include "src/epp/domain/update_domain_localized.h"
 
 #include "src/epp/domain/update_domain_input_data.h"
+#include "src/epp/domain/update_domain_config_data.h"
 #include "src/epp/domain/update_domain.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/impl/conditionally_enqueue_notification.h"
@@ -51,10 +52,9 @@ namespace Domain {
 
 EppResponseSuccessLocalized update_domain_localized(
         const UpdateDomainInputData& _update_domain_input_data,
+        const UpdateDomainConfigData& _update_domain_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id,
-        const bool _rifd_epp_update_domain_keyset_clear)
+        const NotificationData& _notification_data)
 {
 
     try
@@ -70,9 +70,8 @@ EppResponseSuccessLocalized update_domain_localized(
                 update_domain(
                         ctx,
                         _update_domain_input_data,
-                        _session_data.registrar_id,
-                        _logd_request_id,
-                        _rifd_epp_update_domain_keyset_clear);
+                        _update_domain_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

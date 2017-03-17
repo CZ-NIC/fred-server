@@ -21,6 +21,7 @@
  */
 
 #include "tests/interfaces/epp/util.h"
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 
 #include "src/epp/epp_response_failure.h"
@@ -45,12 +46,13 @@ bool info_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
 
 BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
 {
+    const unsigned long long invalid_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::info_nsset(
             ctx,
             nsset.handle,
-            Epp::SessionLang::en,
-            0 /* <== !!! */
+            Test::DefaultInfoNssetConfigData(),
+            Test::Session(ctx, invalid_registrar_id).data
         ),
         Epp::EppResponseFailure,
         info_invalid_registrar_id_exception
@@ -69,8 +71,8 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
         Epp::Nsset::info_nsset(
             ctx,
             nsset.handle + "SOMEobscureSTRING",
-            Epp::SessionLang::en,
-            42 /* TODO */
+            Test::DefaultInfoNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         info_fail_nonexistent_handle_exception
@@ -110,8 +112,8 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_nsset_with_all_data_set)
         Epp::Nsset::info_nsset(
             ctx,
             nsset.handle,
-            Epp::SessionLang::en,
-            registrar.id
+            Test::DefaultInfoNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         nsset
     );

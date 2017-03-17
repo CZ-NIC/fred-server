@@ -44,9 +44,9 @@ namespace Keyset {
 
 EppResponseSuccessLocalized update_keyset_localized(
         const UpdateKeysetInputData& _update_keyset_input_data,
+        const UpdateKeysetConfigData& _update_keyset_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const NotificationData& _notification_data)
 {
     try
     {
@@ -61,8 +61,8 @@ EppResponseSuccessLocalized update_keyset_localized(
                 update_keyset(
                         ctx,
                         _update_keyset_input_data,
-                        _session_data.registrar_id,
-                        _logd_request_id);
+                        _update_keyset_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

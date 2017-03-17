@@ -43,9 +43,9 @@ namespace Keyset {
 
 CreateKeysetLocalizedResponse create_keyset_localized(
         const CreateKeysetInputData& _create_keyset_input_data,
+        const CreateKeysetConfigData& _create_keyset_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const NotificationData& _notification_data)
 {
     try
     {
@@ -60,8 +60,8 @@ CreateKeysetLocalizedResponse create_keyset_localized(
                 create_keyset(
                         ctx,
                         _create_keyset_input_data,
-                        _session_data.registrar_id,
-                        _logd_request_id);
+                        _create_keyset_config_data,
+                        _session_data);
 
         const CreateKeysetLocalizedResponse create_keyset_localized_response(
                 EppResponseSuccessLocalized(

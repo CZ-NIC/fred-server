@@ -42,6 +42,7 @@ namespace Keyset {
 
 EppResponseSuccessLocalized delete_keyset_localized(
         const std::string& _keyset_handle,
+        const DeleteKeysetConfigData& _delete_keyset_config_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data)
 {
@@ -58,7 +59,8 @@ EppResponseSuccessLocalized delete_keyset_localized(
                 delete_keyset(
                         ctx,
                         _keyset_handle,
-                        _session_data.registrar_id);
+                        _delete_keyset_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

@@ -19,7 +19,9 @@
 #ifndef INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 #define INFO_KEYSET_H_6F5C2120747B47CB9758B4E30FA6FB73
 
+#include "src/epp/keyset/info_keyset_config_data.h"
 #include "src/epp/keyset/info_keyset_output_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <string>
@@ -33,7 +35,9 @@ namespace Keyset {
 InfoKeysetOutputData info_keyset(
         Fred::OperationContext& _ctx,
         const std::string& _keyset_handle,
-        unsigned long long _registrar_id);
+        const InfoKeysetConfigData& _info_keyset_config_data,
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

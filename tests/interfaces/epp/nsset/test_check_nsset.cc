@@ -20,6 +20,7 @@
  *  @file
  */
 
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -32,7 +33,7 @@
 #include <boost/assign/list_of.hpp>
 
 BOOST_AUTO_TEST_SUITE(Nsset)
-BOOST_FIXTURE_TEST_SUITE(NssetCheckImpl, Test::autocommitting_context)
+BOOST_AUTO_TEST_SUITE(CheckNsset)
 
 bool test_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
@@ -40,22 +41,24 @@ bool test_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, has_invalid_registrar_id)
+BOOST_AUTO_TEST_CASE(test_invalid_registrar_id)
 {
+    const unsigned long long invalid_session_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
         Fred::OperationContextCreator ctx;
 
         Epp::Nsset::check_nsset(
             ctx,
             std::set<std::string>(),
-            invalid_registrar_id
+            Test::DefaultCheckNssetConfigData(),
+            Test::Session(ctx, invalid_session_registrar_id).data
         ),
         Epp::EppResponseFailure,
         test_invalid_registrar_id_exception
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_empty, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_result_size_empty, HasRegistrar)
 {
     Fred::OperationContextCreator ctx;
 
@@ -63,13 +66,14 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_empty, has_registrar)
         Epp::Nsset::check_nsset(
             ctx,
             std::set<std::string>(),
-            registrar.id
+            Test::DefaultCheckNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ).size(),
         0
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, HasRegistrar)
 {
     const std::set<std::string> nsset_handles
         = boost::assign::list_of
@@ -90,13 +94,14 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, has_registrar)
         Epp::Nsset::check_nsset(
             ctx,
             nsset_handles,
-            registrar.id
+            Test::DefaultCheckNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ).size(),
         nsset_handles.size()
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_invalid_handle, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasRegistrar)
 {
     const std::set<std::string> nsset_handles
         = boost::assign::list_of
@@ -115,7 +120,8 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, has_registrar)
         Epp::Nsset::check_nsset(
             ctx,
             nsset_handles,
-            registrar.id
+            Test::DefaultCheckNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -126,7 +132,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, has_registrar)
     }
 }
 
-struct has_protected_handles : has_registrar {
+struct has_protected_handles : HasRegistrar {
     std::set<std::string> protected_handles;
     has_protected_handles() {
         protected_handles = boost::assign::list_of
@@ -150,7 +156,8 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
         Epp::Nsset::check_nsset(
             ctx,
             protected_handles,
-            registrar.id
+            Test::DefaultCheckNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -161,7 +168,7 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, HasRegistrar)
 {
     const std::set<std::string> nsset_handles
         = boost::assign::list_of
@@ -179,7 +186,8 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, has_registrar)
         Epp::Nsset::check_nsset(
             ctx,
             nsset_handles,
-            registrar.id
+            Test::DefaultCheckNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -190,7 +198,7 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, has_registrar)
     }
 }
 
-struct has_existing_nssets : has_registrar {
+struct has_existing_nssets : HasRegistrar {
     std::set<std::string> existing_nsset_handles;
     has_existing_nssets() {
         existing_nsset_handles = boost::assign::list_of
@@ -213,7 +221,8 @@ BOOST_FIXTURE_TEST_CASE(test_existing, has_existing_nssets)
         Epp::Nsset::check_nsset(
             ctx,
             existing_nsset_handles,
-            registrar.id
+            Test::DefaultCheckNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         );
 
     for(std::map<std::string, Nullable<Epp::Nsset::NssetHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();

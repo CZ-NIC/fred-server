@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -109,13 +105,14 @@ bool fail_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, Test::supply_ctx<Test::Fixture::HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Domain::info_domain(
             ctx,
-            info_domain_data_.fqdn,
-            0 // invalid registrar_id
+            "domain.cz",
+            Test::DefaultInfoDomainConfigData(),
+            session_with_unauthenticated_registrar.data
         ),
         Epp::EppResponseFailure,
         fail_invalid_registrar_id_exception
@@ -128,28 +125,30 @@ bool fail_nonexistent_fqdn_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn,  Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndNonexistentFqdn>)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Domain::info_domain(
             ctx,
-            info_domain_data_.fqdn,
-            info_registrar_data_.id
+            nonexistent_fqdn.fqdn,
+            Test::DefaultInfoDomainConfigData(),
+            session.data
         ),
         Epp::EppResponseFailure,
         fail_nonexistent_fqdn_exception
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
 {
     check_equal(
         Epp::Domain::info_domain(
             ctx,
-            info_domain_data_.fqdn,
-            info_registrar_data_.id
+            domain.data.fqdn,
+            Test::DefaultInfoDomainConfigData(),
+            session.data
         ),
-        info_domain_data_);
+        domain.data);
 }
 
 BOOST_AUTO_TEST_SUITE_END();

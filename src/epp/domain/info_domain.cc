@@ -43,12 +43,12 @@ namespace Domain {
 
 InfoDomainOutputData info_domain(
         Fred::OperationContext& _ctx,
-        const std::string& _domain_fqdn,
-        unsigned long long _session_registrar_id)
+        const std::string& _fqdn,
+        const InfoDomainConfigData& _info_domain_config_data,
+        const SessionData& _session_data)
 {
 
-    const bool registrar_is_authenticated = _session_registrar_id != 0;
-    if (!registrar_is_authenticated)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -60,7 +60,7 @@ InfoDomainOutputData info_domain(
     {
 
         const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_domain_fqdn)).exec(_ctx, "UTC").info_domain_data;
+                Fred::Zone::rem_trailing_dot(_fqdn)).exec(_ctx, "UTC").info_domain_data;
 
         info_domain_output_data.roid = info_domain_data.roid;
         info_domain_output_data.fqdn = info_domain_data.fqdn;
@@ -100,7 +100,7 @@ InfoDomainOutputData info_domain(
 
         // show object authinfopw only to sponsoring registrar
         const std::string session_registrar_handle =
-                Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+                Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
         const bool authinfopw_has_to_be_hidden = info_domain_data.sponsoring_registrar_handle !=
                                                  session_registrar_handle;
         info_domain_output_data.authinfopw =

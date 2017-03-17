@@ -19,6 +19,7 @@
 #ifndef DELETE_DOMAIN_LOCALIZED_H_7881B671649445C0BD9D46F87C8643B8
 #define DELETE_DOMAIN_LOCALIZED_H_7881B671649445C0BD9D46F87C8643B8
 
+#include "src/epp/domain/delete_domain_config_data.h"
 #include "src/epp/epp_response_success_localized.h"
 #include "src/epp/notification_data.h"
 #include "src/epp/session_data.h"
@@ -29,7 +30,8 @@ namespace Epp {
 namespace Domain {
 
 EppResponseSuccessLocalized delete_domain_localized(
-        const std::string& _domain_fqdn,
+        const std::string& _domain_name,
+        const DeleteDomainConfigData& _delete_domain_config_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data);
 

@@ -19,9 +19,10 @@
 #ifndef CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
 #define CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
 
-#include "src/fredlib/opcontext.h"
-
+#include "src/epp/contact/create_contact_config_data.h"
 #include "src/epp/contact/create_contact_localized.h"
+#include "src/epp/session_data.h"
+#include "src/fredlib/opcontext.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -32,6 +33,10 @@ namespace Contact {
 
 struct CreateContactResult
 {
+    const unsigned long long id;
+    const unsigned long long create_history_id;
+    // TODO guarantee non-special
+    const boost::posix_time::ptime crdate;
 
 
     CreateContactResult(
@@ -45,19 +50,14 @@ struct CreateContactResult
     }
 
 
-    const unsigned long long id;
-    const unsigned long long create_history_id;
-    // TODO guarantee non-special
-    const boost::posix_time::ptime crdate;
-
 };
 
 CreateContactResult create_contact(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const CreateContactInputData& _data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const CreateContactConfigData& _create_contact_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Contact

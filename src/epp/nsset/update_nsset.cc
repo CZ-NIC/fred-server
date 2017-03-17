@@ -58,11 +58,10 @@ unsigned long long update_nsset(
         Fred::OperationContext& _ctx,
         const UpdateNssetInputData& _update_nsset_data,
         const UpdateNssetConfigData& _nsset_config,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const SessionData& _session_data)
 {
 
-    if (_registrar_id == 0)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -104,7 +103,7 @@ unsigned long long update_nsset(
                     _update_nsset_data.handle);
 
     const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id)
+            Fred::InfoRegistrarById(_session_data.registrar_id)
                     .exec(_ctx)
                     .info_registrar_data;
 
@@ -369,7 +368,7 @@ unsigned long long update_nsset(
                 _update_nsset_data.tech_check_level
                         ? Optional<short>(*_update_nsset_data.tech_check_level)
                         : Optional<short>(),
-                _logd_request_id);
+                _session_data.logd_request_id);
 
         try
         {

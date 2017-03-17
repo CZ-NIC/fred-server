@@ -36,6 +36,7 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
 namespace {
 
@@ -269,4 +270,5 @@ wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input
 }
 
 
+} // namespace Fred::Corba
 } // namespace Corba

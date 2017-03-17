@@ -28,22 +28,17 @@ namespace Epp {
 namespace Contact {
 
 /**
- * If successful (no exception thrown) state requests of conact are performed. In case of exception behaviour is undefined and transaction should bo rolled back.
+ * If successful (no exception thrown) state requests of conact are performed.
+ * In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns new history id
- *
- * @throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
- * @throws NonexistentHandle
- * @throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
- * @throws ObjectStatusProhibitsOperation
- * @throws AuthorizationError in case invalid _authinfopw is given
  */
 unsigned long long transfer_contact(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const std::string& _authinfopw,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const TransferContactConfigData& _transfer_contact_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Contact

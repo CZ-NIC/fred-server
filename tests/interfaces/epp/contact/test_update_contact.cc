@@ -16,10 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -158,7 +155,7 @@ bool update_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
+BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, HasInvalidSessionRegistrar)
 {
     Epp::Contact::ContactChange data;
     set_correct_data(data);
@@ -166,10 +163,10 @@ BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, has_contact)
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::update_contact(
             ctx,
-            contact.handle + "*?!",
+            "contact_handle",
             data,
-            0,  /* <== !!! */
-            42 /* TODO */
+            config.update_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         update_invalid_registrar_id_exception
@@ -182,7 +179,7 @@ bool update_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
+BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, HasContact)
 {
     Epp::Contact::ContactChange data;
     set_correct_data(data);
@@ -192,8 +189,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_contact)
             ctx,
             contact.handle + "abc",
             data,
-            registrar.id,
-            42 /* TODO */
+            config.update_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         update_fail_nonexistent_handle_exception
@@ -210,7 +207,7 @@ bool update_fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different_registrar)
+BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, HasContactAndAnotherRegistrar)
 {
     Epp::Contact::ContactChange data;
     set_correct_data(data);
@@ -220,8 +217,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_contact_and_a_different
             ctx,
             contact.handle,
             data,
-            the_different_registrar.id,
-            42 /* TODO */
+            config.update_contact_config_data,
+            Test::Session(ctx, Test::Registrar(ctx).data.id).data
         ),
         Epp::EppResponseFailure,
         update_fail_wrong_registrar_exception
@@ -234,7 +231,7 @@ bool update_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e)
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server_update_prohibited)
+BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, HasContactWithServerUpdateProhibited)
 {
     Epp::Contact::ContactChange data;
     set_correct_data(data);
@@ -244,8 +241,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_contact_with_server
             ctx,
             contact.handle,
             data,
-            registrar.id,
-            42 /* TODO */
+            config.update_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status1_exception
@@ -258,7 +255,7 @@ bool update_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e)
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete_candidate)
+BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, HasContactWithDeleteCandidate)
 {
     Epp::Contact::ContactChange data;
     set_correct_data(data);
@@ -268,8 +265,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_contact_with_delete
             ctx,
             contact.handle,
             data,
-            registrar.id,
-            42 /* TODO */
+            config.update_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status2_exception
@@ -282,7 +279,7 @@ bool update_fail_prohibiting_status_request_exception(const Epp::EppResponseFail
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_contact_with_delete_candidate_request)
+BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, HasContactWithDeleteCandidateRequest)
 {
     Epp::Contact::ContactChange data;
     set_correct_data_2(data);
@@ -292,8 +289,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_contact_with
             ctx,
             contact.handle,
             data,
-            registrar.id,
-            42 /* TODO */
+            config.update_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status_request_exception
@@ -321,7 +318,7 @@ bool update_fail_nonexistent_country_code_exception(const Epp::EppResponseFailur
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
+BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, HasContact)
 {
     Epp::Contact::ContactChange data;
     set_correct_data(data);
@@ -334,8 +331,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, has_contact)
             ctx,
             contact.handle,
             data,
-            registrar.id,
-            42 /* TODO */
+            config.update_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         update_fail_nonexistent_country_code_exception
@@ -348,7 +345,7 @@ bool update_fail_address_cant_be_undisclosed_exception(const Epp::EppResponseFai
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
+BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, HasContact)
 {
     Epp::Contact::ContactChange data;
     set_correct_data(data);
@@ -360,8 +357,8 @@ BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, has_contact)
             ctx,
             contact.handle,
             data,
-            registrar.id,
-            42 /* TODO */
+            config.update_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         update_fail_address_cant_be_undisclosed_exception
@@ -423,7 +420,7 @@ static void check_equal(
                       updated< Epp::Contact::ContactDisclose::Item::notify_email >(update, info_before.disclosenotifyemail));
 }
 
-BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
+BOOST_FIXTURE_TEST_CASE(update_ok_full_data, HasContact)
 {
     Epp::Contact::ContactChange data;
     set_correct_data_2(data);
@@ -432,14 +429,14 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, has_contact)
         ctx,
         contact.handle,
         data,
-        registrar.id,
-        42 /* TODO */
+        config.update_contact_config_data,
+        session.data
     );
 
     check_equal(contact, data, Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data);
 }
 
-BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_contact_with_server_transfer_prohibited_request)
+BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, HasContactWithServerTransferProhibitedRequest)
 {
     Epp::Contact::ContactChange data;
     set_correct_data_2(data);
@@ -448,8 +445,8 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_contact_with_server_t
         ctx,
         contact.handle,
         data,
-        registrar.id,
-        42 /* TODO */
+        config.update_contact_config_data,
+        session.data
     );
 
     check_equal(contact, data, Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data);

@@ -19,27 +19,26 @@
 #ifndef DELETE_CONTACT_H_453EB59462824558BD5077709DA2806D
 #define DELETE_CONTACT_H_453EB59462824558BD5077709DA2806D
 
-#include <string>
-
+#include "src/epp/contact/delete_contact_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
+
+#include <string>
 
 namespace Epp {
 namespace Contact {
 
 /**
- * If successful (no exception thrown) state requests of conact are performed. In case of exception behaviour is undefined and transaction should bo rolled back.
+ * If successful (no exception thrown) state requests of conact are performed.
+ * In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns last contact history id before delete
- *
- * @throws AuthErrorServerClosingConnection
- * @throws NonexistentHandle
- * @throws AuthorizationError
- * @throws ObjectStatusProhibitsOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long delete_contact(
         Fred::OperationContext& _ctx,
         const std::string& _handle,
-        unsigned long long _registrar_id);
+        const DeleteContactConfigData& _delete_contact_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Contact

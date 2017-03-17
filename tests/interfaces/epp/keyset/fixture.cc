@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "tests/interfaces/epp/keyset/fixture.h"
 #include "src/epp/keyset/impl/limits.h"
 

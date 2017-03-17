@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
 namespace {
 
@@ -36,14 +37,14 @@ unwrap_ccReg_DSRecord_str(
         Epp::Keyset::DsRecord& _dst)
 {
     long key_tag;
-    unwrap_int(_src.keyTag, key_tag);
+    Fred::Corba::unwrap_int(_src.keyTag, key_tag);
     long alg;
-    unwrap_int(_src.alg, alg);
+    Fred::Corba::unwrap_int(_src.alg, alg);
     long digest_type;
-    unwrap_int(_src.digestType, digest_type);
+    Fred::Corba::unwrap_int(_src.digestType, digest_type);
     const std::string digest = unwrap_string(_src.digest);
     long max_sig_life;
-    unwrap_int(_src.maxSigLife, max_sig_life);
+    Fred::Corba::unwrap_int(_src.maxSigLife, max_sig_life);
     _dst = Epp::Keyset::DsRecord(key_tag, alg, digest_type, digest, max_sig_life);
 }
 
@@ -54,11 +55,11 @@ unwrap_ccReg_DNSKey_str(
         Epp::Keyset::DnsKey& _dst)
 {
     unsigned short flags;
-    unwrap_int(_src.flags, flags);
+    Fred::Corba::unwrap_int(_src.flags, flags);
     unsigned short protocol;
-    unwrap_int(_src.protocol, protocol);
+    Fred::Corba::unwrap_int(_src.protocol, protocol);
     unsigned short alg;
-    unwrap_int(_src.alg, alg);
+    Fred::Corba::unwrap_int(_src.alg, alg);
     const std::string key = unwrap_string(_src.key);
     _dst = Epp::Keyset::DnsKey(flags, protocol, alg, key);
 }
@@ -114,14 +115,14 @@ wrap_Epp_InfoKeysetOutputData_DnsKeys(
     for (Epp::Keyset::InfoKeysetOutputData::DnsKeys::const_iterator data_ptr = _src.begin();
          data_ptr != _src.end(); ++data_ptr, ++idx)
     {
-        wrap_int(data_ptr->get_flags(),    _dst[idx].flags);
-        wrap_int(data_ptr->get_protocol(), _dst[idx].protocol);
-        wrap_int(data_ptr->get_alg(),      _dst[idx].alg);
+        Fred::Corba::wrap_int(data_ptr->get_flags(),    _dst[idx].flags);
+        Fred::Corba::wrap_int(data_ptr->get_protocol(), _dst[idx].protocol);
+        Fred::Corba::wrap_int(data_ptr->get_alg(),      _dst[idx].alg);
         _dst[idx].key = data_ptr->get_key().c_str();
     }
 }
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::{anonymous}
 
 std::vector<std::string>
 unwrap_TechContact_to_vector_string(const ccReg::TechContact& _tech_contacts)
@@ -223,4 +224,5 @@ wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
 }
 
 
+} // namespace Fred::Cobra
 } // namespace Cobra

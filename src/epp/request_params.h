@@ -20,7 +20,8 @@
 #define REQUEST_PARAMS_H_E846A60680374E6287EA3DE17D3A5FEA
 
 #include "util/util.h"
-#include "util/optional_value.h"
+
+#include <boost/optional.hpp>
 
 #include <string>
 
@@ -30,14 +31,16 @@ struct RequestParams
 {
     unsigned long long session_id;
     std::string client_transaction_id;
-    Optional<unsigned long long> log_request_id;
+    boost::optional<unsigned long long> log_request_id;
 
-    std::string get_server_transaction_handle()const
+    std::string get_server_transaction_handle() const
     {
-        return Util::make_svtrid(log_request_id.get_value_or(0));
+        return Util::make_svtrid(log_request_id ? log_request_id.value() : 0);
     }
+
+
 };
 
-}
+} // namespace Epp
 
 #endif

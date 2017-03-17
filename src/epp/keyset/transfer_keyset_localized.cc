@@ -39,9 +39,9 @@ namespace Keyset {
 EppResponseSuccessLocalized transfer_keyset_localized(
         const std::string& _keyset_handle,
         const std::string& _authinfopw,
+        const TransferKeysetConfigData& _transfer_keyset_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const NotificationData& _notification_data)
 {
     try
     {
@@ -57,8 +57,8 @@ EppResponseSuccessLocalized transfer_keyset_localized(
                         ctx,
                         _keyset_handle,
                         _authinfopw,
-                        _session_data.registrar_id,
-                        _logd_request_id);
+                        _transfer_keyset_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

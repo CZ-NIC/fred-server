@@ -33,6 +33,7 @@
 #include <boost/optional.hpp>
 
 
+namespace Fred {
 namespace Corba {
 
 
@@ -40,7 +41,7 @@ std::vector<std::string>
 unwrap_ccreg_techcontacts_to_vector_string(const ccReg::TechContact& in);
 
 
-std::vector<Epp::Nsset::DnsHostInput>
+std::vector< ::Epp::Nsset::DnsHostInput>
 unwrap_ccreg_dnshosts_to_vector_dnshosts(const ccReg::DNSHost& in);
 
 
@@ -55,14 +56,14 @@ ccReg::CheckResp
 wrap_localized_check_info(
         const std::vector<std::string>& nsset_handles,
         const std::map<std::string,
-                boost::optional<Epp::Nsset::NssetHandleRegistrationObstructionLocalized> >& nsset_handle_check_results);
+                boost::optional< ::Epp::Nsset::NssetHandleRegistrationObstructionLocalized> >& nsset_handle_check_results);
 
 
 ccReg::NSSet
-wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input);
+wrap_localized_info_nsset(const ::Epp::Nsset::InfoNssetLocalizedOutputData& _input);
 
 
+} // namespace Fred::Corba
 } // namespace Corba
-
 
 #endif

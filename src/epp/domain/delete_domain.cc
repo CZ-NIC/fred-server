@@ -44,11 +44,11 @@ namespace Domain {
 unsigned long long delete_domain(
         Fred::OperationContext& _ctx,
         const std::string& _domain_fqdn,
-        const unsigned long long _registrar_id)
+        const DeleteDomainConfigData& _delete_domain_config_data,
+        const SessionData& _session_data)
 {
 
-    const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -81,7 +81,7 @@ unsigned long long delete_domain(
         boost::date_time::c_local_adjustor<ptime>::utc_to_local(current_utc_time);
     const boost::gregorian::date current_local_date = current_local_time.date();
 
-    if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx))
+    if (!Fred::is_zone_accessible_by_registrar(_session_data.registrar_id, zone_data.id, current_local_date, _ctx))
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
     }
@@ -103,7 +103,7 @@ unsigned long long delete_domain(
     }
 
     const Fred::InfoRegistrarData session_registrar =
-        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
+        Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_delete.sponsoring_registrar_handle ==
                                           session_registrar.handle);

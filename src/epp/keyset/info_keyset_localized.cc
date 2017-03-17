@@ -46,6 +46,7 @@ namespace Keyset {
 
 InfoKeysetLocalizedResponse info_keyset_localized(
         const std::string& _keyset_handle,
+        const InfoKeysetConfigData& _info_keyset_config_data,
         const SessionData& _session_data)
 {
     // since no changes are comitted this transaction is reused for everything
@@ -63,7 +64,8 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                 info_keyset(
                         ctx,
                         _keyset_handle,
-                        _session_data.registrar_id);
+                        _info_keyset_config_data,
+                        _session_data);
 
         const InfoKeysetLocalizedOutputData info_keyset_localized_output_data =
                 InfoKeysetLocalizedOutputData(

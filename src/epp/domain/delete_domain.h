@@ -19,6 +19,8 @@
 #ifndef DELETE_DOMAIN_H_E59390C3378948FBBEE42A0F7666F0E7
 #define DELETE_DOMAIN_H_E59390C3378948FBBEE42A0F7666F0E7
 
+#include "src/epp/domain/delete_domain_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <string>
@@ -31,18 +33,12 @@ namespace Domain {
  * In case of exception, behaviour is undefined and transaction should bo rolled back.
  *
  * \returns last domain history id before delete
- *
- * \throws AuthErrorServerClosingConnection in case registrar_id is zero (legacy reasons)
- * \throws NonexistentHandle
- * \throws AuthorizationError
- * \throws ObjectStatusProhibitsOperation  if domain has serverDeleteProhibited, serverUpdateProhibited or deleteCandidate status
- *
- * \throws Fred::DeleteDomainByHandle::Exception
  */
 unsigned long long delete_domain(
         Fred::OperationContext& _ctx,
         const std::string& _domain_fqdn,
-        unsigned long long _registrar_id);
+        const DeleteDomainConfigData& _delete_domain_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Domain

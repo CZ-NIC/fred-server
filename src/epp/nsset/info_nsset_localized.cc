@@ -48,6 +48,7 @@ namespace Nsset {
 
 InfoNssetLocalizedResponse info_nsset_localized(
         const std::string& _nsset_handle,
+        const InfoNssetConfigData& _info_nsset_config_data,
         const SessionData& _session_data)
 {
     // since no changes are comitted this transaction is reused for everything
@@ -64,8 +65,8 @@ InfoNssetLocalizedResponse info_nsset_localized(
                 info_nsset(
                         ctx,
                         _nsset_handle,
-                        _session_data.lang,
-                        _session_data.registrar_id);
+                        _info_nsset_config_data,
+                        _session_data);
 
         // hide internal states
         {

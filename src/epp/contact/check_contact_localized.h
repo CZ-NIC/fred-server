@@ -19,6 +19,7 @@
 #ifndef CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 #define CHECK_CONTACT_LOCALIZED_H_1AE05A8205724400A94CCB90F0E0060F
 
+#include "src/epp/contact/check_contact_config_data.h"
 #include "src/epp/contact/check_contact_localized_response.h"
 #include "src/epp/session_data.h"
 
@@ -30,6 +31,7 @@ namespace Contact {
 
 CheckContactLocalizedResponse check_contact_localized(
         const std::set<std::string>& _contact_handles,
+        const CheckContactConfigData& _check_contact_config_data,
         const SessionData& _session_data);
 
 

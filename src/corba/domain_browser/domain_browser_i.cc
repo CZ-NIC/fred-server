@@ -56,7 +56,7 @@ namespace Registry
         {
             try
             {
-                unsigned long long id = pimpl_->getContactId(Corba::unwrap_string_from_const_char_ptr(handle));
+                unsigned long long id = pimpl_->getContactId(Fred::Corba::unwrap_string_from_const_char_ptr(handle));
                 return id;
             }//try
             catch (const Registry::DomainBrowserImpl::ObjectNotExists&)
@@ -78,8 +78,8 @@ namespace Registry
             Registry::DomainBrowser::NextDomainState ret;
             Registry::DomainBrowserImpl::NextDomainState next_state = in.get_value();
 
-            ret.state_code = Corba::wrap_string_to_corba_string(next_state.state_code);
-            ret.state_date = Corba::wrap_date_to_corba_string(next_state.state_date);
+            ret.state_code = Fred::Corba::wrap_string_to_corba_string(next_state.state_code);
+            ret.state_date = Fred::Corba::wrap_date_to_corba_string(next_state.state_date);
             return Nullable<Registry::DomainBrowser::NextDomainState>(ret);
         }
 
@@ -91,23 +91,23 @@ namespace Registry
             {
                 DomainListData dld;
                 dld.id = domain_list.at(i).id;
-                dld.fqdn = Corba::wrap_string_to_corba_string(domain_list.at(i).fqdn);
+                dld.fqdn = Fred::Corba::wrap_string_to_corba_string(domain_list.at(i).fqdn);
                 dld.external_importance = domain_list.at(i).external_importance;
 
                 Registry::DomainBrowser::NextDomainState corba_next_domain_state;
 
-                dld.next_state = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableNextDomainState>(
+                dld.next_state = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableNextDomainState>(
                     corba_wrap_nullable_next_domain_state(domain_list.at(i).next_state));
 
                 dld.have_keyset = domain_list.at(i).have_keyset;
-                dld.user_role = Corba::wrap_string_to_corba_string(domain_list.at(i).user_role);
-                dld.registrar_handle = Corba::wrap_string_to_corba_string(domain_list.at(i).registrar_handle);
-                dld.registrar_name = Corba::wrap_string_to_corba_string(domain_list.at(i).registrar_name);
+                dld.user_role = Fred::Corba::wrap_string_to_corba_string(domain_list.at(i).user_role);
+                dld.registrar_handle = Fred::Corba::wrap_string_to_corba_string(domain_list.at(i).registrar_handle);
+                dld.registrar_name = Fred::Corba::wrap_string_to_corba_string(domain_list.at(i).registrar_name);
 
                 dld.state_code.length(domain_list.at(i).state_code.size());
                 for(unsigned long long j = 0; j < domain_list.at(i).state_code.size(); ++j)
                 {
-                    dld.state_code[j] = Corba::wrap_string_to_corba_string(domain_list.at(i).state_code.at(j));
+                    dld.state_code[j] = Fred::Corba::wrap_string_to_corba_string(domain_list.at(i).state_code.at(j));
                 }
 
                 dld.is_server_blocked = domain_list.at(i).is_server_blocked;
@@ -155,15 +155,15 @@ namespace Registry
             {
                 NssetListData nld;
                 nld.id = nsset_list.at(i).id;
-                nld.handle = Corba::wrap_string_to_corba_string(nsset_list.at(i).handle);
+                nld.handle = Fred::Corba::wrap_string_to_corba_string(nsset_list.at(i).handle);
                 nld.domain_count = nsset_list.at(i).domain_count;
-                nld.registrar_handle = Corba::wrap_string_to_corba_string(nsset_list.at(i).registrar_handle);
-                nld.registrar_name = Corba::wrap_string_to_corba_string(nsset_list.at(i).registrar_name);
+                nld.registrar_handle = Fred::Corba::wrap_string_to_corba_string(nsset_list.at(i).registrar_handle);
+                nld.registrar_name = Fred::Corba::wrap_string_to_corba_string(nsset_list.at(i).registrar_name);
                 nld.external_importance = nsset_list.at(i).external_importance;
                 nld.state_code.length(nsset_list.at(i).state_code.size());
                 for(unsigned long long j = 0; j < nsset_list.at(i).state_code.size(); ++j)
                 {
-                    nld.state_code[j] = Corba::wrap_string_to_corba_string(nsset_list.at(i).state_code.at(j));
+                    nld.state_code[j] = Fred::Corba::wrap_string_to_corba_string(nsset_list.at(i).state_code.at(j));
                 }
                 nld.is_server_blocked = nsset_list.at(i).is_server_blocked;
                 nl[i] = nld;
@@ -209,15 +209,15 @@ namespace Registry
             {
                 KeysetListData kld;
                 kld.id = keyset_list.at(i).id;
-                kld.handle = Corba::wrap_string_to_corba_string(keyset_list.at(i).handle);
+                kld.handle = Fred::Corba::wrap_string_to_corba_string(keyset_list.at(i).handle);
                 kld.domain_count = keyset_list.at(i).domain_count;
-                kld.registrar_handle = Corba::wrap_string_to_corba_string(keyset_list.at(i).registrar_handle);
-                kld.registrar_name = Corba::wrap_string_to_corba_string(keyset_list.at(i).registrar_name);
+                kld.registrar_handle = Fred::Corba::wrap_string_to_corba_string(keyset_list.at(i).registrar_handle);
+                kld.registrar_name = Fred::Corba::wrap_string_to_corba_string(keyset_list.at(i).registrar_name);
                 kld.external_importance = keyset_list.at(i).external_importance;
                 kld.state_code.length(keyset_list.at(i).state_code.size());
                 for(unsigned long long j = 0; j < keyset_list.at(i).state_code.size(); ++j)
                 {
-                    kld.state_code[j] = Corba::wrap_string_to_corba_string(keyset_list.at(i).state_code.at(j));
+                    kld.state_code[j] = Fred::Corba::wrap_string_to_corba_string(keyset_list.at(i).state_code.at(j));
                 }
                 kld.is_server_blocked = keyset_list.at(i).is_server_blocked;
                 kl[i] = kld;
@@ -320,16 +320,16 @@ namespace Registry
             Registry::DomainBrowser::PlaceAddress ret;
             Fred::Contact::PlaceAddress mailing_addr = in.get_value();
 
-            ret.street1 = Corba::wrap_string_to_corba_string(mailing_addr.street1);
-            ret.street2 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
-                Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street2));
-            ret.street3 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
-                Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street3));
-            ret.state = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
-                Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.stateorprovince));
-            ret.postal_code = Corba::wrap_string_to_corba_string(mailing_addr.postalcode);
-            ret.city = Corba::wrap_string_to_corba_string(mailing_addr.city);
-            ret.country = Corba::wrap_string_to_corba_string(mailing_addr.country);
+            ret.street1 = Fred::Corba::wrap_string_to_corba_string(mailing_addr.street1);
+            ret.street2 = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                Fred::Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street2));
+            ret.street3 = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                Fred::Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.street3));
+            ret.state = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                Fred::Corba::wrap_optional_string_to_nullable_corba_string(mailing_addr.stateorprovince));
+            ret.postal_code = Fred::Corba::wrap_string_to_corba_string(mailing_addr.postalcode);
+            ret.city = Fred::Corba::wrap_string_to_corba_string(mailing_addr.city);
+            ret.country = Fred::Corba::wrap_string_to_corba_string(mailing_addr.country);
 
             return Nullable<Registry::DomainBrowser::PlaceAddress>(ret);
         }
@@ -346,43 +346,43 @@ namespace Registry
 
                 ContactDetail_var contact_detail = new ContactDetail;
                 contact_detail->id = detail_impl.id;
-                contact_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
-                contact_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
+                contact_detail->handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.handle);
+                contact_detail->roid = Fred::Corba::wrap_string_to_corba_string(detail_impl.roid);
                 contact_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                contact_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
-                contact_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                contact_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+                contact_detail->registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                contact_detail->registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                contact_detail->create_time = Fred::Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
 
-                contact_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
-                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
-                contact_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
-                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
+                contact_detail->transfer_time = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Fred::Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                contact_detail->update_time = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Fred::Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
-                contact_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
-                contact_detail->name = Corba::wrap_string_to_corba_string(detail_impl.name.get_value_or_default());
-                contact_detail->organization = Corba::wrap_string_to_corba_string(detail_impl.organization.get_value_or_default());
+                contact_detail->auth_info = Fred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+                contact_detail->name = Fred::Corba::wrap_string_to_corba_string(detail_impl.name.get_value_or_default());
+                contact_detail->organization = Fred::Corba::wrap_string_to_corba_string(detail_impl.organization.get_value_or_default());
 
-                contact_detail->permanent_address.street1 = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.street1);
-                contact_detail->permanent_address.street2 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
-                    Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street2));
-                contact_detail->permanent_address.street3 = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
-                    Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street3));
-                contact_detail->permanent_address.state = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
-                    Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.stateorprovince));
-                contact_detail->permanent_address.postal_code = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.postalcode);
-                contact_detail->permanent_address.city = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.city);
-                contact_detail->permanent_address.country = Corba::wrap_string_to_corba_string(detail_impl.permanent_address.country);
+                contact_detail->permanent_address.street1 = Fred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.street1);
+                contact_detail->permanent_address.street2 = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                    Fred::Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street2));
+                contact_detail->permanent_address.street3 = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                    Fred::Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.street3));
+                contact_detail->permanent_address.state = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableString>(
+                    Fred::Corba::wrap_optional_string_to_nullable_corba_string(detail_impl.permanent_address.stateorprovince));
+                contact_detail->permanent_address.postal_code = Fred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.postalcode);
+                contact_detail->permanent_address.city = Fred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.city);
+                contact_detail->permanent_address.country = Fred::Corba::wrap_string_to_corba_string(detail_impl.permanent_address.country);
 
-                contact_detail->mailing_address= Corba::wrap_nullable_corba_type_to_corba_valuetype<NullablePlaceAddress>(
+                contact_detail->mailing_address= Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullablePlaceAddress>(
                     corba_wrap_nullable_placeaddress(detail_impl.mailing_address));
 
-                contact_detail->telephone = Corba::wrap_string_to_corba_string(detail_impl.telephone.get_value_or_default());
-                contact_detail->fax = Corba::wrap_string_to_corba_string(detail_impl.fax.get_value_or_default());
-                contact_detail->email = Corba::wrap_string_to_corba_string(detail_impl.email.get_value_or_default());
-                contact_detail->notify_email = Corba::wrap_string_to_corba_string(detail_impl.notifyemail.get_value_or_default());
-                contact_detail->ssn = Corba::wrap_string_to_corba_string(detail_impl.ssn.get_value_or_default());
-                contact_detail->ssn_type = Corba::wrap_string_to_corba_string(detail_impl.ssntype.get_value_or_default());
-                contact_detail->vat = Corba::wrap_string_to_corba_string(detail_impl.vat.get_value_or_default());
+                contact_detail->telephone = Fred::Corba::wrap_string_to_corba_string(detail_impl.telephone.get_value_or_default());
+                contact_detail->fax = Fred::Corba::wrap_string_to_corba_string(detail_impl.fax.get_value_or_default());
+                contact_detail->email = Fred::Corba::wrap_string_to_corba_string(detail_impl.email.get_value_or_default());
+                contact_detail->notify_email = Fred::Corba::wrap_string_to_corba_string(detail_impl.notifyemail.get_value_or_default());
+                contact_detail->ssn = Fred::Corba::wrap_string_to_corba_string(detail_impl.ssn.get_value_or_default());
+                contact_detail->ssn_type = Fred::Corba::wrap_string_to_corba_string(detail_impl.ssntype.get_value_or_default());
+                contact_detail->vat = Fred::Corba::wrap_string_to_corba_string(detail_impl.vat.get_value_or_default());
                 contact_detail->disclose_flags.address = detail_impl.disclose_flags.address;
                 contact_detail->disclose_flags.email = detail_impl.disclose_flags.email;
                 contact_detail->disclose_flags.fax = detail_impl.disclose_flags.fax;
@@ -396,7 +396,7 @@ namespace Registry
                 contact_detail->state_codes.length(detail_impl.state_codes.size());
                 for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
                 {
-                    contact_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                    contact_detail->state_codes[j] = Fred::Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
                 }
 
                 if(detail_impl.is_owner)
@@ -408,7 +408,7 @@ namespace Registry
                     auth_result = PUBLIC_DATA;
                 }
 
-                contact_detail->warning_letter = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableBoolean>(detail_impl.warning_letter);
+                contact_detail->warning_letter = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableBoolean>(detail_impl.warning_letter);
 
                 return contact_detail._retn();
             }
@@ -439,53 +439,53 @@ namespace Registry
                 NSSetDetail_var nsset_detail = new NSSetDetail;
 
                 nsset_detail->id = detail_impl.id;
-                nsset_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
-                nsset_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
+                nsset_detail->handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.handle);
+                nsset_detail->roid = Fred::Corba::wrap_string_to_corba_string(detail_impl.roid);
                 nsset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                nsset_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
-                nsset_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                nsset_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+                nsset_detail->registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                nsset_detail->registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                nsset_detail->create_time = Fred::Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
 
-                nsset_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
-                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
-                nsset_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
-                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
+                nsset_detail->transfer_time = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Fred::Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                nsset_detail->update_time = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Fred::Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
                 nsset_detail->create_registrar.id = detail_impl.create_registrar.id;
-                nsset_detail->create_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
-                nsset_detail->create_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.name);
+                nsset_detail->create_registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
+                nsset_detail->create_registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.create_registrar.name);
 
                 nsset_detail->update_registrar.id = detail_impl.update_registrar.id;
-                nsset_detail->update_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.handle);
-                nsset_detail->update_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.name);
+                nsset_detail->update_registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.update_registrar.handle);
+                nsset_detail->update_registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.update_registrar.name);
 
-                nsset_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+                nsset_detail->auth_info = Fred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
 
                 nsset_detail->admins.length(detail_impl.admins.size());
                 for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
                 {
                     nsset_detail->admins[i].id = detail_impl.admins[i].id;
-                    nsset_detail->admins[i].handle = Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
-                    nsset_detail->admins[i].name = Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
+                    nsset_detail->admins[i].handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
+                    nsset_detail->admins[i].name = Fred::Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
                 }
 
                 nsset_detail->hosts.length(detail_impl.hosts.size());
                 for(std::size_t i = 0; i < detail_impl.hosts.size(); ++i)
                 {
-                    nsset_detail->hosts[i].fqdn = Corba::wrap_string_to_corba_string(detail_impl.hosts[i].get_fqdn());
+                    nsset_detail->hosts[i].fqdn = Fred::Corba::wrap_string_to_corba_string(detail_impl.hosts[i].get_fqdn());
 
                     std::vector<boost::asio::ip::address> inet_addrs = detail_impl.hosts[i].get_inet_addr();
                     nsset_detail->hosts[i].inet.length(inet_addrs.size());
                     for(std::size_t j = 0; j < inet_addrs.size(); ++j)
                     {
-                        nsset_detail->hosts[i].inet[j] = Corba::wrap_string_to_corba_string(inet_addrs.at(j).to_string());
+                        nsset_detail->hosts[i].inet[j] = Fred::Corba::wrap_string_to_corba_string(inet_addrs.at(j).to_string());
                     }
                 }
 
                 nsset_detail->state_codes.length(detail_impl.state_codes.size());
                 for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
                 {
-                    nsset_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                    nsset_detail->state_codes[j] = Fred::Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
                 }
 
 
@@ -528,30 +528,30 @@ namespace Registry
 
                 DomainDetail_var domain_detail = new DomainDetail;
                 domain_detail->id = detail_impl.id;
-                domain_detail->fqdn = Corba::wrap_string_to_corba_string(detail_impl.fqdn);
-                domain_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
+                domain_detail->fqdn = Fred::Corba::wrap_string_to_corba_string(detail_impl.fqdn);
+                domain_detail->roid = Fred::Corba::wrap_string_to_corba_string(detail_impl.roid);
                 domain_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                domain_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
-                domain_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                domain_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+                domain_detail->registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                domain_detail->registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                domain_detail->create_time = Fred::Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
 
-                domain_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
-                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
+                domain_detail->update_time = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Fred::Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
-                domain_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+                domain_detail->auth_info = Fred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
                 domain_detail->registrant.id = detail_impl.registrant.id;
-                domain_detail->registrant.handle = Corba::wrap_string_to_corba_string(detail_impl.registrant.handle);
-                domain_detail->registrant.name = Corba::wrap_string_to_corba_string(detail_impl.registrant.name);
+                domain_detail->registrant.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.registrant.handle);
+                domain_detail->registrant.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.registrant.name);
 
-                domain_detail->expiration_date = Corba::wrap_date_to_corba_string(detail_impl.expiration_date);
+                domain_detail->expiration_date = Fred::Corba::wrap_date_to_corba_string(detail_impl.expiration_date);
 
                 domain_detail->is_enum = !detail_impl.enum_domain_validation.isnull();
                 if(domain_detail->is_enum)
                 {
                     domain_detail->publish = detail_impl.enum_domain_validation.get_value().publish;
 
-                    domain_detail->val_ex_date = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateIsoString>(
-                    Corba::wrap_nullable_date_to_nullable_corba_string(
+                    domain_detail->val_ex_date = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateIsoString>(
+                    Fred::Corba::wrap_nullable_date_to_nullable_corba_string(
                         Nullable<boost::gregorian::date>(detail_impl.enum_domain_validation.get_value().validation_expiration)));
                 }
                 else
@@ -561,26 +561,26 @@ namespace Registry
                 }
 
                 domain_detail->nsset.id = detail_impl.nsset.id;
-                domain_detail->nsset.handle = Corba::wrap_string_to_corba_string(detail_impl.nsset.handle);
-                domain_detail->nsset.name = Corba::wrap_string_to_corba_string(detail_impl.nsset.name);
+                domain_detail->nsset.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.nsset.handle);
+                domain_detail->nsset.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.nsset.name);
 
                 domain_detail->keyset.id = detail_impl.keyset.id;
-                domain_detail->keyset.handle = Corba::wrap_string_to_corba_string(detail_impl.keyset.handle);
-                domain_detail->keyset.name = Corba::wrap_string_to_corba_string(detail_impl.keyset.name);
+                domain_detail->keyset.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.keyset.handle);
+                domain_detail->keyset.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.keyset.name);
 
                 domain_detail->admins.length(detail_impl.admins.size());
 
                 for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
                 {
                     domain_detail->admins[i].id = detail_impl.admins[i].id;
-                    domain_detail->admins[i].handle = Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
-                    domain_detail->admins[i].name = Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
+                    domain_detail->admins[i].handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
+                    domain_detail->admins[i].name = Fred::Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
                 }
 
                 domain_detail->state_codes.length(detail_impl.state_codes.size());
                 for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
                 {
-                    domain_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                    domain_detail->state_codes[j] = Fred::Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
                 }
 
 
@@ -622,34 +622,34 @@ namespace Registry
                 KeysetDetail_var keyset_detail = new KeysetDetail;
 
                 keyset_detail->id = detail_impl.id;
-                keyset_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
-                keyset_detail->roid = Corba::wrap_string_to_corba_string(detail_impl.roid);
+                keyset_detail->handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.handle);
+                keyset_detail->roid = Fred::Corba::wrap_string_to_corba_string(detail_impl.roid);
                 keyset_detail->registrar.id = detail_impl.sponsoring_registrar.id;
-                keyset_detail->registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
-                keyset_detail->registrar.name = Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
-                keyset_detail->create_time = Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
+                keyset_detail->registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.handle);
+                keyset_detail->registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.sponsoring_registrar.name);
+                keyset_detail->create_time = Fred::Corba::wrap_ptime_to_corba_string(detail_impl.creation_time);
 
-                keyset_detail->transfer_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
-                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
-                keyset_detail->update_time = Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
-                    Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
+                keyset_detail->transfer_time = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Fred::Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.transfer_time));
+                keyset_detail->update_time = Fred::Corba::wrap_nullable_corba_type_to_corba_valuetype<NullableDateTimeIsoString>(
+                    Fred::Corba::wrap_nullable_ptime_to_nullable_corba_string(detail_impl.update_time));
 
                 keyset_detail->create_registrar.id = detail_impl.create_registrar.id;
-                keyset_detail->create_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
-                keyset_detail->create_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.create_registrar.name);
+                keyset_detail->create_registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.create_registrar.handle);
+                keyset_detail->create_registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.create_registrar.name);
 
                 keyset_detail->update_registrar.id = detail_impl.update_registrar.id;
-                keyset_detail->update_registrar.handle = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.handle);
-                keyset_detail->update_registrar.name = Corba::wrap_string_to_corba_string(detail_impl.update_registrar.name);
+                keyset_detail->update_registrar.handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.update_registrar.handle);
+                keyset_detail->update_registrar.name = Fred::Corba::wrap_string_to_corba_string(detail_impl.update_registrar.name);
 
-                keyset_detail->auth_info = Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
+                keyset_detail->auth_info = Fred::Corba::wrap_string_to_corba_string(detail_impl.authinfopw);
 
                 keyset_detail->admins.length(detail_impl.admins.size());
                 for(std::size_t i = 0; i < detail_impl.admins.size(); ++i)
                 {
                     keyset_detail->admins[i].id = detail_impl.admins[i].id;
-                    keyset_detail->admins[i].handle = Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
-                    keyset_detail->admins[i].name = Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
+                    keyset_detail->admins[i].handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.admins[i].handle);
+                    keyset_detail->admins[i].name = Fred::Corba::wrap_string_to_corba_string(detail_impl.admins[i].name);
                 }
 
                 keyset_detail->dnskeys.length(detail_impl.dnskeys.size());
@@ -658,13 +658,13 @@ namespace Registry
                     keyset_detail->dnskeys[i].flags = detail_impl.dnskeys[i].flags;
                     keyset_detail->dnskeys[i].protocol = detail_impl.dnskeys[i].protocol;
                     keyset_detail->dnskeys[i].alg = detail_impl.dnskeys[i].alg;
-                    keyset_detail->dnskeys[i].key = Corba::wrap_string_to_corba_string(detail_impl.dnskeys[i].key);
+                    keyset_detail->dnskeys[i].key = Fred::Corba::wrap_string_to_corba_string(detail_impl.dnskeys[i].key);
                 }
 
                 keyset_detail->state_codes.length(detail_impl.state_codes.size());
                 for(unsigned long long j = 0; j < detail_impl.state_codes.size(); ++j)
                 {
-                    keyset_detail->state_codes[j] = Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
+                    keyset_detail->state_codes[j] = Fred::Corba::wrap_string_to_corba_string(detail_impl.state_codes.at(j));
                 }
 
                 if(detail_impl.is_owner)
@@ -703,12 +703,12 @@ namespace Registry
 
                 RegistrarDetail_var registrar_detail = new RegistrarDetail;
                 registrar_detail->id = detail_impl.id;
-                registrar_detail->handle = Corba::wrap_string_to_corba_string(detail_impl.handle);
-                registrar_detail->name = Corba::wrap_string_to_corba_string(detail_impl.name);
-                registrar_detail->phone = Corba::wrap_string_to_corba_string(detail_impl.phone);
-                registrar_detail->fax = Corba::wrap_string_to_corba_string(detail_impl.fax);
-                registrar_detail->url = Corba::wrap_string_to_corba_string(detail_impl.url);
-                registrar_detail->address = Corba::wrap_string_to_corba_string(detail_impl.address);
+                registrar_detail->handle = Fred::Corba::wrap_string_to_corba_string(detail_impl.handle);
+                registrar_detail->name = Fred::Corba::wrap_string_to_corba_string(detail_impl.name);
+                registrar_detail->phone = Fred::Corba::wrap_string_to_corba_string(detail_impl.phone);
+                registrar_detail->fax = Fred::Corba::wrap_string_to_corba_string(detail_impl.fax);
+                registrar_detail->url = Fred::Corba::wrap_string_to_corba_string(detail_impl.url);
+                registrar_detail->address = Fred::Corba::wrap_string_to_corba_string(detail_impl.address);
 
                 return registrar_detail._retn();
             }
@@ -825,7 +825,7 @@ namespace Registry
                 change_prohibited_var->length(blocked_objects.size());
                 for(std::size_t i = 0; i < blocked_objects.size(); ++i)
                 {
-                    change_prohibited_var[i] = Corba::wrap_string_to_corba_string(blocked_objects.at(i));
+                    change_prohibited_var[i] = Fred::Corba::wrap_string_to_corba_string(blocked_objects.at(i));
                 }
 
                 change_prohibited = change_prohibited_var._retn();//transfer ownership to the out parameter, no exceptions allowed after this point
@@ -862,8 +862,8 @@ namespace Registry
                 status_description_var->length(status_description.size());
                 for(std::size_t i = 0; i < status_description.size(); ++i)
                 {
-                    status_description_var[i].state_code = Corba::wrap_string_to_corba_string(status_description.at(i).state_code);
-                    status_description_var[i].state_desc = Corba::wrap_string_to_corba_string(status_description.at(i).state_desc);
+                    status_description_var[i].state_code = Fred::Corba::wrap_string_to_corba_string(status_description.at(i).state_code);
+                    status_description_var[i].state_desc = Fred::Corba::wrap_string_to_corba_string(status_description.at(i).state_desc);
                 }
                 return  status_description_var._retn();
             }
@@ -882,12 +882,12 @@ namespace Registry
             {
                 MergeContactCandidateData cld;
                 cld.id = candidate_list.at(i).id;
-                cld.handle = Corba::wrap_string_to_corba_string(candidate_list.at(i).handle);
+                cld.handle = Fred::Corba::wrap_string_to_corba_string(candidate_list.at(i).handle);
                 cld.domain_count = candidate_list.at(i).domain_count;
                 cld.nsset_count = candidate_list.at(i).nsset_count;
                 cld.keyset_count = candidate_list.at(i).keyset_count;
-                cld.registrar_handle = Corba::wrap_string_to_corba_string(candidate_list.at(i).registrar_handle);
-                cld.registrar_name = Corba::wrap_string_to_corba_string(candidate_list.at(i).registrar_name);
+                cld.registrar_handle = Fred::Corba::wrap_string_to_corba_string(candidate_list.at(i).registrar_handle);
+                cld.registrar_name = Fred::Corba::wrap_string_to_corba_string(candidate_list.at(i).registrar_name);
 
                 cl[i] = cld;
             }

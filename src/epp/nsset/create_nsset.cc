@@ -55,13 +55,11 @@ namespace Nsset {
 CreateNssetResult create_nsset(
         Fred::OperationContext& _ctx,
         const CreateNssetInputData& _nsset_data,
-        const CreateNssetConfigData& _nsset_config,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const CreateNssetConfigData& _create_nsset_config_data,
+        const SessionData& _session_data)
 {
 
-    // check registrar logged in
-    if (_registrar_id == 0)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -84,12 +82,12 @@ CreateNssetResult create_nsset(
         throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing));
     }
 
-    if (_nsset_data.dns_hosts.size() < _nsset_config.min_hosts)
+    if (_nsset_data.dns_hosts.size() < _create_nsset_config_data.min_hosts)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
     }
 
-    if (_nsset_data.dns_hosts.size() > _nsset_config.max_hosts)
+    if (_nsset_data.dns_hosts.size() > _create_nsset_config_data.max_hosts)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error));
     }
@@ -237,7 +235,7 @@ CreateNssetResult create_nsset(
 
     const short nsset_tech_check_level =
         _nsset_data.tech_check_level ? *_nsset_data.tech_check_level
-        : boost::numeric_cast<short>(_nsset_config.default_tech_check_level);
+        : boost::numeric_cast<short>(_create_nsset_config_data.default_tech_check_level);
 
     if (nsset_tech_check_level > max_nsset_tech_check_level ||
         nsset_tech_check_level < min_nsset_tech_check_level)
@@ -250,14 +248,14 @@ CreateNssetResult create_nsset(
         const Fred::CreateNsset::Result create_data =
                 Fred::CreateNsset(
                         _nsset_data.handle,
-                        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
+                        Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle,
                         _nsset_data.authinfopw
                                 ? Optional<std::string>(*_nsset_data.authinfopw)
                                 : Optional<std::string>(),
                         nsset_tech_check_level,
                         make_fred_dns_hosts(_nsset_data.dns_hosts),
                         _nsset_data.tech_contacts,
-                        _logd_request_id)
+                        _session_data.logd_request_id)
                         .exec(_ctx, "UTC");
 
         return CreateNssetResult(

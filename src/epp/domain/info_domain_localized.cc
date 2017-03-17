@@ -46,7 +46,8 @@ namespace Epp {
 namespace Domain {
 
 InfoDomainLocalizedResponse info_domain_localized(
-        const std::string& _domain_fqdn,
+        const std::string& _fqdn,
+        const InfoDomainConfigData& _info_domain_config_data,
         const SessionData& _session_data)
 {
     // since no changes are comitted this transaction is reused for everything
@@ -62,8 +63,9 @@ InfoDomainLocalizedResponse info_domain_localized(
         const InfoDomainOutputData info_domain_output_data =
                 info_domain(
                         ctx,
-                        _domain_fqdn,
-                        _session_data.registrar_id);
+                        _fqdn,
+                        _info_domain_config_data,
+                        _session_data);
 
         const InfoDomainLocalizedOutputData info_domain_localized_output_data =
                 InfoDomainLocalizedOutputData(

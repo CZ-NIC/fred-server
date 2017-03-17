@@ -16,10 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -41,17 +38,16 @@ bool fail_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, Test::supply_ctx<Test::Fixture::HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::delete_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            0 // invalid registrar_id
-        ),
-        Epp::EppResponseFailure,
-        fail_invalid_registrar_id_exception
-    );
+            Epp::Domain::delete_domain(
+                    ctx,
+                    "domain.cz",
+                    Test::DefaultDeleteDomainConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            Epp::EppResponseFailure,
+            fail_invalid_registrar_id_exception);
 }
 
 bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
@@ -60,17 +56,16 @@ bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndNonexistentFqdn>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::delete_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            info_registrar_data_.id
-        ),
-        Epp::EppResponseFailure,
-        fail_nonexistent_handle_exception
-    );
+            Epp::Domain::delete_domain(
+                    ctx,
+                    nonexistent_fqdn.fqdn,
+                    Test::DefaultDeleteDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_nonexistent_handle_exception);
 }
 
 bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e) {
@@ -79,17 +74,16 @@ bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e)
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndNonexistentEnumFqdn>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::delete_domain(
-            ctx,
-            info_enum_domain_data_.fqdn,
-            info_registrar_data_.id
-        ),
-        Epp::EppResponseFailure,
-        fail_enum_domain_does_not_exist_exception
-    );
+            Epp::Domain::delete_domain(
+                    ctx,
+                    nonexistent_enum_fqdn.fqdn,
+                    Test::DefaultDeleteDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_enum_domain_does_not_exist_exception);
 }
 
 bool fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
@@ -102,17 +96,16 @@ bool fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomainOfDifferentRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::delete_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            different_info_registrar_data_.id
-        ),
-        Epp::EppResponseFailure,
-        fail_wrong_registrar_exception
-    );
+            Epp::Domain::delete_domain(
+                    ctx,
+                    domain_of_different_registrar.data.fqdn,
+                    Test::DefaultDeleteDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_wrong_registrar_exception);
 }
 
 bool fail_registrar_without_zone_access_exception(const Epp::EppResponseFailure& e) {
@@ -121,17 +114,16 @@ bool fail_registrar_without_zone_access_exception(const Epp::EppResponseFailure&
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::delete_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            info_registrar_data_.id
-        ),
-        Epp::EppResponseFailure,
-        fail_registrar_without_zone_access_exception
-    );
+            Epp::Domain::delete_domain(
+                    ctx,
+                    domain.data.fqdn,
+                    Test::DefaultDeleteDomainConfigData(),
+                    Test::Session(ctx, Test::RegistrarNotInZone(ctx).data.id).data),
+            Epp::EppResponseFailure,
+            fail_registrar_without_zone_access_exception);
 }
 
 bool fail_prohibiting_status_exception(const Epp::EppResponseFailure& e) {
@@ -140,52 +132,55 @@ bool fail_prohibiting_status_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
+BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::delete_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            info_registrar_data_.id
-        ),
-        Epp::EppResponseFailure,
-        fail_prohibiting_status_exception
-    );
+            Epp::Domain::delete_domain(
+                    ctx,
+                    Test::DomainWithServerUpdateProhibited(ctx, registrar.data.handle).data.fqdn,
+                    Test::DefaultDeleteDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_prohibiting_status_exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
 {
     Epp::Domain::delete_domain(
         ctx,
-        info_domain_data_.fqdn,
-        info_registrar_data_.id
+        domain.data.fqdn,
+        Test::DefaultDeleteDomainConfigData(),
+        session.data
     );
 
     BOOST_CHECK_EQUAL(
-        Fred::InfoDomainHistoryById(info_domain_data_.id).exec(ctx).rbegin()->info_domain_data.delete_time.isnull(),
+        Fred::InfoDomainHistoryById(domain.data.id).exec(ctx).rbegin()->info_domain_data.delete_time.isnull(),
         false
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(ok_states_are_upgraded, HasInfoDomainDataWithServerTransferProhibited)
+BOOST_FIXTURE_TEST_CASE(ok_states_are_upgraded, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
+    Test::DomainWithServerTransferProhibited domain(ctx, registrar.data.handle);
+
     Epp::Domain::delete_domain(
         ctx,
-        info_domain_data_.fqdn,
-        info_registrar_data_.id
+        domain.data.fqdn,
+        Test::DefaultDeleteDomainConfigData(),
+        session.data
     );
 
-    /* now object has the state server_transfer_prohibited request itself */
+    // now object has the state server_transfer_prohibited request itself
     {
         std::vector<std::string> object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(info_domain_data_.id).exec(ctx) ) {
+            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(domain.data.id).exec(ctx) ) {
                 object_states_after.push_back(state.state_name);
             }
         }
 
         BOOST_CHECK(
-            std::find(object_states_after.begin(), object_states_after.end(), status_)
+            std::find(object_states_after.begin(), object_states_after.end(), domain.status)
             !=
             object_states_after.end()
         );

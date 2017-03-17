@@ -19,38 +19,42 @@
 #ifndef CREATE_NSSET_H_2C8AA4B2A66B416FADE6B4087CFEFF2B
 #define CREATE_NSSET_H_2C8AA4B2A66B416FADE6B4087CFEFF2B
 
-#include "src/fredlib/opcontext.h"
-
 #include "src/epp/nsset/create_nsset_localized.h"
+#include "src/epp/session_data.h"
+#include "src/fredlib/opcontext.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
 namespace Nsset {
 
-struct CreateNssetResult {
+struct CreateNssetResult
+{
     const unsigned long long id;
     const unsigned long long create_history_id;
     // TODO guarantee non-special
     const boost::posix_time::ptime crdate;
 
+
     CreateNssetResult(
-        unsigned long long _nsset_id,
-        unsigned long long _create_history_id,
-        const boost::posix_time::ptime& _nsset_crdate
-    ) :
-        id(_nsset_id),
-        create_history_id(_create_history_id),
-        crdate(_nsset_crdate)
-    { }
+            unsigned long long _nsset_id,
+            unsigned long long _create_history_id,
+            const boost::posix_time::ptime& _nsset_crdate)
+        : id(_nsset_id),
+          create_history_id(_create_history_id),
+          crdate(_nsset_crdate)
+    {
+    }
+
+
 };
 
 CreateNssetResult create_nsset(
         Fred::OperationContext& _ctx,
         const CreateNssetInputData& _create_nsset_input_data,
         const CreateNssetConfigData& _create_nsset_config_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

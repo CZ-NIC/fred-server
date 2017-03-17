@@ -19,9 +19,10 @@
 #ifndef TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
 #define TRANSFER_NSSET_H_23BF32D131EA4C9CB2BA3778F1A845E2
 
-#include "src/fredlib/opcontext.h"
-
+#include "src/epp/nsset/transfer_nsset_config_data.h"
 #include "src/epp/nsset/transfer_nsset_localized.h"
+#include "src/epp/session_data.h"
+#include "src/fredlib/opcontext.h"
 
 #include <string>
 
@@ -29,7 +30,8 @@ namespace Epp {
 namespace Nsset {
 
 /**
- * If successful (no exception thrown) state requests of nsset are performed. In case of exception behaviour is undefined and transaction should be rolled back.
+ * If successful (no exception thrown) state requests of nsset are performed.
+ * In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns new history id
  */
@@ -37,8 +39,8 @@ unsigned long long transfer_nsset(
         Fred::OperationContext& _ctx,
         const std::string& _nsset_handle,
         const std::string& _authinfopw,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const TransferNssetConfigData& _transfer_nsset_config_data,
+        const SessionData& _session_data);
 
 } // namespace Epp::Nsset
 } // namespace Epp

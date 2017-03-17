@@ -19,6 +19,7 @@
 #ifndef RENEW_DOMAIN_LOCALIZED_H_AADAB1519F8C4D6BAA4E0766858D8E49
 #define RENEW_DOMAIN_LOCALIZED_H_AADAB1519F8C4D6BAA4E0766858D8E49
 
+#include "src/epp/domain/renew_domain_config_data.h"
 #include "src/epp/domain/renew_domain_input_data.h"
 #include "src/epp/domain/renew_domain_localized_response.h"
 #include "src/epp/notification_data.h"
@@ -29,11 +30,10 @@ namespace Epp {
 namespace Domain {
 
 RenewDomainLocalizedResponse renew_domain_localized(
-        const RenewDomainInputData& _data,
+        const RenewDomainInputData& _renew_domain_input_data,
+        const RenewDomainConfigData& _renew_domain_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _rifd_epp_operations_charging);
+        const NotificationData& _notification_data);
 
 
 } // namespace Epp::Domain

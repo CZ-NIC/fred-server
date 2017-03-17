@@ -24,14 +24,17 @@ namespace Nsset {
 
 struct UpdateNssetConfigData
 {
-    unsigned int min_hosts;
-    unsigned int max_hosts;
+    const bool rifd_epp_operations_charging;
+    const unsigned int min_hosts;
+    const unsigned int max_hosts;
 
 
     UpdateNssetConfigData(
+            const bool _rifd_epp_operations_charging,
             const unsigned int _min_hosts,
             const unsigned int _max_hosts)
-        : min_hosts(_min_hosts),
+        : rifd_epp_operations_charging(_rifd_epp_operations_charging),
+          min_hosts(_min_hosts),
           max_hosts(_max_hosts)
     {
     }

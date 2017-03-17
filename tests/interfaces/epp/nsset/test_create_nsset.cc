@@ -20,6 +20,7 @@
  *  @file
  */
 
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -38,7 +39,7 @@
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(CreateNsset)
 
-BOOST_FIXTURE_TEST_CASE(test_case_uninitialized_ip_prohibited, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_case_uninitialized_ip_prohibited, HasRegistrar)
 {
     boost::optional<boost::asio::ip::address> ip;
     BOOST_REQUIRE(Epp::Nsset::is_prohibited_ip_addr(ip,ctx));
@@ -52,13 +53,13 @@ bool create_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
 
 BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_nsset_input_data_set)
 {
+    const unsigned long long invalid_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::create_nsset(
             ctx,
-            nsset_input_data,
-            nsset_config_data,
-            0, // <== !!!
-            42
+            create_nsset_input_data,
+            Test::DefaultCreateNssetConfigData(),
+            Test::Session(ctx, invalid_registrar_id).data
         ),
         Epp::EppResponseFailure,
         create_invalid_registrar_id_exception
@@ -74,14 +75,13 @@ bool create_fail_handle_format_exception(const Epp::EppResponseFailure& e) {
 
 BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_nsset_input_data_set)
 {
-    nsset_input_data.handle +="?";
+    create_nsset_input_data.handle += "?";
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::create_nsset(
             ctx,
-            nsset_input_data,
-            nsset_config_data,
-            registrar.id,
-            42
+            create_nsset_input_data,
+            Test::DefaultCreateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         create_fail_handle_format_exception
@@ -99,10 +99,9 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_nsset_with_input_data_
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::create_nsset(
             ctx,
-            nsset_input_data,
-            nsset_config_data,
-            registrar.id,
-            42
+            create_nsset_input_data,
+            Test::DefaultCreateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         create_fail_already_existing_exception
@@ -119,17 +118,16 @@ bool create_fail_protected_handle_exception(const Epp::EppResponseFailure& e) {
 
 BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_nsset_with_input_data_set)
 {
-    {   /* fixture */
+    {   // fixture
         Fred::DeleteNssetByHandle(nsset.handle).exec(ctx);
     }
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::create_nsset(
             ctx,
-            nsset_input_data,
-            nsset_config_data,
-            registrar.id,
-            42
+            create_nsset_input_data,
+            Test::DefaultCreateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         create_fail_protected_handle_exception
@@ -174,15 +172,14 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_nsset_input_data_set)
     const Epp::Nsset::CreateNssetResult result =
         Epp::Nsset::create_nsset(
             ctx,
-            nsset_input_data,
-            nsset_config_data,
-            registrar.id,
-            42
+            create_nsset_input_data,
+            create_nsset_config_data,
+            Test::Session(ctx, registrar.id).data
         );
 
-    /* check returned data and db changes */
+    // check returned data and db changes
     {
-        const Fred::InfoNssetData check_sample = Fred::InfoNssetByHandle(nsset_input_data.handle).exec(ctx).info_nsset_data;
+        const Fred::InfoNssetData check_sample = Fred::InfoNssetByHandle(create_nsset_input_data.handle).exec(ctx).info_nsset_data;
         BOOST_CHECK_EQUAL( check_sample.id, result.id );
         BOOST_CHECK_EQUAL(
             boost::posix_time::time_from_string(
@@ -193,8 +190,8 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_nsset_input_data_set)
             result.crdate
         );
         check_equal(
-            nsset_input_data,
-            nsset_config_data,
+            create_nsset_input_data,
+            create_nsset_config_data,
             check_sample
         );
     }

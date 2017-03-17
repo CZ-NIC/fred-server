@@ -83,6 +83,7 @@ private:
 
 InfoContactLocalizedResponse info_contact_localized(
         const std::string& _contact_handle,
+        const InfoContactConfigData& _info_contact_config_data,
         const SessionData& _session_data)
 {
     // since no changes are comitted this transaction is reused for everything
@@ -98,7 +99,8 @@ InfoContactLocalizedResponse info_contact_localized(
                 info_contact(
                         ctx,
                         _contact_handle,
-                        _session_data.registrar_id);
+                        _info_contact_config_data,
+                        _session_data);
 
         InfoContactLocalizedOutputData info_contact_localized_output_data(info_contact_output_data.disclose);
         info_contact_localized_output_data.handle                       = info_contact_output_data.handle;

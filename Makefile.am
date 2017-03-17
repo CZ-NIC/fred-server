@@ -260,6 +260,7 @@ noinst_HEADERS = \
 		src/fredlib/public_request/info_public_request.h \
 		src/fredlib/public_request/info_public_request_auth.h \
 		tests/interfaces/epp/util.h \
+		tests/interfaces/epp/fixture.h \
 		tests/interfaces/epp/contact/fixture.h \
 		tests/interfaces/epp/domain/fixture.h \
 		src/corba/mojeid/mojeid_corba_conversion.h \
@@ -1579,6 +1580,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/epp_result_code.h \
 		src/epp/notification_data.h \
 		src/epp/session_data.h \
+		src/epp/session_data.cc \
 		src/epp/impl/conditionally_enqueue_notification.h \
 		src/epp/impl/conditionally_enqueue_notification.cc \
 		src/epp/contact/create_contact_localized.cc \
@@ -2510,9 +2512,8 @@ tests_interfaces_test_admin_notification_LDADD = \
 # tests/interfaces/test-epp
 #
 tests_interfaces_test_epp_SOURCES = \
-		src/epp/session_data.h \
-		src/epp/notification_data.h \
 		tests/interfaces/epp/util.h \
+		tests/interfaces/epp/fixture.h \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
 		tests/interfaces/epp/contact/fixture.h \

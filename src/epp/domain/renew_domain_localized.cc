@@ -47,11 +47,10 @@ namespace Epp {
 namespace Domain {
 
 RenewDomainLocalizedResponse renew_domain_localized(
-        const RenewDomainInputData& _data,
+        const RenewDomainInputData& _renew_domain_input_data,
+        const RenewDomainConfigData& _renew_domain_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id,
-        const bool _rifd_epp_operations_charging)
+        const NotificationData& _notification_data)
 {
     try
     {
@@ -65,10 +64,9 @@ RenewDomainLocalizedResponse renew_domain_localized(
         const RenewDomainResult renew_domain_result(
                 renew_domain(
                         ctx,
-                        _data,
-                        _session_data.registrar_id,
-                        _logd_request_id,
-                        _rifd_epp_operations_charging));
+                        _renew_domain_input_data,
+                        _renew_domain_config_data,
+                        _session_data));
 
         const RenewDomainLocalizedResponse renew_domain_localized_response(
                 EppResponseSuccessLocalized(
@@ -86,7 +84,6 @@ RenewDomainLocalizedResponse renew_domain_localized(
                 _notification_data);
 
         return renew_domain_localized_response;
-
     }
     catch (const EppResponseFailure& e)
     {

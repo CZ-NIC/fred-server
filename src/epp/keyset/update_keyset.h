@@ -21,12 +21,10 @@
 
 #include "src/epp/keyset/update_keyset_input_data.h"
 #include "src/fredlib/opcontext.h"
-#include "util/optional_value.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "src/epp/keyset/update_keyset_config_data.h"
+#include "src/epp/session_data.h"
 
 #include <string>
-#include <vector>
 
 namespace Epp {
 namespace Keyset {
@@ -35,13 +33,15 @@ struct UpdateKeysetResult
 {
     unsigned long long id;
     unsigned long long update_history_id;
+
 };
 
 UpdateKeysetResult update_keyset(
         Fred::OperationContext& _ctx,
         const UpdateKeysetInputData& _update_keyset_input_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const UpdateKeysetConfigData& _update_keyset_config_data,
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

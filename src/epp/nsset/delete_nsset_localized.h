@@ -20,8 +20,9 @@
 #define DELETE_NSSET_LOCALIZED_H_9D46AC55B43743898CF9E6A41641A1BC
 
 #include "src/epp/epp_response_success_localized.h"
-#include "src/epp/session_data.h"
 #include "src/epp/notification_data.h"
+#include "src/epp/nsset/delete_nsset_config_data.h"
+#include "src/epp/session_data.h"
 
 #include <string>
 
@@ -30,8 +31,10 @@ namespace Nsset {
 
 EppResponseSuccessLocalized delete_nsset_localized(
         const std::string& _nsset_handle,
+        const DeleteNssetConfigData& _delete_nsset_config_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data);
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -51,15 +51,15 @@ namespace Domain {
 
 unsigned long long transfer_domain(
         Fred::OperationContext& _ctx,
-        const std::string& _domain_fqdn,
+        const std::string& _fqdn,
         const std::string& _authinfopw,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const TransferDomainConfigData& _transfer_domain_config_data,
+        const SessionData& _session_data)
 {
 
-    const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (!is_session_registrar_valid(_session_data)) {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
     // start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
@@ -73,7 +73,7 @@ unsigned long long transfer_domain(
     Fred::Zone::Data zone_data;
     try {
         zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-            Fred::Zone::rem_trailing_dot(_domain_fqdn));
+            Fred::Zone::rem_trailing_dot(_fqdn));
     } catch (const Fred::Zone::Exception& e) {
         if (e.is_set_unknown_zone_in_fqdn()) {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
@@ -82,14 +82,14 @@ unsigned long long transfer_domain(
         throw;
     }
 
-    if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx)) {
+    if (!Fred::is_zone_accessible_by_registrar(_session_data.registrar_id, zone_data.id, current_local_date, _ctx)) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
     }
 
     Fred::InfoDomainData domain_data_before_transfer;
     try
     {
-        domain_data_before_transfer = Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(_domain_fqdn))
+        domain_data_before_transfer = Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(_fqdn))
                                               .set_lock().exec(_ctx).info_domain_data;
     }
     catch(const Fred::InfoDomainByHandle::Exception& ex)
@@ -103,7 +103,7 @@ unsigned long long transfer_domain(
     }
 
     const Fred::InfoRegistrarData session_registrar =
-        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
+        Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (domain_data_before_transfer.sponsoring_registrar_handle ==
                                           session_registrar.handle);
@@ -132,7 +132,7 @@ unsigned long long transfer_domain(
                 domain_data_before_transfer.id,
                 session_registrar.handle,
                 _authinfopw,
-                _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>()
+                _session_data.logd_request_id.isset() ? _session_data.logd_request_id.get_value() : Nullable<unsigned long long>()
             ).exec(_ctx);
 
         Fred::Poll::CreateEppActionPollMessage(post_transfer_history_id,

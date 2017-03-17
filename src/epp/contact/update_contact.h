@@ -29,22 +29,17 @@ namespace Epp {
 namespace Contact {
 
 /**
- * If successful (no exception thrown) state requests of conact are performed. In case of exception behaviour is undefined and transaction should bo rolled back.
+ * If successful (no exception thrown) state requests of conact are performed.
+ * In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns new contact history id
- *
- * @throws AuthErrorServerClosingConnection
- * @throws NonexistentHandle
- * @throws AuthorizationError
- * @throws ObjectStatusProhibitsOperation in case conatct has serverUpdateProhibited or deleteCandidate status (or request)
- * @throws ParameterValuePolicyError
  */
 unsigned long long update_contact(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const ContactChange& _data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const UpdateContactConfigData& _update_contact_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Contact

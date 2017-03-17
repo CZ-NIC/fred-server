@@ -49,6 +49,7 @@ namespace Keyset {
 
 CheckKeysetLocalizedResponse check_keyset_localized(
         const std::set<std::string>& _keyset_handles,
+        const CheckKeysetConfigData& _check_keyset_config_data,
         const SessionData& _session_data)
 {
     Fred::OperationContextCreator ctx;
@@ -65,7 +66,8 @@ CheckKeysetLocalizedResponse check_keyset_localized(
                         check_keyset(
                                 ctx,
                                 _keyset_handles,
-                                _session_data.registrar_id);
+                                _check_keyset_config_data,
+                                _session_data);
 
         return CheckKeysetLocalizedResponse(
                 EppResponseSuccessLocalized(

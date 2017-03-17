@@ -21,6 +21,7 @@
 
 #include "src/epp/nsset/update_nsset_config_data.h"
 #include "src/epp/nsset/update_nsset_input_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 namespace Epp {
@@ -35,8 +36,8 @@ unsigned long long update_nsset(
         Fred::OperationContext& _ctx,
         const UpdateNssetInputData& _update_nsset_input_data,
         const UpdateNssetConfigData& _update_nsset_config_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -16,20 +16,85 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 #define FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 
+#include "src/epp/keyset/check_keyset_config_data.h"
+#include "src/epp/keyset/create_keyset_config_data.h"
+#include "src/epp/keyset/create_keyset_localized.h"
+#include "src/epp/keyset/delete_keyset_config_data.h"
+#include "src/epp/keyset/info_keyset_config_data.h"
+#include "src/epp/keyset/transfer_keyset_config_data.h"
+#include "src/epp/keyset/update_keyset_config_data.h"
+#include "src/fredlib/keyset/handle_state.h"
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
-#include "src/fredlib/keyset/handle_state.h"
 
 #include <vector>
 
 namespace Test {
+
+struct DefaultCheckKeysetConfigData : Epp::Keyset::CheckKeysetConfigData
+{
+    DefaultCheckKeysetConfigData()
+        : CheckKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultInfoKeysetConfigData : Epp::Keyset::InfoKeysetConfigData
+{
+    DefaultInfoKeysetConfigData()
+        : InfoKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultCreateKeysetConfigData : Epp::Keyset::CreateKeysetConfigData
+{
+    DefaultCreateKeysetConfigData()
+        : CreateKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultUpdateKeysetConfigData : Epp::Keyset::UpdateKeysetConfigData
+{
+    DefaultUpdateKeysetConfigData()
+        : UpdateKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultDeleteKeysetConfigData : Epp::Keyset::DeleteKeysetConfigData
+{
+    DefaultDeleteKeysetConfigData()
+        : DeleteKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultTransferKeysetConfigData : Epp::Keyset::TransferKeysetConfigData
+{
+    DefaultTransferKeysetConfigData()
+        : TransferKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultSessionData : public Epp::SessionData
+{
+    DefaultSessionData()
+        : SessionData(0, Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
+    {
+    }
+
+    DefaultSessionData& set_registrar_id(unsigned long long _registrar_id)
+    {
+        registrar_id = _registrar_id;
+        return *this;
+    }
+};
 
 class RegistrarProvider
 {

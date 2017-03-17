@@ -19,6 +19,7 @@
 #ifndef UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 #define UPDATE_DOMAIN_LOCALIZED_H_F4E3294590164F499765EEE0244A5196
 
+#include "src/epp/domain/update_domain_config_data.h"
 #include "src/epp/domain/update_domain_input_data.h"
 #include "src/epp/epp_response_success_localized.h"
 #include "src/epp/notification_data.h"
@@ -33,10 +34,9 @@ namespace Domain {
 
 EppResponseSuccessLocalized update_domain_localized(
         const UpdateDomainInputData& _update_domain_input_data,
+        const UpdateDomainConfigData& _update_domain_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _rifd_epp_update_domain_keyset_clear);
+        const NotificationData& _notification_data);
 
 
 } // namespace Epp::Domain

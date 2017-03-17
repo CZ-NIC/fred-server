@@ -329,7 +329,7 @@ public:
 
     ccReg::Response* ContactTransfer(
             const char* _handle,
-            const char* _auth_info_pw,
+            const char* _authinfopw,
             const ccReg::EppParams& _epp_params);
 
     ccReg::Response* ContactUpdate(
@@ -346,9 +346,9 @@ public:
       * @brief creation Nsset and subservient DNS hosts
       *
       * @param handle - nsset identifier
-      * @param _auth_info_pw - authentication
+      * @param _authinfopw - authentication
       * @param _tech_contacts - sequence of technical contact
-      * @param _dns_host - sequence of DNS records
+      * @param _dns_hosts - sequence of DNS records
       * @param _tech_check_level - tech check level
       * @param _create_time - object creation date
       * @param _epp_params - common EPP parametres
@@ -357,9 +357,9 @@ public:
       */
     ccReg::Response* NSSetCreate(
             const char* handle,
-            const char* _auth_info_pw,
+            const char* _authinfopw,
             const ccReg::TechContact& _tech_contacts,
-            const ccReg::DNSHost& _dns_host,
+            const ccReg::DNSHost& _dns_hosts,
             CORBA::Short _tech_check_level,
             ccReg::timestamp_out _create_time,
             const ccReg::EppParams& _epp_params);
@@ -392,18 +392,18 @@ public:
 
     ccReg::Response* NSSetTransfer(
             const char* _nsset_handle,
-            const char* _auth_info_pw,
+            const char* _authinfopw,
             const ccReg::EppParams& _epp_params);
 
     /**
       * @brief change of Nsset and subservient DNS hosts and technical contacts and saving changes into history
       *
       * @param _nsset_handle - nsset identifier
-      * @param _auth_info_pw_chg - authentication change
-      * @param _dns_add - sequence of added DNS records
-      * @param _dns_rem - sequence of DNS records for deleting
-      * @param _tech_add - sequence of added technical contacts
-      * @param _tech_rem - sequence of technical contact for deleting
+      * @param _authinfopw_chg - authentication change
+      * @param _dns_hosts_add - sequence of added DNS records
+      * @param _dns_hosts_rem - sequence of DNS records for deleting
+      * @param _tech_contacts_add - sequence of added technical contacts
+      * @param _tech_contacts_rem - sequence of technical contact for deleting
       * @param _tech_check_level - tech check level
       * @param _epp_params - common EPP parametres
       *
@@ -411,11 +411,11 @@ public:
       */
     ccReg::Response* NSSetUpdate(
             const char* _nsset_handle,
-            const char* _auth_info_pw_chg,
-            const ccReg::DNSHost& _dns_add,
-            const ccReg::DNSHost& _dns_rem,
-            const ccReg::TechContact& _tech_add,
-            const ccReg::TechContact& _tech_rem,
+            const char* _authinfopw_chg,
+            const ccReg::DNSHost& _dns_hosts_add,
+            const ccReg::DNSHost& _dns_hosts_rem,
+            const ccReg::TechContact& _tech_contacts_add,
+            const ccReg::TechContact& _tech_contacts_rem,
             CORBA::Short _tech_check_level,
             const ccReg::EppParams& _epp_params);
 
@@ -426,7 +426,7 @@ public:
 
     ccReg::Response* KeySetCreate(
             const char* _keyset_handle,
-            const char* _auth_info_pw,
+            const char* _authinfopw,
             const ccReg::TechContact& _tech_contacts,
             const ccReg::DSRecord& _ds_records,
             const ccReg::DNSKey& _dns_keys,
@@ -444,12 +444,12 @@ public:
 
     ccReg::Response* KeySetTransfer(
             const char* _keyset_handle,
-            const char* _auth_info_pw,
+            const char* _authinfopw,
             const ccReg::EppParams& _epp_params);
 
     ccReg::Response* KeySetUpdate(
             const char* _keyset_handle,
-            const char* _auth_info_pw_chg,
+            const char* _authinfopw_chg,
             const ccReg::TechContact& _tech_contacts_add,
             const ccReg::TechContact& _tech_contacts_rem,
             const ccReg::DSRecord& _ds_records_add,
@@ -461,7 +461,7 @@ public:
     /**
        * DomainCheck - retrieve states of domains identified by their FQDNs
        *
-       * \param _domain_fqdns - identifiers of domains to check
+       * \param _fqdns - identifiers of domains to check
        * \param _domain_check_results - output sequence of check results
        * \param _epp_params - parameters of EPP session
        *
@@ -470,16 +470,16 @@ public:
        * \throws ccReg::EPP::EppError
        */
     ccReg::Response* DomainCheck(
-            const ccReg::Check& _domain_fqdns,
+            const ccReg::Check& _fqdns,
             ccReg::CheckResp_out _domain_check_results,
             const ccReg::EppParams& _epp_params);
 
     ccReg::Response* DomainCreate(
-            const char* _domain_fqdn,
+            const char* _fqdn,
             const char* _registrant,
             const char* _nsset,
             const char* _keyset,
-            const char* _auth_info_pw,
+            const char* _authinfopw,
             const ccReg::Period_str& _period,
             const ccReg::AdminContact& _admin_contacts,
             ccReg::timestamp_out _create_time,
@@ -490,7 +490,7 @@ public:
     /**
       * DomainDelete - delete domain identified by its FQDN
       *
-      * \param _domain_fqdn - identifier of domain - fully qualified domain name
+      * \param _fqdn - identifier of domain - fully qualified domain name
       * \param _epp_params - parameters of EPP session
       *
       * \return ccReg::Response
@@ -498,13 +498,13 @@ public:
       * \throws ccReg::EPP::EppError
       */
     ccReg::Response* DomainDelete(
-            const char* _domain_fqdn,
+            const char* _fqdn,
             const ccReg::EppParams& _epp_params);
 
     /**
       * DomainInfo - get information obout domain identified by its FQDN
       *
-      * \param _domain_fqdn - identifier of domain - fully qualified domain name
+      * \param _fqdn - identifier of domain - fully qualified domain name
       * \param _domain_info - output information
       * \param _epp_params - parameters of EPP session
       *
@@ -513,12 +513,12 @@ public:
       * \throws ccReg::EPP::EppError
       */
     ccReg::Response* DomainInfo(
-            const char* _domain_fqdn,
+            const char* _fqdn,
             ccReg::Domain_out _domain_info,
             const ccReg::EppParams& _epp_params);
 
     ccReg::Response* DomainRenew(
-            const char* _domain_fqdn,
+            const char* _fqdn,
             const char* _current_exdate,
             const ccReg::Period_str& _period,
             ccReg::timestamp_out _exdate,
@@ -528,8 +528,8 @@ public:
     /**
        * DomainTransfer - transfer domain to other registrar
        *
-       * \param _domain_fqdn - identifier of domain to transfer
-       * \param _auth_info_pw - secret authorization information
+       * \param _fqdn - identifier of domain to transfer
+       * \param _authinfopw - secret authorization information
        * \param _epp_params - parameters of EPP session
        *
        * \return ccReg::Response
@@ -537,16 +537,16 @@ public:
        * \throws ccReg::EPP::EppError
        */
     ccReg::Response* DomainTransfer(
-            const char* _domain_fqdn,
-            const char* _auth_info_pw,
+            const char* _fqdn,
+            const char* _authinfopw,
             const ccReg::EppParams& _epp_params);
 
     /**
       * DomainUpdate - update data of domain identified by its FQDN
       *
-      * \param _domain_fqdn - identifiers of domains to check
+      * \param _fqdn - identifiers of domains to check
       * \param _registrant_chg - change of domain holder
-      * \param _auth_info_pw_chg  - change of password
+      * \param _authinfopw_chg  - change of password
       * \param _nsset_chg - change of nsset
       * \param _keyset_chg - change of keyset
       * \param _admin_contacts_add - sequence of added administration contacts
@@ -560,9 +560,9 @@ public:
       * \throws ccReg::EPP::EppError
       */
     ccReg::Response* DomainUpdate(
-            const char* _domain_fqdn,
+            const char* _fqdn,
             const char* _registrant_chg,
-            const char* _auth_info_pw_chg,
+            const char* _authinfopw_chg,
             const char* _nsset_chg,
             const char* _keyset_chg,
             const ccReg::AdminContact& _admin_contacts_add,

@@ -32,10 +32,11 @@ namespace Nsset {
 std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
         Fred::OperationContext& _ctx,
         const std::set<std::string>& _nsset_handles,
-        unsigned long long _registrar_id)
+        const CheckNssetConfigData& _check_nsset_config_data,
+        const SessionData& _session_data)
 {
-    const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id)
+
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));

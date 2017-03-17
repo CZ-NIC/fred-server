@@ -19,6 +19,7 @@
 #ifndef CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
 #define CREATE_CONTACT_LOCALIZED_H_8134301928FF41759B9B4E7061469BE4
 
+#include "src/epp/contact/create_contact_config_data.h"
 #include "src/epp/contact/create_contact_input_data.h"
 #include "src/epp/contact/create_contact_localized_response.h"
 #include "src/epp/notification_data.h"
@@ -31,9 +32,9 @@ namespace Contact {
 CreateContactLocalizedResponse create_contact_localized(
         const std::string& _contact_handle,
         const CreateContactInputData& _create_contact_input_data,
+        const CreateContactConfigData& _create_contact_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id);
+        const NotificationData& _notification_data);
 
 
 } // namespace Epp::Contact

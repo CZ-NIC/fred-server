@@ -20,6 +20,8 @@
 #define INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
 
 #include "src/epp/nsset/dns_host_output.h"
+#include "src/epp/nsset/info_nsset_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
@@ -31,11 +33,11 @@
 #include <set>
 #include <string>
 #include <vector>
-
 namespace Epp {
 namespace Nsset {
 
-struct InfoNssetOutputData {
+struct InfoNssetOutputData
+{
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -50,42 +52,46 @@ struct InfoNssetOutputData {
     std::vector<std::string> tech_contacts;
     short tech_check_level;
 
+
     InfoNssetOutputData(
-        const std::string& _handle,
-        const std::string& _roid,
-        const std::string& _sponsoring_registrar_handle,
-        const std::string& _creating_registrar_handle,
-        const Nullable<std::string>& _last_update_registrar_handle,
-        const std::set<std::string>& _states,
-        const boost::posix_time::ptime& _crdate,
-        const Nullable<boost::posix_time::ptime>& _last_update,
-        const Nullable<boost::posix_time::ptime>& _last_transfer,
-        const boost::optional<std::string>& _authinfopw,
-        const std::vector<DnsHostOutput>& _dns_hosts,
-        const std::vector<std::string>& _tech_contacts,
-        short _tech_check_level
-    ) :
-        handle(_handle),
-        roid(_roid),
-        sponsoring_registrar_handle(_sponsoring_registrar_handle),
-        creating_registrar_handle(_creating_registrar_handle),
-        last_update_registrar_handle(_last_update_registrar_handle),
-        states(_states),
-        crdate(_crdate),
-        last_update(_last_update),
-        last_transfer(_last_transfer),
-        authinfopw(_authinfopw),
-        dns_hosts(_dns_hosts),
-        tech_contacts(_tech_contacts),
-        tech_check_level(_tech_check_level)
-    { }
+            const std::string& _handle,
+            const std::string& _roid,
+            const std::string& _sponsoring_registrar_handle,
+            const std::string& _creating_registrar_handle,
+            const Nullable<std::string>& _last_update_registrar_handle,
+            const std::set<std::string>& _states,
+            const boost::posix_time::ptime& _crdate,
+            const Nullable<boost::posix_time::ptime>& _last_update,
+            const Nullable<boost::posix_time::ptime>& _last_transfer,
+            const boost::optional<std::string>& _authinfopw,
+            const std::vector<DnsHostOutput>& _dns_hosts,
+            const std::vector<std::string>& _tech_contacts,
+            short _tech_check_level)
+        : handle(_handle),
+          roid(_roid),
+          sponsoring_registrar_handle(_sponsoring_registrar_handle),
+          creating_registrar_handle(_creating_registrar_handle),
+          last_update_registrar_handle(_last_update_registrar_handle),
+          states(_states),
+          crdate(_crdate),
+          last_update(_last_update),
+          last_transfer(_last_transfer),
+          authinfopw(_authinfopw),
+          dns_hosts(_dns_hosts),
+          tech_contacts(_tech_contacts),
+          tech_check_level(_tech_check_level)
+    {
+    }
+
+
 };
 
 InfoNssetOutputData info_nsset(
         Fred::OperationContext& _ctx,
-        const std::string& _handle,
-        SessionLang::Enum _object_state_description_lang,
-        unsigned long long _session_registrar_id);
+        const std::string& _nsset_handle,
+        const InfoNssetConfigData& _info_nsset_config_data,
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

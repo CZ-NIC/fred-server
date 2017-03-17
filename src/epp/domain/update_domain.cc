@@ -86,12 +86,10 @@ public:
 unsigned long long update_domain(
         Fred::OperationContext& _ctx,
         const UpdateDomainInputData& _update_domain_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _rifd_epp_update_domain_keyset_clear)
+        const UpdateDomainConfigData& _update_domain_config_data,
+        const SessionData& _session_data)
 {
-    const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -103,7 +101,7 @@ unsigned long long update_domain(
     {
         zone_data = Fred::Zone::find_zone_in_fqdn(
                 _ctx,
-                Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn));
+                Fred::Zone::rem_trailing_dot(_update_domain_data.fqdn));
     }
     catch (const Fred::Zone::Exception& e)
     {
@@ -127,7 +125,7 @@ unsigned long long update_domain(
 
     const boost::gregorian::date current_local_date = current_local_time.date();
 
-    if (!Fred::is_zone_accessible_by_registrar(_registrar_id, zone_data.id, current_local_date, _ctx))
+    if (!Fred::is_zone_accessible_by_registrar(_session_data.registrar_id, zone_data.id, current_local_date, _ctx))
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
     }
@@ -137,7 +135,7 @@ unsigned long long update_domain(
     {
         info_domain_data_before_update =
                 Fred::InfoDomainByHandle(
-                        Fred::Zone::rem_trailing_dot(_update_domain_data.domain_fqdn))
+                        Fred::Zone::rem_trailing_dot(_update_domain_data.fqdn))
                         .set_lock()
                         .exec(_ctx, "UTC")
                         .info_domain_data;
@@ -226,7 +224,7 @@ unsigned long long update_domain(
     }
 
     const Fred::InfoRegistrarData session_registrar =
-        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
+        Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_sponsoring_registrar = (info_domain_data_before_update.sponsoring_registrar_handle ==
                                           session_registrar.handle);
@@ -400,13 +398,15 @@ unsigned long long update_domain(
     }
 
     const Optional<Nullable<std::string> >& keyset_chg =
-            (_update_domain_data.nsset_chg.isset() && !_update_domain_data.keyset_chg.isset() && _rifd_epp_update_domain_keyset_clear)
+            (_update_domain_data.nsset_chg.isset() &&
+             !_update_domain_data.keyset_chg.isset() &&
+             _update_domain_config_data.rifd_epp_update_domain_keyset_clear)
                     ? Optional<Nullable<std::string> >(Nullable<std::string>())
                     : _update_domain_data.keyset_chg; // TODO if nsset set, but same as current one?
 
     Fred::UpdateDomain update_domain =
             Fred::UpdateDomain(
-                    _update_domain_data.domain_fqdn,
+                    _update_domain_data.fqdn,
                     session_registrar.handle,
                     _update_domain_data.registrant_chg,
                     _update_domain_data.authinfopw_chg,
@@ -417,7 +417,7 @@ unsigned long long update_domain(
                     Optional<boost::gregorian::date>(), // expiration_date
                     req_enum_valexdate,
                     enum_publish_flag,
-                    _logd_request_id);
+                    _session_data.logd_request_id);
 
     try
     {

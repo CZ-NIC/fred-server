@@ -143,16 +143,18 @@ InfoContactOutputData::InfoContactOutputData(const boost::optional<ContactDisclo
 
 InfoContactOutputData info_contact(
         Fred::OperationContext& _ctx,
-        const std::string& _handle,
-        const unsigned long long _session_registrar_id)
+        const std::string& _contact_handle,
+        const InfoContactConfigData& _info_contact_config_data,
+        const SessionData& _session_data)
 {
-    const bool registrar_is_authenticated = _session_registrar_id != 0;
-    if (!registrar_is_authenticated) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+
+    if (!is_session_registrar_valid(_session_data)) {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
     try {
-        const Fred::InfoContactData info = Fred::InfoContactByHandle(_handle).exec(_ctx, "UTC").info_contact_data;
+        const Fred::InfoContactData info = Fred::InfoContactByHandle(_contact_handle).exec(_ctx, "UTC").info_contact_data;
 
         InfoContactOutputData output_data(get_discloseflags(info));
         output_data.handle = info.handle;
@@ -202,7 +204,7 @@ InfoContactOutputData info_contact(
 
         // show object authinfopw only to sponsoring registrar
         const std::string session_registrar_handle =
-            Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+            Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
 
         const bool authinfopw_has_to_be_hidden = info.sponsoring_registrar_handle !=
                                                  session_registrar_handle;

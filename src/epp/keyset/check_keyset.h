@@ -19,7 +19,9 @@
 #ifndef CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
 #define CHECK_KEYSET_H_EFE348DAB8F14531A5877D6F14C74BFD
 
+#include "src/epp/keyset/check_keyset_config_data.h"
 #include "src/epp/keyset/keyset_handle_registration_obstruction.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 
@@ -36,7 +38,9 @@ namespace Keyset {
 std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum> > check_keyset(
         Fred::OperationContext& _ctx,
         const std::set<std::string>& _keyset_handles,
-        unsigned long long _registrar_id);
+        const CheckKeysetConfigData& _check_keyset_config_data,
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

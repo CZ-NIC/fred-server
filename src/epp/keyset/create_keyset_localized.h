@@ -19,23 +19,20 @@
 #ifndef CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
 #define CREATE_KEYSET_LOCALIZED_H_7AD651C69E1247888C7D924FE3B981F5
 
-#include "src/epp/keyset/create_keyset_localized_response.h"
+#include "src/epp/keyset/create_keyset_config_data.h"
 #include "src/epp/keyset/create_keyset_input_data.h"
+#include "src/epp/keyset/create_keyset_localized_response.h"
 #include "src/epp/session_data.h"
 #include "src/epp/notification_data.h"
-#include "util/optional_value.h"
-
-#include <string>
-#include <vector>
 
 namespace Epp {
 namespace Keyset {
 
 CreateKeysetLocalizedResponse create_keyset_localized(
         const CreateKeysetInputData& _create_keyset_input_data,
+        const CreateKeysetConfigData& _create_keyset_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id);
+        const NotificationData& _notification_data);
 
 } // namespace Epp::Keyset
 } // namespace Epp

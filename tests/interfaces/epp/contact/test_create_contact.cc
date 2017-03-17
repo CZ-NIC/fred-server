@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -151,7 +147,7 @@ bool create_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
+BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, HasInvalidSessionRegistrar)
 {
     Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
@@ -161,8 +157,8 @@ BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, has_registrar)
             ctx,
             "contacthandle",
             Epp::Contact::CreateContactInputData(contact_data),
-            0 /* <== !!! */,
-            42
+            config.create_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         create_invalid_registrar_id_exception
@@ -179,7 +175,7 @@ bool create_fail_handle_format_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
+BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, HasRegistrar)
 {
     Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
@@ -189,8 +185,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, has_registrar)
             ctx,
             "contacthandle1?" /* <== !!! */,
             Epp::Contact::CreateContactInputData(contact_data),
-            registrar.id,
-            42 /* TODO */
+            config.create_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         create_fail_handle_format_exception
@@ -203,7 +199,7 @@ bool create_fail_already_existing_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
+BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, HasContact)
 {
     Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
@@ -213,8 +209,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, has_contact)
             ctx,
             contact.handle,
             Epp::Contact::CreateContactInputData(contact_data),
-            registrar.id,
-            42 /* TODO */
+            config.create_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         create_fail_already_existing_exception
@@ -229,7 +225,7 @@ bool create_fail_protected_handle_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
+BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, HasContact)
 {
     {   /* fixture */
         Fred::DeleteContactByHandle(contact.handle).exec(ctx);
@@ -243,8 +239,8 @@ BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, has_contact)
             ctx,
             contact.handle,
             Epp::Contact::CreateContactInputData(contact_data),
-            registrar.id,
-            42 /* TODO */
+            config.create_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         create_fail_protected_handle_exception
@@ -259,7 +255,7 @@ bool create_fail_nonexistent_countrycode_exception(const Epp::EppResponseFailure
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
+BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, HasRegistrar)
 {
     Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
@@ -270,15 +266,15 @@ BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, has_registrar)
             ctx,
             "contacthandle1",
             Epp::Contact::CreateContactInputData(contact_data),
-            registrar.id,
-            42 /* TODO */
+            config.create_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         create_fail_nonexistent_countrycode_exception
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
+BOOST_FIXTURE_TEST_CASE(create_ok_all_data, HasRegistrar)
 {
     Epp::Contact::ContactChange contact_data;
     set_correct_contact_data(contact_data);
@@ -288,8 +284,8 @@ BOOST_FIXTURE_TEST_CASE(create_ok_all_data, has_registrar)
         ctx,
         contact_handle,
         Epp::Contact::CreateContactInputData(contact_data),
-        registrar.id,
-        42 /* TODO */
+        config.create_contact_config_data,
+        session.data
     );
 
     /* check returned data and db changes */

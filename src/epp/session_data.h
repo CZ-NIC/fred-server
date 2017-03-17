@@ -21,24 +21,38 @@
 
 #include "src/epp/session_lang.h"
 
+#include "util/optional_value.h"
+
 #include <string>
 
 namespace Epp {
 
-struct SessionData {
+struct SessionData
+{
     unsigned long long registrar_id;
     Epp::SessionLang::Enum lang;
-    const std::string server_transaction_handle;
+    std::string server_transaction_handle;
+    Optional<unsigned long long> logd_request_id;
+
 
     SessionData(
             unsigned long long _registrar_id,
             Epp::SessionLang::Enum _lang,
-            const std::string& _server_transaction_handle)
+            const std::string& _server_transaction_handle,
+            const boost::optional<unsigned long long>& _logd_request_id)
         : registrar_id(_registrar_id),
           lang(_lang),
-          server_transaction_handle(_server_transaction_handle)
-    { }
+          server_transaction_handle(_server_transaction_handle),
+          logd_request_id(_logd_request_id
+                                  ? Optional<unsigned long long>(_logd_request_id.value())
+                                  : Optional<unsigned long long>())
+    {
+    }
+
+
 };
+
+bool is_session_registrar_valid(const SessionData& _session_data);
 
 } // namespace Epp
 

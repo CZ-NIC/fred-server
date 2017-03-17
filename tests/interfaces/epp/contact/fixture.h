@@ -16,58 +16,165 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef TEST_INTERFACE_EPP_FIXTURE_681453104385310
 #define TEST_INTERFACE_EPP_FIXTURE_681453104385310
 
 #include "tests/setup/fixtures.h"
 #include "tests/interfaces/epp/util.h"
 
+#include "src/epp/contact/check_contact_config_data.h"
+#include "src/epp/contact/info_contact_config_data.h"
+#include "src/epp/contact/create_contact_config_data.h"
+#include "src/epp/contact/update_contact_config_data.h"
+#include "src/epp/contact/delete_contact_config_data.h"
+#include "src/epp/contact/transfer_contact_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
+#include "util/optional_value.h"
 
-struct has_invalid_registrar_id : virtual Test::autocommitting_context {
-    static const unsigned long long invalid_registrar_id = 0;
-};
-
-struct has_registrar : virtual Test::autocommitting_context {
-    Fred::InfoRegistrarData registrar;
-
-    has_registrar() {
-        const std::string reg_handle = "REGISTRAR1";
-        Fred::CreateRegistrar(reg_handle).exec(ctx);
-        registrar = Fred::InfoRegistrarByHandle(reg_handle).exec(ctx).info_registrar_data;
+struct TestCheckContactConfigData : Epp::Contact::CheckContactConfigData
+{
+    TestCheckContactConfigData()
+        : CheckContactConfigData(false)
+    {
     }
 };
 
-struct has_contact : has_registrar {
+struct TestInfoContactConfigData : Epp::Contact::InfoContactConfigData
+{
+    TestInfoContactConfigData()
+        : InfoContactConfigData(false)
+    {
+    }
+};
+
+struct TestCreateContactConfigData : Epp::Contact::CreateContactConfigData
+{
+    TestCreateContactConfigData()
+        : CreateContactConfigData(false)
+    {
+    }
+};
+
+struct TestUpdateContactConfigData : Epp::Contact::UpdateContactConfigData
+{
+    TestUpdateContactConfigData()
+        : UpdateContactConfigData(false, false)
+    {
+    }
+};
+
+struct TestDeleteContactConfigData : Epp::Contact::DeleteContactConfigData
+{
+    TestDeleteContactConfigData()
+        : DeleteContactConfigData(false)
+    {
+    }
+};
+
+struct TestTransferContactConfigData : Epp::Contact::TransferContactConfigData
+{
+    TestTransferContactConfigData()
+        : TransferContactConfigData(false)
+    {
+    }
+};
+
+struct HasConfig {
+    TestCheckContactConfigData check_contact_config_data;
+    TestInfoContactConfigData info_contact_config_data;
+    TestCreateContactConfigData create_contact_config_data;
+    TestUpdateContactConfigData update_contact_config_data;
+    TestDeleteContactConfigData delete_contact_config_data;
+    TestTransferContactConfigData transfer_contact_config_data;
+
+    HasConfig() {
+    }
+};
+
+struct TestSessionData : Epp::SessionData
+{
+    TestSessionData()
+        : SessionData(0, Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
+    {
+    }
+};
+
+struct HasSession {
+    TestSessionData data;
+
+    HasSession() {
+    }
+};
+
+struct HasInvalidSessionRegistrar : virtual Test::autocommitting_context {
+    HasSession session;
+    HasConfig config;
+
+    HasInvalidSessionRegistrar()
+    {
+        const unsigned long long invalid_session_registrar_id = 0;
+        session.data.registrar_id = invalid_session_registrar_id;
+        BOOST_REQUIRE(!is_session_registrar_valid(session.data));
+    }
+};
+
+struct HasRegistrar : virtual Test::autocommitting_context {
+    Fred::InfoRegistrarData registrar;
+    HasSession session;
+    HasConfig config;
+
+    HasRegistrar() {
+        const std::string reg_handle = "REGISTRAR1";
+        Fred::CreateRegistrar(reg_handle).exec(ctx);
+        registrar = Fred::InfoRegistrarByHandle(reg_handle).exec(ctx).info_registrar_data;
+
+        session.data.registrar_id = registrar.id;
+        BOOST_REQUIRE(is_session_registrar_valid(session.data));
+    }
+
+};
+
+struct HasAnotherRegistrar : virtual Test::autocommitting_context {
+    Fred::InfoRegistrarData data;
+    HasSession session;
+    HasConfig config;
+
+    HasAnotherRegistrar() {
+        const std::string reg_handle = "REGISTRAR2";
+        Fred::CreateRegistrar(reg_handle).exec(ctx);
+        data = Fred::InfoRegistrarByHandle(reg_handle).exec(ctx).info_registrar_data;
+
+        session.data.registrar_id = data.id + 1;
+        BOOST_REQUIRE(is_session_registrar_valid(session.data));
+
+    }
+
+};
+
+struct HasContact : HasRegistrar {
     Fred::InfoContactData contact;
 
-    has_contact() {
+    HasContact() {
         const std::string contact_handle = "CONTACT1";
         Fred::CreateContact(contact_handle, registrar.handle).exec(ctx);
         contact = Fred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data;
     }
+
 };
 
-struct has_contact_and_a_different_registrar : has_contact {
-    Fred::InfoRegistrarData the_different_registrar;
-
-    has_contact_and_a_different_registrar() {
-        const std::string diff_reg_handle = "REGISTRAR2";
-        Fred::CreateRegistrar(diff_reg_handle).exec(ctx);
-        the_different_registrar = Fred::InfoRegistrarByHandle(diff_reg_handle).exec(ctx).info_registrar_data;
+struct HasContactAndAnotherRegistrar : HasContact {
+    Fred::InfoRegistrarData another_registrar;
+    HasContactAndAnotherRegistrar() {
     }
 };
 
-struct has_contact_with_status_request : has_contact {
+struct HasContactWithStatusRequest : HasContact {
     const std::string status;
 
-    has_contact_with_status_request(const std::string& _status)
+    HasContactWithStatusRequest(const std::string& _status)
     :   status(_status)
     {
         ctx.get_conn().exec_params(
@@ -97,47 +204,47 @@ struct has_contact_with_status_request : has_contact {
     }
 };
 
-struct has_contact_with_status : has_contact_with_status_request {
-    has_contact_with_status(const std::string& _status)
-    :   has_contact_with_status_request(_status)
+struct HasContactWithStatus : HasContactWithStatusRequest {
+    HasContactWithStatus(const std::string& _status)
+    :   HasContactWithStatusRequest(_status)
     {
         Fred::PerformObjectStateRequest(contact.id).exec(ctx);
     }
 };
 
-struct has_contact_with_server_update_prohibited : has_contact_with_status {
-    has_contact_with_server_update_prohibited()
-    :   has_contact_with_status("serverUpdateProhibited")
+struct HasContactWithServerUpdateProhibited : HasContactWithStatus {
+    HasContactWithServerUpdateProhibited()
+    :   HasContactWithStatus("serverUpdateProhibited")
     { }
 };
 
-struct has_contact_with_server_transfer_prohibited : has_contact_with_status {
-    has_contact_with_server_transfer_prohibited()
-    :   has_contact_with_status("serverTransferProhibited")
+struct HasContactWithServerTransferProhibited : HasContactWithStatus {
+    HasContactWithServerTransferProhibited()
+    :   HasContactWithStatus("serverTransferProhibited")
     { }
 };
 
-struct has_contact_with_delete_candidate : has_contact_with_status {
-    has_contact_with_delete_candidate()
-    :   has_contact_with_status("deleteCandidate")
+struct HasContactWithDeleteCandidate : HasContactWithStatus {
+    HasContactWithDeleteCandidate()
+    :   HasContactWithStatus("deleteCandidate")
     { }
 };
 
-struct has_contact_with_delete_candidate_request : has_contact_with_status_request {
-    has_contact_with_delete_candidate_request()
-    :   has_contact_with_status_request("deleteCandidate")
+struct HasContactWithDeleteCandidateRequest : HasContactWithStatusRequest {
+    HasContactWithDeleteCandidateRequest()
+    :   HasContactWithStatusRequest("deleteCandidate")
     { }
 };
 
-struct has_contact_with_server_transfer_prohibited_request : has_contact_with_status_request {
-    has_contact_with_server_transfer_prohibited_request()
-    :   has_contact_with_status_request("serverTransferProhibited")
+struct HasContactWithServerTransferProhibitedRequest : HasContactWithStatusRequest {
+    HasContactWithServerTransferProhibitedRequest()
+    :   HasContactWithStatusRequest("serverTransferProhibited")
     { }
 };
 
-struct has_contact_with_server_update_prohibited_request : has_contact_with_status_request {
-    has_contact_with_server_update_prohibited_request()
-    :   has_contact_with_status_request("serverUpdateProhibited")
+struct HasContactWithServerUpdateProhibitedRequest : HasContactWithStatusRequest {
+    HasContactWithServerUpdateProhibitedRequest()
+    :   HasContactWithStatusRequest("serverUpdateProhibited")
     { }
 };
 

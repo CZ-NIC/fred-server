@@ -46,6 +46,7 @@ namespace Nsset {
 
 CheckNssetLocalizedResponse check_nsset_localized(
         const std::set<std::string>& _nsset_handles,
+        const CheckNssetConfigData& _check_nsset_config_data,
         const SessionData& _session_data)
 {
     Fred::OperationContextCreator ctx;
@@ -61,7 +62,8 @@ CheckNssetLocalizedResponse check_nsset_localized(
                 check_nsset(
                         ctx,
                         _nsset_handles,
-                        _session_data.registrar_id);
+                        _check_nsset_config_data,
+                        _session_data);
 
         return CheckNssetLocalizedResponse(
                 EppResponseSuccessLocalized(

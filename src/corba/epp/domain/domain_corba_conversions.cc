@@ -35,7 +35,10 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
+namespace Epp {
+namespace Domain {
 
 Optional<Nullable<std::string> >
 unwrap_string_for_change_or_remove_to_Optional_Nullable_string(const char* _src)
@@ -59,7 +62,7 @@ namespace {
 
 ccReg::CheckAvail
 wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
-        const boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction>& obstruction)
+        const boost::optional< ::Epp::Domain::DomainLocalizedRegistrationObstruction>& obstruction)
 {
     if (!obstruction)
     {
@@ -68,24 +71,24 @@ wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(
 
     switch (obstruction.get().state)
     {
-        case Epp::Domain::DomainRegistrationObstruction::registered:
+        case ::Epp::Domain::DomainRegistrationObstruction::registered:
             return ccReg::Exist;
 
-        case Epp::Domain::DomainRegistrationObstruction::blacklisted:
+        case ::Epp::Domain::DomainRegistrationObstruction::blacklisted:
             return ccReg::BlackList;
 
-        case Epp::Domain::DomainRegistrationObstruction::zone_not_in_registry:
+        case ::Epp::Domain::DomainRegistrationObstruction::zone_not_in_registry:
             return ccReg::NotApplicable;
 
-        case Epp::Domain::DomainRegistrationObstruction::invalid_fqdn:
+        case ::Epp::Domain::DomainRegistrationObstruction::invalid_fqdn:
             return ccReg::BadFormat;
     }
 
-    throw std::logic_error("Unexpected Epp::Domain::DomainRegistrationObstruction::Enum value.");
+    throw std::logic_error("Unexpected ::Epp::Domain::DomainRegistrationObstruction::Enum value.");
 }
 
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::Epp::{anonymous}
 
 
 /**
@@ -95,7 +98,7 @@ ccReg::CheckResp
 wrap_Epp_Domain_CheckDomainLocalizedResponse(
         const std::vector<std::string>& _domain_fqdns,
         const std::map<std::string,
-                boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction)
+                boost::optional< ::Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction)
 {
     ccReg::CheckResp result;
     result.length(_domain_fqdns.size());
@@ -105,7 +108,7 @@ wrap_Epp_Domain_CheckDomainLocalizedResponse(
          domain_fqdn_ptr != _domain_fqdns.end();
          ++domain_fqdn_ptr, ++result_idx)
     {
-        const boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction>
+        const boost::optional< ::Epp::Domain::DomainLocalizedRegistrationObstruction>
                 domain_localized_registration_obstruction =
                         map_at(_domain_fqdn_to_domain_localized_registration_obstruction, *domain_fqdn_ptr);
 
@@ -113,7 +116,7 @@ wrap_Epp_Domain_CheckDomainLocalizedResponse(
                 wrap_Epp_Domain_DomainLocalizedRegistrationObstruction(domain_localized_registration_obstruction);
 
         result[result_idx].reason =
-                Corba::wrap_string_to_corba_string(
+                Fred::Corba::wrap_string_to_corba_string(
                         domain_localized_registration_obstruction
                                 ? domain_localized_registration_obstruction.get().description
                                 : "");
@@ -128,13 +131,13 @@ namespace {
 
 void
 wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(
-        const Nullable<Epp::Domain::EnumValidationExtension>& _src,
+        const Nullable< ::Epp::Domain::EnumValidationExtension>& _src,
         ccReg::ExtensionList& _dst)
 {
     if (!_src.isnull())
     {
         ccReg::ENUMValidationExtension_var enumVal = new ccReg::ENUMValidationExtension();
-        enumVal->valExDate = Corba::wrap_string_to_corba_string(
+        enumVal->valExDate = Fred::Corba::wrap_string_to_corba_string(
                 boost::gregorian::to_iso_extended_string(_src.get_value().get_valexdate()));
         enumVal->publish = _src.get_value().get_publish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
         _dst.length(1);
@@ -143,40 +146,40 @@ wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(
 }
 
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::{anonymous}
 
 
 void
 wrap_Epp_Domain_InfoDomainLocalizedOutputData(
-        const Epp::Domain::InfoDomainLocalizedOutputData& _src,
+        const ::Epp::Domain::InfoDomainLocalizedOutputData& _src,
         ccReg::Domain& _dst)
 {
-    _dst.ROID = Corba::wrap_string_to_corba_string(_src.roid);
-    _dst.name = Corba::wrap_string_to_corba_string(_src.fqdn);
+    _dst.ROID = Fred::Corba::wrap_string_to_corba_string(_src.roid);
+    _dst.name = Fred::Corba::wrap_string_to_corba_string(_src.fqdn);
 
-    _dst.Registrant = Corba::wrap_string_to_corba_string(_src.registrant);
-    _dst.nsset = Corba::wrap_string_to_corba_string(_src.nsset.get_value_or_default());
-    _dst.keyset = Corba::wrap_string_to_corba_string(_src.keyset.get_value_or_default());
+    _dst.Registrant = Fred::Corba::wrap_string_to_corba_string(_src.registrant);
+    _dst.nsset = Fred::Corba::wrap_string_to_corba_string(_src.nsset.get_value_or_default());
+    _dst.keyset = Fred::Corba::wrap_string_to_corba_string(_src.keyset.get_value_or_default());
 
-    Corba::wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
+    Fred::Corba::wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
 
-    _dst.ClID = Corba::wrap_string_to_corba_string(_src.sponsoring_registrar_handle);
-    _dst.CrID = Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);
-    _dst.UpID = Corba::wrap_string_to_corba_string(_src.last_update_registrar_handle.get_value_or_default());
+    _dst.ClID = Fred::Corba::wrap_string_to_corba_string(_src.sponsoring_registrar_handle);
+    _dst.CrID = Fred::Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);
+    _dst.UpID = Fred::Corba::wrap_string_to_corba_string(_src.last_update_registrar_handle.get_value_or_default());
 
-    _dst.CrDate = Corba::wrap_string_to_corba_string(convert_time_to_local_rfc3339(_src.crdate));
-    _dst.UpDate = Corba::wrap_string_to_corba_string(
+    _dst.CrDate = Fred::Corba::wrap_string_to_corba_string(convert_time_to_local_rfc3339(_src.crdate));
+    _dst.UpDate = Fred::Corba::wrap_string_to_corba_string(
             _src.last_update.isnull()
                     ? std::string()
                     : convert_time_to_local_rfc3339(_src.last_update.get_value()));
-    _dst.TrDate = Corba::wrap_string_to_corba_string(
+    _dst.TrDate = Fred::Corba::wrap_string_to_corba_string(
             _src.last_transfer.isnull()
                     ? std::string()
                     : convert_time_to_local_rfc3339(_src.last_transfer.get_value()));
 
-    _dst.ExDate = Corba::wrap_string_to_corba_string(boost::gregorian::to_iso_extended_string(_src.exdate));
+    _dst.ExDate = Fred::Corba::wrap_string_to_corba_string(boost::gregorian::to_iso_extended_string(_src.exdate));
 
-    _dst.AuthInfoPw = Corba::wrap_string_to_corba_string(
+    _dst.AuthInfoPw = Fred::Corba::wrap_string_to_corba_string(
             _src.authinfopw ? _src.authinfopw.value() : std::string());
 
     _dst.admin.length(_src.admin.size());
@@ -185,10 +188,10 @@ wrap_Epp_Domain_InfoDomainLocalizedOutputData(
          admin_ptr != _src.admin.end();
          ++admin_ptr, ++dst_admin_index)
     {
-        _dst.admin[dst_admin_index] = Corba::wrap_string_to_corba_string(*admin_ptr);
+        _dst.admin[dst_admin_index] = Fred::Corba::wrap_string_to_corba_string(*admin_ptr);
     }
 
-    Corba::wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(
+    wrap_Epp_Domain_EnumValidationExtension_to_ccReg_ExtensionList(
             _src.ext_enum_domain_validation,
             _dst.ext);
 
@@ -198,25 +201,25 @@ wrap_Epp_Domain_InfoDomainLocalizedOutputData(
          tmpcontact_ptr != _src.tmpcontact.end();
          ++tmpcontact_ptr, ++dst_tmpcontact_index)
     {
-        _dst.tmpcontact[dst_tmpcontact_index] = Corba::wrap_string_to_corba_string(*tmpcontact_ptr);
+        _dst.tmpcontact[dst_tmpcontact_index] = Fred::Corba::wrap_string_to_corba_string(*tmpcontact_ptr);
     }
 }
 
 
-Epp::Domain::DomainRegistrationTime
+::Epp::Domain::DomainRegistrationTime
 unwrap_domain_registration_period(const ccReg::Period_str& period)
 {
     switch (period.unit)
     {
         case ccReg::unit_month:
-            return Epp::Domain::DomainRegistrationTime(
+            return ::Epp::Domain::DomainRegistrationTime(
                     period.count,
-                    Epp::Domain::DomainRegistrationTime::Unit::month);
+                    ::Epp::Domain::DomainRegistrationTime::Unit::month);
 
         case ccReg::unit_year:
-            return Epp::Domain::DomainRegistrationTime(
+            return ::Epp::Domain::DomainRegistrationTime(
                     period.count,
-                    Epp::Domain::DomainRegistrationTime::Unit::year);
+                    ::Epp::Domain::DomainRegistrationTime::Unit::year);
     }
     throw std::runtime_error("unwrap_domain_registration_period internal error");
 }
@@ -240,17 +243,17 @@ unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact& in)
 }
 
 
-std::vector<Epp::Domain::EnumValidationExtension>
+std::vector< ::Epp::Domain::EnumValidationExtension>
 unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
 {
     const ccReg::ENUMValidationExtension* enum_ext = 0;
-    std::vector<Epp::Domain::EnumValidationExtension> ret;
+    std::vector< ::Epp::Domain::EnumValidationExtension> ret;
     ret.reserve(ext.length());
     for (unsigned i = 0; i < ext.length(); ++i)
     {
         if (ext[i] >>= enum_ext)
         {
-            const std::string temp_valexdate_string = Corba::unwrap_string_from_const_char_ptr(
+            const std::string temp_valexdate_string = Fred::Corba::unwrap_string_from_const_char_ptr(
                     enum_ext->valExDate);
             boost::gregorian::date valexdate;
             try
@@ -263,7 +266,7 @@ unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
             }
 
             ret.push_back(
-                    Epp::Domain::EnumValidationExtension(
+                    ::Epp::Domain::EnumValidationExtension(
                             valexdate,
                             enum_ext->publish == ccReg::DISCL_DISPLAY));
         }
@@ -277,4 +280,7 @@ unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
 }
 
 
-} // namespace Corba
+} // namespace Fred::Corba::Epp::Domain
+} // namespace Fred::Corba::Epp
+} // namespace Fred::Corba
+} // namespace Fred

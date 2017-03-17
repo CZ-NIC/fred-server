@@ -19,6 +19,7 @@
 #ifndef INFO_DOMAIN_LOCALIZED_H_23BA4FC5083B45F2AB3100C54E6AF3F6
 #define INFO_DOMAIN_LOCALIZED_H_23BA4FC5083B45F2AB3100C54E6AF3F6
 
+#include "src/epp/domain/info_domain_config_data.h"
 #include "src/epp/domain/info_domain_localized_response.h"
 #include "src/epp/session_data.h"
 
@@ -26,7 +27,8 @@ namespace Epp {
 namespace Domain {
 
 InfoDomainLocalizedResponse info_domain_localized(
-        const std::string& _domain_fqdn,
+        const std::string& _fqdn,
+        const InfoDomainConfigData& _info_domain_config_data,
         const SessionData& _session_data);
 
 

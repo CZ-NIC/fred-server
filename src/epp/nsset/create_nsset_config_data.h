@@ -19,28 +19,24 @@
 #ifndef CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
 #define CREATE_NSSET_CONFIG_DATA_H_B950F0E2F8084F44ACFDFEEC1867FF3E
 
-#include "src/epp/nsset/dns_host_input.h"
-
-#include <boost/optional.hpp>
-
-#include <string>
-#include <vector>
-
 namespace Epp {
 namespace Nsset {
 
 struct CreateNssetConfigData
 {
-    unsigned int default_tech_check_level;
-    unsigned int min_hosts;
-    unsigned int max_hosts;
+    const bool rifd_epp_operations_charging;
+    const unsigned int default_tech_check_level;
+    const unsigned int min_hosts;
+    const unsigned int max_hosts;
 
 
     CreateNssetConfigData(
+            const bool _rifd_epp_operations_charging,
             const unsigned int _default_tech_check_level,
             const unsigned int _min_hosts,
             const unsigned int _max_hosts)
-        : default_tech_check_level(_default_tech_check_level),
+        : rifd_epp_operations_charging(_rifd_epp_operations_charging),
+          default_tech_check_level(_default_tech_check_level),
           min_hosts(_min_hosts),
           max_hosts(_max_hosts)
     {

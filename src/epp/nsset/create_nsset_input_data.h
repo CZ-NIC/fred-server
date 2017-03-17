@@ -33,21 +33,21 @@ struct CreateNssetInputData
 {
     std::string handle;
     boost::optional<std::string> authinfopw;
-    std::vector<DnsHostInput> dns_hosts;
     std::vector<std::string> tech_contacts;
+    std::vector<DnsHostInput> dns_hosts;
     boost::optional<short> tech_check_level;
 
 
     CreateNssetInputData(
             const std::string& _handle,
             const boost::optional<std::string>& _authinfopw,
-            const std::vector<DnsHostInput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
+            const std::vector<DnsHostInput>& _dns_hosts,
             const boost::optional<short>& _tech_check_level)
         : handle(_handle),
           authinfopw(_authinfopw),
-          dns_hosts(_dns_hosts),
           tech_contacts(_tech_contacts),
+          dns_hosts(_dns_hosts),
           tech_check_level(_tech_check_level)
     {
     }

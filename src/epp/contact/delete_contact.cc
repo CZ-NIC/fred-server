@@ -37,26 +37,28 @@ namespace Contact {
 
 unsigned long long delete_contact(
         Fred::OperationContext& _ctx,
-        const std::string& _handle,
-        const unsigned long long _registrar_id)
+        const std::string& _contact_handle,
+        const DeleteContactConfigData& _delete_contact_config_data,
+        const SessionData& _session_data)
 {
 
-    if ( _registrar_id == 0 ) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+    if (!is_session_registrar_valid(_session_data)) {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if ( Fred::Contact::get_handle_registrability(_ctx, _handle) != Fred::ContactHandleState::Registrability::registered ) {
+    if ( Fred::Contact::get_handle_registrability(_ctx, _contact_handle) != Fred::ContactHandleState::Registrability::registered ) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
 
     const Fred::InfoContactData contact_data_before_delete =
-            Fred::InfoContactByHandle(_handle)
+            Fred::InfoContactByHandle(_contact_handle)
                     .set_lock()
                     .exec(_ctx)
                     .info_contact_data;
 
     const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id)
+            Fred::InfoRegistrarById(_session_data.registrar_id)
                     .exec(_ctx)
                     .info_registrar_data;
 
@@ -95,7 +97,7 @@ unsigned long long delete_contact(
 
     try {
 
-        Fred::DeleteContactByHandle(_handle).exec(_ctx);
+        Fred::DeleteContactByHandle(_contact_handle).exec(_ctx);
 
         return contact_data_before_delete.historyid;
 

@@ -16,25 +16,25 @@ namespace Whois
 PlaceAddress wrap_address(const Registry::WhoisImpl::PlaceAddress& address)
 {
     PlaceAddress result;
-    result.street1    = Corba::wrap_string_to_corba_string(address.street1);
-    result.street2    = Corba::wrap_string_to_corba_string(address.street2);
-    result.street3    = Corba::wrap_string_to_corba_string(address.street3);
-    result.city       = Corba::wrap_string_to_corba_string(address.city);
-    result.postalcode = Corba::wrap_string_to_corba_string(address.postal_code);
-    result.stateorprovince = Corba::wrap_string_to_corba_string(address.stateorprovince);
-    result.country_code    = Corba::wrap_string_to_corba_string(address.country_code);
+    result.street1    = Fred::Corba::wrap_string_to_corba_string(address.street1);
+    result.street2    = Fred::Corba::wrap_string_to_corba_string(address.street2);
+    result.street3    = Fred::Corba::wrap_string_to_corba_string(address.street3);
+    result.city       = Fred::Corba::wrap_string_to_corba_string(address.city);
+    result.postalcode = Fred::Corba::wrap_string_to_corba_string(address.postal_code);
+    result.stateorprovince = Fred::Corba::wrap_string_to_corba_string(address.stateorprovince);
+    result.country_code    = Fred::Corba::wrap_string_to_corba_string(address.country_code);
     return result;
 }
 
 Registrar wrap_registrar(const Registry::WhoisImpl::Registrar& registrar)
 {
     Registrar result;
-    result.handle  = Corba::wrap_string_to_corba_string(registrar.handle);
-    result.name    = Corba::wrap_string_to_corba_string(registrar.name);
-    result.organization = Corba::wrap_string_to_corba_string(registrar.organization);
-    result.url     = Corba::wrap_string_to_corba_string(registrar.url);
-    result.phone   = Corba::wrap_string_to_corba_string(registrar.phone);
-    result.fax     = Corba::wrap_string_to_corba_string(registrar.fax);
+    result.handle  = Fred::Corba::wrap_string_to_corba_string(registrar.handle);
+    result.name    = Fred::Corba::wrap_string_to_corba_string(registrar.name);
+    result.organization = Fred::Corba::wrap_string_to_corba_string(registrar.organization);
+    result.url     = Fred::Corba::wrap_string_to_corba_string(registrar.url);
+    result.phone   = Fred::Corba::wrap_string_to_corba_string(registrar.phone);
+    result.fax     = Fred::Corba::wrap_string_to_corba_string(registrar.fax);
     result.address = wrap_address(registrar.address);
     return result;
 }
@@ -83,13 +83,13 @@ RegistrarSeq* Server_impl::get_registrars()
 RegistrarGroup wrap_registrar_group(const Registry::WhoisImpl::RegistrarGroup& group)
 {
     RegistrarGroup result;
-    result.name = Corba::wrap_string_to_corba_string(group.name);
+    result.name = Fred::Corba::wrap_string_to_corba_string(group.name);
     result.members.length(group.members.size());
     CORBA::ULong i = 0;
     for (std::vector<std::string>::const_iterator cit = group.members.begin();
             cit != group.members.end(); ++cit, ++i)
     {
-        result.members[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.members[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
     return result;
 }
@@ -116,7 +116,7 @@ RegistrarGroupList* Server_impl::get_registrar_groups()
 RegistrarCertification wrap_registrar_certification(const Registry::WhoisImpl::RegistrarCertification& cert)
 {
     RegistrarCertification result;
-    result.registrar_handle = Corba::wrap_string_to_corba_string(cert.registrar);
+    result.registrar_handle = Fred::Corba::wrap_string_to_corba_string(cert.registrar);
     result.score = cert.score;
     result.evaluation_file_id = cert.evaluation_file_id;
     return result;
@@ -152,7 +152,7 @@ ZoneFqdnList* Server_impl::get_managed_zone_list()
         for (std::vector<std::string>::const_iterator cit = zones.begin();
                 cit != zones.end(); ++cit, ++i)
         {
-            result[i] = Corba::wrap_string_to_corba_string(*cit);
+            result[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
         }
         return result._retn();
     }
@@ -165,7 +165,7 @@ ZoneFqdnList* Server_impl::get_managed_zone_list()
 DisclosableString wrap_disclosable_string(const std::string& str, bool disclose)
 {
     DisclosableString temp;
-    temp.value = Corba::wrap_string_to_corba_string(str);
+    temp.value = Fred::Corba::wrap_string_to_corba_string(str);
     temp.disclose = disclose;
     return temp;
 }
@@ -173,13 +173,13 @@ DisclosableString wrap_disclosable_string(const std::string& str, bool disclose)
 DisclosablePlaceAddress wrap_disclosable_address(const Registry::WhoisImpl::PlaceAddress& addr, bool disclose)
 {
     DisclosablePlaceAddress temp;
-    temp.value.street1 = Corba::wrap_string_to_corba_string(addr.street1);
-    temp.value.street2 = Corba::wrap_string_to_corba_string(addr.street2);
-    temp.value.street3 = Corba::wrap_string_to_corba_string(addr.street3);
-    temp.value.city    = Corba::wrap_string_to_corba_string(addr.city);
-    temp.value.stateorprovince = Corba::wrap_string_to_corba_string(addr.stateorprovince);
-    temp.value.postalcode      = Corba::wrap_string_to_corba_string(addr.postal_code);
-    temp.value.country_code    = Corba::wrap_string_to_corba_string(addr.country_code);
+    temp.value.street1 = Fred::Corba::wrap_string_to_corba_string(addr.street1);
+    temp.value.street2 = Fred::Corba::wrap_string_to_corba_string(addr.street2);
+    temp.value.street3 = Fred::Corba::wrap_string_to_corba_string(addr.street3);
+    temp.value.city    = Fred::Corba::wrap_string_to_corba_string(addr.city);
+    temp.value.stateorprovince = Fred::Corba::wrap_string_to_corba_string(addr.stateorprovince);
+    temp.value.postalcode      = Fred::Corba::wrap_string_to_corba_string(addr.postal_code);
+    temp.value.country_code    = Fred::Corba::wrap_string_to_corba_string(addr.country_code);
     temp.disclose = disclose;
     return temp;
 }
@@ -187,7 +187,7 @@ DisclosablePlaceAddress wrap_disclosable_address(const Registry::WhoisImpl::Plac
 Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
 {
     Contact result;
-    result.handle       = Corba::wrap_string_to_corba_string(con.handle);
+    result.handle       = Fred::Corba::wrap_string_to_corba_string(con.handle);
     result.organization = wrap_disclosable_string(con.organization, con.disclose_organization);
     result.name         = wrap_disclosable_string(con.name, con.disclose_name);
     result.address      = wrap_disclosable_address(con.address, con.disclose_address);
@@ -198,25 +198,25 @@ Contact wrap_contact(const Registry::WhoisImpl::Contact& con)
     result.vat_number   = wrap_disclosable_string(con.vat_number, con.disclose_vat_number);
 
     result.identification.value.identification_type =
-            Corba::wrap_string_to_corba_string(con.identification.identification_type);
+            Fred::Corba::wrap_string_to_corba_string(con.identification.identification_type);
     result.identification.value.identification_data =
-            Corba::wrap_string_to_corba_string(con.identification.identification_data);
+            Fred::Corba::wrap_string_to_corba_string(con.identification.identification_data);
     result.identification.disclose = con.disclose_identification;
 
     result.creating_registrar_handle =
-            Corba::wrap_string_to_corba_string(con.creating_registrar);
+            Fred::Corba::wrap_string_to_corba_string(con.creating_registrar);
     result.sponsoring_registrar_handle =
-            Corba::wrap_string_to_corba_string(con.sponsoring_registrar);
-    result.created = Corba::wrap_time(con.created);
-    result.changed = Corba::wrap_nullable_datetime(con.changed);
-    result.last_transfer = Corba::wrap_nullable_datetime(con.last_transfer);
+            Fred::Corba::wrap_string_to_corba_string(con.sponsoring_registrar);
+    result.created = Fred::Corba::wrap_time(con.created);
+    result.changed = Fred::Corba::wrap_nullable_datetime(con.changed);
+    result.last_transfer = Fred::Corba::wrap_nullable_datetime(con.last_transfer);
 
     result.statuses.length(con.statuses.size());
     CORBA::ULong i = 0;
     for (std::vector<std::string>::const_iterator cit = con.statuses.begin();
             cit != con.statuses.end(); ++cit, ++i)
     {
-        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.statuses[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
 
     return result;
@@ -250,7 +250,7 @@ struct InvalidIPAddressException : public std::runtime_error
 IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
 {
     IPAddress result;
-    result.address = Corba::wrap_string(in.to_string());
+    result.address = Fred::Corba::wrap_string(in.to_string());
     if (in.is_v4())
     {
         result.version = IPv4;
@@ -269,7 +269,7 @@ IPAddress wrap_ipaddress(const boost::asio::ip::address& in)
 NameServer wrap_nameserver(const Registry::WhoisImpl::NameServer& ns)
 {
     NameServer result;
-    result.fqdn = Corba::wrap_string_to_corba_string(ns.fqdn);
+    result.fqdn = Fred::Corba::wrap_string_to_corba_string(ns.fqdn);
     result.ip_addresses.length(ns.ip_addresses.size());
     for (CORBA::ULong i = 0; i < ns.ip_addresses.size(); ++i)
     {
@@ -282,11 +282,11 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
 {
     NSSet result;
 
-    result.handle = Corba::wrap_string_to_corba_string(nsset.handle);
-    result.registrar_handle = Corba::wrap_string_to_corba_string(nsset.sponsoring_registrar);
-    result.created = Corba::wrap_time(nsset.created);
-    result.changed = Corba::wrap_nullable_datetime(nsset.changed);
-    result.last_transfer = Corba::wrap_nullable_datetime(nsset.last_transfer);
+    result.handle = Fred::Corba::wrap_string_to_corba_string(nsset.handle);
+    result.registrar_handle = Fred::Corba::wrap_string_to_corba_string(nsset.sponsoring_registrar);
+    result.created = Fred::Corba::wrap_time(nsset.created);
+    result.changed = Fred::Corba::wrap_nullable_datetime(nsset.changed);
+    result.last_transfer = Fred::Corba::wrap_nullable_datetime(nsset.last_transfer);
 
     result.nservers.length(nsset.nservers.size());
     for (CORBA::ULong i = 0; i < nsset.nservers.size(); ++i)
@@ -298,7 +298,7 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
     for (std::vector<std::string>::const_iterator cit = nsset.tech_contacts.begin();
             cit != nsset.tech_contacts.end(); ++cit, ++i)
     {
-        result.tech_contact_handles[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.tech_contact_handles[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
 
     result.statuses.length(nsset.statuses.size());
@@ -306,7 +306,7 @@ NSSet wrap_nsset(const Registry::WhoisImpl::NSSet& nsset)
     for (std::vector<std::string>::const_iterator cit = nsset.statuses.begin();
             cit != nsset.statuses.end(); ++cit, ++i)
     {
-        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.statuses[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
     return result;
 }
@@ -398,7 +398,7 @@ NameServer* Server_impl::get_nameserver_by_fqdn(const char* handle)
     try
     {
         NameServer result;
-        result.fqdn = Corba::wrap_string_to_corba_string(pimpl_->get_nameserver_by_fqdn(handle).fqdn);
+        result.fqdn = Fred::Corba::wrap_string_to_corba_string(pimpl_->get_nameserver_by_fqdn(handle).fqdn);
         /*
          * Because of grouping nameservers in NSSet we don't include
          * IP address in output (given nameserver can be in different
@@ -428,7 +428,7 @@ DNSKey wrap_dnskey(const Registry::WhoisImpl::DNSKey& dnskey)
     result.flags      = dnskey.flags;
     result.protocol   = dnskey.protocol;
     result.alg        = dnskey.alg;
-    result.public_key = Corba::wrap_string_to_corba_string(dnskey.public_key);
+    result.public_key = Fred::Corba::wrap_string_to_corba_string(dnskey.public_key);
     return result;
 }
 
@@ -436,18 +436,18 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
 {
     KeySet result;
 
-    result.handle  = Corba::wrap_string_to_corba_string(keyset.handle);
-    result.registrar_handle = Corba::wrap_string_to_corba_string(keyset.sponsoring_registrar);
-    result.created = Corba::wrap_time(keyset.created);
-    result.changed = Corba::wrap_nullable_datetime(keyset.changed);
-    result.last_transfer = Corba::wrap_nullable_datetime(keyset.last_transfer);
+    result.handle  = Fred::Corba::wrap_string_to_corba_string(keyset.handle);
+    result.registrar_handle = Fred::Corba::wrap_string_to_corba_string(keyset.sponsoring_registrar);
+    result.created = Fred::Corba::wrap_time(keyset.created);
+    result.changed = Fred::Corba::wrap_nullable_datetime(keyset.changed);
+    result.last_transfer = Fred::Corba::wrap_nullable_datetime(keyset.last_transfer);
 
     result.tech_contact_handles.length(keyset.tech_contacts.size());
     CORBA::ULong i = 0;
     for (std::vector<std::string>::const_iterator cit = keyset.tech_contacts.begin();
             cit != keyset.tech_contacts.end(); ++cit, ++i)
     {
-        result.tech_contact_handles[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.tech_contact_handles[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
 
     result.statuses.length(keyset.statuses.size());
@@ -455,7 +455,7 @@ KeySet wrap_keyset(const Registry::WhoisImpl::KeySet& keyset)
     for (std::vector<std::string>::const_iterator cit = keyset.statuses.begin();
             cit != keyset.statuses.end(); ++cit, ++i)
     {
-        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.statuses[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
 
     result.dns_keys.length(keyset.dns_keys.size());
@@ -520,15 +520,15 @@ KeySetSeq* Server_impl::get_keysets_by_tech_c(
 Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
 {
     Domain result;
-    result.handle = Corba::wrap_string_to_corba_string(domain.fqdn);
-    result.registrant_handle = Corba::wrap_string_to_corba_string(domain.registrant);
+    result.handle = Fred::Corba::wrap_string_to_corba_string(domain.fqdn);
+    result.registrant_handle = Fred::Corba::wrap_string_to_corba_string(domain.registrant);
     if (domain.nsset.size() == 0)
     {
         result.nsset_handle = NULL;
     }
     else
     {
-        result.nsset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.nsset));
+        result.nsset_handle = new NullableString(Fred::Corba::wrap_string_to_corba_string(domain.nsset));
     }
     if (domain.keyset.size() == 0)
     {
@@ -536,15 +536,15 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else
     {
-        result.keyset_handle = new NullableString(Corba::wrap_string_to_corba_string(domain.keyset));
+        result.keyset_handle = new NullableString(Fred::Corba::wrap_string_to_corba_string(domain.keyset));
     }
-    result.registrar_handle = Corba::wrap_string_to_corba_string(domain.sponsoring_registrar);
-    result.registered = Corba::wrap_time(domain.registered);
-    result.changed = Corba::wrap_nullable_datetime(domain.changed);
-    result.last_transfer = Corba::wrap_nullable_datetime(domain.last_transfer);
-    result.expire = Corba::wrap_date(domain.expire);
-    result.expire_time_estimate = Corba::wrap_time(domain.expire_time_estimate);
-    result.expire_time_actual = Corba::wrap_nullable_datetime(domain.expire_time_actual);
+    result.registrar_handle = Fred::Corba::wrap_string_to_corba_string(domain.sponsoring_registrar);
+    result.registered = Fred::Corba::wrap_time(domain.registered);
+    result.changed = Fred::Corba::wrap_nullable_datetime(domain.changed);
+    result.last_transfer = Fred::Corba::wrap_nullable_datetime(domain.last_transfer);
+    result.expire = Fred::Corba::wrap_date(domain.expire);
+    result.expire_time_estimate = Fred::Corba::wrap_time(domain.expire_time_estimate);
+    result.expire_time_actual = Fred::Corba::wrap_nullable_datetime(domain.expire_time_actual);
     if (domain.validated_to.isnull())
     {
         result.validated_to = NULL;
@@ -553,9 +553,9 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     }
     else
     {
-        result.validated_to = new Registry::NullableDate(Corba::wrap_date(domain.validated_to.get_value()));
-        result.validated_to_time_estimate = Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
-        result.validated_to_time_actual = Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
+        result.validated_to = new Registry::NullableDate(Fred::Corba::wrap_date(domain.validated_to.get_value()));
+        result.validated_to_time_estimate = Fred::Corba::wrap_nullable_datetime(domain.validated_to_time_estimate);
+        result.validated_to_time_actual = Fred::Corba::wrap_nullable_datetime(domain.validated_to_time_actual);
     }
 
     result.admin_contact_handles.length(domain.admin_contacts.size());
@@ -563,7 +563,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     for (std::vector<std::string>::const_iterator cit = domain.admin_contacts.begin();
             cit != domain.admin_contacts.end(); ++cit, ++i)
     {
-        result.admin_contact_handles[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.admin_contact_handles[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
 
     result.statuses.length(domain.statuses.size());
@@ -571,7 +571,7 @@ Domain wrap_domain(const Registry::WhoisImpl::Domain& domain)
     for (std::vector<std::string>::const_iterator cit = domain.statuses.begin();
             cit != domain.statuses.end(); ++cit, ++i)
     {
-        result.statuses[i] = Corba::wrap_string_to_corba_string(*cit);
+        result.statuses[i] = Fred::Corba::wrap_string_to_corba_string(*cit);
     }
 
     return result;
@@ -715,8 +715,8 @@ DomainSeq* Server_impl::get_domains_by_keyset(
 ObjectStatusDesc wrap_ObjectStatusDesc(const Registry::WhoisImpl::ObjectStatusDesc& osd)
 {
     ObjectStatusDesc result;
-    result.handle = Corba::wrap_string_to_corba_string(osd.handle);
-    result.name = Corba::wrap_string_to_corba_string(osd.name);
+    result.handle = Fred::Corba::wrap_string_to_corba_string(osd.handle);
+    result.name = Fred::Corba::wrap_string_to_corba_string(osd.name);
     return result;
 }
 

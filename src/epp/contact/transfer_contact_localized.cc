@@ -45,9 +45,9 @@ namespace Contact {
 EppResponseSuccessLocalized transfer_contact_localized(
         const std::string& _contact_handle,
         const std::string& _authinfopw,
+        const TransferContactConfigData& _transfer_contact_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const NotificationData& _notification_data)
 {
     try {
         Logging::Context logging_ctx1("rifd");
@@ -62,8 +62,8 @@ EppResponseSuccessLocalized transfer_contact_localized(
                         ctx,
                         _contact_handle,
                         _authinfopw,
-                        _session_data.registrar_id,
-                        _logd_request_id);
+                        _transfer_contact_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

@@ -19,6 +19,7 @@
 #ifndef UPDATE_CONTACT_LOCALIZED_H_3265A4F7B3D6435FBB17D88760C1AAED
 #define UPDATE_CONTACT_LOCALIZED_H_3265A4F7B3D6435FBB17D88760C1AAED
 
+#include "src/epp/contact/update_contact_config_data.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/epp_response_success_localized.h"
 #include "src/epp/notification_data.h"
@@ -34,10 +35,9 @@ namespace Contact {
 EppResponseSuccessLocalized update_contact_localized(
         const std::string& _contact_handle,
         const ContactChange& _data,
+        const UpdateContactConfigData& _update_contact_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _epp_update_contact_enqueue_check);
+        const NotificationData& _notification_data);
 
 
 } // namespace Epp::Contact

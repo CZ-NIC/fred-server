@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include <boost/test/unit_test.hpp>
 
 #include "src/epp/contact/contact_handle_state_to_check_result.h"

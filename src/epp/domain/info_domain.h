@@ -20,6 +20,8 @@
 #define INFO_DOMAIN_H_A9C7B7C225EB43899886D9EE74F3EF6B
 
 #include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/info_domain_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/opcontext.h"
@@ -65,8 +67,9 @@ struct InfoDomainOutputData
  */
 InfoDomainOutputData info_domain(
         Fred::OperationContext& _ctx,
-        const std::string& _domain_fqdn,
-        unsigned long long _session_registrar_id);
+        const std::string& _fqdn,
+        const InfoDomainConfigData& _info_domain_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Domain

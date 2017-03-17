@@ -23,8 +23,8 @@
 #include "src/epp/epp_result_code.h"
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
-#include "src/epp/reason.h"
 #include "src/epp/impl/util.h"
+#include "src/epp/reason.h"
 #include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/info_domain.h"
@@ -57,10 +57,9 @@ namespace Domain {
 
 RenewDomainResult renew_domain(
         Fred::OperationContext& _ctx,
-        const RenewDomainInputData& _data,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        const bool _rifd_epp_operations_charging)
+        const RenewDomainInputData& _renew_domain_input_data,
+        const RenewDomainConfigData& _renew_domain_config_data,
+        const SessionData& _session_data)
 {
     // start of db transaction, utc timestamp without timezone, will be timestamp of domain creation crdate
     const boost::posix_time::ptime current_utc_time = boost::posix_time::time_from_string(
@@ -73,7 +72,7 @@ RenewDomainResult renew_domain(
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     // check registrar logged in
-    if (_registrar_id == 0)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -84,7 +83,10 @@ RenewDomainResult renew_domain(
     Fred::Zone::Data zone_data;
     try
     {
-        zone_data = Fred::Zone::find_zone_in_fqdn(_ctx, Fred::Zone::rem_trailing_dot(_data.fqdn));
+        zone_data =
+            Fred::Zone::find_zone_in_fqdn(
+                    _ctx,
+                    Fred::Zone::rem_trailing_dot(_renew_domain_input_data.fqdn));
     }
     catch (const Fred::Zone::Exception& e)
     {
@@ -98,7 +100,7 @@ RenewDomainResult renew_domain(
 
     // check registrar zone access permission
     if (!Fred::is_zone_accessible_by_registrar(
-                _registrar_id,
+                _session_data.registrar_id,
                 zone_data.id,
                 current_local_date,
                 _ctx))
@@ -111,10 +113,10 @@ RenewDomainResult renew_domain(
     try
     {
         info_domain_data = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_data.fqdn))
-                           .set_lock()
-                           .exec(_ctx, "UTC")
-                           .info_domain_data;
+                Fred::Zone::rem_trailing_dot(_renew_domain_input_data.fqdn))
+                                   .set_lock()
+                                   .exec(_ctx, "UTC")
+                                   .info_domain_data;
     }
     catch (const Fred::InfoDomainByHandle::Exception& ex)
     {
@@ -130,7 +132,7 @@ RenewDomainResult renew_domain(
     try
     {
         const boost::gregorian::date current_exdate = boost::gregorian::from_simple_string(
-                _data.current_exdate);
+                _renew_domain_input_data.current_exdate);
         if (current_exdate != info_domain_data.expiration_date)
         {
             throw std::runtime_error("input exdate");
@@ -138,11 +140,12 @@ RenewDomainResult renew_domain(
     }
     catch (const std::exception&)
     {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
-                                         .add_extended_error(
-                                                 EppExtendedError::of_scalar_parameter(
-                                                         Param::domain_cur_exp_date,
-                                                         Reason::curexpdate_not_expdate)));
+        throw EppResponseFailure(
+                EppResultFailure(EppResultCode::parameter_value_policy_error)
+                        .add_extended_error(
+                                EppExtendedError::of_scalar_parameter(
+                                        Param::domain_cur_exp_date,
+                                        Reason::curexpdate_not_expdate)));
     }
 
     EppResultFailure parameter_value_range_errors = EppResultFailure(
@@ -152,7 +155,7 @@ RenewDomainResult renew_domain(
     try
     {
         domain_registration_in_months = boost::numeric_cast<unsigned>(
-                _data.period.get_length_of_domain_registration_in_months());
+                _renew_domain_input_data.period.get_length_of_domain_registration_in_months());
     }
     catch (const boost::numeric::bad_numeric_cast&)
     {
@@ -176,11 +179,12 @@ RenewDomainResult renew_domain(
     }
     if (domain_registration_in_months % zone_data.ex_period_min != 0)
     {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
-                                         .add_extended_error(
-                                                 EppExtendedError::of_scalar_parameter(
-                                                         Param::domain_period,
-                                                         Reason::period_policy)));
+        throw EppResponseFailure(
+                EppResultFailure(EppResultCode::parameter_value_policy_error)
+                        .add_extended_error(
+                                EppExtendedError::of_scalar_parameter(
+                                        Param::domain_period,
+                                        Reason::period_policy)));
     }
 
     // check if domain renew is possible
@@ -193,9 +197,9 @@ RenewDomainResult renew_domain(
                 (" + ").param_bigint(zone_data.ex_period_max)(" * ('1 month'::interval))::date as max_exdate"));
 
     const boost::gregorian::date new_exdate =
-            boost::gregorian::from_simple_string(static_cast<std::string>(exdate_result[0]["new_exdate"]));
+        boost::gregorian::from_simple_string(static_cast<std::string>(exdate_result[0]["new_exdate"]));
     const boost::gregorian::date max_exdate =
-            boost::gregorian::from_simple_string(static_cast<std::string>(exdate_result[0]["max_exdate"]));
+        boost::gregorian::from_simple_string(static_cast<std::string>(exdate_result[0]["max_exdate"]));
 
     // curExpDate + domain_registration_in_months <= current_local_date + zone.ex_period_max (in months)
     if (new_exdate > max_exdate)
@@ -207,11 +211,11 @@ RenewDomainResult renew_domain(
     }
 
     // check no ENUM validation date in case of non ENUM domain
-    if (!zone_data.is_enum && !_data.enum_validation_list.empty())
+    if (!zone_data.is_enum && !_renew_domain_input_data.enum_validation_extension_list.empty())
     {
         EppResultFailure parameter_value_policy_errors = EppResultFailure(
                 EppResultCode::parameter_value_policy_error);
-        for (unsigned i = 0; i < _data.enum_validation_list.size(); ++i)
+        for (unsigned i = 0; i < _renew_domain_input_data.enum_validation_extension_list.size(); ++i)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -223,16 +227,17 @@ RenewDomainResult renew_domain(
     }
 
     // check new ENUM domain validation expiration
-    if (zone_data.is_enum && !_data.enum_validation_list.empty())
+    if (zone_data.is_enum && !_renew_domain_input_data.enum_validation_extension_list.empty())
     {
-        const boost::gregorian::date new_valexdate = _data.enum_validation_list.rbegin()->get_valexdate();
+        const boost::gregorian::date new_valexdate =
+            _renew_domain_input_data.enum_validation_extension_list.rbegin()->get_valexdate();
 
         // ENUM validation expiration date is optional, if missing ENUM domain is not currently validated
         const boost::optional<boost::gregorian::date> current_valexdate =
-                info_domain_data.enum_domain_validation.isnull()
-                        ? boost::optional<boost::gregorian::date>()
-                        : boost::optional<boost::gregorian::date>(
-                                  info_domain_data.enum_domain_validation.get_value().validation_expiration);
+            info_domain_data.enum_domain_validation.isnull()
+            ? boost::optional<boost::gregorian::date>()
+            : boost::optional<boost::gregorian::date>(
+                    info_domain_data.enum_domain_validation.get_value().validation_expiration);
 
         if (is_new_enum_domain_validation_expiration_date_invalid(
                     new_valexdate,
@@ -244,14 +249,15 @@ RenewDomainResult renew_domain(
             parameter_value_range_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_ext_val_date,
-                            boost::numeric_cast<unsigned short>(_data.enum_validation_list.size() - 1),
+                            boost::numeric_cast<unsigned short>(
+                                    _renew_domain_input_data.enum_validation_extension_list.size() - 1),
                             Reason::valexpdate_not_valid));
         }
     }
 
     // check sponsoring or system registrar
     const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
+        Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
 
@@ -268,9 +274,9 @@ RenewDomainResult renew_domain(
     const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data.id).exec(_ctx));
 
     if (!session_registrar.system.get_value_or_default() &&
-            (domain_states.presents(Fred::Object_State::server_renew_prohibited)
-            ||
-            domain_states.presents(Fred::Object_State::delete_candidate)))
+        (domain_states.presents(Fred::Object_State::server_renew_prohibited)
+         ||
+         domain_states.presents(Fred::Object_State::delete_candidate)))
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
     }
@@ -283,30 +289,31 @@ RenewDomainResult renew_domain(
     try
     {
         Fred::RenewDomain renew_domain = Fred::RenewDomain(
-                _data.fqdn,
+                _renew_domain_input_data.fqdn,
                 session_registrar.handle,
                 new_exdate);
 
-        if (zone_data.is_enum && !_data.enum_validation_list.empty())
+        if (zone_data.is_enum && !_renew_domain_input_data.enum_validation_extension_list.empty())
         {
-            renew_domain.set_enum_validation_expiration(_data.enum_validation_list.rbegin()->get_valexdate())
-                    .set_enum_publish_flag(_data.enum_validation_list.rbegin()->get_publish());
+            renew_domain.set_enum_validation_expiration(
+                    _renew_domain_input_data.enum_validation_extension_list.rbegin()->get_valexdate())
+            .set_enum_publish_flag(
+                    _renew_domain_input_data.enum_validation_extension_list.rbegin()->get_publish());
         }
 
-        if (_logd_request_id.isset())
+        if (_session_data.logd_request_id.isset())
         {
-            renew_domain.set_logd_request_id(_logd_request_id.get_value());
+            renew_domain.set_logd_request_id(_session_data.logd_request_id.get_value());
         }
 
         unsigned long long renewed_domain_history_id = renew_domain.exec(_ctx);
 
-        if (_rifd_epp_operations_charging &&
-            !is_system_registrar)
+        if (_renew_domain_config_data.rifd_epp_operations_charging && !is_system_registrar)
         {
             renew_domain_bill_item(
-                    _data.fqdn,
+                    _renew_domain_input_data.fqdn,
                     current_utc_time,
-                    _registrar_id,
+                    _session_data.registrar_id,
                     info_domain_data.id,
                     domain_registration_in_months,
                     info_domain_data.expiration_date,

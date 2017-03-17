@@ -22,6 +22,7 @@
 #include <boost/integer_traits.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
+namespace Fred {
 namespace Corba {
 
 /**
@@ -67,6 +68,7 @@ wrap_int(SOURCE_INTEGRAL_TYPE src)
 }
 
 
-} // namespace Corba
+} // namespace Fred::Corba
+} // namespace Fred
 
 #endif

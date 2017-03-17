@@ -36,7 +36,10 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
+namespace Epp {
+namespace Domain {
 
 /**
  * Unwrapper for attributes which can be empty with special meaning and can have control char with special meaning
@@ -56,19 +59,19 @@ ccReg::CheckResp
 wrap_Epp_Domain_CheckDomainLocalizedResponse(
         const std::vector<std::string>& _domain_fqdns,
         const std::map<std::string,
-                boost::optional<Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction);
+                boost::optional< ::Epp::Domain::DomainLocalizedRegistrationObstruction> >& _domain_fqdn_to_domain_localized_registration_obstruction);
 
 
 void
 wrap_Epp_Domain_InfoDomainLocalizedOutputData(
-        const Epp::Domain::InfoDomainLocalizedOutputData& _src,
+        const ::Epp::Domain::InfoDomainLocalizedOutputData& _src,
         ccReg::Domain& _dst);
 
 
 /**
  * length of domain registration period
  */
-Epp::Domain::DomainRegistrationTime
+::Epp::Domain::DomainRegistrationTime
 unwrap_domain_registration_period(const ccReg::Period_str& period);
 
 
@@ -82,10 +85,13 @@ unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact& in);
 /**
  * ENUM validation list unwrapper
  */
-std::vector<Epp::Domain::EnumValidationExtension>
+std::vector< ::Epp::Domain::EnumValidationExtension>
 unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext);
 
 
-} // namespace Corba
+} // namespace Fred::Corba;:Epp::Domain
+} // namespace Fred::Corba::Epp
+} // namespace Fred::Corba
+} // namespace Fred
 
 #endif

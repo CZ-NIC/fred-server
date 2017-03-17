@@ -19,8 +19,9 @@
 #ifndef INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 #define INFO_NSSET_LOCALIZED_H_47356271F650459CBC0999B992C5C6DD
 
-#include "src/epp/session_data.h"
+#include "src/epp/nsset/info_nsset_config_data.h"
 #include "src/epp/nsset/info_nsset_localized_response.h"
+#include "src/epp/session_data.h"
 
 #include <string>
 
@@ -28,8 +29,10 @@ namespace Epp {
 namespace Nsset {
 
 InfoNssetLocalizedResponse info_nsset_localized(
-        const std::string& _handle,
+        const std::string& _nsset_handle,
+        const InfoNssetConfigData& _info_nsset_config_data,
         const SessionData& _session_data);
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

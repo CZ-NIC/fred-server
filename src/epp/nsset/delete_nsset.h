@@ -19,22 +19,28 @@
 #ifndef DELETE_NSSET_H_3578B2297509402F87E30F8130000C4A
 #define DELETE_NSSET_H_3578B2297509402F87E30F8130000C4A
 
-#include <string>
-
+#include "src/epp/notification_data.h"
+#include "src/epp/nsset/delete_nsset_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
+
+#include <string>
 
 namespace Epp {
 namespace Nsset {
 
 /**
- * If successful (no exception thrown) state requests of nsset are performed. In case of exception behaviour is undefined and transaction should be rolled back.
+ * If successful (no exception thrown) state requests of nsset are performed.
+ * In case of exception behaviour is undefined and transaction should be rolled back.
  *
  * @returns last nsset history id before delete
  */
 unsigned long long delete_nsset(
         Fred::OperationContext& _ctx,
         const std::string& _handle,
-        unsigned long long _registrar_id);
+        const DeleteNssetConfigData& _delete_nsset_config_data,
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Nsset
 } // namespace Epp

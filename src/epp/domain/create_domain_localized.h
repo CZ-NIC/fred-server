@@ -19,6 +19,7 @@
 #ifndef CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 #define CREATE_DOMAIN_LOCALIZED_H_EDC3ED43379D48C5A532E4A061895332
 
+#include "src/epp/domain/create_domain_config_data.h"
 #include "src/epp/domain/create_domain_input_data.h"
 #include "src/epp/domain/create_domain_localized_response.h"
 #include "src/epp/notification_data.h"
@@ -30,10 +31,9 @@ namespace Domain {
 
 CreateDomainLocalizedResponse create_domain_localized(
         const CreateDomainInputData& _create_domain_input_data,
+        const CreateDomainConfigData& _create_domain_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _rifd_epp_operations_charging);
+        const NotificationData& _notification_data);
 
 
 } // namespace Epp::Domain

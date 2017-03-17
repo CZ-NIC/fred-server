@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
 
 void
@@ -55,6 +56,7 @@ wrap_InfoContactLocalizedOutputData(
         ccReg::Contact& dst);
 
 
-} // namespace Corba
+} // namespace Fred::Corba
+} // namespace Fred
 
 #endif

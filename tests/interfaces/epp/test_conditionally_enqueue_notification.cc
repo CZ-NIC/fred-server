@@ -102,7 +102,7 @@ template<bool SystemReg>struct has_updated_contact_and_empty_notification_queue 
     unsigned long long registrar_id;
     static const bool epp_notification_disabled = true;
     static const bool epp_notification_enabled = false;
-    static const Epp::SessionLang::Enum epp_session_lange_default = Epp::SessionLang::en;
+    static const Epp::SessionLang::Enum epp_session_lang_default = Epp::SessionLang::en;
 
     has_updated_contact_and_empty_notification_queue()
     :
@@ -139,8 +139,9 @@ BOOST_FIXTURE_TEST_CASE(notification_created, has_nonsystem_registrar_updated_co
             post_update_contact_history_id,
             Epp::SessionData(
                     registrar_id,
-                    epp_session_lange_default,
-                    "srv-trx-007"),
+                    epp_session_lang_default,
+                    "srv-trx-007",
+                    0ULL),
             Epp::NotificationData(
                     "cl-trx-007",
                     epp_notification_enabled,
@@ -160,8 +161,9 @@ BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonsystem_registrar, has
             post_update_contact_history_id,
             Epp::SessionData(
                     registrar_id,
-                    epp_session_lange_default,
-                    "srv-trx-007"),
+                    epp_session_lang_default,
+                    "srv-trx-007",
+                    0ULL),
             Epp::NotificationData(
                     "DOnotNOTIFY-cl-trx-007",
                     epp_notification_enabled,
@@ -181,8 +183,9 @@ BOOST_FIXTURE_TEST_CASE(notification_created_because_of_nonmatching_prefix, has_
             post_update_contact_history_id,
             Epp::SessionData(
                     registrar_id,
-                    epp_session_lange_default,
-                    "srv-trx-007"),
+                    epp_session_lang_default,
+                    "srv-trx-007",
+                    0ULL),
             Epp::NotificationData(
                     "DOnotNOTIFY-cl-trx-007",
                     epp_notification_enabled,
@@ -202,8 +205,9 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_sys_reg_and_prefix, 
             post_update_contact_history_id,
             Epp::SessionData(
                     registrar_id,
-                    epp_session_lange_default,
-                    "srv-trx-007"),
+                    epp_session_lang_default,
+                    "srv-trx-007",
+                    0ULL),
             Epp::NotificationData(
                     "DOnotNOTIFY-cl-trx-007",
                     epp_notification_enabled,
@@ -223,8 +227,9 @@ BOOST_FIXTURE_TEST_CASE(notification_not_created_because_of_config, has_nonsyste
             post_update_contact_history_id,
             Epp::SessionData(
                     registrar_id,
-                    epp_session_lange_default,
-                    "srv-trx-007"),
+                    epp_session_lang_default,
+                    "srv-trx-007",
+                    0ULL),
             Epp::NotificationData(
                     "DOnotNOTIFY-cl-trx-007",
                     epp_notification_disabled,

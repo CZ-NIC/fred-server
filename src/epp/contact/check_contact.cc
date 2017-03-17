@@ -32,11 +32,13 @@ namespace Contact {
 std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > check_contact(
         Fred::OperationContext& _ctx,
         const std::set<std::string>& _contact_handles,
-        unsigned long long _registrar_id)
+        const CheckContactConfigData& _check_contact_config_data,
+        const SessionData& _session_data)
 {
-    const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+
+    if (!is_session_registrar_valid(_session_data)) {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
     std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > result;

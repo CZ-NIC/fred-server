@@ -30,17 +30,18 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
 
 std::vector<std::string>
 unwrap_TechContact_to_vector_string(const ccReg::TechContact& _tech_contacts);
 
 
-std::vector<Epp::Keyset::DsRecord>
+std::vector< ::Epp::Keyset::DsRecord>
 unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(const ccReg::DSRecord& _ds_records);
 
 
-std::vector<Epp::Keyset::DnsKey>
+std::vector< ::Epp::Keyset::DnsKey>
 unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(const ccReg::DNSKey& _dns_keys);
 
 
@@ -50,16 +51,17 @@ unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(const ccReg::DNSKey& _dns_keys);
 void
 wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
         const std::vector<std::string>& handles,
-        const Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
+        const ::Epp::Keyset::CheckKeysetLocalizedResponse::Results& check_results,
         ccReg::CheckResp& dst);
 
 
 void
 wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
-        const Epp::Keyset::InfoKeysetLocalizedOutputData& _src,
+        const ::Epp::Keyset::InfoKeysetLocalizedOutputData& _src,
         ccReg::KeySet& _dst);
 
 
+} // namespace Fred::Corba
 } // namespace Corba
 
 #endif

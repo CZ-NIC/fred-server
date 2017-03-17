@@ -41,10 +41,9 @@ namespace Nsset {
 
 CreateNssetLocalizedResponse create_nsset_localized(
         const CreateNssetInputData& _create_nsset_input_data,
-        const SessionData& _session_data,
-        const NotificationData& _notification_data,
         const CreateNssetConfigData& _create_nsset_config_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const SessionData& _session_data,
+        const NotificationData& _notification_data)
 {
     try
     {
@@ -60,8 +59,7 @@ CreateNssetLocalizedResponse create_nsset_localized(
                         ctx,
                         _create_nsset_input_data,
                         _create_nsset_config_data,
-                        _session_data.registrar_id,
-                        _logd_request_id));
+                        _session_data));
 
         const CreateNssetLocalizedResponse create_nsset_localized_response(
                 EppResponseSuccessLocalized(

@@ -19,6 +19,7 @@
 #ifndef CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 #define CHECK_DOMAIN_LOCALIZED_H_2EB8975220034A3F92F6BF3D499C6EF5
 
+#include "src/epp/domain/check_domain_config_data.h"
 #include "src/epp/domain/check_domain_localized_response.h"
 #include "src/epp/session_data.h"
 
@@ -29,7 +30,8 @@ namespace Epp {
 namespace Domain {
 
 CheckDomainLocalizedResponse check_domain_localized(
-        const std::set<std::string>& _domain_fqdns,
+        const std::set<std::string>& _domain_names,
+        const CheckDomainConfigData& _check_domain_config_data,
         const SessionData& _session_data);
 
 

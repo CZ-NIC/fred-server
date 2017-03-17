@@ -19,6 +19,7 @@
 #ifndef TRANSFER_KEYSET_LOCALIZED_H_49BA69E2FC3645A09CA592D1E3FDD10A
 #define TRANSFER_KEYSET_LOCALIZED_H_49BA69E2FC3645A09CA592D1E3FDD10A
 
+#include "src/epp/keyset/transfer_keyset_config_data.h"
 #include "src/epp/epp_response_success_localized.h"
 #include "src/epp/notification_data.h"
 #include "src/epp/session_data.h"
@@ -32,9 +33,9 @@ namespace Keyset {
 EppResponseSuccessLocalized transfer_keyset_localized(
         const std::string& _keyset_handle,
         const std::string& _authinfopw,
+        const TransferKeysetConfigData& _transfer_keyset_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id);
+        const NotificationData& _notification_data);
 
 } // namespace Epp::Keyset
 } // namespace Epp

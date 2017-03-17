@@ -19,6 +19,8 @@
 #ifndef TRANSFER_KEYSET_H_14553F4B5766411C9489766C4B95E283
 #define TRANSFER_KEYSET_H_14553F4B5766411C9489766C4B95E283
 
+#include "src/epp/keyset/transfer_keyset_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/optional_value.h"
 
@@ -32,19 +34,14 @@ namespace Keyset {
  * behaviour is undefined and transaction should be rolled back.
  *
  * @returns new history id
- *
- * @throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
- * @throws NonexistentHandle
- * @throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
- * @throws ObjectStatusProhibitsOperation
- * @throws AutorError in case invalid _authinfopw is given
  */
 unsigned long long transfer_keyset(
         Fred::OperationContext& _ctx,
         const std::string& _keyset_handle,
         const std::string& _authinfopw,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const TransferKeysetConfigData& _transfer_keyset_config_data,
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

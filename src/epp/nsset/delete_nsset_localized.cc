@@ -41,6 +41,7 @@ namespace Nsset {
 
 EppResponseSuccessLocalized delete_nsset_localized(
         const std::string& _nsset_handle,
+        const DeleteNssetConfigData& _delete_nsset_config_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data)
 {
@@ -56,7 +57,8 @@ EppResponseSuccessLocalized delete_nsset_localized(
         const unsigned long long last_history_id_before_delete = delete_nsset(
                 ctx,
                 _nsset_handle,
-                _session_data.registrar_id);
+                _delete_nsset_config_data,
+                _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

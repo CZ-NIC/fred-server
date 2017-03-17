@@ -43,6 +43,7 @@ namespace Contact {
 
 EppResponseSuccessLocalized delete_contact_localized(
         const std::string& _contact_handle,
+        const DeleteContactConfigData& _delete_contact_config_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data)
 {
@@ -58,7 +59,8 @@ EppResponseSuccessLocalized delete_contact_localized(
                 delete_contact(
                         ctx,
                         _contact_handle,
-                        _session_data.registrar_id);
+                        _delete_contact_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

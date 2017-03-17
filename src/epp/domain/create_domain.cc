@@ -56,21 +56,20 @@ namespace Domain {
 CreateDomainResult create_domain(
         Fred::OperationContext& _ctx,
         const CreateDomainInputData& _data,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        const bool _rifd_epp_operations_charging)
+        const CreateDomainConfigData& _create_domain_config_data,
+        const SessionData& _session_data)
 {
     EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
     // check registrar logged in
-    if (_registrar_id == 0)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
     }
 
     const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
+            Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;
 
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
 
@@ -129,7 +128,7 @@ CreateDomainResult create_domain(
 
     // check registrar zone access permission
     if (!Fred::is_zone_accessible_by_registrar(
-                _registrar_id,
+                _session_data.registrar_id,
                 zone_data.id,
                 current_local_date,
                 _ctx))
@@ -213,15 +212,15 @@ CreateDomainResult create_domain(
     }
 
     // check expiration date of ENUM domain validation
-    if (zone_data.is_enum && _data.enum_validation_list.empty())
+    if (zone_data.is_enum && _data.enum_validation_extension_list.empty())
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing));
     }
 
     // check no ENUM validation date in case of non ENUM domain
-    if (!zone_data.is_enum && !_data.enum_validation_list.empty())
+    if (!zone_data.is_enum && !_data.enum_validation_extension_list.empty())
     {
-        for (unsigned i = 0; i < _data.enum_validation_list.size(); ++i)
+        for (unsigned i = 0; i < _data.enum_validation_extension_list.size(); ++i)
         {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
@@ -234,7 +233,7 @@ CreateDomainResult create_domain(
     // check range of ENUM domain validation expiration
     if (zone_data.is_enum)
     {
-        const boost::gregorian::date new_valexdate = _data.enum_validation_list.rbegin()->get_valexdate();
+        const boost::gregorian::date new_valexdate = _data.enum_validation_extension_list.rbegin()->get_valexdate();
 
         if (is_new_enum_domain_validation_expiration_date_invalid(
                     new_valexdate,
@@ -248,7 +247,7 @@ CreateDomainResult create_domain(
                                                      EppExtendedError::of_vector_parameter(
                                                              Param::domain_ext_val_date,
                                                              boost::numeric_cast<unsigned short>(
-                                                                     _data.enum_validation_list.size() -
+                                                                     _data.enum_validation_extension_list.size() -
                                                                      1),
                                                              Reason::valexpdate_not_valid)));
         }
@@ -297,12 +296,12 @@ CreateDomainResult create_domain(
 
         const Optional<boost::gregorian::date>
                 enum_validation_expiration(zone_data.is_enum
-                                                   ? Optional<boost::gregorian::date>(_data.enum_validation_list.rbegin()->get_valexdate())
+                                                   ? Optional<boost::gregorian::date>(_data.enum_validation_extension_list.rbegin()->get_valexdate())
                                                    : Optional<boost::gregorian::date>());
 
         const Optional<bool>
                 enum_publish_flag(zone_data.is_enum
-                                  ? Optional<bool>(_data.enum_validation_list.rbegin()->get_publish())
+                                  ? Optional<bool>(_data.enum_validation_extension_list.rbegin()->get_publish())
                                   : Optional<bool>());
 
         const Fred::CreateDomain::Result result = Fred::CreateDomain(
@@ -322,26 +321,26 @@ CreateDomainResult create_domain(
                 domain_expiration_date,
                 enum_validation_expiration,
                 enum_publish_flag,
-                _logd_request_id).exec(_ctx, "UTC");
+                _session_data.logd_request_id).exec(_ctx, "UTC");
 
         if (result.creation_time.is_special())
         {
             throw std::runtime_error("domain create failed");
         }
 
-        if (_rifd_epp_operations_charging && !is_system_registrar)
+        if (_create_domain_config_data.rifd_epp_operations_charging && !is_system_registrar)
         {
             create_domain_bill_item(
                     _data.fqdn,
                     result.creation_time,
-                    _registrar_id,
+                    _session_data.registrar_id,
                     result.create_object_result.object_id,
                     _ctx);
 
             renew_domain_bill_item(
                     _data.fqdn,
                     result.creation_time,
-                    _registrar_id,
+                    _session_data.registrar_id,
                     result.create_object_result.object_id,
                     domain_registration_in_months,
                     current_local_date,

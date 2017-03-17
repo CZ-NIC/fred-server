@@ -16,39 +16,107 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #ifndef FIXTURE_H_F9A390F89F6D4E078F26DB46A61B1BC1
 #define FIXTURE_H_F9A390F89F6D4E078F26DB46A61B1BC1
 
-#include "tests/setup/fixtures.h"
 #include "tests/interfaces/epp/util.h"
+#include "tests/setup/fixtures.h"
 
 #include "src/fredlib/object_state/create_object_state_request_id.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 
+#include "src/epp/nsset/check_nsset_config_data.h"
+#include "src/epp/nsset/create_nsset_config_data.h"
 #include "src/epp/nsset/create_nsset_localized.h"
-#include "src/epp/nsset/update_nsset_localized.h"
+#include "src/epp/nsset/create_nsset_localized.h"
+#include "src/epp/nsset/delete_nsset_config_data.h"
 #include "src/epp/nsset/impl/nsset.h"
+#include "src/epp/nsset/info_nsset_config_data.h"
+#include "src/epp/nsset/transfer_nsset_config_data.h"
+#include "src/epp/nsset/update_nsset_config_data.h"
+#include "src/epp/nsset/update_nsset_localized.h"
 
-struct has_invalid_registrar_id : virtual Test::autocommitting_context {
-    static const unsigned long long invalid_registrar_id = 0;
-};
+namespace Test {
 
-struct has_registrar : virtual Test::autocommitting_context {
-    Fred::InfoRegistrarData registrar;
-
-    has_registrar() {
-        const std::string reg_handle = "REGISTRAR1";
-        Fred::CreateRegistrar(reg_handle).exec(ctx);
-        registrar = Fred::InfoRegistrarByHandle(reg_handle).exec(ctx).info_registrar_data;
+struct DefaultCheckNssetConfigData : Epp::Nsset::CheckNssetConfigData
+{
+    DefaultCheckNssetConfigData()
+        : CheckNssetConfigData(false)
+    {
     }
 };
 
-struct has_nsset : has_registrar {
+struct DefaultInfoNssetConfigData : Epp::Nsset::InfoNssetConfigData
+{
+    DefaultInfoNssetConfigData()
+        : InfoNssetConfigData(false)
+    {
+    }
+};
+
+struct DefaultCreateNssetConfigData : Epp::Nsset::CreateNssetConfigData
+{
+    DefaultCreateNssetConfigData()
+        : CreateNssetConfigData(
+                false, // rifd_EPP_operations_charging
+                3,     // default_tech_check_level
+                2,     // min_hosts
+                10)    // max_hosts
+    {
+    }
+};
+
+struct DefaultUpdateNssetConfigData : Epp::Nsset::UpdateNssetConfigData
+{
+    DefaultUpdateNssetConfigData()
+        : UpdateNssetConfigData(
+                false, // rifd_epp_operations_charging;
+                0,     // min_hosts;
+                10)    // max_hosts;
+    {
+    }
+};
+
+struct DefaultDeleteNssetConfigData : Epp::Nsset::DeleteNssetConfigData
+{
+    DefaultDeleteNssetConfigData()
+        : DeleteNssetConfigData(false)
+    {
+    }
+};
+
+struct DefaultTransferNssetConfigData : Epp::Nsset::TransferNssetConfigData
+{
+    DefaultTransferNssetConfigData()
+        : TransferNssetConfigData(false)
+    {
+    }
+};
+
+struct DefaultSessionData : Epp::SessionData
+{
+    DefaultSessionData()
+        : SessionData(0, Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
+    {
+    }
+};
+
+} // namespace Test
+
+
+struct HasRegistrar : virtual Test::autorollbacking_context {
+    Fred::InfoRegistrarData registrar;
+
+    HasRegistrar()
+    {
+        const std::string registrar_handle = "REGISTRAR1";
+        Fred::CreateRegistrar(registrar_handle).exec(ctx);
+        registrar = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
+    }
+};
+
+struct has_nsset : HasRegistrar {
     Fred::InfoNssetData nsset;
 
     has_nsset() {
@@ -81,7 +149,7 @@ struct has_nsset : has_registrar {
     }
 };
 
-struct has_nsset_with_all_data_set : has_registrar {
+struct has_nsset_with_all_data_set : HasRegistrar {
     Fred::InfoNssetData nsset;
     std::string admin_contact4_handle;
     std::string admin_contact5_handle;
@@ -146,20 +214,24 @@ struct has_nsset_with_all_data_set : has_registrar {
     }
 };
 
-struct has_nsset_input_data_set : has_registrar
+struct has_nsset_input_data_set : HasRegistrar
 {
-    Epp::Nsset::CreateNssetInputData nsset_input_data;
-    Epp::Nsset::CreateNssetConfigData nsset_config_data;
+    Epp::Nsset::CreateNssetInputData create_nsset_input_data;
+    Epp::Nsset::CreateNssetConfigData create_nsset_config_data;
+    static const bool rifd_epp_operations_charging = false;
     static const unsigned int nsset_tech_check_level = 3;
     static const unsigned int default_nsset_tech_check_level = 3;
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
 
     has_nsset_input_data_set()
-    : nsset_input_data(
+    : create_nsset_input_data(
             Epp::Nsset::CreateNssetInputData(
                     "NSSET1",
                     boost::optional<std::string>("authInfo123"),
+                    Util::vector_of<std::string>
+                        ("TEST-ADMIN-CONTACT2")
+                        ("TEST-ADMIN-CONTACT3"),
                     Util::vector_of<Epp::Nsset::DnsHostInput>
                         (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
                             Util::vector_of< boost::optional<boost::asio::ip::address> >
@@ -169,12 +241,10 @@ struct has_nsset_input_data_set : has_registrar
                             Util::vector_of<boost::optional<boost::asio::ip::address> >
                                 (boost::asio::ip::address::from_string("11.0.0.4"))
                                 (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
-                    Util::vector_of<std::string>
-                        ("TEST-ADMIN-CONTACT2")
-                        ("TEST-ADMIN-CONTACT3"),
                     nsset_tech_check_level)),
-      nsset_config_data(
+      create_nsset_config_data(
             Epp::Nsset::CreateNssetConfigData(
+                    rifd_epp_operations_charging,
                     default_nsset_tech_check_level,
                     nsset_min_hosts,
                     nsset_max_hosts))
@@ -185,7 +255,7 @@ struct has_nsset_input_data_set : has_registrar
         place.postalcode = "11150";
         place.country = "CZ";
 
-        std::string admin_contact2_handle = nsset_input_data.tech_contacts.at(1);
+        std::string admin_contact2_handle = create_nsset_input_data.tech_contacts.at(1);
 
         Fred::CreateContact(admin_contact2_handle,registrar.handle)
             .set_name("TEST-ADMIN-CONTACT2 NAME")
@@ -194,7 +264,7 @@ struct has_nsset_input_data_set : has_registrar
             .set_discloseaddress(true)
             .exec(ctx);
 
-        std::string admin_contact3_handle = nsset_input_data.tech_contacts.at(0);
+        std::string admin_contact3_handle = create_nsset_input_data.tech_contacts.at(0);
 
         Fred::CreateContact(admin_contact3_handle,registrar.handle)
             .set_name("TEST-ADMIN-CONTACT3 NAME")
@@ -206,20 +276,24 @@ struct has_nsset_input_data_set : has_registrar
 };
 
 
-struct has_nsset_with_input_data_set : has_registrar {
+struct has_nsset_with_input_data_set : HasRegistrar {
     Fred::InfoNssetData nsset;
-    Epp::Nsset::CreateNssetInputData nsset_input_data;
-    Epp::Nsset::CreateNssetConfigData nsset_config_data;
+    Epp::Nsset::CreateNssetInputData create_nsset_input_data;
+    Epp::Nsset::CreateNssetConfigData create_nsset_config_data;
+    static const bool rifd_epp_operations_charging = false;
     static const unsigned int nsset_tech_check_level = 3;
     static const unsigned int default_nsset_tech_check_level = 3;
     static const unsigned int nsset_min_hosts = 2;
     static const unsigned int nsset_max_hosts = 10;
 
     has_nsset_with_input_data_set()
-    : nsset_input_data(
+    : create_nsset_input_data(
             Epp::Nsset::CreateNssetInputData(
                     "NSSET1",
                     boost::optional<std::string>("authInfo123"),
+                    Util::vector_of<std::string>
+                        ("TEST-ADMIN-CONTACT2")
+                        ("TEST-ADMIN-CONTACT3"),
                     Util::vector_of<Epp::Nsset::DnsHostInput>
                         (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
                             Util::vector_of<boost::optional<boost::asio::ip::address> >
@@ -229,12 +303,10 @@ struct has_nsset_with_input_data_set : has_registrar {
                             Util::vector_of<boost::optional<boost::asio::ip::address> >
                                 (boost::asio::ip::address::from_string("11.0.0.4"))
                                 (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
-                    Util::vector_of<std::string>
-                        ("TEST-ADMIN-CONTACT2")
-                        ("TEST-ADMIN-CONTACT3"),
                     nsset_tech_check_level)),
-      nsset_config_data(
+      create_nsset_config_data(
             Epp::Nsset::CreateNssetConfigData(
+                    rifd_epp_operations_charging,
                     default_nsset_tech_check_level,
                     nsset_min_hosts,
                     nsset_max_hosts))
@@ -245,7 +317,7 @@ struct has_nsset_with_input_data_set : has_registrar {
         place.postalcode = "11150";
         place.country = "CZ";
 
-        std::string admin_contact2_handle = nsset_input_data.tech_contacts.at(0);
+        std::string admin_contact2_handle = create_nsset_input_data.tech_contacts.at(0);
 
         Fred::CreateContact(admin_contact2_handle,registrar.handle)
             .set_name("TEST-ADMIN-CONTACT2 NAME")
@@ -254,7 +326,7 @@ struct has_nsset_with_input_data_set : has_registrar {
             .set_discloseaddress(true)
             .exec(ctx);
 
-        std::string admin_contact3_handle = nsset_input_data.tech_contacts.at(1);
+        std::string admin_contact3_handle = create_nsset_input_data.tech_contacts.at(1);
 
         Fred::CreateContact(admin_contact3_handle,registrar.handle)
             .set_name("TEST-ADMIN-CONTACT3 NAME")
@@ -263,30 +335,20 @@ struct has_nsset_with_input_data_set : has_registrar {
             .set_discloseaddress(true)
             .exec(ctx);
 
-        Fred::CreateNsset(nsset_input_data.handle, registrar.handle)
+        Fred::CreateNsset(create_nsset_input_data.handle, registrar.handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost(nsset_input_data.dns_hosts.at(0).fqdn, Epp::Nsset::make_ipaddrs(nsset_input_data.dns_hosts.at(0).inet_addr) )) //add_dns
-                (Fred::DnsHost(nsset_input_data.dns_hosts.at(1).fqdn, Epp::Nsset::make_ipaddrs(nsset_input_data.dns_hosts.at(1).inet_addr) )) //add_dns
+                (Fred::DnsHost(create_nsset_input_data.dns_hosts.at(0).fqdn, Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(0).inet_addr) )) //add_dns
+                (Fred::DnsHost(create_nsset_input_data.dns_hosts.at(1).fqdn, Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(1).inet_addr) )) //add_dns
                 )
-            .set_authinfo(nsset_input_data.authinfopw ? *nsset_input_data.authinfopw : std::string())
+            .set_authinfo(create_nsset_input_data.authinfopw ? *create_nsset_input_data.authinfopw : std::string())
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))
-            .set_tech_check_level(*nsset_input_data.tech_check_level)
+            .set_tech_check_level(*create_nsset_input_data.tech_check_level)
             .exec(ctx);
-        nsset = Fred::InfoNssetByHandle(nsset_input_data.handle).exec(ctx).info_nsset_data;
+        nsset = Fred::InfoNssetByHandle(create_nsset_input_data.handle).exec(ctx).info_nsset_data;
 
     }
 };
 
-
-struct has_nsset_and_a_different_registrar : has_nsset {
-    Fred::InfoRegistrarData the_different_registrar;
-
-    has_nsset_and_a_different_registrar() {
-        const std::string diff_reg_handle = "REGISTRAR2";
-        Fred::CreateRegistrar(diff_reg_handle).exec(ctx);
-        the_different_registrar = Fred::InfoRegistrarByHandle(diff_reg_handle).exec(ctx).info_registrar_data;
-    }
-};
 
 struct has_nsset_with_status_request : has_nsset {
     const std::string status;

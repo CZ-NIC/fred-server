@@ -20,6 +20,8 @@
 #define INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
 
 #include "src/epp/contact/contact_disclose.h"
+#include "src/epp/contact/info_contact_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/contact/info_contact_data.h"
 #include "src/fredlib/opcontext.h"
@@ -77,8 +79,9 @@ struct InfoContactOutputData
  */
 InfoContactOutputData info_contact(
         Fred::OperationContext& _ctx,
-        const std::string& _handle,
-        unsigned long long _session_registrar_id);
+        const std::string& _contact_handle,
+        const InfoContactConfigData& _info_contact_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Contact

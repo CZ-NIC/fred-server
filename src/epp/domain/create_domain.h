@@ -60,9 +60,8 @@ struct CreateDomainResult
 CreateDomainResult create_domain(
         Fred::OperationContext& _ctx,
         const CreateDomainInputData& _data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _rifd_epp_operations_charging);
+        const CreateDomainConfigData& _create_domain_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Domain

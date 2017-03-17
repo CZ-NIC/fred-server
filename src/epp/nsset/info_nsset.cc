@@ -57,11 +57,12 @@ static std::set<std::string> convert_object_states(const std::vector<Fred::Objec
 
 InfoNssetOutputData info_nsset(
         Fred::OperationContext& _ctx,
-        const std::string& _handle,
-        const SessionLang::Enum _object_state_description_lang,
-        const unsigned long long _session_registrar_id)
+        const std::string& _nsset_handle,
+        const InfoNssetConfigData& _info_nsset_config_data,
+        const SessionData& _session_data)
 {
-    if (_session_registrar_id == 0)
+
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -70,7 +71,7 @@ InfoNssetOutputData info_nsset(
     try
     {
         const Fred::InfoNssetData info_nsset_data =
-            Fred::InfoNssetByHandle(_handle).exec(_ctx, "UTC").info_nsset_data;
+            Fred::InfoNssetByHandle(_nsset_handle).exec(_ctx, "UTC").info_nsset_data;
 
         // tech contact handle list
         std::vector<std::string> tech_contacts;
@@ -80,7 +81,7 @@ InfoNssetOutputData info_nsset(
         }
 
         const std::string session_registrar_handle =
-                Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
+                Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
         const bool authinfopw_has_to_be_hidden = info_nsset_data.sponsoring_registrar_handle !=
                                                  session_registrar_handle;
 

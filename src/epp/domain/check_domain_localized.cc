@@ -44,7 +44,8 @@ namespace Epp {
 namespace Domain {
 
 CheckDomainLocalizedResponse check_domain_localized(
-        const std::set<std::string>& _domain_fqdns,
+        const std::set<std::string>& _fqdns,
+        const CheckDomainConfigData& _check_domain_config_data,
         const SessionData& _session_data)
 {
     Fred::OperationContextCreator ctx;
@@ -59,8 +60,9 @@ CheckDomainLocalizedResponse check_domain_localized(
         const std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_domain_results =
                 check_domain(
                         ctx,
-                        _domain_fqdns,
-                        _session_data.registrar_id);
+                        _fqdns,
+                        _check_domain_config_data,
+                        _session_data);
 
         return CheckDomainLocalizedResponse(
                 EppResponseSuccessLocalized(

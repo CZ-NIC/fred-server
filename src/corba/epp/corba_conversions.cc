@@ -51,6 +51,7 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
 
 namespace {
@@ -171,7 +172,7 @@ wrap_param_error(Epp::Param::Enum _param)
 }
 
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::{anonymous}
 
 
 // represents RFC3339 time offset
@@ -391,4 +392,5 @@ wrap_Epp_ObjectStatesLocalized(
     }
 }
 
-} // namespace Corba
+} // namespace Fred::Corba
+} // namespace Fred

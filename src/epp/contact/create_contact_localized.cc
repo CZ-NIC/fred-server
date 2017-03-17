@@ -45,9 +45,9 @@ namespace Contact {
 CreateContactLocalizedResponse create_contact_localized(
         const std::string& _contact_handle,
         const CreateContactInputData& _create_contact_input_data,
+        const CreateContactConfigData& _create_contact_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const NotificationData& _notification_data)
 {
     try {
         Logging::Context logging_ctx("rifd");
@@ -62,8 +62,8 @@ CreateContactLocalizedResponse create_contact_localized(
                         ctx,
                         _contact_handle,
                         _create_contact_input_data,
-                        _session_data.registrar_id,
-                        _logd_request_id));
+                        _create_contact_config_data,
+                        _session_data));
 
         const CreateContactLocalizedResponse create_contact_localized_response(
                 EppResponseSuccessLocalized(

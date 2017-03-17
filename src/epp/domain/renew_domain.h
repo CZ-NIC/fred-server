@@ -19,9 +19,10 @@
 #ifndef RENEW_DOMAIN_H_D7F4D8C176734E96A2CECBBED06B6A99
 #define RENEW_DOMAIN_H_D7F4D8C176734E96A2CECBBED06B6A99
 
-#include "src/fredlib/opcontext.h"
-
+#include "src/epp/domain/renew_domain_config_data.h"
 #include "src/epp/domain/renew_domain_localized.h"
+#include "src/epp/session_data.h"
+#include "src/fredlib/opcontext.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -59,10 +60,9 @@ struct RenewDomainResult
 
 RenewDomainResult renew_domain(
         Fred::OperationContext& _ctx,
-        const RenewDomainInputData& _data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _rifd_epp_operations_charging);
+        const RenewDomainInputData& _renew_domain_input_data,
+        const RenewDomainConfigData& _renew_domain_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Domain

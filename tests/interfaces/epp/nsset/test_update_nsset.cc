@@ -20,6 +20,7 @@
  *  @file
  */
 
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/nsset/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -49,6 +50,7 @@ bool update_nsset_invalid_registrar_exception(const Epp::EppResponseFailure& e) 
 
 BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
 {
+    const unsigned long long invalid_registrar_id = 0;
     const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle + "*?!",
         Optional<std::string>(),
@@ -58,15 +60,14 @@ BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
         std::vector<std::string>(),
         boost::optional<short>()
     );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             input_data,
-            config_data,
-            0, // registrar id
-            42 // whatever
+            Test::DefaultUpdateNssetConfigData(),
+            Test::Session(ctx, invalid_registrar_id).data
         ),
         Epp::EppResponseFailure,
         update_nsset_invalid_registrar_exception
@@ -91,15 +92,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
         std::vector<std::string>(),
         boost::optional<short>()
     );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             input_data,
-            config_data,
-            registrar.id,
-            42 // whatever
+            Test::DefaultUpdateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         update_fail_nonexistent_handle_exception
@@ -116,7 +116,7 @@ bool update_fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_registrar)
+BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset)
 {
     const Epp::Nsset::UpdateNssetInputData input_data(
         nsset.handle,
@@ -127,15 +127,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset_and_a_different_r
         std::vector<std::string>(),
         boost::optional<short>()
     );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             input_data,
-            config_data,
-            the_different_registrar.id,
-            42 // whatever
+            Test::DefaultUpdateNssetConfigData(),
+            Test::Session(ctx, Test::Registrar(ctx).data.id).data
         ),
         Epp::EppResponseFailure,
         update_fail_wrong_registrar_exception
@@ -159,15 +158,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_u
         std::vector<std::string>(),
         boost::optional<short>()
     );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             input_data,
-            config_data,
-            registrar.id,
-            42 // whatever
+            Test::DefaultUpdateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status1_exception
@@ -191,15 +189,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_c
         std::vector<std::string>(),
         boost::optional<short>()
     );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             input_data,
-            config_data,
-            registrar.id,
-            42 // whatever
+            Test::DefaultUpdateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status2_exception
@@ -223,15 +220,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
         std::vector<std::string>(),
         boost::optional<short>()
     );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
         Epp::Nsset::update_nsset(
             ctx,
             input_data,
-            config_data,
-            registrar.id,
-            42 // whatever
+            Test::DefaultUpdateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         ),
         Epp::EppResponseFailure,
         update_fail_prohibiting_status_request_exception
@@ -416,15 +412,14 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
                 ("TEST-ADMIN-CONTACT3"),//tech_contacts_rem
             3
         );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     try {
         Epp::Nsset::update_nsset(
             ctx,
             input_data,
-            config_data,
-            registrar.id,
-            42 // whatever
+            Test::DefaultUpdateNssetConfigData(),
+            Test::Session(ctx, registrar.id).data
         );
         check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
     }
@@ -458,14 +453,13 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_tra
             std::vector<std::string>(),
             3
         );
-    const Epp::Nsset::UpdateNssetConfigData config_data(2, 10);
+    const Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     Epp::Nsset::update_nsset(
         ctx,
         input_data,
-        config_data,
-        registrar.id,
-        42 // whatever
+        Test::DefaultUpdateNssetConfigData(),
+        Test::Session(ctx, registrar.id).data
     );
 
     check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);

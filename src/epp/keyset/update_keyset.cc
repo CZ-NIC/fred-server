@@ -658,11 +658,11 @@ std::vector<Fred::DnsKey> to_fred(const std::vector<Keyset::DnsKey>& _dns_keys)
 UpdateKeysetResult update_keyset(
         Fred::OperationContext& _ctx,
         const UpdateKeysetInputData& _update_keyset_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const UpdateKeysetConfigData& _update_keyset_config_data,
+        const SessionData& _session_data)
 {
-    static const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id)
+
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -673,7 +673,7 @@ UpdateKeysetResult update_keyset(
     {
         const Fred::InfoKeysetData keyset_data = check_keyset_handle(
                 _update_keyset_data.keyset_handle,
-                _registrar_id,
+                _session_data.registrar_id,
                 _ctx,
                 session_registrar_handle);
 
@@ -888,7 +888,7 @@ UpdateKeysetResult update_keyset(
                 _update_keyset_data.tech_contacts_rem,
                 dns_keys_add,
                 dns_keys_rem,
-                _logd_request_id).exec(_ctx);
+                _session_data.logd_request_id).exec(_ctx);
         if (!_update_keyset_data.tech_contacts_rem.empty())
         {
             const Fred::InfoKeysetData keyset_data =

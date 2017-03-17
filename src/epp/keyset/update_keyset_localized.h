@@ -20,19 +20,19 @@
 #define UPDATE_KEYSET_LOCALIZED_H_D8C319D4188D49BBB144814D6A67970C
 
 #include "src/epp/epp_response_success_localized.h"
+#include "src/epp/keyset/update_keyset_config_data.h"
+#include "src/epp/keyset/update_keyset_input_data.h"
 #include "src/epp/notification_data.h"
 #include "src/epp/session_data.h"
-#include "src/epp/keyset/update_keyset_input_data.h"
-#include "util/optional_value.h"
 
 namespace Epp {
 namespace Keyset {
 
 EppResponseSuccessLocalized update_keyset_localized(
         const UpdateKeysetInputData& _update_keyset_input_data,
+        const UpdateKeysetConfigData& _update_keyset_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id);
+        const NotificationData& _notification_data);
 
 } // namespace Epp::Keyset
 } // namespace Epp

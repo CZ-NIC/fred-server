@@ -416,12 +416,13 @@ unsigned long long update_contact(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const ContactChange& _change,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const UpdateContactConfigData& _update_contact_config_data,
+        const SessionData& _session_data)
 {
-    const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+
+    if (!is_session_registrar_valid(_session_data)) {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
     const bool contact_is_registered = Fred::Contact::get_handle_registrability(_ctx, _contact_handle) ==
@@ -433,7 +434,7 @@ unsigned long long update_contact(
     const Fred::InfoContactData contact_data_before_update = info_contact_by_handle(_contact_handle, _ctx);
 
     const Fred::InfoRegistrarData session_registrar =
-            Fred::InfoRegistrarById(_registrar_id)
+            Fred::InfoRegistrarById(_session_data.registrar_id)
                     .exec(_ctx)
                     .info_registrar_data;
 
@@ -542,8 +543,8 @@ unsigned long long update_contact(
             update.set_place(new_place);
         }
 
-        if (_logd_request_id.isset()) {
-            update.set_logd_request_id(_logd_request_id.get_value());
+        if (_session_data.logd_request_id.isset()) {
+            update.set_logd_request_id(_session_data.logd_request_id.get_value());
         }
 
         try {

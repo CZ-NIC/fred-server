@@ -16,10 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -51,28 +48,16 @@ bool fail_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, Test::supply_ctx<Test::Fixture::HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // authinfopw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            0, // invalid_registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_invalid_registrar_id_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::DefaultUpdateDomainInputData(),
+                    Test::DefaultUpdateDomainConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            Epp::EppResponseFailure,
+            fail_invalid_registrar_id_exception);
 }
 bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
@@ -80,28 +65,16 @@ bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // authinfopw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_nonexistent_handle_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::UpdateDomainInputData(Test::NonexistentFqdn().fqdn).data,
+                    Test::DefaultUpdateDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_nonexistent_handle_exception);
 }
 
 bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e) {
@@ -110,28 +83,16 @@ bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e)
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_enum_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // auth_info_pw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_enum_domain_does_not_exist_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::UpdateDomainInputData(Test::NonexistentEnumFqdn().fqdn).data,
+                    Test::DefaultUpdateDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_enum_domain_does_not_exist_exception);
 }
 
 bool fail_enum_domain_does_not_exist_wih_valexdate_exception(const Epp::EppResponseFailure& e) {
@@ -140,33 +101,31 @@ bool fail_enum_domain_does_not_exist_wih_valexdate_exception(const Epp::EppRespo
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist_wih_valexdate, HasInfoDomainDataOfNonexistentEnumDomain)
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist_with_valexdate, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
+    Test::NonexistentEnumDomain nonexistent_enum_domain(ctx, registrar.data.handle);
+
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_enum_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // auth_info_pw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>(
-                    1,
-                    Epp::Domain::EnumValidationExtension(
-                        info_enum_domain_data_.enum_domain_validation.get_value().validation_expiration
-                            + boost::gregorian::months(1),
-                        false))), // enum_validation_list
-            info_registrar_data_.id,     // registrar_id
-            Optional<unsigned long long>(),     // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_enum_domain_does_not_exist_wih_valexdate_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Epp::Domain::UpdateDomainInputData(
+                            nonexistent_enum_domain.data.fqdn,
+                            Optional<std::string>(),            // registrant_chg
+                            Optional<std::string>(),            // auth_info_pw_chg
+                            Optional<Nullable<std::string> >(), // nsset_chg
+                            Optional<Nullable<std::string> >(), // keyset_chg
+                            std::vector<std::string>(),         // admin_contacts_add
+                            std::vector<std::string>(),         // admin_contacts_rem
+                            std::vector<std::string>(),         // tmpcontacts_rem
+                            std::vector<Epp::Domain::EnumValidationExtension>(
+                                    1,
+                                    Epp::Domain::EnumValidationExtension(
+                                            nonexistent_enum_domain.data.enum_domain_validation.get_value().validation_expiration + boost::gregorian::months(1),
+                                            false))), // enum_validation_list
+                    Test::DefaultUpdateDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_enum_domain_does_not_exist_wih_valexdate_exception);
 }
 
 bool fail_invalid_zone_exception(const Epp::EppResponseFailure& e) {
@@ -175,28 +134,16 @@ bool fail_invalid_zone_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_invalid_zone, HasInfoDomainDataOfNonexistentDomain)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_zone, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn + "c",
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // authinfopw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_invalid_zone_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::UpdateDomainInputData(domain.data.fqdn + "c").data,
+                    Test::DefaultUpdateDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_invalid_zone_exception);
 }
 
 bool fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
@@ -209,57 +156,34 @@ bool fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomainOfDifferentRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // authinfopw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            different_info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_wrong_registrar_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::UpdateDomainInputData(domain_of_different_registrar.data.fqdn).data,
+                    Test::DefaultUpdateDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_wrong_registrar_exception);
 }
+
 bool fail_registrar_without_zone_access_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // authinfopw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_registrar_without_zone_access_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::UpdateDomainInputData(domain.data.fqdn).data,
+                    Test::DefaultUpdateDomainConfigData(),
+                    Test::Session(ctx, Test::RegistrarNotInZone(ctx).data.id).data),
+            Epp::EppResponseFailure,
+            fail_registrar_without_zone_access_exception);
 }
 bool fail_prohibiting_status_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
@@ -267,28 +191,17 @@ bool fail_prohibiting_status_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, HasInfoDomainDataWithServerUpdateProhibited)
+BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
+    const Test::DomainWithServerUpdateProhibitedRequest domain_with_server_update_prohibited_request(ctx, registrar.data.handle);
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // authinfopw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_prohibiting_status_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::UpdateDomainInputData(domain_with_server_update_prohibited_request.data.fqdn).data,
+                    Test::DefaultUpdateDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_prohibiting_status_exception);
 }
 bool fail_invalid_handle_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
@@ -296,39 +209,34 @@ bool fail_invalid_handle_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_invalid_handle, HasInfoDomainDataOfDomainWithInvalidFqdn)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_handle, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::update_domain(
-            ctx,
-            Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn,
-                Optional<std::string>(), // registrant_chg
-                Optional<std::string>(), // authinfopw_chg
-                Optional<Nullable<std::string> >(), // nsset_chg
-                Optional<Nullable<std::string> >(), // keyset_chg
-                std::vector<std::string>(), // admin_contacts_add
-                std::vector<std::string>(), // admin_contacts_rem
-                std::vector<std::string>(), // tmpcontacts_rem
-                std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
-        ),
-        Epp::EppResponseFailure,
-        fail_invalid_handle_exception
-    );
+            Epp::Domain::update_domain(
+                    ctx,
+                    Test::UpdateDomainInputData(Test::InvalidFqdn().fqdn).data,
+                    Test::DefaultUpdateDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_invalid_handle_exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(nsset_change_should_clear_keyset, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(nsset_change_should_clear_keyset, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
+    Test::FullDomain domain(ctx, registrar.data.handle);
+
     const Optional<Nullable<std::string> > nsset_chg = Optional<Nullable<std::string> >(Nullable<std::string>());
-    const bool rifd_epp_update_domain_keyset_clear = true;
+
+    BOOST_REQUIRE(!domain.data.keyset.isnull());
+
+    Epp::Domain::UpdateDomainConfigData update_domain_config_data(
+            false, // rifd_epp_operations_charging
+            true); // rifd_epp_update_domain_keyset_clear
 
     Epp::Domain::update_domain(
         ctx,
         Epp::Domain::UpdateDomainInputData(
-            info_domain_data_.fqdn,
+            domain.data.fqdn,
             Optional<std::string>(), // registrant_chg
             Optional<std::string>(), // authinfopw_chg
             nsset_chg, // nsset_chg
@@ -337,24 +245,32 @@ BOOST_FIXTURE_TEST_CASE(nsset_change_should_clear_keyset, HasInfoDomainData)
             std::vector<std::string>(), // admin_contacts_rem
             std::vector<std::string>(), // tmpcontacts_rem
             std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-        info_registrar_data_.id, // registrar_id
-        Optional<unsigned long long>(), // logd_request_id
-        rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
+        update_domain_config_data,
+        session.data
     );
 
-    BOOST_CHECK(Fred::InfoDomainById(info_domain_data_.id).exec(ctx, "UTC").info_domain_data.nsset.isnull());
-    BOOST_CHECK_EQUAL(Fred::InfoDomainById(info_domain_data_.id).exec(ctx, "UTC").info_domain_data.keyset.isnull(), rifd_epp_update_domain_keyset_clear);
+    const Fred::InfoDomainData info_domain_data = Fred::InfoDomainById(domain.data.id).exec(ctx, "UTC").info_domain_data;
+
+    BOOST_CHECK(info_domain_data.nsset.isnull());
+    BOOST_CHECK_EQUAL(info_domain_data.keyset.isnull(), update_domain_config_data.rifd_epp_update_domain_keyset_clear); 
 }
 
-BOOST_FIXTURE_TEST_CASE(nsset_change_should_not_clear_keyset, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(nsset_change_should_not_clear_keyset, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
+    Test::FullDomain domain(ctx, registrar.data.handle);
+
     const Optional<Nullable<std::string> > nsset_chg = Optional<Nullable<std::string> >(Nullable<std::string>());
-    const bool rifd_epp_update_domain_keyset_clear = false;
+
+    BOOST_REQUIRE(!domain.data.keyset.isnull());
+
+    Epp::Domain::UpdateDomainConfigData update_domain_config_data(
+            false, // rifd_epp_operations_charging
+            false); // rifd_epp_update_domain_keyset_clear
 
     Epp::Domain::update_domain(
         ctx,
         Epp::Domain::UpdateDomainInputData(
-            info_domain_data_.fqdn,
+            domain.data.fqdn,
             Optional<std::string>(), // registrant_chg
             Optional<std::string>(), // authinfopw_chg
             nsset_chg, // nsset_chg,
@@ -363,15 +279,14 @@ BOOST_FIXTURE_TEST_CASE(nsset_change_should_not_clear_keyset, HasInfoDomainData)
             std::vector<std::string>(), // admin_contacts_rem
             std::vector<std::string>(), // tmpcontacts_rem
             std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-        info_registrar_data_.id, // registrar_id
-        Optional<unsigned long long>(), // logd_request_id
-        rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
+        update_domain_config_data,
+        session.data
     );
 
-    Fred::InfoDomainData info_domain_data = Fred::InfoDomainById(info_domain_data_.id).exec(ctx, "UTC").info_domain_data;
+    Fred::InfoDomainData info_domain_data = Fred::InfoDomainById(domain.data.id).exec(ctx, "UTC").info_domain_data;
 
     BOOST_CHECK(info_domain_data.nsset.isnull());
-    BOOST_CHECK_EQUAL(info_domain_data.keyset.isnull(), rifd_epp_update_domain_keyset_clear);
+    BOOST_CHECK_EQUAL(info_domain_data.keyset.isnull(), update_domain_config_data.rifd_epp_update_domain_keyset_clear);
 }
 
 bool fail_tmpcontacts_rem_not_empty_exception(const Epp::EppResponseFailure& e) {
@@ -380,7 +295,7 @@ bool fail_tmpcontacts_rem_not_empty_exception(const Epp::EppResponseFailure& e) 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForUpdateDomain)
+BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, Test::supply_ctx<Test::Fixture::HasDataForUpdateDomain>)
 {
     BOOST_REQUIRE(!tmpcontacts_rem_.empty());
 
@@ -388,7 +303,7 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForUpdateDomain)
         Epp::Domain::update_domain(
             ctx,
             Epp::Domain::UpdateDomainInputData(
-                info_domain_data_.fqdn,
+                domain.data.fqdn,
                 Optional<std::string>(), // registrant_chg
                 Optional<std::string>(), // authinfopw_chg
                 Optional<Nullable<std::string> >(), // nsset_chg
@@ -397,9 +312,8 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, HasDataForUpdateDomain)
                 std::vector<std::string>(), // admin_contacts_rem
                 tmpcontacts_rem_, // tmpcontacts_rem
                 std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            true // rifd_epp_update_domain_keyset_clear
+            Test::DefaultUpdateDomainConfigData(),
+            session.data
         ),
         Epp::EppResponseFailure,
         fail_tmpcontacts_rem_not_empty_exception
@@ -412,13 +326,12 @@ bool fail_existing_fqdn_but_spaces_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForUpdateDomain)
+BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, Test::supply_ctx<Test::Fixture::HasDataForUpdateDomain>)
 {
     BOOST_REQUIRE(admin_contacts_add_.size() == 2);
     BOOST_REQUIRE(admin_contacts_rem_.size() == 1);
-    const bool rifd_epp_update_domain_keyset_clear = false;
 
-    const std::string fqdn_with_spaces("  " + info_domain_data_.fqdn + "  ");
+    const std::string fqdn_with_spaces("  " + domain.data.fqdn + "  ");
 
     BOOST_CHECK_EXCEPTION(
         Epp::Domain::update_domain(
@@ -433,25 +346,25 @@ BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, HasDataForUpdateDomain)
                 admin_contacts_rem_,
                 std::vector<std::string>(), // tmpcontacts_rem
                 std::vector<Epp::Domain::EnumValidationExtension>()), // enum_validation_list
-            info_registrar_data_.id, // registrar_id
-            Optional<unsigned long long>(), // logd_request_id
-            rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
+            Epp::Domain::UpdateDomainConfigData(
+                    false,  // rifd_epp_operations_charging
+                    false), // rifd_epp_update_domain_keyset_clear
+            session.data
         ),
         Epp::EppResponseFailure,
         fail_existing_fqdn_but_spaces_exception
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(ok, HasDataForUpdateDomain)
+BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasDataForUpdateDomain>)
 {
     BOOST_REQUIRE(admin_contacts_add_.size() == 2);
     BOOST_REQUIRE(admin_contacts_rem_.size() == 1);
-    const bool rifd_epp_update_domain_keyset_clear = false;
 
     Epp::Domain::update_domain(
         ctx,
         Epp::Domain::UpdateDomainInputData(
-            info_domain_data_.fqdn,
+            domain.data.fqdn,
             registrant_chg_, // registrant_chg
             authinfopw_chg_, // authinfopw_chg
             nsset_chg_, // nsset_chg
@@ -460,48 +373,50 @@ BOOST_FIXTURE_TEST_CASE(ok, HasDataForUpdateDomain)
             admin_contacts_rem_, // admin_contacts_rem
             std::vector<std::string>(), // tmpcontacts_rem
             enum_validation_list_), // enum_validation_list
-        info_registrar_data_.id, // registrar_id
-        Optional<unsigned long long>(), // logd_request_id
-        rifd_epp_update_domain_keyset_clear // rifd_epp_update_domain_keyset_clear
+        Epp::Domain::UpdateDomainConfigData(
+                false,  // rifd_epp_operations_charging
+                false), // rifd_epp_update_domain_keyset_clear
+        session.data
     );
 
-    Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(info_domain_data_.fqdn).exec(ctx, "UTC").info_domain_data;
+    Fred::InfoDomainData domain_data_after_update = Fred::InfoDomainByHandle(domain.data.fqdn).exec(ctx, "UTC").info_domain_data;
 
-    BOOST_CHECK_EQUAL(info_domain_data.roid, info_domain_data_.roid);
-    BOOST_CHECK_EQUAL(info_domain_data.fqdn, info_domain_data_.fqdn);
+    BOOST_CHECK_EQUAL(domain_data_after_update.roid, domain.data.roid);
+    BOOST_CHECK_EQUAL(domain_data_after_update.fqdn, domain.data.fqdn);
 
-    BOOST_CHECK_EQUAL(info_domain_data.registrant.handle, registrant_chg_);
+    BOOST_CHECK_EQUAL(domain_data_after_update.registrant.handle, registrant_chg_);
 
-    BOOST_CHECK_EQUAL(info_domain_data.nsset.get_value_or_default().handle, nsset_chg_.get_value_or_default());
-    BOOST_CHECK_EQUAL(info_domain_data.keyset.get_value_or_default().handle, keyset_chg_.get_value_or_default());
+    BOOST_CHECK_EQUAL(domain_data_after_update.nsset.get_value_or_default().handle, nsset_chg_.get_value_or_default());
+    BOOST_CHECK_EQUAL(domain_data_after_update.keyset.get_value_or_default().handle, keyset_chg_.get_value_or_default());
     // states
-    BOOST_CHECK_EQUAL(info_domain_data.sponsoring_registrar_handle, info_domain_data_.sponsoring_registrar_handle);
-    BOOST_CHECK_EQUAL(info_domain_data.create_registrar_handle, info_domain_data_.create_registrar_handle);
+    BOOST_CHECK_EQUAL(domain_data_after_update.sponsoring_registrar_handle, domain.data.sponsoring_registrar_handle);
+    BOOST_CHECK_EQUAL(domain_data_after_update.create_registrar_handle, domain.data.create_registrar_handle);
 
-    BOOST_CHECK_EQUAL(info_domain_data.update_registrar_handle, info_registrar_data_.handle);
+    BOOST_CHECK_EQUAL(domain_data_after_update.update_registrar_handle, registrar.data.handle);
 
-    BOOST_CHECK_EQUAL(info_domain_data.creation_time, info_domain_data_.creation_time);
-    //BOOST_CHECK_EQUAL(info_domain_data.last_update, info_domain_data_.update_time);
-    BOOST_CHECK_EQUAL(info_domain_data.transfer_time, info_domain_data_.transfer_time);
-    BOOST_CHECK_EQUAL(info_domain_data.expiration_date, info_domain_data_.expiration_date);
-    BOOST_CHECK_EQUAL(info_domain_data.authinfopw, authinfopw_chg_);
+    BOOST_CHECK_EQUAL(domain_data_after_update.creation_time, domain.data.creation_time);
+    //BOOST_CHECK_EQUAL(domain_data_after_update.last_update, domain.data.update_time);
+    BOOST_CHECK_EQUAL(domain_data_after_update.transfer_time, domain.data.transfer_time);
+    BOOST_CHECK_EQUAL(domain_data_after_update.expiration_date, domain.data.expiration_date);
+    BOOST_CHECK_EQUAL(domain_data_after_update.authinfopw, authinfopw_chg_);
 
-    std::vector<std::string> info_domain_data_admin_contacts = vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(info_domain_data.admin_contacts);
+    std::vector<std::string> domain_data_after_update_admin_contacts =
+            Test::vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(domain_data_after_update.admin_contacts);
     BOOST_CHECK_EQUAL_COLLECTIONS(
-        info_domain_data_admin_contacts.begin(),
-        info_domain_data_admin_contacts.end(),
+        domain_data_after_update_admin_contacts.begin(),
+        domain_data_after_update_admin_contacts.end(),
         admin_contacts_add_.begin(),
         admin_contacts_add_.end()
     );
 
     BOOST_CHECK_EQUAL(
-       info_domain_data.enum_domain_validation.get_value_or_default().validation_expiration,
-       info_domain_data_.enum_domain_validation.get_value_or_default().validation_expiration
+       domain_data_after_update.enum_domain_validation.get_value_or_default().validation_expiration,
+       domain.data.enum_domain_validation.get_value_or_default().validation_expiration
    );
 
     BOOST_CHECK_EQUAL(
-       info_domain_data.enum_domain_validation.get_value_or_default().publish,
-       info_domain_data_.enum_domain_validation.get_value_or_default().publish
+       domain_data_after_update.enum_domain_validation.get_value_or_default().publish,
+       domain.data.enum_domain_validation.get_value_or_default().publish
    );
 }
 

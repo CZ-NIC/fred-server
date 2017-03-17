@@ -41,9 +41,9 @@ namespace Nsset {
 EppResponseSuccessLocalized transfer_nsset_localized(
         const std::string& _nsset_handle,
         const std::string& _authinfopw,
+        const TransferNssetConfigData& _transfer_nsset_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const NotificationData& _notification_data)
 {
     try
     {
@@ -59,8 +59,8 @@ EppResponseSuccessLocalized transfer_nsset_localized(
                         ctx,
                         _nsset_handle,
                         _authinfopw,
-                        _session_data.registrar_id,
-                        _logd_request_id);
+                        _transfer_nsset_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

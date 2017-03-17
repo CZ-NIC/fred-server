@@ -21,7 +21,9 @@
 
 #include "src/epp/contact/update_contact.h"
 #include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/update_domain_config_data.h"
 #include "src/epp/domain/update_domain_input_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
@@ -35,9 +37,8 @@ namespace Domain {
 unsigned long long update_domain(
         Fred::OperationContext& _ctx,
         const UpdateDomainInputData& _update_domain_input_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id,
-        bool _rifd_epp_update_domain_keyset_clear);
+        const UpdateDomainConfigData& _update_domain_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Domain

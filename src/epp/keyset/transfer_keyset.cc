@@ -46,11 +46,11 @@ unsigned long long transfer_keyset(
         Fred::OperationContext& _ctx,
         const std::string& _keyset_handle,
         const std::string& _authinfopw,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const TransferKeysetConfigData& _transfer_keyset_config_data,
+        const SessionData& _session_data)
 {
-    static const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id)
+
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -65,7 +65,7 @@ unsigned long long transfer_keyset(
                         .info_keyset_data;
 
         const Fred::InfoRegistrarData session_registrar =
-                Fred::InfoRegistrarById(_registrar_id)
+                Fred::InfoRegistrarById(_session_data.registrar_id)
                         .exec(_ctx)
                         .info_registrar_data;
 
@@ -104,7 +104,7 @@ unsigned long long transfer_keyset(
                         keyset_data_before_transfer.id,
                         session_registrar.handle,
                         _authinfopw,
-                        _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable<unsigned long long>())
+                        _session_data.logd_request_id.isset() ? _session_data.logd_request_id.get_value() : Nullable<unsigned long long>())
                         .exec(_ctx);
 
         Fred::Poll::CreateEppActionPollMessage(

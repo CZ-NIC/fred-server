@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+namespace Test {
+
 std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(const std::vector<Fred::ObjectIdHandlePair>& admin_contacts) {
     std::vector<std::string> admin;
     for (
@@ -15,3 +17,5 @@ std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(c
     }
     return admin;
 }
+
+} // namespace Test

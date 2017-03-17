@@ -29,13 +29,13 @@
 #include "src/epp/domain/domain_registration_time.h"
 #include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/epp_response_success_localized.h"
-#include "src/epp/request_params.h"
 #include "src/epp/keyset/check_keyset_localized.h"
 #include "src/epp/keyset/info_keyset_localized.h"
 #include "src/epp/nsset/check_nsset_localized.h"
 #include "src/epp/nsset/delete_nsset_localized.h"
 #include "src/epp/nsset/dns_host_input.h"
 #include "src/epp/nsset/info_nsset_localized.h"
+#include "src/epp/request_params.h"
 #include "src/old_utils/util.h"
 #include "util/corba_conversion.h"
 
@@ -44,6 +44,7 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
 
 
@@ -96,35 +97,36 @@ std::vector<std::string>
 unwrap_handle_sequence_to_string_vector(const ccReg::Check& handles);
 
 
-Epp::RequestParams
+::Epp::RequestParams
 unwrap_EppParams(const ccReg::EppParams& _epp_request_params);
 
 
 void
 wrap_Epp_EppResponseSuccessLocalized(
-        const Epp::EppResponseSuccessLocalized& _input,
+        const ::Epp::EppResponseSuccessLocalized& _input,
         const std::string& _server_transaction_handle,
         ccReg::Response& _dst);
 
 
 ccReg::Response
 wrap_Epp_EppResponseSuccessLocalized(
-        const Epp::EppResponseSuccessLocalized& _input,
+        const ::Epp::EppResponseSuccessLocalized& _input,
         const std::string& _server_transaction_handle);
 
 
 ccReg::EPP::EppError
 wrap_Epp_EppResponseFailureLocalized(
-        const Epp::EppResponseFailureLocalized& _epp_response_failure,
+        const ::Epp::EppResponseFailureLocalized& _epp_response_failure,
         const std::string& _server_transaction_handle);
 
 
 void
 wrap_Epp_ObjectStatesLocalized(
-        const Epp::ObjectStatesLocalized& _src,
+        const ::Epp::ObjectStatesLocalized& _src,
         ccReg::Status& _dst);
 
 
-} // namespace Corba
+} // namespace Fred::Corba
+} // namespace Fred
 
 #endif

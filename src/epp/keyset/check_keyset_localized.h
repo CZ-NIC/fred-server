@@ -19,17 +19,21 @@
 #ifndef CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
 #define CHECK_KEYSET_LOCALIZED_H_231A7D4B89FC4368A15ED984120F7488
 
+#include "src/epp/keyset/check_keyset_config_data.h"
 #include "src/epp/keyset/check_keyset_localized_response.h"
 #include "src/epp/session_data.h"
 
 #include <set>
+#include <string>
 
 namespace Epp {
 namespace Keyset {
 
 CheckKeysetLocalizedResponse check_keyset_localized(
         const std::set<std::string>& _keyset_handles,
+        const CheckKeysetConfigData& _check_keyset_config_data,
         const SessionData& _session_data);
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

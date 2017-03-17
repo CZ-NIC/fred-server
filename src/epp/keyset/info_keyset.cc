@@ -35,8 +35,16 @@ namespace Keyset {
 InfoKeysetOutputData info_keyset(
         Fred::OperationContext& _ctx,
         const std::string& _keyset_handle,
-        unsigned long long _registrar_id)
+        const InfoKeysetConfigData& _info_keyset_config_data,
+        const SessionData& _session_data)
 {
+
+    if (!is_session_registrar_valid(_session_data))
+    {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
+    }
+
     try
     {
         InfoKeysetOutputData result;
@@ -67,7 +75,7 @@ InfoKeysetOutputData info_keyset(
         result.last_transfer = data.transfer_time;
         // show object authinfopw only to sponsoring registrar
         if (Fred::InfoRegistrarByHandle(data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id ==
-            _registrar_id)
+            _session_data.registrar_id)
         {
             result.authinfopw = data.authinfopw;
         }

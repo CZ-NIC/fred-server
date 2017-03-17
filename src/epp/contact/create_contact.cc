@@ -73,12 +73,13 @@ CreateContactResult create_contact(
         Fred::OperationContext& _ctx,
         const std::string& _contact_handle,
         const CreateContactInputData& _contact_data,
-        const unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const CreateContactConfigData& _create_contact_config_data,
+        const SessionData& _session_data)
 {
-    const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
+
+    if (!is_session_registrar_valid(_session_data)) {
+        throw EppResponseFailure(EppResultFailure(
+                EppResultCode::authentication_error_server_closing_connection));
     }
 
     const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_contact_handle) ==
@@ -144,7 +145,7 @@ CreateContactResult create_contact(
 
         const Fred::CreateContact create_contact_op(
             _contact_handle,
-            Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
+            Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle,
             _contact_data.authinfopw ? Optional<std::string>(*_contact_data.authinfopw) : Optional<std::string>() ,
             _contact_data.name,
             _contact_data.organization,
@@ -168,7 +169,8 @@ CreateContactResult create_contact(
             should_item_be_disclosed< ContactDisclose::Item::ident        >(_contact_data.disclose),
             should_item_be_disclosed< ContactDisclose::Item::notify_email >(_contact_data.disclose),
             Optional< Nullable< bool > >(),
-            _logd_request_id);
+            _session_data.logd_request_id);
+
         const Fred::CreateContact::Result create_data = create_contact_op.exec(_ctx, "UTC");
 
         return CreateContactResult(

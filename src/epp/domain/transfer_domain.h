@@ -32,19 +32,13 @@ namespace Domain {
  * In case of exception, behaviour is undefined and transaction should bo rolled back.
  *
  * \returns new history id
- *
- * \throws AuthErrorServerClosingConnection in case _registrar_id is zero (legacy reasons)
- * \throws NonexistentHandle
- * \throws ObjectNotEligibleForTransfer in case _registrar_id is of currently sponsoring registrar
- * \throws ObjectStatusProhibitsOperation
- * \throws AuthorizationInformationError in case invalid _authinfopw is given
  */
 unsigned long long transfer_domain(
         Fred::OperationContext& _ctx,
-        const std::string& _domain_fqdn,
+        const std::string& _fqdn,
         const std::string& _authinfopw,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const TransferDomainConfigData& _transfer_domain_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Domain

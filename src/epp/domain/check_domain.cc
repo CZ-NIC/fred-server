@@ -75,26 +75,27 @@ Nullable<DomainRegistrationObstruction::Enum> domain_get_registration_obstructio
 
 std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_domain(
         Fred::OperationContext& _ctx,
-        const std::set<std::string>& _domain_fqdns,
-        unsigned long long _registrar_id)
+        const std::set<std::string>& _fqdn,
+        const CheckDomainConfigData& _check_domain_config_data,
+        const SessionData& _session_data)
 {
 
-    const bool registrar_is_authenticated = _registrar_id != 0;
-    if (!registrar_is_authenticated)
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
     }
 
-    std::map<std::string,
-            Nullable<DomainRegistrationObstruction::Enum> > domain_fqdn_to_domain_registration_obstruction;
+    std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> >
+            fqdn_to_domain_registration_obstruction;
 
-    BOOST_FOREACH(const std::string & domain_fqdn, _domain_fqdns) {
-        domain_fqdn_to_domain_registration_obstruction[domain_fqdn] =
-                domain_get_registration_obstruction_by_fqdn(_ctx, domain_fqdn);
+    BOOST_FOREACH (const std::string& fqdn, _fqdn)
+    {
+        fqdn_to_domain_registration_obstruction[fqdn] =
+                domain_get_registration_obstruction_by_fqdn(_ctx, fqdn);
     }
 
-    return domain_fqdn_to_domain_registration_obstruction;
+    return fqdn_to_domain_registration_obstruction;
 }
 
 

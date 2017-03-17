@@ -30,19 +30,19 @@ namespace Domain {
 
 struct UpdateDomainInputData
 {
-    const std::string& domain_fqdn;
-    const Optional<std::string>& registrant_chg;
-    const Optional<std::string>& authinfopw_chg;
-    const Optional<Nullable<std::string> >& nsset_chg;
-    const Optional<Nullable<std::string> >& keyset_chg;
-    const std::vector<std::string>& admin_contacts_add;
-    const std::vector<std::string>& admin_contacts_rem;
-    const std::vector<std::string>& tmpcontacts_rem;
-    const std::vector<EnumValidationExtension>& enum_validation_list;
+    const std::string fqdn;
+    const Optional<std::string> registrant_chg;
+    const Optional<std::string> authinfopw_chg;
+    const Optional<Nullable<std::string> > nsset_chg;
+    const Optional<Nullable<std::string> > keyset_chg;
+    const std::vector<std::string> admin_contacts_add;
+    const std::vector<std::string> admin_contacts_rem;
+    const std::vector<std::string> tmpcontacts_rem;
+    const std::vector<EnumValidationExtension> enum_validation_list;
 
 
     UpdateDomainInputData(
-            const std::string& _domain_fqdn,
+            const std::string& _fqdn,
             const Optional<std::string>& _registrant_chg,
             const Optional<std::string>& _authinfopw_chg,
             const Optional<Nullable<std::string> >& _nsset_chg,
@@ -51,7 +51,7 @@ struct UpdateDomainInputData
             const std::vector<std::string>& _admin_contacts_rem,
             const std::vector<std::string>& _tmpcontacts_rem,
             const std::vector<EnumValidationExtension>& _enum_validation_list)
-        : domain_fqdn(_domain_fqdn),
+        : fqdn(_fqdn),
           registrant_chg(_registrant_chg),
           authinfopw_chg(_authinfopw_chg),
           nsset_chg(_nsset_chg),

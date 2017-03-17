@@ -45,11 +45,11 @@ namespace Epp {
 namespace Domain {
 
 EppResponseSuccessLocalized transfer_domain_localized(
-        const std::string& _domain_fqdn,
+        const std::string& _fqdn,
         const std::string& _authinfopw,
+        const TransferDomainConfigData& _transfer_domain_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id)
+        const NotificationData& _notification_data)
 {
     try
     {
@@ -63,10 +63,10 @@ EppResponseSuccessLocalized transfer_domain_localized(
         const unsigned long long post_transfer_history_id =
                 transfer_domain(
                         ctx,
-                        _domain_fqdn,
+                        _fqdn,
                         _authinfopw,
-                        _session_data.registrar_id,
-                        _logd_request_id);
+                        _transfer_domain_config_data,
+                        _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
                 EppResponseSuccessLocalized(

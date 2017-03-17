@@ -19,6 +19,8 @@
 #ifndef DELETE_KEYSET_H_B1F9FD75689C471A8C4FAB8A30DB2B80
 #define DELETE_KEYSET_H_B1F9FD75689C471A8C4FAB8A30DB2B80
 
+#include "src/epp/keyset/delete_keyset_config_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <string>
@@ -31,16 +33,13 @@ namespace Keyset {
  * behaviour is undefined and transaction should be rolled back.
  *
  * @returns last keyset history id before delete
- *
- * @throws AuthErrorServerClosingConnection
- * @throws NonexistentHandle
- * @throws AutorError
- * @throws ObjectStatusProhibitsOperation in case contact has serverDeleteProhibited, serverUpdateProhibited, deleteCandidate or linked status (or request)
  */
 unsigned long long delete_keyset(
         Fred::OperationContext& _ctx,
         const std::string& _keyset_handle,
-        unsigned long long _registrar_id);
+        const DeleteKeysetConfigData& _delete_keyset_config_data,
+        const SessionData& _session_data);
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

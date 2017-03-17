@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -27,6 +23,8 @@
 #include "src/epp/impl/disclose_policy.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
+#include "src/epp/session_data.h"
+#include "src/epp/contact/info_contact_config_data.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -94,13 +92,14 @@ bool info_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_contact)
+BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, HasInvalidSessionRegistrar)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::info_contact(
             ctx,
-            contact.handle,
-            0 /* <== !!! */
+            "contacthandle",
+            config.info_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         info_invalid_registrar_id_exception
@@ -113,13 +112,14 @@ bool info_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_contact)
+BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, HasContact)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::info_contact(
             ctx,
             contact.handle + "SOMEobscureSTRING",
-            42 /* TODO */
+            config.info_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         info_fail_nonexistent_handle_exception
@@ -127,13 +127,14 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_contact)
 }
 
 
-BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_contact)
+BOOST_FIXTURE_TEST_CASE(info_ok_full_data, HasContact)
 {
     check_equal(
         Epp::Contact::info_contact(
             ctx,
             contact.handle,
-            registrar.id
+            config.info_contact_config_data,
+            session.data
         ),
         contact);
 }

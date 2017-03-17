@@ -19,7 +19,9 @@
 #ifndef CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
 #define CHECK_CONTACT_H_19C1ED6F0967492CB555556A6BD1317D
 
+#include "src/epp/contact/check_contact_config_data.h"
 #include "src/epp/contact/contact_handle_registration_obstruction.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <map>
@@ -35,7 +37,8 @@ namespace Contact {
 std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > check_contact(
         Fred::OperationContext& _ctx,
         const std::set<std::string>& _contact_handles,
-        unsigned long long _registrar_id);
+        const CheckContactConfigData& _check_contact_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Contact

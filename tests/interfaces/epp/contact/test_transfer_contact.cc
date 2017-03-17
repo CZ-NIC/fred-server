@@ -16,10 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -40,15 +37,15 @@ bool transfer_fail_auth_error_srvr_closing_connection_exception(const Epp::EppRe
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_contact)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, HasInvalidSessionRegistrar)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::transfer_contact(
             ctx,
-            contact.handle,
-            contact.authinfopw,
-            0,
-            42
+            "contact_handle",
+            "authinfopw",
+            config.transfer_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         transfer_fail_auth_error_srvr_closing_connection_exception
@@ -61,15 +58,15 @@ bool transfer_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, has_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, HasRegistrar)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::transfer_contact(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
             "abc-it-doesnt-matter-operation-should-fail-even-sooner",
-            registrar.id,
-            42
+            config.transfer_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         transfer_fail_nonexistent_handle_exception
@@ -82,32 +79,20 @@ bool transfer_fail_not_eligible_for_transfer_exception(const Epp::EppResponseFai
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, has_contact)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, HasContact)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
-            registrar.id,
-            42
+            config.transfer_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         transfer_fail_not_eligible_for_transfer_exception
     );
 }
-
-struct has_another_registrar : virtual Test::autocommitting_context {
-    Fred::InfoRegistrarData another_registrar;
-
-    has_another_registrar() {
-        const std::string reg_handle = "ANOTHERREGISTRAR";
-        Fred::CreateRegistrar(reg_handle).exec(ctx);
-        another_registrar = Fred::InfoRegistrarByHandle(reg_handle).exec(ctx).info_registrar_data;
-    }
-};
-
-struct has_contact_with_server_transfer_prohibited_and_another_registrar : has_contact_with_server_transfer_prohibited, has_another_registrar { };
 
 bool transfer_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
@@ -115,22 +100,20 @@ bool transfer_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_contact_with_server_transfer_prohibited_and_another_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, HasContactWithServerTransferProhibited)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
-            another_registrar.id,
-            42
+            config.transfer_contact_config_data,
+            Test::Session(ctx, Test::Registrar(ctx).data.id).data
         ),
         Epp::EppResponseFailure,
         transfer_fail_prohibiting_status1_exception
     );
 }
-
-struct has_contact_with_server_delete_prohibited_and_another_registrar : has_contact_with_delete_candidate, has_another_registrar { };
 
 bool transfer_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
@@ -138,22 +121,20 @@ bool transfer_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_contact_with_server_delete_prohibited_and_another_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, HasContactWithDeleteCandidate)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
-            another_registrar.id,
-            42
+            config.transfer_contact_config_data,
+            Test::Session(ctx, Test::Registrar(ctx).data.id).data
         ),
         Epp::EppResponseFailure,
         transfer_fail_prohibiting_status2_exception
     );
 }
-
-struct has_contact_and_another_registrar : has_contact, has_another_registrar { };
 
 bool transfer_fail_autor_error_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::invalid_authorization_information);
@@ -161,31 +142,29 @@ bool transfer_fail_autor_error_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, has_contact_and_another_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, HasContact)
 {
     BOOST_CHECK_EXCEPTION(
         Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             "thisisdifferent" + contact.authinfopw,
-            another_registrar.id,
-            42
+            config.transfer_contact_config_data,
+            Test::Session(ctx, Test::Registrar(ctx).data.id).data
         ),
         Epp::EppResponseFailure,
         transfer_fail_autor_error_exception
     );
 }
 
-struct has_contact_with_server_update_prohibited_request_and_another_registrar : has_another_registrar, has_contact_with_server_update_prohibited_request { };
-
-BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, has_contact_with_server_update_prohibited_request_and_another_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, HasContactWithServerUpdateProhibitedRequest)
 {
     Epp::Contact::transfer_contact(
         ctx,
         contact.handle,
         contact.authinfopw,
-        another_registrar.id,
-        42
+        config.transfer_contact_config_data,
+        Test::Session(ctx, Test::Registrar(ctx).data.id).data
     );
 
     /* now object has the state server_update_prohibited itself */
@@ -205,16 +184,18 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, has_contact_with_ser
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_contact_and_another_registrar)
+BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, HasContact)
 {
     const Fred::InfoContactData contact_data_before = Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data;
+
+    Test::Registrar another_registrar(ctx);
 
     Epp::Contact::transfer_contact(
         ctx,
         contact.handle,
         contact.authinfopw,
-        another_registrar.id,
-        42
+        config.transfer_contact_config_data,
+        Test::Session(ctx, another_registrar.data.id).data
     );
 
     const Fred::InfoContactData contact_data_after = Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data;
@@ -228,7 +209,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_contact_and_another_registrar
 
     BOOST_CHECK(contact_data_change.changed_fields() == change_fields_etalon);
 
-    BOOST_CHECK_EQUAL(contact_data_after.sponsoring_registrar_handle, another_registrar.handle);
+    BOOST_CHECK_EQUAL(contact_data_after.sponsoring_registrar_handle, another_registrar.data.handle);
 
     BOOST_CHECK_EQUAL(
         contact_data_after.transfer_time,

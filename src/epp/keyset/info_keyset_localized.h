@@ -19,6 +19,7 @@
 #ifndef INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 #define INFO_KEYSET_LOCALIZED_H_FC17377A92AD4B6287BF8BCCBC3E1F93
 
+#include "src/epp/keyset/info_keyset_config_data.h"
 #include "src/epp/keyset/info_keyset_localized_response.h"
 #include "src/epp/session_data.h"
 
@@ -29,7 +30,9 @@ namespace Keyset {
 
 InfoKeysetLocalizedResponse info_keyset_localized(
         const std::string& _keyset_handle,
+        const InfoKeysetConfigData& _info_keyset_config_data,
         const SessionData& _session_data);
+
 
 } // namespace Epp::Keyset
 } // namespace Epp

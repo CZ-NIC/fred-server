@@ -19,12 +19,12 @@
 #ifndef CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 #define CREATE_KEYSET_H_40D13A301E374731AE4EA4486456DAF6
 
+#include "src/epp/keyset/create_keyset_config_data.h"
 #include "src/epp/keyset/create_keyset_input_data.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
-#include "util/optional_value.h"
 
-#include <string>
-#include <vector>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Epp {
 namespace Keyset {
@@ -39,8 +39,8 @@ struct CreateKeysetResult
 CreateKeysetResult create_keyset(
         Fred::OperationContext& _ctx,
         const CreateKeysetInputData& _create_keyset_input_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id);
+        const CreateKeysetConfigData& _create_keyset_config_data,
+        const SessionData& _session_data);
 
 } // namespace Epp::Keyset
 } // namespace Epp

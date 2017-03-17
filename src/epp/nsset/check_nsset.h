@@ -19,7 +19,9 @@
 #ifndef CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
 #define CHECK_NSSET_H_B5F837D0A1C14E38AF40554365CF857B
 
+#include "src/epp/nsset/check_nsset_config_data.h"
 #include "src/epp/nsset/nsset_handle_registration_obstruction.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <map>
@@ -35,7 +37,8 @@ namespace Nsset {
 std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check_nsset(
         Fred::OperationContext& _ctx,
         const std::set<std::string>& _nsset_handles,
-        unsigned long long _registrar_id);
+        const CheckNssetConfigData& _check_nsset_config_data,
+        const SessionData& _session_data);
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -16,10 +16,6 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
 #include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -40,7 +36,7 @@ bool test_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, has_invalid_registrar_id)
+BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, HasInvalidSessionRegistrar)
 {
     Fred::OperationContextCreator ctx;
 
@@ -48,14 +44,15 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, has_invalid_registrar_id)
         Epp::Contact::check_contact(
             ctx,
             std::set<std::string>(),
-            invalid_registrar_id
+            config.check_contact_config_data,
+            session.data
         ),
         Epp::EppResponseFailure,
         test_invalid_registrar_id_exception
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_empty, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_result_size_empty, HasRegistrar)
 {
     Fred::OperationContextCreator ctx;
 
@@ -63,13 +60,14 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_empty, has_registrar)
         Epp::Contact::check_contact(
             ctx,
             std::set<std::string>(),
-            registrar.id
+            config.check_contact_config_data,
+            session.data
         ).size(),
         0
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, HasRegistrar)
 {
     const std::set<std::string> contact_handles
         = boost::assign::list_of
@@ -90,13 +88,14 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, has_registrar)
         Epp::Contact::check_contact(
             ctx,
             contact_handles,
-            registrar.id
+            config.check_contact_config_data,
+            session.data
         ).size(),
         contact_handles.size()
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_invalid_handle, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasRegistrar)
 {
     const std::set<std::string> contact_handles
         = boost::assign::list_of
@@ -115,7 +114,8 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, has_registrar)
         Epp::Contact::check_contact(
             ctx,
             contact_handles,
-            registrar.id
+            config.check_contact_config_data,
+            session.data
         );
 
     for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -126,7 +126,7 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, has_registrar)
     }
 }
 
-struct has_protected_handles : has_registrar {
+struct has_protected_handles : HasRegistrar {
     std::set<std::string> protected_handles;
     has_protected_handles() {
         protected_handles = boost::assign::list_of
@@ -150,7 +150,8 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
         Epp::Contact::check_contact(
             ctx,
             protected_handles,
-            registrar.id
+            config.check_contact_config_data,
+            session.data
         );
 
     for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -161,7 +162,7 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, has_registrar)
+BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, HasRegistrar)
 {
     const std::set<std::string> contact_handles
         = boost::assign::list_of
@@ -179,7 +180,8 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, has_registrar)
         Epp::Contact::check_contact(
             ctx,
             contact_handles,
-            registrar.id
+            config.check_contact_config_data,
+            session.data
         );
 
     for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
@@ -190,7 +192,7 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, has_registrar)
     }
 }
 
-struct has_existing_contacts : has_registrar {
+struct has_existing_contacts : HasRegistrar {
     std::set<std::string> existing_contact_handles;
     has_existing_contacts() {
         existing_contact_handles = boost::assign::list_of
@@ -213,7 +215,8 @@ BOOST_FIXTURE_TEST_CASE(test_existing, has_existing_contacts)
         Epp::Contact::check_contact(
             ctx,
             existing_contact_handles,
-            registrar.id
+            config.check_contact_config_data,
+            session.data
         );
 
     for(std::map<std::string, Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();

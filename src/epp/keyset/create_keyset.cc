@@ -327,11 +327,11 @@ Success check_dns_keys(
 CreateKeysetResult create_keyset(
         Fred::OperationContext& _ctx,
         const CreateKeysetInputData& _keyset_data,
-        unsigned long long _registrar_id,
-        const Optional<unsigned long long>& _logd_request_id)
+        const CreateKeysetConfigData& _create_keyset_config_data,
+        const SessionData& _session_data)
 {
-    static const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id)
+
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -488,11 +488,11 @@ CreateKeysetResult create_keyset(
         const Fred::CreateKeyset::Result op_result =
                 Fred::CreateKeyset(
                         _keyset_data.keyset_handle,
-                        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle,
+                        Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle,
                         _keyset_data.authinfopw,
                         dns_keys,
                         _keyset_data.tech_contacts)
-                        .exec(_ctx, _logd_request_id, "UTC");
+                        .exec(_ctx, _session_data.logd_request_id, "UTC");
 
         CreateKeysetResult result;
         result.id = op_result.create_object_result.object_id,

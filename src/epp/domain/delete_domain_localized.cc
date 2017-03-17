@@ -43,6 +43,7 @@ namespace Domain {
 
 EppResponseSuccessLocalized delete_domain_localized(
         const std::string& _domain_fqdn,
+        const DeleteDomainConfigData& _delete_domain_config_data,
         const SessionData& _session_data,
         const NotificationData& _notification_data)
 {
@@ -59,7 +60,8 @@ EppResponseSuccessLocalized delete_domain_localized(
             delete_domain(
                     ctx,
                     _domain_fqdn,
-                    _session_data.registrar_id);
+                    _delete_domain_config_data,
+                    _session_data);
 
         const EppResponseSuccessLocalized epp_response_success_localized =
             EppResponseSuccessLocalized(

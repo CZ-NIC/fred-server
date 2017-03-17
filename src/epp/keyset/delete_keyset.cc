@@ -50,10 +50,11 @@ bool presents(
 unsigned long long delete_keyset(
         Fred::OperationContext& _ctx,
         const std::string& _keyset_handle,
-        unsigned long long _registrar_id)
+        const DeleteKeysetConfigData& _delete_keyset_config_data,
+        const SessionData& _session_data)
 {
-    static const unsigned long long invalid_registrar_id = 0;
-    if (_registrar_id == invalid_registrar_id)
+
+    if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
@@ -64,7 +65,7 @@ unsigned long long delete_keyset(
         const Fred::InfoKeysetData keyset_data = Fred::InfoKeysetByHandle(_keyset_handle).set_lock()
                                                  .exec(_ctx).info_keyset_data;
         const Fred::InfoRegistrarData session_registrar =
-                Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data;
+                Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;
         const bool is_sponsoring_registrar =
                 (keyset_data.sponsoring_registrar_handle == session_registrar.handle);
         const bool is_system_registrar = session_registrar.system.get_value_or(false);

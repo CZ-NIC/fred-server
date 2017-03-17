@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 
+namespace Fred {
 namespace Corba {
 namespace {
 
@@ -62,7 +63,7 @@ boost::optional<Nullable<std::string> > convert_contact_update_or_delete_string(
     {
         return boost::optional<Nullable<std::string> >();
     }
-    const std::string value_to_set = Corba::unwrap_string(src);
+    const std::string value_to_set = Fred::Corba::unwrap_string(src);
     const bool value_to_set_means_not_to_touch = value_to_set.empty();
     if (value_to_set_means_not_to_touch)
     {
@@ -80,7 +81,7 @@ boost::optional<std::string> convert_contact_update_string(const char* src)
     {
         return boost::optional<std::string>();
     }
-    const std::string value_to_set = Corba::unwrap_string(src);
+    const std::string value_to_set = Fred::Corba::unwrap_string(src);
     const bool value_to_set_means_not_to_touch = value_to_set.empty();
 
     return value_to_set_means_not_to_touch ? boost::optional<std::string>()
@@ -93,39 +94,39 @@ Epp::Contact::ContactDisclose convert_ContactChange_to_ContactDisclose(
         Epp::Contact::ContactDisclose::Flag::Enum meaning)
 {
     Epp::Contact::ContactDisclose result(meaning);
-    if (wrap_int<bool>(src.DiscloseName))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseName))
     {
         result.add<Epp::Contact::ContactDisclose::Item::name>();
     }
-    if (wrap_int<bool>(src.DiscloseOrganization))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseOrganization))
     {
         result.add<Epp::Contact::ContactDisclose::Item::organization>();
     }
-    if (wrap_int<bool>(src.DiscloseAddress))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseAddress))
     {
         result.add<Epp::Contact::ContactDisclose::Item::address>();
     }
-    if (wrap_int<bool>(src.DiscloseTelephone))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseTelephone))
     {
         result.add<Epp::Contact::ContactDisclose::Item::telephone>();
     }
-    if (wrap_int<bool>(src.DiscloseFax))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseFax))
     {
         result.add<Epp::Contact::ContactDisclose::Item::fax>();
     }
-    if (wrap_int<bool>(src.DiscloseEmail))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseEmail))
     {
         result.add<Epp::Contact::ContactDisclose::Item::email>();
     }
-    if (wrap_int<bool>(src.DiscloseVAT))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseVAT))
     {
         result.add<Epp::Contact::ContactDisclose::Item::vat>();
     }
-    if (wrap_int<bool>(src.DiscloseIdent))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseIdent))
     {
         result.add<Epp::Contact::ContactDisclose::Item::ident>();
     }
-    if (wrap_int<bool>(src.DiscloseNotifyEmail))
+    if (Fred::Corba::wrap_int<bool>(src.DiscloseNotifyEmail))
     {
         result.add<Epp::Contact::ContactDisclose::Item::notify_email>();
     }
@@ -182,7 +183,7 @@ Nullable<Epp::Contact::ContactChange::IdentType::Enum> unwrap_identtyp(ccReg::id
 }
 
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::{anonymous}
 
 
 void unwrap_ContactChange(
@@ -268,7 +269,7 @@ ccReg::identtyp wrap_identtyp(
 }
 
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::{anonymous}
 
 
 /**
@@ -309,7 +310,7 @@ CORBA::Boolean presents(const Epp::Contact::ContactDisclose& src)
 }
 
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::{anonymous}
 
 
 void wrap_InfoContactLocalizedOutputData(
@@ -375,7 +376,7 @@ void wrap_InfoContactLocalizedOutputData(
     dst.ident           = wrap_Nullable_string_to_string(src.ident);
     dst.identtype       = wrap_identtyp(src.identtype);
     dst.AuthInfoPw =
-            Corba::wrap_string_to_corba_string(src.authinfopw ? src.authinfopw.value() : std::string());
+            Fred::Corba::wrap_string_to_corba_string(src.authinfopw ? src.authinfopw.value() : std::string());
 
     if (!src.disclose.is_initialized())
     {
@@ -408,4 +409,5 @@ void wrap_InfoContactLocalizedOutputData(
 }
 
 
-} // namespace Corba
+} // namespace Fred::Corba
+} // namespace Fred

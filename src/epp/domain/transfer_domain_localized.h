@@ -19,6 +19,7 @@
 #ifndef TRANSFER_DOMAIN_LOCALIZED_H_35B028F1145C40FA8AA305D6AA0B4A3B
 #define TRANSFER_DOMAIN_LOCALIZED_H_35B028F1145C40FA8AA305D6AA0B4A3B
 
+#include "src/epp/domain/transfer_domain_config_data.h"
 #include "src/epp/epp_response_success_localized.h"
 #include "src/epp/notification_data.h"
 #include "src/epp/session_data.h"
@@ -30,11 +31,11 @@ namespace Epp {
 namespace Domain {
 
 EppResponseSuccessLocalized transfer_domain_localized(
-        const std::string& _domain_fqdn,
+        const std::string& _fqdn,
         const std::string& _authinfopw,
+        const TransferDomainConfigData& _transfer_domain_config_data,
         const SessionData& _session_data,
-        const NotificationData& _notification_data,
-        const Optional<unsigned long long>& _logd_request_id);
+        const NotificationData& _notification_data);
 
 
 } // namespace Epp::Domain

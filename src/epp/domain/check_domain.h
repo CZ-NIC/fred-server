@@ -19,8 +19,10 @@
 #ifndef CHECK_DOMAIN_H_29361249D9254622AD544B34701D9E63
 #define CHECK_DOMAIN_H_29361249D9254622AD544B34701D9E63
 
+#include "src/epp/domain/check_domain_config_data.h"
 #include "src/epp/domain/check_domain_localized.h"
 #include "src/epp/domain/domain_registration_obstruction.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/opcontext.h"
 
 #include <map>
@@ -31,14 +33,15 @@ namespace Epp {
 namespace Domain {
 
 /**
- * \returns check results for given domain FQDNs
+ * \returns check results for given domain names
  *
  * \throws  AuthErrorServerClosingConnection
  */
 std::map<std::string, Nullable<DomainRegistrationObstruction::Enum> > check_domain(
         Fred::OperationContext& _ctx,
-        const std::set<std::string>& _domain_fqdns,
-        unsigned long long _registrar_id);
+        const std::set<std::string>& _fqdns,
+        const CheckDomainConfigData& _check_domain_config_data,
+        const SessionData& _session_data);
 
 
 } // namespace Epp::Domain

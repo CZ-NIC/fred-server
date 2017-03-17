@@ -16,10 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -45,19 +42,17 @@ bool fail_auth_error_srvr_closing_connection_exception(const Epp::EppResponseFai
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(fail_auth_error_srvr_closing_connection, Test::supply_ctx<Test::Fixture::HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::transfer_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            info_domain_data_.authinfopw,
-            0,
-            42
-        ),
-        Epp::EppResponseFailure,
-        fail_auth_error_srvr_closing_connection_exception
-    );
+            Epp::Domain::transfer_domain(
+                    ctx,
+                    "domain.cz",
+                    "authinfopw",
+                    Test::DefaultTransferDomainConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            Epp::EppResponseFailure,
+            fail_auth_error_srvr_closing_connection_exception);
 }
 
 bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
@@ -66,19 +61,17 @@ bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, HasInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::transfer_domain(
-            ctx,
-            Test::get_nonexistent_object_handle(ctx),
-            "abc-it-doesnt-matter-operation-should-fail-even-sooner",
-            info_registrar_data_.id,
-            42
-        ),
-        Epp::EppResponseFailure,
-        fail_nonexistent_handle_exception
-    );
+            Epp::Domain::transfer_domain(
+                    ctx,
+                    Test::get_nonexistent_object_handle(ctx),
+                    "authinfopw",
+                    Test::DefaultTransferDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_nonexistent_handle_exception);
 }
 
 bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e) {
@@ -87,19 +80,17 @@ bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e)
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, HasInfoDomainDataOfNonexistentEnumDomain)
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::transfer_domain(
-            ctx,
-            info_enum_domain_data_.fqdn,
-            "abc-it-doesnt-matter-operation-should-fail-even-sooner",
-            info_registrar_data_.id,
-            42
-        ),
-        Epp::EppResponseFailure,
-        fail_enum_domain_does_not_exist_exception
-    );
+            Epp::Domain::transfer_domain(
+                    ctx,
+                    Test::NonexistentEnumFqdn().fqdn,
+                    "authinfopw",
+                    Test::DefaultTransferDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_enum_domain_does_not_exist_exception);
 }
 
 bool fail_not_eligible_for_transfer_exception(const Epp::EppResponseFailure& e) {
@@ -108,19 +99,17 @@ bool fail_not_eligible_for_transfer_exception(const Epp::EppResponseFailure& e) 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_not_eligible_for_transfer, HasInfoDomainData)
+BOOST_FIXTURE_TEST_CASE(fail_not_eligible_for_transfer, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::transfer_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            info_domain_data_.authinfopw,
-            info_registrar_data_.id,
-            42
-        ),
-        Epp::EppResponseFailure,
-        fail_not_eligible_for_transfer_exception
-    );
+            Epp::Domain::transfer_domain(
+                    ctx,
+                    domain.data.fqdn,
+                    domain.data.authinfopw,
+                    Test::DefaultTransferDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_not_eligible_for_transfer_exception);
 }
 
 bool fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
@@ -129,19 +118,19 @@ bool fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status1, HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited)
+BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status1, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDifferentRegistrar>)
 {
+    const Test::DomainWithServerTransferProhibited domain_with_server_transfer_prohibited(ctx, different_registrar.data.handle);
+
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::transfer_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            info_domain_data_.authinfopw,
-            different_info_registrar_data_.id,
-            42
-        ),
-        Epp::EppResponseFailure,
-        fail_prohibiting_status1_exception
-    );
+            Epp::Domain::transfer_domain(
+                    ctx,
+                    domain_with_server_transfer_prohibited.data.fqdn,
+                    domain_with_server_transfer_prohibited.data.authinfopw,
+                    Test::DefaultTransferDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_prohibiting_status1_exception);
 }
 
 bool fail_authz_info_error_exception(const Epp::EppResponseFailure& e) {
@@ -150,19 +139,17 @@ bool fail_authz_info_error_exception(const Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_authz_info_error, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(fail_authz_info_error, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomainOfDifferentRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::transfer_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            "thisisdifferent" + info_domain_data_.authinfopw,
-            different_info_registrar_data_.id,
-            42
-        ),
-        Epp::EppResponseFailure,
-        fail_authz_info_error_exception
-    );
+            Epp::Domain::transfer_domain(
+                    ctx,
+                    domain_of_different_registrar.data.fqdn,
+                    "thisisdifferent" + domain_of_different_registrar.data.authinfopw,
+                    Test::DefaultTransferDomainConfigData(),
+                    session.data),
+            Epp::EppResponseFailure,
+            fail_authz_info_error_exception);
 }
 bool fail_registrar_without_zone_access_exception(const Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
@@ -170,65 +157,62 @@ bool fail_registrar_without_zone_access_exception(const Epp::EppResponseFailure&
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess)
+BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::transfer_domain(
-            ctx,
-            info_domain_data_.fqdn,
-            info_domain_data_.authinfopw,
-            info_registrar_data_.id, // same registrar but zone access should be checked before this
-            42
-        ),
-        Epp::EppResponseFailure,
-        fail_registrar_without_zone_access_exception
-    );
+            Epp::Domain::transfer_domain(
+                    ctx,
+                    domain.data.fqdn,
+                    domain.data.authinfopw,
+                    Test::DefaultTransferDomainConfigData(),
+                    Test::Session(ctx, Test::RegistrarNotInZone(ctx).data.id).data),
+            Epp::EppResponseFailure,
+            fail_registrar_without_zone_access_exception);
 }
 
-struct HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData : HasDifferentInfoRegistrarData, HasInfoDomainDataWithServerUpdateProhibitedRequest { };
-
-BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDifferentRegistrar>)
 {
+    const Test::DomainWithServerUpdateProhibitedRequest domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, different_registrar.data.handle);
+
     Epp::Domain::transfer_domain(
         ctx,
-        info_domain_data_.fqdn,
-        info_domain_data_.authinfopw,
-        different_info_registrar_data_.id,
-        42
+        domain_of_different_registrar_and_with_server_update_prohibited_request.data.fqdn,
+        domain_of_different_registrar_and_with_server_update_prohibited_request.data.authinfopw,
+        Test::DefaultTransferDomainConfigData(),
+        session.data
     );
 
-    /* now object has the state server_update_prohibited itself */
+    // now object has the state server_update_prohibited itself
     {
         std::vector<std::string> object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(info_domain_data_.id).exec(ctx) ) {
+            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(domain_of_different_registrar_and_with_server_update_prohibited_request.data.id).exec(ctx) ) {
                 object_states_after.push_back(state.state_name);
             }
         }
 
         BOOST_CHECK(
-            std::find(object_states_after.begin(), object_states_after.end(), status_)
+            std::find(object_states_after.begin(), object_states_after.end(), domain_of_different_registrar_and_with_server_update_prohibited_request.status)
             !=
             object_states_after.end()
         );
     }
 }
 
-struct HasInfoDomainDataWithServerUpdateProhibitedRequestAndSystemInfoRegistrarData : HasSystemRegistrar, HasInfoDomainDataWithServerUpdateProhibitedRequest { };
-
-BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, HasInfoDomainDataWithServerUpdateProhibitedRequestAndSystemInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, Test::supply_ctx<Test::Fixture::HasSystemRegistrarWithSessionAndDifferentRegistrar>)
 {
-    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(info_domain_data_.fqdn).exec(ctx).info_domain_data;
+    const Test::DomainWithServerUpdateProhibitedRequest domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, Test::Registrar(ctx).data.handle);
+    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(domain_of_different_registrar_and_with_server_update_prohibited_request.data.fqdn).exec(ctx).info_domain_data;
 
     Epp::Domain::transfer_domain(
         ctx,
-        info_domain_data_.fqdn,
-        info_domain_data_.authinfopw,
-        system_registrar_data_.id,
-        42
+        domain_of_different_registrar_and_with_server_update_prohibited_request.data.fqdn,
+        domain_of_different_registrar_and_with_server_update_prohibited_request.data.authinfopw,
+        Test::DefaultTransferDomainConfigData(),
+        session.data
     );
 
-    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByHandle(info_domain_data_.fqdn).exec(ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByHandle(domain_data_before.fqdn).exec(ctx).info_domain_data;
 
     const Fred::InfoDomainDiff domain_data_change = diff_domain_data(domain_data_before, domain_data_after);
     const std::set<std::string> change_fields_etalon = boost::assign::list_of
@@ -239,7 +223,7 @@ BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, HasInfoDoma
 
     BOOST_CHECK(domain_data_change.changed_fields() == change_fields_etalon);
 
-    BOOST_CHECK_EQUAL(domain_data_after.sponsoring_registrar_handle, system_registrar_data_.handle);
+    BOOST_CHECK_EQUAL(domain_data_after.sponsoring_registrar_handle, system_registrar.data.handle);
 
     BOOST_CHECK_EQUAL(
         domain_data_after.transfer_time,
@@ -257,19 +241,19 @@ BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, HasInfoDoma
     BOOST_CHECK(domain_data_before.authinfopw != domain_data_after.authinfopw);
 }
 
-BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainDataAndDifferentInfoRegistrarData)
+BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomainOfDifferentRegistrar>)
 {
-    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(info_domain_data_.fqdn).exec(ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(domain_of_different_registrar.data.fqdn).exec(ctx).info_domain_data;
 
     Epp::Domain::transfer_domain(
         ctx,
-        info_domain_data_.fqdn,
-        info_domain_data_.authinfopw,
-        different_info_registrar_data_.id,
-        42
+        domain_of_different_registrar.data.fqdn,
+        domain_of_different_registrar.data.authinfopw,
+        Test::DefaultTransferDomainConfigData(),
+        session.data
     );
 
-    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByHandle(info_domain_data_.fqdn).exec(ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByHandle(domain_data_before.fqdn).exec(ctx).info_domain_data;
 
     const Fred::InfoDomainDiff domain_data_change = diff_domain_data(domain_data_before, domain_data_after);
     const std::set<std::string> change_fields_etalon = boost::assign::list_of
@@ -280,7 +264,7 @@ BOOST_FIXTURE_TEST_CASE(ok, HasInfoDomainDataAndDifferentInfoRegistrarData)
 
     BOOST_CHECK(domain_data_change.changed_fields() == change_fields_etalon);
 
-    BOOST_CHECK_EQUAL(domain_data_after.sponsoring_registrar_handle, different_info_registrar_data_.handle);
+    BOOST_CHECK_EQUAL(domain_data_after.sponsoring_registrar_handle, registrar.data.handle);
 
     BOOST_CHECK_EQUAL(
         domain_data_after.transfer_time,
