@@ -194,7 +194,7 @@ public:
 
     std::string get() const
     {
-        std::string text("config dump:\n");
+        std::string text("config dump: ");
         for(std::vector<VMConfigData>::const_iterator ci = data_.begin(); ci != data_.end(); ++ci)
         {
             text += ci->get_key();
