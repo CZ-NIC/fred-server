@@ -35,7 +35,6 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/any.hpp>
-
 #include "faked_args.h"
 
 /**
@@ -152,26 +151,37 @@ public:
             std::string value;
             try
             {
-                if(it->second.value().type() == typeid(std::string))
+                if(typeid(std::string) == it->second.value().type())
                 {
                     value = boost::any_cast<std::string>(it->second.value());
                 }
-                else if(it->second.value().type() == typeid(unsigned))
+                else if(typeid(unsigned) == it->second.value().type())
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<unsigned>(it->second.value()));
                 }
-                else if(it->second.value().type() == typeid(bool))
+                else if(typeid(bool) == it->second.value().type())
                 {
                     value = boost::any_cast<bool>(it->second.value()) ? "TRUE" : "FALSE";
                 }
+                else if(typeid(boost::gregorian::date) == it->second.value().type())
+                {
+                    value = boost::gregorian::to_iso_extended_string(
+                            boost::any_cast<boost::gregorian::date>(it->second.value()));
+                }
+                else if(typeid(boost::posix_time::ptime) == it->second.value().type())
+                {
+                    value = boost::posix_time::to_iso_extended_string(
+                            boost::any_cast<boost::posix_time::ptime>(it->second.value()));
+                }
                 else
                 {
-                    value = "error: unknown type";
+                    value = "ERROR: unknown type";
                 }
             }
             catch(const std::exception& ex)
             {
-                value = ex.what();
+                value = "ERROR: ";
+                value += ex.what();
             }
 
             data_.push_back(VMConfigData(it->first,

@@ -2121,7 +2121,8 @@ src_corba_mojeid_messages_fred_mojeid_msggen_LDFLAGS = \
 
 src_corba_mojeid_messages_fred_mojeid_msggen_LDADD = \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
-		$(OMNIORB4_LIBS)
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB)
 #
 # src/corba/mojeid/messages/fred-mojeid-msggen
 
