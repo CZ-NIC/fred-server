@@ -18,16 +18,17 @@
 
 #include "src/epp/nsset/info_nsset_localized.h"
 
-#include "src/epp/impl/action.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_failure_localized.h"
 #include "src/epp/exception.h"
+#include "src/epp/impl/action.h"
+#include "src/epp/impl/util.h"
 #include "src/epp/localization.h"
 #include "src/epp/notification_data.h"
-#include "src/epp/session_data.h"
-#include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
 #include "src/epp/nsset/info_nsset.h"
+#include "src/epp/object_states_localized.h"
+#include "src/epp/session_data.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/opcontext.h"
@@ -68,35 +69,6 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         _info_nsset_config_data,
                         _session_data);
 
-        // hide internal states
-        {
-            std::set<std::string> filtered_states;
-
-            // TODO udelat pres ziskani externich stavu, zatim na to neni ve fredlibu rozhrani
-            // TODO Fred::GetObjectStates pro "handle"
-            const std::vector<Fred::ObjectStateData> state_definitions =
-                    Fred::GetObjectStates(
-                            Fred::InfoNssetByHandle(info_nsset_output_data.handle).exec(ctx).info_nsset_data.id)
-                            .exec(ctx);
-
-            BOOST_FOREACH(const std::string & state, info_nsset_output_data.states) {
-                BOOST_FOREACH(const Fred::ObjectStateData & state_def, state_definitions) {
-                    if (state_def.is_external)
-                    {
-                        filtered_states.insert(state);
-                    }
-                }
-            }
-
-            info_nsset_output_data.states = filtered_states;
-        }
-
-        /* XXX HACK: OK state */
-        if (info_nsset_output_data.states.empty())
-        {
-            info_nsset_output_data.states.insert("ok");
-        }
-
         const InfoNssetLocalizedOutputData info_nsset_localized_output_data =
                 InfoNssetLocalizedOutputData(
                         info_nsset_output_data.handle,
@@ -104,7 +76,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         info_nsset_output_data.sponsoring_registrar_handle,
                         info_nsset_output_data.creating_registrar_handle,
                         info_nsset_output_data.last_update_registrar_handle,
-                        localize_object_states_deprecated(ctx, info_nsset_output_data.states, _session_data.lang),
+                        localize_object_states(ctx, info_nsset_output_data.states, _session_data.lang),
                         info_nsset_output_data.crdate,
                         info_nsset_output_data.last_update,
                         info_nsset_output_data.last_transfer,

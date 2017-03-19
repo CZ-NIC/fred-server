@@ -19,7 +19,6 @@
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/info_contact.h"
 
-#include "src/admin/contact/verification/contact_states/enum.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_failure_localized.h"
@@ -103,49 +102,35 @@ InfoContactLocalizedResponse info_contact_localized(
                         _session_data);
 
         InfoContactLocalizedOutputData info_contact_localized_output_data(info_contact_output_data.disclose);
-        info_contact_localized_output_data.handle                       = info_contact_output_data.handle;
-        info_contact_localized_output_data.roid                         = info_contact_output_data.roid;
-        info_contact_localized_output_data.sponsoring_registrar_handle  = info_contact_output_data.sponsoring_registrar_handle;
-        info_contact_localized_output_data.creating_registrar_handle    = info_contact_output_data.creating_registrar_handle;
-        info_contact_localized_output_data.last_update_registrar_handle = info_contact_output_data.last_update_registrar_handle;
-
-        // compute info_contact_localized_output_data.localized_external_states
-        {
-            const std::vector<std::string> admin_contact_verification_states =
-                Admin::AdminContactVerificationObjectStates::get_all();
-
-            std::set<std::string> filtered_states = info_contact_output_data.states;
-
-            // XXX HACK: Ticket #10053 - temporary hack until changed xml schemas are released upon poor registrars
-            // Do not propagate admin contact verification states.
-            FilterOut::what(admin_contact_verification_states).from(filtered_states);
-
-            if (filtered_states.empty()) {//XXX HACK: OK state
-                static const char *const ok_state_name = "ok";
-                filtered_states.insert(ok_state_name);
-            }
-            info_contact_localized_output_data.localized_external_states =
-                    localize_object_states_deprecated(ctx, filtered_states, _session_data.lang);
-        }
-
-        info_contact_localized_output_data.crdate            = info_contact_output_data.crdate;
-        info_contact_localized_output_data.last_update       = info_contact_output_data.last_update;
-        info_contact_localized_output_data.last_transfer     = info_contact_output_data.last_transfer;
-        info_contact_localized_output_data.name              = info_contact_output_data.name;
-        info_contact_localized_output_data.organization      = info_contact_output_data.organization;
-        info_contact_localized_output_data.street1           = info_contact_output_data.street1;
-        info_contact_localized_output_data.street2           = info_contact_output_data.street2;
-        info_contact_localized_output_data.street3           = info_contact_output_data.street3;
-        info_contact_localized_output_data.city              = info_contact_output_data.city;
+        info_contact_localized_output_data.handle = info_contact_output_data.handle;
+        info_contact_localized_output_data.roid = info_contact_output_data.roid;
+        info_contact_localized_output_data.sponsoring_registrar_handle =
+            info_contact_output_data.sponsoring_registrar_handle;
+        info_contact_localized_output_data.creating_registrar_handle =
+            info_contact_output_data.creating_registrar_handle;
+        info_contact_localized_output_data.last_update_registrar_handle =
+            info_contact_output_data.last_update_registrar_handle;
+        info_contact_localized_output_data.localized_external_states =
+            localize_object_states(ctx, info_contact_output_data.states, _session_data.lang);
+        info_contact_localized_output_data.crdate = info_contact_output_data.crdate;
+        info_contact_localized_output_data.last_update = info_contact_output_data.last_update;
+        info_contact_localized_output_data.last_transfer = info_contact_output_data.last_transfer;
+        info_contact_localized_output_data.name = info_contact_output_data.name;
+        info_contact_localized_output_data.organization = info_contact_output_data.organization;
+        info_contact_localized_output_data.street1 = info_contact_output_data.street1;
+        info_contact_localized_output_data.street2 = info_contact_output_data.street2;
+        info_contact_localized_output_data.street3 = info_contact_output_data.street3;
+        info_contact_localized_output_data.city = info_contact_output_data.city;
         info_contact_localized_output_data.state_or_province = info_contact_output_data.state_or_province;
-        info_contact_localized_output_data.postal_code       = info_contact_output_data.postal_code;
-        info_contact_localized_output_data.country_code      = info_contact_output_data.country_code;
-        info_contact_localized_output_data.telephone         = info_contact_output_data.telephone;
-        info_contact_localized_output_data.fax               = info_contact_output_data.fax;
-        info_contact_localized_output_data.email             = info_contact_output_data.email;
-        info_contact_localized_output_data.notify_email      = info_contact_output_data.notify_email;
-        info_contact_localized_output_data.VAT               = info_contact_output_data.VAT;
-        if (info_contact_output_data.personal_id.is_initialized()) {
+        info_contact_localized_output_data.postal_code = info_contact_output_data.postal_code;
+        info_contact_localized_output_data.country_code = info_contact_output_data.country_code;
+        info_contact_localized_output_data.telephone = info_contact_output_data.telephone;
+        info_contact_localized_output_data.fax = info_contact_output_data.fax;
+        info_contact_localized_output_data.email = info_contact_output_data.email;
+        info_contact_localized_output_data.notify_email = info_contact_output_data.notify_email;
+        info_contact_localized_output_data.VAT = info_contact_output_data.VAT;
+        if (info_contact_output_data.personal_id.is_initialized())
+        {
             info_contact_localized_output_data.ident         = info_contact_output_data.personal_id->get();
             if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_OP("").get_type())
             {

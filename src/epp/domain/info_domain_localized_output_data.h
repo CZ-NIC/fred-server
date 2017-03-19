@@ -20,6 +20,7 @@
 #define INFO_DOMAIN_LOCALIZED_OUTPUT_DATA_H_A77108D55D9D4F31AC54E93686386A62
 
 #include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/object_state.h"
 #include "src/epp/object_states_localized.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
@@ -36,8 +37,6 @@ namespace Domain {
 
 struct InfoDomainLocalizedOutputData
 {
-
-    typedef std::set<Fred::Object_State::Enum> States;
 
     std::string roid; ///< Domain repository ID
     std::string fqdn; ///< Domain FQDN

@@ -18,6 +18,7 @@
 
 #include "src/epp/domain/info_domain.h"
 
+#include "src/epp/object_state.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
 #include "src/epp/epp_result_failure.h"
@@ -82,9 +83,9 @@ InfoDomainOutputData info_domain(
             {
                 if (object_state_ptr->is_external)
                 {
-                    info_domain_output_data.states.insert(
+                    info_domain_output_data.states.insert(Conversion::Enums::from_fred_object_state<Epp::Object_State>(
                             Conversion::Enums::from_db_handle<Fred::Object_State>(
-                                    object_state_ptr->state_name));
+                                    object_state_ptr->state_name)));
                 }
             }
         }

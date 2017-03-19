@@ -21,7 +21,7 @@
 
 #include "src/epp/keyset/dns_key.h"
 #include "src/epp/keyset/ds_record.h"
-#include "src/fredlib/object/object_state.h"
+#include "src/epp/object_state.h"
 #include "util/db/nullable.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -36,7 +36,7 @@ namespace Keyset {
 struct InfoKeysetOutputData
 {
 
-    typedef std::set<Fred::Object_State::Enum> States;
+    typedef std::set<Epp::Object_State::Enum> States;
     typedef std::set<Keyset::DsRecord> DsRecords;
     typedef std::set<Keyset::DnsKey> DnsKeys;
     typedef std::set<std::string> TechContacts;

@@ -161,7 +161,7 @@ wrap_Epp_Domain_InfoDomainLocalizedOutputData(
     _dst.nsset = Fred::Corba::wrap_string_to_corba_string(_src.nsset.get_value_or_default());
     _dst.keyset = Fred::Corba::wrap_string_to_corba_string(_src.keyset.get_value_or_default());
 
-    Fred::Corba::wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
+    wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
 
     _dst.ClID = Fred::Corba::wrap_string_to_corba_string(_src.sponsoring_registrar_handle);
     _dst.CrID = Fred::Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);

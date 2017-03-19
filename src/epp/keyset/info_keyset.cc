@@ -49,58 +49,61 @@ InfoKeysetOutputData info_keyset(
     {
         InfoKeysetOutputData result;
         static const char* const utc_timezone = "UTC";
-        const Fred::InfoKeysetData data =
+        const Fred::InfoKeysetData info_keyset_data =
             Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx, utc_timezone).info_keyset_data;
-        result.handle = data.handle;
-        result.roid = data.roid;
-        result.sponsoring_registrar_handle = data.sponsoring_registrar_handle;
-        result.creating_registrar_handle = data.create_registrar_handle;
-        result.last_update_registrar_handle = data.update_registrar_handle;
+        result.handle = info_keyset_data.handle;
+        result.roid = info_keyset_data.roid;
+        result.sponsoring_registrar_handle = info_keyset_data.sponsoring_registrar_handle;
+        result.creating_registrar_handle = info_keyset_data.create_registrar_handle;
+        result.last_update_registrar_handle = info_keyset_data.update_registrar_handle;
         {
 
             typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
 
-            ObjectStatesData keyset_states_data = Fred::GetObjectStates(data.id).exec(_ctx);
-            for (ObjectStatesData::const_iterator data_ptr = keyset_states_data.begin();
-                 data_ptr != keyset_states_data.end(); ++data_ptr)
+            ObjectStatesData keyset_states_data = Fred::GetObjectStates(info_keyset_data.id).exec(_ctx);
+            for (ObjectStatesData::const_iterator object_state = keyset_states_data.begin();
+                 object_state != keyset_states_data.end(); ++object_state)
             {
-                result.states.insert(
-                        Conversion::Enums::from_db_handle<Fred::Object_State>(
-                                data_ptr->
-                                state_name));
+                if (object_state->is_external)
+                {
+                    result.states.insert(Conversion::Enums::from_fred_object_state<Epp::Object_State>(
+                            Conversion::Enums::from_db_handle<Fred::Object_State>(
+                                    object_state->state_name)));
+                }
             }
         }
-        result.crdate = data.creation_time;
-        result.last_update = data.update_time;
-        result.last_transfer = data.transfer_time;
+        result.crdate = info_keyset_data.creation_time;
+        result.last_update = info_keyset_data.update_time;
+        result.last_transfer = info_keyset_data.transfer_time;
         // show object authinfopw only to sponsoring registrar
-        if (Fred::InfoRegistrarByHandle(data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id ==
-            _session_data.registrar_id)
+        const unsigned long long sponsoring_registrar_id =
+            Fred::InfoRegistrarByHandle(info_keyset_data.sponsoring_registrar_handle).exec(_ctx).info_registrar_data.id;
+        if (sponsoring_registrar_id == _session_data.registrar_id)
         {
-            result.authinfopw = data.authinfopw;
+            result.authinfopw = info_keyset_data.authinfopw;
         }
         // result.ds_records = ... // Fred::InfoKeysetData doesn't contain any ds record informations
         {
 
             typedef std::vector<Fred::DnsKey> FredDnsKeys;
-            for (FredDnsKeys::const_iterator data_ptr = data.dns_keys.begin();
-                 data_ptr != data.dns_keys.end(); ++data_ptr)
+            for (FredDnsKeys::const_iterator fred_dns_key = info_keyset_data.dns_keys.begin();
+                 fred_dns_key != info_keyset_data.dns_keys.end(); ++fred_dns_key)
             {
                 result.dns_keys.insert(
                         Keyset::DnsKey(
-                                data_ptr->get_flags(),
-                                data_ptr->get_protocol(),
-                                data_ptr->get_alg(),
-                                data_ptr->get_key()));
+                                fred_dns_key->get_flags(),
+                                fred_dns_key->get_protocol(),
+                                fred_dns_key->get_alg(),
+                                fred_dns_key->get_key()));
             }
         }
         {
 
             typedef std::vector<Fred::ObjectIdHandlePair> FredObjectIdHandle;
-            for (FredObjectIdHandle::const_iterator data_ptr = data.tech_contacts.begin();
-                 data_ptr != data.tech_contacts.end(); ++data_ptr)
+            for (FredObjectIdHandle::const_iterator tech_contact = info_keyset_data.tech_contacts.begin();
+                 tech_contact != info_keyset_data.tech_contacts.end(); ++tech_contact)
             {
-                result.tech_contacts.insert(data_ptr->handle);
+                result.tech_contacts.insert(tech_contact->handle);
             }
         }
         return result;

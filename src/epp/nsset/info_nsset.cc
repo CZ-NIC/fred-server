@@ -24,6 +24,7 @@
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
+#include "src/epp/object_state.h"
 #include "src/fredlib/nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/info_nsset_data.h"
@@ -42,18 +43,6 @@
 
 namespace Epp {
 namespace Nsset {
-
-static std::set<std::string> convert_object_states(const std::vector<Fred::ObjectStateData>& _object_states)
-{
-    std::set<std::string> result;
-
-    BOOST_FOREACH(const Fred::ObjectStateData & state, _object_states) {
-        result.insert(state.state_name);
-    }
-
-    return result;
-}
-
 
 InfoNssetOutputData info_nsset(
         Fred::OperationContext& _ctx,
@@ -85,13 +74,30 @@ InfoNssetOutputData info_nsset(
         const bool authinfopw_has_to_be_hidden = info_nsset_data.sponsoring_registrar_handle !=
                                                  session_registrar_handle;
 
+        std::set<Epp::Object_State::Enum> info_nsset_output_data_states;
+        {
+            typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
+
+            ObjectStatesData domain_states_data = Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
+            for (ObjectStatesData::const_iterator object_state = domain_states_data.begin();
+                 object_state != domain_states_data.end(); ++object_state)
+            {
+                if (object_state->is_external)
+                {
+                    info_nsset_output_data_states.insert(Conversion::Enums::from_fred_object_state<Epp::Object_State>(
+                            Conversion::Enums::from_db_handle<Fred::Object_State>(
+                                    object_state->state_name)));
+                }
+            }
+        }
+
         return InfoNssetOutputData(
                 info_nsset_data.handle,
                 info_nsset_data.roid,
                 info_nsset_data.sponsoring_registrar_handle,
                 info_nsset_data.create_registrar_handle,
                 info_nsset_data.update_registrar_handle,
-                convert_object_states(Fred::GetObjectStates(info_nsset_data.id).exec(_ctx)),
+                info_nsset_output_data_states,
                 info_nsset_data.creation_time,
                 info_nsset_data.update_time,
                 info_nsset_data.transfer_time,

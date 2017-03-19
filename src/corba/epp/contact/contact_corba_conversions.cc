@@ -51,19 +51,19 @@ bool is_contact_change_string_meaning_not_to_touch(const char* value)
 }
 
 
-boost::optional<Nullable<std::string> > convert_contact_update_or_delete_string(const char* src)
+boost::optional<Nullable<std::string> > convert_contact_update_or_delete_string(const char* _src)
 {
-    const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(src);
+    const bool src_has_special_meaning_to_delete = is_contact_change_string_meaning_to_delete(_src);
     if (src_has_special_meaning_to_delete)
     {
         return Nullable<std::string>();
     }
-    const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
+    const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(_src);
     if (src_has_special_meaning_not_to_touch)
     {
         return boost::optional<Nullable<std::string> >();
     }
-    const std::string value_to_set = Fred::Corba::unwrap_string(src);
+    const std::string value_to_set = Fred::Corba::unwrap_string(_src);
     const bool value_to_set_means_not_to_touch = value_to_set.empty();
     if (value_to_set_means_not_to_touch)
     {
@@ -74,14 +74,14 @@ boost::optional<Nullable<std::string> > convert_contact_update_or_delete_string(
 }
 
 
-boost::optional<std::string> convert_contact_update_string(const char* src)
+boost::optional<std::string> convert_contact_update_string(const char* _src)
 {
-    const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(src);
+    const bool src_has_special_meaning_not_to_touch = is_contact_change_string_meaning_not_to_touch(_src);
     if (src_has_special_meaning_not_to_touch)
     {
         return boost::optional<std::string>();
     }
-    const std::string value_to_set = Fred::Corba::unwrap_string(src);
+    const std::string value_to_set = Fred::Corba::unwrap_string(_src);
     const bool value_to_set_means_not_to_touch = value_to_set.empty();
 
     return value_to_set_means_not_to_touch ? boost::optional<std::string>()
@@ -90,43 +90,43 @@ boost::optional<std::string> convert_contact_update_string(const char* src)
 
 
 Epp::Contact::ContactDisclose convert_ContactChange_to_ContactDisclose(
-        const ccReg::ContactChange& src,
-        Epp::Contact::ContactDisclose::Flag::Enum meaning)
+        const ccReg::ContactChange& _src,
+        Epp::Contact::ContactDisclose::Flag::Enum _meaning)
 {
-    Epp::Contact::ContactDisclose result(meaning);
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseName))
+    Epp::Contact::ContactDisclose result(_meaning);
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseName))
     {
         result.add<Epp::Contact::ContactDisclose::Item::name>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseOrganization))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseOrganization))
     {
         result.add<Epp::Contact::ContactDisclose::Item::organization>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseAddress))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseAddress))
     {
         result.add<Epp::Contact::ContactDisclose::Item::address>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseTelephone))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseTelephone))
     {
         result.add<Epp::Contact::ContactDisclose::Item::telephone>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseFax))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseFax))
     {
         result.add<Epp::Contact::ContactDisclose::Item::fax>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseEmail))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseEmail))
     {
         result.add<Epp::Contact::ContactDisclose::Item::email>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseVAT))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseVAT))
     {
         result.add<Epp::Contact::ContactDisclose::Item::vat>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseIdent))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseIdent))
     {
         result.add<Epp::Contact::ContactDisclose::Item::ident>();
     }
-    if (Fred::Corba::wrap_int<bool>(src.DiscloseNotifyEmail))
+    if (Fred::Corba::wrap_int<bool>(_src.DiscloseNotifyEmail))
     {
         result.add<Epp::Contact::ContactDisclose::Item::notify_email>();
     }
@@ -136,19 +136,19 @@ Epp::Contact::ContactDisclose convert_ContactChange_to_ContactDisclose(
 
 
 boost::optional<Epp::Contact::ContactDisclose> unwrap_ContactChange_to_ContactDisclose(
-        const ccReg::ContactChange& src)
+        const ccReg::ContactChange& _src)
 {
-    switch (src.DiscloseFlag)
+    switch (_src.DiscloseFlag)
     {
         case ccReg::DISCL_EMPTY:
             return boost::optional<Epp::Contact::ContactDisclose>();
 
         case ccReg::DISCL_HIDE:
-            return convert_ContactChange_to_ContactDisclose(src, Epp::Contact::ContactDisclose::Flag::hide);
+            return convert_ContactChange_to_ContactDisclose(_src, Epp::Contact::ContactDisclose::Flag::hide);
 
         case ccReg::DISCL_DISPLAY:
             return convert_ContactChange_to_ContactDisclose(
-                src,
+                _src,
                 Epp::Contact::ContactDisclose::Flag::disclose);
     }
 
@@ -187,28 +187,28 @@ Nullable<Epp::Contact::ContactChange::IdentType::Enum> unwrap_identtyp(ccReg::id
 
 
 void unwrap_ContactChange(
-        const ccReg::ContactChange& src,
-        Epp::Contact::ContactChange& dst)
+        const ccReg::ContactChange& _src,
+        Epp::Contact::ContactChange& _dst)
 {
-    dst.name              = convert_contact_update_or_delete_string(src.Name);
-    dst.organization      = convert_contact_update_or_delete_string(src.Organization);
-    for (unsigned idx = 0; idx < src.Streets.length(); ++idx)
+    _dst.name              = convert_contact_update_or_delete_string(_src.Name);
+    _dst.organization      = convert_contact_update_or_delete_string(_src.Organization);
+    for (unsigned idx = 0; idx < _src.Streets.length(); ++idx)
     {
-        dst.streets.push_back(convert_contact_update_or_delete_string(src.Streets[idx]));
+        _dst.streets.push_back(convert_contact_update_or_delete_string(_src.Streets[idx]));
     }
-    dst.city              = convert_contact_update_or_delete_string(src.City);
-    dst.state_or_province = convert_contact_update_or_delete_string(src.StateOrProvince);
-    dst.postal_code       = convert_contact_update_or_delete_string(src.PostalCode);
-    dst.country_code      = convert_contact_update_string(src.CC);
-    dst.telephone         = convert_contact_update_or_delete_string(src.Telephone);
-    dst.fax               = convert_contact_update_or_delete_string(src.Fax);
-    dst.email             = convert_contact_update_or_delete_string(src.Email);
-    dst.notify_email      = convert_contact_update_or_delete_string(src.NotifyEmail);
-    dst.vat               = convert_contact_update_or_delete_string(src.VAT);
-    dst.ident             = convert_contact_update_or_delete_string(src.ident);
-    dst.ident_type        = unwrap_identtyp(src.identtype);
-    dst.authinfopw        = convert_contact_update_or_delete_string(src.AuthInfoPw);
-    dst.disclose          = unwrap_ContactChange_to_ContactDisclose(src);
+    _dst.city              = convert_contact_update_or_delete_string(_src.City);
+    _dst.state_or_province = convert_contact_update_or_delete_string(_src.StateOrProvince);
+    _dst.postal_code       = convert_contact_update_or_delete_string(_src.PostalCode);
+    _dst.country_code      = convert_contact_update_string(_src.CC);
+    _dst.telephone         = convert_contact_update_or_delete_string(_src.Telephone);
+    _dst.fax               = convert_contact_update_or_delete_string(_src.Fax);
+    _dst.email             = convert_contact_update_or_delete_string(_src.Email);
+    _dst.notify_email      = convert_contact_update_or_delete_string(_src.NotifyEmail);
+    _dst.vat               = convert_contact_update_or_delete_string(_src.VAT);
+    _dst.ident             = convert_contact_update_or_delete_string(_src.ident);
+    _dst.ident_type        = unwrap_identtyp(_src.identtype);
+    _dst.authinfopw        = convert_contact_update_or_delete_string(_src.AuthInfoPw);
+    _dst.disclose          = unwrap_ContactChange_to_ContactDisclose(_src);
 }
 
 
@@ -304,9 +304,9 @@ namespace {
 
 
 template <Epp::Contact::ContactDisclose::Item::Enum ITEM>
-CORBA::Boolean presents(const Epp::Contact::ContactDisclose& src)
+CORBA::Boolean presents(const Epp::Contact::ContactDisclose& _src)
 {
-    return wrap_int<CORBA::Boolean>(src.presents<ITEM>());
+    return wrap_int<CORBA::Boolean>(_src.presents<ITEM>());
 }
 
 
@@ -314,97 +314,87 @@ CORBA::Boolean presents(const Epp::Contact::ContactDisclose& src)
 
 
 void wrap_InfoContactLocalizedOutputData(
-        const Epp::Contact::InfoContactLocalizedOutputData& src,
-        ccReg::Contact& dst)
+        const Epp::Contact::InfoContactLocalizedOutputData& _src,
+        ccReg::Contact& _dst)
 {
-    dst.handle = wrap_string_to_corba_string(src.handle);
-    dst.ROID = wrap_string_to_corba_string(src.roid);
-    dst.ClID = wrap_string_to_corba_string(src.sponsoring_registrar_handle);
-    dst.CrID = wrap_string_to_corba_string(src.creating_registrar_handle);
+    _dst.handle = wrap_string_to_corba_string(_src.handle);
+    _dst.ROID = wrap_string_to_corba_string(_src.roid);
+    _dst.ClID = wrap_string_to_corba_string(_src.sponsoring_registrar_handle);
+    _dst.CrID = wrap_string_to_corba_string(_src.creating_registrar_handle);
     // XXX IDL nonsense
-    dst.UpID = wrap_Nullable_string_to_string(src.last_update_registrar_handle);
-
-    dst.stat.length(src.localized_external_states.size());
-    unsigned long idx = 0;
-    for (std::map<std::string, std::string>::const_iterator value_text_ptr =
-             src.localized_external_states.begin();
-         value_text_ptr != src.localized_external_states.end(); ++value_text_ptr, ++idx)
-    {
-        dst.stat[idx].value = wrap_string_to_corba_string(value_text_ptr->first);
-        dst.stat[idx].text  = wrap_string_to_corba_string(value_text_ptr->second);
-    }
-
-    dst.CrDate = wrap_boost_posix_time_ptime_to_string(src.crdate);
+    _dst.UpID = wrap_Nullable_string_to_string(_src.last_update_registrar_handle);
+    wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
+    _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
     // XXX IDL nonsense
-    dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(src.last_update);
+    _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);
     // XXX IDL nonsense
-    dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(src.last_transfer);
-    dst.Name = wrap_Nullable_string_to_string(src.name);
-    dst.Organization = wrap_Nullable_string_to_string(src.organization);
+    _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);
+    _dst.Name = wrap_Nullable_string_to_string(_src.name);
+    _dst.Organization = wrap_Nullable_string_to_string(_src.organization);
 
     const unsigned number_of_streets =
-            !src.street3.isnull() && !src.street3.get_value().empty()
+            !_src.street3.isnull() && !_src.street3.get_value().empty()
                     ? 3
-                    : !src.street2.isnull() && !src.street2.get_value().empty()
+                    : !_src.street2.isnull() && !_src.street2.get_value().empty()
                               ? 2
-                              : !src.street1.isnull() && !src.street1.get_value().empty()
+                              : !_src.street1.isnull() && !_src.street1.get_value().empty()
                                         ? 1
                                         : 0;
-    dst.Streets.length(number_of_streets);
+    _dst.Streets.length(number_of_streets);
     if (0 < number_of_streets)
     {
-        dst.Streets[0] = wrap_Nullable_string_to_string(src.street1);
+        _dst.Streets[0] = wrap_Nullable_string_to_string(_src.street1);
     }
     if (1 < number_of_streets)
     {
-        dst.Streets[1] = wrap_Nullable_string_to_string(src.street2);
+        _dst.Streets[1] = wrap_Nullable_string_to_string(_src.street2);
     }
     if (2 < number_of_streets)
     {
-        dst.Streets[2] = wrap_Nullable_string_to_string(src.street3);
+        _dst.Streets[2] = wrap_Nullable_string_to_string(_src.street3);
     }
 
-    dst.City            = wrap_Nullable_string_to_string(src.city);
-    dst.StateOrProvince = wrap_Nullable_string_to_string(src.state_or_province);
-    dst.PostalCode      = wrap_Nullable_string_to_string(src.postal_code);
-    dst.CountryCode     = wrap_Nullable_string_to_string(src.country_code);
-    dst.Telephone       = wrap_Nullable_string_to_string(src.telephone);
-    dst.Fax             = wrap_Nullable_string_to_string(src.fax);
-    dst.Email           = wrap_Nullable_string_to_string(src.email);
-    dst.NotifyEmail     = wrap_Nullable_string_to_string(src.notify_email);
-    dst.VAT             = wrap_Nullable_string_to_string(src.VAT);
-    dst.ident           = wrap_Nullable_string_to_string(src.ident);
-    dst.identtype       = wrap_identtyp(src.identtype);
-    dst.AuthInfoPw =
-            Fred::Corba::wrap_string_to_corba_string(src.authinfopw ? src.authinfopw.value() : std::string());
+    _dst.City            = wrap_Nullable_string_to_string(_src.city);
+    _dst.StateOrProvince = wrap_Nullable_string_to_string(_src.state_or_province);
+    _dst.PostalCode      = wrap_Nullable_string_to_string(_src.postal_code);
+    _dst.CountryCode     = wrap_Nullable_string_to_string(_src.country_code);
+    _dst.Telephone       = wrap_Nullable_string_to_string(_src.telephone);
+    _dst.Fax             = wrap_Nullable_string_to_string(_src.fax);
+    _dst.Email           = wrap_Nullable_string_to_string(_src.email);
+    _dst.NotifyEmail     = wrap_Nullable_string_to_string(_src.notify_email);
+    _dst.VAT             = wrap_Nullable_string_to_string(_src.VAT);
+    _dst.ident           = wrap_Nullable_string_to_string(_src.ident);
+    _dst.identtype       = wrap_identtyp(_src.identtype);
+    _dst.AuthInfoPw =
+            Fred::Corba::wrap_string_to_corba_string(_src.authinfopw ? _src.authinfopw.value() : std::string());
 
-    if (!src.disclose.is_initialized())
+    if (!_src.disclose.is_initialized())
     {
-        dst.DiscloseFlag           = ccReg::DISCL_EMPTY;
-        dst.DiscloseName           = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseOrganization   = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseAddress        = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseTelephone      = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseFax            = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseEmail          = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseVAT            = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseIdent          = wrap_int<CORBA::Boolean>(false);
-        dst.DiscloseNotifyEmail    = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseFlag           = ccReg::DISCL_EMPTY;
+        _dst.DiscloseName           = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseOrganization   = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseAddress        = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseTelephone      = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseFax            = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseEmail          = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseVAT            = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseIdent          = wrap_int<CORBA::Boolean>(false);
+        _dst.DiscloseNotifyEmail    = wrap_int<CORBA::Boolean>(false);
     }
     else
     {
-        dst.DiscloseFlag         = src.disclose->does_present_item_mean_to_disclose()
+        _dst.DiscloseFlag         = _src.disclose->does_present_item_mean_to_disclose()
                                            ? ccReg::DISCL_DISPLAY
                                            : ccReg::DISCL_HIDE;
-        dst.DiscloseName         = presents<Epp::Contact::ContactDisclose::Item::name>(*src.disclose);
-        dst.DiscloseOrganization = presents<Epp::Contact::ContactDisclose::Item::organization>(*src.disclose);
-        dst.DiscloseAddress      = presents<Epp::Contact::ContactDisclose::Item::address>(*src.disclose);
-        dst.DiscloseTelephone    = presents<Epp::Contact::ContactDisclose::Item::telephone>(*src.disclose);
-        dst.DiscloseFax          = presents<Epp::Contact::ContactDisclose::Item::fax>(*src.disclose);
-        dst.DiscloseEmail        = presents<Epp::Contact::ContactDisclose::Item::email>(*src.disclose);
-        dst.DiscloseVAT          = presents<Epp::Contact::ContactDisclose::Item::vat>(*src.disclose);
-        dst.DiscloseIdent        = presents<Epp::Contact::ContactDisclose::Item::ident>(*src.disclose);
-        dst.DiscloseNotifyEmail  = presents<Epp::Contact::ContactDisclose::Item::notify_email>(*src.disclose);
+        _dst.DiscloseName         = presents<Epp::Contact::ContactDisclose::Item::name>(*_src.disclose);
+        _dst.DiscloseOrganization = presents<Epp::Contact::ContactDisclose::Item::organization>(*_src.disclose);
+        _dst.DiscloseAddress      = presents<Epp::Contact::ContactDisclose::Item::address>(*_src.disclose);
+        _dst.DiscloseTelephone    = presents<Epp::Contact::ContactDisclose::Item::telephone>(*_src.disclose);
+        _dst.DiscloseFax          = presents<Epp::Contact::ContactDisclose::Item::fax>(*_src.disclose);
+        _dst.DiscloseEmail        = presents<Epp::Contact::ContactDisclose::Item::email>(*_src.disclose);
+        _dst.DiscloseVAT          = presents<Epp::Contact::ContactDisclose::Item::vat>(*_src.disclose);
+        _dst.DiscloseIdent        = presents<Epp::Contact::ContactDisclose::Item::ident>(*_src.disclose);
+        _dst.DiscloseNotifyEmail  = presents<Epp::Contact::ContactDisclose::Item::notify_email>(*_src.disclose);
     }
 }
 

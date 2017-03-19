@@ -65,14 +65,9 @@ std::string get_epp_result_description_localized(
     return static_cast<std::string>(res[0][0]);
 }
 
-std::map<std::string, std::string> localize_object_states_deprecated(
-        Fred::OperationContext& _ctx,
-        const std::set<std::string>& _state_handles,
-        SessionLang::Enum _lang);
-
 ObjectStatesLocalized localize_object_states(
         Fred::OperationContext& _ctx,
-        const std::set<Fred::Object_State::Enum>& _states,
+        const std::set<Epp::Object_State::Enum>& _states,
         SessionLang::Enum _lang);
 
 /**

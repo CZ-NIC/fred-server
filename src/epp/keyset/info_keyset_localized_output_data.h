@@ -38,7 +38,7 @@ struct InfoKeysetLocalizedOutputData
     std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
     std::string creating_registrar_handle; ///< Registrar identifier, which created contact
     Nullable<std::string> last_update_registrar_handle; ///< Registrar identifier, which realized changes
-    ObjectStatesLocalized localized_states; ///< Keyset states list
+    ObjectStatesLocalized localized_external_states; ///< Keyset states list
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
     Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
@@ -54,7 +54,7 @@ struct InfoKeysetLocalizedOutputData
             const std::string& _sponsoring_registrar_handle,
             const std::string& _creating_registrar_handle,
             const Nullable<std::string>& _last_update_registrar_handle,
-            const ObjectStatesLocalized& _localized_states,
+            const ObjectStatesLocalized& _localized_external_states,
             const boost::posix_time::ptime& _crdate,
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,
@@ -67,7 +67,7 @@ struct InfoKeysetLocalizedOutputData
           sponsoring_registrar_handle(_sponsoring_registrar_handle),
           creating_registrar_handle(_creating_registrar_handle),
           last_update_registrar_handle(_last_update_registrar_handle),
-          localized_states(_localized_states),
+          localized_external_states(_localized_external_states),
           crdate(_crdate),
           last_update(_last_update),
           last_transfer(_last_transfer),

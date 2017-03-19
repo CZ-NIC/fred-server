@@ -40,35 +40,35 @@ struct EppResultCode
 
     enum Failure
     {
-        unknown_command                                  = 2000, ///< Epp error code 2000
-        command_syntax_error                             = 2001, ///< Epp error code 2001
-        command_use_error                                = 2002, ///< Epp error code 2002
-        required_parameter_missing                       = 2003, ///< Epp error code 2003
-        parameter_value_range_error                      = 2004, ///< Epp error code 2004
-        parameter_value_syntax_error                     = 2005, ///< Epp error code 2005
-        unimplemented_protocol_version                   = 2100, ///< Epp error code 2100
-        unimplemented_command                            = 2101, ///< Epp error code 2101
-        unimplemented_option                             = 2102, ///< Epp error code 2102
-        unimplemented_extension                          = 2103, ///< Epp error code 2103
-        billing_failure                                  = 2104, ///< Epp error code 2104
-        object_is_not_eligible_for_renewal               = 2105, ///< Epp error code 2105
-        object_is_not_eligible_for_transfer              = 2106, ///< Epp error code 2106
-        authentication_error                             = 2200, ///< Epp error code 2200
-        authorization_error                              = 2201, ///< Epp error code 2201
-        invalid_authorization_information                = 2202, ///< Epp error code 2202
-        object_pending_transfer                          = 2300, ///< Epp error code 2300
-        object_not_pending_transfer                      = 2301, ///< Epp error code 2301
-        object_exists                                    = 2302, ///< Epp error code 2302
-        object_does_not_exist                            = 2303, ///< Epp error code 2303
-        object_status_prohibits_operation                = 2304, ///< Epp error code 2304
-        object_association_prohibits_operation           = 2305, ///< Epp error code 2305
-        parameter_value_policy_error                     = 2306, ///< Epp error code 2306
-        unimplemented_object_service                     = 2307, ///< Epp error code 2307
-        data_management_policy_violation                 = 2308, ///< Epp error code 2308
-        command_failed                                   = 2400, ///< Epp error code 2400
-        command_failed_server_closing_connection         = 2500, ///< Epp error code 2500
-        authentication_error_server_closing_connection   = 2501, ///< Epp error code 2501
-        session_limit_exceeded_server_closing_connection = 2502, ///< Epp error code 2502
+        unknown_command                                  = 2000, ///< EPP error code 2000
+        command_syntax_error                             = 2001, ///< EPP error code 2001
+        command_use_error                                = 2002, ///< EPP error code 2002
+        required_parameter_missing                       = 2003, ///< EPP error code 2003
+        parameter_value_range_error                      = 2004, ///< EPP error code 2004
+        parameter_value_syntax_error                     = 2005, ///< EPP error code 2005
+        unimplemented_protocol_version                   = 2100, ///< EPP error code 2100
+        unimplemented_command                            = 2101, ///< EPP error code 2101
+        unimplemented_option                             = 2102, ///< EPP error code 2102
+        unimplemented_extension                          = 2103, ///< EPP error code 2103
+        billing_failure                                  = 2104, ///< EPP error code 2104
+        object_is_not_eligible_for_renewal               = 2105, ///< EPP error code 2105
+        object_is_not_eligible_for_transfer              = 2106, ///< EPP error code 2106
+        authentication_error                             = 2200, ///< EPP error code 2200
+        authorization_error                              = 2201, ///< EPP error code 2201
+        invalid_authorization_information                = 2202, ///< EPP error code 2202
+        object_pending_transfer                          = 2300, ///< EPP error code 2300
+        object_not_pending_transfer                      = 2301, ///< EPP error code 2301
+        object_exists                                    = 2302, ///< EPP error code 2302
+        object_does_not_exist                            = 2303, ///< EPP error code 2303
+        object_status_prohibits_operation                = 2304, ///< EPP error code 2304
+        object_association_prohibits_operation           = 2305, ///< EPP error code 2305
+        parameter_value_policy_error                     = 2306, ///< EPP error code 2306
+        unimplemented_object_service                     = 2307, ///< EPP error code 2307
+        data_management_policy_violation                 = 2308, ///< EPP error code 2308
+        command_failed                                   = 2400, ///< EPP error code 2400
+        command_failed_server_closing_connection         = 2500, ///< EPP error code 2500
+        authentication_error_server_closing_connection   = 2501, ///< EPP error code 2501
+        session_limit_exceeded_server_closing_connection = 2502, ///< EPP error code 2502
     };
 
     static bool is_valid(Success _value)

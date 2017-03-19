@@ -29,7 +29,7 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/contact/transfer_contact.h"
 #include "src/fredlib/exception.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"

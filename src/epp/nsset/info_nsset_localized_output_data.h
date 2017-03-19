@@ -20,6 +20,7 @@
 #define INFO_NSSET_LOCALIZED_OUTPUT_DATA_H_1C6660CFA5554FDBB67D4BE7BEF4EE57
 
 #include "src/epp/nsset/dns_host_output.h"
+#include "src/epp/object_states_localized.h"
 #include "util/db/nullable.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -39,7 +40,7 @@ struct InfoNssetLocalizedOutputData
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
     Nullable<std::string> last_update_registrar_handle;
-    std::map<std::string, std::string> localized_external_states;
+    ObjectStatesLocalized localized_external_states;
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
@@ -55,7 +56,7 @@ struct InfoNssetLocalizedOutputData
             const std::string& _sponsoring_registrar_handle,
             const std::string& _creating_registrar_handle,
             const Nullable<std::string>& _last_update_registrar_handle,
-            const std::map<std::string, std::string>& _localized_external_states,
+            const ObjectStatesLocalized _localized_external_states,
             const boost::posix_time::ptime& _crdate,
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,

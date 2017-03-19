@@ -207,21 +207,7 @@ wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input
     // XXX IDL nonsense
     result.UpID = wrap_string_to_corba_string(
             _input.last_update_registrar_handle.isnull() ? std::string() : _input.last_update_registrar_handle.get_value());
-
-    {
-        result.stat.length(_input.localized_external_states.size());
-        unsigned long i = 0;
-        for (
-            std::map<std::string, std::string>::const_iterator it = _input.localized_external_states.begin();
-            it != _input.localized_external_states.end();
-            ++it, ++i
-            )
-        {
-            result.stat[i].value = wrap_string_to_corba_string(it->first);
-            result.stat[i].text = wrap_string_to_corba_string(it->second);
-        }
-    }
-
+    wrap_Epp_ObjectStatesLocalized(_input.localized_external_states, result.stat);
     result.CrDate = wrap_boost_posix_time_ptime_to_string(_input.crdate);
     // XXX IDL nonsense
     result.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_input.last_update);

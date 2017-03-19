@@ -27,7 +27,7 @@
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/info_domain.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/info_registrar.h"

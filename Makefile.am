@@ -252,7 +252,7 @@ noinst_HEADERS = \
 		src/epp/epp_result_code.h \
 		src/epp/impl/action.h \
 		src/epp/impl/util.h \
-		src/fredlib/object/states_info.h \
+		src/fredlib/object/object_states_info.h \
 		src/fredlib/object/object_state.h \
 		src/epp/contact/contact_handle_state_to_check_result.h \
 		src/fredlib/public_request/public_request_status.h \
@@ -1579,6 +1579,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/epp_extended_error_localized.cc \
 		src/epp/epp_result_code.h \
 		src/epp/notification_data.h \
+		src/epp/object_state.h \
 		src/epp/session_data.h \
 		src/epp/session_data.cc \
 		src/epp/impl/conditionally_enqueue_notification.h \

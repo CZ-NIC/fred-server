@@ -43,7 +43,7 @@
 #include "src/fredlib/public_request/public_request_lock_guard.h"
 #include "src/fredlib/public_request/get_active_public_request.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/cancel_object_state_request_id.h"
 #include "src/fredlib/messages/messages_impl.h"

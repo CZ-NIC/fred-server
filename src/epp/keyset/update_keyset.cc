@@ -28,7 +28,7 @@
 #include "src/fredlib/contact/check_contact.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/update_keyset.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"

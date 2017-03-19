@@ -21,6 +21,7 @@
 
 #include "src/epp/nsset/dns_host_output.h"
 #include "src/epp/nsset/info_nsset_config_data.h"
+#include "src/epp/object_state.h"
 #include "src/epp/session_data.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/opcontext.h"
@@ -43,7 +44,7 @@ struct InfoNssetOutputData
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
     Nullable<std::string> last_update_registrar_handle;
-    std::set<std::string> states;
+    std::set<Epp::Object_State::Enum> states;
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;
@@ -59,7 +60,7 @@ struct InfoNssetOutputData
             const std::string& _sponsoring_registrar_handle,
             const std::string& _creating_registrar_handle,
             const Nullable<std::string>& _last_update_registrar_handle,
-            const std::set<std::string>& _states,
+            const std::set<Epp::Object_State::Enum>& _states,
             const boost::posix_time::ptime& _crdate,
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,

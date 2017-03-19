@@ -16,44 +16,49 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
-*  @file
-*  header of Fred::Object::StatesInfo class
-*/
-#ifndef STATES_INFO_H_8E754FC03E96F93ACCE180D1B5BA0C82//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define STATES_INFO_H_8E754FC03E96F93ACCE180D1B5BA0C82
+#ifndef OBJECT_STATES_INFO_H_0AE168B27E2343E8A623660E996C99E0
+#define OBJECT_STATES_INFO_H_0AE168B27E2343E8A623660E996C99E0
 
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
 #include <set>
 
-/// Fred matters
 namespace Fred {
 
 class ObjectStatesInfo
 {
 public:
-    typedef std::vector< ObjectStateData > ObjectStates;
-    explicit ObjectStatesInfo(const ObjectStates &_data)
+    typedef std::vector<ObjectStateData> ObjectStates;
+
+
+    explicit ObjectStatesInfo(const ObjectStates& _object_states)
     {
-        for (ObjectStates::const_iterator ptr = _data.begin(); ptr != _data.end(); ++ptr) {
-            presents_.insert(Conversion::Enums::from_db_handle< Object_State >(ptr->state_name));
+        for (ObjectStates::const_iterator object_state = _object_states.begin(); object_state != _object_states.end(); ++object_state)
+        {
+            presents_.insert(Conversion::Enums::from_db_handle<Object_State>(object_state->state_name));
         }
     }
-    bool presents(Object_State::Enum _state)const
+
+
+    bool presents(Object_State::Enum _state) const
     {
         return presents_.find(_state) != presents_.end();
     }
-    bool absents(Object_State::Enum _state)const
+
+
+    bool absents(Object_State::Enum _state) const
     {
         return !this->presents(_state);
     }
+
+
 private:
-    typedef std::set< Object_State::Enum > SetOfStates;
+    typedef std::set<Object_State::Enum> SetOfStates;
+
     SetOfStates presents_;
 };
 
-}//Fred
+} // namespace Fred
 
-#endif//STATES_INFO_H_8E754FC03E96F93ACCE180D1B5BA0C82
+#endif
