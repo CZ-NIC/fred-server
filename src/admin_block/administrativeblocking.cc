@@ -453,9 +453,9 @@ namespace Registry
                                 if (0 < _log_req_id) {
                                     update_domain.set_logd_request_id(_log_req_id);
                                 }
-                                unsigned long long new_hid = update_domain.exec(ctx);
+                                const unsigned long long new_hid = update_domain.exec(ctx);
                                 /* in case of error when creating poll message we fail with internal server error */
-                                Fred::Poll::CreateUpdateObjectPollMessage(new_hid).exec(ctx);
+                                Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_hid);
                             }
                             result.push_back(result_item);
                         }
@@ -785,9 +785,9 @@ namespace Registry
                                 }
                             }
                             //domain expiration has to be set before update_object_states invocation
-                            unsigned long long new_hid = update_domain.exec(ctx);
+                            const unsigned long long new_hid = update_domain.exec(ctx);
                             /* in case of error when creating poll message we fail with internal server error */
-                            Fred::Poll::CreateUpdateObjectPollMessage(new_hid).exec(ctx);
+                            Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_hid);
                         }
                         //update_object_states invocation
                         Fred::PerformObjectStateRequest(object_id).exec(ctx);

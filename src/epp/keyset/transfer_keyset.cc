@@ -33,8 +33,8 @@
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/poll/create_epp_action_poll_message_impl.h"
-#include "src/fredlib/poll/message_types.h"
+#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/message_type.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
 #include <string>
@@ -100,18 +100,15 @@ unsigned long long transfer_keyset(
         }
 
         const unsigned long long post_transfer_history_id =
-                Fred::TransferKeyset(
-                        keyset_data_before_transfer.id,
-                        session_registrar.handle,
-                        _authinfopw,
-                        _session_data.logd_request_id.isset() ? _session_data.logd_request_id.get_value() : Nullable<unsigned long long>())
-                        .exec(_ctx);
+            Fred::TransferKeyset(
+                    keyset_data_before_transfer.id,
+                    session_registrar.handle,
+                    _authinfopw,
+                    _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable< unsigned long long >())
+            .exec(_ctx);
 
-        Fred::Poll::CreateEppActionPollMessage(
-                post_transfer_history_id,
-                Fred::Poll::keyset,
-                Fred::Poll::TRANSFER_KEYSET)
-                .exec(_ctx);
+        Fred::Poll::CreateEppActionPollMessage::
+                Of<Fred::Poll::MessageType::transfer_keyset>().exec(_ctx, post_transfer_history_id);
 
         return post_transfer_history_id;
 

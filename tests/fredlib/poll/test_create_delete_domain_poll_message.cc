@@ -17,8 +17,8 @@
  */
 
 
-#include "src/fredlib/poll/create_delete_domain_poll_message.h"
-#include "src/fredlib/poll/message_types.h"
+#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/message_type.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -49,9 +49,8 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
 
     int count_before = static_cast<int>(count_res[0]["count_"]);
 
-    unsigned long long message_id = Fred::Poll::CreateDeleteDomainPollMessage(
-        domain.info_data.historyid
-    ).exec(ctx);
+    const unsigned long long message_id = Fred::Poll::CreateEppActionPollMessage::
+            Of<Fred::Poll::MessageType::delete_domain>().exec(ctx, domain.info_data.historyid);
 
     Database::Result count_res2 = ctx.get_conn().exec(
         "SELECT COUNT(id) AS count_ "
@@ -73,8 +72,9 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
     );
 
     BOOST_CHECK_EQUAL(message_res.size(), 1);
-    BOOST_CHECK_EQUAL(static_cast<bool>(message_res[0]["seen_"]), false);
-    BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::DELETE_DOMAIN);
+    BOOST_CHECK(!static_cast<bool>(message_res[0]["seen_"]));
+    BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
+                      Conversion::Enums::to_db_handle(Fred::Poll::MessageType::delete_domain));
 
     Database::Result polleppaction_res = ctx.get_conn().exec_params(
         "SELECT objid "
@@ -100,19 +100,14 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
 BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
 {
     Fred::OperationContextCreator ctx;
-
-    bool correct_exception_caught = false;
+    const unsigned long long nonexistent_object_historyid = Test::get_nonexistent_object_historyid(ctx);
     try {
-        Fred::Poll::CreateDeleteDomainPollMessage(
-            Test::get_nonexistent_object_historyid(ctx)
-        ).exec(ctx);
-    } catch(const Fred::Poll::CreateDeleteDomainPollMessage::Exception& e) {
-        if(e.get_object_history_not_found()) {
-            correct_exception_caught = true;
-        }
+        Fred::Poll::CreateEppActionPollMessage::
+                    Of<Fred::Poll::MessageType::delete_domain>().exec(ctx, nonexistent_object_historyid);
     }
-
-    BOOST_CHECK_EQUAL(correct_exception_caught, true);
+    catch (const Fred::Poll::CreateEppActionPollMessage::Exception::ObjectHistoryNotFound& e) {
+        BOOST_CHECK_EQUAL(e.history_id, nonexistent_object_historyid);
+    }
 }
 
 /**
@@ -127,18 +122,12 @@ BOOST_AUTO_TEST_CASE( test_different_object_type )
     Fred::OperationContextCreator ctx;
     Test::contact contact(ctx);
 
-    bool correct_exception_caught = false;
     try {
-        Fred::Poll::CreateDeleteDomainPollMessage(
-                contact.info_data.historyid
-        ).exec(ctx);
-    } catch(const Fred::Poll::CreateDeleteDomainPollMessage::Exception& e) {
-        if(e.get_domain_not_found()) {
-            correct_exception_caught = true;
-        }
+        Fred::Poll::CreateEppActionPollMessage::
+                            Of<Fred::Poll::MessageType::delete_domain>().exec(ctx, contact.info_data.historyid);
     }
-
-    BOOST_CHECK_EQUAL(correct_exception_caught, true);
+    catch (const Fred::Poll::CreateEppActionPollMessage::Exception::ObjectNotRequestedType&) {
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();
