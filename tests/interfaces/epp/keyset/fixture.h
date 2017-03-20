@@ -19,6 +19,7 @@
 #ifndef FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 #define FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 
+#include "tests/interfaces/epp/fixture.h"
 #include "src/epp/keyset/check_keyset_config_data.h"
 #include "src/epp/keyset/create_keyset_config_data.h"
 #include "src/epp/keyset/create_keyset_localized.h"
@@ -33,8 +34,11 @@
 #include <vector>
 
 namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Keyset {
 
-struct DefaultCheckKeysetConfigData : Epp::Keyset::CheckKeysetConfigData
+struct DefaultCheckKeysetConfigData : ::Epp::Keyset::CheckKeysetConfigData
 {
     DefaultCheckKeysetConfigData()
         : CheckKeysetConfigData(false)
@@ -42,7 +46,7 @@ struct DefaultCheckKeysetConfigData : Epp::Keyset::CheckKeysetConfigData
     }
 };
 
-struct DefaultInfoKeysetConfigData : Epp::Keyset::InfoKeysetConfigData
+struct DefaultInfoKeysetConfigData : ::Epp::Keyset::InfoKeysetConfigData
 {
     DefaultInfoKeysetConfigData()
         : InfoKeysetConfigData(false)
@@ -50,7 +54,7 @@ struct DefaultInfoKeysetConfigData : Epp::Keyset::InfoKeysetConfigData
     }
 };
 
-struct DefaultCreateKeysetConfigData : Epp::Keyset::CreateKeysetConfigData
+struct DefaultCreateKeysetConfigData : ::Epp::Keyset::CreateKeysetConfigData
 {
     DefaultCreateKeysetConfigData()
         : CreateKeysetConfigData(false)
@@ -58,7 +62,7 @@ struct DefaultCreateKeysetConfigData : Epp::Keyset::CreateKeysetConfigData
     }
 };
 
-struct DefaultUpdateKeysetConfigData : Epp::Keyset::UpdateKeysetConfigData
+struct DefaultUpdateKeysetConfigData : ::Epp::Keyset::UpdateKeysetConfigData
 {
     DefaultUpdateKeysetConfigData()
         : UpdateKeysetConfigData(false)
@@ -66,7 +70,7 @@ struct DefaultUpdateKeysetConfigData : Epp::Keyset::UpdateKeysetConfigData
     }
 };
 
-struct DefaultDeleteKeysetConfigData : Epp::Keyset::DeleteKeysetConfigData
+struct DefaultDeleteKeysetConfigData : ::Epp::Keyset::DeleteKeysetConfigData
 {
     DefaultDeleteKeysetConfigData()
         : DeleteKeysetConfigData(false)
@@ -74,7 +78,7 @@ struct DefaultDeleteKeysetConfigData : Epp::Keyset::DeleteKeysetConfigData
     }
 };
 
-struct DefaultTransferKeysetConfigData : Epp::Keyset::TransferKeysetConfigData
+struct DefaultTransferKeysetConfigData : ::Epp::Keyset::TransferKeysetConfigData
 {
     DefaultTransferKeysetConfigData()
         : TransferKeysetConfigData(false)
@@ -82,17 +86,11 @@ struct DefaultTransferKeysetConfigData : Epp::Keyset::TransferKeysetConfigData
     }
 };
 
-struct DefaultSessionData : public Epp::SessionData
-{
-    DefaultSessionData()
-        : SessionData(0, Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
-    {
-    }
-
-    DefaultSessionData& set_registrar_id(unsigned long long _registrar_id)
-    {
-        registrar_id = _registrar_id;
-        return *this;
+struct Keyset {
+    std::string handle;
+    Keyset(Fred::OperationContext& _ctx, const std::string& _registrar_handle) {
+        handle = "KEYSET";
+        Fred::CreateKeyset(handle, _registrar_handle).exec(_ctx);
     }
 };
 
@@ -126,9 +124,9 @@ private:
     const std::vector< Fred::InfoContactData > contact_;
 };
 
-class ObjectsProvider:private Fixture::instantiate_db_template,
-                      public RegistrarProvider,
-                      public ContactProvider
+class ObjectsProvider : private instantiate_db_template,
+                        public RegistrarProvider,
+                        public ContactProvider
 {
 public:
     ObjectsProvider();
@@ -138,7 +136,9 @@ public:
     static std::string get_keyset_handle(Fred::OperationContext&);
 };
 
-
-}//namespace Test
+} // namespace Test::Backend::Epp::Keyset
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
+} // namespace Test
 
 #endif

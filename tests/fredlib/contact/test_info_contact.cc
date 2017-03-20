@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_SUITE(TestInfoContact)
 
 const std::string server_name = "test-info-contact";
 //unique global name of the fixture
-struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::Fixture::instantiate_db_template
+struct test_contact_fixture_6da88b63b0bc46e29f6d0ce3181fd5d8 : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

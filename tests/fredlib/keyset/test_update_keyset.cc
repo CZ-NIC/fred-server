@@ -29,7 +29,7 @@
 
 const std::string server_name = "test-update-keyset";
 
-struct update_keyset_fixture : public Test::Fixture::instantiate_db_template
+struct update_keyset_fixture : public Test::instantiate_db_template
 {
 
     std::string registrar_handle;

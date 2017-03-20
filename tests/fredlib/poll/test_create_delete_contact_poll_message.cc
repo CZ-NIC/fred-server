@@ -25,7 +25,7 @@
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 
-BOOST_FIXTURE_TEST_SUITE(TestPoll, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestPoll, Test::instantiate_db_template)
 BOOST_AUTO_TEST_SUITE(TestCreateDeleteContactPollMessage)
 
 /**

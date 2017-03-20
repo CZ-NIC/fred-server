@@ -37,6 +37,8 @@
 #include <vector>
 
 namespace Test {
+namespace Backend {
+namespace Epp {
 
 template <class T>
 struct supply_ctx
@@ -54,15 +56,29 @@ struct supply_ctx
 
 };
 
+struct DefaultSessionData : public ::Epp::SessionData
+{
+    DefaultSessionData()
+        : SessionData(0, ::Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
+    {
+    }
+
+    DefaultSessionData& set_registrar_id(unsigned long long _registrar_id)
+    {
+        registrar_id = _registrar_id;
+        return *this;
+    }
+};
+
 struct SessionData
-    : Epp::SessionData
+    : ::Epp::SessionData
 {
 
 
     SessionData(const unsigned long long _registrar_id)
-        : Epp::SessionData(
+        : ::Epp::SessionData(
                   _registrar_id,
-                  Epp::SessionLang::en,
+                  ::Epp::SessionLang::en,
                   "",
                   boost::optional<unsigned long long>(0))
     {
@@ -168,23 +184,6 @@ struct SystemRegistrar
 
 };
 
-struct Contact
-{
-    Fred::InfoContactData data;
-
-
-    Contact(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _contact_handle = "CONTACT")
-    {
-        Fred::CreateContact(_contact_handle, _registrar_handle).exec(_ctx);
-        data = Fred::InfoContactByHandle(_contact_handle).exec(_ctx).info_contact_data;
-    }
-
-
-};
-
 struct Fqdn
 {
     const std::string fqdn;
@@ -267,284 +266,9 @@ struct BlacklistedFqdn
 
 };
 
-struct Domain
-{
-    Contact registrant;
-    Fred::InfoDomainData data;
 
 
-    Domain(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _fqdn = "freddy.cz",
-            const std::string& _registrant_handle = "REGISTRANT")
-        : registrant(_ctx, _registrar_handle, _registrant_handle)
-    {
-        Fred::CreateDomain(_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
-        data = Fred::InfoDomainByHandle(_fqdn).exec(_ctx, "UTC").info_domain_data;
-    }
-
-
-};
-
-struct EnumDomain
-{
-    Contact registrant;
-    Fred::InfoDomainData data;
-
-
-    EnumDomain(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _enum_fqdn = "5.5.1.3.5.0.2.4.e164.arpa",
-            const std::string& _registrant_handle = "REGISTRANT")
-        : registrant(_ctx, _registrar_handle, _registrant_handle)
-    {
-
-        const std::string tmp_fqdn = "tmpdomain.cz";
-
-        Fred::CreateDomain(tmp_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
-        data = Fred::InfoDomainByHandle(tmp_fqdn).exec(_ctx, "UTC").info_domain_data;
-
-        Fred::CreateDomain(_enum_fqdn, _registrar_handle, registrant.data.handle)
-        .set_enum_validation_expiration(data.creation_time.date() + boost::gregorian::months(3))
-        // .set_nsset(nsset_handle)
-        // .set_keyset(keyset_handle)
-        // .set_admin_contacts(admin_contacts)
-        .exec(_ctx);
-
-        data = Fred::InfoDomainByHandle(_enum_fqdn).exec(_ctx, "UTC").info_domain_data;
-    }
-
-
-};
-
-struct NonexistentEnumDomain
-    : EnumDomain
-{
-
-
-    NonexistentEnumDomain(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _registrant_handle = "REGISTRANT")
-        : EnumDomain(
-                  _ctx,
-                  _registrar_handle,
-                  "5.5.1.3.5.0.2.4.e164.arpa",
-                  _registrant_handle)
-    {
-        data.fqdn = NonexistentEnumFqdn().fqdn;
-    }
-
-
-};
-
-struct BlacklistedDomain
-    : Domain
-{
-
-
-    BlacklistedDomain(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _registrant_handle = "REGISTRANT")
-        : Domain(_ctx, _registrar_handle, "blacklisteddomain.cz", _registrant_handle)
-    {
-        _ctx.get_conn().exec_params(
-                "INSERT INTO domain_blacklist (regexp, valid_from, reason) "
-                "VALUES ($1::text, NOW(), '')",
-                Database::query_param_list(data.fqdn));
-    }
-
-
-};
-
-struct DomainWithStatusRequest
-    : Domain
-{
-    const std::string status;
-
-
-    DomainWithStatusRequest(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _status)
-        : Domain(_ctx, _registrar_handle, "domainwith" + boost::algorithm::to_lower_copy(_status) + ".cz"),
-          status(_status)
-    {
-        _ctx.get_conn().exec_params(
-                "UPDATE enum_object_states SET manual = 'true'::bool WHERE name = $1::text",
-                Database::query_param_list(_status)
-                );
-
-        const std::set<std::string> statuses = boost::assign::list_of(_status);
-
-        Fred::CreateObjectStateRequestId(data.id, statuses).exec(_ctx);
-
-        // ensure object has only request, not the state itself
-        {
-            std::vector<std::string> object_states_before;
-            {
-                BOOST_FOREACH(
-                        const Fred::ObjectStateData & state,
-                        Fred::GetObjectStates(data.id).exec(_ctx)) {
-                    object_states_before.push_back(state.state_name);
-                }
-            }
-
-            BOOST_CHECK(
-                    std::find(object_states_before.begin(), object_states_before.end(), _status) ==
-                    object_states_before.end());
-        }
-    }
-
-
-};
-
-struct DomainWithStatus
-    : DomainWithStatusRequest
-{
-
-
-    DomainWithStatus(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _status)
-        : DomainWithStatusRequest(
-                  _ctx,
-                  _registrar_handle,
-                  _status)
-    {
-        Fred::PerformObjectStateRequest(data.id).exec(_ctx);
-    }
-
-
-};
-
-struct DomainWithServerDeleteProhibited
-    : DomainWithStatus
-{
-
-
-    DomainWithServerDeleteProhibited(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle)
-        : DomainWithStatus(_ctx, _registrar_handle, "serverDeleteProhibited")
-    {
-    }
-
-
-};
-
-struct DomainWithServerUpdateProhibited
-    : DomainWithStatus
-{
-
-
-    DomainWithServerUpdateProhibited(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle)
-        : DomainWithStatus(_ctx, _registrar_handle, "serverUpdateProhibited")
-    {
-    }
-
-
-};
-
-struct DomainWithServerTransferProhibited
-    : DomainWithStatus
-{
-
-
-    DomainWithServerTransferProhibited(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle)
-        : DomainWithStatus(_ctx, _registrar_handle, "serverTransferProhibited")
-    {
-    }
-
-
-};
-
-struct DomainWithStatusRequestAndServerTransferProhibited
-    : DomainWithStatusRequest
-{
-
-
-    DomainWithStatusRequestAndServerTransferProhibited(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle)
-        : DomainWithStatusRequest(_ctx, _registrar_handle, "serverTransferProhibited")
-    {
-    }
-
-
-};
-
-struct DomainWithServerUpdateProhoibitedRequest
-    : DomainWithStatusRequest
-{
-
-
-    DomainWithServerUpdateProhoibitedRequest(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle)
-        : DomainWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
-    {
-    }
-
-
-};
-
-struct DomainWithServerUpdateProhibitedRequest
-    : DomainWithStatusRequest
-{
-
-
-    DomainWithServerUpdateProhibitedRequest(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle)
-        : DomainWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
-    {
-    }
-
-
-};
-
-struct FullDomain
-{
-    Contact registrant;
-    Fred::InfoDomainData data;
-
-
-    FullDomain(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle,
-            const std::string& _fqdn = "freddy.cz",
-            const std::string& _registrant_handle = "REGISTRANT")
-        : registrant(_ctx, _registrar_handle, _registrant_handle)
-    {
-        Fred::CreateContact("CONTACT1", _registrar_handle).exec(_ctx);
-
-        Fred::CreateNsset("NSSET1", _registrar_handle).exec(_ctx);
-
-        Fred::CreateKeyset("KEYSET1", _registrar_handle).exec(_ctx);
-
-        Fred::CreateDomain("fulldomain.cz", _registrar_handle, _registrant_handle)
-                .set_admin_contacts(Util::vector_of<std::string>("CONTACT1"))
-                .set_nsset(std::string("NSSET1"))
-                .set_keyset(std::string("KEYSET1"))
-                .exec(_ctx);
-
-        data = Fred::InfoDomainByHandle("fulldomain.cz").exec(_ctx, "UTC").info_domain_data;
-    }
-
-
-};
-
-
-namespace Fixture {
+// fixtures
 
 struct HasSessionWithUnauthenticatedRegistrar
 {
@@ -619,59 +343,6 @@ struct HasRegistrarNotInZoneWithSession
 
 };
 
-struct HasSystemRegistrarWithSessionAndDomain
-{
-    SystemRegistrar system_registrar;
-    Session session;
-    Domain domain;
-
-
-    HasSystemRegistrarWithSessionAndDomain(Fred::OperationContext& _ctx)
-        : system_registrar(_ctx),
-          session(_ctx, system_registrar.data.id),
-          domain(_ctx, system_registrar.data.handle)
-
-    {
-    }
-
-
-};
-
-struct HasSystemRegistrarWithSessionAndBlacklistedDomain
-{
-    SystemRegistrar system_registrar;
-    Session session;
-    BlacklistedDomain blacklisted_domain;
-
-
-    HasSystemRegistrarWithSessionAndBlacklistedDomain(Fred::OperationContext& _ctx)
-        : system_registrar(_ctx),
-          session(_ctx, system_registrar.data.id),
-          blacklisted_domain(_ctx, system_registrar.data.handle)
-    {
-    }
-
-
-};
-
-struct HasRegistrarWithSessionAndBlacklistedDomain
-{
-    Registrar registrar;
-    Session session;
-    BlacklistedDomain blacklisted_domain;
-
-
-    HasRegistrarWithSessionAndBlacklistedDomain(Fred::OperationContext& _ctx)
-        : registrar(_ctx),
-          session(_ctx, registrar.data.id),
-          blacklisted_domain(_ctx, registrar.data.handle)
-
-    {
-    }
-
-
-};
-
 struct HasRegistrarWithSessionAndNonexistentFqdn
 {
     Registrar registrar;
@@ -726,60 +397,6 @@ struct HasRegistrarWithSessionAndBlacklistedFqdn
 
 };
 
-struct HasRegistrarNotInZoneWithSessionAndDomain
-{
-    SystemRegistrar registrar_not_in_zone;
-    Session session;
-    Domain domain;
-
-
-    HasRegistrarNotInZoneWithSessionAndDomain(Fred::OperationContext& _ctx)
-        : registrar_not_in_zone(_ctx),
-          session(_ctx, registrar_not_in_zone.data.id),
-          domain(_ctx, registrar_not_in_zone.data.handle)
-
-    {
-    }
-
-
-};
-
-struct HasRegistrarWithSessionAndDomain
-{
-    Registrar registrar;
-    Session session;
-    Domain domain;
-
-
-    HasRegistrarWithSessionAndDomain(Fred::OperationContext& _ctx)
-        : registrar(_ctx),
-          session(_ctx, registrar.data.id),
-          domain(_ctx, registrar.data.handle)
-    {
-    }
-
-
-};
-
-struct HasRegistrarWithSessionAndDomainAndDifferentRegistrar
-{
-    Registrar registrar;
-    Session session;
-    Domain domain;
-    Registrar different_registrar;
-
-
-    HasRegistrarWithSessionAndDomainAndDifferentRegistrar(Fred::OperationContext& _ctx)
-        : registrar(_ctx),
-          session(_ctx, registrar.data.id),
-          domain(_ctx, registrar.data.handle),
-          different_registrar(_ctx, "REG-TEST2")
-    {
-    }
-
-
-};
-
 struct HasSystemRegistrarWithSessionAndDifferentRegistrar
 {
     SystemRegistrar system_registrar;
@@ -814,57 +431,27 @@ struct HasRegistrarWithSessionAndDifferentRegistrar
 
 };
 
-struct HasRegistrarWithSessionAndDomainOfDifferentRegistrar
-{
-    Registrar registrar;
-    Session session;
-    Registrar different_registrar;
-    Domain domain_of_different_registrar;
-
-
-    HasRegistrarWithSessionAndDomainOfDifferentRegistrar(Fred::OperationContext& _ctx)
-        : registrar(_ctx),
-          session(_ctx, registrar.data.id),
-          different_registrar(_ctx, "REG-TEST2"),
-          domain_of_different_registrar(_ctx, different_registrar.data.handle)
-    {
-    }
-
-
-};
-
-struct HasDomainWithdServerTransferProhibitedAndDifferentRegistrar
-{
-    Registrar different_registrar;
-    DomainWithServerTransferProhibited domain_with_server_transfer_prohibited;
-
-
-    HasDomainWithdServerTransferProhibitedAndDifferentRegistrar(Fred::OperationContext& _ctx)
-        : different_registrar(_ctx, "REG-TEST2"),
-          domain_with_server_transfer_prohibited(_ctx, different_registrar.data.handle + "DIFFERENT")
-    {
-        BOOST_REQUIRE(
-                domain_with_server_transfer_prohibited.data.sponsoring_registrar_handle !=
-                different_registrar.data.handle);
-    }
-
-
-};
-
-} // namespace Test::Fixture
-
-// void print_epp_response_failure(const Epp::EppResponseFailure& e) {
-//    BOOST_TEST_MESSAGE("EPP result code: " << e.epp_result().epp_result_code());
-//    for (std::set<Epp::EppExtendedError>::const_iterator extended_error = e.epp_result().extended_errors()->begin();
-//            extended_error != e.epp_result().extended_errors()->end();
+// move to cc file if needed
+//void print_epp_response_failure(const ::Epp::EppResponseFailure& e) {
+//   for (std::vector< ::Epp::EppResultFailure>::const_iterator epp_result = e.epp_results().begin();
+//        epp_result != e.epp_results().end();
+//        ++epp_result)
+//   {
+//       BOOST_TEST_MESSAGE("EPP result code: " << epp_result->epp_result_code());
+//       for (std::set< ::Epp::EppExtendedError>::const_iterator extended_error = epp_result->extended_errors()->begin();
+//            extended_error != epp_result->extended_errors()->end();
 //            ++extended_error)
-//    {
-//        BOOST_TEST_MESSAGE("EPP extended error param: " << e.epp_result().extended_errors()->begin()->param());
-//        BOOST_TEST_MESSAGE("EPP extended error position: " << e.epp_result().extended_errors()->begin()->position());
-//        BOOST_TEST_MESSAGE("EPP extended error reason: " << e.epp_result().extended_errors()->begin()->reason());
-//    }
-// }
+//       {
+//           BOOST_TEST_MESSAGE("  EPP extended error param: " << extended_error->param());
+//           BOOST_TEST_MESSAGE("  EPP extended error position: " << extended_error->position());
+//           BOOST_TEST_MESSAGE("  EPP extended error reason: " << extended_error->reason());
+//       }
+//   }
+//}
 
+
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
 } // namespace Test
 
 #endif

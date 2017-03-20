@@ -34,70 +34,83 @@
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "util/optional_value.h"
 
-struct TestCheckContactConfigData : Epp::Contact::CheckContactConfigData
+namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Contact {
+
+struct DefaultCheckContactConfigData : ::Epp::Contact::CheckContactConfigData
 {
-    TestCheckContactConfigData()
+    DefaultCheckContactConfigData()
         : CheckContactConfigData(false)
     {
     }
 };
 
-struct TestInfoContactConfigData : Epp::Contact::InfoContactConfigData
+struct DefaultInfoContactConfigData : ::Epp::Contact::InfoContactConfigData
 {
-    TestInfoContactConfigData()
+    DefaultInfoContactConfigData()
         : InfoContactConfigData(false)
     {
     }
 };
 
-struct TestCreateContactConfigData : Epp::Contact::CreateContactConfigData
+struct DefaultCreateContactConfigData : ::Epp::Contact::CreateContactConfigData
 {
-    TestCreateContactConfigData()
+    DefaultCreateContactConfigData()
         : CreateContactConfigData(false)
     {
     }
 };
 
-struct TestUpdateContactConfigData : Epp::Contact::UpdateContactConfigData
+struct DefaultUpdateContactConfigData : ::Epp::Contact::UpdateContactConfigData
 {
-    TestUpdateContactConfigData()
+    DefaultUpdateContactConfigData()
         : UpdateContactConfigData(false, false)
     {
     }
 };
 
-struct TestDeleteContactConfigData : Epp::Contact::DeleteContactConfigData
+struct DefaultDeleteContactConfigData : ::Epp::Contact::DeleteContactConfigData
 {
-    TestDeleteContactConfigData()
+    DefaultDeleteContactConfigData()
         : DeleteContactConfigData(false)
     {
     }
 };
 
-struct TestTransferContactConfigData : Epp::Contact::TransferContactConfigData
+struct DefaultTransferContactConfigData : ::Epp::Contact::TransferContactConfigData
 {
-    TestTransferContactConfigData()
+    DefaultTransferContactConfigData()
         : TransferContactConfigData(false)
     {
     }
 };
 
-struct HasConfig {
-    TestCheckContactConfigData check_contact_config_data;
-    TestInfoContactConfigData info_contact_config_data;
-    TestCreateContactConfigData create_contact_config_data;
-    TestUpdateContactConfigData update_contact_config_data;
-    TestDeleteContactConfigData delete_contact_config_data;
-    TestTransferContactConfigData transfer_contact_config_data;
+struct Contact
+{
+    Fred::InfoContactData data;
 
-    HasConfig() {
+
+    Contact(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _contact_handle = "CONTACT")
+    {
+        Fred::CreateContact(_contact_handle, _registrar_handle).exec(_ctx);
+        data = Fred::InfoContactByHandle(_contact_handle).exec(_ctx).info_contact_data;
     }
+
+
 };
 
-struct TestSessionData : Epp::SessionData
+
+// fixtures
+
+struct TestSessionData : ::Epp::SessionData
 {
     TestSessionData()
-        : SessionData(0, Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
+        : SessionData(0, ::Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
     {
     }
 };
@@ -109,9 +122,8 @@ struct HasSession {
     }
 };
 
-struct HasInvalidSessionRegistrar : virtual Test::autocommitting_context {
+struct HasInvalidSessionRegistrar : virtual autocommitting_context {
     HasSession session;
-    HasConfig config;
 
     HasInvalidSessionRegistrar()
     {
@@ -121,10 +133,9 @@ struct HasInvalidSessionRegistrar : virtual Test::autocommitting_context {
     }
 };
 
-struct HasRegistrar : virtual Test::autocommitting_context {
+struct HasRegistrar : virtual autocommitting_context {
     Fred::InfoRegistrarData registrar;
     HasSession session;
-    HasConfig config;
 
     HasRegistrar() {
         const std::string reg_handle = "REGISTRAR1";
@@ -137,10 +148,9 @@ struct HasRegistrar : virtual Test::autocommitting_context {
 
 };
 
-struct HasAnotherRegistrar : virtual Test::autocommitting_context {
+struct HasAnotherRegistrar : virtual autocommitting_context {
     Fred::InfoRegistrarData data;
     HasSession session;
-    HasConfig config;
 
     HasAnotherRegistrar() {
         const std::string reg_handle = "REGISTRAR2";
@@ -247,5 +257,10 @@ struct HasContactWithServerUpdateProhibitedRequest : HasContactWithStatusRequest
     :   HasContactWithStatusRequest("serverUpdateProhibited")
     { }
 };
+
+} // namespace Test::Backend::Epp::Contact
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
+} // namespace Test
 
 #endif

@@ -20,6 +20,9 @@
 #include "src/epp/keyset/impl/limits.h"
 
 namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Keyset {
 
 RegistrarProvider::RegistrarProvider()
 {
@@ -121,7 +124,7 @@ std::vector< Fred::InfoContactData > ContactProvider::create_contacts(unsigned n
 
 ObjectsProvider::ObjectsProvider()
 :   RegistrarProvider(),
-    ContactProvider(Epp::Keyset::max_number_of_tech_contacts,
+    ContactProvider(::Epp::Keyset::max_number_of_tech_contacts,
                     static_cast< const RegistrarProvider& >(*this))
 {
 }
@@ -143,4 +146,7 @@ std::string ObjectsProvider::get_keyset_handle< Fred::Keyset::HandleState::avail
     }
 }
 
-}//namespace Test
+} // namespace Test::Backend::Epp::Keyset
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
+} // namespace Test

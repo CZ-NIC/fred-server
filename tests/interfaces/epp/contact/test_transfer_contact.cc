@@ -28,11 +28,15 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(TransferContact)
 
-bool transfer_fail_auth_error_srvr_closing_connection_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool transfer_fail_auth_error_srvr_closing_connection_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -40,20 +44,20 @@ bool transfer_fail_auth_error_srvr_closing_connection_exception(const Epp::EppRe
 BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, HasInvalidSessionRegistrar)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::transfer_contact(
+        ::Epp::Contact::transfer_contact(
             ctx,
             "contact_handle",
             "authinfopw",
-            config.transfer_contact_config_data,
+            DefaultTransferContactConfigData(),
             session.data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_auth_error_srvr_closing_connection_exception
     );
 }
 
-bool transfer_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool transfer_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -61,20 +65,20 @@ bool transfer_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e
 BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, HasRegistrar)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::transfer_contact(
+        ::Epp::Contact::transfer_contact(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
             "abc-it-doesnt-matter-operation-should-fail-even-sooner",
-            config.transfer_contact_config_data,
+            DefaultTransferContactConfigData(),
             session.data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_nonexistent_handle_exception
     );
 }
 
-bool transfer_fail_not_eligible_for_transfer_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_is_not_eligible_for_transfer);
+bool transfer_fail_not_eligible_for_transfer_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_is_not_eligible_for_transfer);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -82,20 +86,20 @@ bool transfer_fail_not_eligible_for_transfer_exception(const Epp::EppResponseFai
 BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, HasContact)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::transfer_contact(
+        ::Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
-            config.transfer_contact_config_data,
+            DefaultTransferContactConfigData(),
             session.data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_not_eligible_for_transfer_exception
     );
 }
 
-bool transfer_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+bool transfer_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -103,20 +107,20 @@ bool transfer_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, HasContactWithServerTransferProhibited)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::transfer_contact(
+        ::Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
-            config.transfer_contact_config_data,
-            Test::Session(ctx, Test::Registrar(ctx).data.id).data
+            DefaultTransferContactConfigData(),
+            Session(ctx, Registrar(ctx).data.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_prohibiting_status1_exception
     );
 }
 
-bool transfer_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+bool transfer_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -124,20 +128,20 @@ bool transfer_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, HasContactWithDeleteCandidate)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::transfer_contact(
+        ::Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             contact.authinfopw,
-            config.transfer_contact_config_data,
-            Test::Session(ctx, Test::Registrar(ctx).data.id).data
+            DefaultTransferContactConfigData(),
+            Session(ctx, Registrar(ctx).data.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_prohibiting_status2_exception
     );
 }
 
-bool transfer_fail_autor_error_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::invalid_authorization_information);
+bool transfer_fail_autor_error_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::invalid_authorization_information);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -145,26 +149,26 @@ bool transfer_fail_autor_error_exception(const Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(transfer_fail_autor_error, HasContact)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::transfer_contact(
+        ::Epp::Contact::transfer_contact(
             ctx,
             contact.handle,
             "thisisdifferent" + contact.authinfopw,
-            config.transfer_contact_config_data,
-            Test::Session(ctx, Test::Registrar(ctx).data.id).data
+            DefaultTransferContactConfigData(),
+            Session(ctx, Registrar(ctx).data.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_autor_error_exception
     );
 }
 
 BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, HasContactWithServerUpdateProhibitedRequest)
 {
-    Epp::Contact::transfer_contact(
+    ::Epp::Contact::transfer_contact(
         ctx,
         contact.handle,
         contact.authinfopw,
-        config.transfer_contact_config_data,
-        Test::Session(ctx, Test::Registrar(ctx).data.id).data
+        DefaultTransferContactConfigData(),
+        Session(ctx, Registrar(ctx).data.id).data
     );
 
     /* now object has the state server_update_prohibited itself */
@@ -188,14 +192,14 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, HasContact)
 {
     const Fred::InfoContactData contact_data_before = Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data;
 
-    Test::Registrar another_registrar(ctx);
+    Registrar another_registrar(ctx);
 
-    Epp::Contact::transfer_contact(
+    ::Epp::Contact::transfer_contact(
         ctx,
         contact.handle,
         contact.authinfopw,
-        config.transfer_contact_config_data,
-        Test::Session(ctx, another_registrar.data.id).data
+        DefaultTransferContactConfigData(),
+        Session(ctx, another_registrar.data.id).data
     );
 
     const Fred::InfoContactData contact_data_after = Fred::InfoContactByHandle(contact.handle).exec(ctx).info_contact_data;
@@ -229,3 +233,7 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, HasContact)
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

@@ -20,65 +20,73 @@
 
 #include "src/epp/contact/contact_handle_state_to_check_result.h"
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(ContactHandleStateToCheckResult)
 
 BOOST_AUTO_TEST_CASE(test_conversion)
 {
     BOOST_CHECK(
-        Epp::Contact::contact_handle_state_to_check_result(
+        ::Epp::Contact::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::invalid,
             Fred::ContactHandleState::Registrability::registered
         )
         ==
-        Epp::Contact::ContactHandleRegistrationObstruction::registered_handle
+        ::Epp::Contact::ContactHandleRegistrationObstruction::registered_handle
     );
 
     BOOST_CHECK(
-        Epp::Contact::contact_handle_state_to_check_result(
+        ::Epp::Contact::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::invalid,
             Fred::ContactHandleState::Registrability::available
         )
         ==
-        Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle
+        ::Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle
     );
 
     BOOST_CHECK(
-        Epp::Contact::contact_handle_state_to_check_result(
+        ::Epp::Contact::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::invalid,
             Fred::ContactHandleState::Registrability::in_protection_period
         )
         ==
-        Epp::Contact::ContactHandleRegistrationObstruction::protected_handle
+        ::Epp::Contact::ContactHandleRegistrationObstruction::protected_handle
     );
 
     BOOST_CHECK(
-        Epp::Contact::contact_handle_state_to_check_result(
+        ::Epp::Contact::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::valid,
             Fred::ContactHandleState::Registrability::registered
         )
         ==
-        Epp::Contact::ContactHandleRegistrationObstruction::registered_handle
+        ::Epp::Contact::ContactHandleRegistrationObstruction::registered_handle
     );
 
     BOOST_CHECK(
-        Epp::Contact::contact_handle_state_to_check_result(
+        ::Epp::Contact::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::valid,
             Fred::ContactHandleState::Registrability::available
         )
         ==
-        Nullable<Epp::Contact::ContactHandleRegistrationObstruction::Enum>()
+        Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum>()
     );
 
     BOOST_CHECK(
-        Epp::Contact::contact_handle_state_to_check_result(
+        ::Epp::Contact::contact_handle_state_to_check_result(
             Fred::ContactHandleState::SyntaxValidity::valid,
             Fred::ContactHandleState::Registrability::in_protection_period
         )
         ==
-        Epp::Contact::ContactHandleRegistrationObstruction::protected_handle
+        ::Epp::Contact::ContactHandleRegistrationObstruction::protected_handle
     );
 }
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

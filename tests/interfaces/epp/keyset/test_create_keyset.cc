@@ -34,7 +34,12 @@
 #include <boost/mpl/assert.hpp>
 #include <boost/test/unit_test.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Keyset)
+BOOST_AUTO_TEST_SUITE(CreateKeyset)
 
 namespace {
 
@@ -63,34 +68,34 @@ struct Registrar
 };
 
 template < Registrar::Enum REGISTRAR >
-const Fred::InfoRegistrarData& get_registrar(const Test::ObjectsProvider&);
+const Fred::InfoRegistrarData& get_registrar(const ObjectsProvider&);
 
 template < >
-const Fred::InfoRegistrarData& get_registrar< Registrar::A >(const Test::ObjectsProvider &objects_provider)
+const Fred::InfoRegistrarData& get_registrar< Registrar::A >(const ObjectsProvider &objects_provider)
 {
     return objects_provider.get_registrar_a();
 }
 
 template < >
-const Fred::InfoRegistrarData& get_registrar< Registrar::B >(const Test::ObjectsProvider &objects_provider)
+const Fred::InfoRegistrarData& get_registrar< Registrar::B >(const ObjectsProvider &objects_provider)
 {
     return objects_provider.get_registrar_b();
 }
 
 template < >
-const Fred::InfoRegistrarData& get_registrar< Registrar::SYS >(const Test::ObjectsProvider &objects_provider)
+const Fred::InfoRegistrarData& get_registrar< Registrar::SYS >(const ObjectsProvider &objects_provider)
 {
     return objects_provider.get_sys_registrar();
 }
 
 template < Registrar::Enum REGISTRAR >
-unsigned long long get_registrar_id(const Test::ObjectsProvider &objects_provider)
+unsigned long long get_registrar_id(const ObjectsProvider &objects_provider)
 {
     return get_registrar< REGISTRAR >(objects_provider).id;
 }
 
 template < Registrar::Enum REGISTRAR >
-std::string get_registrar_handle(const Test::ObjectsProvider &objects_provider)
+std::string get_registrar_handle(const ObjectsProvider &objects_provider)
 {
     return get_registrar< REGISTRAR >(objects_provider).handle;
 }
@@ -102,12 +107,12 @@ struct KeysetCreateData
     std::string registrar_handle;
     Optional< std::string > authinfopw;
     std::vector< std::string > tech_contacts;
-    std::vector< Epp::Keyset::DsRecord > ds_records;
-    std::vector< Epp::Keyset::DnsKey > dns_keys;
+    std::vector< ::Epp::Keyset::DsRecord > ds_records;
+    std::vector< ::Epp::Keyset::DnsKey > dns_keys;
 };
 
 template < Registrar::Enum REGISTRAR >
-KeysetCreateData create_successfully_by(const Test::ObjectsProvider &objects_provider)
+KeysetCreateData create_successfully_by(const ObjectsProvider &objects_provider)
 {
     try {
         Fred::OperationContextCreator ctx;
@@ -117,33 +122,33 @@ KeysetCreateData create_successfully_by(const Test::ObjectsProvider &objects_pro
         data.keyset_handle = objects_provider.get_keyset_handle< Fred::Keyset::HandleState::available,
                                                                  Fred::Keyset::HandleState::valid >(ctx);
         data.registrar_handle = get_registrar_handle< REGISTRAR >(objects_provider);
-        static const unsigned number_of_contacts = (1 + Epp::Keyset::max_number_of_tech_contacts) / 2;
+        static const unsigned number_of_contacts = (1 + ::Epp::Keyset::max_number_of_tech_contacts) / 2;
         data.tech_contacts.reserve(number_of_contacts);
         for (unsigned idx = 0; idx < number_of_contacts; ++idx) {
             data.tech_contacts.push_back(objects_provider.get_contact(idx).handle);
         }
         static const unsigned long long logd_request_id = 12345;
-        data.dns_keys.push_back(Epp::Keyset::DnsKey(0, 3, 8, "bla="));
-        BOOST_CHECK(is_nondecreasing(Epp::Keyset::min_number_of_dns_keys, data.dns_keys.size(), Epp::Keyset::max_number_of_dns_keys));
-        const Epp::Keyset::CreateKeysetResult result = Epp::Keyset::create_keyset(
+        data.dns_keys.push_back(::Epp::Keyset::DnsKey(0, 3, 8, "bla="));
+        BOOST_CHECK(is_nondecreasing(::Epp::Keyset::min_number_of_dns_keys, data.dns_keys.size(), ::Epp::Keyset::max_number_of_dns_keys));
+        const ::Epp::Keyset::CreateKeysetResult result = ::Epp::Keyset::create_keyset(
                 ctx,
-                Epp::Keyset::CreateKeysetInputData(
+                ::Epp::Keyset::CreateKeysetInputData(
                         data.keyset_handle,
                         data.authinfopw,
                         data.tech_contacts,
                         data.ds_records,
                         data.dns_keys),
-                Test::DefaultCreateKeysetConfigData(),
-                Epp::SessionData(
+                DefaultCreateKeysetConfigData(),
+                ::Epp::SessionData(
                         data.registrar_id,
-                        Epp::SessionLang::en,
+                        ::Epp::SessionLang::en,
                         "",
                         boost::optional<unsigned long long>(logd_request_id)));
         BOOST_REQUIRE(0 < result.id);
         ctx.commit_transaction();
         return data;
     }
-    catch (const Epp::EppResponseFailure& e) {
+    catch (const ::Epp::EppResponseFailure& e) {
         std::cout << "catch: " << e.what() << std::endl;
         throw;
     }
@@ -162,12 +167,12 @@ void check_created_keyset(const KeysetCreateData &data)
     try {
         Fred::OperationContextCreator ctx;
         BOOST_REQUIRE(data.registrar_id != 0);
-        const Epp::Keyset::InfoKeysetOutputData info_data =
-            Epp::Keyset::info_keyset(
+        const ::Epp::Keyset::InfoKeysetOutputData info_data =
+            ::Epp::Keyset::info_keyset(
                     ctx,
                     data.keyset_handle,
-                    Test::DefaultInfoKeysetConfigData(),
-                    Test::DefaultSessionData().set_registrar_id(data.registrar_id));
+                    DefaultInfoKeysetConfigData(),
+                    DefaultSessionData().set_registrar_id(data.registrar_id));
         ctx.commit_transaction();
         BOOST_CHECK(info_data.handle == data.keyset_handle);
         BOOST_CHECK(info_data.creating_registrar_handle == data.registrar_handle);
@@ -186,7 +191,7 @@ void check_created_keyset(const KeysetCreateData &data)
         BOOST_CHECK(data.ds_records.empty());
         BOOST_CHECK(info_data.dns_keys.size() == data.dns_keys.size());
         BOOST_CHECK(!info_data.dns_keys.empty());
-        for (std::vector< Epp::Keyset::DnsKey >::const_iterator dns_key_ptr = data.dns_keys.begin();
+        for (std::vector< ::Epp::Keyset::DnsKey >::const_iterator dns_key_ptr = data.dns_keys.begin();
              dns_key_ptr != data.dns_keys.end(); ++dns_key_ptr)
         {
             BOOST_CHECK(info_data.dns_keys.count(*dns_key_ptr) == 1);
@@ -203,8 +208,8 @@ void check_created_keyset(const KeysetCreateData &data)
     }
 }
 
-bool create_by_invalid_registrar_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool create_by_invalid_registrar_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -215,35 +220,35 @@ void create_by_invalid_registrar(const KeysetCreateData &data)
     static const unsigned long long invalid_registrar_id = 0;
     static const unsigned long long logd_request_id = 12346;
     BOOST_CHECK_EXCEPTION(
-            Epp::Keyset::create_keyset(
+            ::Epp::Keyset::create_keyset(
                     ctx,
-                    Epp::Keyset::CreateKeysetInputData(
+                    ::Epp::Keyset::CreateKeysetInputData(
                             data.keyset_handle,
                             data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
-                    Test::DefaultCreateKeysetConfigData(),
-                    Epp::SessionData(
+                    DefaultCreateKeysetConfigData(),
+                    ::Epp::SessionData(
                             invalid_registrar_id,
-                            Epp::SessionLang::en,
+                            ::Epp::SessionLang::en,
                             "",
                             boost::optional<unsigned long long>(logd_request_id))),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             create_by_invalid_registrar_exception);
 }
 
-bool create_with_correct_data_but_registered_handle_by_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_exists);
+bool create_with_correct_data_but_registered_handle_by_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_exists);
     BOOST_REQUIRE(e.epp_result().extended_errors());
     BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
-    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::keyset_handle, Epp::Reason::existing));
+    BOOST_CHECK(::Epp::has_extended_error_with_param_reason(e.epp_result(), ::Epp::Param::keyset_handle, ::Epp::Reason::existing));
     return true;
 }
 
 template < Registrar::Enum REGISTRAR >
 void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &data,
-                                                       const Test::ObjectsProvider &objects_provider)
+                                                       const ObjectsProvider &objects_provider)
 {
     Fred::OperationContextCreator ctx;
     BOOST_REQUIRE(Fred::Keyset::get_handle_registrability(ctx, data.keyset_handle) ==
@@ -251,42 +256,42 @@ void create_with_correct_data_but_registered_handle_by(const KeysetCreateData &d
     static const unsigned long long logd_request_id = 12346;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     BOOST_CHECK_EXCEPTION(
-            Epp::Keyset::create_keyset(
+            ::Epp::Keyset::create_keyset(
                     ctx,
-                    Epp::Keyset::CreateKeysetInputData(
+                    ::Epp::Keyset::CreateKeysetInputData(
                             data.keyset_handle,
                             data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
-                    Test::DefaultCreateKeysetConfigData(),
-                    Epp::SessionData(
+                    DefaultCreateKeysetConfigData(),
+                    ::Epp::SessionData(
                             registrar_id,
-                            Epp::SessionLang::en,
+                            ::Epp::SessionLang::en,
                             "",
                             boost::optional<unsigned long long>(logd_request_id))),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             create_with_correct_data_but_registered_handle_by_exception);
 }
 
 template < Registrar::Enum REGISTRAR >
-KeysetCreateData create_protected_period_by(const Test::ObjectsProvider &objects_provider)
+KeysetCreateData create_protected_period_by(const ObjectsProvider &objects_provider)
 {
     try {
-        const KeysetCreateData data = Keyset::create_successfully_by< REGISTRAR >(objects_provider);
+        const KeysetCreateData data = CreateKeyset::create_successfully_by< REGISTRAR >(objects_provider);
         check_created_keyset(data);
         Fred::OperationContextCreator ctx;
         const unsigned long long delete_result =
-                Epp::Keyset::delete_keyset(
+                ::Epp::Keyset::delete_keyset(
                         ctx,
                         data.keyset_handle,
-                        Test::DefaultDeleteKeysetConfigData(),
-                        Test::DefaultSessionData().set_registrar_id(data.registrar_id));
+                        DefaultDeleteKeysetConfigData(),
+                        DefaultSessionData().set_registrar_id(data.registrar_id));
         BOOST_REQUIRE(0 < delete_result);
         ctx.commit_transaction();
         return data;
     }
-    catch (const Epp::EppResponseFailure& e) {
+    catch (const ::Epp::EppResponseFailure& e) {
         std::cout << "catch: " << e.what() << std::endl;
         throw;
     }
@@ -301,24 +306,24 @@ KeysetCreateData create_protected_period_by(const Test::ObjectsProvider &objects
 }
 
 template < Registrar::Enum REGISTRAR >
-void check_protected_period_keyset(const std::string &keyset_handle, const Test::ObjectsProvider &objects_provider)
+void check_protected_period_keyset(const std::string &keyset_handle, const ObjectsProvider &objects_provider)
 {
     try {
         Fred::OperationContextCreator ctx;
         std::set< std::string > handles;
         handles.insert(keyset_handle);
         const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
-        const std::map<std::string, Nullable<Epp::Keyset::KeysetHandleRegistrationObstruction::Enum> > check_result =
-                Epp::Keyset::check_keyset(
+        const std::map<std::string, Nullable< ::Epp::Keyset::KeysetHandleRegistrationObstruction::Enum> > check_result =
+                ::Epp::Keyset::check_keyset(
                         ctx,
                         handles,
-                        Test::DefaultCheckKeysetConfigData(),
-                        Test::DefaultSessionData().set_registrar_id(registrar_id));
+                        DefaultCheckKeysetConfigData(),
+                        DefaultSessionData().set_registrar_id(registrar_id));
         ctx.commit_transaction();
         BOOST_REQUIRE(check_result.size() == 1);
         BOOST_REQUIRE(check_result.count(keyset_handle) == 1);
         BOOST_REQUIRE(!check_result.find(keyset_handle)->second.isnull());
-        BOOST_CHECK(check_result.find(keyset_handle)->second.get_value() == Epp::Keyset::KeysetHandleRegistrationObstruction::protected_handle);
+        BOOST_CHECK(check_result.find(keyset_handle)->second.get_value() == ::Epp::Keyset::KeysetHandleRegistrationObstruction::protected_handle);
         return;
     }
     catch (const std::exception &e) {
@@ -331,17 +336,17 @@ void check_protected_period_keyset(const std::string &keyset_handle, const Test:
     }
 }
 
-bool create_with_correct_data_but_protected_handle_by_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_policy_error);
+bool create_with_correct_data_but_protected_handle_by_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::parameter_value_policy_error);
     BOOST_REQUIRE(e.epp_result().extended_errors());
     BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
-    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::keyset_handle, Epp::Reason::protected_period));
+    BOOST_CHECK(::Epp::has_extended_error_with_param_reason(e.epp_result(), ::Epp::Param::keyset_handle, ::Epp::Reason::protected_period));
     return true;
 }
 
 template < Registrar::Enum REGISTRAR >
 void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &data,
-                                                      const Test::ObjectsProvider &objects_provider)
+                                                      const ObjectsProvider &objects_provider)
 {
     Fred::OperationContextCreator ctx;
     BOOST_REQUIRE(Fred::Keyset::get_handle_registrability(ctx, data.keyset_handle) ==
@@ -349,35 +354,35 @@ void create_with_correct_data_but_protected_handle_by(const KeysetCreateData &da
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     BOOST_CHECK_EXCEPTION(
-            Epp::Keyset::create_keyset(
+            ::Epp::Keyset::create_keyset(
                     ctx,
-                    Epp::Keyset::CreateKeysetInputData(
+                    ::Epp::Keyset::CreateKeysetInputData(
                             data.keyset_handle,
                             data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
-                    Test::DefaultCreateKeysetConfigData(),
-                    Epp::SessionData(
+                    DefaultCreateKeysetConfigData(),
+                    ::Epp::SessionData(
                             registrar_id,
-                            Epp::SessionLang::en,
+                            ::Epp::SessionLang::en,
                             "",
                             boost::optional<unsigned long long>(logd_request_id))),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             create_with_correct_data_but_protected_handle_by_exception);
 }
 
-bool create_with_correct_data_but_invalid_handle_by_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::parameter_value_syntax_error);
+bool create_with_correct_data_but_invalid_handle_by_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::parameter_value_syntax_error);
     BOOST_REQUIRE(e.epp_result().extended_errors());
     BOOST_REQUIRE(!e.epp_result().extended_errors()->empty());
-    BOOST_CHECK(Epp::has_extended_error_with_param_reason(e.epp_result(), Epp::Param::keyset_handle, Epp::Reason::bad_format_keyset_handle));
+    BOOST_CHECK(::Epp::has_extended_error_with_param_reason(e.epp_result(), ::Epp::Param::keyset_handle, ::Epp::Reason::bad_format_keyset_handle));
     return true;
 }
 
 template < Registrar::Enum REGISTRAR >
 void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data,
-                                                    const Test::ObjectsProvider &objects_provider)
+                                                    const ObjectsProvider &objects_provider)
 {
     const std::string invalid_keyset_handle = data.keyset_handle + "-";
     BOOST_REQUIRE(Fred::Keyset::get_handle_syntax_validity(invalid_keyset_handle) ==
@@ -386,35 +391,35 @@ void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     BOOST_CHECK_EXCEPTION(
-            Epp::Keyset::create_keyset(
+            ::Epp::Keyset::create_keyset(
                     ctx,
-                    Epp::Keyset::CreateKeysetInputData(
+                    ::Epp::Keyset::CreateKeysetInputData(
                             invalid_keyset_handle,
                             data.authinfopw,
                             data.tech_contacts,
                             data.ds_records,
                             data.dns_keys),
-                    Test::DefaultCreateKeysetConfigData(),
-                    Epp::SessionData(
+                    DefaultCreateKeysetConfigData(),
+                    ::Epp::SessionData(
                             registrar_id,
-                            Epp::SessionLang::en,
+                            ::Epp::SessionLang::en,
                             "",
                             boost::optional<unsigned long long>(logd_request_id))),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             create_with_correct_data_but_invalid_handle_by_exception);
 }
 
 } // namespace {anonymous}
 
-BOOST_FIXTURE_TEST_CASE(create, Test::ObjectsProvider)
+BOOST_FIXTURE_TEST_CASE(create, ObjectsProvider)
 {
-    const KeysetCreateData data_a = Keyset::create_successfully_by< Registrar::A >(*this);
+    const KeysetCreateData data_a = CreateKeyset::create_successfully_by< Registrar::A >(*this);
     check_created_keyset(data_a);
 
-    const KeysetCreateData data_b = Keyset::create_successfully_by< Registrar::B >(*this);
+    const KeysetCreateData data_b = CreateKeyset::create_successfully_by< Registrar::B >(*this);
     check_created_keyset(data_b);
 
-    const KeysetCreateData data_sys = Keyset::create_successfully_by< Registrar::SYS >(*this);
+    const KeysetCreateData data_sys = CreateKeyset::create_successfully_by< Registrar::SYS >(*this);
     check_created_keyset(data_sys);
 
     create_by_invalid_registrar(data_a);
@@ -432,11 +437,11 @@ BOOST_FIXTURE_TEST_CASE(create, Test::ObjectsProvider)
     create_with_correct_data_but_registered_handle_by< Registrar::B >(data_sys, *this);
     create_with_correct_data_but_registered_handle_by< Registrar::SYS >(data_sys, *this);
 
-    const KeysetCreateData protected_data_a = Keyset::create_protected_period_by< Registrar::A >(*this);
+    const KeysetCreateData protected_data_a = CreateKeyset::create_protected_period_by< Registrar::A >(*this);
     check_protected_period_keyset< Registrar::A >(protected_data_a.keyset_handle, *this);
-    const KeysetCreateData protected_data_b = Keyset::create_protected_period_by< Registrar::B >(*this);
+    const KeysetCreateData protected_data_b = CreateKeyset::create_protected_period_by< Registrar::B >(*this);
     check_protected_period_keyset< Registrar::B >(protected_data_b.keyset_handle, *this);
-    const KeysetCreateData protected_data_sys = Keyset::create_protected_period_by< Registrar::SYS >(*this);
+    const KeysetCreateData protected_data_sys = CreateKeyset::create_protected_period_by< Registrar::SYS >(*this);
     check_protected_period_keyset< Registrar::SYS >(protected_data_sys.keyset_handle, *this);
 
     create_with_correct_data_but_protected_handle_by< Registrar::A >(protected_data_a, *this);
@@ -461,3 +466,8 @@ BOOST_FIXTURE_TEST_CASE(create, Test::ObjectsProvider)
 }
 
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

@@ -42,7 +42,7 @@
 #include "tests/setup/fixtures.h"
 
 
-struct test_info_registrar_fixture : virtual public Test::Fixture::instantiate_db_template
+struct test_info_registrar_fixture : virtual public Test::instantiate_db_template
 {
     std::string xmark;
     Fred::InfoRegistrarData test_registrar_data_1;

@@ -32,11 +32,15 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(TransferNsset)
 
-bool transfer_fail_auth_error_srvr_closing_connection_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool transfer_fail_auth_error_srvr_closing_connection_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -45,20 +49,20 @@ BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_ns
 {
     const unsigned long long invalid_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::transfer_nsset(
+        ::Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
-            Test::DefaultTransferNssetConfigData(),
-            Test::Session(ctx, invalid_registrar_id).data
+            DefaultTransferNssetConfigData(),
+            Session(ctx, invalid_registrar_id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_auth_error_srvr_closing_connection_exception
     );
 }
 
-bool transfer_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool transfer_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -66,20 +70,20 @@ bool transfer_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e
 BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, HasRegistrar)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::transfer_nsset(
+        ::Epp::Nsset::transfer_nsset(
             ctx,
             Test::get_nonexistent_object_handle(ctx),
             "abc-it-doesnt-matter-operation-should-fail-even-sooner",
-            Test::DefaultTransferNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultTransferNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_nonexistent_handle_exception
     );
 }
 
-bool transfer_fail_not_eligible_for_transfer_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_is_not_eligible_for_transfer);
+bool transfer_fail_not_eligible_for_transfer_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_is_not_eligible_for_transfer);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -87,20 +91,20 @@ bool transfer_fail_not_eligible_for_transfer_exception(const Epp::EppResponseFai
 BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, has_nsset)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::transfer_nsset(
+        ::Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
-            Test::DefaultTransferNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultTransferNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_not_eligible_for_transfer_exception
     );
 }
 
-bool transfer_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+bool transfer_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -108,20 +112,20 @@ bool transfer_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_nsset_with_server_transfer_prohibited)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::transfer_nsset(
+        ::Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
-            Test::DefaultTransferNssetConfigData(),
-            Test::Session(ctx, Test::Registrar(ctx).data.id).data
+            DefaultTransferNssetConfigData(),
+            Session(ctx, Registrar(ctx).data.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_prohibiting_status1_exception
     );
 }
 
-bool transfer_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+bool transfer_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -129,20 +133,20 @@ bool transfer_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_nsset_with_delete_candidate)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::transfer_nsset(
+        ::Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             nsset.authinfopw,
-            Test::DefaultTransferNssetConfigData(),
-            Test::Session(ctx, Test::Registrar(ctx).data.id).data
+            DefaultTransferNssetConfigData(),
+            Session(ctx, Registrar(ctx).data.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_prohibiting_status2_exception
     );
 }
 
-bool transfer_fail_authinfopw_error_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::invalid_authorization_information);
+bool transfer_fail_authinfopw_error_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::invalid_authorization_information);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -150,26 +154,26 @@ bool transfer_fail_authinfopw_error_exception(const Epp::EppResponseFailure& e) 
 BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfopw_error, has_nsset)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::transfer_nsset(
+        ::Epp::Nsset::transfer_nsset(
             ctx,
             nsset.handle,
             "thisisdifferent" + nsset.authinfopw,
-            Test::DefaultTransferNssetConfigData(),
-            Test::Session(ctx, Test::Registrar(ctx).data.id).data
+            DefaultTransferNssetConfigData(),
+            Session(ctx, Registrar(ctx).data.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         transfer_fail_authinfopw_error_exception
     );
 }
 
 BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, has_nsset_with_server_update_prohibited_request)
 {
-    Epp::Nsset::transfer_nsset(
+    ::Epp::Nsset::transfer_nsset(
         ctx,
         nsset.handle,
         nsset.authinfopw,
-        Test::DefaultTransferNssetConfigData(),
-        Test::Session(ctx, Test::Registrar(ctx).data.id).data
+        DefaultTransferNssetConfigData(),
+        Session(ctx, Registrar(ctx).data.id).data
     );
 
     /* now object has the state server_update_prohibited itself */
@@ -193,13 +197,13 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_nsset)
 {
     const Fred::InfoNssetData nsset_data_before = Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data;
 
-    Test::Registrar another_registrar(ctx);
-    Epp::Nsset::transfer_nsset(
+    Registrar another_registrar(ctx);
+    ::Epp::Nsset::transfer_nsset(
         ctx,
         nsset.handle,
         nsset.authinfopw,
-        Test::DefaultTransferNssetConfigData(),
-        Test::Session(ctx, another_registrar.data.id).data
+        DefaultTransferNssetConfigData(),
+        Session(ctx, another_registrar.data.id).data
     );
 
     const Fred::InfoNssetData nsset_data_after = Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data;
@@ -233,3 +237,8 @@ BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_nsset)
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test
+ 

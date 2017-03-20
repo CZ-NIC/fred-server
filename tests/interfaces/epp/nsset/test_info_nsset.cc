@@ -35,11 +35,15 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/optional.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(InfoNsset)
 
-bool info_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool info_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -48,19 +52,19 @@ BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
 {
     const unsigned long long invalid_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::info_nsset(
+        ::Epp::Nsset::info_nsset(
             ctx,
             nsset.handle,
-            Test::DefaultInfoNssetConfigData(),
-            Test::Session(ctx, invalid_registrar_id).data
+            DefaultInfoNssetConfigData(),
+            Session(ctx, invalid_registrar_id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         info_invalid_registrar_id_exception
     );
 }
 
-bool info_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool info_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -68,18 +72,18 @@ bool info_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::info_nsset(
+        ::Epp::Nsset::info_nsset(
             ctx,
             nsset.handle + "SOMEobscureSTRING",
-            Test::DefaultInfoNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultInfoNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         info_fail_nonexistent_handle_exception
     );
 }
 
-static void check_equal(const Epp::Nsset::InfoNssetOutputData& nsset_data, const Fred::InfoNssetData& info_data) {
+static void check_equal(const ::Epp::Nsset::InfoNssetOutputData& nsset_data, const Fred::InfoNssetData& info_data) {
     BOOST_CHECK_EQUAL( boost::to_upper_copy( nsset_data.handle ), info_data.handle );
 
     BOOST_REQUIRE(nsset_data.authinfopw);
@@ -109,11 +113,11 @@ static void check_equal(const Epp::Nsset::InfoNssetOutputData& nsset_data, const
 BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_nsset_with_all_data_set)
 {
     check_equal(
-        Epp::Nsset::info_nsset(
+        ::Epp::Nsset::info_nsset(
             ctx,
             nsset.handle,
-            Test::DefaultInfoNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultInfoNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
         nsset
     );
@@ -151,3 +155,7 @@ struct has_nsset_with_external_and_nonexternal_states : has_nsset {
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

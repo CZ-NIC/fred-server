@@ -39,7 +39,7 @@ public:
                                       (HandleArgsPtr(new HandleRifdArgs))
                                       (HandleArgsPtr(new HandleContactVerificationArgs))
                                       (HandleArgsPtr(new HandleMojeIDArgs))
-                                      (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>()))
+                                      (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>()))
     {
         CfgArgs::init< HandleTestsArgs >(config_handlers)->handle(
             boost::unit_test::framework::master_test_suite().argc,
@@ -80,7 +80,7 @@ void handle_command_line_args::setup_logging(CfgArgs *cfg_instance_ptr)
 class global_fixture
 {
     Test::handle_command_line_args handle_admin_db_cmd_line_args;
-    Test::Fixture::create_db_template crete_db_template;
+    Test::create_db_template crete_db_template;
 };
 
 BOOST_GLOBAL_FIXTURE(global_fixture);

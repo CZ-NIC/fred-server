@@ -34,6 +34,8 @@
 #include <set>
 #include <vector>
 
+namespace Test {
+
 namespace {
 
 std::set<std::string> vector_of_Fred_ObjectIdHandlePair_to_set_of_string(const std::vector<Fred::ObjectIdHandlePair>& admin_contacts) {
@@ -49,7 +51,7 @@ std::set<std::string> vector_of_Fred_ObjectIdHandlePair_to_set_of_string(const s
 }
 
 void check_equal(
-    const Epp::Domain::InfoDomainOutputData& _info_domain_output_data,
+    const ::Epp::Domain::InfoDomainOutputData& _info_domain_output_data,
     const Fred::InfoDomainData& _info_domain_data)
 {
     BOOST_CHECK_EQUAL(_info_domain_output_data.roid, _info_domain_data.roid);
@@ -96,56 +98,58 @@ void check_equal(
 
 } // namespace {anonymous}
 
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(InfoDomain)
 
-bool fail_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool fail_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, Test::supply_ctx<Test::Fixture::HasSessionWithUnauthenticatedRegistrar>)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::info_domain(
+        ::Epp::Domain::info_domain(
             ctx,
             "domain.cz",
-            Test::DefaultInfoDomainConfigData(),
+            DefaultInfoDomainConfigData(),
             session_with_unauthenticated_registrar.data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         fail_invalid_registrar_id_exception
     );
 }
 
-bool fail_nonexistent_fqdn_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool fail_nonexistent_fqdn_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn,  Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndNonexistentFqdn>)
+BOOST_FIXTURE_TEST_CASE(fail_nonexistent_fqdn,  supply_ctx<HasRegistrarWithSessionAndNonexistentFqdn>)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Domain::info_domain(
+        ::Epp::Domain::info_domain(
             ctx,
             nonexistent_fqdn.fqdn,
-            Test::DefaultInfoDomainConfigData(),
+            DefaultInfoDomainConfigData(),
             session.data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         fail_nonexistent_fqdn_exception
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
+BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasRegistrarWithSessionAndDomain>)
 {
     check_equal(
-        Epp::Domain::info_domain(
+        ::Epp::Domain::info_domain(
             ctx,
             domain.data.fqdn,
-            Test::DefaultInfoDomainConfigData(),
+            DefaultInfoDomainConfigData(),
             session.data
         ),
         domain.data);
@@ -153,3 +157,7 @@ BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasRegistrarWithSess
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

@@ -30,11 +30,11 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-BOOST_FIXTURE_TEST_SUITE(TestCheckHandle, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestCheckHandle, Test::instantiate_db_template)
 
 const std::string server_name = "test-check-handle";
 
-struct check_handle_fixture : public Test::Fixture::instantiate_db_template
+struct check_handle_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

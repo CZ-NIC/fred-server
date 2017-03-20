@@ -5,6 +5,9 @@
 #include <vector>
 
 namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Domain {
 
 std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(const std::vector<Fred::ObjectIdHandlePair>& admin_contacts) {
     std::vector<std::string> admin;
@@ -18,4 +21,7 @@ std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(c
     return admin;
 }
 
+} // namespace Test::Backend::Epp::Domain
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
 } // namespace Test

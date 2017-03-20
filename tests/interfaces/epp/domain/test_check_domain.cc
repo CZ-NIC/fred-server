@@ -26,23 +26,27 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(CheckDomain)
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_empty, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
+BOOST_FIXTURE_TEST_CASE(test_result_size_empty, supply_ctx<HasRegistrarWithSession>)
 {
     BOOST_CHECK_EQUAL(
-        Epp::Domain::check_domain(
+        ::Epp::Domain::check_domain(
             ctx,
             std::set<std::string>(),
-            Test::DefaultCheckDomainConfigData(),
+            DefaultCheckDomainConfigData(),
             session.data
         ).size(),
         0
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
+BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, supply_ctx<HasRegistrarWithSession>)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
@@ -58,17 +62,17 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, Test::supply_ctx<Test::Fixtur
             ("e1").convert_to_container<std::set<std::string> >();
 
     BOOST_CHECK_EQUAL(
-        Epp::Domain::check_domain(
+        ::Epp::Domain::check_domain(
             ctx,
             domain_fqdns,
-            Test::DefaultCheckDomainConfigData(),
+            DefaultCheckDomainConfigData(),
             session.data
         ).size(),
         domain_fqdns.size()
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_invalid_handle, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
+BOOST_FIXTURE_TEST_CASE(test_invalid_handle, supply_ctx<HasRegistrarWithSession>)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
@@ -78,41 +82,41 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, Test::supply_ctx<Test::Fixture::Has
             ("do--main.cz")
             ("!domain.cz").convert_to_container<std::set<std::string> >();
 
-    const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
-        Epp::Domain::check_domain(
+    const std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
+        ::Epp::Domain::check_domain(
             ctx,
             domain_fqdns,
-            Test::DefaultCheckDomainConfigData(),
+            DefaultCheckDomainConfigData(),
             session.data
         );
 
-    for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
+    for(std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
         it != check_domain_res.end();
         ++it
     ) {
         BOOST_CHECK(!it->second.isnull()); // isnull() means domain is available (not registered) and its fqdn is valid
-        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == Epp::Domain::DomainRegistrationObstruction::invalid_fqdn));
+        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == ::Epp::Domain::DomainRegistrationObstruction::invalid_fqdn));
         if(!it->second.isnull()) {
             BOOST_TEST_MESSAGE(it->first << "  DomainRegistrationObstruction: " << it->second.get_value());
         }
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndNonexistentFqdn>)
+BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, supply_ctx<HasRegistrarWithSessionAndNonexistentFqdn>)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
             (nonexistent_fqdn.fqdn).convert_to_container<std::set<std::string> >();
 
-    const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
-        Epp::Domain::check_domain(
+    const std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
+        ::Epp::Domain::check_domain(
             ctx,
             domain_fqdns,
-            Test::DefaultCheckDomainConfigData(),
+            DefaultCheckDomainConfigData(),
             session.data
         );
 
-    for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
+    for(std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
         it != check_domain_res.end();
         ++it
     ) {
@@ -120,72 +124,72 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, Test::supply_ctx<Test::Fixture:
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_existing, Test::supply_ctx<Test::Fixture::HasSystemRegistrarWithSessionAndDomain>)
+BOOST_FIXTURE_TEST_CASE(test_existing, supply_ctx<HasSystemRegistrarWithSessionAndDomain>)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
             (domain.data.fqdn).convert_to_container<std::set<std::string> >();
 
-    const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
-        Epp::Domain::check_domain(
+    const std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
+        ::Epp::Domain::check_domain(
             ctx,
             domain_fqdns,
-            Test::DefaultCheckDomainConfigData(),
+            DefaultCheckDomainConfigData(),
             session.data
         );
 
-    for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
+    for(std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
         it != check_domain_res.end();
         ++it
     ) {
         BOOST_CHECK(!it->second.isnull()); // isnull() means domain is available (not registered) and its fqdn is valid
-        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == Epp::Domain::DomainRegistrationObstruction::registered));
+        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == ::Epp::Domain::DomainRegistrationObstruction::registered));
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_blacklisted, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndBlacklistedFqdn>)
+BOOST_FIXTURE_TEST_CASE(test_blacklisted, supply_ctx<HasRegistrarWithSessionAndBlacklistedFqdn>)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
             (blacklisted_fqdn.fqdn).convert_to_container<std::set<std::string> >();
 
-    const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
-        Epp::Domain::check_domain(
+    const std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
+        ::Epp::Domain::check_domain(
             ctx,
             domain_fqdns,
-            Test::DefaultCheckDomainConfigData(),
+            DefaultCheckDomainConfigData(),
             session.data
         );
 
-    for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
+    for(std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
         it != check_domain_res.end();
         ++it
     ) {
         BOOST_CHECK(!it->second.isnull()); // isnull() means domain is available (not registered) and its fqdn is valid
-        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == Epp::Domain::DomainRegistrationObstruction::blacklisted));
+        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == ::Epp::Domain::DomainRegistrationObstruction::blacklisted));
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_existing_and_blacklisted, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndBlacklistedDomain>)
+BOOST_FIXTURE_TEST_CASE(test_existing_and_blacklisted, supply_ctx<HasRegistrarWithSessionAndBlacklistedDomain>)
 {
     const std::set<std::string> domain_fqdns
         = boost::assign::list_of
             (blacklisted_domain.data.fqdn).convert_to_container<std::set<std::string> >();
 
-    const std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
-        Epp::Domain::check_domain(
+    const std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> > check_domain_res =
+        ::Epp::Domain::check_domain(
             ctx,
             domain_fqdns,
-            Test::DefaultCheckDomainConfigData(),
+            DefaultCheckDomainConfigData(),
             session.data
         );
 
-    for(std::map<std::string, Nullable<Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
+    for(std::map<std::string, Nullable< ::Epp::Domain::DomainRegistrationObstruction::Enum> >::const_iterator it = check_domain_res.begin();
         it != check_domain_res.end();
         ++it
     ) {
         BOOST_CHECK(!it->second.isnull()); // isnull() means domain is available (not registered) and its fqdn is valid
-        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == Epp::Domain::DomainRegistrationObstruction::registered));
+        BOOST_CHECK(!it->second.isnull() && (it->second.get_value() == ::Epp::Domain::DomainRegistrationObstruction::registered));
     }
 }
 
@@ -193,3 +197,7 @@ BOOST_FIXTURE_TEST_CASE(test_existing_and_blacklisted, Test::supply_ctx<Test::Fi
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

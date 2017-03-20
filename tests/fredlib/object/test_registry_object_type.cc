@@ -26,7 +26,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestRegistryObjectType)
 
-BOOST_FIXTURE_TEST_CASE(all_definitions_from_db_are_supported, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_CASE(all_definitions_from_db_are_supported, Test::instantiate_db_template)
 {
     Fred::OperationContextCreator ctx;
     Database::Result obj_types_res = ctx.get_conn().exec("SELECT name FROM enum_object_type");

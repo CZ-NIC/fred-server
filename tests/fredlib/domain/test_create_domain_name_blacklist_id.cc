@@ -29,7 +29,7 @@
 
 const std::string server_name = "test-create-domain-name-blacklist-id";
 
-struct create_domain_name_blacklist_id_fixture : public Test::Fixture::instantiate_db_template
+struct create_domain_name_blacklist_id_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

@@ -29,7 +29,7 @@
 
 const std::string server_name = "test-create-contact";
 
-struct create_contact_fixture : public virtual Test::Fixture::instantiate_db_template
+struct create_contact_fixture : public virtual Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

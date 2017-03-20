@@ -31,47 +31,92 @@
 #include <boost/test/test_tools.hpp>
 
 namespace Test {
+namespace Backend {
+namespace Epp {
 
-    struct autocommitting_context : virtual Fixture::instantiate_db_template {
-        Fred::OperationContextCreator ctx;
+struct autocommitting_context
+    : virtual instantiate_db_template
+{
+    Fred::OperationContextCreator ctx;
 
-        virtual ~autocommitting_context() {
-            ctx.commit_transaction();
-        }
-    };
 
-    struct autorollbacking_context : virtual Fixture::instantiate_db_template {
-        Fred::OperationContextCreator ctx;
-    };
-
-    class RegistrarProvider
+    virtual ~autocommitting_context()
     {
-    public:
-        static const Fred::InfoRegistrarData& get_registrar_a();
-        static const Fred::InfoRegistrarData& get_registrar_b();
-        static const Fred::InfoRegistrarData& get_sys_registrar();
-    private:
-        RegistrarProvider();
-        explicit RegistrarProvider(Fred::OperationContext&);
-        static Fred::InfoRegistrarData create_registrar(Fred::OperationContext&, const std::string&, bool);
-        static const RegistrarProvider& get_const_instance();
-        const Fred::InfoRegistrarData registrar_a_;
-        const Fred::InfoRegistrarData registrar_b_;
-        const Fred::InfoRegistrarData sys_registrar_;
-    };
+        ctx.commit_transaction();
+    }
 
-    class ContactProvider
-    {
-    public:
-        static const Fred::InfoContactData& get_contact(unsigned idx);
-    private:
-        ContactProvider();
-        explicit ContactProvider(Fred::OperationContext&, unsigned);
-        static Fred::InfoContactData create_contact(Fred::OperationContext&, const std::string&, const std::string&);
-        static const ContactProvider& get_const_instance();
-        std::vector< Fred::InfoContactData > contact_;
-    };
 
-}//namespace Test
+};
+
+struct autorollbacking_context
+    : virtual instantiate_db_template
+{
+    Fred::OperationContextCreator ctx;
+
+};
+
+class RegistrarProvider
+{
+public:
+    static const Fred::InfoRegistrarData& get_registrar_a();
+
+
+    static const Fred::InfoRegistrarData& get_registrar_b();
+
+
+    static const Fred::InfoRegistrarData& get_sys_registrar();
+
+
+private:
+    RegistrarProvider();
+
+
+    explicit RegistrarProvider(Fred::OperationContext&);
+
+
+    static Fred::InfoRegistrarData create_registrar(
+            Fred::OperationContext&,
+            const std::string&,
+            bool);
+
+
+    static const RegistrarProvider& get_const_instance();
+
+
+    const Fred::InfoRegistrarData registrar_a_;
+    const Fred::InfoRegistrarData registrar_b_;
+    const Fred::InfoRegistrarData sys_registrar_;
+};
+
+class ContactProvider
+{
+public:
+    static const Fred::InfoContactData& get_contact(unsigned idx);
+
+
+private:
+    ContactProvider();
+
+
+    explicit ContactProvider(
+            Fred::OperationContext&,
+            unsigned);
+
+
+    static Fred::InfoContactData create_contact(
+            Fred::OperationContext&,
+            const std::string&,
+            const std::string&);
+
+
+    static const ContactProvider& get_const_instance();
+
+
+    std::vector<Fred::InfoContactData> contact_;
+};
+
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
+} // namespace Test
 
 #endif

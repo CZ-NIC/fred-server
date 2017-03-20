@@ -27,7 +27,7 @@
 
 const std::string server_name = "test-copy-contact";
 
-struct copy_contact_fixture : public Test::Fixture::instantiate_db_template
+struct copy_contact_fixture : public Test::instantiate_db_template
 {
     std::string xmark;
     std::string sys_registrar_handle;

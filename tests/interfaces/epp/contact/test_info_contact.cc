@@ -32,18 +32,20 @@
 #include <boost/optional.hpp>
 #include <boost/test/unit_test.hpp>
 
+namespace Test {
+
 namespace {
 
-template < Epp::Contact::ContactDisclose::Item::Enum ITEM >
-bool to_disclose(const Epp::Contact::InfoContactOutputData &epp_data)
+template < ::Epp::Contact::ContactDisclose::Item::Enum ITEM >
+bool to_disclose(const ::Epp::Contact::InfoContactOutputData &epp_data)
 {
     if (!epp_data.disclose.is_initialized()) {
-        return Epp::is_the_default_policy_to_disclose();
+        return ::Epp::is_the_default_policy_to_disclose();
     }
     return epp_data.disclose->should_be_disclosed< ITEM >(Epp::is_the_default_policy_to_disclose());
 }
 
-void check_equal(const Epp::Contact::InfoContactOutputData &epp_data, const Fred::InfoContactData &fred_data)
+void check_equal(const ::Epp::Contact::InfoContactOutputData &epp_data, const Fred::InfoContactData &fred_data)
 {
     BOOST_CHECK_EQUAL(boost::to_upper_copy(epp_data.handle),        fred_data.handle);
     BOOST_CHECK_EQUAL(epp_data.name.get_value_or_default(),         fred_data.name.get_value_or_default());
@@ -70,24 +72,26 @@ void check_equal(const Epp::Contact::InfoContactOutputData &epp_data, const Fred
     BOOST_REQUIRE(epp_data.authinfopw);
     BOOST_CHECK_EQUAL(epp_data.authinfopw.value(),                        fred_data.authinfopw);
 
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::name         >(epp_data), fred_data.disclosename);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::organization >(epp_data), fred_data.discloseorganization);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::address      >(epp_data), fred_data.discloseaddress);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::telephone    >(epp_data), fred_data.disclosetelephone);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::fax          >(epp_data), fred_data.disclosefax);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::email        >(epp_data), fred_data.discloseemail);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::vat          >(epp_data), fred_data.disclosevat);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::ident        >(epp_data), fred_data.discloseident);
-    BOOST_CHECK_EQUAL(to_disclose< Epp::Contact::ContactDisclose::Item::notify_email >(epp_data), fred_data.disclosenotifyemail);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::name         >(epp_data), fred_data.disclosename);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::organization >(epp_data), fred_data.discloseorganization);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::address      >(epp_data), fred_data.discloseaddress);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::telephone    >(epp_data), fred_data.disclosetelephone);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::fax          >(epp_data), fred_data.disclosefax);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::email        >(epp_data), fred_data.discloseemail);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::vat          >(epp_data), fred_data.disclosevat);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::ident        >(epp_data), fred_data.discloseident);
+    BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::notify_email >(epp_data), fred_data.disclosenotifyemail);
 }
 
-}//namespace {anonymous}
+} // namespace Test::{anonymous}
 
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(InfoContact)
 
-bool info_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool info_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -95,19 +99,19 @@ bool info_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, HasInvalidSessionRegistrar)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::info_contact(
+        ::Epp::Contact::info_contact(
             ctx,
             "contacthandle",
-            config.info_contact_config_data,
+            DefaultInfoContactConfigData(),
             session.data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         info_invalid_registrar_id_exception
     );
 }
 
-bool info_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool info_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -115,13 +119,13 @@ bool info_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, HasContact)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Contact::info_contact(
+        ::Epp::Contact::info_contact(
             ctx,
             contact.handle + "SOMEobscureSTRING",
-            config.info_contact_config_data,
+            DefaultInfoContactConfigData(),
             session.data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         info_fail_nonexistent_handle_exception
     );
 }
@@ -130,10 +134,10 @@ BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, HasContact)
 BOOST_FIXTURE_TEST_CASE(info_ok_full_data, HasContact)
 {
     check_equal(
-        Epp::Contact::info_contact(
+        ::Epp::Contact::info_contact(
             ctx,
             contact.handle,
-            config.info_contact_config_data,
+            DefaultInfoContactConfigData(),
             session.data
         ),
         contact);
@@ -141,3 +145,7 @@ BOOST_FIXTURE_TEST_CASE(info_ok_full_data, HasContact)
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

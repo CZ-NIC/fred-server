@@ -36,7 +36,7 @@
 
 const std::string server_name = "test-renew-domain";
 
-struct renew_domain_fixture : virtual public Test::Fixture::instantiate_db_template
+struct renew_domain_fixture : virtual public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_SUITE(TestRenewDomain, renew_domain_fixture)
  * test RenewDomain::Exception
  * test create and throw exception with special data
  */
-BOOST_FIXTURE_TEST_CASE(renew_domain_exception, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_CASE(renew_domain_exception, Test::instantiate_db_template)
 {
     //good path exception
     BOOST_CHECK_THROW (BOOST_THROW_EXCEPTION(Fred::RenewDomain::Exception().set_unknown_domain_fqdn("badfqdn.cz"));

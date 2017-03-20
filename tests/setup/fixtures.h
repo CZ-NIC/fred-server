@@ -17,7 +17,6 @@
  */
 
 namespace Test {
-namespace Fixture {
 
     // database created by fred-manager init_cz
     static std::string get_original_db_name() { return "fred"; }
@@ -64,6 +63,7 @@ namespace Fixture {
             std::auto_ptr<Database::StandaloneConnection> get_admin_connection();
     };
 
-}
-}
+
+} // namespace Test
+
 #endif // #include guard end

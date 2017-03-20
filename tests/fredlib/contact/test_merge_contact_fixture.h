@@ -139,7 +139,7 @@ namespace MergeContactFixture
      * OF<number> or of<number> is ordinal number in the linked object configuration quantity, starting from 0
      *
      */
-    struct mergeable_contact_grps_with_linked_objects_and_blocking_states : Test::Fixture::instantiate_db_template
+    struct mergeable_contact_grps_with_linked_objects_and_blocking_states : Test::instantiate_db_template
     {
         /**
          * Create handle of test contact.
@@ -1424,7 +1424,7 @@ public:
             std::vector<std::set<std::string> > linked_object_state_combinations = Util::vector_of<std::set<std::string> > (std::set<std::string>()),
             std::vector<unsigned> _linked_object_quantities = Util::vector_of<unsigned>(0)
             )
-        : Test::Fixture::instantiate_db_template(db_name_suffix)
+        : Test::instantiate_db_template(db_name_suffix)
         , registrar_mc_1_handle("REG1")
         , registrar_mc_2_handle("REG2")
         , registrar_mojeid_handle("REG-MOJEID")

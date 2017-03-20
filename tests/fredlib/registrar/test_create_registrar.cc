@@ -39,7 +39,7 @@
 
 const std::string server_name = "test-create-registrar";
 
-struct test_registrar_fixture : virtual public Test::Fixture::instantiate_db_template
+struct test_registrar_fixture : virtual public Test::instantiate_db_template
 {
     std::string xmark;
     std::string test_registrar_handle;

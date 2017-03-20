@@ -29,127 +29,131 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(DeleteDomain)
 
-bool fail_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool fail_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, Test::supply_ctx<Test::Fixture::HasSessionWithUnauthenticatedRegistrar>)
+BOOST_FIXTURE_TEST_CASE(fail_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-            Epp::Domain::delete_domain(
+            ::Epp::Domain::delete_domain(
                     ctx,
                     "domain.cz",
-                    Test::DefaultDeleteDomainConfigData(),
+                    DefaultDeleteDomainConfigData(),
                     session_with_unauthenticated_registrar.data),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             fail_invalid_registrar_id_exception);
 }
 
-bool fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndNonexistentFqdn>)
+BOOST_FIXTURE_TEST_CASE(fail_domain_does_not_exist, supply_ctx<HasRegistrarWithSessionAndNonexistentFqdn>)
 {
     BOOST_CHECK_EXCEPTION(
-            Epp::Domain::delete_domain(
+            ::Epp::Domain::delete_domain(
                     ctx,
                     nonexistent_fqdn.fqdn,
-                    Test::DefaultDeleteDomainConfigData(),
+                    DefaultDeleteDomainConfigData(),
                     session.data),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             fail_nonexistent_handle_exception);
 }
 
-bool fail_enum_domain_does_not_exist_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool fail_enum_domain_does_not_exist_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndNonexistentEnumFqdn>)
+BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist, supply_ctx<HasRegistrarWithSessionAndNonexistentEnumFqdn>)
 {
     BOOST_CHECK_EXCEPTION(
-            Epp::Domain::delete_domain(
+            ::Epp::Domain::delete_domain(
                     ctx,
                     nonexistent_enum_fqdn.fqdn,
-                    Test::DefaultDeleteDomainConfigData(),
+                    DefaultDeleteDomainConfigData(),
                     session.data),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             fail_enum_domain_does_not_exist_exception);
 }
 
-bool fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+bool fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authorization_error);
     BOOST_REQUIRE(e.epp_result().extended_errors());
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::registrar_autor);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), ::Epp::Param::registrar_autor);
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::unauthorized_registrar);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), ::Epp::Reason::unauthorized_registrar);
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomainOfDifferentRegistrar>)
+BOOST_FIXTURE_TEST_CASE(fail_wrong_registrar, supply_ctx<HasRegistrarWithSessionAndDomainOfDifferentRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-            Epp::Domain::delete_domain(
+            ::Epp::Domain::delete_domain(
                     ctx,
                     domain_of_different_registrar.data.fqdn,
-                    Test::DefaultDeleteDomainConfigData(),
+                    DefaultDeleteDomainConfigData(),
                     session.data),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             fail_wrong_registrar_exception);
 }
 
-bool fail_registrar_without_zone_access_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+bool fail_registrar_without_zone_access_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authorization_error);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
+BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, supply_ctx<HasRegistrarWithSessionAndDomain>)
 {
     BOOST_CHECK_EXCEPTION(
-            Epp::Domain::delete_domain(
+            ::Epp::Domain::delete_domain(
                     ctx,
                     domain.data.fqdn,
-                    Test::DefaultDeleteDomainConfigData(),
-                    Test::Session(ctx, Test::RegistrarNotInZone(ctx).data.id).data),
-            Epp::EppResponseFailure,
+                    DefaultDeleteDomainConfigData(),
+                    Session(ctx, RegistrarNotInZone(ctx).data.id).data),
+            ::Epp::EppResponseFailure,
             fail_registrar_without_zone_access_exception);
 }
 
-bool fail_prohibiting_status_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+bool fail_prohibiting_status_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
+BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, supply_ctx<HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-            Epp::Domain::delete_domain(
+            ::Epp::Domain::delete_domain(
                     ctx,
-                    Test::DomainWithServerUpdateProhibited(ctx, registrar.data.handle).data.fqdn,
-                    Test::DefaultDeleteDomainConfigData(),
+                    DomainWithServerUpdateProhibited(ctx, registrar.data.handle).data.fqdn,
+                    DefaultDeleteDomainConfigData(),
                     session.data),
-            Epp::EppResponseFailure,
+            ::Epp::EppResponseFailure,
             fail_prohibiting_status_exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasRegistrarWithSessionAndDomain>)
+BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasRegistrarWithSessionAndDomain>)
 {
-    Epp::Domain::delete_domain(
+    ::Epp::Domain::delete_domain(
         ctx,
         domain.data.fqdn,
-        Test::DefaultDeleteDomainConfigData(),
+        DefaultDeleteDomainConfigData(),
         session.data
     );
 
@@ -159,14 +163,14 @@ BOOST_FIXTURE_TEST_CASE(ok, Test::supply_ctx<Test::Fixture::HasRegistrarWithSess
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(ok_states_are_upgraded, Test::supply_ctx<Test::Fixture::HasRegistrarWithSession>)
+BOOST_FIXTURE_TEST_CASE(ok_states_are_upgraded, supply_ctx<HasRegistrarWithSession>)
 {
-    Test::DomainWithServerTransferProhibited domain(ctx, registrar.data.handle);
+    DomainWithServerTransferProhibited domain(ctx, registrar.data.handle);
 
-    Epp::Domain::delete_domain(
+    ::Epp::Domain::delete_domain(
         ctx,
         domain.data.fqdn,
-        Test::DefaultDeleteDomainConfigData(),
+        DefaultDeleteDomainConfigData(),
         session.data
     );
 
@@ -189,3 +193,7 @@ BOOST_FIXTURE_TEST_CASE(ok_states_are_upgraded, Test::supply_ctx<Test::Fixture::
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

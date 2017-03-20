@@ -32,11 +32,15 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
 
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(DeleteNsset)
 
-bool delete_invalid_registrar_id_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authentication_error_server_closing_connection);
+bool delete_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -45,19 +49,19 @@ BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, has_nsset)
 {
     const unsigned long long invalid_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::delete_nsset(
+        ::Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
-            Test::DefaultDeleteNssetConfigData(),
-            Test::Session(ctx, invalid_registrar_id).data
+            DefaultDeleteNssetConfigData(),
+            Session(ctx, invalid_registrar_id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         delete_invalid_registrar_id_exception
     );
 }
 
-bool delete_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_does_not_exist);
+bool delete_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -65,43 +69,43 @@ bool delete_fail_nonexistent_handle_exception(const Epp::EppResponseFailure& e) 
 BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, has_nsset)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::delete_nsset(
+        ::Epp::Nsset::delete_nsset(
             ctx,
             "SOMEobscureString",
-            Test::DefaultDeleteNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultDeleteNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         delete_fail_nonexistent_handle_exception
     );
 }
 
-bool delete_fail_wrong_registrar_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::authorization_error);
+bool delete_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authorization_error);
     BOOST_REQUIRE(e.epp_result().extended_errors());
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->size(), 1);
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), Epp::Param::registrar_autor);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->param(), ::Epp::Param::registrar_autor);
     BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->position(), 0);
-    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), Epp::Reason::unauthorized_registrar);
+    BOOST_CHECK_EQUAL(e.epp_result().extended_errors()->begin()->reason(), ::Epp::Reason::unauthorized_registrar);
     return true;
 }
 
 BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, has_nsset)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::delete_nsset(
+        ::Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
-            Test::DefaultDeleteNssetConfigData(),
-            Test::Session(ctx, Test::Registrar(ctx).data.id).data
+            DefaultDeleteNssetConfigData(),
+            Session(ctx, Registrar(ctx).data.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         delete_fail_wrong_registrar_exception
     );
 }
 
-bool delete_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+bool delete_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -109,13 +113,13 @@ bool delete_fail_prohibiting_status1_exception(const Epp::EppResponseFailure& e)
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, has_nsset_with_server_update_prohibited)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::delete_nsset(
+        ::Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
-            Test::DefaultDeleteNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultDeleteNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         delete_fail_prohibiting_status1_exception
     );
 }
@@ -126,8 +130,8 @@ struct has_nsset_with_server_delete_prohibited : has_nsset_with_status {
     { }
 };
 
-bool delete_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_status_prohibits_operation);
+bool delete_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_status_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -135,13 +139,13 @@ bool delete_fail_prohibiting_status2_exception(const Epp::EppResponseFailure& e)
 BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, has_nsset_with_delete_candidate)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::delete_nsset(
+        ::Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
-            Test::DefaultDeleteNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultDeleteNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         delete_fail_prohibiting_status2_exception
     );
 }
@@ -151,8 +155,8 @@ struct has_nsset_linked_to_domain : has_nsset_with_all_data_set {
     }
 };
 
-bool delete_fail_linked_domain_exception(const Epp::EppResponseFailure& e) {
-    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), Epp::EppResultCode::object_association_prohibits_operation);
+bool delete_fail_linked_domain_exception(const ::Epp::EppResponseFailure& e) {
+    BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_association_prohibits_operation);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
@@ -160,24 +164,24 @@ bool delete_fail_linked_domain_exception(const Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(delete_fail_linked_domain, has_nsset_linked_to_domain)
 {
     BOOST_CHECK_EXCEPTION(
-        Epp::Nsset::delete_nsset(
+        ::Epp::Nsset::delete_nsset(
             ctx,
             nsset.handle,
-            Test::DefaultDeleteNssetConfigData(),
-            Test::Session(ctx, registrar.id).data
+            DefaultDeleteNssetConfigData(),
+            Session(ctx, registrar.id).data
         ),
-        Epp::EppResponseFailure,
+        ::Epp::EppResponseFailure,
         delete_fail_linked_domain_exception
     );
 }
 
 BOOST_FIXTURE_TEST_CASE(delete_ok, has_nsset)
 {
-    Epp::Nsset::delete_nsset(
+    ::Epp::Nsset::delete_nsset(
         ctx,
         nsset.handle,
-        Test::DefaultDeleteNssetConfigData(),
-        Test::Session(ctx, registrar.id).data
+        DefaultDeleteNssetConfigData(),
+        Session(ctx, registrar.id).data
     );
 
     BOOST_CHECK_EQUAL(
@@ -188,11 +192,11 @@ BOOST_FIXTURE_TEST_CASE(delete_ok, has_nsset)
 
 BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, has_nsset_with_server_transfer_prohibited_request)
 {
-    Epp::Nsset::delete_nsset(
+    ::Epp::Nsset::delete_nsset(
         ctx,
         nsset.handle,
-        Test::DefaultDeleteNssetConfigData(),
-        Test::Session(ctx, registrar.id).data
+        DefaultDeleteNssetConfigData(),
+        Session(ctx, registrar.id).data
     );
 
     /* now object has the state server_transfer_prohibited request itself */
@@ -214,3 +218,7 @@ BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, has_nsset_with_server_tra
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

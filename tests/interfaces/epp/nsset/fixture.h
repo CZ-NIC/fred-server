@@ -38,8 +38,11 @@
 #include "src/epp/nsset/update_nsset_localized.h"
 
 namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Nsset {
 
-struct DefaultCheckNssetConfigData : Epp::Nsset::CheckNssetConfigData
+struct DefaultCheckNssetConfigData : ::Epp::Nsset::CheckNssetConfigData
 {
     DefaultCheckNssetConfigData()
         : CheckNssetConfigData(false)
@@ -47,7 +50,7 @@ struct DefaultCheckNssetConfigData : Epp::Nsset::CheckNssetConfigData
     }
 };
 
-struct DefaultInfoNssetConfigData : Epp::Nsset::InfoNssetConfigData
+struct DefaultInfoNssetConfigData : ::Epp::Nsset::InfoNssetConfigData
 {
     DefaultInfoNssetConfigData()
         : InfoNssetConfigData(false)
@@ -55,7 +58,7 @@ struct DefaultInfoNssetConfigData : Epp::Nsset::InfoNssetConfigData
     }
 };
 
-struct DefaultCreateNssetConfigData : Epp::Nsset::CreateNssetConfigData
+struct DefaultCreateNssetConfigData : ::Epp::Nsset::CreateNssetConfigData
 {
     DefaultCreateNssetConfigData()
         : CreateNssetConfigData(
@@ -67,7 +70,7 @@ struct DefaultCreateNssetConfigData : Epp::Nsset::CreateNssetConfigData
     }
 };
 
-struct DefaultUpdateNssetConfigData : Epp::Nsset::UpdateNssetConfigData
+struct DefaultUpdateNssetConfigData : ::Epp::Nsset::UpdateNssetConfigData
 {
     DefaultUpdateNssetConfigData()
         : UpdateNssetConfigData(
@@ -78,7 +81,7 @@ struct DefaultUpdateNssetConfigData : Epp::Nsset::UpdateNssetConfigData
     }
 };
 
-struct DefaultDeleteNssetConfigData : Epp::Nsset::DeleteNssetConfigData
+struct DefaultDeleteNssetConfigData : ::Epp::Nsset::DeleteNssetConfigData
 {
     DefaultDeleteNssetConfigData()
         : DeleteNssetConfigData(false)
@@ -86,7 +89,7 @@ struct DefaultDeleteNssetConfigData : Epp::Nsset::DeleteNssetConfigData
     }
 };
 
-struct DefaultTransferNssetConfigData : Epp::Nsset::TransferNssetConfigData
+struct DefaultTransferNssetConfigData : ::Epp::Nsset::TransferNssetConfigData
 {
     DefaultTransferNssetConfigData()
         : TransferNssetConfigData(false)
@@ -94,18 +97,18 @@ struct DefaultTransferNssetConfigData : Epp::Nsset::TransferNssetConfigData
     }
 };
 
-struct DefaultSessionData : Epp::SessionData
-{
-    DefaultSessionData()
-        : SessionData(0, Epp::SessionLang::en, "", boost::optional<unsigned long long>(0))
-    {
+struct Nsset {
+    std::string handle;
+    Nsset(Fred::OperationContext& _ctx, const std::string& _registrar_handle) {
+        handle = "NSSET";
+        Fred::CreateNsset(handle, _registrar_handle).exec(_ctx);
     }
 };
 
-} // namespace Test
 
+// fixtures
 
-struct HasRegistrar : virtual Test::autorollbacking_context {
+struct HasRegistrar : virtual autorollbacking_context {
     Fred::InfoRegistrarData registrar;
 
     HasRegistrar()
@@ -216,8 +219,8 @@ struct has_nsset_with_all_data_set : HasRegistrar {
 
 struct has_nsset_input_data_set : HasRegistrar
 {
-    Epp::Nsset::CreateNssetInputData create_nsset_input_data;
-    Epp::Nsset::CreateNssetConfigData create_nsset_config_data;
+    ::Epp::Nsset::CreateNssetInputData create_nsset_input_data;
+    ::Epp::Nsset::CreateNssetConfigData create_nsset_config_data;
     static const bool rifd_epp_operations_charging = false;
     static const unsigned int nsset_tech_check_level = 3;
     static const unsigned int default_nsset_tech_check_level = 3;
@@ -226,24 +229,24 @@ struct has_nsset_input_data_set : HasRegistrar
 
     has_nsset_input_data_set()
     : create_nsset_input_data(
-            Epp::Nsset::CreateNssetInputData(
+            ::Epp::Nsset::CreateNssetInputData(
                     "NSSET1",
                     boost::optional<std::string>("authInfo123"),
                     Util::vector_of<std::string>
                         ("TEST-ADMIN-CONTACT2")
                         ("TEST-ADMIN-CONTACT3"),
-                    Util::vector_of<Epp::Nsset::DnsHostInput>
-                        (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
+                    Util::vector_of< ::Epp::Nsset::DnsHostInput>
+                        (::Epp::Nsset::DnsHostInput("a.ns.nic.cz",
                             Util::vector_of< boost::optional<boost::asio::ip::address> >
                                 (boost::asio::ip::address::from_string("11.0.0.3"))
                                 (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
-                        (Epp::Nsset::DnsHostInput("c.ns.nic.cz",
+                        (::Epp::Nsset::DnsHostInput("c.ns.nic.cz",
                             Util::vector_of<boost::optional<boost::asio::ip::address> >
                                 (boost::asio::ip::address::from_string("11.0.0.4"))
                                 (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
                     nsset_tech_check_level)),
       create_nsset_config_data(
-            Epp::Nsset::CreateNssetConfigData(
+            ::Epp::Nsset::CreateNssetConfigData(
                     rifd_epp_operations_charging,
                     default_nsset_tech_check_level,
                     nsset_min_hosts,
@@ -278,8 +281,8 @@ struct has_nsset_input_data_set : HasRegistrar
 
 struct has_nsset_with_input_data_set : HasRegistrar {
     Fred::InfoNssetData nsset;
-    Epp::Nsset::CreateNssetInputData create_nsset_input_data;
-    Epp::Nsset::CreateNssetConfigData create_nsset_config_data;
+    ::Epp::Nsset::CreateNssetInputData create_nsset_input_data;
+    ::Epp::Nsset::CreateNssetConfigData create_nsset_config_data;
     static const bool rifd_epp_operations_charging = false;
     static const unsigned int nsset_tech_check_level = 3;
     static const unsigned int default_nsset_tech_check_level = 3;
@@ -288,24 +291,24 @@ struct has_nsset_with_input_data_set : HasRegistrar {
 
     has_nsset_with_input_data_set()
     : create_nsset_input_data(
-            Epp::Nsset::CreateNssetInputData(
+            ::Epp::Nsset::CreateNssetInputData(
                     "NSSET1",
                     boost::optional<std::string>("authInfo123"),
                     Util::vector_of<std::string>
                         ("TEST-ADMIN-CONTACT2")
                         ("TEST-ADMIN-CONTACT3"),
-                    Util::vector_of<Epp::Nsset::DnsHostInput>
-                        (Epp::Nsset::DnsHostInput("a.ns.nic.cz",
+                    Util::vector_of< ::Epp::Nsset::DnsHostInput>
+                        (::Epp::Nsset::DnsHostInput("a.ns.nic.cz",
                             Util::vector_of<boost::optional<boost::asio::ip::address> >
                                 (boost::asio::ip::address::from_string("11.0.0.3"))
                                 (boost::asio::ip::address::from_string("11.1.1.3")))) //add_dns
-                        (Epp::Nsset::DnsHostInput("c.ns.nic.cz",
+                        (::Epp::Nsset::DnsHostInput("c.ns.nic.cz",
                             Util::vector_of<boost::optional<boost::asio::ip::address> >
                                 (boost::asio::ip::address::from_string("11.0.0.4"))
                                 (boost::asio::ip::address::from_string("11.1.1.4")))), //add_dns
                     nsset_tech_check_level)),
       create_nsset_config_data(
-            Epp::Nsset::CreateNssetConfigData(
+            ::Epp::Nsset::CreateNssetConfigData(
                     rifd_epp_operations_charging,
                     default_nsset_tech_check_level,
                     nsset_min_hosts,
@@ -337,8 +340,8 @@ struct has_nsset_with_input_data_set : HasRegistrar {
 
         Fred::CreateNsset(create_nsset_input_data.handle, registrar.handle)
             .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-                (Fred::DnsHost(create_nsset_input_data.dns_hosts.at(0).fqdn, Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(0).inet_addr) )) //add_dns
-                (Fred::DnsHost(create_nsset_input_data.dns_hosts.at(1).fqdn, Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(1).inet_addr) )) //add_dns
+                (Fred::DnsHost(create_nsset_input_data.dns_hosts.at(0).fqdn, ::Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(0).inet_addr) )) //add_dns
+                (Fred::DnsHost(create_nsset_input_data.dns_hosts.at(1).fqdn, ::Epp::Nsset::make_ipaddrs(create_nsset_input_data.dns_hosts.at(1).inet_addr) )) //add_dns
                 )
             .set_authinfo(create_nsset_input_data.authinfopw ? *create_nsset_input_data.authinfopw : std::string())
             .set_tech_contacts(Util::vector_of<std::string>(admin_contact2_handle)(admin_contact3_handle))
@@ -426,5 +429,10 @@ struct has_nsset_with_server_update_prohibited_request : has_nsset_with_status_r
     :   has_nsset_with_status_request("serverUpdateProhibited")
     { }
 };
+
+} // namespace Test::Backend::Epp::Nsset
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
+} // namespace Test
 
 #endif

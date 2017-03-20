@@ -96,7 +96,7 @@ struct MockMailerManager : public Fred::Mailer::Manager {
     virtual bool checkEmailList(std::string &_email_list) const { return true; }
 };
 
-template<bool SystemReg>struct has_updated_contact_and_empty_notification_queue : virtual Test::Fixture::instantiate_db_template {
+template<bool SystemReg>struct has_updated_contact_and_empty_notification_queue : virtual Test::instantiate_db_template {
     boost::shared_ptr<Fred::Mailer::Manager> mailer;
     unsigned long long post_update_contact_history_id;
     unsigned long long registrar_id;

@@ -33,7 +33,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
-struct has_autocomitting_ctx : Test::Fixture::instantiate_db_template {
+struct has_autocomitting_ctx : Test::instantiate_db_template {
     Fred::OperationContextCreator ctx;
 
     has_autocomitting_ctx() {

@@ -12,7 +12,6 @@
 #include <boost/test/test_tools.hpp>
 
 namespace Test {
-namespace Fixture {
 
     namespace po = boost::program_options;
 
@@ -243,5 +242,4 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
     }
 
 
-}
 }

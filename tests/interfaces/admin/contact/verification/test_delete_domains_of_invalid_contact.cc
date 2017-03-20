@@ -34,7 +34,7 @@
 #include "tests/setup/fixtures.h"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestDeleteDomainOfInvalidatedContact, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestDeleteDomainOfInvalidatedContact, Test::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification_integration-delete_domains_of_invalid_contact";
 
