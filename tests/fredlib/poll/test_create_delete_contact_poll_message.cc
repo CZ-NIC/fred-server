@@ -17,7 +17,7 @@
  */
 
 
-#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/poll/message_type.h"
 
 #include <boost/test/unit_test.hpp>
@@ -46,8 +46,8 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
 
     const int count_before = static_cast<int>(count_res[0]["count_"]);
 
-    const unsigned long long message_id = Fred::Poll::CreateEppActionPollMessage::
-            Of<Fred::Poll::MessageType::delete_contact>().exec(ctx, contact.info_data.historyid);
+    const unsigned long long message_id = Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
+            .exec(ctx, contact.info_data.historyid);
 
     Database::Result count_res2 = ctx.get_conn().exec(
         "SELECT COUNT(id) AS count_ "
@@ -99,11 +99,11 @@ BOOST_AUTO_TEST_CASE(test_nonexistent_historyid)
     Fred::OperationContextCreator ctx;
     const unsigned long long nonexistent_object_historyid = Test::get_nonexistent_object_historyid(ctx);
     try {
-        Fred::Poll::CreateEppActionPollMessage::
-                    Of<Fred::Poll::MessageType::delete_contact>().exec(ctx, nonexistent_object_historyid);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
+                .exec(ctx, nonexistent_object_historyid);
     }
-    catch (const Fred::Poll::CreateEppActionPollMessage::Exception::ObjectHistoryNotFound& e) {
-        BOOST_CHECK_EQUAL(e.history_id, nonexistent_object_historyid);
+    catch (const Fred::OperationException&) {
+        BOOST_CHECK(true);
     }
 }
 
@@ -120,10 +120,11 @@ BOOST_AUTO_TEST_CASE( test_different_object_type )
     const Test::domain domain(ctx);
 
     try {
-        Fred::Poll::CreateEppActionPollMessage::
-                            Of<Fred::Poll::MessageType::delete_contact>().exec(ctx, domain.info_data.historyid);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
+                .exec(ctx, domain.info_data.historyid);
     }
-    catch (const Fred::Poll::CreateEppActionPollMessage::Exception::ObjectNotRequestedType&) {
+    catch (const Fred::OperationException&) {
+        BOOST_CHECK(true);
     }
 }
 

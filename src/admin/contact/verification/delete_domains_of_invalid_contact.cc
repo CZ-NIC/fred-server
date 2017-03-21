@@ -8,7 +8,7 @@
 
 #include <fredlib/domain.h>
 #include <fredlib/contact.h>
-#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
 #include "util/log/context.h"
@@ -98,8 +98,8 @@ namespace  Admin {
                 store_check_poll_message_relation(
                     _ctx,
                     _check_handle,
-                    Fred::Poll::CreateEppActionPollMessage::
-                            Of<Fred::Poll::MessageType::delete_domain>().exec(_ctx, info_domain.historyid));
+                    Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_domain>()
+                        .exec(_ctx, info_domain.historyid));
             }
         }
         catch (const Fred::ExceptionUnknownCheckHandle&) {

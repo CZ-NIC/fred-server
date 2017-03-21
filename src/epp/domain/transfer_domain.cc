@@ -34,7 +34,7 @@
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/poll/message_type.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
@@ -123,7 +123,7 @@ unsigned long long transfer_domain(
     }
 
     try {
-        unsigned long long post_transfer_history_id =
+        const unsigned long long post_transfer_history_id =
             Fred::TransferDomain(
                 domain_data_before_transfer.id,
                 session_registrar.handle,
@@ -131,8 +131,8 @@ unsigned long long transfer_domain(
                 _session_data.logd_request_id.isset() ? _session_data.logd_request_id.get_value() : Nullable<unsigned long long>()
             ).exec(_ctx);
 
-        Fred::Poll::CreateEppActionPollMessage::
-                Of<Fred::Poll::MessageType::transfer_domain>().exec(_ctx, post_transfer_history_id);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_domain>()
+                .exec(_ctx, post_transfer_history_id);
 
         return post_transfer_history_id;
 

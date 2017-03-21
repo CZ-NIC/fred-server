@@ -901,9 +901,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object/transfer_object_exception.h \
 		src/fredlib/object/object.cc \
 		src/fredlib/poll/message_type.h \
-		src/fredlib/poll/exception.h \
-		src/fredlib/poll/create_epp_action_poll_message.h \
-		src/fredlib/poll/create_epp_action_poll_message.cc \
+		src/fredlib/poll/create_poll_message.h \
+		src/fredlib/poll/create_poll_message.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
 		src/fredlib/poll/create_update_object_poll_message.cc \
 		src/fredlib/opexception.h \

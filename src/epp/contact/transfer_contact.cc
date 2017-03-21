@@ -34,7 +34,7 @@
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/poll/message_type.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "util/optional_value.h"
@@ -100,8 +100,8 @@ unsigned long long transfer_contact(
                 _session_data.logd_request_id.isset() ? _session_data.logd_request_id.get_value() : Nullable<unsigned long long>()
             ).exec(_ctx);
 
-        Fred::Poll::CreateEppActionPollMessage::
-                Of<Fred::Poll::MessageType::transfer_contact>().exec(_ctx, post_transfer_history_id);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_contact>()
+                .exec(_ctx, post_transfer_history_id);
 
         return post_transfer_history_id;
     }

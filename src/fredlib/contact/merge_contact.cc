@@ -35,7 +35,7 @@
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
-#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/db_settings.h"
 #include "util/random.h"
@@ -598,8 +598,8 @@ namespace Fred
         {
             Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        Fred::Poll::CreateEppActionPollMessage::
-                Of<Fred::Poll::MessageType::delete_contact>().exec(_ctx, _merge_data.contactid.src_contact_historyid);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
+                .exec(_ctx, _merge_data.contactid.src_contact_historyid);
     }
 
 

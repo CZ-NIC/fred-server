@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
 
         ctx.commit_transaction();
     }
-    catch (const Fred::Poll::CreateUpdateObjectPollMessage::Exception::ObjectOfUnsupportedType&) {
+    catch (const Fred::OperationException&) {
         BOOST_CHECK(true);
     }
     catch (...) {
@@ -236,8 +236,8 @@ BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
         Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, nonexistent_object_historyid);
         BOOST_CHECK(false);
     }
-    catch (const Fred::Poll::CreateUpdateObjectPollMessage::Exception::ObjectHistoryNotFound& e) {
-        BOOST_CHECK_EQUAL(e.history_id, nonexistent_object_historyid);
+    catch (const Fred::OperationException&) {
+        BOOST_CHECK(true);
     }
     catch (...) {
         BOOST_CHECK(false);

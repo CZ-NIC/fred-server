@@ -1,5 +1,7 @@
 #include "src/fredlib/poll/create_update_object_poll_message.h"
-#include "src/fredlib/poll/create_epp_action_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/object/object_type.h"
+#include "src/fredlib/opexception.h"
 
 namespace Fred {
 namespace Poll {
@@ -18,19 +20,19 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
     {
         case 0:
         {
-            struct NotFound:Exception, Exception::ObjectHistoryNotFound
+            struct NotFound:OperationException
             {
-                NotFound(unsigned long long _history_id):Exception::ObjectHistoryNotFound(_history_id) { }
                 const char* what()const throw() { return "object history not found"; }
             };
-            throw NotFound(_history_id);
+            throw NotFound();
         }
         case 1:
             break;
         default:
         {
-            struct TooManyRows:Exception
+            struct TooManyRows:InternalError
             {
+                TooManyRows():InternalError(std::string()) { }
                 const char* what()const throw() { return "too many rows"; }
             };
             throw TooManyRows();
@@ -39,21 +41,27 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
     switch (Conversion::Enums::from_db_handle<Object_Type>(static_cast<std::string>(db_res[0][0])))
     {
         case Object_Type::contact:
-            struct ContactsNotSupported:Exception, Exception::ObjectOfUnsupportedType
+            struct ContactsNotSupported:OperationException
             {
                 const char* what()const throw() { return "contacts not supported"; }
             };
             throw ContactsNotSupported();
         case Object_Type::domain:
-            CreateEppActionPollMessage::Of<MessageType::update_domain>().exec(_ctx, _history_id);
-            break;
+            CreatePollMessage<MessageType::update_domain>().exec(_ctx, _history_id);
+            return;
         case Object_Type::keyset:
-            CreateEppActionPollMessage::Of<MessageType::update_keyset>().exec(_ctx, _history_id);
-            break;
+            CreatePollMessage<MessageType::update_keyset>().exec(_ctx, _history_id);
+            return;
         case Object_Type::nsset:
-            CreateEppActionPollMessage::Of<MessageType::update_nsset>().exec(_ctx, _history_id);
-            break;
+            CreatePollMessage<MessageType::update_nsset>().exec(_ctx, _history_id);
+            return;
     }
+    struct UnexpectedObjectType:InternalError
+    {
+        UnexpectedObjectType():InternalError(std::string()) { }
+        const char* what()const throw() { return "unexpected object type"; }
+    };
+    throw UnexpectedObjectType();
 }
 
 
