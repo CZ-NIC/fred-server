@@ -248,6 +248,7 @@ DomainRenewResult domain_renew_impl(
             domain_info_data.id,
             domain_info_data.historyid,
             current_utc_time,
+            domain_info_data.expiration_date,
             new_exdate,
             domain_registration_in_months / 12);
 

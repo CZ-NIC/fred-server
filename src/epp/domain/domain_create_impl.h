@@ -35,6 +35,7 @@ struct DomainCreateResult {
     const unsigned long long id;
     const unsigned long long create_history_id;
     const boost::posix_time::ptime crtime;
+    const boost::gregorian::date old_exdate;
     const boost::gregorian::date exdate;
     const unsigned length_of_domain_registration_in_years;
 
@@ -42,12 +43,14 @@ struct DomainCreateResult {
         unsigned long long _domain_id,
         unsigned long long _create_history_id,
         const boost::posix_time::ptime& _domain_crdate,
+        const boost::gregorian::date& _old_exdate,
         const boost::gregorian::date& _exdate,
         const unsigned _length_of_domain_registration_in_years
     ) :
         id(_domain_id),
         create_history_id(_create_history_id),
         crtime(_domain_crdate),
+        old_exdate(_old_exdate),
         exdate(_exdate),
         length_of_domain_registration_in_years(_length_of_domain_registration_in_years)
     { }
