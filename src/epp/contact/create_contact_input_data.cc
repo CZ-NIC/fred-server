@@ -77,7 +77,7 @@ CreateContactInputData::CreateContactInputData(const ContactChange& src)
       fax(convert(trim(src.fax))),
       email(convert(trim(src.email))),
       notify_email(convert(trim(src.notify_email))),
-      VAT(convert(trim(src.vat))),
+      vat(convert(trim(src.vat))),
       ident(convert(trim(src.ident))),
       identtype(src.ident_type),
       authinfopw((src.authinfopw && (*src.authinfopw).isnull())

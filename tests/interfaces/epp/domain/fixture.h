@@ -352,30 +352,7 @@ struct DomainWithStatusRequest
         : Domain(_ctx, _registrar_handle, "domainwith" + boost::algorithm::to_lower_copy(_status) + ".cz"),
           status(_status)
     {
-        _ctx.get_conn().exec_params(
-                "UPDATE enum_object_states SET manual = 'true'::bool WHERE name = $1::text",
-                Database::query_param_list(_status)
-                );
-
-        const std::set<std::string> statuses = boost::assign::list_of(_status);
-
-        Fred::CreateObjectStateRequestId(data.id, statuses).exec(_ctx);
-
-        // ensure object has only request, not the state itself
-        {
-            std::vector<std::string> object_states_before;
-            {
-                BOOST_FOREACH(
-                        const Fred::ObjectStateData & state,
-                        Fred::GetObjectStates(data.id).exec(_ctx)) {
-                    object_states_before.push_back(state.state_name);
-                }
-            }
-
-            BOOST_CHECK(
-                    std::find(object_states_before.begin(), object_states_before.end(), _status) ==
-                    object_states_before.end());
-        }
+        ObjectWithStatus(_ctx, data.id, _status);
     }
 
 
@@ -401,12 +378,12 @@ struct DomainWithStatus
 
 };
 
-struct DomainWithServerDeleteProhibited
+struct DomainWithStatusServerDeleteProhibited
     : DomainWithStatus
 {
 
 
-    DomainWithServerDeleteProhibited(
+    DomainWithStatusServerDeleteProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatus(_ctx, _registrar_handle, "serverDeleteProhibited")
@@ -416,12 +393,12 @@ struct DomainWithServerDeleteProhibited
 
 };
 
-struct DomainWithServerUpdateProhibited
+struct DomainWithStatusServerUpdateProhibited
     : DomainWithStatus
 {
 
 
-    DomainWithServerUpdateProhibited(
+    DomainWithStatusServerUpdateProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatus(_ctx, _registrar_handle, "serverUpdateProhibited")
@@ -446,12 +423,12 @@ struct DomainWithServerTransferProhibited
 
 };
 
-struct DomainWithStatusRequestAndServerTransferProhibited
+struct DomainWithStatusRequestServerTransferProhibited
     : DomainWithStatusRequest
 {
 
 
-    DomainWithStatusRequestAndServerTransferProhibited(
+    DomainWithStatusRequestServerTransferProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatusRequest(_ctx, _registrar_handle, "serverTransferProhibited")
@@ -461,27 +438,12 @@ struct DomainWithStatusRequestAndServerTransferProhibited
 
 };
 
-struct DomainWithServerUpdateProhoibitedRequest
+struct DomainWithStatusRequestServerUpdateProhibited
     : DomainWithStatusRequest
 {
 
 
-    DomainWithServerUpdateProhoibitedRequest(
-            Fred::OperationContext& _ctx,
-            const std::string& _registrar_handle)
-        : DomainWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
-    {
-    }
-
-
-};
-
-struct DomainWithServerUpdateProhibitedRequest
-    : DomainWithStatusRequest
-{
-
-
-    DomainWithServerUpdateProhibitedRequest(
+    DomainWithStatusRequestServerUpdateProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : DomainWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
@@ -543,17 +505,17 @@ struct HasSystemRegistrarWithSessionAndDomain
 
 };
 
-struct HasSystemRegistrarWithSessionAndBlacklistedDomain
+struct HasRegistrarWithSessionAndDomain
 {
-    SystemRegistrar system_registrar;
+    Registrar registrar;
     Session session;
-    BlacklistedDomain blacklisted_domain;
+    Domain domain;
 
 
-    HasSystemRegistrarWithSessionAndBlacklistedDomain(Fred::OperationContext& _ctx)
-        : system_registrar(_ctx),
-          session(_ctx, system_registrar.data.id),
-          blacklisted_domain(_ctx, system_registrar.data.handle)
+    HasRegistrarWithSessionAndDomain(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          domain(_ctx, registrar.data.handle)
     {
     }
 
@@ -578,6 +540,23 @@ struct HasRegistrarWithSessionAndBlacklistedDomain
 
 };
 
+struct HasSystemRegistrarWithSessionAndBlacklistedDomain
+{
+    SystemRegistrar system_registrar;
+    Session session;
+    BlacklistedDomain blacklisted_domain;
+
+
+    HasSystemRegistrarWithSessionAndBlacklistedDomain(Fred::OperationContext& _ctx)
+        : system_registrar(_ctx),
+          session(_ctx, system_registrar.data.id),
+          blacklisted_domain(_ctx, system_registrar.data.handle)
+    {
+    }
+
+
+};
+
 struct HasRegistrarNotInZoneWithSessionAndDomain
 {
     SystemRegistrar registrar_not_in_zone;
@@ -590,23 +569,6 @@ struct HasRegistrarNotInZoneWithSessionAndDomain
           session(_ctx, registrar_not_in_zone.data.id),
           domain(_ctx, registrar_not_in_zone.data.handle)
 
-    {
-    }
-
-
-};
-
-struct HasRegistrarWithSessionAndDomain
-{
-    Registrar registrar;
-    Session session;
-    Domain domain;
-
-
-    HasRegistrarWithSessionAndDomain(Fred::OperationContext& _ctx)
-        : registrar(_ctx),
-          session(_ctx, registrar.data.id),
-          domain(_ctx, registrar.data.handle)
     {
     }
 

@@ -18,6 +18,8 @@
 
 #include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/nsset/fixture.h"
+#include "tests/interfaces/epp/domain/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
 #include "src/epp/contact/delete_contact.h"
@@ -35,49 +37,20 @@ BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Contact)
 BOOST_AUTO_TEST_SUITE(DeleteContact)
 
-// fixtures
-
-struct has_contact_with_server_delete_prohibited : Test::Backend::Epp::Contact::HasContactWithStatus {
-    has_contact_with_server_delete_prohibited()
-    :   HasContactWithStatus("serverDeleteProhibited")
-    { }
-};
-
-struct has_contact_owning_domain_and_another_admin_contact : Test::Backend::Epp::Contact::HasContact {
-    has_contact_owning_domain_and_another_admin_contact() {
-        const std::string another_contact_handle = "contactAnother";
-        Fred::CreateContact(another_contact_handle, registrar.handle).exec(ctx);
-
-        Fred::CreateDomain("domain.cz", registrar.handle, another_contact_handle)
-            .set_admin_contacts( boost::assign::list_of(contact.handle) )
-            .exec(ctx);
-    }
-};
-
-struct has_contact_administrating_nsset : Test::Backend::Epp::Contact::HasContact {
-    has_contact_administrating_nsset() {
-        Fred::CreateNsset("nsset1x", registrar.handle)
-            .set_tech_contacts( boost::assign::list_of(contact.handle) )
-            .exec(ctx);
-    }
-};
-
-// tests
-
 bool delete_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, HasInvalidSessionRegistrar)
+BOOST_FIXTURE_TEST_CASE(delete_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
         ::Epp::Contact::delete_contact(
             ctx,
-            "contacthandle",
+            ValidHandle().handle,
             DefaultDeleteContactConfigData(),
-            session.data
+            session_with_unauthenticated_registrar.data
         ),
         ::Epp::EppResponseFailure,
         delete_invalid_registrar_id_exception
@@ -90,12 +63,12 @@ bool delete_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, HasContact)
+BOOST_FIXTURE_TEST_CASE(delete_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
         ::Epp::Contact::delete_contact(
             ctx,
-            "SOMEobscureString",
+            NonexistentHandle().handle,
             DefaultDeleteContactConfigData(),
             session.data
         ),
@@ -114,14 +87,14 @@ bool delete_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, HasContact)
+BOOST_FIXTURE_TEST_CASE(delete_fail_wrong_registrar, supply_ctx<HasRegistrarWithSessionAndContactOfDifferentRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
         ::Epp::Contact::delete_contact(
             ctx,
-            contact.handle,
+            contact_of_different_registrar.data.handle,
             DefaultDeleteContactConfigData(),
-            Session(ctx, Registrar(ctx).data.id).data
+            session.data
         ),
         ::Epp::EppResponseFailure,
         delete_fail_wrong_registrar_exception
@@ -134,18 +107,18 @@ bool delete_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, HasContactWithServerUpdateProhibited)
+BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status1, supply_ctx<HasRegistrarWithSession>)
 {
+    ContactWithStatusServerUpdateProhibited contact_with_status_server_update_prohibited(ctx, registrar.data.handle);
+
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::delete_contact(
-            ctx,
-            contact.handle,
-            DefaultDeleteContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        delete_fail_prohibiting_status1_exception
-    );
+            ::Epp::Contact::delete_contact(
+                    ctx,
+                    contact_with_status_server_update_prohibited.data.handle,
+                    DefaultDeleteContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            delete_fail_prohibiting_status1_exception);
 }
 
 bool delete_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
@@ -154,25 +127,47 @@ bool delete_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, HasContactWithDeleteCandidate)
+BOOST_FIXTURE_TEST_CASE(delete_fail_prohibiting_status2, supply_ctx<HasRegistrarWithSession>)
 {
+    ContactWithStatusDeleteCandidate contact_with_status_delete_candidate(ctx, registrar.data.handle);
+
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::delete_contact(
-            ctx,
-            contact.handle,
-            DefaultDeleteContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        delete_fail_prohibiting_status2_exception
-    );
+            ::Epp::Contact::delete_contact(
+                    ctx,
+                    contact_with_status_delete_candidate.data.handle,
+                    DefaultDeleteContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            delete_fail_prohibiting_status2_exception);
 }
 
-struct HasContactOwningDomain : HasContact {
-    HasContactOwningDomain() {
-        Fred::CreateDomain("domain.cz", registrar.handle, contact.handle).exec(ctx);
+BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, supply_ctx<HasRegistrarWithSession>)
+{
+    ContactWithStatusRequestServerTransferProhibited contact_with_status_request_server_transfer_prohibited(ctx, registrar.data.handle);
+
+    ::Epp::Contact::delete_contact(
+        ctx,
+        contact_with_status_request_server_transfer_prohibited.data.handle,
+        DefaultDeleteContactConfigData(),
+        session.data
+    );
+
+    /* now object has the state server_transfer_prohibited request itself */
+    {
+        std::vector<std::string> object_states_after;
+        {
+            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(contact_with_status_request_server_transfer_prohibited.data.id).exec(ctx) ) {
+                object_states_after.push_back(state.state_name);
+            }
+        }
+
+        BOOST_CHECK(
+            std::find( object_states_after.begin(), object_states_after.end(), contact_with_status_request_server_transfer_prohibited.status )
+            !=
+            object_states_after.end()
+        );
     }
-};
+}
 
 bool delete_fail_owning_domain_exception(const ::Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_association_prohibits_operation);
@@ -180,12 +175,12 @@ bool delete_fail_owning_domain_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_owning_domain, HasContactOwningDomain)
+BOOST_FIXTURE_TEST_CASE(delete_fail_owning_domain, supply_ctx<Domain::HasRegistrarWithSessionAndDomain>)
 {
     BOOST_CHECK_EXCEPTION(
         ::Epp::Contact::delete_contact(
             ctx,
-            contact.handle,
+            domain.registrant.data.handle,
             DefaultDeleteContactConfigData(),
             session.data
         ),
@@ -200,12 +195,20 @@ bool delete_fail_administrating_domain_exception(const ::Epp::EppResponseFailure
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_administrating_domain, has_contact_owning_domain_and_another_admin_contact)
+BOOST_FIXTURE_TEST_CASE(delete_fail_administrating_domain, supply_ctx<HasRegistrarWithSession>)
 {
+    Contact contact(ctx, registrar.data.handle);
+    Contact admin_contact(ctx, registrar.data.handle, "ADMINCONTACT");
+
+    ::Fred::CreateDomain("domain.cz", registrar.data.handle, contact.data.handle)
+            .set_admin_contacts(boost::assign::list_of(admin_contact.data.handle))
+            .exec(ctx);
+
+
     BOOST_CHECK_EXCEPTION(
         ::Epp::Contact::delete_contact(
             ctx,
-            contact.handle,
+            admin_contact.data.handle,
             DefaultDeleteContactConfigData(),
             session.data
         ),
@@ -220,27 +223,19 @@ bool delete_fail_linked_nsset_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_linked_nsset, has_contact_administrating_nsset)
+BOOST_FIXTURE_TEST_CASE(delete_fail_linked_nsset, supply_ctx<HasRegistrarWithSession>)
 {
-    BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::delete_contact(
-            ctx,
-            contact.handle,
-            DefaultDeleteContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        delete_fail_linked_nsset_exception
-    );
-}
+    Nsset::NssetWithTechContact nsset(ctx, registrar.data.handle);
 
-struct HasContactAdministratingKeyset : HasContact {
-    HasContactAdministratingKeyset() {
-        Fred::CreateKeyset("keyset1x", registrar.handle)
-            .set_tech_contacts( boost::assign::list_of(contact.handle) )
-            .exec(ctx);
-    }
-};
+    BOOST_CHECK_EXCEPTION(
+            ::Epp::Contact::delete_contact(
+                    ctx,
+                    nsset.tech_contact.data.handle,
+                    DefaultDeleteContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            delete_fail_linked_nsset_exception);
+}
 
 bool delete_fail_linked_keyset_exception(const ::Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_association_prohibits_operation);
@@ -248,12 +243,19 @@ bool delete_fail_linked_keyset_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, HasContactAdministratingKeyset)
+BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, supply_ctx<HasRegistrarWithSession>)
 {
+    // TODO (like NssetWithTechContact above)
+    Contact tech_contact(ctx, registrar.data.handle, "KEYSETTECHCONTACT");
+
+    Fred::CreateKeyset("keyset1x", registrar.data.handle)
+            .set_tech_contacts(boost::assign::list_of(tech_contact.data.handle))
+            .exec(ctx);
+
     BOOST_CHECK_EXCEPTION(
         ::Epp::Contact::delete_contact(
             ctx,
-            contact.handle,
+            tech_contact.data.handle,
             DefaultDeleteContactConfigData(),
             session.data
         ),
@@ -262,45 +264,19 @@ BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, HasContactAdministratingKeyse
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(delete_ok, HasContact)
+BOOST_FIXTURE_TEST_CASE(delete_ok, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
     ::Epp::Contact::delete_contact(
         ctx,
-        contact.handle,
+        contact.data.handle,
         DefaultDeleteContactConfigData(),
         session.data
     );
 
     BOOST_CHECK_EQUAL(
-        Fred::InfoContactHistoryById(contact.id).exec(ctx).rbegin()->info_contact_data.delete_time.isnull(),
+        Fred::InfoContactHistoryById(contact.data.id).exec(ctx).rbegin()->info_contact_data.delete_time.isnull(),
         false
     );
-}
-
-BOOST_FIXTURE_TEST_CASE(delete_ok_states_are_upgraded, HasContactWithServerTransferProhibitedRequest)
-{
-    ::Epp::Contact::delete_contact(
-        ctx,
-        contact.handle,
-        DefaultDeleteContactConfigData(),
-        session.data
-    );
-
-    /* now object has the state server_transfer_prohibited request itself */
-    {
-        std::vector<std::string> object_states_after;
-        {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(contact.id).exec(ctx) ) {
-                object_states_after.push_back(state.state_name);
-            }
-        }
-
-        BOOST_CHECK(
-            std::find( object_states_after.begin(), object_states_after.end(), status )
-            !=
-            object_states_after.end()
-        );
-    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();

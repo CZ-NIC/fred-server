@@ -43,7 +43,7 @@ struct CreateContactInputData
     std::string fax;
     std::string email;
     std::string notify_email;
-    std::string VAT;
+    std::string vat;
     std::string ident;
     Nullable<ContactChange::IdentType::Enum> identtype;
     boost::optional<std::string> authinfopw;

@@ -154,7 +154,7 @@ CreateContactResult create_contact(
             _contact_data.fax,
             _contact_data.email,
             _contact_data.notify_email,
-            _contact_data.VAT,
+            _contact_data.vat,
             to_db_handle(_contact_data.identtype),
             _contact_data.ident,
             // will be implemented in #13744

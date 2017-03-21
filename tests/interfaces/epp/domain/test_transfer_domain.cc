@@ -176,7 +176,7 @@ BOOST_FIXTURE_TEST_CASE(fail_registrar_without_zone_access, supply_ctx<HasRegist
 
 BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, supply_ctx<HasRegistrarWithSessionAndDifferentRegistrar>)
 {
-    const DomainWithServerUpdateProhibitedRequest domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, different_registrar.data.handle);
+    const DomainWithStatusRequestServerUpdateProhibited domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, different_registrar.data.handle);
 
     ::Epp::Domain::transfer_domain(
         ctx,
@@ -205,7 +205,7 @@ BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, supply_ctx<HasRegistrarWithSe
 
 BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
 {
-    const DomainWithServerUpdateProhibitedRequest domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, Registrar(ctx).data.handle);
+    const DomainWithStatusRequestServerUpdateProhibited domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, Registrar(ctx).data.handle);
     const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(domain_of_different_registrar_and_with_server_update_prohibited_request.data.fqdn).exec(ctx).info_domain_data;
 
     ::Epp::Domain::transfer_domain(

@@ -197,6 +197,19 @@ struct Fqdn
 
 };
 
+struct ValidFqdn
+    : Fqdn
+{
+
+
+    ValidFqdn()
+        : Fqdn("validfqdn.cz")
+    {
+    }
+
+
+};
+
 struct InvalidFqdn
     : Fqdn
 {
@@ -261,6 +274,58 @@ struct BlacklistedFqdn
                 "INSERT INTO domain_blacklist (regexp, valid_from, reason) "
                 "VALUES ($1::text, NOW(), '')",
                 Database::query_param_list(fqdn));
+    }
+
+
+};
+
+struct Handle
+{
+    const std::string handle;
+
+
+    Handle(const std::string& _handle)
+        : handle(_handle)
+    {
+    }
+
+
+};
+
+struct ValidHandle
+    : Handle
+{
+
+
+    ValidHandle()
+        : Handle("validhandle")
+    {
+    }
+
+
+};
+
+struct InvalidHandle
+    : Handle
+{
+
+
+    InvalidHandle()
+        : Handle("invalid!handle")
+    {
+    }
+
+
+};
+
+struct NonexistentHandle
+    : Handle
+{
+
+
+    NonexistentHandle()
+        : Handle("nonexistenthandle")
+    {
     }
 
 
@@ -426,6 +491,44 @@ struct HasRegistrarWithSessionAndDifferentRegistrar
           session(_ctx, registrar.data.id),
           different_registrar(_ctx, "REG-TEST2")
     {
+    }
+
+
+};
+
+struct ObjectWithStatus
+{
+
+
+    ObjectWithStatus(
+            Fred::OperationContext& _ctx,
+            unsigned long long _object_id,
+            const std::string& _status)
+    {
+        _ctx.get_conn().exec_params(
+                "UPDATE enum_object_states SET manual = 'true'::bool WHERE name = $1::text",
+                Database::query_param_list(_status));
+
+        const std::set<std::string> statuses = boost::assign::list_of(_status);
+
+        Fred::CreateObjectStateRequestId(_object_id, statuses).exec(_ctx);
+
+        // ensure object has only request, not the state itself
+        {
+            std::vector<std::string> object_states_before;
+            {
+                BOOST_FOREACH (
+                        const Fred::ObjectStateData& state,
+                        Fred::GetObjectStates(_object_id).exec(_ctx))
+                {
+                    object_states_before.push_back(state.state_name);
+                }
+            }
+
+            BOOST_CHECK(
+                    std::find(object_states_before.begin(), object_states_before.end(), _status) ==
+                    object_states_before.end());
+        }
     }
 
 

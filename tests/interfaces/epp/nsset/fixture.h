@@ -19,6 +19,7 @@
 #ifndef FIXTURE_H_F9A390F89F6D4E078F26DB46A61B1BC1
 #define FIXTURE_H_F9A390F89F6D4E078F26DB46A61B1BC1
 
+#include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/interfaces/epp/util.h"
 #include "tests/setup/fixtures.h"
 
@@ -97,14 +98,30 @@ struct DefaultTransferNssetConfigData : ::Epp::Nsset::TransferNssetConfigData
     }
 };
 
-struct Nsset {
+struct Nsset
+{
     std::string handle;
-    Nsset(Fred::OperationContext& _ctx, const std::string& _registrar_handle) {
+    Nsset(Fred::OperationContext& _ctx, const std::string& _registrar_handle)
+    {
         handle = "NSSET";
         Fred::CreateNsset(handle, _registrar_handle).exec(_ctx);
     }
 };
 
+struct NssetWithTechContact
+{
+    Contact::Contact tech_contact;
+    std::string handle;
+
+    NssetWithTechContact(Fred::OperationContext& _ctx, const std::string& _registrar_handle)
+        : tech_contact(_ctx, _registrar_handle, "NSSETTECHCONTACT"),
+          handle("NSSET")
+    {
+        Fred::CreateNsset(handle, _registrar_handle)
+                .set_tech_contacts(boost::assign::list_of(tech_contact.data.handle))
+                .exec(_ctx);
+    }
+};
 
 // fixtures
 

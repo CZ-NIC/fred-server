@@ -16,6 +16,7 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/contact/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
@@ -33,52 +34,8 @@ namespace Test {
 
 namespace {
 
-boost::optional< ::Epp::Contact::ContactDisclose > set_all_disclose_flags(bool to_disclose)
-{
-    if (::Epp::is_the_default_policy_to_disclose() == to_disclose)
-    {
-        return boost::optional< ::Epp::Contact::ContactDisclose >();
-    }
-    ::Epp::Contact::ContactDisclose disclose(to_disclose ? ::Epp::Contact::ContactDisclose::Flag::hide
-                                                       : ::Epp::Contact::ContactDisclose::Flag::disclose);
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::name >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::organization >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::address >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::telephone >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::fax >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::email >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::vat >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::ident >();
-    disclose.add< ::Epp::Contact::ContactDisclose::Item::notify_email >();
-    return disclose;
-}
-
-void set_correct_contact_data(::Epp::Contact::ContactChange &contact_data)
-{
-    contact_data.name              = "Jan Novak Jr.";
-    contact_data.organization      = "";
-    contact_data.streets.clear();
-    contact_data.streets.reserve(3);
-    contact_data.streets.push_back(Nullable< std::string >("ulice 1"));
-    contact_data.streets.push_back(Nullable< std::string >("ulice 2"));
-    contact_data.streets.push_back(Nullable< std::string >("ulice 3"));
-    contact_data.city              = "mesto";
-    contact_data.state_or_province = "hejtmanstvi";
-    contact_data.postal_code       = "12345";
-    contact_data.country_code      = "CZ";
-    contact_data.telephone         = "+420 123 456 789";
-    contact_data.fax               = "+420 987 654 321";
-    contact_data.email             = "jan@novak.novak";
-    contact_data.notify_email      = "jan.notify@novak.novak";
-    contact_data.vat               = "MyVATstring";
-    contact_data.ident             = "";
-    contact_data.ident_type        = Nullable< ::Epp::Contact::ContactChange::IdentType::Enum >();
-    contact_data.authinfopw      = "authInfo123";
-    contact_data.disclose          = set_all_disclose_flags(true);
-}
-
-template < ::Epp::Contact::ContactDisclose::Item::Enum ITEM >
-bool to_disclose(const ::Epp::Contact::CreateContactInputData &_data)
+template < ::Epp::Contact::ContactDisclose::Item::Enum ITEM>
+bool to_disclose(const ::Epp::Contact::CreateContactInputData& _data)
 {
     if (!_data.disclose.is_initialized()) {
         return ::Epp::is_the_default_policy_to_disclose();
@@ -99,7 +56,7 @@ std::string ident_type_to_string(::Epp::Contact::ContactChange::IdentType::Enum 
     throw std::runtime_error("Invalid ::Epp::Contact::ContactChange::IdentType::Enum value.");
 }
 
-void check_equal(const ::Epp::Contact::CreateContactInputData &create_data, const Fred::InfoContactData &info_data)
+void check_equal(const ::Epp::Contact::CreateContactInputData& create_data, const Fred::InfoContactData& info_data)
 {
     BOOST_CHECK_EQUAL(create_data.name,              info_data.name.get_value_or_default() );
     BOOST_CHECK_EQUAL(create_data.organization,      info_data.organization.get_value_or_default() );
@@ -118,7 +75,7 @@ void check_equal(const ::Epp::Contact::CreateContactInputData &create_data, cons
     BOOST_CHECK_EQUAL(create_data.fax,               info_data.fax.get_value_or_default());
     BOOST_CHECK_EQUAL(create_data.email,             info_data.email.get_value_or_default());
     BOOST_CHECK_EQUAL(create_data.notify_email,      info_data.notifyemail.get_value_or_default());
-    BOOST_CHECK_EQUAL(create_data.VAT,               info_data.vat.get_value_or_default());
+    BOOST_CHECK_EQUAL(create_data.vat,               info_data.vat.get_value_or_default());
     BOOST_CHECK_EQUAL(create_data.ident,             info_data.ssn.get_value_or_default());
 
     BOOST_CHECK_EQUAL(create_data.identtype.isnull()
@@ -151,22 +108,17 @@ bool create_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, HasInvalidSessionRegistrar)
+BOOST_FIXTURE_TEST_CASE(create_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
-    ::Epp::Contact::ContactChange contact_data;
-    set_correct_contact_data(contact_data);
-
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::create_contact(
-            ctx,
-            "contacthandle",
-            ::Epp::Contact::CreateContactInputData(contact_data),
-            DefaultCreateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        create_invalid_registrar_id_exception
-    );
+            ::Epp::Contact::create_contact(
+                    ctx,
+                    DefaultCreateContactInputData().handle,
+                    DefaultCreateContactInputData(),
+                    DefaultCreateContactConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            ::Epp::EppResponseFailure,
+            create_invalid_registrar_id_exception);
 }
 
 bool create_fail_handle_format_exception(const ::Epp::EppResponseFailure& e) {
@@ -179,22 +131,17 @@ bool create_fail_handle_format_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(create_fail_handle_format, supply_ctx<HasRegistrarWithSession>)
 {
-    ::Epp::Contact::ContactChange contact_data;
-    set_correct_contact_data(contact_data);
-
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::create_contact(
-            ctx,
-            "contacthandle1?" /* <== !!! */,
-            ::Epp::Contact::CreateContactInputData(contact_data),
-            DefaultCreateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        create_fail_handle_format_exception
-    );
+            ::Epp::Contact::create_contact(
+                    ctx,
+                    InvalidHandle().handle,
+                    DefaultCreateContactInputData(),
+                    DefaultCreateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            create_fail_handle_format_exception);
 }
 
 bool create_fail_already_existing_exception(const ::Epp::EppResponseFailure& e) {
@@ -203,22 +150,17 @@ bool create_fail_already_existing_exception(const ::Epp::EppResponseFailure& e) 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, HasContact)
+BOOST_FIXTURE_TEST_CASE(create_fail_already_existing, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
-    ::Epp::Contact::ContactChange contact_data;
-    set_correct_contact_data(contact_data);
-
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::create_contact(
-            ctx,
-            contact.handle,
-            ::Epp::Contact::CreateContactInputData(contact_data),
-            DefaultCreateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        create_fail_already_existing_exception
-    );
+            ::Epp::Contact::create_contact(
+                    ctx,
+                    contact.data.handle,
+                    DefaultCreateContactInputData(),
+                    DefaultCreateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            create_fail_already_existing_exception);
 }
 
 bool create_fail_protected_handle_exception(const ::Epp::EppResponseFailure& e) {
@@ -229,26 +171,21 @@ bool create_fail_protected_handle_exception(const ::Epp::EppResponseFailure& e) 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, HasContact)
+BOOST_FIXTURE_TEST_CASE(create_fail_protected_handle, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
-    {   /* fixture */
-        Fred::DeleteContactByHandle(contact.handle).exec(ctx);
+    {
+        Fred::DeleteContactByHandle(contact.data.handle).exec(ctx);
     }
 
-    ::Epp::Contact::ContactChange contact_data;
-    set_correct_contact_data(contact_data);
-
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::create_contact(
-            ctx,
-            contact.handle,
-            ::Epp::Contact::CreateContactInputData(contact_data),
-            DefaultCreateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        create_fail_protected_handle_exception
-    );
+            ::Epp::Contact::create_contact(
+                    ctx,
+                    contact.data.handle,
+                    DefaultCreateContactInputData(),
+                    DefaultCreateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            create_fail_protected_handle_exception);
 }
 
 bool create_fail_nonexistent_countrycode_exception(const ::Epp::EppResponseFailure& e) {
@@ -259,48 +196,43 @@ bool create_fail_nonexistent_countrycode_exception(const ::Epp::EppResponseFailu
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(create_fail_nonexistent_countrycode, supply_ctx<HasRegistrarWithSession>)
 {
-    ::Epp::Contact::ContactChange contact_data;
-    set_correct_contact_data(contact_data);
-    contact_data.country_code      = "1Z9"; /* <- !!! */
+    DefaultCreateContactInputData create_contact_input_data;
+    create_contact_input_data.country_code = "1Z9";
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::create_contact(
-            ctx,
-            "contacthandle1",
-            ::Epp::Contact::CreateContactInputData(contact_data),
-            DefaultCreateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        create_fail_nonexistent_countrycode_exception
-    );
+            ::Epp::Contact::create_contact(
+                    ctx,
+                    create_contact_input_data.handle,
+                    create_contact_input_data,
+                    DefaultCreateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            create_fail_nonexistent_countrycode_exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(create_ok_all_data, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(create_ok_all_data, supply_ctx<HasRegistrarWithSession>)
 {
-    ::Epp::Contact::ContactChange contact_data;
-    set_correct_contact_data(contact_data);
-    const std::string contact_handle = "contacthandle1";
+    DefaultCreateContactInputData create_contact_input_data;
 
-    const ::Epp::Contact::CreateContactResult result = ::Epp::Contact::create_contact(
-        ctx,
-        contact_handle,
-        ::Epp::Contact::CreateContactInputData(contact_data),
-        DefaultCreateContactConfigData(),
-        session.data
-    );
+    const ::Epp::Contact::CreateContactResult result =
+            ::Epp::Contact::create_contact(
+                    ctx,
+                    create_contact_input_data.handle,
+                    create_contact_input_data,
+                    DefaultCreateContactConfigData(),
+                    session.data);
 
     /* check returned data and db changes */
     {
-        const Fred::InfoContactData check_sample = Fred::InfoContactByHandle(contact_handle).exec(ctx).info_contact_data;
+        const Fred::InfoContactData check_sample = Fred::InfoContactByHandle(create_contact_input_data.handle).exec(ctx).info_contact_data;
         BOOST_CHECK_EQUAL( check_sample.id, result.id );
         const Database::Result db_res = ctx.get_conn().exec("SELECT NOW() AT TIME ZONE 'utc'");
         const std::string current_utc_time = static_cast< std::string >(db_res[0][0]);
         BOOST_CHECK_EQUAL(boost::posix_time::time_from_string(current_utc_time), result.crdate);
-        BOOST_CHECK_EQUAL(boost::to_upper_copy(contact_handle), check_sample.handle);
-        check_equal(::Epp::Contact::CreateContactInputData(contact_data), check_sample);
+        BOOST_CHECK_EQUAL(boost::to_upper_copy(create_contact_input_data.handle), check_sample.handle);
+        check_equal(create_contact_input_data, check_sample);
     }
 }
 

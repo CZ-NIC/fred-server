@@ -33,45 +33,6 @@ BOOST_AUTO_TEST_SUITE(Backend)
 BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Contact)
 
-// fixtures
-
-struct has_protected_handles : HasRegistrar {
-    std::set<std::string> protected_handles;
-    has_protected_handles() {
-        protected_handles = boost::assign::list_of
-            ("protHandleX1")
-            ("protHandleX2")
-            ("protHandleX3")
-            ("protHandleXa")
-            ("protHandleXb")
-            ("protHandleXc").convert_to_container<std::set<std::string> >();
-
-        BOOST_FOREACH(const std::string& handle, protected_handles) {
-            Fred::CreateContact(handle, registrar.handle).exec(ctx);
-            Fred::DeleteContactByHandle(handle).exec(ctx);
-        }
-    }
-};
-
-struct has_existing_contacts : HasRegistrar {
-    std::set<std::string> existing_contact_handles;
-    has_existing_contacts() {
-        existing_contact_handles = boost::assign::list_of
-            ("handle01")
-            ("handle02")
-            ("handle03")
-            ("handle0a")
-            ("handle0b")
-            ("handle0c").convert_to_container<std::set<std::string> >();
-
-        BOOST_FOREACH(const std::string& handle, existing_contact_handles) {
-            Fred::CreateContact(handle, registrar.handle).exec(ctx);
-        }
-    }
-};
-
-// tests
-
 BOOST_FIXTURE_TEST_SUITE(CheckContact, autocommitting_context)
 
 bool test_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
@@ -80,21 +41,23 @@ bool test_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, HasInvalidSessionRegistrar)
+BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
+    const std::set<std::string> contact_handles
+        = boost::assign::list_of
+              (ValidHandle().handle).convert_to_container<std::set<std::string> >();
+
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::check_contact(
-            ctx,
-            std::set<std::string>(),
-            DefaultCheckContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        test_invalid_registrar_id_exception
-    );
+            ::Epp::Contact::check_contact(
+                    ctx,
+                    contact_handles,
+                    DefaultCheckContactConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            ::Epp::EppResponseFailure,
+            test_invalid_registrar_id_exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_empty, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(test_result_size_empty, supply_ctx<HasRegistrarWithSession>)
 {
     BOOST_CHECK_EQUAL(
         ::Epp::Contact::check_contact(
@@ -107,7 +70,7 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_empty, HasRegistrar)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, supply_ctx<HasRegistrarWithSession>)
 {
     const std::set<std::string> contact_handles
         = boost::assign::list_of
@@ -133,7 +96,7 @@ BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, HasRegistrar)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(test_invalid_handle, supply_ctx<HasRegistrarWithSession>)
 {
     const std::set<std::string> contact_handles
         = boost::assign::list_of
@@ -162,8 +125,23 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_handle, HasRegistrar)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
+BOOST_FIXTURE_TEST_CASE(test_protected_handle, supply_ctx<HasRegistrarWithSession>)
 {
+    std::set<std::string> protected_handles;
+   
+    protected_handles = boost::assign::list_of
+        ("protHandleX1")
+        ("protHandleX2")
+        ("protHandleX3")
+        ("protHandleXa")
+        ("protHandleXb")
+        ("protHandleXc").convert_to_container<std::set<std::string> >();
+
+    BOOST_FOREACH(const std::string& handle, protected_handles) {
+        Fred::CreateContact(handle, registrar.data.handle).exec(ctx);
+        Fred::DeleteContactByHandle(handle).exec(ctx);
+    }
+
     const std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
         ::Epp::Contact::check_contact(
             ctx,
@@ -180,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, has_protected_handles)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, supply_ctx<HasRegistrarWithSession>)
 {
     const std::set<std::string> contact_handles
         = boost::assign::list_of
@@ -208,8 +186,21 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, HasRegistrar)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(test_existing, has_existing_contacts)
+BOOST_FIXTURE_TEST_CASE(test_existing, supply_ctx<HasRegistrarWithSession>)
 {
+    std::set<std::string> existing_contact_handles;
+    existing_contact_handles = boost::assign::list_of
+        ("handle01")
+        ("handle02")
+        ("handle03")
+        ("handle0a")
+        ("handle0b")
+        ("handle0c").convert_to_container<std::set<std::string> >();
+
+    BOOST_FOREACH(const std::string& handle, existing_contact_handles) {
+        Fred::CreateContact(handle, registrar.data.handle).exec(ctx);
+    }
+
     const std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
         ::Epp::Contact::check_contact(
             ctx,

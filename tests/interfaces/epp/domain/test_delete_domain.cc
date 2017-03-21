@@ -141,7 +141,7 @@ BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, supply_ctx<HasRegistrarWithSess
     BOOST_CHECK_EXCEPTION(
             ::Epp::Domain::delete_domain(
                     ctx,
-                    DomainWithServerUpdateProhibited(ctx, registrar.data.handle).data.fqdn,
+                    DomainWithStatusServerUpdateProhibited(ctx, registrar.data.handle).data.fqdn,
                     DefaultDeleteDomainConfigData(),
                     session.data),
             ::Epp::EppResponseFailure,
