@@ -78,26 +78,38 @@ public:
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         /* construct connection string */
-        std::string dbhost = (vm.count("database.host") == 0 ? ""
-                : "host=" + vm["database.host"].as<std::string>() + " ");
-        std::string dbpass = (vm.count("database.password") == 0 ? ""
-                : "password=" + vm["database.password"].as<std::string>() + " ");
-        std::string dbname = (vm.count("database.name") == 0 ? ""
-                : "dbname=" + vm["database.name"].as<std::string>() + " ");
-        std::string dbuser = (vm.count("database.user") == 0 ? ""
-                : "user=" + vm["database.user"].as<std::string>() + " ");
-        std::string dbport = (vm.count("database.port") == 0 ? ""
-                : "port=" + boost::lexical_cast<std::string>(vm["database.port"].as<unsigned>()) + " ");
-        std::string dbtime = (vm.count("database.timeout") == 0 ? ""
-                : "connect_timeout=" + boost::lexical_cast<std::string>(vm["database.timeout"].as<unsigned>()) + " ");
-        conn_info = str(boost::format("%1% %2% %3% %4% %5% %6%")
-                                                  % dbhost
-                                                  % dbport
-                                                  % dbname
-                                                  % dbuser
-                                                  % dbpass
-                                                  % dbtime);
-        // std::cout << "database connection set to: " << conn_info << std::endl;
+        conn_info += "host=";
+        conn_info += vm["database.host"].as<std::string>();
+        conn_info += " ";
+
+        if(vm.count("database.port") == 1)
+        {
+            conn_info += "port=";
+            conn_info += boost::lexical_cast<std::string>(vm["database.port"].as<unsigned>());
+            conn_info += " ";
+        }
+
+        conn_info += "dbname=";
+        conn_info += vm["database.name"].as<std::string>();
+        conn_info += " ";
+
+        conn_info += "user=";
+        conn_info += vm["database.user"].as<std::string>();
+        conn_info += " ";
+
+        if(vm.count("database.password") == 1)
+        {
+            conn_info += "password=";
+            conn_info += vm["database.password"].as<std::string>();
+            conn_info += " ";
+        }
+
+        if(vm.count("database.timeout") == 1)
+        {
+            conn_info += "connect_timeout=";
+            conn_info += boost::lexical_cast<std::string>(vm["database.timeout"].as<unsigned>());
+            conn_info += " ";
+        }
 
         Database::Manager::init(new Database::ConnectionFactory(conn_info));
 
