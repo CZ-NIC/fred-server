@@ -48,19 +48,16 @@ bool info_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, has_nsset)
+BOOST_FIXTURE_TEST_CASE(info_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
-    const unsigned long long invalid_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::info_nsset(
-            ctx,
-            nsset.handle,
-            DefaultInfoNssetConfigData(),
-            Session(ctx, invalid_registrar_id).data
-        ),
-        ::Epp::EppResponseFailure,
-        info_invalid_registrar_id_exception
-    );
+            ::Epp::Nsset::info_nsset(
+                    ctx,
+                    ValidHandle().handle,
+                    DefaultInfoNssetConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            ::Epp::EppResponseFailure,
+            info_invalid_registrar_id_exception);
 }
 
 bool info_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
@@ -69,18 +66,16 @@ bool info_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, has_nsset)
+BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSessionAndNsset>)
 {
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::info_nsset(
-            ctx,
-            nsset.handle + "SOMEobscureSTRING",
-            DefaultInfoNssetConfigData(),
-            Session(ctx, registrar.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        info_fail_nonexistent_handle_exception
-    );
+            ::Epp::Nsset::info_nsset(
+                    ctx,
+                    NonexistentHandle().handle,
+                    DefaultInfoNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            info_fail_nonexistent_handle_exception);
 }
 
 static void check_equal(const ::Epp::Nsset::InfoNssetOutputData& nsset_data, const Fred::InfoNssetData& info_data) {
@@ -110,16 +105,16 @@ static void check_equal(const ::Epp::Nsset::InfoNssetOutputData& nsset_data, con
     BOOST_CHECK_EQUAL( nsset_data.tech_check_level, info_data.tech_check_level );
 }
 
-BOOST_FIXTURE_TEST_CASE(info_ok_full_data, has_nsset_with_all_data_set)
+BOOST_FIXTURE_TEST_CASE(info_ok_full_data, supply_ctx<HasRegistrarWithSessionAndFullNsset>)
 {
     check_equal(
         ::Epp::Nsset::info_nsset(
             ctx,
-            nsset.handle,
+            nsset.data.handle,
             DefaultInfoNssetConfigData(),
-            Session(ctx, registrar.id).data
+            session.data
         ),
-        nsset
+        nsset.data
     );
 }
 

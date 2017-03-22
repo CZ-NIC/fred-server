@@ -120,16 +120,14 @@ bool update_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(update_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::update_contact(
-            ctx,
-            ValidHandle().handle,
-            DefaultUpdateContactInputData(),
-            DefaultUpdateContactConfigData(),
-            session_with_unauthenticated_registrar.data
-        ),
-        ::Epp::EppResponseFailure,
-        update_invalid_registrar_id_exception
-    );
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    ValidHandle().handle,
+                    DefaultUpdateContactInputData(),
+                    DefaultUpdateContactConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            ::Epp::EppResponseFailure,
+            update_invalid_registrar_id_exception);
 }
 
 bool update_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
@@ -141,16 +139,14 @@ bool update_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e
 BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::update_contact(
-            ctx,
-            contact.data.handle + "abc",
-            DefaultUpdateContactInputData(),
-            DefaultUpdateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_nonexistent_handle_exception
-    );
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact.data.handle + "abc",
+                    DefaultUpdateContactInputData(),
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_nonexistent_handle_exception);
 }
 
 bool update_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
@@ -187,16 +183,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, supply_ctx<HasRegistrar
     ContactWithStatusRequestServerUpdateProhibited contact_with_status_request_server_update_prohibited(ctx, registrar.data.handle);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::update_contact(
-            ctx,
-            contact_with_status_request_server_update_prohibited.data.handle,
-            DefaultUpdateContactInputData(),
-            DefaultUpdateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_prohibiting_status1_exception
-    );
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact_with_status_request_server_update_prohibited.data.handle,
+                    DefaultUpdateContactInputData(),
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_prohibiting_status1_exception);
 }
 
 bool update_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
@@ -233,16 +227,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, supply_ctx<HasRe
     ContactWithStatusRequestDeleteCandidate contact_with_status_request_delete_candidate(ctx, registrar.data.handle);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::update_contact(
-            ctx,
-            contact_with_status_request_delete_candidate.data.handle,
-            DefaultUpdateContactInputData().add_additional_data(),
-            DefaultUpdateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_prohibiting_status_request_exception
-    );
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact_with_status_request_delete_candidate.data.handle,
+                    DefaultUpdateContactInputData().add_additional_data(),
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_prohibiting_status_request_exception);
 
     // now object has the state deleteCandidate itself
     {
@@ -274,16 +266,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_country_code, supply_ctx<HasRegi
     update_contact_input_data.disclose     = get_all_items();
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::update_contact(
-            ctx,
-            contact.data.handle,
-            update_contact_input_data,
-            DefaultUpdateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_nonexistent_country_code_exception
-    );
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact.data.handle,
+                    update_contact_input_data,
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_nonexistent_country_code_exception);
 }
 
 bool update_fail_address_cant_be_undisclosed_exception(const ::Epp::EppResponseFailure& e) {
@@ -299,16 +289,14 @@ BOOST_FIXTURE_TEST_CASE(update_fail_address_cant_be_undisclosed, supply_ctx<HasR
     update_contact_input_data.disclose = get_all_items(false); // address <- !!!
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::update_contact(
-            ctx,
-            contact.data.handle,
-            update_contact_input_data,
-            DefaultUpdateContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_address_cant_be_undisclosed_exception
-    );
+            ::Epp::Contact::update_contact(
+                    ctx,
+                    contact.data.handle,
+                    update_contact_input_data,
+                    DefaultUpdateContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_address_cant_be_undisclosed_exception);
 }
 
 static void check_equal(
@@ -372,12 +360,11 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, supply_ctx<HasRegistrarWithSessionA
     update_contact_input_data.add_additional_data();
 
     ::Epp::Contact::update_contact(
-        ctx,
-        contact.data.handle,
-        update_contact_input_data,
-        DefaultUpdateContactConfigData(),
-        session.data
-    );
+            ctx,
+            contact.data.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
 
     check_equal(contact.data, update_contact_input_data, Fred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
 }
@@ -385,16 +372,16 @@ BOOST_FIXTURE_TEST_CASE(update_ok_full_data, supply_ctx<HasRegistrarWithSessionA
 BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, supply_ctx<HasRegistrarWithSession>)
 {
     ContactWithStatusRequestServerTransferProhibited contact_with_status_request_server_transfer_prohibited(ctx, registrar.data.handle);
+
     DefaultUpdateContactInputData update_contact_input_data;
     update_contact_input_data.add_additional_data();
 
     ::Epp::Contact::update_contact(
-        ctx,
-        contact_with_status_request_server_transfer_prohibited.data.handle,
-        update_contact_input_data,
-        DefaultUpdateContactConfigData(),
-        session.data
-    );
+            ctx,
+            contact_with_status_request_server_transfer_prohibited.data.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
 
     check_equal(contact_with_status_request_server_transfer_prohibited.data, update_contact_input_data, Fred::InfoContactByHandle(contact_with_status_request_server_transfer_prohibited.data.handle).exec(ctx).info_contact_data);
 

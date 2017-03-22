@@ -24,10 +24,10 @@
 #include "tests/interfaces/epp/nsset/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
-#include "src/epp/nsset/create_nsset.h"
-#include "src/epp/nsset/impl/nsset.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
+#include "src/epp/nsset/create_nsset.h"
+#include "src/epp/nsset/impl/nsset.h"
 
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/assign/list_of.hpp>
@@ -43,10 +43,10 @@ BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Nsset)
 BOOST_AUTO_TEST_SUITE(CreateNsset)
 
-BOOST_FIXTURE_TEST_CASE(test_case_uninitialized_ip_prohibited, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(test_case_uninitialized_ip_prohibited, supply_ctx<HasRegistrarWithSession>)
 {
     boost::optional<boost::asio::ip::address> ip;
-    BOOST_REQUIRE(::Epp::Nsset::is_prohibited_ip_addr(ip,ctx));
+    BOOST_REQUIRE(::Epp::Nsset::is_prohibited_ip_addr(ip, ctx));
 }
 
 bool create_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {

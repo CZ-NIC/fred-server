@@ -112,12 +112,12 @@ bool info_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSessionAndContact>)
+BOOST_FIXTURE_TEST_CASE(info_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
         ::Epp::Contact::info_contact(
             ctx,
-            contact.data.handle + "SOMEobscureSTRING",
+            NonexistentHandle().handle,
             DefaultInfoContactConfigData(),
             session.data
         ),

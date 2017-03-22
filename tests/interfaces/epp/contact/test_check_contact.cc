@@ -43,9 +43,8 @@ bool test_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
 
 BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
-    const std::set<std::string> contact_handles
-        = boost::assign::list_of
-              (ValidHandle().handle).convert_to_container<std::set<std::string> >();
+    const std::set<std::string> contact_handles =
+            boost::assign::list_of(ValidHandle().handle).convert_to_container<std::set<std::string> >();
 
     BOOST_CHECK_EXCEPTION(
             ::Epp::Contact::check_contact(
@@ -60,68 +59,66 @@ BOOST_FIXTURE_TEST_CASE(test_invalid_registrar_id, supply_ctx<HasSessionWithUnau
 BOOST_FIXTURE_TEST_CASE(test_result_size_empty, supply_ctx<HasRegistrarWithSession>)
 {
     BOOST_CHECK_EQUAL(
-        ::Epp::Contact::check_contact(
-            ctx,
-            std::set<std::string>(),
-            DefaultCheckContactConfigData(),
-            session.data
-        ).size(),
-        0
-    );
+            ::Epp::Contact::check_contact(
+                    ctx,
+                    std::set<std::string>(),
+                    DefaultCheckContactConfigData(),
+                    session.data).size(),
+            0);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_result_size_nonempty, supply_ctx<HasRegistrarWithSession>)
 {
-    const std::set<std::string> contact_handles
-        = boost::assign::list_of
-            ("a")
-            ("b")
-            ("c")
-            ("d")
-            ("e")
-            ("a1")
-            ("b1")
-            ("c1")
-            ("d1")
-            ("e1").convert_to_container<std::set<std::string> >();
+    const std::set<std::string> contact_handles =
+            boost::assign::list_of
+                    ("a")
+                    ("b")
+                    ("c")
+                    ("d")
+                    ("e")
+                    ("a1")
+                    ("b1")
+                    ("c1")
+                    ("d1")
+                    ("e1").convert_to_container<std::set<std::string> >();
 
     BOOST_CHECK_EQUAL(
-        ::Epp::Contact::check_contact(
-            ctx,
-            contact_handles,
-            DefaultCheckContactConfigData(),
-            session.data
-        ).size(),
-        contact_handles.size()
-    );
+            ::Epp::Contact::check_contact(
+                    ctx,
+                    contact_handles,
+                    DefaultCheckContactConfigData(),
+                    session.data)
+                    .size(),
+            contact_handles.size());
 }
 
 BOOST_FIXTURE_TEST_CASE(test_invalid_handle, supply_ctx<HasRegistrarWithSession>)
 {
-    const std::set<std::string> contact_handles
-        = boost::assign::list_of
-            ("")
-            ("1234567890123456789012345678901234567890123456789012345678901234") // <== 64 chars
-            ("*")
-            ("!")
-            ("@")
-            ("a*")
-            ("*a")
-            ("a*a").convert_to_container<std::set<std::string> >();
+    const std::set<std::string> contact_handles =
+            boost::assign::list_of
+                    ("")
+                    ("1234567890123456789012345678901234567890123456789012345678901234") // <== 64 chars
+                    ("*")
+                    ("!")
+                    ("@")
+                    ("a*")
+                    ("*a")
+                    ("a*a").convert_to_container<std::set<std::string> >();
 
     const std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
-        ::Epp::Contact::check_contact(
-            ctx,
-            contact_handles,
-            DefaultCheckContactConfigData(),
-            session.data
-        );
+            ::Epp::Contact::check_contact(
+                    ctx,
+                    contact_handles,
+                    DefaultCheckContactConfigData(),
+                    session.data);
 
-    for(std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
-        it != check_res.end();
-        ++it
-    ) {
-        BOOST_CHECK(it->second.get_value() == ::Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle);
+    for (std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
+         it != check_res.end();
+         ++it)
+    {
+        BOOST_CHECK(
+                it->second.get_value() ==
+                ::Epp::Contact::ContactHandleRegistrationObstruction::invalid_handle);
     }
 }
 
@@ -129,26 +126,27 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, supply_ctx<HasRegistrarWithSessio
 {
     std::set<std::string> protected_handles;
    
-    protected_handles = boost::assign::list_of
-        ("protHandleX1")
-        ("protHandleX2")
-        ("protHandleX3")
-        ("protHandleXa")
-        ("protHandleXb")
-        ("protHandleXc").convert_to_container<std::set<std::string> >();
+    protected_handles =
+            boost::assign::list_of
+                    ("protHandleX1")
+                    ("protHandleX2")
+                    ("protHandleX3")
+                    ("protHandleXa")
+                    ("protHandleXb")
+                    ("protHandleXc").convert_to_container<std::set<std::string> >();
 
-    BOOST_FOREACH(const std::string& handle, protected_handles) {
+    BOOST_FOREACH (const std::string& handle, protected_handles)
+    {
         Fred::CreateContact(handle, registrar.data.handle).exec(ctx);
         Fred::DeleteContactByHandle(handle).exec(ctx);
     }
 
     const std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
-        ::Epp::Contact::check_contact(
-            ctx,
-            protected_handles,
-            DefaultCheckContactConfigData(),
-            session.data
-        );
+            ::Epp::Contact::check_contact(
+                    ctx,
+                    protected_handles,
+                    DefaultCheckContactConfigData(),
+                    session.data);
 
     for(std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
@@ -160,23 +158,22 @@ BOOST_FIXTURE_TEST_CASE(test_protected_handle, supply_ctx<HasRegistrarWithSessio
 
 BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, supply_ctx<HasRegistrarWithSession>)
 {
-    const std::set<std::string> contact_handles
-        = boost::assign::list_of
-            ("abc123")
-            ("def234")
-            ("ghi345")
-            ("jkl456")
-            ("mno567")
-            ("pqr678")
-            ("xyz789").convert_to_container<std::set<std::string> >();
+    const std::set<std::string> contact_handles =
+            boost::assign::list_of
+                    ("abc123")
+                    ("def234")
+                    ("ghi345")
+                    ("jkl456")
+                    ("mno567")
+                    ("pqr678")
+                    ("xyz789").convert_to_container<std::set<std::string> >();
 
     const std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
-        ::Epp::Contact::check_contact(
-            ctx,
-            contact_handles,
-            DefaultCheckContactConfigData(),
-            session.data
-        );
+            ::Epp::Contact::check_contact(
+                    ctx,
+                    contact_handles,
+                    DefaultCheckContactConfigData(),
+                    session.data);
 
     for(std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();
@@ -189,25 +186,25 @@ BOOST_FIXTURE_TEST_CASE(test_nonexistent_handle, supply_ctx<HasRegistrarWithSess
 BOOST_FIXTURE_TEST_CASE(test_existing, supply_ctx<HasRegistrarWithSession>)
 {
     std::set<std::string> existing_contact_handles;
-    existing_contact_handles = boost::assign::list_of
-        ("handle01")
-        ("handle02")
-        ("handle03")
-        ("handle0a")
-        ("handle0b")
-        ("handle0c").convert_to_container<std::set<std::string> >();
+    existing_contact_handles =
+            boost::assign::list_of
+                    ("handle01")
+                    ("handle02")
+                    ("handle03")
+                    ("handle0a")
+                    ("handle0b")
+                    ("handle0c").convert_to_container<std::set<std::string> >();
 
     BOOST_FOREACH(const std::string& handle, existing_contact_handles) {
         Fred::CreateContact(handle, registrar.data.handle).exec(ctx);
     }
 
     const std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> > check_res =
-        ::Epp::Contact::check_contact(
-            ctx,
-            existing_contact_handles,
-            DefaultCheckContactConfigData(),
-            session.data
-        );
+            ::Epp::Contact::check_contact(
+                    ctx,
+                    existing_contact_handles,
+                    DefaultCheckContactConfigData(),
+                    session.data);
 
     for(std::map<std::string, Nullable< ::Epp::Contact::ContactHandleRegistrationObstruction::Enum> >::const_iterator it = check_res.begin();
         it != check_res.end();

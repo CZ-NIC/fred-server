@@ -16,10 +16,11 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "tests/interfaces/epp/fixture.h"
 #include "tests/interfaces/epp/contact/fixture.h"
-#include "tests/interfaces/epp/nsset/fixture.h"
 #include "tests/interfaces/epp/domain/fixture.h"
+#include "tests/interfaces/epp/fixture.h"
+#include "tests/interfaces/epp/keyset/fixture.h"
+#include "tests/interfaces/epp/nsset/fixture.h"
 #include "tests/interfaces/epp/util.h"
 
 #include "src/epp/contact/delete_contact.h"
@@ -245,23 +246,16 @@ bool delete_fail_linked_keyset_exception(const ::Epp::EppResponseFailure& e) {
 
 BOOST_FIXTURE_TEST_CASE(delete_fail_linked_keyset, supply_ctx<HasRegistrarWithSession>)
 {
-    // TODO (like NssetWithTechContact above)
-    Contact tech_contact(ctx, registrar.data.handle, "KEYSETTECHCONTACT");
-
-    Fred::CreateKeyset("keyset1x", registrar.data.handle)
-            .set_tech_contacts(boost::assign::list_of(tech_contact.data.handle))
-            .exec(ctx);
+    Keyset::KeysetWithTechContact keyset(ctx, registrar.data.handle);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Contact::delete_contact(
-            ctx,
-            tech_contact.data.handle,
-            DefaultDeleteContactConfigData(),
-            session.data
-        ),
-        ::Epp::EppResponseFailure,
-        delete_fail_linked_keyset_exception
-    );
+            ::Epp::Contact::delete_contact(
+                    ctx,
+                    keyset.tech_contact.data.handle,
+                    DefaultDeleteContactConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            delete_fail_linked_keyset_exception);
 }
 
 BOOST_FIXTURE_TEST_CASE(delete_ok, supply_ctx<HasRegistrarWithSessionAndContact>)

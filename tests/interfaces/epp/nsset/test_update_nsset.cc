@@ -52,31 +52,26 @@ bool update_nsset_invalid_registrar_exception(const ::Epp::EppResponseFailure& e
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, has_nsset)
+BOOST_FIXTURE_TEST_CASE(update_nsset_invalid_registrar, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
-    const unsigned long long invalid_registrar_id = 0;
     const ::Epp::Nsset::UpdateNssetInputData input_data(
-        nsset.handle + "*?!",
-        Optional<std::string>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector<std::string>(),
-        std::vector<std::string>(),
-        boost::optional<short>()
-    );
+            "abc",
+            Optional<std::string>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector<std::string>(),
+            std::vector<std::string>(),
+            boost::optional<short>());
     const ::Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::update_nsset(
-            ctx,
-            input_data,
-            DefaultUpdateNssetConfigData(),
-            Session(ctx, invalid_registrar_id).data
-        ),
-        ::Epp::EppResponseFailure,
-        update_nsset_invalid_registrar_exception
-    );
-
+            ::Epp::Nsset::update_nsset(
+                    ctx,
+                    input_data,
+                    DefaultUpdateNssetConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            ::Epp::EppResponseFailure,
+            update_nsset_invalid_registrar_exception);
 }
 
 bool update_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
@@ -85,29 +80,26 @@ bool update_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, has_nsset)
+BOOST_FIXTURE_TEST_CASE(update_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSessionAndNsset>)
 {
     const ::Epp::Nsset::UpdateNssetInputData input_data(
-        nsset.handle + "abc",
-        Optional<std::string>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector<std::string>(),
-        std::vector<std::string>(),
-        boost::optional<short>()
-    );
+            NonexistentHandle().handle,
+            Optional<std::string>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector<std::string>(),
+            std::vector<std::string>(),
+            boost::optional<short>());
     const ::Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::update_nsset(
-            ctx,
-            input_data,
-            DefaultUpdateNssetConfigData(),
-            Session(ctx, registrar.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_nonexistent_handle_exception
-    );
+            ::Epp::Nsset::update_nsset(
+                    ctx,
+                    input_data,
+                    DefaultUpdateNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_nonexistent_handle_exception);
 }
 
 bool update_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
@@ -120,29 +112,26 @@ bool update_fail_wrong_registrar_exception(const ::Epp::EppResponseFailure& e) {
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, has_nsset)
+BOOST_FIXTURE_TEST_CASE(update_fail_wrong_registrar, supply_ctx<HasRegistrarWithSessionAndNssetOfDifferentRegistrar>)
 {
     const ::Epp::Nsset::UpdateNssetInputData input_data(
-        nsset.handle,
-        Optional<std::string>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector<std::string>(),
-        std::vector<std::string>(),
-        boost::optional<short>()
-    );
+            nsset_of_different_registrar.data.handle,
+            Optional<std::string>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector<std::string>(),
+            std::vector<std::string>(),
+            boost::optional<short>());
     const ::Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::update_nsset(
-            ctx,
-            input_data,
-            DefaultUpdateNssetConfigData(),
-            Session(ctx, Registrar(ctx).data.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_wrong_registrar_exception
-    );
+            ::Epp::Nsset::update_nsset(
+                    ctx,
+                    input_data,
+                    DefaultUpdateNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_wrong_registrar_exception);
 }
 
 bool update_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& e) {
@@ -151,29 +140,28 @@ bool update_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, has_nsset_with_server_update_prohibited)
+BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status1, supply_ctx<HasRegistrarWithSession>)
 {
+    NssetWithStatusServerUpdateProhibited nsset_with_status_server_update_prohibited(ctx, registrar.data.handle);
+
     const ::Epp::Nsset::UpdateNssetInputData input_data(
-        nsset.handle,
-        Optional<std::string>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector<std::string>(),
-        std::vector<std::string>(),
-        boost::optional<short>()
-    );
+            nsset_with_status_server_update_prohibited.data.handle,
+            Optional<std::string>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector<std::string>(),
+            std::vector<std::string>(),
+            boost::optional<short>());
     const ::Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::update_nsset(
-            ctx,
-            input_data,
-            DefaultUpdateNssetConfigData(),
-            Session(ctx, registrar.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_prohibiting_status1_exception
-    );
+            ::Epp::Nsset::update_nsset(
+                    ctx,
+                    input_data,
+                    DefaultUpdateNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_prohibiting_status1_exception);
 }
 
 bool update_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
@@ -182,29 +170,28 @@ bool update_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& 
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, has_nsset_with_delete_candidate)
+BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status2, supply_ctx<HasRegistrarWithSession>)
 {
+    NssetWithStatusDeleteCandidate nsset_with_status_delete_candidate(ctx, registrar.data.handle);
+
     const ::Epp::Nsset::UpdateNssetInputData input_data(
-        nsset.handle,
-        Optional<std::string>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector< ::Epp::Nsset::DnsHostInput>(),
-        std::vector<std::string>(),
-        std::vector<std::string>(),
-        boost::optional<short>()
-    );
+            nsset_with_status_delete_candidate.data.handle,
+            Optional<std::string>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector< ::Epp::Nsset::DnsHostInput>(),
+            std::vector<std::string>(),
+            std::vector<std::string>(),
+            boost::optional<short>());
     const ::Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::update_nsset(
-            ctx,
-            input_data,
-            DefaultUpdateNssetConfigData(),
-            Session(ctx, registrar.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        update_fail_prohibiting_status2_exception
-    );
+            ::Epp::Nsset::update_nsset(
+                    ctx,
+                    input_data,
+                    DefaultUpdateNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            update_fail_prohibiting_status2_exception);
 }
 
 bool update_fail_prohibiting_status_request_exception(const ::Epp::EppResponseFailure& e) {
@@ -213,10 +200,12 @@ bool update_fail_prohibiting_status_request_exception(const ::Epp::EppResponseFa
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_delete_candidate_request)
+BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, supply_ctx<HasRegistrarWithSession>)
 {
+    NssetWithStatusRequestDeleteCandidate nsset_with_status_request_delete_candidate(ctx, registrar.data.handle);
+
     const ::Epp::Nsset::UpdateNssetInputData input_data(
-        nsset.handle,
+        nsset_with_status_request_delete_candidate.data.handle,
         Optional<std::string>(),
         std::vector< ::Epp::Nsset::DnsHostInput>(),
         std::vector< ::Epp::Nsset::DnsHostInput>(),
@@ -231,7 +220,7 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
             ctx,
             input_data,
             DefaultUpdateNssetConfigData(),
-            Session(ctx, registrar.id).data
+            session.data
         ),
         ::Epp::EppResponseFailure,
         update_fail_prohibiting_status_request_exception
@@ -241,16 +230,15 @@ BOOST_FIXTURE_TEST_CASE(update_fail_prohibiting_status_request, has_nsset_with_d
     {
         std::vector<std::string> object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(nsset.id).exec(ctx) ) {
+            BOOST_FOREACH (const Fred::ObjectStateData& state, Fred::GetObjectStates(nsset_with_status_request_delete_candidate.data.id).exec(ctx))
+            {
                 object_states_after.push_back(state.state_name);
             }
         }
 
         BOOST_CHECK(
-            std::find( object_states_after.begin(), object_states_after.end(), status )
-            !=
-            object_states_after.end()
-        );
+                std::find(object_states_after.begin(), object_states_after.end(), nsset_with_status_request_delete_candidate.status) !=
+                object_states_after.end());
     }
 }
 
@@ -391,10 +379,10 @@ void check_after_update_data(const ::Epp::Nsset::UpdateNssetInputData& update_da
 }
 
 
-BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
+BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, supply_ctx<HasRegistrarWithSessionAndFullNsset>)
 {
     ::Epp::Nsset::UpdateNssetInputData input_data(
-            nsset.handle,
+            nsset.data.handle,
             "authInfo1234",
             Util::vector_of< ::Epp::Nsset::DnsHostInput>
                 (::Epp::Nsset::DnsHostInput("a.ns.nic.cz",
@@ -423,9 +411,9 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
             ctx,
             input_data,
             DefaultUpdateNssetConfigData(),
-            Session(ctx, registrar.id).data
+            Session(ctx, registrar.data.id).data
         );
-        check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
+        check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset.data.handle).exec(ctx).info_nsset_data);
     }
     catch(const ::Epp::EppResponseFailure& e)
     {
@@ -446,39 +434,40 @@ BOOST_FIXTURE_TEST_CASE(nsset_update_ok_full_data, has_nsset_with_all_data_set)
 
 }
 
-BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, has_nsset_with_server_transfer_prohibited_request)
+BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, supply_ctx<HasRegistrarWithSession>)
 {
+    NssetWithStatusRequestServerTransferProhibited nsset_with_status_request_server_transfer_prohibited(ctx, registrar.data.handle);
+
     ::Epp::Nsset::UpdateNssetInputData input_data(
-            nsset.handle,
+            nsset_with_status_request_server_transfer_prohibited.data.handle,
             "authInfo1234",
             std::vector< ::Epp::Nsset::DnsHostInput>(), //add_dns
             std::vector< ::Epp::Nsset::DnsHostInput>(), //rem_dns
-            std::vector<std::string>(),//0
+            std::vector<std::string>(),                 //0
             std::vector<std::string>(),
-            3
-        );
+            3);
     const ::Epp::Nsset::UpdateNssetConfigData config_data(false, 2, 10);
 
     ::Epp::Nsset::update_nsset(
-        ctx,
-        input_data,
-        DefaultUpdateNssetConfigData(),
-        Session(ctx, registrar.id).data
-    );
+            ctx,
+            input_data,
+            DefaultUpdateNssetConfigData(),
+            session.data);
 
-    check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data);
+    check_after_update_data(input_data, Fred::InfoNssetByHandle(nsset_with_status_request_server_transfer_prohibited.data.handle).exec(ctx).info_nsset_data);
 
-    /* now object has the state server_transfer_prohibited itself */
+    // now object has the state server_transfer_prohibited itself
     {
-        std::vector<std::string> object_states_after;
+        std::set<std::string> object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(nsset.id).exec(ctx) ) {
-                object_states_after.push_back(state.state_name);
+            BOOST_FOREACH (const Fred::ObjectStateData& state, Fred::GetObjectStates(nsset_with_status_request_server_transfer_prohibited.data.id).exec(ctx))
+            {
+                object_states_after.insert(state.state_name);
             }
         }
 
         BOOST_CHECK(
-            std::find( object_states_after.begin(), object_states_after.end(), status )
+            std::find( object_states_after.begin(), object_states_after.end(), nsset_with_status_request_server_transfer_prohibited.status )
             !=
             object_states_after.end()
         );

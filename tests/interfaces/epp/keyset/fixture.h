@@ -19,7 +19,6 @@
 #ifndef FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 #define FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 
-#include "tests/interfaces/epp/fixture.h"
 #include "src/epp/keyset/check_keyset_config_data.h"
 #include "src/epp/keyset/create_keyset_config_data.h"
 #include "src/epp/keyset/create_keyset_localized.h"
@@ -28,9 +27,12 @@
 #include "src/epp/keyset/transfer_keyset_config_data.h"
 #include "src/epp/keyset/update_keyset_config_data.h"
 #include "src/fredlib/keyset/handle_state.h"
+#include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
 
+#include <string>
 #include <vector>
 
 namespace Test {
@@ -91,6 +93,21 @@ struct Keyset {
     Keyset(Fred::OperationContext& _ctx, const std::string& _registrar_handle) {
         handle = "KEYSET";
         Fred::CreateKeyset(handle, _registrar_handle).exec(_ctx);
+    }
+};
+
+struct KeysetWithTechContact
+{
+    Contact::Contact tech_contact;
+    std::string handle;
+
+    KeysetWithTechContact(Fred::OperationContext& _ctx, const std::string& _registrar_handle)
+        : tech_contact(_ctx, _registrar_handle, "KEYSETTECHCONTACT"),
+          handle("KEYSET")
+    {
+        Fred::CreateKeyset(handle, _registrar_handle)
+                .set_tech_contacts(boost::assign::list_of(tech_contact.data.handle))
+                .exec(_ctx);
     }
 };
 

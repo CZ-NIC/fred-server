@@ -45,20 +45,17 @@ bool transfer_fail_auth_error_srvr_closing_connection_exception(const ::Epp::Epp
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, has_nsset)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_auth_error_srvr_closing_connection, supply_ctx<HasSessionWithUnauthenticatedRegistrar>)
 {
-    const unsigned long long invalid_registrar_id = 0;
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::transfer_nsset(
-            ctx,
-            nsset.handle,
-            nsset.authinfopw,
-            DefaultTransferNssetConfigData(),
-            Session(ctx, invalid_registrar_id).data
-        ),
-        ::Epp::EppResponseFailure,
-        transfer_fail_auth_error_srvr_closing_connection_exception
-    );
+            ::Epp::Nsset::transfer_nsset(
+                    ctx,
+                    ValidHandle().handle,
+                    "authinfopw",
+                    DefaultTransferNssetConfigData(),
+                    session_with_unauthenticated_registrar.data),
+            ::Epp::EppResponseFailure,
+            transfer_fail_auth_error_srvr_closing_connection_exception);
 }
 
 bool transfer_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure& e) {
@@ -67,19 +64,17 @@ bool transfer_fail_nonexistent_handle_exception(const ::Epp::EppResponseFailure&
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, HasRegistrar)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_nonexistent_handle, supply_ctx<HasRegistrarWithSession>)
 {
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::transfer_nsset(
-            ctx,
-            Test::get_nonexistent_object_handle(ctx),
-            "abc-it-doesnt-matter-operation-should-fail-even-sooner",
-            DefaultTransferNssetConfigData(),
-            Session(ctx, registrar.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        transfer_fail_nonexistent_handle_exception
-    );
+            ::Epp::Nsset::transfer_nsset(
+                    ctx,
+                    Test::get_nonexistent_object_handle(ctx),
+                    "authinfopw",
+                    DefaultTransferNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            transfer_fail_nonexistent_handle_exception);
 }
 
 bool transfer_fail_not_eligible_for_transfer_exception(const ::Epp::EppResponseFailure& e) {
@@ -88,19 +83,17 @@ bool transfer_fail_not_eligible_for_transfer_exception(const ::Epp::EppResponseF
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, has_nsset)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_not_eligible_for_transfer, supply_ctx<HasRegistrarWithSessionAndNsset>)
 {
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::transfer_nsset(
-            ctx,
-            nsset.handle,
-            nsset.authinfopw,
-            DefaultTransferNssetConfigData(),
-            Session(ctx, registrar.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        transfer_fail_not_eligible_for_transfer_exception
-    );
+            ::Epp::Nsset::transfer_nsset(
+                    ctx,
+                    nsset.data.handle,
+                    nsset.data.authinfopw,
+                    DefaultTransferNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            transfer_fail_not_eligible_for_transfer_exception);
 }
 
 bool transfer_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure& e) {
@@ -109,19 +102,19 @@ bool transfer_fail_prohibiting_status1_exception(const ::Epp::EppResponseFailure
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, has_nsset_with_server_transfer_prohibited)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status1, supply_ctx<HasRegistrarWithSessionAndDifferentRegistrar>)
 {
+    NssetWithStatusServerTransferProhibited nsset_of_different_registrar_and_with_status_server_transfer_prohibited(ctx, different_registrar.data.handle);
+
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::transfer_nsset(
-            ctx,
-            nsset.handle,
-            nsset.authinfopw,
-            DefaultTransferNssetConfigData(),
-            Session(ctx, Registrar(ctx).data.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        transfer_fail_prohibiting_status1_exception
-    );
+            ::Epp::Nsset::transfer_nsset(
+                    ctx,
+                    nsset_of_different_registrar_and_with_status_server_transfer_prohibited.data.handle,
+                    nsset_of_different_registrar_and_with_status_server_transfer_prohibited.data.authinfopw,
+                    DefaultTransferNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            transfer_fail_prohibiting_status1_exception);
 }
 
 bool transfer_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure& e) {
@@ -130,19 +123,19 @@ bool transfer_fail_prohibiting_status2_exception(const ::Epp::EppResponseFailure
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, has_nsset_with_delete_candidate)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_prohibiting_status2, supply_ctx<HasRegistrarWithSessionAndDifferentRegistrar>)
 {
+    NssetWithStatusDeleteCandidate nsset_of_different_registrar_and_with_status_delete_candidate(ctx, different_registrar.data.handle);
+
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::transfer_nsset(
-            ctx,
-            nsset.handle,
-            nsset.authinfopw,
-            DefaultTransferNssetConfigData(),
-            Session(ctx, Registrar(ctx).data.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        transfer_fail_prohibiting_status2_exception
-    );
+            ::Epp::Nsset::transfer_nsset(
+                    ctx,
+                    nsset_of_different_registrar_and_with_status_delete_candidate.data.handle,
+                    nsset_of_different_registrar_and_with_status_delete_candidate.data.authinfopw,
+                    DefaultTransferNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            transfer_fail_prohibiting_status2_exception);
 }
 
 bool transfer_fail_authinfopw_error_exception(const ::Epp::EppResponseFailure& e) {
@@ -151,73 +144,73 @@ bool transfer_fail_authinfopw_error_exception(const ::Epp::EppResponseFailure& e
     return true;
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfopw_error, has_nsset)
+BOOST_FIXTURE_TEST_CASE(transfer_fail_authinfopw_error, supply_ctx<HasRegistrarWithSessionAndNssetOfDifferentRegistrar>)
 {
     BOOST_CHECK_EXCEPTION(
-        ::Epp::Nsset::transfer_nsset(
-            ctx,
-            nsset.handle,
-            "thisisdifferent" + nsset.authinfopw,
-            DefaultTransferNssetConfigData(),
-            Session(ctx, Registrar(ctx).data.id).data
-        ),
-        ::Epp::EppResponseFailure,
-        transfer_fail_authinfopw_error_exception
-    );
+            ::Epp::Nsset::transfer_nsset(
+                    ctx,
+                    nsset_of_different_registrar.data.handle,
+                    "thisisdifferent" + nsset_of_different_registrar.data.authinfopw,
+                    DefaultTransferNssetConfigData(),
+                    session.data),
+            ::Epp::EppResponseFailure,
+            transfer_fail_authinfopw_error_exception);
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, has_nsset_with_server_update_prohibited_request)
+BOOST_FIXTURE_TEST_CASE(transfer_ok_state_requests_updated, supply_ctx<HasRegistrarWithSessionAndDifferentRegistrar>)
 {
+    NssetWithStatusRequestServerUpdateProhibited nsset_of_different_registrar_and_with_status_request_server_update_prohibited(ctx, different_registrar.data.handle);
+
     ::Epp::Nsset::transfer_nsset(
-        ctx,
-        nsset.handle,
-        nsset.authinfopw,
-        DefaultTransferNssetConfigData(),
-        Session(ctx, Registrar(ctx).data.id).data
-    );
+            ctx,
+            nsset_of_different_registrar_and_with_status_request_server_update_prohibited.data.handle,
+            nsset_of_different_registrar_and_with_status_request_server_update_prohibited.data.authinfopw,
+            DefaultTransferNssetConfigData(),
+            session.data);
 
     /* now object has the state server_update_prohibited itself */
     {
         std::vector<std::string> object_states_after;
         {
-            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(nsset.id).exec(ctx) ) {
+            BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(nsset_of_different_registrar_and_with_status_request_server_update_prohibited.data.id).exec(ctx) ) {
                 object_states_after.push_back(state.state_name);
             }
         }
 
         BOOST_CHECK(
-            std::find( object_states_after.begin(), object_states_after.end(), status )
+            std::find(object_states_after.begin(), object_states_after.end(), nsset_of_different_registrar_and_with_status_request_server_update_prohibited.status)
             !=
             object_states_after.end()
         );
     }
 }
 
-BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, has_nsset)
+BOOST_FIXTURE_TEST_CASE(transfer_ok_full_data, supply_ctx<HasRegistrarWithSessionAndDifferentRegistrar>)
 {
-    const Fred::InfoNssetData nsset_data_before = Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data;
+    FullNsset nsset_of_different_registrar(ctx, different_registrar.data.handle);
+    const Fred::InfoNssetData nsset_data_before = Fred::InfoNssetByHandle(nsset_of_different_registrar.data.handle).exec(ctx).info_nsset_data;
 
-    Registrar another_registrar(ctx);
     ::Epp::Nsset::transfer_nsset(
         ctx,
-        nsset.handle,
-        nsset.authinfopw,
+        nsset_of_different_registrar.data.handle,
+        nsset_of_different_registrar.data.authinfopw,
         DefaultTransferNssetConfigData(),
-        Session(ctx, another_registrar.data.id).data
+        session.data
     );
 
-    const Fred::InfoNssetData nsset_data_after = Fred::InfoNssetByHandle(nsset.handle).exec(ctx).info_nsset_data;
+    const Fred::InfoNssetData nsset_data_after = Fred::InfoNssetByHandle(nsset_of_different_registrar.data.handle).exec(ctx).info_nsset_data;
 
     const Fred::InfoNssetDiff nsset_data_change = diff_nsset_data(nsset_data_before, nsset_data_after);
-    const std::set<std::string> change_fields_etalon = boost::assign::list_of
-        ("sponsoring_registrar_handle")
-        ("transfer_time")
-        ("historyid")
-        ("authinfopw");
+    const std::set<std::string> change_fields_etalon =
+            boost::assign::list_of
+                    ("sponsoring_registrar_handle")
+                    ("transfer_time")
+                    ("historyid")
+                    ("authinfopw");
 
     BOOST_CHECK(nsset_data_change.changed_fields() == change_fields_etalon);
 
-    BOOST_CHECK_EQUAL(nsset_data_after.sponsoring_registrar_handle, another_registrar.data.handle);
+    BOOST_CHECK_EQUAL(nsset_data_after.sponsoring_registrar_handle, registrar.data.handle);
 
     BOOST_CHECK_EQUAL(
         nsset_data_after.transfer_time,

@@ -654,7 +654,7 @@ struct HasRegistrarWithSessionAndCreateDomainInputData
           contact2(_ctx, registrar.data.handle, "CONTACT2"),
           create_domain_input_data("newdomain.cz",
                   registrant.data.handle,
-                  nsset.handle,
+                  nsset.data.handle,
                   keyset.handle,
                   Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle))
     {
@@ -725,7 +725,7 @@ struct HasRegistrarWithSessionAndCreateDomainInputDataAndRenewDomainInputData
           create_domain_input_data(
                   "nonexistentdomain.cz",
                   registrant.data.handle,
-                  nsset.handle,
+                  nsset.data.handle,
                   keyset.handle,
                   Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle)),
           renew_domain_input_data(
@@ -763,7 +763,7 @@ struct HasRegistrarWithSessionAndDomainAndCreateDomainInputDataAndRenewDomainInp
           create_domain_input_data(
                   domain.data.fqdn,
                   registrant.data.handle,
-                  nsset.handle,
+                  nsset.data.handle,
                   keyset.handle,
                   Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle)),
           renew_domain_input_data(
