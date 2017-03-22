@@ -109,36 +109,38 @@ inline std::string to_db_handle(Fred::Poll::MessageType::Enum value)
 template < >
 inline Fred::Poll::MessageType::Enum from_db_handle<Fred::Poll::MessageType>(const std::string &db_handle)
 {
-    if (to_db_handle(Fred::Poll::MessageType::credit) == db_handle) { return Fred::Poll::MessageType::credit; }
-    if (to_db_handle(Fred::Poll::MessageType::request_fee_info) == db_handle) { return Fred::Poll::MessageType::request_fee_info; }
+    static const Fred::Poll::MessageType::Enum possible_results[] =
+            {
+                Fred::Poll::MessageType::credit,
+                Fred::Poll::MessageType::request_fee_info,
 
-    if (to_db_handle(Fred::Poll::MessageType::techcheck) == db_handle) { return Fred::Poll::MessageType::techcheck; }
+                Fred::Poll::MessageType::techcheck,
 
-    if (to_db_handle(Fred::Poll::MessageType::transfer_contact) == db_handle) { return Fred::Poll::MessageType::transfer_contact; }
-    if (to_db_handle(Fred::Poll::MessageType::transfer_domain) == db_handle) { return Fred::Poll::MessageType::transfer_domain; }
-    if (to_db_handle(Fred::Poll::MessageType::transfer_nsset) == db_handle) { return Fred::Poll::MessageType::transfer_nsset; }
-    if (to_db_handle(Fred::Poll::MessageType::transfer_keyset) == db_handle) { return Fred::Poll::MessageType::transfer_keyset; }
+                Fred::Poll::MessageType::transfer_contact,
+                Fred::Poll::MessageType::transfer_domain,
+                Fred::Poll::MessageType::transfer_nsset,
+                Fred::Poll::MessageType::transfer_keyset,
 
-    if (to_db_handle(Fred::Poll::MessageType::idle_delete_contact) == db_handle) { return Fred::Poll::MessageType::idle_delete_contact; }
-    if (to_db_handle(Fred::Poll::MessageType::idle_delete_domain) == db_handle) { return Fred::Poll::MessageType::idle_delete_domain; }
-    if (to_db_handle(Fred::Poll::MessageType::idle_delete_nsset) == db_handle) { return Fred::Poll::MessageType::idle_delete_nsset; }
-    if (to_db_handle(Fred::Poll::MessageType::idle_delete_keyset) == db_handle) { return Fred::Poll::MessageType::idle_delete_keyset; }
+                Fred::Poll::MessageType::idle_delete_contact,
+                Fred::Poll::MessageType::idle_delete_domain,
+                Fred::Poll::MessageType::idle_delete_nsset,
+                Fred::Poll::MessageType::idle_delete_keyset,
 
-    if (to_db_handle(Fred::Poll::MessageType::imp_expiration) == db_handle) { return Fred::Poll::MessageType::imp_expiration; }
-    if (to_db_handle(Fred::Poll::MessageType::expiration) == db_handle) { return Fred::Poll::MessageType::expiration; }
-    if (to_db_handle(Fred::Poll::MessageType::outzone) == db_handle) { return Fred::Poll::MessageType::outzone; }
+                Fred::Poll::MessageType::imp_expiration,
+                Fred::Poll::MessageType::expiration,
+                Fred::Poll::MessageType::outzone,
 
-    if (to_db_handle(Fred::Poll::MessageType::imp_validation) == db_handle) { return Fred::Poll::MessageType::imp_validation; }
-    if (to_db_handle(Fred::Poll::MessageType::validation) == db_handle) { return Fred::Poll::MessageType::validation; }
+                Fred::Poll::MessageType::imp_validation,
+                Fred::Poll::MessageType::validation,
 
-    if (to_db_handle(Fred::Poll::MessageType::update_domain) == db_handle) { return Fred::Poll::MessageType::update_domain; }
-    if (to_db_handle(Fred::Poll::MessageType::update_nsset) == db_handle) { return Fred::Poll::MessageType::update_nsset; }
-    if (to_db_handle(Fred::Poll::MessageType::update_keyset) == db_handle) { return Fred::Poll::MessageType::update_keyset; }
+                Fred::Poll::MessageType::update_domain,
+                Fred::Poll::MessageType::update_nsset,
+                Fred::Poll::MessageType::update_keyset,
 
-    if (to_db_handle(Fred::Poll::MessageType::delete_contact) == db_handle) { return Fred::Poll::MessageType::delete_contact; }
-    if (to_db_handle(Fred::Poll::MessageType::delete_domain) == db_handle) { return Fred::Poll::MessageType::delete_domain; }
-
-    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to Fred::Poll::MessageType::Enum");
+                Fred::Poll::MessageType::delete_contact,
+                Fred::Poll::MessageType::delete_domain
+            };
+    return inverse_transformation(db_handle, possible_results, to_db_handle);
 }
 
 }//namespace Conversion::Enums
