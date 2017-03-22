@@ -75,12 +75,9 @@ public:
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
-        nameservice_host = (vm.count("nameservice.host") == 0
-                ? std::string("localhost") : vm["nameservice.host"].as<std::string>());
-        nameservice_port = (vm.count("nameservice.port") == 0
-                ? 2809 : vm["nameservice.port"].as<unsigned>());
-        nameservice_context = (vm.count("nameservice.context") == 0
-                ? std::string("fred") : vm["nameservice.context"].as<std::string>());
+        nameservice_host = vm["nameservice.host"].as<std::string>();
+        nameservice_port = vm["nameservice.port"].as<unsigned>();
+        nameservice_context = vm["nameservice.context"].as<std::string>();
     }//handle
 };//HandleCorbaNameServiceArgs
 
