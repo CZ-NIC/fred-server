@@ -134,6 +134,7 @@ public:
 class AccumulatedConfig
 {
 private:
+    std::size_t get_count_;
     std::vector<VMConfigData> data_;
 
 public:
@@ -192,26 +193,33 @@ public:
         }
     }
 
-    std::string get() const
+    /**
+     * return next config item or empty string
+     */
+    std::string get_one()
     {
-        std::string text("config dump: ");
-        for(std::vector<VMConfigData>::const_iterator ci = data_.begin(); ci != data_.end(); ++ci)
+        std::string text;
+        if(get_count_ < data_.size())
         {
-            text += ci->get_key();
+            text += "config dump: ";
+            text += data_.at(get_count_).get_key();
             text+=": ";
-            text += ci->get_value();
+            text += data_.at(get_count_).get_value();
             text+=" ";
-            text += ci->get_defaulted() ? "DEFAULT" : "" ;
+            text += data_.at(get_count_).get_defaulted() ? "DEFAULT" : "" ;
             text+=" ";
-            text += ci->get_empty() ? "EMPTY" : "" ;
-            text+=" # ";
+            text += data_.at(get_count_).get_empty() ? "EMPTY" : "" ;
+            ++get_count_;
         }
-
         return text;
     }
 
 private:
-    AccumulatedConfig() {}
+    AccumulatedConfig()
+        : get_count_(0)
+    {
+    }
+
 //c++03 version
     AccumulatedConfig(AccumulatedConfig const&); //unimplemented
     void operator=(AccumulatedConfig const&); //unimplemented

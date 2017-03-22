@@ -61,9 +61,13 @@ template <class HANDLE_ARGS> std::map<std::string, std::string> readConfigFile(c
 
         std::map<std::string, std::string> set_cfg = handle_args_ptr->get_map();
 
-
         //config dump
-        Logging::Manager::instance_ref().get(PACKAGE).debug(AccumulatedConfig::get_instance().get());
+        for(std::string config_item;
+            config_item = AccumulatedConfig::get_instance().get_one(), !config_item.empty();)
+        {
+            Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+        }
+
 
         return set_cfg;
 }
