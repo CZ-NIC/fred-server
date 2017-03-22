@@ -24,10 +24,13 @@
 
 #include <boost/assign/list_of.hpp>
 
-#include "cfg/faked_args.h"
-#include "cfg/handle_args.h"
+#include "util/cfg/faked_args.h"
+#include "util/cfg/handle_args.h"
+#include "util/log/logger.h"
+#include "util/log/context.h"
+
 //#include "cfg/config_handler_decl.h"
-#include "cfg/handle_general_args.h"
+#include "util/cfg/handle_general_args.h"
 
 namespace Admin {
 
@@ -57,6 +60,10 @@ template <class HANDLE_ARGS> std::map<std::string, std::string> readConfigFile(c
         }//for HandlerPtrVector
 
         std::map<std::string, std::string> set_cfg = handle_args_ptr->get_map();
+
+
+        //config dump
+        Logging::Manager::instance_ref().get(PACKAGE).debug(AccumulatedConfig::get_instance().get());
 
         return set_cfg;
 }

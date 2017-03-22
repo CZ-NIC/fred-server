@@ -335,7 +335,6 @@ noinst_PROGRAMS = \
 		util/log/test-log \
 		util/db/test-db \
 		util/db/test-mockdb \
-		util/hp/client-hp \
 		util/hp/crc32 \
 		src/model/test-model \
 		$(SERVER_TESTS)
@@ -590,27 +589,6 @@ util_hp_libhp_a_SOURCES = \
 		util/hp/hpmailbatchstate.h
 #
 # util/hp/libhp.a
-
-
-# util/hp/client-hp
-#
-util_hp_client_hp_SOURCES = \
-		util/hp/client-hp.cc \
-		util/hp/handle_hpmail_args.h \
-		util/hp/handle_hpmailbatchstate_args.h \
-		util/hp/handle_clienthp_args.h
-
-util_hp_client_hp_LDFLAGS = \
-		$(BOOST_LDFLAGS) \
-		$(AM_LDFLAGS)
-
-util_hp_client_hp_LDADD = \
-		util/hp/libhp.a \
-		$(BOOST_PROGRAM_OPTIONS_LIB) \
-		$(BOOST_DATE_TIME_LIB)
-#
-# util/hp/client-hp
-
 
 # util/hp/crc32
 #

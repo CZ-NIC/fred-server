@@ -24,11 +24,11 @@
 #ifndef _CHARGE_CLIENT_IMPL_H_
 #define _CHARGE_CLIENT_IMPL_H_
 
-#include "cfg/config_handler_decl.h"
+#include "util/cfg/config_handler_decl.h"
 // #include "cfg/handle_database_args.h"
-#include "handle_adminclientselection_args.h"
-#include "log/context.h"
-#include "chargeclient.h"
+#include "src/cli_admin/handle_adminclientselection_args.h"
+#include "util/log/context.h"
+#include "src/cli_admin/chargeclient.h"
 
 
 /**

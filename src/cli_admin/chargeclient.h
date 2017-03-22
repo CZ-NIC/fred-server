@@ -19,7 +19,7 @@
 #ifndef _CHARGECLIENT_H_
 #define _CHARGECLIENT_H_
 
-#include "charge_params.h"
+#include "src/cli_admin/charge_params.h"
 
 namespace Admin {
 class ChargeClient {
