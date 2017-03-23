@@ -175,7 +175,7 @@ wrap_param_error(Epp::Param::Enum _param)
 } // namespace Fred::Corba::{anonymous}
 
 
-// represents RFC3339 time offset
+// represents RFC 3339 time offset formatted with respect to RFC 5731
 // append to boost::posix_time::to_iso_extended_string() to get RFC3339 timestamp
 struct TimeZoneOffset
 {
@@ -184,29 +184,35 @@ struct TimeZoneOffset
 
     explicit TimeZoneOffset(const boost::posix_time::ptime& _utc_time)
     {
-        time_zone_offset_ =
-            boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_time) - _utc_time;
+        try {
+            time_zone_offset_ =
+                    boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(_utc_time) - _utc_time;
+        }
+        catch (...) {
+            // time zone offset will be unknown
+        }
     }
 
     std::string to_rfc3339_string()
     {
-        if (time_zone_offset_)
+        if (time_zone_offset_) // local time zone offset is known
         {
-            if (time_zone_offset_->hours() || time_zone_offset_->minutes())
+            if (time_zone_offset_->hours() || time_zone_offset_->minutes()) // local time zone offset is != 0
             {
                 return boost::str(
                         boost::format("%1$+03d:%2$02d")
                                 % time_zone_offset_->hours()
                                 % boost::date_time::absolute_value(time_zone_offset_->minutes()));
             }
-            else
+            else // local time zone is UTC
             {
+                // uppercase "Z" MUST be used according to RFC 5731 section 2.4. "Dates and Times"
                 return std::string("Z");
             }
         }
-        else
+        else // local time zone offset is unknown
         {
-            return std::string("-00:00");
+            return std::string("-00:00"); // unknown local zone
         }
     }
 

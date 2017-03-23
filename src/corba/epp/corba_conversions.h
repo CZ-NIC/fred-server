@@ -49,11 +49,12 @@ namespace Corba {
 
 
 /**
- * Converts and formats time
+ * Converts time from UTC to local time zone and formats it to RFC 3339 date format, with seconds fraction trimmed.
+ * If conversion to local time zone fails, UTC time with -00:00 (unknown local zone) offset is returned.
  *
  * @param _utc_ptime time in UTC
  *
- * @return time converted to local time zone, with seconds fraction trimmed, formatted as RFC3339 string
+ * @return time converted to local time zone (if possible), with seconds fraction trimmed, formatted as RFC3339 string.
  */
 std::string
 convert_time_to_local_rfc3339(const boost::posix_time::ptime& _utc_ptime);
