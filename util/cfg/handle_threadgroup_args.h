@@ -65,20 +65,8 @@ public:
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
-        thread_number = (vm.count("thread_number") == 0
-                ? 50 : vm["thread_number"].as<unsigned>());
-        /*
-        std::cout << "thread_number: " << thread_number
-                << " vm[\"thread_number\"].as<unsigned>(): "
-                << vm["thread_number"].as<unsigned>() << std::endl;
-        */
-
-        thread_group_divisor = (vm.count("thread_group_divisor") == 0
-                ? 10 : vm["thread_group_divisor"].as<unsigned>());
-        /*
-        std::cout << "thread_group_divisor: " << thread_group_divisor<< ""
-                << std::endl;
-        */
+        thread_number = vm["thread_number"].as<unsigned>();
+        thread_group_divisor = vm["thread_group_divisor"].as<unsigned>();
     }//handle
 };
 

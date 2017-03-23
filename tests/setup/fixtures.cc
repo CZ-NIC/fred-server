@@ -171,27 +171,27 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
 
          db_opts->add_options()
              (   "admin_database.name",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value("fred"),
                  "admin database name"
              )
              (   "admin_database.user",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value("fred"),
                  "admin database user name"
              )
              (   "admin_database.password",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value("password"),
                  "admin database password"
              )
              (   "admin_database.host",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value("localhost"),
                  "admin database hostname"
              )
              (   "admin_database.port",
-                 po::value<unsigned int>(),
+                 po::value<unsigned int>()->default_value(5432),
                  "admin database port number"
              )
              (   "admin_database.timeout",
-                 po::value<unsigned int>(),
+                 po::value<unsigned int>()->default_value(10),
                  "admin database timeout"
              );
 
@@ -204,25 +204,12 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
         /* construct connection string */
-        host = vm.count("admin_database.host") == 0
-                ? ""
-                : vm["admin_database.host"].as<std::string>();
-        pass = vm.count("admin_database.password") == 0
-                ? ""
-                : vm["admin_database.password"].as<std::string>();
-        dbname = vm.count("admin_database.name") == 0
-                ? ""
-                : vm["admin_database.name"].as<std::string>();
-        user = vm.count("admin_database.user") == 0
-                ? ""
-                : vm["admin_database.user"].as<std::string>();
-        port = vm.count("admin_database.port") == 0
-                ? ""
-                : boost::lexical_cast<std::string>(vm["admin_database.port"].as<unsigned>());
-        timeout = vm.count("admin_database.timeout") == 0
-                ? ""
-                : boost::lexical_cast<std::string>(vm["admin_database.timeout"].as<unsigned>());
-
+        host = vm["admin_database.host"].as<std::string>();
+        pass = vm["admin_database.password"].as<std::string>();
+        dbname = vm["admin_database.name"].as<std::string>();
+        user = vm["admin_database.user"].as<std::string>();
+        port = boost::lexical_cast<std::string>(vm["admin_database.port"].as<unsigned>());
+        timeout = boost::lexical_cast<std::string>(vm["admin_database.timeout"].as<unsigned>());
     }
 
     std::auto_ptr<Database::StandaloneConnection> HandleAdminDatabaseArgs::get_admin_connection() {
