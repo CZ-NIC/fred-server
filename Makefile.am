@@ -982,6 +982,12 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/get_registrar_handles.h \
 		src/fredlib/registrar/check_registrar.h \
 		src/fredlib/registrar/check_registrar.cc \
+		src/fredlib/registrar/zone_credit.h \
+		src/fredlib/registrar/zone_credit.cc \
+		src/fredlib/registrar/registrar_zone_credit.h \
+		src/fredlib/registrar/registrar_zone_credit.cc \
+		src/fredlib/registrar/get_registrar_zone_credit.h \
+		src/fredlib/registrar/get_registrar_zone_credit.cc \
 		src/fredlib/object/object_id_handle_pair.h \
 		src/fredlib/object/object_id_handle_pair.cc \
 		src/fredlib/object_state/object_state_name.h \
@@ -3048,6 +3054,7 @@ tests_test_blocking_LDADD = \
 tests_test_fredlib_SOURCES = \
 		tests/fredlib/main.cc \
 		tests/fredlib/registrar/test_registrar_zone_access.cc \
+		tests/fredlib/registrar/test_get_registrar_zone_credit.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \
 		tests/fredlib/registrar/test_create_registrar.cc \
 		tests/fredlib/contact/test_delete_contact.cc \
