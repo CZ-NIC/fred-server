@@ -187,11 +187,10 @@ const char GetRecipient<SponsoringRegistrar::who_did_the_action>::sql[] =
 
 const char GetRecipient<SponsoringRegistrar::at_the_transfer_start>::sql[] =
         "SELECT eot.id IS NOT NULL,oh.clid "
-        "FROM history h "
-        "JOIN object_history oh ON oh.historyid=h.id "
+        "FROM object_history oh "
         "JOIN object_registry obr ON obr.id=oh.id "
         "LEFT JOIN enum_object_type eot ON eot.id=obr.type AND eot.name=$2::TEXT "
-        "WHERE h.next=$1::BIGINT";
+        "WHERE oh.historyid=(SELECT id FROM history WHERE next=$1::BIGINT)";
 
 }//namespace Fred::Poll::{anonymous}
 
@@ -231,14 +230,17 @@ unsigned long long CreatePollMessage<message_type>::exec(
         }
     }
 
-    const bool object_is_requested_type = static_cast<bool>(db_res[0][0]);
-    if (!object_is_requested_type)
+    const bool object_type_corresponds_to_message_type = static_cast<bool>(db_res[0][0]);
+    if (!object_type_corresponds_to_message_type)
     {
-        struct ObjectNotRequestedType:OperationException
+        struct NotCorrespondingObjectType:OperationException
         {
-            const char* what()const throw() { return "object not requested type"; }
+            const char* what()const throw()
+            {
+                return "associated object is not of corresponding type to the given message type";
+            }
         };
-        throw ObjectNotRequestedType();
+        throw NotCorrespondingObjectType();
     }
 
     const unsigned long long recipient_registrar_id = static_cast<unsigned long long>(db_res[0][1]);

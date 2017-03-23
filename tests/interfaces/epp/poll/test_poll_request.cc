@@ -303,7 +303,7 @@ struct HasPollUpdateDomainMessage : virtual Test::autorollbacking_context
         history_id = Fred::UpdateDomain(domain.info_data.fqdn,
                                         domain.info_data.sponsoring_registrar_handle
             ).set_authinfo("doesntmatter").exec(ctx);
-        Fred::Poll::CreateUpdateObjectPollMessage(history_id).exec(ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
     typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_domain> SubMessage;
@@ -319,7 +319,7 @@ struct HasPollUpdateNssetMessage : virtual Test::autorollbacking_context
         history_id = Fred::UpdateNsset(nsset.info_data.handle,
                                        nsset.info_data.sponsoring_registrar_handle
             ).set_authinfo("doesntmatter").exec(ctx);
-        Fred::Poll::CreateUpdateObjectPollMessage(history_id).exec(ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
     typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_nsset> SubMessage;
@@ -335,7 +335,7 @@ struct HasPollUpdateKeysetMessage : virtual Test::autorollbacking_context
         history_id = Fred::UpdateKeyset(keyset.info_data.handle,
                                         keyset.info_data.sponsoring_registrar_handle
             ).set_authinfo("doesntmatter").exec(ctx);
-        Fred::Poll::CreateUpdateObjectPollMessage(history_id).exec(ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
     typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_keyset> SubMessage;

@@ -52,7 +52,7 @@ struct HasTwoPollInfoMessages : virtual Test::autorollbacking_context
             Fred::UpdateDomain(domain.info_data.fqdn,
                                domain.info_data.sponsoring_registrar_handle
                 ).set_authinfo("doesntmatter").exec(ctx);
-        Fred::Poll::CreateUpdateObjectPollMessage(new_history_id).exec(ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, new_history_id);
     }
 };
 
