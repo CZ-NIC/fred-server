@@ -75,17 +75,10 @@ public:
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
-        log_type = (vm.count("log.type") == 0)
-                ? 0 : vm["log.type"].as<unsigned>();
-
-        log_level = (vm.count("log.level") == 0)
-                ? 0 : vm["log.level"].as<unsigned>();
-
-        log_file = (vm.count("log.file") == 0
-                        ? std::string("") : vm["log.file"].as<std::string>());
-
-        log_syslog_facility = (vm.count("log.syslog_facility") == 0)
-                ? 0 : vm["log.syslog_facility"].as<unsigned>();
+        log_type = vm["log.type"].as<unsigned>();
+        log_level = vm["log.level"].as<unsigned>();
+        log_file = vm["log.file"].as<std::string>();
+        log_syslog_facility = vm["log.syslog_facility"].as<unsigned>();
     }//handle
 };
 
