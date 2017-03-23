@@ -65,8 +65,7 @@ public:
         po::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
-        logd_monitoring_hosts_file = (vm.count("logd.monitoring_hosts_file") == 0
-                ? std::string() : vm["logd.monitoring_hosts_file"].as<std::string>());
+        logd_monitoring_hosts_file = vm["logd.monitoring_hosts_file"].as<std::string>();
     }//handle
 };
 
