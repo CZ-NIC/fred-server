@@ -52,7 +52,7 @@ public:
                 new po::options_description(std::string("Sms sender configuration")));
         opts_descs->add_options()
                 ("sms.command",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value(""),
                  "send messages shell command")
                  ;
 
@@ -63,8 +63,7 @@ public:
         po::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
-        command = (vm.count("sms.command") == 0
-                ? std::string() : vm["sms.command"].as<std::string>());
+        command = vm["sms.command"].as<std::string>();
     }//handle
 };//HandleSmsArgs
 
