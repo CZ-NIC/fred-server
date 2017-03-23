@@ -83,16 +83,16 @@ public:
                  po::value<unsigned int>()->default_value(10),
                  "maximal number of hosts in nsset")
                 ("registry.docgen_path",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value(""),
                  "")
                 ("registry.docgen_template_path",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value(""),
                  "")
                 ("registry.docgen_domain_count_limit",
                  po::value<unsigned int>()->default_value(100),
                  "")
                 ("registry.fileclient_path",
-                 po::value<std::string>(),
+                 po::value<std::string>()->default_value(""),
                  "")
                 ("registry.disable_epp_notifier_cltrid_prefix",
                  po::value<std::string>()->default_value("do_not_notify"),
@@ -119,12 +119,9 @@ public:
         nsset_min_hosts = vm["registry.nsset_min_hosts"].as<unsigned int>();
         nsset_max_hosts = vm["registry.nsset_max_hosts"].as<unsigned int>();
         docgen_domain_count_limit = vm["registry.docgen_domain_count_limit"].as<unsigned int>();
-        docgen_path = (vm.count("registry.docgen_path") == 0
-                ? std::string() : vm["registry.docgen_path"].as<std::string>());
-        docgen_template_path = (vm.count("registry.docgen_template_path") == 0
-                ? std::string() : vm["registry.docgen_template_path"].as<std::string>());
-        fileclient_path = (vm.count("registry.fileclient_path") == 0
-                ? std::string() : vm["registry.fileclient_path"].as<std::string>());
+        docgen_path = vm["registry.docgen_path"].as<std::string>();
+        docgen_template_path = vm["registry.docgen_template_path"].as<std::string>();
+        fileclient_path = vm["registry.fileclient_path"].as<std::string>();
         disable_epp_notifier_cltrid_prefix = vm["registry.disable_epp_notifier_cltrid_prefix"].as<std::string>();
     }//handle
 };//HandleRegistryArgs
