@@ -30,6 +30,7 @@
 #include <vector>
 
 #include <boost/program_options.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -212,6 +213,10 @@ public:
                 {
                     value = boost::posix_time::to_iso_extended_string(
                             boost::any_cast<Checked::ptime>(it->second.value()));
+                }
+                else if(typeid(std::vector<std::string>) == it->second.value().type())
+                {
+                    value = boost::algorithm::join(boost::any_cast<std::vector<std::string> >(it->second.value()), ", ");
                 }
                 else
                 {
