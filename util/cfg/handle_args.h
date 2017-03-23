@@ -244,10 +244,8 @@ public:
             text += data_.at(get_count_).get_key();
             text+=": ";
             text += data_.at(get_count_).get_value();
-            text+=" ";
-            text += data_.at(get_count_).get_defaulted() ? "DEFAULT" : "" ;
-            text+=" ";
-            text += data_.at(get_count_).get_empty() ? "EMPTY" : "" ;
+            text += data_.at(get_count_).get_defaulted() ? " DEFAULT" : "" ;
+            text += data_.at(get_count_).get_empty() ? " EMPTY" : "" ;
             ++get_count_;
         }
         return text;
