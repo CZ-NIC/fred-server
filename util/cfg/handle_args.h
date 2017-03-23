@@ -179,12 +179,40 @@ public:
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::string>(it->second.value()));
                 }
-
                 else if(typeid(Checked_string_fpnumber) == it->second.value().type())
                 {
                     value = boost::any_cast<Checked_string_fpnumber>(it->second.value()).to_string();
                 }
-
+                else if(typeid(Checked::ulonglong) == it->second.value().type())
+                {
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulonglong>(it->second.value()));
+                }
+                else if(typeid(Checked::ulong) == it->second.value().type())
+                {
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulong>(it->second.value()));
+                }
+                else if(typeid(Checked::id) == it->second.value().type())
+                {
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::id>(it->second.value()));
+                }
+                else if(typeid(Checked::fpnumber) == it->second.value().type())
+                {
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::fpnumber>(it->second.value()));
+                }
+                else if(typeid(Checked::ushort) == it->second.value().type())
+                {
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ushort>(it->second.value()));
+                }
+                else if(typeid(Checked::date) == it->second.value().type())
+                {
+                    value = boost::gregorian::to_iso_extended_string(
+                            boost::any_cast<Checked::date>(it->second.value()));
+                }
+                else if(typeid(Checked::ptime) == it->second.value().type())
+                {
+                    value = boost::posix_time::to_iso_extended_string(
+                            boost::any_cast<Checked::ptime>(it->second.value()));
+                }
                 else
                 {
                     value = "ERROR: unknown type";
