@@ -22,8 +22,8 @@
  *  option argument value custom validation
  */
 
-#ifndef VALIDATE_ARGS_H_
-#define VALIDATE_ARGS_H_
+#ifndef VALIDATE_ARGS_H_cdc5c061928e479397d512bdd29e8c95
+#define VALIDATE_ARGS_H_cdc5c061928e479397d512bdd29e8c95
 
 #include <iostream>
 #include <stdexcept>
@@ -39,42 +39,26 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 
 
-#include "faked_args.h"
-#include "handle_args.h"
-
-
-// alias checked by custom validator
-struct Checked
-{
-    typedef std::string string;
-    typedef unsigned long long ulonglong;
-    typedef unsigned long ulong;
-    typedef ulonglong id;
-    typedef double fpnumber;
-    BOOST_STRONG_TYPEDEF(std::string, string_fpnumber);
-    typedef boost::gregorian::date date;
-    typedef boost::posix_time::ptime ptime;
-    typedef unsigned short ushort;
-};
-
+#include "util/cfg/faked_args.h"
+#include "util/cfg/handle_args.h"
+#include "util/cfg/checked_types.h"
 
 template<class Char, class Traits>
 std::basic_ostream<Char, Traits>&
-operator<<(std::basic_ostream<Char, Traits> &o, const Checked::string_fpnumber &s)
+operator<<(std::basic_ostream<Char, Traits> &o, const Checked_string_fpnumber &s)
 {
-    return o << static_cast<std::string>(s);
+    return o << (s.to_string());
 }
 
 template<class Char, class Traits>
 std::basic_istream<Char, Traits>&
-operator>>(std::basic_istream<Char, Traits> &i, Checked::string_fpnumber &s)
+operator>>(std::basic_istream<Char, Traits> &i, Checked_string_fpnumber &s)
 {
     std::string tmp;
     i >> tmp;
     s = tmp;
     return i;
 }
-
 
 
 namespace boost
@@ -391,10 +375,9 @@ namespace boost
             }
         }//validate checked_fpnumber
 
-
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked::string_fpnumber* target_type, int)
+                      Checked_string_fpnumber* target_type, int)
         {
             using namespace boost;
             using namespace boost::program_options;
@@ -480,7 +463,7 @@ namespace boost
 
                 v = any(s);
             }
-        }//validate checked_string_fpnumber
+        }
 
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
@@ -670,6 +653,7 @@ namespace boost
             }
         }//validate checked ptime
 
+
     }//namespace program_options
 }//namespace boost
-#endif //VALIDATE_ARGS_H_
+#endif

@@ -173,8 +173,8 @@ typedef OptionalType<boost::gregorian::date> optional_date;
 typedef OptionalType<boost::posix_time::ptime> optional_ptime;
 
 //save ARG into VALUE
-//boost program options notifiers not only for OptionalType
-//VALUE have to be contructible from ARG
+//boost program options notifier callback
+//VALUE have to be constructible from ARG
 //and constructed VALUE have to be assignable
 template <typename VALUE>
 class save_arg
@@ -248,6 +248,25 @@ public:
     }
 };//template <typename VALUE> class insert_arg
 
+
+//save ARG into VALUE using ARG::to_string()
+//boost program options notifier callback
+//VALUE have to be constructible from ARG::to_string() return type
+//and constructed VALUE have to be assignable
+template <typename VALUE>
+class save_arg_using_to_string
+{
+    VALUE& val_;
+public:
+    //ctor taking reference to variable where arg value will be stored
+    save_arg_using_to_string(VALUE& val) : val_(val) {}
+
+    template <typename ARG>
+    void operator()(const ARG& arg)//assign value
+    {
+        val_=VALUE(arg.to_string());
+    }
+};
 
 
 #endif //OPTIONAL_H_

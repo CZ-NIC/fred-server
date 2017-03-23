@@ -179,6 +179,7 @@ noinst_HEADERS = \
 		util/cfg/handle_rifd_args.h \
 		util/cfg/command_selection_args.h \
 		util/cfg/check_args.h \
+		util/cfg/checked_types.h \
 		util/cfg/validate_args.h \
 		util/cfg/handle_sms_args.h \
 		util/cfg/handle_contactverification_args.h \

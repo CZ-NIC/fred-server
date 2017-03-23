@@ -35,7 +35,8 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/any.hpp>
-#include "faked_args.h"
+#include "util/cfg/faked_args.h"
+#include "util/cfg/checked_types.h"
 
 /**
  * \class HandleArgs
@@ -174,6 +175,16 @@ public:
                     value = boost::posix_time::to_iso_extended_string(
                             boost::any_cast<boost::posix_time::ptime>(it->second.value()));
                 }
+                else if(typeid(Checked::string) == it->second.value().type())
+                {
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::string>(it->second.value()));
+                }
+
+                else if(typeid(Checked_string_fpnumber) == it->second.value().type())
+                {
+                    value = boost::any_cast<Checked_string_fpnumber>(it->second.value()).to_string();
+                }
+
                 else
                 {
                     value = "ERROR: unknown type";
