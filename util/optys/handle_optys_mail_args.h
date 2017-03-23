@@ -98,8 +98,6 @@ public:
                         key = key.substr(CONFIG_PREFIX.length());
                 }
 
-                //std::cout << key << " = " << it->second.as<std::string>() << std::endl;
-
                 optys_config [key] = (it->second).as<std::string>();
         }
 

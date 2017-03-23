@@ -131,8 +131,6 @@ public:
                         key = key.substr(CONFIG_PREFIX.length());
                 }
 
-                std::cout << key << " = " << it->second.as<std::string>() << std::endl;
-
                 hp_config [key] = (it->second).as<std::string>();
         }
 
@@ -237,8 +235,6 @@ public:
                 if (key.compare(0, CONFIG_PREFIX.length(), CONFIG_PREFIX)==0) {
                         key = key.substr(CONFIG_PREFIX.length());
                 }
-
-                std::cout << key << " = " << it->second.as<std::string>() << std::endl;
 
                 hp_config [key] = (it->second).as<std::string>();
         }
