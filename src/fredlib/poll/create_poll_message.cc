@@ -237,7 +237,7 @@ unsigned long long CreatePollMessage<message_type>::exec(
         {
             const char* what()const throw()
             {
-                return "associated object is not of corresponding type to the given message type";
+                return "associated object is not of the type corresponding to the given message type";
             }
         };
         throw NotCorrespondingObjectType();
