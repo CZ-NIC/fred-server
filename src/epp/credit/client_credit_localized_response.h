@@ -16,23 +16,28 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C
+#ifndef CLIENT_CREDIT_LOCALIZED_RESPONSE_H_EFE819249D3E9376B5363A231CC13FEC//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define CLIENT_CREDIT_LOCALIZED_RESPONSE_H_EFE819249D3E9376B5363A231CC13FEC
 
 #include "src/epp/credit/client_credit_output_data.h"
-#include "src/fredlib/opcontext.h"
+#include "src/epp/epp_response_success_localized.h"
 
 namespace Epp {
 namespace Credit {
 
-/**
- * @throws ExceptionAuthErrorServerClosingConnection
- */
-ClientCreditOutputData client_credit(
-        Fred::OperationContext& _ctx,
-        unsigned long long _registrar_id);
+struct ClientCreditLocalizedResponse
+{
+    ClientCreditLocalizedResponse(
+            const EppResponseSuccessLocalized& _epp_response_success_localized,
+            const ClientCreditOutputData& _data)
+        : epp_response_success_localized(_epp_response_success_localized),
+          data(_data)
+    { }
+    const EppResponseSuccessLocalized epp_response_success_localized;
+    const ClientCreditOutputData data;
+};
 
-} // namespace Epp::Credit
+} // namespace Epp::Contact
 } // namespace Epp
 
-#endif//CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C
+#endif//CLIENT_CREDIT_LOCALIZED_RESPONSE_H_EFE819249D3E9376B5363A231CC13FEC

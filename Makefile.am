@@ -1620,8 +1620,13 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/create_contact_config_data.h \
 		src/epp/contact/create_contact_localized_response.h \
 		src/epp/contact/status_value.h \
+		src/epp/credit/client_credit_output_data.cc \
+		src/epp/credit/client_credit_output_data.h \
 		src/epp/credit/client_credit.cc \
 		src/epp/credit/client_credit.h \
+		src/epp/credit/client_credit_localized_response.h \
+		src/epp/credit/client_credit_localized.cc \
+		src/epp/credit/client_credit_localized.h \
 		src/epp/domain/check_domain_localized.cc \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain_localized_response.h \

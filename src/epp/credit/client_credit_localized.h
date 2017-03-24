@@ -16,23 +16,19 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C
+#ifndef CLIENT_CREDIT_LOCALIZED_H_70DB3AA27BA936DA925FEB4F5E89D01B//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
+#define CLIENT_CREDIT_LOCALIZED_H_70DB3AA27BA936DA925FEB4F5E89D01B
 
-#include "src/epp/credit/client_credit_output_data.h"
-#include "src/fredlib/opcontext.h"
+#include "src/epp/credit/client_credit_localized_response.h"
+#include "src/epp/session_data.h"
 
 namespace Epp {
 namespace Credit {
 
-/**
- * @throws ExceptionAuthErrorServerClosingConnection
- */
-ClientCreditOutputData client_credit(
-        Fred::OperationContext& _ctx,
-        unsigned long long _registrar_id);
+ClientCreditLocalizedResponse client_credit_localized(const SessionData& _session_data);
+
 
 } // namespace Epp::Credit
 } // namespace Epp
 
-#endif//CLIENT_CREDIT_H_E89D3E7C5F1FFE3E22340654403DA23C
+#endif//CLIENT_CREDIT_LOCALIZED_H_70DB3AA27BA936DA925FEB4F5E89D01B
