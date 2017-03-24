@@ -35,6 +35,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <boost/any.hpp>
 #include "util/cfg/faked_args.h"
 #include "util/cfg/checked_types.h"
@@ -245,10 +246,18 @@ public:
         std::string text;
         if(get_count_ < data_.size())
         {
+            const boost::regex hide_value ("password|certificate"
+                    , boost::regex::icase);
+
+            const std::string key = data_.at(get_count_).get_key();
+            const std::string value = boost::regex_search(key, hide_value)
+                ? std::string("*** hidden ***")
+                : data_.at(get_count_).get_value();
+
             text += "config dump: ";
-            text += data_.at(get_count_).get_key();
+            text += key;
             text+=": ";
-            text += data_.at(get_count_).get_value();
+            text += value;
             text += data_.at(get_count_).get_defaulted() ? " DEFAULT" : "" ;
             text += data_.at(get_count_).get_empty() ? " EMPTY" : "" ;
             ++get_count_;
