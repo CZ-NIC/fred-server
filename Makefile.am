@@ -1620,6 +1620,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/create_contact_config_data.h \
 		src/epp/contact/create_contact_localized_response.h \
 		src/epp/contact/status_value.h \
+		src/epp/credit/client_credit.cc \
+		src/epp/credit/client_credit.h \
 		src/epp/domain/check_domain_localized.cc \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain_localized_response.h \
@@ -2676,6 +2678,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_check_contact.cc \
 		tests/interfaces/epp/contact/test_transfer_contact.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/credit/test_client_credit.cc \
 		tests/interfaces/epp/domain/fixture.h \
 		tests/interfaces/epp/domain/fixture.cc \
 		tests/interfaces/epp/domain/test_check_domain.cc \
