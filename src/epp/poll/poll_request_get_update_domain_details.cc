@@ -96,6 +96,9 @@ PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
     catch (const Fred::InfoDomainHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
+    catch (const Fred::OperationException&) {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+    }
 
     return ret;
 }

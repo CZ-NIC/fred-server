@@ -98,6 +98,9 @@ PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     catch (const Fred::InfoNssetHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
+    catch (const Fred::OperationException&) {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+    }
 }
 
 } // namespace Epp::Poll

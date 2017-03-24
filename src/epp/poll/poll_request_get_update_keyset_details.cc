@@ -95,6 +95,9 @@ PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
     catch (const Fred::InfoKeysetHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
+    catch (const Fred::OperationException&) {
+        throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
+    }
 
     return ret;
 }

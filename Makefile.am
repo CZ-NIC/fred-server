@@ -2577,6 +2577,9 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/poll/fixture.cc \
 		tests/interfaces/epp/poll/test_poll_request.cc \
 		tests/interfaces/epp/poll/test_poll_acknowledgement.cc \
+		tests/interfaces/epp/poll/test_poll_request_nsset_details.cc \
+		tests/interfaces/epp/poll/test_poll_request_domain_details.cc \
+		tests/interfaces/epp/poll/test_poll_request_keyset_details.cc \
 		tests/setup/fixtures.cc
 
 tests_interfaces_test_epp_LDFLAGS = \
