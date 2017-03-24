@@ -39,13 +39,6 @@ public:
       loginID = 0;
   }
 
-  ///------------------------
-  //   BILLING
-
-
-  std::string GetRegistrarCredit(
-    int regID, int zoneID);
-
   //----------------------------
   // EPP function for table action and action_xml
 

@@ -128,7 +128,6 @@ public:
   int GetZoneDotsMax(DBSharedPtr db, int id);
   bool GetZoneEnum(DBSharedPtr db, int id);
   std::string GetZoneFQDN(DBSharedPtr db, int id);
-  std::vector<int> GetAllZonesIDs(DBSharedPtr db);
 
   int getZone(DBSharedPtr db, const char *fqdn);
   int getZoneMax(DBSharedPtr db, const char *fqdn);

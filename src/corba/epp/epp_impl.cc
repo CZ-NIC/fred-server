@@ -31,7 +31,7 @@
 #include <string.h>
 #include <time.h>
 #include "src/corba/EPP.hh"
-#include "epp_impl.h"
+#include "src/corba/epp/epp_impl.h"
 
 #include "src/corba/connection_releaser.h"
 
@@ -45,6 +45,10 @@
 #include "src/old_utils/dbsql.h"
 
 #include "action.h"    // code of the EPP operations
+// support function
+#include "src/old_utils/util.h"
+
+#include "src/corba/epp/action.h" // code of the EPP operations
 #include "response.h"  // errors code
 #include "reason.h"    // reason messages code
 
@@ -64,7 +68,6 @@
 #include "src/fredlib/info_buffer.h"
 #include "src/fredlib/zone.h"
 #include "src/fredlib/invoicing/invoice.h"
-#include <memory>
 #include "tech_check.h"
 
 #include "src/fredlib/registrar/info_registrar.h"
@@ -84,6 +87,9 @@
 #include "src/epp/contact/info_contact_localized.h"
 #include "src/epp/contact/transfer_contact_localized.h"
 #include "src/epp/contact/update_contact_localized.h"
+
+#include "src/corba/epp/credit/credit_corba_conversions.h"
+#include "src/epp/credit/client_credit_localized.h"
 
 #include "src/epp/domain/check_domain_localized.h"
 #include "src/epp/domain/create_domain_localized.h"
@@ -163,7 +169,22 @@
 #include "src/epp/nsset/transfer_nsset_config_data.h"
 #include "src/epp/nsset/update_nsset_config_data.h"
 
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
 #include <vector>
+#include <memory>
+
+#include <fstream>
+#include <iostream>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/local_time_adjustor.hpp>
+#include <boost/date_time/c_local_time_adjustor.hpp>
+#include <boost/numeric/conversion/cast.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/scoped_ptr.hpp>
 
 struct NotificationParams //for enqueue_notification call in ~EPPAction()
 {
@@ -863,28 +884,6 @@ bool ccReg_EPP_i::setvalue_DISCLOSE(
   return false;
 }
 
-std::vector<int>
-ccReg_EPP_i::GetAllZonesIDs(
-    DBSharedPtr db)
-{
-    std::vector<int> ret;
-    std::string query("SELECT id FROM zone;");
-    DBSharedPtr  db_freeselect_guard = DBFreeSelectPtr(db.get());
-    if (!db->ExecSelect(query.c_str())) {
-        LOGGER(PACKAGE).error("cannot retrieve zones ids from the database");
-        return ret;
-    }
-    if (db->GetSelectRows() == 0) {
-        LOGGER(PACKAGE).error("GetAllZonesIDs: result size is zero");
-        return ret;
-    }
-    for (int i = 0; i < db->GetSelectRows(); i++) {
-        ret.push_back(atoi(db->GetFieldValue(i, 0)));
-    }
-
-    return ret;
-}
-
 // ZONE parameters
 int ccReg_EPP_i::GetZoneExPeriodMin(
     DBSharedPtr db,
@@ -1477,54 +1476,46 @@ ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
 }
 
 ccReg::Response *
-ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &params)
+ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out _credit, const ccReg::EppParams &_epp_params)
 {
-    Logging::Context::clear();
-    Logging::Context ctx("rifd");
-    Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-    ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    unsigned int z, seq, zoneID;
-    short int code = 0;
+    try
+    {
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-    credit = new ccReg::ZoneCredit;
-    credit->length(0);
-    seq=0;
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-    LOG( NOTICE_LOG, "ClientCredit: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
+        const Epp::Credit::ClientCreditLocalizedResponse localized_response =
+                Epp::Credit::client_credit_localized(session_data);
 
-    EPPAction action(this, params.loginID, EPP_ClientCredit, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::ZoneCredit_var zone_credit = new ccReg::ZoneCredit;
+        Fred::Corba::wrap_ClientCreditOutputData(localized_response.data, zone_credit.inout());
 
-    try {
-        std::vector<int> zones = GetAllZonesIDs(action.getDB());
-        for (z = 0; z < zones.size(); z++) {
-            zoneID = zones[z];
-            // credit of the registrar
-            std::string price = action.getDB()->GetRegistrarCredit(action.getRegistrar(), zoneID);
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                localized_response.epp_response_success_localized,
+                                server_transaction_handle));
 
-            //  return all not depend on            if( price >  0)
-            {
-                credit->length(seq+1);
-                credit[seq].price = CORBA::string_dup(price.c_str());
-                credit[seq].zone_fqdn = CORBA::string_dup(GetZoneFQDN(action.getDB(), zoneID).c_str() );
-                seq++;
-            }
-        }
-        code = COMMAND_OK;
+        // no exception shall be thrown from here onwards
+
+        _credit = zone_credit._retn();
+        return return_value._retn();
+
     }
-    catch (...) {
-        code = COMMAND_FAILED;
+    catch (const Epp::EppResponseFailureLocalized& e)
+    {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-
-    if (code > COMMAND_EXCEPTION) {
-        action.failed(code);
-    }
-
-    if (code == 0) {
-        action.failedInternal("ClientCredit");
-    }
-
-    return action.getRet()._retn();
 }
 
 ccReg::Response *

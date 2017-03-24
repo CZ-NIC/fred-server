@@ -63,32 +63,6 @@ DB::~DB()
 
 }
 
-std::string DB::GetRegistrarCredit(
-  int regID, int zoneID)
-{
-  std::string price = "0";
-  char sqlString[128];
-
-  snprintf(sqlString, sizeof(sqlString), 
-      "SELECT sum( credit) FROM invoice  WHERE  registrarid=%d and zone=%d; ",
-      regID, zoneID);
-
-  std::stringstream query;
-  query << "SELECT credit FROM registrar_credit"
-        << " WHERE registrar_id = " << regID
-        << " AND zone_id = " << zoneID;
-
-  if (ExecSelect(query.str().c_str())) {
-    if (GetSelectRows() == 1) {
-      price = std::string(GetFieldValue(0, 0));
-    }
-
-    FreeSelect();
-  }
-
-  return price;
-}
-
 // test for login
 bool DB::TestRegistrarACL(
   int regID, const char * pass, const char * cert)
