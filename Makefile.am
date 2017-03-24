@@ -1523,6 +1523,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/epp_impl.h \
 		src/corba/epp/contact/contact_corba_conversions.cc \
 		src/corba/epp/contact/contact_corba_conversions.h \
+		src/corba/epp/credit/credit_corba_conversions.cc \
+		src/corba/epp/credit/credit_corba_conversions.h \
 		src/corba/epp/domain/domain_corba_conversions.cc \
 		src/corba/epp/domain/domain_corba_conversions.h \
 		src/corba/epp/poll/poll_corba_conversions.cc \
