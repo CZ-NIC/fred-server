@@ -98,41 +98,61 @@ struct test_client_credit_fixture
                     "SELECT id FROM registrar WHERE handle=$1::TEXT",
                     Database::query_param_list(registrar_2_handle))[0][0]);
 
-        const Database::Result db_res = ctx.get_conn().exec("SELECT id,LOWER(fqdn) FROM zone LIMIT 2");
-        BOOST_REQUIRE(db_res.size() == 2);
-        const unsigned long long zone_1_id = static_cast<unsigned long long>(db_res[0][0]);
-        const std::string zone_1_fqdn = static_cast<std::string>(db_res[0][1]);
-        const unsigned long long zone_2_id = static_cast<unsigned long long>(db_res[1][0]);
-        const std::string zone_2_fqdn = static_cast<std::string>(db_res[1][1]);
-
         ctx.get_conn().exec_params(
-                "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
-                "VALUES($1::BIGINT,$3::BIGINT,NOW()::DATE,NULL),"
-                      "($2::BIGINT,$3::BIGINT,NOW()::DATE,NULL),"
-                      "($2::BIGINT,$4::BIGINT,NOW()::DATE,NULL)",
+                "DELETE FROM registrarinvoice WHERE registrarid IN ($1::BIGINT,$2::BIGINT)",
                 Database::query_param_list(registrar_1_id)
-                                          (registrar_2_id)
-                                          (zone_1_id)
-                                          (zone_2_id));
-        registrar_1_zones.insert(::Epp::Credit::ZoneCredit(zone_1_fqdn, Decimal("1000.00")));
-        registrar_1_zones.insert(::Epp::Credit::ZoneCredit(zone_2_fqdn));
-        registrar_2_zones.insert(::Epp::Credit::ZoneCredit(zone_1_fqdn, Decimal("2000.01")));
-        registrar_2_zones.insert(::Epp::Credit::ZoneCredit(zone_2_fqdn, Decimal("3000.10")));
+                                          (registrar_2_id));
 
         ctx.get_conn().exec_params(
                 "DELETE FROM registrar_credit WHERE registrar_id IN ($1::BIGINT,$2::BIGINT)",
                 Database::query_param_list(registrar_1_id)
                                           (registrar_2_id));
 
-        ctx.get_conn().exec_params(
-                "INSERT INTO registrar_credit (registrar_id,zone_id,credit) "
-                "VALUES($1::BIGINT,$2::BIGINT,$3::NUMERIC(30,2)),"
-                      "($4::BIGINT,$5::BIGINT,$6::NUMERIC(30,2)),"
-                      "($7::BIGINT,$8::BIGINT,$9::NUMERIC(30,2))",
-                Database::query_param_list(registrar_1_id)(zone_1_id)("1000.00")
-                                          (registrar_2_id)(zone_1_id)("2000.01")
-                                          (registrar_2_id)(zone_2_id)("3000.10"));
+        const Database::Result db_reg_1_zones = ctx.get_conn().exec_params(
+                "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
+                "SELECT $1::BIGINT,id,NOW()::DATE,NULL FROM zone LIMIT (SELECT COUNT(*)-1 FROM zone) "
+                "RETURNING (SELECT LOWER(fqdn) FROM zone WHERE id=zone)",
+                Database::query_param_list(registrar_1_id));
+        BOOST_REQUIRE(0 < db_reg_1_zones.size());
+        Decimal credit = "1000.00";
+        for (unsigned idx = 0; idx < db_reg_1_zones.size(); ++idx)
+        {
+            const std::string zone_fqdn = static_cast<std::string>(db_reg_1_zones[idx][0]);
+            ctx.get_conn().exec_params(
+                    "INSERT INTO registrar_credit (registrar_id,zone_id,credit) "
+                    "SELECT $1::BIGINT,id,$3::NUMERIC(30,2) FROM zone WHERE LOWER(fqdn)=$2::TEXT",
+                    Database::query_param_list(registrar_1_id)
+                                              (zone_fqdn)
+                                              (credit.get_string()));
+            registrar_1_zones.insert(::Epp::Credit::ZoneCredit(zone_fqdn, credit));
+            credit += Decimal("1000.00");
+        }
 
+        const Database::Result db_reg_2_zones = ctx.get_conn().exec_params(
+                "INSERT INTO registrarinvoice (registrarid,zone,fromdate,todate) "
+                "SELECT $1::BIGINT,id,NOW()::DATE,NULL FROM zone "
+                "RETURNING (SELECT LOWER(fqdn) FROM zone WHERE id=zone)",
+                Database::query_param_list(registrar_2_id));
+        BOOST_REQUIRE((db_reg_1_zones.size() + 1) == db_reg_2_zones.size());
+        credit = "1500.01";
+        for (unsigned idx = 0; idx < db_reg_2_zones.size(); ++idx)
+        {
+            const std::string zone_fqdn = static_cast<std::string>(db_reg_2_zones[idx][0]);
+            ctx.get_conn().exec_params(
+                    "INSERT INTO registrar_credit (registrar_id,zone_id,credit) "
+                    "SELECT $1::BIGINT,id,$3::NUMERIC(30,2) FROM zone WHERE LOWER(fqdn)=$2::TEXT",
+                    Database::query_param_list(registrar_2_id)
+                                              (zone_fqdn)
+                                              (credit.get_string()));
+            registrar_2_zones.insert(::Epp::Credit::ZoneCredit(zone_fqdn, credit));
+            credit += Decimal("1000.10");
+            const ::Epp::Credit::ZoneCredit missing_zone(zone_fqdn);
+            if (registrar_1_zones.find(missing_zone) == registrar_1_zones.end())
+            {
+                registrar_1_zones.insert(missing_zone);
+            }
+        }
+        BOOST_REQUIRE(registrar_1_zones.size() == registrar_2_zones.size());
     }
     const std::string xmark;
     const std::string registrar_1_handle;
@@ -178,11 +198,12 @@ BOOST_FIXTURE_TEST_SUITE(ClientCredit, test_client_credit_fixture)
 BOOST_AUTO_TEST_CASE(client_credit_success)
 {
     const ::Epp::Credit::ClientCreditOutputData registrar_1_result = ::Epp::Credit::client_credit(ctx, registrar_1_id);
-    BOOST_CHECK_EQUAL(registrar_1_result.size(), 2);
+    BOOST_CHECK(2 <= registrar_1_result.size());
     BOOST_CHECK(registrar_1_result == registrar_1_zones);
     const ::Epp::Credit::ClientCreditOutputData registrar_2_result = ::Epp::Credit::client_credit(ctx, registrar_2_id);
-    BOOST_CHECK_EQUAL(registrar_2_result.size(), 2);
+    BOOST_CHECK(2 <= registrar_2_result.size());
     BOOST_CHECK(registrar_2_result == registrar_2_zones);
+    BOOST_CHECK_EQUAL(registrar_1_result.size(), registrar_2_result.size());
 }
 
 BOOST_AUTO_TEST_SUITE_END()//Test/Backend/Epp/Credit/ClientCredit
