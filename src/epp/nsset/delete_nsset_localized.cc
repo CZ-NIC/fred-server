@@ -79,28 +79,28 @@ EppResponseSuccessLocalized delete_nsset_localized(
     }
     catch (const EppResponseFailure& e)
     {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info(std::string("delete_nsset_localized: ") + e.what());
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info(std::string("delete_nsset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
-                exception_localization_ctx,
+                ctx,
                 e,
                 _session_data.lang);
     }
     catch (const std::exception& e)
     {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info(std::string("delete_nsset_localized failure: ") + e.what());
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info(std::string("delete_nsset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
-                exception_localization_ctx,
+                ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
     catch (...)
     {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info("unexpected exception in delete_nsset_localized function");
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info("unexpected exception in delete_nsset_localized function");
         throw EppResponseFailureLocalized(
-                exception_localization_ctx,
+                ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }

@@ -49,13 +49,13 @@ CreateDomainLocalizedResponse create_domain_localized(
         const SessionData& _session_data,
         const NotificationData& _notification_data)
 {
+    Logging::Context logging_ctx("rifd");
+    Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+    Logging::Context logging_ctx3(_session_data.server_transaction_handle);
+    Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CreateDomain)));
+
     try
     {
-        Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
-        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CreateDomain)));
-
         Fred::OperationContextCreator ctx;
 
         const CreateDomainResult create_domain_result(
@@ -85,28 +85,28 @@ CreateDomainLocalizedResponse create_domain_localized(
     }
     catch (const EppResponseFailure& e)
     {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info(std::string("create_domain_localized: ") + e.what());
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info(std::string("create_domain_localized: ") + e.what());
         throw EppResponseFailureLocalized(
-                exception_localization_ctx,
+                ctx,
                 e,
                 _session_data.lang);
     }
     catch (const std::exception& e)
     {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info(std::string("create_domain_localized failure: ") + e.what());
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info(std::string("create_domain_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
-                exception_localization_ctx,
+                ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }
     catch (...)
     {
-        Fred::OperationContextCreator exception_localization_ctx;
-        exception_localization_ctx.get_log().info("unexpected exception in create_domain_localized function");
+        Fred::OperationContextCreator ctx;
+        ctx.get_log().info("unexpected exception in create_domain_localized function");
         throw EppResponseFailureLocalized(
-                exception_localization_ctx,
+                ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
                 _session_data.lang);
     }

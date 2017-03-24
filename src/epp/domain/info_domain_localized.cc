@@ -50,15 +50,14 @@ InfoDomainLocalizedResponse info_domain_localized(
         const InfoDomainConfigData& _info_domain_config_data,
         const SessionData& _session_data)
 {
-    // since no changes are comitted this transaction is reused for everything
-    Fred::OperationContextCreator ctx;
+    Logging::Context logging_ctx("rifd");
+    Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+    Logging::Context logging_ctx3(_session_data.server_transaction_handle);
+    Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoDomain)));
 
     try
     {
-        Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
-        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::InfoDomain)));
+        Fred::OperationContextCreator ctx;
 
         const InfoDomainOutputData info_domain_output_data =
                 info_domain(
@@ -97,6 +96,7 @@ InfoDomainLocalizedResponse info_domain_localized(
     }
     catch (const EppResponseFailure& e)
     {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("info_domain_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
@@ -105,6 +105,7 @@ InfoDomainLocalizedResponse info_domain_localized(
     }
     catch (const std::exception& e)
     {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("info_domain_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
@@ -113,6 +114,7 @@ InfoDomainLocalizedResponse info_domain_localized(
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info("unexpected exception in info_domain_localized function");
         throw EppResponseFailureLocalized(
                 ctx,

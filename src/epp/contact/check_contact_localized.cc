@@ -58,14 +58,14 @@ CheckContactLocalizedResponse check_contact_localized(
         const CheckContactConfigData& _check_contact_config_data,
         const SessionData& _session_data)
 {
-    Fred::OperationContextCreator ctx;
+    Logging::Context logging_ctx("rifd");
+    Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+    Logging::Context logging_ctx3(_session_data.server_transaction_handle);
+    Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckContact)));
 
     try
     {
-        Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
-        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CheckContact)));
+        Fred::OperationContextCreator ctx;
 
         const HandleToObstruction check_contact_results =
                 check_contact(
@@ -88,6 +88,7 @@ CheckContactLocalizedResponse check_contact_localized(
     }
     catch (const EppResponseFailure& e)
     {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("check_contact_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
@@ -96,6 +97,7 @@ CheckContactLocalizedResponse check_contact_localized(
     }
     catch (const std::exception& e)
     {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("check_contact_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
@@ -104,6 +106,7 @@ CheckContactLocalizedResponse check_contact_localized(
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         ctx.get_log().info("unexpected exception in check_contact_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
