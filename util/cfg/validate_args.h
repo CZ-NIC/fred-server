@@ -45,14 +45,14 @@
 
 template<class Char, class Traits>
 std::basic_ostream<Char, Traits>&
-operator<<(std::basic_ostream<Char, Traits> &o, const Checked_string_fpnumber &s)
+operator<<(std::basic_ostream<Char, Traits> &o, const Checked::string_fpnumber &s)
 {
     return o << (s.to_string());
 }
 
 template<class Char, class Traits>
 std::basic_istream<Char, Traits>&
-operator>>(std::basic_istream<Char, Traits> &i, Checked_string_fpnumber &s)
+operator>>(std::basic_istream<Char, Traits> &i, Checked::string_fpnumber &s)
 {
     std::string tmp;
     i >> tmp;
@@ -377,7 +377,7 @@ namespace boost
 
         void validate(boost::any& v,
                       const std::vector<std::string>& values,
-                      Checked_string_fpnumber* target_type, int)
+                      Checked::string_fpnumber* target_type, int)
         {
             using namespace boost;
             using namespace boost::program_options;

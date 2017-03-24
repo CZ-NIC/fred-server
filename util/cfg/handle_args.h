@@ -180,9 +180,9 @@ public:
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::string>(it->second.value()));
                 }
-                else if(typeid(Checked_string_fpnumber) == it->second.value().type())
+                else if(typeid(Checked::string_fpnumber) == it->second.value().type())
                 {
-                    value = boost::any_cast<Checked_string_fpnumber>(it->second.value()).to_string();
+                    value = boost::any_cast<Checked::string_fpnumber>(it->second.value()).to_string();
                 }
                 else if(typeid(Checked::ulonglong) == it->second.value().type())
                 {
