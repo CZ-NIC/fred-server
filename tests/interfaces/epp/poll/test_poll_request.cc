@@ -20,10 +20,7 @@
 #include "tests/setup/fixtures_utils.h"
 #include "tests/interfaces/epp/util.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
-#include "src/fredlib/poll/create_transfer_domain_poll_message.h"
-#include "src/fredlib/poll/create_transfer_contact_poll_message.h"
-#include "src/fredlib/poll/create_transfer_nsset_poll_message.h"
-#include "src/fredlib/poll/create_transfer_keyset_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/domain/transfer_domain.h"
 #include "src/fredlib/contact/transfer_contact.h"
 #include "src/fredlib/nsset/transfer_nsset.h"
@@ -156,7 +153,7 @@ struct HasPollTransferDomainMessage : virtual Test::autorollbacking_context
                                                              domain.info_data.authinfopw,
                                                              Nullable<unsigned long long>()).exec(ctx);
 
-        Fred::Poll::CreateTransferDomainPollMessage(history_id).exec(ctx);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_domain>().exec(ctx, history_id);
     }
 
     typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_domain> submessage;
@@ -180,7 +177,7 @@ struct HasPollTransferContactMessage : virtual Test::autorollbacking_context
                                                               contact.info_data.authinfopw,
                                                               Nullable<unsigned long long>()).exec(ctx);
 
-        Fred::Poll::CreateTransferContactPollMessage(history_id).exec(ctx);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_contact>().exec(ctx, history_id);
     }
 
     typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_contact> submessage;
@@ -204,7 +201,7 @@ struct HasPollTransferNssetMessage : virtual Test::autorollbacking_context
                                                             nsset.info_data.authinfopw,
                                                             Nullable<unsigned long long>()).exec(ctx);
 
-        Fred::Poll::CreateTransferNssetPollMessage(history_id).exec(ctx);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_nsset>().exec(ctx, history_id);
     }
 
     typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_nsset> submessage;
@@ -228,7 +225,7 @@ struct HasPollTransferKeysetMessage : virtual Test::autorollbacking_context
                                                              keyset.info_data.authinfopw,
                                                              Nullable<unsigned long long>()).exec(ctx);
 
-        Fred::Poll::CreateTransferKeysetPollMessage(history_id).exec(ctx);
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_keyset>().exec(ctx, history_id);
     }
 
     typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_keyset> submessage;
