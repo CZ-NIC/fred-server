@@ -21,11 +21,9 @@
 #include "src/epp/epp_result_code.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
-#include "src/epp/object_state.h"
 #include "src/epp/reason.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/db_settings.h"
-#include "src/fredlib/object_state/get_object_state_descriptions.h"
 #include "src/fredlib/opcontext.h"
 #include "util/db/nullable.h"
 #include "util/map_at.h"
@@ -91,45 +89,6 @@ std::string get_reason_description_localized(
     }
 
     return static_cast< std::string >(res[0][0]);
-}
-
-namespace {
-
-std::string get_success_state_localized_description(SessionLang::Enum _lang)
-{
-    switch (_lang)
-    {
-        case SessionLang::en:
-            return "Object is without restrictions";
-        case SessionLang::cs:
-            return "Objekt je bez omezení";
-    }
-    return std::string();
-}
-
-}
-
-ObjectStatesLocalized localize_object_states(
-    Fred::OperationContext& _ctx,
-    const std::set< Epp::Object_State::Enum >& _states,
-    SessionLang::Enum _lang)
-{
-    typedef std::vector< Fred::ObjectStateDescription > ObjectStateDescriptions;
-    const ObjectStateDescriptions all_state_descriptions =
-        Fred::GetObjectStateDescriptions(SessionLang::to_db_handle(_lang)).exec(_ctx);
-
-    ObjectStatesLocalized states;
-    for (ObjectStateDescriptions::const_iterator state_ptr = all_state_descriptions.begin();
-         state_ptr != all_state_descriptions.end(); ++state_ptr)
-    {
-        const Epp::Object_State::Enum state =
-            Conversion::Enums::from_db_handle< Epp::Object_State >(state_ptr->handle);
-        if (_states.find(state) != _states.end()) {
-            states.descriptions[state] = state_ptr->description;
-        }
-    }
-    states.success_state_localized_description = get_success_state_localized_description(_lang);
-    return states;
 }
 
 /**

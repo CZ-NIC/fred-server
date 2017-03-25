@@ -72,7 +72,7 @@ InfoKeysetLocalizedResponse info_keyset_localized(
                         info_keyset_data.sponsoring_registrar_handle,
                         info_keyset_data.creating_registrar_handle,
                         info_keyset_data.last_update_registrar_handle,
-                        localize_object_states(ctx, info_keyset_data.states, _session_data.lang),
+                        localize_object_states<StatusValue>(ctx, info_keyset_data.states, _session_data.lang),
                         info_keyset_data.crdate,
                         info_keyset_data.last_update,
                         info_keyset_data.last_transfer,

@@ -19,8 +19,9 @@
 #ifndef INFO_KEYSET_LOCALIZED_OUTPUT_DATA_H_62737710C6CF40C6AFAEE43C59253E0B
 #define INFO_KEYSET_LOCALIZED_OUTPUT_DATA_H_62737710C6CF40C6AFAEE43C59253E0B
 
-#include "src/epp/object_states_localized.h"
 #include "src/epp/keyset/info_keyset_output_data.h"
+#include "src/epp/keyset/status_value.h"
+#include "src/epp/object_states_localized.h"
 #include "src/fredlib/object/object_state.h"
 #include "util/db/nullable.h"
 
@@ -38,7 +39,7 @@ struct InfoKeysetLocalizedOutputData
     std::string sponsoring_registrar_handle; ///< registrar identifier, which has to right for change
     std::string creating_registrar_handle; ///< Registrar identifier, which created contact
     Nullable<std::string> last_update_registrar_handle; ///< Registrar identifier, which realized changes
-    ObjectStatesLocalized localized_external_states; ///< Keyset states list
+    ObjectStatesLocalized<StatusValue> localized_external_states; ///< Keyset states list
     boost::posix_time::ptime crdate; ///< Creation date and time
     Nullable<boost::posix_time::ptime> last_update; ///< Date and time of last change
     Nullable<boost::posix_time::ptime> last_transfer; ///< Date and time of last transfer
@@ -54,7 +55,7 @@ struct InfoKeysetLocalizedOutputData
             const std::string& _sponsoring_registrar_handle,
             const std::string& _creating_registrar_handle,
             const Nullable<std::string>& _last_update_registrar_handle,
-            const ObjectStatesLocalized& _localized_external_states,
+            const ObjectStatesLocalized<Epp::Keyset::StatusValue> _localized_external_states,
             const boost::posix_time::ptime& _crdate,
             const Nullable<boost::posix_time::ptime>& _last_update,
             const Nullable<boost::posix_time::ptime>& _last_transfer,

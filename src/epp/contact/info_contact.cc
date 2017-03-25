@@ -20,12 +20,12 @@
 #include "src/epp/contact/info_contact.h"
 
 #include "src/admin/contact/verification/contact_states/enum.h"
+#include "src/epp/contact/status_value.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
-#include "src/epp/object_state.h"
 #include "src/fredlib/contact.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/object_state/get_object_states.h"
@@ -165,7 +165,7 @@ InfoContactOutputData info_contact(
 
                 if (object_state->is_external)
                 {
-                    info_contact_output_data.states.insert(Conversion::Enums::from_fred_object_state<Epp::Object_State>(
+                    info_contact_output_data.states.insert(Conversion::Enums::from_fred_object_state<StatusValue>(
                             Conversion::Enums::from_db_handle<Fred::Object_State>(
                                     object_state->state_name)));
                 }

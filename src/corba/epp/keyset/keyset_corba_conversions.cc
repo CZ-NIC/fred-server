@@ -213,7 +213,7 @@ wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
     _dst.ClID = _src.sponsoring_registrar_handle.c_str();
     _dst.CrID = _src.creating_registrar_handle.c_str();
     _dst.UpID = wrap_Nullable_string_to_string(_src.last_update_registrar_handle);
-    wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
+    wrap_Epp_ObjectStatesLocalized< ::Epp::Keyset::StatusValue>(_src.localized_external_states, _dst.stat);
     _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
     _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);
     _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);

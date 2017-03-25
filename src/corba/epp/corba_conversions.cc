@@ -375,28 +375,5 @@ unwrap_string_for_change_or_remove_to_Optional_string(const char* _src)
                              : unwrapped_src;
 }
 
-void
-wrap_Epp_ObjectStatesLocalized(
-        const Epp::ObjectStatesLocalized& _src,
-        ccReg::Status& _dst)
-{
-    if (_src.descriptions.empty())
-    {
-        _dst.length(1);
-        _dst[0].value = "ok";
-        _dst[0].text = _src.success_state_localized_description.c_str();
-
-        return;
-    }
-    _dst.length(_src.descriptions.size());
-    ::size_t idx = 0;
-    for (Epp::ObjectStatesLocalized::Descriptions::const_iterator state_ptr = _src.descriptions.begin();
-         state_ptr != _src.descriptions.end(); ++state_ptr, ++idx)
-    {
-        _dst[idx].value = Conversion::Enums::to_db_handle(state_ptr->first).c_str();
-        _dst[idx].text = state_ptr->second.c_str();
-    }
-}
-
 } // namespace Fred::Corba
 } // namespace Fred

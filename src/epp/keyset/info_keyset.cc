@@ -22,6 +22,7 @@
 #include "src/epp/epp_result_code.h"
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
+#include "src/epp/keyset/status_value.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -66,7 +67,7 @@ InfoKeysetOutputData info_keyset(
             {
                 if (object_state->is_external)
                 {
-                    result.states.insert(Conversion::Enums::from_fred_object_state<Epp::Object_State>(
+                    result.states.insert(Conversion::Enums::from_fred_object_state<StatusValue>(
                             Conversion::Enums::from_db_handle<Fred::Object_State>(
                                     object_state->state_name)));
                 }

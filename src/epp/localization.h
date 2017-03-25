@@ -19,10 +19,16 @@
 #ifndef LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
 #define LOCALIZATION_H_6BA4B6A62A5D41F0A69D20DE5B507D2E
 
+#include "src/epp/contact/status_value.h"
+#include "src/epp/domain/status_value.h"
 #include "src/epp/epp_result_code.h"
+#include "src/epp/keyset/status_value.h"
+#include "src/epp/nsset/status_value.h"
 #include "src/epp/object_states_localized.h"
 #include "src/epp/reason.h"
 #include "src/epp/session_lang.h"
+#include "src/fredlib/object_state/get_object_state_descriptions.h"
+#include "util/enum_conversion.h"
 
 #include "src/fredlib/opcontext.h"
 
@@ -65,10 +71,57 @@ std::string get_epp_result_description_localized(
     return static_cast<std::string>(res[0][0]);
 }
 
-ObjectStatesLocalized localize_object_states(
+namespace {
+
+std::string get_success_state_localized_description(SessionLang::Enum _lang)
+{
+    switch (_lang)
+    {
+        case SessionLang::en:
+            return "Object is without restrictions";
+        case SessionLang::cs:
+            return "Objekt je bez omezení";
+    }
+    return std::string();
+}
+
+}
+
+template <typename T>
+ObjectStatesLocalized<T> localize_object_states(
         Fred::OperationContext& _ctx,
-        const std::set<Epp::Object_State::Enum>& _states,
-        SessionLang::Enum _lang);
+        const std::set<typename T::Enum>& _status_values,
+        SessionLang::Enum _lang)
+{
+    ObjectStatesLocalized<T> status_values_localized;
+    for (typename std::set<typename T::Enum>::const_iterator status_value = _status_values.begin();
+            status_value != _status_values.end();
+            ++status_value)
+    {
+        const Database::Result res = _ctx.get_conn().exec_params(
+            "SELECT eosd.description "
+            "FROM enum_object_states_desc eosd "
+                "JOIN enum_object_states eos ON eosd.state_id = eos.id "
+                    "AND eos.external = TRUE "
+            "WHERE eos.name = $1::text "
+            "AND UPPER(eosd.lang) = UPPER($2::text)",
+            Database::query_param_list(Conversion::Enums::to_db_handle(Conversion::Enums::to_fred_object_state(*status_value)))
+            (SessionLang::to_db_handle(_lang)));
+
+        if (res.size() < 1) {
+            throw MissingLocalizedDescription();
+        }
+
+        if (res.size() > 1) {
+            throw std::runtime_error("0 or 1 row expected");
+        }
+
+        status_values_localized.descriptions[*status_value] = static_cast<std::string>(res[0][0]);
+    }
+    status_values_localized.success_state_localized_description = get_success_state_localized_description(_lang);
+
+    return status_values_localized;
+}
 
 /**
  * @returns untyped postgres array

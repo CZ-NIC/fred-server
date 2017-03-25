@@ -323,7 +323,7 @@ void wrap_InfoContactLocalizedOutputData(
     _dst.CrID = wrap_string_to_corba_string(_src.creating_registrar_handle);
     // XXX IDL nonsense
     _dst.UpID = wrap_Nullable_string_to_string(_src.last_update_registrar_handle);
-    wrap_Epp_ObjectStatesLocalized(_src.localized_external_states, _dst.stat);
+    wrap_Epp_ObjectStatesLocalized< ::Epp::Contact::StatusValue>(_src.localized_external_states, _dst.stat);
     _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
     // XXX IDL nonsense
     _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);

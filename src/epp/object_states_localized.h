@@ -19,17 +19,16 @@
 #ifndef OBJECT_STATES_LOCALIZED_H_33777B6EEDFD423494782C90D5718B94
 #define OBJECT_STATES_LOCALIZED_H_33777B6EEDFD423494782C90D5718B94
 
-#include "src/epp/object_state.h"
-
 #include <map>
 #include <string>
 
 namespace Epp {
 
+template <typename T>
 struct ObjectStatesLocalized
 {
 
-    typedef std::map<Epp::Object_State::Enum, std::string> Descriptions;
+    typedef std::map<typename T::Enum, std::string> Descriptions;
 
     Descriptions descriptions;
     std::string success_state_localized_description;

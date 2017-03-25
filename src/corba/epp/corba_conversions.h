@@ -35,6 +35,7 @@
 #include "src/epp/nsset/delete_nsset_localized.h"
 #include "src/epp/nsset/dns_host_input.h"
 #include "src/epp/nsset/info_nsset_localized.h"
+#include "src/epp/object_states_localized.h"
 #include "src/epp/request_params.h"
 #include "src/old_utils/util.h"
 #include "util/corba_conversion.h"
@@ -49,7 +50,7 @@ namespace Corba {
 
 
 /**
- * Converts time from UTC to local time zone and formats it to RFC 3339 date format, with seconds fraction trimmed.
+ * Converts time from UTC to local time zone and formats it to RFC 3339 date and time format, with seconds fraction trimmed.
  * If conversion to local time zone fails, UTC time with -00:00 (unknown local zone) offset is returned.
  *
  * @param _utc_ptime time in UTC
@@ -121,10 +122,29 @@ wrap_Epp_EppResponseFailureLocalized(
         const std::string& _server_transaction_handle);
 
 
+template <typename T>
 void
 wrap_Epp_ObjectStatesLocalized(
-        const ::Epp::ObjectStatesLocalized& _src,
-        ccReg::Status& _dst);
+        const ::Epp::ObjectStatesLocalized<T>& _src,
+        ccReg::Status& _dst)
+{
+    if (_src.descriptions.empty())
+    {
+        _dst.length(1);
+        _dst[0].value = "ok";
+        _dst[0].text = _src.success_state_localized_description.c_str();
+
+        return;
+    }
+    _dst.length(_src.descriptions.size());
+    ::size_t idx = 0;
+    for (typename ::Epp::ObjectStatesLocalized<T>::Descriptions::const_iterator state_ptr = _src.descriptions.begin();
+         state_ptr != _src.descriptions.end(); ++state_ptr, ++idx)
+    {
+        _dst[idx].value = Conversion::Enums::to_status_value_name(state_ptr->first).c_str();
+        _dst[idx].text = state_ptr->second.c_str();
+    }
+}
 
 
 } // namespace Fred::Corba

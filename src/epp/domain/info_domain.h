@@ -21,7 +21,7 @@
 
 #include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/domain/info_domain_config_data.h"
-#include "src/epp/object_state.h"
+#include "src/epp/domain/status_value.h"
 #include "src/epp/session_data.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "src/fredlib/object/object_state.h"
@@ -41,7 +41,7 @@ namespace Domain {
 struct InfoDomainOutputData
 {
 
-    typedef std::set<Epp::Object_State::Enum> States;
+    typedef std::set<StatusValue::Enum> States;
 
     std::string roid; ///< Domain repository ID
     std::string fqdn; ///< Domain FQDN

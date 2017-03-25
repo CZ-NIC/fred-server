@@ -111,7 +111,7 @@ InfoContactLocalizedResponse info_contact_localized(
         info_contact_localized_output_data.last_update_registrar_handle =
             info_contact_output_data.last_update_registrar_handle;
         info_contact_localized_output_data.localized_external_states =
-            localize_object_states(ctx, info_contact_output_data.states, _session_data.lang);
+            localize_object_states<StatusValue>(ctx, info_contact_output_data.states, _session_data.lang);
         info_contact_localized_output_data.crdate = info_contact_output_data.crdate;
         info_contact_localized_output_data.last_update = info_contact_output_data.last_update;
         info_contact_localized_output_data.last_transfer = info_contact_output_data.last_transfer;

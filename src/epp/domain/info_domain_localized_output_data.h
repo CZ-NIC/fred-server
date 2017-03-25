@@ -20,7 +20,7 @@
 #define INFO_DOMAIN_LOCALIZED_OUTPUT_DATA_H_A77108D55D9D4F31AC54E93686386A62
 
 #include "src/epp/domain/domain_enum_validation.h"
-#include "src/epp/object_state.h"
+#include "src/epp/domain/status_value.h"
 #include "src/epp/object_states_localized.h"
 #include "src/fredlib/domain/enum_validation_extension.h"
 #include "util/db/nullable.h"
@@ -43,7 +43,7 @@ struct InfoDomainLocalizedOutputData
     std::string registrant;
     Nullable<std::string> nsset;
     Nullable<std::string> keyset;
-    ObjectStatesLocalized localized_external_states; ///< Domain states list
+    ObjectStatesLocalized<Epp::Domain::StatusValue> localized_external_states;
     std::string sponsoring_registrar_handle; ///< Registrar which has to right for change
     std::string creating_registrar_handle; ///< Registrar which created contact
     Nullable<std::string> last_update_registrar_handle; ///< Registrar which realized changes
@@ -58,23 +58,23 @@ struct InfoDomainLocalizedOutputData
 
 
     InfoDomainLocalizedOutputData(
-            const std::string _roid,
-            const std::string _fqdn,
-            const std::string _registrant,
-            const Nullable<std::string> _nsset,
-            const Nullable<std::string> _keyset,
-            const ObjectStatesLocalized _localized_external_states,
-            const std::string _sponsoring_registrar_handle,
-            const std::string _creating_registrar_handle,
-            const Nullable<std::string> _last_update_registrar_handle,
-            const boost::posix_time::ptime _crdate,
-            const Nullable<boost::posix_time::ptime> _last_update,
-            const Nullable<boost::posix_time::ptime> _last_transfer,
-            const boost::gregorian::date _exdate,
-            const boost::optional<std::string> _authinfopw,
-            const std::set<std::string> _admin,
-            const Nullable<EnumValidationExtension> _ext_enum_domain_validation,
-            const std::set<std::string> _tmpcontact)
+            const std::string& _roid,
+            const std::string& _fqdn,
+            const std::string& _registrant,
+            const Nullable<std::string>& _nsset,
+            const Nullable<std::string>& _keyset,
+            const ObjectStatesLocalized<StatusValue> _localized_external_states,
+            const std::string& _sponsoring_registrar_handle,
+            const std::string& _creating_registrar_handle,
+            const Nullable<std::string>& _last_update_registrar_handle,
+            const boost::posix_time::ptime& _crdate,
+            const Nullable<boost::posix_time::ptime>& _last_update,
+            const Nullable<boost::posix_time::ptime>& _last_transfer,
+            const boost::gregorian::date& _exdate,
+            const boost::optional<std::string>& _authinfopw,
+            const std::set<std::string>& _admin,
+            const Nullable<EnumValidationExtension>& _ext_enum_domain_validation,
+            const std::set<std::string>& _tmpcontact)
         : roid(_roid),
           fqdn(_fqdn),
           registrant(_registrant),

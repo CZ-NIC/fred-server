@@ -1579,7 +1579,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/epp_extended_error_localized.cc \
 		src/epp/epp_result_code.h \
 		src/epp/notification_data.h \
-		src/epp/object_state.h \
 		src/epp/session_data.h \
 		src/epp/session_data.cc \
 		src/epp/impl/conditionally_enqueue_notification.h \
@@ -1617,6 +1616,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/update_contact_post_hooks.h \
 		src/epp/contact/create_contact_input_data.cc \
 		src/epp/contact/create_contact_input_data.h \
+		src/epp/contact/status_value.h \
 		src/epp/domain/check_domain_localized.cc \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain.cc \
@@ -1651,6 +1651,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/update_domain.cc \
 		src/epp/domain/update_domain.h \
 		src/epp/domain/domain_registration_obstruction.h \
+		src/epp/domain/status_value.h \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \
@@ -1681,6 +1682,7 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/transfer_keyset.h \
 		src/epp/keyset/transfer_keyset_localized.cc \
 		src/epp/keyset/transfer_keyset_localized.h \
+		src/epp/keyset/status_value.h \
 		src/epp/nsset/check_nsset_localized.cc \
 		src/epp/nsset/check_nsset_localized.h \
 		src/epp/nsset/check_nsset.cc \
@@ -1707,7 +1709,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/transfer_nsset.cc \
 		src/epp/nsset/transfer_nsset.h \
 		src/epp/nsset/impl/nsset.cc \
-		src/epp/nsset/impl/nsset.h
+		src/epp/nsset/impl/nsset.h \
+		src/epp/nsset/status_value.h
 
 #
 # src/corba/epp/libepp_impl.a

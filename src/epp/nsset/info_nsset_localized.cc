@@ -75,7 +75,7 @@ InfoNssetLocalizedResponse info_nsset_localized(
                         info_nsset_output_data.sponsoring_registrar_handle,
                         info_nsset_output_data.creating_registrar_handle,
                         info_nsset_output_data.last_update_registrar_handle,
-                        localize_object_states(ctx, info_nsset_output_data.states, _session_data.lang),
+                        localize_object_states<StatusValue>(ctx, info_nsset_output_data.states, _session_data.lang),
                         info_nsset_output_data.crdate,
                         info_nsset_output_data.last_update,
                         info_nsset_output_data.last_transfer,

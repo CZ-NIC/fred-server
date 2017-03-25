@@ -43,25 +43,27 @@ inline typename ENUM_HOST_TYPE::Enum from_db_handle(const std::string &db_handle
 
 /**
  * Helps to implement from_db_handle function using to_db_handle conversion function.
- * @tparam ENUM enum type
- * @tparam ITEMS number of enum items
- * @param db_handle string which has to be converted to its enum counterpart
- * @param values array of all enum items
- * @param type_name name of enum type used for readable exception message
- * @return matching enum counterpart
+ * @tparam S type of source value
+ * @tparam D type of destination value
+ * @tparam items number of all possible destination values
+ * @param src source value
+ * @param set_of_results C array of all possible destination values
+ * @param forward_transformation function which transforms D value into S value
+ * @return matching counterpart value
  * @throw std::invalid_argument in case that conversion fails
  */
-template < class ENUM, ::size_t ITEMS >
-ENUM from_db_handle_impl(const std::string &db_handle,
-                         const ENUM (&values)[ITEMS],
-                         const char *type_name)
+template <class S, class D, unsigned items>
+D inverse_transformation(const S& src, const D (&set_of_results)[items], S (*forward_transformation)(D))
 {
-    for (::size_t idx = 0; idx < ITEMS; ++idx) {
-        if (to_db_handle(values[idx]) == db_handle) {
-            return values[idx];
+    const D* const end_of_results = set_of_results + items;
+    for (const D* result_candidate_ptr = set_of_results; result_candidate_ptr < end_of_results; ++result_candidate_ptr)
+    {
+        if (forward_transformation(*result_candidate_ptr) == src)
+        {
+            return *result_candidate_ptr;
         }
     }
-    throw std::invalid_argument("handle \"" + db_handle + "\" isn't convertible to " + type_name);
+    throw std::invalid_argument("conversion does not exist");
 }
 
 }//namespace Conversion::Enums

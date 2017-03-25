@@ -73,7 +73,7 @@ InfoDomainLocalizedResponse info_domain_localized(
                         info_domain_output_data.registrant,
                         info_domain_output_data.nsset,
                         info_domain_output_data.keyset,
-                        localize_object_states(ctx, info_domain_output_data.states, _session_data.lang),
+                        localize_object_states<StatusValue>(ctx, info_domain_output_data.states, _session_data.lang),
                         info_domain_output_data.sponsoring_registrar_handle,
                         info_domain_output_data.creating_registrar_handle,
                         info_domain_output_data.last_update_registrar_handle,

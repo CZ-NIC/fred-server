@@ -20,6 +20,7 @@
 #define INFO_CONTACT_LOCALIZED_OUTPUT_DATA_H_671EB821E0A641C5BE786A96B551FE13
 
 #include "src/epp/contact/contact_disclose.h"
+#include "src/epp/contact/status_value.h"
 #include "src/epp/object_states_localized.h"
 #include "util/db/nullable.h"
 
@@ -39,7 +40,7 @@ struct InfoContactLocalizedOutputData
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
     Nullable<std::string> last_update_registrar_handle;
-    ObjectStatesLocalized localized_external_states;
+    ObjectStatesLocalized<StatusValue> localized_external_states;
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;

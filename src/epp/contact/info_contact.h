@@ -21,7 +21,7 @@
 
 #include "src/epp/contact/contact_disclose.h"
 #include "src/epp/contact/info_contact_config_data.h"
-#include "src/epp/object_state.h"
+#include "src/epp/contact/status_value.h"
 #include "src/epp/session_data.h"
 #include "src/epp/session_lang.h"
 #include "src/fredlib/contact/info_contact_data.h"
@@ -50,7 +50,7 @@ struct InfoContactOutputData
     std::string sponsoring_registrar_handle;
     std::string creating_registrar_handle;
     Nullable<std::string> last_update_registrar_handle;
-    std::set<Epp::Object_State::Enum> states;
+    std::set<StatusValue::Enum> states;
     boost::posix_time::ptime crdate;
     Nullable<boost::posix_time::ptime> last_update;
     Nullable<boost::posix_time::ptime> last_transfer;

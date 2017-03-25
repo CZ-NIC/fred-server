@@ -24,7 +24,7 @@
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/nsset/impl/nsset.h"
-#include "src/epp/object_state.h"
+#include "src/epp/nsset/status_value.h"
 #include "src/fredlib/nsset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/nsset/info_nsset_data.h"
@@ -74,7 +74,7 @@ InfoNssetOutputData info_nsset(
         const bool authinfopw_has_to_be_hidden = info_nsset_data.sponsoring_registrar_handle !=
                                                  session_registrar_handle;
 
-        std::set<Epp::Object_State::Enum> info_nsset_output_data_states;
+        std::set<StatusValue::Enum> info_nsset_output_data_states;
         {
             typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
 
@@ -84,7 +84,7 @@ InfoNssetOutputData info_nsset(
             {
                 if (object_state->is_external)
                 {
-                    info_nsset_output_data_states.insert(Conversion::Enums::from_fred_object_state<Epp::Object_State>(
+                    info_nsset_output_data_states.insert(Conversion::Enums::from_fred_object_state<Epp::Nsset::StatusValue>(
                             Conversion::Enums::from_db_handle<Fred::Object_State>(
                                     object_state->state_name)));
                 }
