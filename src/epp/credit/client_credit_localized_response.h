@@ -33,8 +33,8 @@ struct ClientCreditLocalizedResponse
         : epp_response_success_localized(_epp_response_success_localized),
           data(_data)
     { }
-    const EppResponseSuccessLocalized epp_response_success_localized;
-    const ClientCreditOutputData data;
+    EppResponseSuccessLocalized epp_response_success_localized;
+    ClientCreditOutputData data;
 };
 
 } // namespace Epp::Contact
