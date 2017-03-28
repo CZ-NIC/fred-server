@@ -33,19 +33,6 @@ const typename T::mapped_type& map_at(
     return it->second;
 }
 
-template <typename T>
-typename T::mapped_type& map_at(
-        T& _container,
-        const typename T::key_type& _key)
-{
-    typename T::iterator it;
-    if ((it = _container.find(_key)) == _container.end())
-    {
-        throw std::out_of_range("map_at: not found");
-    }
-    return it->second;
-}
-
 /**
  * if value is found in map by the key, return set optional map value, if not return unset optional map value
  * ReturnOptionalTypeTemplate might be Optional or Nullable template

@@ -14,6 +14,7 @@
 namespace Fred {
 namespace Corba {
 
+/** DEPRECATED - use wrap_string_to_corba_string instead. */
 CORBA::String_var wrap_string(const std::string& in);
 
 

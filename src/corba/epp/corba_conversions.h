@@ -20,6 +20,7 @@
 #define CORBA_CONVERSIONS_H_0DA22651C0FF48C5A0AF69E77BB4A561
 
 #include "src/corba/EPP.hh"
+#include "src/corba/util/corba_conversions_string.h"
 #include "src/epp/contact/check_contact_localized.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact_localized.h"
@@ -131,8 +132,8 @@ wrap_Epp_ObjectStatesLocalized(
     if (_src.descriptions.empty())
     {
         _dst.length(1);
-        _dst[0].value = "ok";
-        _dst[0].text = _src.success_state_localized_description.c_str();
+        _dst[0].value = wrap_string_to_corba_string("ok");
+        _dst[0].text = wrap_string_to_corba_string(_src.success_state_localized_description);
 
         return;
     }
