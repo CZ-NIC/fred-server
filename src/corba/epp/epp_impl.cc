@@ -756,7 +756,6 @@ ccReg_EPP_i::ccReg_EPP_i(
     epp_sessions_(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
     ErrorMsg(),
     ReasonMsg(),
-    CC(),
     max_zone()
 {
   Logging::Context::clear();
@@ -970,32 +969,6 @@ short ccReg_EPP_i::SetReasonDomainFQDN(
     REASON_MSG_BAD_FORMAT_FQDN, lang);
 
   return 0;
-}
-
-// load country code table  enum_country from database
-int ccReg_EPP_i::LoadCountryCode()
-{
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  ConnectionReleaser releaser;
-
-  try
-  {
-      CC.reset(new CountryCode);
-      CC->load();
-      return CC->GetNum();
-  }
-  catch(...)
-  {
-      return -1;
-  }
-}
-
-bool ccReg_EPP_i::TestCountryCode(
-  const char *cc)
-{
-    LOG( NOTICE_LOG , "CCREG:: TestCountryCode  [%s]" , cc );
-    return CC->TestCountryCode(cc);
 }
 
 // get version of the server and actual time

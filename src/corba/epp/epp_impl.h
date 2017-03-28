@@ -16,7 +16,6 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/corba/epp/countrycode.h"
 #include "src/corba/epp/messages.h"
 #include "src/corba/epp/epp_session.h"
 #include "src/corba/mailer_manager.h"
@@ -195,11 +194,6 @@ public:
   bool get_DISCLOSE(bool db);
   char update_DISCLOSE(bool d, ccReg::Disclose flag);
   bool setvalue_DISCLOSE(bool d, ccReg::Disclose flag);
-
-  // load country code
-  int LoadCountryCode();
-  // test country code
-  bool TestCountryCode(const char *cc);
 
   // load and get message of lang from enum_error
   int LoadErrorMessages();
@@ -611,6 +605,5 @@ private:
   EppSessionContainer epp_sessions_;
   Mesg *ErrorMsg;
   Mesg *ReasonMsg;
-  std::auto_ptr<CountryCode> CC;
   int max_zone;
 };

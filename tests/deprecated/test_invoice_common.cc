@@ -32,11 +32,6 @@ void handle_epp_exception(ccReg::EPP::EppError &ex)
 
 void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
 {
-    // load all country code from table enum_country
-    if (epp_i->LoadCountryCode() <= 0) {
-      throw std::runtime_error("EPP backend init: database error: load country code");
-    }
-
     // load error messages to memory
     if (epp_i->LoadErrorMessages() <= 0) {
       throw std::runtime_error("EPP backend init: database error: load error messages");
