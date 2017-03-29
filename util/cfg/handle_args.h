@@ -24,10 +24,13 @@
 #ifndef HANDLE_ARGS_H_
 #define HANDLE_ARGS_H_
 
+#include "util/cfg/faked_args.h"
+#include "util/cfg/checked_types.h"
+
 #include <iostream>
 #include <exception>
 #include <string>
-#include <vector>
+#include <deque>
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -37,8 +40,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <boost/any.hpp>
-#include "util/cfg/faked_args.h"
-#include "util/cfg/checked_types.h"
 
 /**
  * \class HandleArgs
@@ -97,10 +98,6 @@ public:
  */
 class VMConfigData
 {
-    std::string key_;
-    std::string value_;
-    bool defaulted_;
-    bool empty_;
 public:
     VMConfigData(
         const std::string& _key,
@@ -132,6 +129,11 @@ public:
     {
         return empty_;
     }
+private:
+    std::string key_;
+    std::string value_;
+    bool defaulted_;
+    bool empty_;
 };
 
 /**
@@ -140,86 +142,83 @@ public:
  */
 class AccumulatedConfig
 {
-private:
-    std::size_t get_count_;
-    std::vector<VMConfigData> data_;
-
 public:
     static AccumulatedConfig& get_instance()
     {
         static AccumulatedConfig instance; //lazy init
         return instance;
     }
-
-    void add(const boost::program_options::variables_map& vm)
+    /**
+     * adds config to be printed later, performs
+     */
+    void append(const boost::program_options::variables_map& vm)
     {
-        data_.reserve(data_.size() + vm.size());
         for (boost::program_options::variables_map::const_iterator it = vm.begin(); it != vm.end(); it++)
         {
             std::string value;
             try
             {
-                if(typeid(std::string) == it->second.value().type())
+                if (it->second.value().type() == typeid(std::string))
                 {
                     value = boost::any_cast<std::string>(it->second.value());
                 }
-                else if(typeid(unsigned) == it->second.value().type())
+                else if (it->second.value().type() == typeid(unsigned))
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<unsigned>(it->second.value()));
                 }
-                else if(typeid(bool) == it->second.value().type())
+                else if (it->second.value().type() == typeid(bool))
                 {
                     value = boost::any_cast<bool>(it->second.value()) ? "TRUE" : "FALSE";
                 }
-                else if(typeid(boost::gregorian::date) == it->second.value().type())
+                else if (it->second.value().type() == typeid(boost::gregorian::date))
                 {
                     value = boost::gregorian::to_iso_extended_string(
                             boost::any_cast<boost::gregorian::date>(it->second.value()));
                 }
-                else if(typeid(boost::posix_time::ptime) == it->second.value().type())
+                else if (it->second.value().type() == typeid(boost::posix_time::ptime))
                 {
                     value = boost::posix_time::to_iso_extended_string(
                             boost::any_cast<boost::posix_time::ptime>(it->second.value()));
                 }
-                else if(typeid(Checked::string) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::string))
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::string>(it->second.value()));
                 }
-                else if(typeid(Checked::string_fpnumber) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::string_fpnumber))
                 {
                     value = boost::any_cast<Checked::string_fpnumber>(it->second.value()).to_string();
                 }
-                else if(typeid(Checked::ulonglong) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::ulonglong))
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulonglong>(it->second.value()));
                 }
-                else if(typeid(Checked::ulong) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::ulong))
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulong>(it->second.value()));
                 }
-                else if(typeid(Checked::id) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::id))
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::id>(it->second.value()));
                 }
-                else if(typeid(Checked::fpnumber) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::fpnumber))
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::fpnumber>(it->second.value()));
                 }
-                else if(typeid(Checked::ushort) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::ushort))
                 {
                     value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ushort>(it->second.value()));
                 }
-                else if(typeid(Checked::date) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::date))
                 {
                     value = boost::gregorian::to_iso_extended_string(
                             boost::any_cast<Checked::date>(it->second.value()));
                 }
-                else if(typeid(Checked::ptime) == it->second.value().type())
+                else if (it->second.value().type() == typeid(Checked::ptime))
                 {
                     value = boost::posix_time::to_iso_extended_string(
                             boost::any_cast<Checked::ptime>(it->second.value()));
                 }
-                else if(typeid(std::vector<std::string>) == it->second.value().type())
+                else if (it->second.value().type() == typeid(std::vector<std::string>))
                 {
                     value = boost::algorithm::join(boost::any_cast<std::vector<std::string> >(it->second.value()), ", ");
                 }
@@ -246,45 +245,44 @@ public:
      * return next config item in text form or empty string in case no further item available
      * hides sensitive information
      */
-    std::string get_next_config_item_text()
+    std::string pop_front()
     {
         std::string text;
-        if(get_count_ < data_.size())
+
+        if(!data_.empty())
         {
             const boost::regex hide_value ("password|certificate"
                     , boost::regex::icase);
 
-            const std::string key = data_.at(get_count_).get_key();
+            const std::string key = data_.front().get_key();
             const std::string value = boost::regex_search(key, hide_value)
                 ? std::string("*** hidden ***")
-                : data_.at(get_count_).get_value();
+                : data_.front().get_value();
 
             text += "config dump: ";
             text += key;
             text+=": ";
             text += value;
-            text += data_.at(get_count_).get_defaulted() ? " DEFAULT" : "" ;
-            text += data_.at(get_count_).get_empty() ? " EMPTY" : "" ;
-            ++get_count_;
+            text += data_.front().get_defaulted() ? " DEFAULT" : "" ;
+            text += data_.front().get_empty() ? " EMPTY" : "" ;
+
+            data_.pop_front();
         }
+
         return text;
     }
 
 private:
     AccumulatedConfig()
-        : get_count_(0)
     {
     }
 
-//c++03 version
     AccumulatedConfig(AccumulatedConfig const&); //unimplemented
     void operator=(AccumulatedConfig const&); //unimplemented
-//or c++11 version
-//public: //deleted functions should be public
-//AccumulatedConfig(AccumulatedConfig const&) = delete;
-//void operator=(AccumulatedConfig const&) = delete;
+
+    std::deque<VMConfigData> data_;
+
 };
-//AccumulatedConfig::getInstance().add(vm);
 
 ///common parsing using program_options
 struct handler_parse_args
@@ -333,7 +331,7 @@ struct handler_parse_args
         fa.add_argv(*i);//string
     }//for i
 
-    AccumulatedConfig::get_instance().add(vm);
+    AccumulatedConfig::get_instance().append(vm);
 }
 };//handler_parse_args
 

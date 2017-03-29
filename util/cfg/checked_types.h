@@ -24,6 +24,8 @@
 #ifndef CHECKED_TYPES_H_f12642247ed944ddaee5a054d16eead9
 #define CHECKED_TYPES_H_f12642247ed944ddaee5a054d16eead9
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <string>
 
 // types checked by custom validator
@@ -40,7 +42,6 @@ struct Checked
 
     class string_fpnumber
     {
-        std::string s_;
     public:
         std::string to_string() const
         {
@@ -79,6 +80,8 @@ struct Checked
         {
             return s_ < rhs.s_;
         }
+    private:
+        std::string s_;
     };
 
 };
