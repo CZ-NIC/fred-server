@@ -102,12 +102,12 @@ public:
     VMConfigData(
         const std::string& _key,
         const std::string& _value,
-        bool _defaulted,
-        bool _empty)
+        bool _is_value_default,
+        bool _is_value_empty)
     : key_(_key),
       value_(_value),
-      defaulted_(_defaulted),
-      empty_(_empty)
+      is_default_(_is_value_default),
+      is_empty_(_is_value_empty)
     {}
 
     std::string get_key() const
@@ -120,20 +120,20 @@ public:
         return value_;
     }
 
-    bool get_defaulted() const
+    bool is_value_default() const
     {
-        return defaulted_;
+        return is_default_;
     }
 
-    bool get_empty() const
+    bool is_value_empty() const
     {
-        return empty_;
+        return is_empty_;
     }
 private:
     std::string key_;
     std::string value_;
-    bool defaulted_;
-    bool empty_;
+    bool is_default_;
+    bool is_empty_;
 };
 
 /**
@@ -263,8 +263,8 @@ public:
             text += key;
             text+=": ";
             text += value;
-            text += data_.front().get_defaulted() ? " DEFAULT" : "" ;
-            text += data_.front().get_empty() ? " EMPTY" : "" ;
+            text += data_.front().is_value_default() ? " DEFAULT" : "" ;
+            text += data_.front().is_value_empty() ? " EMPTY" : "" ;
 
             data_.pop_front();
         }
