@@ -91,6 +91,10 @@ public:
     virtual std::size_t handle( int argc, char* argv[], FakedArgs &fa , std::size_t option_group_index ) = 0;
 };
 
+/**
+ * \class VMConfigData
+ * \brief internal representation of config data to be printed by class AccumulatedConfig
+ */
 class VMConfigData
 {
     std::string key_;
@@ -239,9 +243,10 @@ public:
     }
 
     /**
-     * return next config item or empty string
+     * return next config item in text form or empty string in case no further item available
+     * hides sensitive information
      */
-    std::string get_one()
+    std::string get_next_config_item_text()
     {
         std::string text;
         if(get_count_ < data_.size())

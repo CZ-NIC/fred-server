@@ -213,7 +213,7 @@ int main(int argc, char* argv[])
 
         //config dump
         for(std::string config_item;
-            config_item = AccumulatedConfig::get_instance().get_one(), !config_item.empty();)
+            config_item = AccumulatedConfig::get_instance().get_next_config_item_text(), !config_item.empty();)
         {
             Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
         }
