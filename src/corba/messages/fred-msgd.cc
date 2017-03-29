@@ -51,7 +51,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleDatabaseArgs))
     (HandleArgsPtr(new HandleCorbaNameServiceArgs));
 
-const char* server_name = "msgd";//for logging contxt
+const char* server_name = "fred-msgd";//for logging contxt
 
 int main(int argc, char** argv)
 {
@@ -63,6 +63,13 @@ int main(int argc, char** argv)
         setup_logging(CfgArgs::instance());
 
         Logging::Context ctx(server_name);
+
+        //config dump
+        for(std::string config_item;
+            config_item = AccumulatedConfig::get_instance().get_one(), !config_item.empty();)
+        {
+            Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+        }
 
         {//db connection, test only
             Database::Connection conn = Database::Manager::acquire();

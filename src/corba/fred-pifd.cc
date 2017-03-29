@@ -85,6 +85,15 @@ int main(int argc, char *argv[])
         // setting up logger
         setup_logging(CfgArgs::instance());
 
+        Logging::Context ctx(server_name);
+
+        //config dump
+        for(std::string config_item;
+            config_item = AccumulatedConfig::get_instance().get_one(), !config_item.empty();)
+        {
+            Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+        }
+
         //CORBA init
         corba_init();
 
