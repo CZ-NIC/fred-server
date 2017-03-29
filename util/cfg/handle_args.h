@@ -251,7 +251,7 @@ public:
 
         if(!data_.empty())
         {
-            const boost::regex hide_value ("password|certificate"
+            const boost::regex hide_value ("user|login_name|password|certificate"
                     , boost::regex::icase);
 
             const std::string key = data_.front().get_key();
