@@ -236,7 +236,7 @@ public:
                 " ON coreg.id = tmp.contact_id"
                 " ORDER BY tmp.contact_id")),
           linked_data_domain_(conn_.exec(
-                  " SELECT t.contact_id AS id, array_filter_null(array_accum(t.name)) AS arr_domains"
+                  " SELECT t.contact_id AS id, array_filter_null(array_agg(t.name)) AS arr_domains"
                    " FROM ("
                        " SELECT tmp.contact_id, oreg.name"
                        " FROM tmp_reminder tmp"
@@ -252,7 +252,7 @@ public:
                    " ORDER BY t.contact_id")),
           linked_data_nsset_(conn_.exec(
                   " SELECT tmp.contact_id AS id, "
-                   " array_filter_null(array_accum(DISTINCT noreg.name)) AS arr_nssets"
+                   " array_filter_null(array_agg(DISTINCT noreg.name)) AS arr_nssets"
                    " FROM tmp_reminder tmp"
                    " LEFT JOIN nsset_contact_map ncm ON ncm.contactid = tmp.contact_id"
                    " LEFT JOIN object_registry noreg ON noreg.id = ncm.nssetid"
@@ -260,7 +260,7 @@ public:
                    " ORDER BY tmp.contact_id")),
           linked_data_keyset_(conn_.exec(
                   "SELECT tmp.contact_id AS id, "
-                  " array_filter_null(array_accum(DISTINCT koreg.name)) AS arr_keysets "
+                  " array_filter_null(array_agg(DISTINCT koreg.name)) AS arr_keysets "
                   " FROM tmp_reminder tmp "
                   " LEFT JOIN keyset_contact_map kcm ON kcm.contactid = tmp.contact_id "
                   " LEFT JOIN object_registry koreg ON koreg.id = kcm.keysetid"

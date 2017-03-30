@@ -38,7 +38,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
         Database::QueryParams dup_params;
         std::stringstream dup_sql;
         dup_sql << "SELECT unnest(dup_set)"
-            " FROM (SELECT array_accum(oreg.name) as dup_set"
+            " FROM (SELECT array_agg(oreg.name) as dup_set"
             " FROM object_registry oreg"
             " JOIN contact c ON c.id = oreg.id"
             " JOIN object o ON o.id = c.id"
@@ -76,7 +76,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
             " c.disclosevat,"
             " c.discloseident,"
             " c.disclosenotifyemail"
-            " HAVING array_upper(array_accum(oreg.name), 1) > 1";
+            " HAVING array_upper(array_agg(oreg.name), 1) > 1";
         if (!exclude_contacts_.empty()) {
             std::vector<std::string> array_params;
             for (std::set<std::string>::const_iterator i = exclude_contacts_.begin();
@@ -86,7 +86,7 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext &ctx)
                 array_params.push_back("$" + boost::lexical_cast<std::string>(dup_params.size()));
             }
 
-            dup_sql << " AND NOT (array_accum(oreg.name)"
+            dup_sql << " AND NOT (array_agg(oreg.name)"
                     << " && array[" << boost::algorithm::join(array_params, ", ") << "]::varchar[])";
         }
         dup_sql << " LIMIT 1) as dup_q";
