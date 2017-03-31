@@ -982,55 +982,6 @@ char* ccReg_EPP_i::version(
   return CORBA::string_dup("DSDng");
 }
 
-void ccReg_EPP_i::extractEnumDomainExtension(std::string &valexdate, ccReg::Disclose &publish,
-        const ccReg::ExtensionList &ext)
-{
-    const ccReg::ENUMValidationExtension *enum_ext;
-    unsigned int len = ext.length();
-
-    for (unsigned int i = 0; i < len; ++i) {
-        if (ext[i] >>= enum_ext) {
-            /* extract validation exdate */
-            valexdate = enum_ext->valExDate;
-            /* extract enum publish flag */
-            publish = enum_ext->publish;
-            LOGGER(PACKAGE).debug(boost::format("valexdate=%1% publish=%2%")
-                    % valexdate % publish);
-        }
-        else {
-            LOGGER(PACKAGE).debug(boost::format("unknown extension found when"
-                    " extracting domain enum extension (list idx=%1%)") % i);
-            break;
-        }
-    }
-}
-
-// parse extension fom domain.ValExDate
-void ccReg_EPP_i::GetValExpDateFromExtension(
-  char *valexpDate, const ccReg::ExtensionList& ext)
-{
-  int len, i;
-  const ccReg::ENUMValidationExtension * enumVal;
-
-  valexpDate[0] = 0;
-
-  len = ext.length();
-  if (len > 0) {
-    LOG( DEBUG_LOG, "extension length %d", (int ) ext.length() );
-    for (i = 0; i < len; i++) {
-      if (ext[i] >>= enumVal) {
-        strncpy(valexpDate, enumVal->valExDate, MAX_DATE);
-        LOG( DEBUG_LOG, "enumVal %s ", valexpDate );
-      } else {
-        LOG( ERROR_LOG, "Unknown value extension[%d]", i );
-        break;
-      }
-
-    }
-  }
-
-}
-
 // Handle disclose flags at the contact based on the DefaultPolicy of the serve
 /*
  bool ccReg_EPP_i::is_null( const char *str )

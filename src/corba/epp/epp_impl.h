@@ -84,7 +84,6 @@ private:
   std::auto_ptr<Fred::Manager> regMan;
 
 
-  void extractEnumDomainExtension(std::string&, ccReg::Disclose &publish, const ccReg::ExtensionList&);
   // is IDN allowed? implements logic: system registrator has always IDN allowed
   bool idn_allowed(EPPAction& action) const;
 
@@ -134,10 +133,6 @@ public:
   int getZone(DBSharedPtr db, const char *fqdn);
   int getZoneMax(DBSharedPtr db, const char *fqdn);
   int getFQDN(DBSharedPtr db, char *FQDN, const char *fqdn);
-
-
-  // parse extension for domain enum.exdate
-  void GetValExpDateFromExtension(char *valexpDate, const ccReg::ExtensionList& ext);
 
   // get RegistrarID
   int GetRegistrarID(unsigned long long clientID);
