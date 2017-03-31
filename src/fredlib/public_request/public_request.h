@@ -99,7 +99,7 @@ enum Status_PR { // suffix to fix name clash with public_request_status.h status
   PRS_INVALID    ///< Time passed without authorization
 };
 
-std::string Status2Str(Status _status); 
+std::string Status2Str(Status_PR _status); 
 /// Object types
 enum ObjectType {
   OT_UNKNOWN = 0,

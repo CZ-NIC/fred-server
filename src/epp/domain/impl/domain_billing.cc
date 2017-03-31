@@ -68,7 +68,7 @@ void create_domain_bill_item(
         throw std::runtime_error("price_list_quantity == 0");
     }
 
-    const Decimal price =  price_list_price * Decimal("1") / price_list_quantity; // count_price
+    const Decimal price = price_list_price * Decimal("1") / price_list_quantity; // count_price
 
     // get_registrar_credit - lock record in registrar_credit table for registrar and zone
     const Database::Result locked_registrar_credit_result
@@ -155,6 +155,10 @@ void renew_domain_bill_item(
         Fred::OperationContext& _ctx)
 {
     const int length_of_domain_registration_in_years = _length_of_domain_registration_in_months / 12;
+
+    _ctx.get_log().debug(
+            boost::format("length_of_domain_registration_in_months: %1% length_of_domain_registration_in_years: %2%")
+            % _length_of_domain_registration_in_months % length_of_domain_registration_in_years);
 
     // exception in find_zone_in_fqdn is not BillingFailure
     const unsigned long long zone_id =

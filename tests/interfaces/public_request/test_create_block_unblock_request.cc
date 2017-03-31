@@ -34,7 +34,7 @@
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(LockRequest)
 
-class lock_request_fixture : public Test::Fixture::instantiate_db_template
+class lock_request_fixture : public Test::instantiate_db_template
 {
 public:
     lock_request_fixture()

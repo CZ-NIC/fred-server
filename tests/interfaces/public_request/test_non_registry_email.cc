@@ -36,7 +36,7 @@
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(NonRegistryEmail)
 
-class non_registry_email_fixture : public Test::Fixture::instantiate_db_template
+class non_registry_email_fixture : public Test::instantiate_db_template
 {
 public:
     non_registry_email_fixture()
@@ -137,7 +137,7 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_non_registry_email, non_registry_ema
     BOOST_CHECK(request.size() == 1);
 }
 
-BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
     BOOST_CHECK_THROW(
             Registry::PublicRequestImpl().create_authinfo_request_non_registry_email(

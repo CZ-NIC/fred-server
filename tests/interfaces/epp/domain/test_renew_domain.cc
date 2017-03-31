@@ -57,6 +57,7 @@ BOOST_FIXTURE_TEST_CASE(renew_invalid_registrar_id, supply_ctx<HasSessionWithUna
             ::Epp::EppResponseFailure,
             renew_invalid_registrar_id_exception);
 }
+
 bool renew_invalid_fqdn_zone_exception(const ::Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::object_does_not_exist);
     BOOST_REQUIRE(e.epp_result().empty());

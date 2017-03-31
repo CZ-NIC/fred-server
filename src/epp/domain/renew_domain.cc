@@ -109,10 +109,10 @@ RenewDomainResult renew_domain(
     }
 
     // check if fqdn is registered and get domain info data and lock domain for update
-    Fred::InfoDomainData info_domain_data;
+    Fred::InfoDomainData info_domain_data_before_renew;
     try
     {
-        info_domain_data = Fred::InfoDomainByHandle(
+        info_domain_data_before_renew = Fred::InfoDomainByHandle(
                 Fred::Zone::rem_trailing_dot(_renew_domain_input_data.fqdn))
                                    .set_lock()
                                    .exec(_ctx, "UTC")
@@ -133,7 +133,7 @@ RenewDomainResult renew_domain(
     {
         const boost::gregorian::date current_exdate = boost::gregorian::from_simple_string(
                 _renew_domain_input_data.current_exdate);
-        if (current_exdate != info_domain_data.expiration_date)
+        if (current_exdate != info_domain_data_before_renew.expiration_date)
         {
             throw std::runtime_error("input exdate");
         }
@@ -190,7 +190,7 @@ RenewDomainResult renew_domain(
     // check if domain renew is possible
     Database::Result exdate_result = _ctx.get_conn().exec_params(
             Database::ParamQuery
-                ("SELECT (").param_date(info_domain_data.expiration_date)
+                ("SELECT (").param_date(info_domain_data_before_renew.expiration_date)
                 (" + ").param_bigint(domain_registration_in_months)(
                     " * ('1 month'::interval))::date as new_exdate, ")
                 ("(").param_date(current_local_date)
@@ -234,10 +234,10 @@ RenewDomainResult renew_domain(
 
         // ENUM validation expiration date is optional, if missing ENUM domain is not currently validated
         const boost::optional<boost::gregorian::date> current_valexdate =
-            info_domain_data.enum_domain_validation.isnull()
+            info_domain_data_before_renew.enum_domain_validation.isnull()
             ? boost::optional<boost::gregorian::date>()
             : boost::optional<boost::gregorian::date>(
-                    info_domain_data.enum_domain_validation.get_value().validation_expiration);
+                    info_domain_data_before_renew.enum_domain_validation.get_value().validation_expiration);
 
         if (is_new_enum_domain_validation_expiration_date_invalid(
                     new_valexdate,
@@ -261,17 +261,17 @@ RenewDomainResult renew_domain(
 
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
 
-    if (info_domain_data.sponsoring_registrar_handle != session_registrar.handle &&
+    if (info_domain_data_before_renew.sponsoring_registrar_handle != session_registrar.handle &&
         !is_system_registrar)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::authorization_error));
     }
 
     //  do it before any object state related checks
-    Fred::LockObjectStateRequestLock(info_domain_data.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(info_domain_data.id).exec(_ctx);
+    Fred::LockObjectStateRequestLock(info_domain_data_before_renew.id).exec(_ctx);
+    Fred::PerformObjectStateRequest(info_domain_data_before_renew.id).exec(_ctx);
 
-    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data.id).exec(_ctx));
+    const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data_before_renew.id).exec(_ctx));
 
     if (!session_registrar.system.get_value_or_default() &&
         (domain_states.presents(Fred::Object_State::server_renew_prohibited)
@@ -314,18 +314,18 @@ RenewDomainResult renew_domain(
                     _renew_domain_input_data.fqdn,
                     current_utc_time,
                     _session_data.registrar_id,
-                    info_domain_data.id,
+                    info_domain_data_before_renew.id,
                     domain_registration_in_months,
-                    info_domain_data.expiration_date,
+                    info_domain_data_before_renew.expiration_date,
                     new_exdate,
                     _ctx);
         }
 
         return RenewDomainResult(
-                info_domain_data.id,
+                info_domain_data_before_renew.id,
                 renewed_domain_history_id,
                 current_utc_time,
-                info_domain_data.expiration_date,
+                info_domain_data_before_renew.expiration_date,
                 new_exdate,
                 domain_registration_in_months);
 

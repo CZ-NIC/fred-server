@@ -44,7 +44,7 @@ struct handle_command_line_args
                 (HandleArgsPtr(new HandleRegistryArgs))
                 (HandleArgsPtr(new HandleRifdArgs))
                 (HandleArgsPtr(new HandleMojeIDArgs))
-                (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs));
+                (HandleArgsPtr(new HandleAdminDatabaseArgs));
 
         namespace boost_args_ns = boost::unit_test::framework;
 
@@ -60,7 +60,7 @@ struct handle_command_line_args
 struct global_fixture
 {
     Test::handle_command_line_args handle_admin_db_cmd_line_args;
-    Test::Fixture::create_db_template create_db_template;
+    Test::create_db_template create_db_template;
 };
 
 BOOST_GLOBAL_FIXTURE( global_fixture );

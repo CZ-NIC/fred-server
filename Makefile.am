@@ -2535,7 +2535,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/domain/test_update_domain.cc \
 		tests/interfaces/epp/domain/test_create_domain.cc \
 		tests/interfaces/epp/domain/test_renew_domain.cc \
-		tests/interfaces/epp/domain/test_bill_domain.cc \
+		tests/interfaces/epp/domain/test_domain_billing.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
 		tests/interfaces/epp/keyset/test_create_keyset.cc \

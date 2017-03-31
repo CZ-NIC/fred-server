@@ -69,7 +69,7 @@ public:
     }
 };
 
-struct registry_email_fixture : Test::Fixture::instantiate_db_template
+struct registry_email_fixture : Test::instantiate_db_template
 {
     registry_email_fixture()
     {
@@ -141,7 +141,7 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_registry_email, registry_email_fixtu
     BOOST_CHECK_EQUAL(request.size(), 1);
 }
 
-BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 {
     Fred::OperationContextCreator ctx;
     const Fred::InfoContactData contact = Test::contact::make(ctx);
@@ -196,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
     catch (const Registry::PublicRequestImpl::NoContactEmail&) { }
 }
 
-BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
     boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     BOOST_CHECK_THROW(

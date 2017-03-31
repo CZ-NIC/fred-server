@@ -53,7 +53,7 @@ Server_i::Server_i()
     {
         const unsigned long long public_request_id = pimpl_->create_authinfo_request_registry_email(
                 unwrap_objecttype_pr_to_objecttype(object_type),
-                Corba::unwrap_string_from_const_char_ptr(object_handle),
+                Fred::Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
                 PublicRequestImpl::get_default_mailer_manager());
         ::CORBA::ULongLong result;
@@ -109,10 +109,10 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
     {
         const unsigned long long public_request_id = pimpl_->create_authinfo_request_non_registry_email(
                 unwrap_objecttype_pr_to_objecttype(object_type),
-                Corba::unwrap_string_from_const_char_ptr(object_handle),
+                Fred::Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
                 unwrap_confirmedby_to_confirmedby(confirmation_method),
-                Corba::unwrap_string_from_const_char_ptr(specified_email));
+                Fred::Corba::unwrap_string_from_const_char_ptr(specified_email));
         CORBA::ULongLong result;
         CorbaConversion::wrap_int(public_request_id, result);
         return result;
@@ -170,7 +170,7 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
     {
         const unsigned long long public_request_id = pimpl_->create_block_unblock_request(
                 unwrap_objecttype_pr_to_objecttype(object_type),
-                Corba::unwrap_string_from_const_char_ptr(object_handle),
+                Fred::Corba::unwrap_string_from_const_char_ptr(object_handle),
                 unwrap_nullableulonglong_to_optional_unsigned_long_long(log_request_id),
                 unwrap_confirmedby_to_confirmedby(confirmation_method),
                 unwrap_lockrequesttype_to_lockrequesttype(lock_request_type));
