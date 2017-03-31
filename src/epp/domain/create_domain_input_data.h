@@ -40,8 +40,7 @@ struct CreateDomainInputData
     boost::optional<std::string> authinfopw;
     DomainRegistrationTime period;
     std::vector<std::string> admin_contacts;
-    std::vector<EnumValidationExtension> enum_validation_extension_list;
-
+    boost::optional<EnumValidationExtension> enum_validation_extension;
 
     CreateDomainInputData(
             const std::string& _fqdn,
@@ -51,7 +50,7 @@ struct CreateDomainInputData
             const boost::optional<std::string>& _authinfopw,
             const DomainRegistrationTime& _period,
             const std::vector<std::string>& _admin_contacts,
-            const std::vector<EnumValidationExtension>& _enum_validation_extension_list)
+            const boost::optional<EnumValidationExtension>& _enum_validation_extension)
         : fqdn(_fqdn),
           registrant(_registrant),
           nsset(_nsset),
@@ -59,7 +58,7 @@ struct CreateDomainInputData
           authinfopw(_authinfopw),
           period(_period),
           admin_contacts(_admin_contacts),
-          enum_validation_extension_list(_enum_validation_extension_list)
+          enum_validation_extension(_enum_validation_extension)
     {
     }
 

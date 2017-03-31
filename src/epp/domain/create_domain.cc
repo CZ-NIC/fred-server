@@ -212,28 +212,25 @@ CreateDomainResult create_domain(
     }
 
     // check expiration date of ENUM domain validation
-    if (zone_data.is_enum && _data.enum_validation_extension_list.empty())
+    if (zone_data.is_enum && !_data.enum_validation_extension)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::required_parameter_missing));
     }
 
     // check no ENUM validation date in case of non ENUM domain
-    if (!zone_data.is_enum && !_data.enum_validation_extension_list.empty())
+    if (!zone_data.is_enum && _data.enum_validation_extension)
     {
-        for (unsigned i = 0; i < _data.enum_validation_extension_list.size(); ++i)
-        {
             parameter_value_policy_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_ext_val_date,
-                            boost::numeric_cast<unsigned short>(i),
+                            boost::numeric_cast<unsigned short>(0),
                             Reason::valexpdate_not_used));
-        }
     }
 
     // check range of ENUM domain validation expiration
     if (zone_data.is_enum)
     {
-        const boost::gregorian::date new_valexdate = _data.enum_validation_extension_list.rbegin()->get_valexdate();
+        const boost::gregorian::date new_valexdate = _data.enum_validation_extension.value().get_valexdate();
 
         if (is_new_enum_domain_validation_expiration_date_invalid(
                     new_valexdate,
@@ -245,11 +242,9 @@ CreateDomainResult create_domain(
             throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_range_error)
                                              .add_extended_error(
                                                      EppExtendedError::of_vector_parameter(
-                                                             Param::domain_ext_val_date,
-                                                             boost::numeric_cast<unsigned short>(
-                                                                     _data.enum_validation_extension_list.size() -
-                                                                     1),
-                                                             Reason::valexpdate_not_valid)));
+                                                         Param::domain_ext_val_date,
+                                                         boost::numeric_cast<unsigned short>(0),
+                                                         Reason::valexpdate_not_valid)));
         }
     }
 
@@ -296,12 +291,12 @@ CreateDomainResult create_domain(
 
         const Optional<boost::gregorian::date>
                 enum_validation_expiration(zone_data.is_enum
-                                                   ? Optional<boost::gregorian::date>(_data.enum_validation_extension_list.rbegin()->get_valexdate())
-                                                   : Optional<boost::gregorian::date>());
+                    ? Optional<boost::gregorian::date>(_data.enum_validation_extension.value().get_valexdate())
+                    : Optional<boost::gregorian::date>());
 
         const Optional<bool>
                 enum_publish_flag(zone_data.is_enum
-                                  ? Optional<bool>(_data.enum_validation_extension_list.rbegin()->get_publish())
+                                  ? Optional<bool>(_data.enum_validation_extension.value().get_publish())
                                   : Optional<bool>());
 
         const Fred::CreateDomain::Result result = Fred::CreateDomain(

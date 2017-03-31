@@ -264,7 +264,7 @@ BOOST_FIXTURE_TEST_CASE(renew_empty_valexdate_enum, supply_ctx<HasRegistrarWithS
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(10), false));
 
     ::Epp::Domain::create_domain(
@@ -302,7 +302,7 @@ BOOST_FIXTURE_TEST_CASE(renew_special_valexdate_enum, supply_ctx<HasRegistrarWit
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(10), false));
 
     ::Epp::Domain::create_domain(
@@ -344,7 +344,7 @@ BOOST_FIXTURE_TEST_CASE(renew_yesterday_enum_valexdate, supply_ctx<HasRegistrarW
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(10), false));
 
     ::Epp::Domain::create_domain(
@@ -386,7 +386,7 @@ BOOST_FIXTURE_TEST_CASE(renew_today_enum_valexdate, supply_ctx<HasRegistrarWithS
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(10), false));
 
     ::Epp::Domain::create_domain(
@@ -418,7 +418,7 @@ BOOST_FIXTURE_TEST_CASE(renew_tomorrow_enum_valexdate, supply_ctx<HasRegistrarWi
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(10), false));
 
     ::Epp::Domain::create_domain(
@@ -453,7 +453,7 @@ BOOST_FIXTURE_TEST_CASE(renew_max_enum_valexdate, supply_ctx<HasRegistrarWithSes
             Database::query_param_list(current_local_date + boost::gregorian::days(10)))[0][0]));
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(10), false));
 
     ::Epp::Domain::create_domain(
@@ -498,7 +498,7 @@ BOOST_FIXTURE_TEST_CASE(renew_long_enum_valexdate, supply_ctx<HasRegistrarWithSe
             Database::query_param_list(current_local_date + boost::gregorian::days(10)))[0][0]));
 
     create_domain_input_data.data.fqdn = std::string("1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa");
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(10), false));
 
     ::Epp::Domain::create_domain(

@@ -540,7 +540,7 @@ bool create_empty_valexdate_enum_exception(const ::Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(create_empty_valexdate_enum, supply_ctx<HasRegistrarWithSessionAndCreateDomainInputData>)
 {
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = std::vector< ::Epp::Domain::EnumValidationExtension>();
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>();
 
     BOOST_CHECK_EXCEPTION(
             ::Epp::Domain::create_domain(
@@ -566,7 +566,7 @@ bool create_special_valexdate_enum_exception(const ::Epp::EppResponseFailure& e)
 BOOST_FIXTURE_TEST_CASE(create_special_valexdate_enum, supply_ctx<HasRegistrarWithSessionAndCreateDomainInputData>)
 {
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension());
 
     BOOST_CHECK_EXCEPTION(
@@ -592,7 +592,7 @@ bool create_nonempty_valexdate_nonenum_exception(const ::Epp::EppResponseFailure
 
 BOOST_FIXTURE_TEST_CASE(create_nonempty_valexdate_nonenum, supply_ctx<HasRegistrarWithSessionAndCreateDomainInputData>)
 {
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension());
 
     BOOST_CHECK_EXCEPTION(
@@ -625,7 +625,7 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_today, supply_ctx<HasRegistrarWith
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date, false));//yesterday
 
     BOOST_CHECK_EXCEPTION(
@@ -658,7 +658,7 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_yesterday, supply_ctx<HasRegistrar
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date - boost::gregorian::days(1), false));//yesterday
 
     BOOST_CHECK_EXCEPTION(
@@ -691,7 +691,7 @@ BOOST_FIXTURE_TEST_CASE(create_enum_valexdate_7m, supply_ctx<HasRegistrarWithSes
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     create_domain_input_data.data.fqdn = "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa";
-    create_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    create_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::months(7), false));//7 months
 
     BOOST_CHECK_EXCEPTION(
