@@ -85,7 +85,7 @@ unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact& in);
 /**
  * ENUM validation list unwrapper
  */
-std::vector< ::Epp::Domain::EnumValidationExtension>
+boost::optional< ::Epp::Domain::EnumValidationExtension>
 unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext);
 
 
