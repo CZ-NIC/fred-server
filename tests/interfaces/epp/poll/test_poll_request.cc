@@ -27,7 +27,9 @@
 #include "src/fredlib/keyset/transfer_keyset.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/domain/delete_domain.h"
+#include "src/fredlib/object/object_type.h"
 #include "src/epp/poll/poll_request.h"
+#include "src/epp/poll/message_type.h"
 #include "src/epp/impl/epp_response_failure.h"
 #include "src/epp/impl/epp_result_failure.h"
 #include "src/epp/impl/epp_result_code.h"
@@ -43,11 +45,20 @@ namespace {
 boost::gregorian::date get_erase_date_by_handle(
     Fred::OperationContext& _ctx,
     const std::string& _handle,
-    const std::string& _type)
+    Fred::Object_Type::Enum _type)
 {
     Database::ParamQuery sql_query;
-    sql_query("SELECT MAX(erdate) FROM object_registry WHERE UPPER(name)=UPPER(")
-        .param_text(_handle)(") AND type=get_object_type_id(").param_text(_type)(")");
+    if (_type == Fred::Object_Type::domain)
+    {
+        sql_query("SELECT MAX(erdate) FROM object_registry WHERE name=LOWER(");
+    }
+    else
+    {
+        sql_query("SELECT MAX(erdate) FROM object_registry WHERE UPPER(name)=UPPER(");
+    }
+    sql_query.param_text(_handle)(") AND type=get_object_type_id(")
+             .param_text(Conversion::Enums::to_db_handle(_type))(")");
+
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     BOOST_REQUIRE_EQUAL(sql_query_result.size(), 1);
     const bool is_null = sql_query_result[0][0].isnull();
@@ -75,6 +86,24 @@ boost::gregorian::date get_transfer_date_by_message_id(Fred::OperationContext& _
     return boost::gregorian::from_string(static_cast<std::string>(sql_query_result[0][0]));
 }
 
+unsigned long long create_message_and_get_message_id(
+    Fred::OperationContext& _ctx,
+    unsigned long long _registrar_id,
+    Epp::Poll::MessageType::Enum _type)
+{
+    Database::ParamQuery sql_query;
+    sql_query("INSERT INTO message (id, clid, crdate, exdate, msgtype) "
+              "VALUES (nextval('message_id_seq'::regclass), ").param_bigint(_registrar_id)(", ")
+             ("current_timestamp, current_timestamp + interval '7 days', "
+              "(SELECT id FROM messagetype WHERE name=")
+             .param_text(Conversion::Enums::to_db_handle(_type))(")) RETURNING id");
+
+    const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
+    BOOST_REQUIRE_EQUAL(sql_query_result.size(), 1);
+
+    return static_cast<unsigned long long>(sql_query_result[0][0]);
+ }
+
 unsigned long long create_poll_request_fee_message(
     Fred::OperationContext& _ctx,
     unsigned long long _registrar_id,
@@ -84,19 +113,10 @@ unsigned long long create_poll_request_fee_message(
     unsigned long long _request_count,
     const Decimal &_price)
 {
-    Database::ParamQuery message_sql_query;
-    message_sql_query("INSERT INTO message (id, clid, crdate, exdate, msgtype) "
-                      "VALUES (nextval('message_id_seq'::regclass), ").param_bigint(_registrar_id)(", ")
-                     ("current_timestamp, current_timestamp + interval '7 days', "
-                      "(SELECT id FROM messagetype WHERE name='request_fee_info')) "
-                      "RETURNING id");
+    const unsigned long long poll_msg_id =
+        create_message_and_get_message_id(_ctx, _registrar_id, Epp::Poll::MessageType::request_fee_info);
 
-    const Database::Result message_sql_query_result = _ctx.get_conn().exec_params(message_sql_query);
-    BOOST_REQUIRE_EQUAL(message_sql_query_result.size(), 1);
-
-    const unsigned long long poll_msg_id = static_cast<unsigned long long>(message_sql_query_result[0][0]);
-
-    const Database::Result poll_request_fee_sql_query_result = _ctx.get_conn().exec_params(
+    const Database::Result sql_query_result = _ctx.get_conn().exec_params(
         "INSERT INTO poll_request_fee "
         "(msgid, period_from, period_to, total_free_count, used_count, price) "
         "VALUES ($1::integer, $2::timestamp, "
@@ -109,6 +129,34 @@ unsigned long long create_poll_request_fee_message(
         (_total_free_count)
         (_request_count)
         (_price.get_string()));
+
+    BOOST_REQUIRE_EQUAL(sql_query_result.rows_affected(), 1);
+
+    return poll_msg_id;
+}
+
+unsigned long long create_poll_low_credit_message(
+    Fred::OperationContext& _ctx,
+    unsigned long long _registrar_id,
+    const std::string& _zone,
+    const Decimal& _limit,
+    const Decimal& _credit)
+{
+    const unsigned long long poll_msg_id =
+        create_message_and_get_message_id(_ctx, _registrar_id, Epp::Poll::MessageType::credit);
+
+    const Database::Result sql_query_result = _ctx.get_conn().exec_params(
+        "INSERT INTO poll_credit "
+        "(msgid, zone, credlimit, credit) "
+        "VALUES ($1::integer, (SELECT id FROM zone WHERE fqdn=$2::text), "
+        "$3::numeric(10,2), $4::numeric(10,2))",
+        Database::query_param_list
+        (poll_msg_id)
+        (_zone)
+        (_limit)
+        (_credit));
+
+    BOOST_REQUIRE_EQUAL(sql_query_result.rows_affected(), 1);
 
     return poll_msg_id;
 }
@@ -321,9 +369,9 @@ struct HasPollTransfer : T
 struct HasPollDeleteDomainMessage : virtual Test::autorollbacking_context
 {
     std::string handle;
-    const std::string message_type;
+    const Fred::Object_Type::Enum object_type;
 
-    HasPollDeleteDomainMessage() : message_type("domain")
+    HasPollDeleteDomainMessage() : object_type(Fred::Object_Type::domain)
     {
         const Test::domain domain(ctx);
         handle = domain.info_data.fqdn;
@@ -340,9 +388,9 @@ struct HasPollDeleteDomainMessage : virtual Test::autorollbacking_context
 struct HasPollDeleteContactMessage : virtual Test::autorollbacking_context
 {
     std::string handle;
-    const std::string message_type;
+    const Fred::Object_Type::Enum object_type;
 
-    HasPollDeleteContactMessage() : message_type("contact")
+    HasPollDeleteContactMessage() : object_type(Fred::Object_Type::contact)
     {
         const Test::contact contact(ctx);
         handle = contact.info_data.handle;
@@ -377,7 +425,7 @@ struct HasPollMessage : T
         SubMessage message_info;
         BOOST_CHECK_NO_THROW(message_info = boost::get<SubMessage>(message_event.message));
 
-        const boost::gregorian::date real_erase_date = get_erase_date_by_handle(T::ctx, T::handle, T::message_type);
+        const boost::gregorian::date real_erase_date = get_erase_date_by_handle(T::ctx, T::handle, T::object_type);
 
         BOOST_CHECK_EQUAL(message_info.date, real_erase_date);
         BOOST_CHECK_EQUAL(message_info.handle, T::handle);
@@ -437,6 +485,51 @@ struct HasPollRequestFeeInfoMessage : virtual Test::autorollbacking_context
     }
 };
 
+
+struct HasPollRequestLowCreditMessage : virtual Test::autorollbacking_context
+{
+    unsigned long long message_id;
+    unsigned long long registrar_id;
+    Epp::Poll::LowCreditEvent golden_low_credit_event;
+
+    HasPollRequestLowCreditMessage()
+    {
+        const Test::registrar registrar(ctx);
+        registrar_id = registrar.info_data.id;
+        golden_low_credit_event.zone = "cz";
+        golden_low_credit_event.limit = "1024.42";
+        golden_low_credit_event.credit = "512.07";
+
+        message_id = create_poll_low_credit_message(ctx,
+                                                    registrar_id,
+                                                    golden_low_credit_event.zone,
+                                                    golden_low_credit_event.limit,
+                                                    golden_low_credit_event.credit);
+    }
+
+    void test()
+    {
+        namespace ep = Epp::Poll;
+
+        const unsigned long long before_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        BOOST_REQUIRE_EQUAL(before_message_count, 1);
+
+        ep::PollRequestOutputData output;
+        BOOST_CHECK_NO_THROW(output = ep::poll_request(ctx, registrar_id));
+
+        ep::LowCreditEvent low_credit_event;
+        BOOST_CHECK_NO_THROW(low_credit_event = boost::get<ep::LowCreditEvent>(output.message));
+
+        BOOST_CHECK_EQUAL(golden_low_credit_event.zone, low_credit_event.zone);
+        BOOST_CHECK_EQUAL(golden_low_credit_event.credit, low_credit_event.credit);
+        BOOST_CHECK_EQUAL(golden_low_credit_event.limit, low_credit_event.limit);
+
+        const unsigned long long after_message_count = Test::get_number_of_unseen_poll_messages(ctx);
+        BOOST_CHECK_EQUAL(after_message_count, 1);
+    }
+};
+
+
 } // namespace {anonymous}
 
 BOOST_FIXTURE_TEST_CASE(request_domain_update_message, HasPollUpdate<HasPollUpdateDomainMessage>)
@@ -485,6 +578,11 @@ BOOST_FIXTURE_TEST_CASE(request_contact_delete_message, HasPollMessage<HasPollDe
 }
 
 BOOST_FIXTURE_TEST_CASE(request_fee_info_message, HasPollRequestFeeInfoMessage)
+{
+    test();
+}
+
+BOOST_FIXTURE_TEST_CASE(request_low_credit_message, HasPollRequestLowCreditMessage)
 {
     test();
 }
