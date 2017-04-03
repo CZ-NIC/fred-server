@@ -151,10 +151,10 @@ MessageEvent get_message_event_validation(
               "FROM poll_statechange ps "
               "JOIN object_state os ON os.id=ps.stateid "
               "JOIN object_registry obr ON obr.id=os.object_id "
-              "JOIN message m ON m.id=pe.msgid "
+              "JOIN message m ON m.id=ps.msgid "
               "JOIN messagetype mt ON mt.id=m.msgtype "
               "LEFT JOIN enumval_history eh ON eh.historyid=os.ohid_from "
-              "WHERE pe.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              "WHERE ps.msgid=").param_bigint(_message_id)(" AND mt.name=")
               .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)
@@ -201,10 +201,10 @@ MessageEvent get_message_event_rest(
               "FROM poll_statechange ps "
               "JOIN object_state os ON os.id=ps.stateid "
               "JOIN object_registry obr ON obr.id=os.object_id "
-              "JOIN message m ON m.id=pe.msgid "
+              "JOIN message m ON m.id=ps.msgid "
               "JOIN messagetype mt ON mt.id=m.msgtype "
               "LEFT JOIN domain_history dh ON dh.historyid=os.ohid_from "
-              "WHERE pe.msgid=").param_bigint(_message_id)(" AND mt.name=")
+              "WHERE ps.msgid=").param_bigint(_message_id)(" AND mt.name=")
               .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     if (sql_query_result.size() == 0)

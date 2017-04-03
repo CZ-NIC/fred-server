@@ -485,7 +485,6 @@ struct HasPollRequestFeeInfoMessage : virtual Test::autorollbacking_context
     }
 };
 
-
 struct HasPollRequestLowCreditMessage : virtual Test::autorollbacking_context
 {
     unsigned long long message_id;
