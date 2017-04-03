@@ -312,7 +312,7 @@ BOOST_FIXTURE_TEST_CASE(renew_special_valexdate_enum, supply_ctx<HasRegistrarWit
         session.data);
 
     renew_domain_input_data.data.fqdn = create_domain_input_data.data.fqdn;
-    renew_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    renew_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension());
 
     BOOST_CHECK_EXCEPTION(
@@ -354,7 +354,7 @@ BOOST_FIXTURE_TEST_CASE(renew_yesterday_enum_valexdate, supply_ctx<HasRegistrarW
         session.data);
 
     renew_domain_input_data.data.fqdn = create_domain_input_data.data.fqdn;
-    renew_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    renew_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date - boost::gregorian::days(1), false));
 
     BOOST_CHECK_EXCEPTION(
@@ -396,7 +396,7 @@ BOOST_FIXTURE_TEST_CASE(renew_today_enum_valexdate, supply_ctx<HasRegistrarWithS
         session.data);
 
     renew_domain_input_data.data.fqdn = create_domain_input_data.data.fqdn;
-    renew_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    renew_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
             ::Epp::Domain::EnumValidationExtension(current_local_date, false));
 
     BOOST_CHECK_EXCEPTION(
@@ -428,7 +428,7 @@ BOOST_FIXTURE_TEST_CASE(renew_tomorrow_enum_valexdate, supply_ctx<HasRegistrarWi
         session.data);
 
     renew_domain_input_data.data.fqdn = create_domain_input_data.data.fqdn;
-    renew_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    renew_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
         ::Epp::Domain::EnumValidationExtension(current_local_date + boost::gregorian::days(1), false));
 
     BOOST_CHECK_NO_THROW(
@@ -463,7 +463,7 @@ BOOST_FIXTURE_TEST_CASE(renew_max_enum_valexdate, supply_ctx<HasRegistrarWithSes
         session.data);
 
     renew_domain_input_data.data.fqdn = create_domain_input_data.data.fqdn;
-    renew_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    renew_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
         ::Epp::Domain::EnumValidationExtension(max_valexdate_renew, false));
 
     BOOST_CHECK_NO_THROW(
@@ -508,7 +508,7 @@ BOOST_FIXTURE_TEST_CASE(renew_long_enum_valexdate, supply_ctx<HasRegistrarWithSe
         session.data);
 
     renew_domain_input_data.data.fqdn = create_domain_input_data.data.fqdn;
-    renew_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    renew_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
         ::Epp::Domain::EnumValidationExtension(max_valexdate_renew + boost::gregorian::days(1), false));
 
     BOOST_CHECK_EXCEPTION(
@@ -533,7 +533,7 @@ bool renew_nonempty_valexdate_nonenum_exception(const ::Epp::EppResponseFailure&
 
 BOOST_FIXTURE_TEST_CASE(renew_nonempty_valexdate_nonenum, supply_ctx<HasRegistrarWithSessionAndDomainAndRenewDomainInputData>)
 {
-    renew_domain_input_data.data.enum_validation_extension_list = Util::vector_of< ::Epp::Domain::EnumValidationExtension>(
+    renew_domain_input_data.data.enum_validation_extension = boost::optional< ::Epp::Domain::EnumValidationExtension>(
         ::Epp::Domain::EnumValidationExtension());
 
     BOOST_CHECK_EXCEPTION(

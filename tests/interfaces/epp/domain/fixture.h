@@ -176,7 +176,7 @@ struct DefaultRenewDomainInputData : ::Epp::Domain::RenewDomainInputData
                   "", // _fqdn
                   "", // _current_exdate
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
-                  std::vector< ::Epp::Domain::EnumValidationExtension>())
+                   boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 };
@@ -191,7 +191,7 @@ struct RenewDomainInputData
                   _fqdn, // _fqdn
                   "", // _current_exdate
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
-                  std::vector< ::Epp::Domain::EnumValidationExtension>())
+                   boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 
@@ -199,12 +199,12 @@ struct RenewDomainInputData
             const std::string& _fqdn,
             const std::string& _current_exdate,
             const ::Epp::Domain::DomainRegistrationTime& _period,
-            const std::vector< ::Epp::Domain::EnumValidationExtension>& _enum_validation_extension_list)
+            const boost::optional< ::Epp::Domain::EnumValidationExtension>& _enum_validation_extension)
         : data(
                   _fqdn,
                   _current_exdate,
                   _period,
-                  _enum_validation_extension_list)
+                  _enum_validation_extension)
     {
     }
 };
@@ -696,7 +696,7 @@ struct HasRegistrarWithSessionAndDomainAndRenewDomainInputData
                   domain.data.fqdn,
                   boost::gregorian::to_iso_extended_string(domain.data.expiration_date),
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
-                  std::vector< ::Epp::Domain::EnumValidationExtension>())
+                   boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 
@@ -732,7 +732,7 @@ struct HasRegistrarWithSessionAndCreateDomainInputDataAndRenewDomainInputData
                   create_domain_input_data.data.fqdn,
                   "",
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
-                  std::vector< ::Epp::Domain::EnumValidationExtension>())
+                   boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 
@@ -770,7 +770,7 @@ struct HasRegistrarWithSessionAndDomainAndCreateDomainInputDataAndRenewDomainInp
                   domain.data.fqdn,
                   boost::gregorian::to_iso_extended_string(domain.data.expiration_date),
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
-                  std::vector< ::Epp::Domain::EnumValidationExtension>())
+                   boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 

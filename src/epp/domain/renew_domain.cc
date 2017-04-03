@@ -211,26 +211,25 @@ RenewDomainResult renew_domain(
     }
 
     // check no ENUM validation date in case of non ENUM domain
-    if (!zone_data.is_enum && !_renew_domain_input_data.enum_validation_extension_list.empty())
+    if (!zone_data.is_enum && _renew_domain_input_data.enum_validation_extension)
     {
         EppResultFailure parameter_value_policy_errors = EppResultFailure(
                 EppResultCode::parameter_value_policy_error);
-        for (unsigned i = 0; i < _renew_domain_input_data.enum_validation_extension_list.size(); ++i)
-        {
-            parameter_value_policy_errors.add_extended_error(
-                    EppExtendedError::of_vector_parameter(
-                            Param::domain_ext_val_date,
-                            boost::numeric_cast<unsigned short>(i),
-                            Reason::valexpdate_not_used));
-        }
+
+        parameter_value_policy_errors.add_extended_error(
+                EppExtendedError::of_vector_parameter(
+                        Param::domain_ext_val_date,
+                        boost::numeric_cast<unsigned short>(0),
+                        Reason::valexpdate_not_used));
+
         throw EppResponseFailure(parameter_value_policy_errors);
     }
 
     // check new ENUM domain validation expiration
-    if (zone_data.is_enum && !_renew_domain_input_data.enum_validation_extension_list.empty())
+    if (zone_data.is_enum && _renew_domain_input_data.enum_validation_extension)
     {
         const boost::gregorian::date new_valexdate =
-            _renew_domain_input_data.enum_validation_extension_list.rbegin()->get_valexdate();
+            _renew_domain_input_data.enum_validation_extension.value().get_valexdate();
 
         // ENUM validation expiration date is optional, if missing ENUM domain is not currently validated
         const boost::optional<boost::gregorian::date> current_valexdate =
@@ -249,8 +248,7 @@ RenewDomainResult renew_domain(
             parameter_value_range_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_ext_val_date,
-                            boost::numeric_cast<unsigned short>(
-                                    _renew_domain_input_data.enum_validation_extension_list.size() - 1),
+                            boost::numeric_cast<unsigned short>(0),
                             Reason::valexpdate_not_valid));
         }
     }
@@ -293,12 +291,12 @@ RenewDomainResult renew_domain(
                 session_registrar.handle,
                 new_exdate);
 
-        if (zone_data.is_enum && !_renew_domain_input_data.enum_validation_extension_list.empty())
+        if (zone_data.is_enum && _renew_domain_input_data.enum_validation_extension)
         {
             renew_domain.set_enum_validation_expiration(
-                    _renew_domain_input_data.enum_validation_extension_list.rbegin()->get_valexdate())
-            .set_enum_publish_flag(
-                    _renew_domain_input_data.enum_validation_extension_list.rbegin()->get_publish());
+                    _renew_domain_input_data.enum_validation_extension.value().get_valexdate())
+                .set_enum_publish_flag(
+                    _renew_domain_input_data.enum_validation_extension.value().get_publish());
         }
 
         if (_session_data.logd_request_id.isset())

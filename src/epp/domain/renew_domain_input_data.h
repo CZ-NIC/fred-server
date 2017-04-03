@@ -22,6 +22,8 @@
 #include "src/epp/domain/domain_enum_validation.h"
 #include "src/epp/domain/domain_registration_time.h"
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <vector>
 
@@ -33,18 +35,18 @@ struct RenewDomainInputData
     std::string fqdn;
     std::string current_exdate;
     DomainRegistrationTime period;
-    std::vector<EnumValidationExtension> enum_validation_extension_list;
+    boost::optional< ::Epp::Domain::EnumValidationExtension> enum_validation_extension;
 
 
     RenewDomainInputData(
             const std::string& _fqdn,
             const std::string& _current_exdate,
             const DomainRegistrationTime& _period,
-            const std::vector<EnumValidationExtension>& _enum_validation_extension_list)
+            const boost::optional< ::Epp::Domain::EnumValidationExtension>& _enum_validation_extension)
         : fqdn(_fqdn),
           current_exdate(_current_exdate),
           period(_period),
-          enum_validation_extension_list(_enum_validation_extension_list)
+          enum_validation_extension(_enum_validation_extension)
     {
     }
 
