@@ -141,7 +141,7 @@ struct DefaultCreateDomainInputData : ::Epp::Domain::CreateDomainInputData
                   boost::optional<std::string>("authinfopw"), //_authinfopw
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
                   std::vector<std::string>(), // Util::vector_of<std::string>("CONTACT1")("CONTACT2"),
-                  ::Epp::Domain::EnumValidationExtension())
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 };
@@ -164,7 +164,7 @@ struct CreateDomainInputData
                   boost::optional<std::string>("authinfopw"), //_authinfopw
                   ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
                   _admin_contacts_add,
-                  ::Epp::Domain::EnumValidationExtension())
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 };
