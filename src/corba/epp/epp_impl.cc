@@ -2154,16 +2154,18 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        // output data must be ordered exactly the same
+        const std::vector<std::string> handles_to_be_checked = Fred::Corba::unwrap_handle_sequence_to_string_vector(_contact_handles_to_be_checked);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Contact::CheckContactConfigData check_contact_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        // output data must be ordered exactly the same
-        const std::vector<std::string> handles_to_be_checked = Fred::Corba::unwrap_handle_sequence_to_string_vector(_contact_handles_to_be_checked);
-
-        const Epp::Contact::CheckContactConfigData check_contact_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2208,16 +2210,18 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        // output data must be ordered exactly the same
+        const std::vector<std::string> handles_to_be_checked = Fred::Corba::unwrap_handle_sequence_to_string_vector(_nsset_handles_to_be_checked);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Nsset::CheckNssetConfigData check_nsset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        // output data must be ordered exactly the same
-        const std::vector<std::string> handles_to_be_checked = Fred::Corba::unwrap_handle_sequence_to_string_vector(_nsset_handles_to_be_checked);
-
-        const Epp::Nsset::CheckNssetConfigData check_nsset_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2264,16 +2268,18 @@ ccReg::Response* ccReg_EPP_i::DomainCheck(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        // output data must be ordered exactly the same
+        const std::vector<std::string> fqdns = Fred::Corba::unwrap_handle_sequence_to_string_vector(_fqdns);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Domain::CheckDomainConfigData check_domain_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        // output data must be ordered exactly the same
-        const std::vector<std::string> fqdns = Fred::Corba::unwrap_handle_sequence_to_string_vector(_fqdns);
-
-        const Epp::Domain::CheckDomainConfigData check_domain_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2318,16 +2324,18 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const std::vector<std::string> handles_to_be_checked =
+            Fred::Corba::unwrap_handle_sequence_to_string_vector(_keyset_handles_to_be_checked);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Keyset::CheckKeysetConfigData check_keyset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const std::vector<std::string> handles_to_be_checked =
-            Fred::Corba::unwrap_handle_sequence_to_string_vector(_keyset_handles_to_be_checked);
-
-        const Epp::Keyset::CheckKeysetConfigData check_keyset_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2373,13 +2381,13 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Contact::InfoContactConfigData info_contact_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Contact::InfoContactConfigData info_contact_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2421,13 +2429,13 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Contact::DeleteContactConfigData delete_contact_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Contact::DeleteContactConfigData delete_contact_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2472,17 +2480,17 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         Epp::Contact::ContactChange contact_update_data;
         Fred::Corba::unwrap_ContactChange(_contact_change_data, contact_update_data);
 
         const Epp::Contact::UpdateContactConfigData update_contact_config_data(
                 rifd_epp_operations_charging_,
                 epp_update_contact_enqueue_check_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2529,11 +2537,6 @@ ccReg::Response* ccReg_EPP_i::ContactCreate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         Epp::Contact::ContactChange contact_create_data;
         Fred::Corba::unwrap_ContactChange(_contact_data, contact_create_data);
 
@@ -2541,6 +2544,11 @@ ccReg::Response* ccReg_EPP_i::ContactCreate(
 
         const Epp::Contact::CreateContactConfigData create_contact_config_data(
                 rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2591,13 +2599,13 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Contact::TransferContactConfigData transfer_contact_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Contact::TransferContactConfigData transfer_contact_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2643,13 +2651,13 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Nsset::TransferNssetConfigData transfer_nsset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Nsset::TransferNssetConfigData transfer_nsset_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2694,13 +2702,13 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Domain::TransferDomainConfigData transfer_domain_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Domain::TransferDomainConfigData transfer_domain_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2746,13 +2754,13 @@ ccReg::Response* ccReg_EPP_i::KeySetTransfer(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Keyset::TransferKeysetConfigData transfer_keyset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Keyset::TransferKeysetConfigData transfer_keyset_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2798,13 +2806,13 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Nsset::InfoNssetConfigData info_nsset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
-                        Fred::Corba::unwrap_EppParams(_epp_params).session_id);
-
-        const Epp::Nsset::InfoNssetConfigData info_nsset_config_data(
-                rifd_epp_operations_charging_);
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2845,13 +2853,13 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Nsset::DeleteNssetConfigData delete_nsset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Nsset::DeleteNssetConfigData delete_nsset_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -2900,17 +2908,14 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         const Fred::Corba::Epp::Nsset::CreateNssetInputDataUnwrapped create_nsset_input_data_unwrapped(
                 _nsset_handle,
                 _authinfopw,
                 _tech_contacts,
                 _dns_hosts,
                 _tech_check_level);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
         const Epp::Nsset::CreateNssetInputData create_nsset_input_data(
                 create_nsset_input_data_unwrapped.nsset_handle,
@@ -2924,6 +2929,11 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
                 nsset_level_,
                 nsset_min_hosts_,
                 nsset_max_hosts_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -3157,11 +3167,6 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         const Fred::Corba::Epp::Domain::UpdateDomainInputDataUnwrapped update_domain_input_data_unwrapped(
                 _fqdn,
                 _registrant_chg,
@@ -3172,6 +3177,8 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
                 _admin_contacts_rem,
                 _tmpcontacts_rem,
                 _enum_validation_extension_list);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
         const Epp::Domain::UpdateDomainInputData update_domain_input_data(
                 update_domain_input_data_unwrapped.fqdn,
@@ -3187,6 +3194,11 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
         const Epp::Domain::UpdateDomainConfigData update_domain_config_data(
                 rifd_epp_operations_charging_,
                 rifd_epp_update_domain_keyset_clear_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -3239,11 +3251,6 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         const Fred::Corba::Epp::Domain::CreateDomainInputDataUnwrapped create_domain_input_data_unwrapped(
                 _fqdn,
                 _registrant,
@@ -3253,6 +3260,8 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
                 _period,
                 _admin_contact,
                 _enum_validation_extension_list);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
         const Epp::Domain::CreateDomainInputData create_domain_input_data(
                 create_domain_input_data_unwrapped.fqdn,
@@ -3266,6 +3275,11 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
 
         const Epp::Domain::CreateDomainConfigData create_domain_config_data(
                 rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -3323,16 +3337,13 @@ ccReg::Response* ccReg_EPP_i::DomainRenew(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         const Fred::Corba::Epp::Domain::RenewDomainInputDataUnwrapped renew_domain_input_data_unwrapped(
                 _fqdn,
                 _current_exdate,
                 _period,
                 _enum_validation_extension_list);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
         const Epp::Domain::RenewDomainInputData renew_domain_input_data(
                 renew_domain_input_data_unwrapped.fqdn,
@@ -3342,6 +3353,11 @@ ccReg::Response* ccReg_EPP_i::DomainRenew(
 
         const Epp::Domain::RenewDomainConfigData renew_domain_config_data(
                 rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -3391,15 +3407,17 @@ ccReg::Response* ccReg_EPP_i::KeySetInfo(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const std::string keyset_handle = Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Keyset::InfoKeysetConfigData info_keyset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const std::string keyset_handle = Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-
-        const Epp::Keyset::InfoKeysetConfigData info_keyset_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -3443,13 +3461,13 @@ ccReg::Response* ccReg_EPP_i::KeySetDelete(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
+        const Epp::Keyset::DeleteKeysetConfigData delete_keyset_config_data(
+                rifd_epp_operations_charging_);
+
         const Epp::RegistrarSessionData registrar_session_data =
                 Epp::get_registrar_session_data(
                         epp_sessions_,
                         epp_request_params.session_id);
-
-        const Epp::Keyset::DeleteKeysetConfigData delete_keyset_config_data(
-                rifd_epp_operations_charging_);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -3535,17 +3553,14 @@ ccReg::Response* ccReg_EPP_i::KeySetCreate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         const Fred::Corba::Epp::Keyset::CreateKeysetInputDataUnwrapped create_keyset_input_data_unwrapped(
                 _keyset_handle,
                 _authinfopw,
                 _tech_contacts,
                 _ds_records,
                 _dns_keys);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
         const Epp::Keyset::CreateKeysetInputData create_keyset_input_data(
                 create_keyset_input_data_unwrapped.keyset_handle,
@@ -3556,6 +3571,11 @@ ccReg::Response* ccReg_EPP_i::KeySetCreate(
 
         const Epp::Keyset::CreateKeysetConfigData create_nsset_config_data(
                 rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
@@ -3611,11 +3631,6 @@ ccReg::Response* ccReg_EPP_i::KeySetUpdate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Epp::RegistrarSessionData registrar_session_data =
-                Epp::get_registrar_session_data(
-                        epp_sessions_,
-                        epp_request_params.session_id);
-
         const Fred::Corba::Epp::Keyset::UpdateKeysetInputDataUnwrapped update_keyset_input_data_unwrapped(
                 _keyset_handle,
                 _authinfopw,
@@ -3625,6 +3640,8 @@ ccReg::Response* ccReg_EPP_i::KeySetUpdate(
                 _ds_records_rem,
                 _dns_keys_add,
                 _dns_keys_rem);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
         const Epp::Keyset::UpdateKeysetInputData update_keyset_input_data(
                 update_keyset_input_data_unwrapped.keyset_handle,
@@ -3638,6 +3655,11 @@ ccReg::Response* ccReg_EPP_i::KeySetUpdate(
 
         const Epp::Keyset::UpdateKeysetConfigData update_keyset_config_data(
                 rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
         const Epp::SessionData session_data(
                 registrar_session_data.registrar_id,
