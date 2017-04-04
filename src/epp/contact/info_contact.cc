@@ -177,33 +177,34 @@ InfoContactOutputData info_contact(
         info_contact_output_data.last_transfer = info_contact_data.transfer_time;
         info_contact_output_data.name = info_contact_data.name;
         info_contact_output_data.organization = info_contact_data.organization;
-        info_contact_output_data.street1 = info_contact_data.place.isnull()
-                                      ? Nullable<std::string>()
-                                      : info_contact_data.place.get_value().street1;
-        info_contact_output_data.street2 = info_contact_data.place.isnull()
-                                      ? Nullable<std::string>()
-                                      : !info_contact_data.place.get_value().street2.isset()
-                                                ? Nullable<std::string>()
-                                                : info_contact_data.place.get_value().street2.get_value();
-        info_contact_output_data.street3 = info_contact_data.place.isnull()
-                                      ? Nullable<std::string>()
-                                      : !info_contact_data.place.get_value().street3.isset()
-                                                ? Nullable<std::string>()
-                                                : info_contact_data.place.get_value().street3.get_value();
-        info_contact_output_data.city = info_contact_data.place.isnull()
-                                   ? Nullable<std::string>()
-                                   : info_contact_data.place.get_value().city;
-        info_contact_output_data.state_or_province = info_contact_data.place.isnull()
-                                                ? Nullable<std::string>()
-                                                : info_contact_data.place.get_value().stateorprovince.isset()
-                                                          ? info_contact_data.place.get_value().stateorprovince.get_value()
-                                                          : Nullable<std::string>();
-        info_contact_output_data.postal_code = info_contact_data.place.isnull()
-                                          ? Nullable<std::string>()
-                                          : info_contact_data.place.get_value().postalcode;
-        info_contact_output_data.country_code = info_contact_data.place.isnull()
-                                           ? Nullable<std::string>()
-                                           : info_contact_data.place.get_value().country;
+        info_contact_output_data.street1 =
+                info_contact_data.place.isnull()
+                        ? Nullable<std::string>()
+                        : info_contact_data.place.get_value().street1;
+        info_contact_output_data.street2 =
+                info_contact_data.place.isnull() || !info_contact_data.place.get_value().street2.isset()
+                        ? Nullable<std::string>()
+                        : info_contact_data.place.get_value().street2.get_value();
+        info_contact_output_data.street3 =
+                info_contact_data.place.isnull() || !info_contact_data.place.get_value().street3.isset()
+                        ? Nullable<std::string>()
+                        : info_contact_data.place.get_value().street3.get_value();
+        info_contact_output_data.city =
+                info_contact_data.place.isnull()
+                        ? Nullable<std::string>()
+                        : info_contact_data.place.get_value().city;
+        info_contact_output_data.state_or_province =
+                info_contact_data.place.isnull() || !info_contact_data.place.get_value().stateorprovince.isset()
+                        ? Nullable<std::string>()
+                        : info_contact_data.place.get_value().stateorprovince.get_value();
+        info_contact_output_data.postal_code =
+                info_contact_data.place.isnull()
+                        ? Nullable<std::string>()
+                        : info_contact_data.place.get_value().postalcode;
+        info_contact_output_data.country_code =
+                info_contact_data.place.isnull()
+                        ? Nullable<std::string>()
+                        : info_contact_data.place.get_value().country;
         info_contact_output_data.telephone = info_contact_data.telephone;
         info_contact_output_data.fax = info_contact_data.fax;
         info_contact_output_data.email = info_contact_data.email;
@@ -217,7 +218,9 @@ InfoContactOutputData info_contact(
 
         const bool authinfopw_has_to_be_hidden = info_contact_data.sponsoring_registrar_handle !=
                                                  session_registrar_handle;
-        info_contact_output_data.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : info_contact_data.authinfopw;
+        info_contact_output_data.authinfopw = authinfopw_has_to_be_hidden
+                                                      ? boost::optional<std::string>()
+                                                      : info_contact_data.authinfopw;
 
         return info_contact_output_data;
 

@@ -129,16 +129,6 @@
 #include "src/corba/util/corba_conversions_string.h"
 #include "util/util.h"
 
-#include "src/corba/epp/domain/create_domain_input_data_unwrapped.h"
-#include "src/corba/epp/domain/renew_domain_input_data_unwrapped.h"
-#include "src/corba/epp/domain/update_domain_input_data_unwrapped.h"
-
-#include "src/corba/epp/keyset/create_keyset_input_data_unwrapped.h"
-#include "src/corba/epp/keyset/update_keyset_input_data_unwrapped.h"
-
-#include "src/corba/epp/nsset/create_nsset_input_data_unwrapped.h"
-#include "src/corba/epp/nsset/update_nsset_input_data_unwrapped.h"
-
 #include "src/epp/contact/check_contact_config_data.h"
 #include "src/epp/contact/create_contact_config_data.h"
 #include "src/epp/contact/delete_contact_config_data.h"
@@ -2908,21 +2898,14 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Fred::Corba::Epp::Nsset::CreateNssetInputDataUnwrapped create_nsset_input_data_unwrapped(
-                _nsset_handle,
-                _authinfopw,
-                _tech_contacts,
-                _dns_hosts,
-                _tech_check_level);
+        const Epp::Nsset::CreateNssetInputData create_nsset_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_nsset_handle),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw),
+                Fred::Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts),
+                Fred::Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_hosts),
+                Fred::Corba::unwrap_tech_check_level(_tech_check_level));
 
         // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
-
-        const Epp::Nsset::CreateNssetInputData create_nsset_input_data(
-                create_nsset_input_data_unwrapped.nsset_handle,
-                create_nsset_input_data_unwrapped.authinfopw,
-                create_nsset_input_data_unwrapped.tech_contacts,
-                create_nsset_input_data_unwrapped.dns_hosts,
-                create_nsset_input_data_unwrapped.tech_check_level);
 
         const Epp::Nsset::CreateNssetConfigData create_nsset_config_data(
                 rifd_epp_operations_charging_,
@@ -2993,23 +2976,14 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
                         epp_sessions_,
                         epp_request_params.session_id);
 
-        const Fred::Corba::Epp::Nsset::UpdateNssetInputDataUnwrapped update_nsset_input_data_unwrapped(
-                _nsset_handle,
-                _authinfopw_chg,
-                _dns_hosts_add,
-                _dns_hosts_rem,
-                _tech_contacts_add,
-                _tech_contacts_rem,
-                _tech_check_level);
-
         const Epp::Nsset::UpdateNssetInputData update_nsset_input_data(
-                update_nsset_input_data_unwrapped.nsset_handle,
-                update_nsset_input_data_unwrapped.authinfopw,
-                update_nsset_input_data_unwrapped.dns_hosts_add,
-                update_nsset_input_data_unwrapped.dns_hosts_rem,
-                update_nsset_input_data_unwrapped.tech_contacts_add,
-                update_nsset_input_data_unwrapped.tech_contacts_rem,
-                update_nsset_input_data_unwrapped.tech_check_level);
+                Fred::Corba::unwrap_string_from_const_char_ptr(_nsset_handle),
+                Fred::Corba::unwrap_string_for_change_or_remove_to_Optional_string(_authinfopw_chg),
+                Fred::Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_hosts_add),
+                Fred::Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_hosts_rem),
+                Fred::Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts_add),
+                Fred::Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts_rem),
+                Fred::Corba::unwrap_tech_check_level(_tech_check_level));
 
         const Epp::Nsset::UpdateNssetConfigData update_nsset_config_data(
                 rifd_epp_operations_charging_,
@@ -3167,29 +3141,18 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Fred::Corba::Epp::Domain::UpdateDomainInputDataUnwrapped update_domain_input_data_unwrapped(
-                _fqdn,
-                _registrant_chg,
-                _authinfopw_chg,
-                _nsset_chg,
-                _keyset_chg,
-                _admin_contacts_add,
-                _admin_contacts_rem,
-                _tmpcontacts_rem,
-                _enum_validation_extension_list);
+        const Epp::Domain::UpdateDomainInputData update_domain_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                Fred::Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg),
+                Fred::Corba::unwrap_string_for_change_or_remove_to_Optional_string(_authinfopw_chg),
+                Fred::Corba::Epp::Domain::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_nsset_chg),
+                Fred::Corba::Epp::Domain::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_keyset_chg),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_add),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_rem),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_tmpcontacts_rem),
+                Fred::Corba::Epp::Domain::unwrap_enum_validation_extension_list(_enum_validation_extension_list));
 
         // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
-
-        const Epp::Domain::UpdateDomainInputData update_domain_input_data(
-                update_domain_input_data_unwrapped.fqdn,
-                update_domain_input_data_unwrapped.registrant_chg,
-                update_domain_input_data_unwrapped.authinfopw_chg,
-                update_domain_input_data_unwrapped.nsset_chg,
-                update_domain_input_data_unwrapped.keyset_chg,
-                update_domain_input_data_unwrapped.admin_contacts_add,
-                update_domain_input_data_unwrapped.admin_contacts_rem,
-                update_domain_input_data_unwrapped.tmpcontacts_rem,
-                update_domain_input_data_unwrapped.enum_validation_extension_list);
 
         const Epp::Domain::UpdateDomainConfigData update_domain_config_data(
                 rifd_epp_operations_charging_,
@@ -3251,27 +3214,21 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Fred::Corba::Epp::Domain::CreateDomainInputDataUnwrapped create_domain_input_data_unwrapped(
-                _fqdn,
-                _registrant,
-                _nsset,
-                _keyset,
-                _authinfopw,
-                _period,
-                _admin_contact,
-                _enum_validation_extension_list);
-
-        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+        const std::string authinfopw_value = Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw);
 
         const Epp::Domain::CreateDomainInputData create_domain_input_data(
-                create_domain_input_data_unwrapped.fqdn,
-                create_domain_input_data_unwrapped.registrant,
-                create_domain_input_data_unwrapped.nsset,
-                create_domain_input_data_unwrapped.keyset,
-                create_domain_input_data_unwrapped.authinfopw,
-                create_domain_input_data_unwrapped.period,
-                create_domain_input_data_unwrapped.admin_contacts,
-                create_domain_input_data_unwrapped.enum_validation_extension_list);
+                Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_registrant),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_nsset),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_keyset),
+                authinfopw_value.empty()
+                        ? boost::optional<std::string>()
+                        : boost::optional<std::string>(authinfopw_value),
+                Fred::Corba::Epp::Domain::unwrap_domain_registration_period(_period),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_admin_contact),
+                Fred::Corba::Epp::Domain::unwrap_enum_validation_extension_list(_enum_validation_extension_list));
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
         const Epp::Domain::CreateDomainConfigData create_domain_config_data(
                 rifd_epp_operations_charging_);
@@ -3337,19 +3294,13 @@ ccReg::Response* ccReg_EPP_i::DomainRenew(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Fred::Corba::Epp::Domain::RenewDomainInputDataUnwrapped renew_domain_input_data_unwrapped(
-                _fqdn,
-                _current_exdate,
-                _period,
-                _enum_validation_extension_list);
+        const Epp::Domain::RenewDomainInputData renew_domain_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_current_exdate),
+                Fred::Corba::Epp::Domain::unwrap_domain_registration_period(_period),
+                Fred::Corba::Epp::Domain::unwrap_enum_validation_extension_list(_enum_validation_extension_list));
 
         // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
-
-        const Epp::Domain::RenewDomainInputData renew_domain_input_data(
-                renew_domain_input_data_unwrapped.fqdn,
-                renew_domain_input_data_unwrapped.current_exdate,
-                renew_domain_input_data_unwrapped.period,
-                renew_domain_input_data_unwrapped.enum_validation_extension_list);
 
         const Epp::Domain::RenewDomainConfigData renew_domain_config_data(
                 rifd_epp_operations_charging_);
@@ -3391,7 +3342,6 @@ ccReg::Response* ccReg_EPP_i::DomainRenew(
 
         _exdate = exdate._retn();
         return return_value._retn();
-
     }
     catch(const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
@@ -3553,21 +3503,15 @@ ccReg::Response* ccReg_EPP_i::KeySetCreate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Fred::Corba::Epp::Keyset::CreateKeysetInputDataUnwrapped create_keyset_input_data_unwrapped(
-                _keyset_handle,
-                _authinfopw,
-                _tech_contacts,
-                _ds_records,
-                _dns_keys);
+        const std::string authinfopw_value = Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw);
+        const Epp::Keyset::CreateKeysetInputData create_keyset_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
+                authinfopw_value.empty() ? Optional<std::string>() : Optional<std::string>(authinfopw_value),
+                Fred::Corba::unwrap_TechContact_to_vector_string(_tech_contacts),
+                Fred::Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records),
+                Fred::Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys));
 
         // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
-
-        const Epp::Keyset::CreateKeysetInputData create_keyset_input_data(
-                create_keyset_input_data_unwrapped.keyset_handle,
-                create_keyset_input_data_unwrapped.authinfopw,
-                create_keyset_input_data_unwrapped.tech_contacts,
-                create_keyset_input_data_unwrapped.ds_records,
-                create_keyset_input_data_unwrapped.dns_keys);
 
         const Epp::Keyset::CreateKeysetConfigData create_nsset_config_data(
                 rifd_epp_operations_charging_);
@@ -3631,27 +3575,17 @@ ccReg::Response* ccReg_EPP_i::KeySetUpdate(
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
-        const Fred::Corba::Epp::Keyset::UpdateKeysetInputDataUnwrapped update_keyset_input_data_unwrapped(
-                _keyset_handle,
-                _authinfopw,
-                _tech_contacts_add,
-                _tech_contacts_rem,
-                _ds_records_add,
-                _ds_records_rem,
-                _dns_keys_add,
-                _dns_keys_rem);
+        const Epp::Keyset::UpdateKeysetInputData update_keyset_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
+                Fred::Corba::unwrap_string_for_change_or_remove_to_Optional_string(_authinfopw),
+                Fred::Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add),
+                Fred::Corba::unwrap_TechContact_to_vector_string(_tech_contacts_rem),
+                Fred::Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records_add),
+                Fred::Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records_rem),
+                Fred::Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_add),
+                Fred::Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_rem));
 
         // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
-
-        const Epp::Keyset::UpdateKeysetInputData update_keyset_input_data(
-                update_keyset_input_data_unwrapped.keyset_handle,
-                update_keyset_input_data_unwrapped.authinfopw,
-                update_keyset_input_data_unwrapped.tech_contacts_add,
-                update_keyset_input_data_unwrapped.tech_contacts_rem,
-                update_keyset_input_data_unwrapped.ds_records_add,
-                update_keyset_input_data_unwrapped.ds_records_rem,
-                update_keyset_input_data_unwrapped.dns_keys_add,
-                update_keyset_input_data_unwrapped.dns_keys_rem);
 
         const Epp::Keyset::UpdateKeysetConfigData update_keyset_config_data(
                 rifd_epp_operations_charging_);
