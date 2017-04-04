@@ -31,14 +31,14 @@ namespace Keyset {
 
 struct UpdateKeysetInputData
 {
-    const std::string& keyset_handle;
-    const Optional<std::string>& authinfopw;
-    const std::vector<std::string>& tech_contacts_add;
-    const std::vector<std::string>& tech_contacts_rem;
-    const std::vector<Keyset::DsRecord>& ds_records_add;
-    const std::vector<Keyset::DsRecord>& ds_records_rem;
-    const std::vector<Keyset::DnsKey>& dns_keys_add;
-    const std::vector<Keyset::DnsKey>& dns_keys_rem;
+    const std::string keyset_handle;
+    const Optional<std::string> authinfopw;
+    const std::vector<std::string> tech_contacts_add;
+    const std::vector<std::string> tech_contacts_rem;
+    const std::vector<Keyset::DsRecord> ds_records_add;
+    const std::vector<Keyset::DsRecord> ds_records_rem;
+    const std::vector<Keyset::DnsKey> dns_keys_add;
+    const std::vector<Keyset::DnsKey> dns_keys_rem;
 
 
     UpdateKeysetInputData(

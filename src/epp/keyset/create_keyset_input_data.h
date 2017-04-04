@@ -31,11 +31,11 @@ namespace Keyset {
 
 struct CreateKeysetInputData
 {
-    const std::string& keyset_handle;
-    const Optional<std::string>& authinfopw;
-    const std::vector<std::string>& tech_contacts;
-    const std::vector<Keyset::DsRecord>& ds_records;
-    const std::vector<Keyset::DnsKey>& dns_keys;
+    const std::string keyset_handle;
+    const Optional<std::string> authinfopw;
+    const std::vector<std::string> tech_contacts;
+    const std::vector<Keyset::DsRecord> ds_records;
+    const std::vector<Keyset::DnsKey> dns_keys;
 
 
     CreateKeysetInputData(

@@ -35,7 +35,7 @@ namespace Epp {
  * According to STD, it may include multiple results with
  * EPP error code representing unsuccessfull result (2xxx).
  */
-class EppResponseFailure : std::exception
+class EppResponseFailure : public std::exception
 {
 
 public:
