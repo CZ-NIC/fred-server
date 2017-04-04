@@ -46,6 +46,7 @@ BOOST_AUTO_TEST_SUITE(Epp)
 BOOST_AUTO_TEST_SUITE(Domain)
 BOOST_AUTO_TEST_SUITE(UpdateDomain)
 
+
 bool fail_invalid_registrar_id_exception(const ::Epp::EppResponseFailure& e) {
     BOOST_CHECK_EQUAL(e.epp_result().epp_result_code(), ::Epp::EppResultCode::authentication_error_server_closing_connection);
     BOOST_CHECK(e.epp_result().empty());
@@ -121,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE(fail_enum_domain_does_not_exist_with_valexdate, supply_c
                             std::vector<std::string>(),         // admin_contacts_add
                             std::vector<std::string>(),         // admin_contacts_rem
                             std::vector<std::string>(),         // tmpcontacts_rem
-                            std::vector< ::Epp::Domain::EnumValidationExtension>(
+                            boost::optional< ::Epp::Domain::EnumValidationExtension>(
                                     1,
                                     ::Epp::Domain::EnumValidationExtension(
                                             nonexistent_enum_domain.data.enum_domain_validation.get_value().validation_expiration + boost::gregorian::months(1),
@@ -248,7 +249,7 @@ BOOST_FIXTURE_TEST_CASE(nsset_change_should_clear_keyset, supply_ctx<HasRegistra
             std::vector<std::string>(), // admin_contacts_add
             std::vector<std::string>(), // admin_contacts_rem
             std::vector<std::string>(), // tmpcontacts_rem
-            std::vector< ::Epp::Domain::EnumValidationExtension>()), // enum_validation_list
+            boost::optional< ::Epp::Domain::EnumValidationExtension>()), // enum_validation
         update_domain_config_data,
         session.data
     );
@@ -282,7 +283,7 @@ BOOST_FIXTURE_TEST_CASE(nsset_change_should_not_clear_keyset, supply_ctx<HasRegi
             std::vector<std::string>(), // admin_contacts_add
             std::vector<std::string>(), // admin_contacts_rem
             std::vector<std::string>(), // tmpcontacts_rem
-            std::vector< ::Epp::Domain::EnumValidationExtension>()), // enum_validation_list
+            boost::optional< ::Epp::Domain::EnumValidationExtension>()), // enum_validation
         update_domain_config_data,
         session.data
     );
@@ -315,7 +316,7 @@ BOOST_FIXTURE_TEST_CASE(fail_tmpcontacts_rem_not_empty, supply_ctx<HasDataForUpd
                 std::vector<std::string>(), // admin_contacts_add
                 std::vector<std::string>(), // admin_contacts_rem
                 tmpcontacts_rem_, // tmpcontacts_rem
-                std::vector< ::Epp::Domain::EnumValidationExtension>()), // enum_validation_list
+                boost::optional< ::Epp::Domain::EnumValidationExtension>()), // enum_validation
             DefaultUpdateDomainConfigData(),
             session.data
         ),
@@ -349,7 +350,7 @@ BOOST_FIXTURE_TEST_CASE(fail_existing_fqdn_but_spaces, supply_ctx<HasDataForUpda
                 admin_contacts_add_,
                 admin_contacts_rem_,
                 std::vector<std::string>(), // tmpcontacts_rem
-                std::vector< ::Epp::Domain::EnumValidationExtension>()), // enum_validation_list
+                boost::optional< ::Epp::Domain::EnumValidationExtension>()), // enum_validation
             ::Epp::Domain::UpdateDomainConfigData(
                     false,  // rifd_epp_operations_charging
                     false), // rifd_epp_update_domain_keyset_clear
@@ -376,7 +377,7 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasDataForUpdateDomain>)
             admin_contacts_add_, // admin_contacts_add
             admin_contacts_rem_, // admin_contacts_rem
             std::vector<std::string>(), // tmpcontacts_rem
-            enum_validation_list_), // enum_validation_list
+            enum_validation_), // enum_validation_list
         ::Epp::Domain::UpdateDomainConfigData(
                 false,  // rifd_epp_operations_charging
                 false), // rifd_epp_update_domain_keyset_clear

@@ -158,18 +158,17 @@ unsigned long long update_domain(
     if (zone_data.is_enum)
     {
 
-        if (!_update_domain_data.enum_validation_list.empty())
+        if (_update_domain_data.enum_validation)
         {
 
-            req_enum_valexdate = _update_domain_data.enum_validation_list.rbegin()->get_valexdate();
+            req_enum_valexdate = _update_domain_data.enum_validation.value().get_valexdate();
 
             if (req_enum_valexdate.get_value().is_special())
             {
                 parameter_value_range_errors.add_extended_error(
                         EppExtendedError::of_vector_parameter(
                                 Param::domain_ext_val_date,
-                                boost::numeric_cast<unsigned short>(
-                                        _update_domain_data.enum_validation_list.size() - 1),
+                                boost::numeric_cast<unsigned short>(0),
                                 Reason::valexpdate_not_valid));
             }
             else
@@ -193,27 +192,21 @@ unsigned long long update_domain(
                     parameter_value_range_errors.add_extended_error(
                             EppExtendedError::of_vector_parameter(
                                     Param::domain_ext_val_date,
-                                    boost::numeric_cast<unsigned short>(
-                                            _update_domain_data.enum_validation_list.size() - 1),
+                                    boost::numeric_cast<unsigned short>(0),
                                     Reason::valexpdate_not_valid));
                 }
             }
 
-            enum_publish_flag = _update_domain_data.enum_validation_list.rbegin()->get_publish();
+            enum_publish_flag = _update_domain_data.enum_validation.value().get_publish();
         }
     }
     else   // not enum
     {
-        for (
-            std::vector<EnumValidationExtension>::const_iterator enum_validation_list_item_ptr =
-                _update_domain_data.enum_validation_list.begin();
-            enum_validation_list_item_ptr != _update_domain_data.enum_validation_list.end();
-            ++enum_validation_list_item_ptr)
+        if(_update_domain_data.enum_validation)
         {
             parameter_value_range_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
-                            Param::domain_ext_val_date,
-                            enum_validation_list_item_ptr - _update_domain_data.enum_validation_list.begin(),
+                            Param::domain_ext_val_date, 0,
                             Reason::valexpdate_not_used));
         }
     }

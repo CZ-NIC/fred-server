@@ -221,7 +221,7 @@ struct DefaultUpdateDomainInputData : ::Epp::Domain::UpdateDomainInputData
                   std::vector<std::string>(), // admin_contacts_add
                   std::vector<std::string>(), // admin_contacts_rem
                   std::vector<std::string>(), // tmpcontacts_rem
-                  std::vector< ::Epp::Domain::EnumValidationExtension>()) // enum_validation_list
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>()) // enum_validation
     {
     }
 };
@@ -241,7 +241,7 @@ struct UpdateDomainInputData
                   std::vector<std::string>(), // admin_contacts_add
                   std::vector<std::string>(), // admin_contacts_rem
                   std::vector<std::string>(), // tmpcontacts_rem
-                  std::vector< ::Epp::Domain::EnumValidationExtension>()) // enum_validation_list
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>()) // enum_validation
     {
     }
 };
@@ -793,7 +793,7 @@ struct HasDataForUpdateDomain
     std::vector<std::string> admin_contacts_add_;
     std::vector<std::string> admin_contacts_rem_;
     std::vector<std::string> tmpcontacts_rem_;
-    std::vector< ::Epp::Domain::EnumValidationExtension> enum_validation_list_;
+    boost::optional< ::Epp::Domain::EnumValidationExtension> enum_validation_;
 
     HasDataForUpdateDomain(Fred::OperationContext& _ctx)
         : registrar(_ctx),

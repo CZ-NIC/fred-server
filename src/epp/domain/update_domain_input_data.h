@@ -23,6 +23,8 @@
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
+#include <boost/optional.hpp>
+
 #include <string>
 
 namespace Epp {
@@ -38,7 +40,7 @@ struct UpdateDomainInputData
     const std::vector<std::string> admin_contacts_add;
     const std::vector<std::string> admin_contacts_rem;
     const std::vector<std::string> tmpcontacts_rem;
-    const std::vector<EnumValidationExtension> enum_validation_list;
+    const boost::optional< ::Epp::Domain::EnumValidationExtension> enum_validation;
 
 
     UpdateDomainInputData(
@@ -50,7 +52,7 @@ struct UpdateDomainInputData
             const std::vector<std::string>& _admin_contacts_add,
             const std::vector<std::string>& _admin_contacts_rem,
             const std::vector<std::string>& _tmpcontacts_rem,
-            const std::vector<EnumValidationExtension>& _enum_validation_list)
+            const boost::optional< ::Epp::Domain::EnumValidationExtension>& _enum_validation)
         : fqdn(_fqdn),
           registrant_chg(_registrant_chg),
           authinfopw_chg(_authinfopw_chg),
@@ -59,7 +61,7 @@ struct UpdateDomainInputData
           admin_contacts_add(_admin_contacts_add),
           admin_contacts_rem(_admin_contacts_rem),
           tmpcontacts_rem(_tmpcontacts_rem),
-          enum_validation_list(_enum_validation_list)
+          enum_validation(_enum_validation)
     {
     }
 
