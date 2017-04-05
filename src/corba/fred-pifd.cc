@@ -88,10 +88,13 @@ int main(int argc, char *argv[])
         Logging::Context ctx(server_name);
 
         //config dump
-        for(std::string config_item = AccumulatedConfig::get_instance().pop_front();
-            !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
+        if (CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump)
         {
-            Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+            for(std::string config_item = AccumulatedConfig::get_instance().pop_front();
+                !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
+            {
+                Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
+            }
         }
 
         //CORBA init

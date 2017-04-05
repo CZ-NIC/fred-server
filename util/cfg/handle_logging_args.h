@@ -47,6 +47,7 @@ public:
     unsigned log_level;
     std::string log_file;
     unsigned log_syslog_facility;
+    bool log_config_dump;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -67,6 +68,9 @@ public:
                 ("log.syslog_facility", boost::program_options
                    ::value<unsigned int>()->default_value(1)
                         , "syslog facility for log.type = 2")
+                ("log.config_dump", boost::program_options
+                   ::value<bool>()->default_value(false)
+                        , "log loaded configuration data with debug severity")
                 ;
         return cfg_opts;
     }//get_options_description
@@ -79,6 +83,7 @@ public:
         log_level = vm["log.level"].as<unsigned>();
         log_file = vm["log.file"].as<std::string>();
         log_syslog_facility = vm["log.syslog_facility"].as<unsigned>();
+        log_config_dump = vm["log.config_dump"].as<bool>();
     }//handle
 };
 
@@ -112,6 +117,8 @@ public:
         {return HandleLoggingArgs::log_syslog_facility;}
     const std::string& get_log_file()
         {return HandleLoggingArgs::log_file;}
+    bool get_log_config_dump()
+        {return HandleLoggingArgs::log_config_dump;}
 };//class HandleLoggingArgsGrp
 
 #endif //HANDLE_LOGGING_ARGS_H_

@@ -78,6 +78,9 @@ file = @LOCALSTATEDIR@/log/fred.log
 # Specify syslog facility (for log type = 2)
 syslog_facility = 1
 
+#print loaded config data into log with debug severity
+config_dump = false
+
 ###
 ### General registry settings // TODO this should be reworked
 ###
