@@ -134,14 +134,14 @@ struct DefaultCreateDomainInputData : ::Epp::Domain::CreateDomainInputData
 {
     DefaultCreateDomainInputData()
         : CreateDomainInputData(
-                "", // _fqdn
-                "", // _registrant
-                "", // _nsset
-                "", // _keyset
-                boost::optional<std::string>("authinfopw"), //_authinfopw
-                ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
-                std::vector<std::string>(), // Util::vector_of<std::string>("CONTACT1")("CONTACT2"),
-                boost::optional< ::Epp::Domain::EnumValidationExtension>())
+                  "", // _fqdn
+                  "", // _registrant
+                  "", // _nsset
+                  "", // _keyset
+                  boost::optional<std::string>("authinfopw"), //_authinfopw
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
+                  std::vector<std::string>(), // Util::vector_of<std::string>("CONTACT1")("CONTACT2"),
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 };
@@ -157,14 +157,14 @@ struct CreateDomainInputData
             const std::string& _keyset,
             const std::vector<std::string>& _admin_contacts_add)
         : data(
-                _fqdn,
-                _registrant,
-                _nsset,
-                _keyset,
-                boost::optional<std::string>("authinfopw"), //_authinfopw
-                ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
-                _admin_contacts_add,
-                boost::optional< ::Epp::Domain::EnumValidationExtension>())
+                  _fqdn,
+                  _registrant,
+                  _nsset,
+                  _keyset,
+                  boost::optional<std::string>("authinfopw"), //_authinfopw
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
+                  _admin_contacts_add,
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 };
@@ -188,10 +188,10 @@ struct RenewDomainInputData
     RenewDomainInputData(
             const std::string& _fqdn)
         : data(
-                _fqdn, // _fqdn
-                "", // _current_exdate
-                ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
-                boost::optional< ::Epp::Domain::EnumValidationExtension>())
+                  _fqdn, // _fqdn
+                  "", // _current_exdate
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
 
@@ -753,27 +753,26 @@ struct HasRegistrarWithSessionAndDomainAndCreateDomainInputDataAndRenewDomainInp
 
     HasRegistrarWithSessionAndDomainAndCreateDomainInputDataAndRenewDomainInputData(Fred::OperationContext& _ctx)
         : registrar(_ctx),
-        session(_ctx, registrar.data.id),
-        registrant(_ctx, registrar.data.handle),
-        nsset(_ctx, registrar.data.handle),
-        keyset(_ctx, registrar.data.handle),
-        contact1(_ctx, registrar.data.handle, "CONTACT1"),
-        contact2(_ctx, registrar.data.handle, "CONTACT2"),
-        domain(_ctx, registrar.data.handle),
-        create_domain_input_data(
-                domain.data.fqdn,
-                registrant.data.handle,
-                nsset.data.handle,
-                keyset.handle,
-                Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle)),
-        renew_domain_input_data(
-                domain.data.fqdn,
-                boost::gregorian::to_iso_extended_string(domain.data.expiration_date),
-                ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
-                boost::optional< ::Epp::Domain::EnumValidationExtension>())
+          session(_ctx, registrar.data.id),
+          registrant(_ctx, registrar.data.handle),
+          nsset(_ctx, registrar.data.handle),
+          keyset(_ctx, registrar.data.handle),
+          contact1(_ctx, registrar.data.handle, "CONTACT1"),
+          contact2(_ctx, registrar.data.handle, "CONTACT2"),
+          domain(_ctx, registrar.data.handle),
+          create_domain_input_data(
+                  domain.data.fqdn,
+                  registrant.data.handle,
+                  nsset.data.handle,
+                  keyset.handle,
+                  Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle)),
+          renew_domain_input_data(
+                  domain.data.fqdn,
+                  boost::gregorian::to_iso_extended_string(domain.data.expiration_date),
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
     {
     }
-
 };
 
 struct HasDataForUpdateDomain
