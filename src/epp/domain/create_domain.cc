@@ -220,11 +220,11 @@ CreateDomainResult create_domain(
     // check no ENUM validation date in case of non ENUM domain
     if (!zone_data.is_enum && _data.enum_validation_extension)
     {
-            parameter_value_policy_errors.add_extended_error(
-                    EppExtendedError::of_vector_parameter(
-                            Param::domain_ext_val_date,
-                            boost::numeric_cast<unsigned short>(0),
-                            Reason::valexpdate_not_used));
+        parameter_value_policy_errors.add_extended_error(
+                EppExtendedError::of_vector_parameter(
+                        Param::domain_ext_val_date,
+                        0,
+                        Reason::valexpdate_not_used));
     }
 
     // check range of ENUM domain validation expiration
@@ -243,7 +243,7 @@ CreateDomainResult create_domain(
                                              .add_extended_error(
                                                      EppExtendedError::of_vector_parameter(
                                                          Param::domain_ext_val_date,
-                                                         boost::numeric_cast<unsigned short>(0),
+                                                         0,
                                                          Reason::valexpdate_not_valid)));
         }
     }

@@ -53,7 +53,7 @@ namespace Epp {
             impl_result.exdate
         );
 
-        if(_rifd_epp_operations_charging
+        if (_rifd_epp_operations_charging
                 && Fred::InfoRegistrarById(_registrar_id).exec(ctx)
                     .info_registrar_data.system.get_value_or(false) == false)
         {

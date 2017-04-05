@@ -246,11 +246,9 @@ unwrap_ccreg_admincontacts_to_vector_string(const ccReg::AdminContact& in)
 boost::optional< ::Epp::Domain::EnumValidationExtension>
 unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
 {
-    boost::optional< ::Epp::Domain::EnumValidationExtension> ret;
-
     if (ext.length() == 0)
     {
-        return ret;
+        return boost::optional< ::Epp::Domain::EnumValidationExtension>();
     }
 
     if (ext.length() > 1)
@@ -259,29 +257,28 @@ unwrap_enum_validation_extension_list(const ccReg::ExtensionList& ext)
     }
 
     const ccReg::ENUMValidationExtension* enum_ext = 0;
-    if (ext[0] >>= enum_ext)
-    {
-        const std::string temp_valexdate_string = Fred::Corba::unwrap_string_from_const_char_ptr(
-                enum_ext->valExDate);
-        boost::gregorian::date valexdate;
-        try
-        {
-            valexdate = boost::gregorian::from_simple_string(temp_valexdate_string);
-        }
-        catch (...)
-        {
-            // conversion errors ignored here, implementation must later handle `not-a-date-time` value correctly
-        }
 
-        ret = ::Epp::Domain::EnumValidationExtension(valexdate,
-            enum_ext->publish == ccReg::DISCL_DISPLAY);
-    }
-    else
+    const bool is_ENUMValidationExtension = (ext[0] >>= enum_ext);
+
+    if (!is_ENUMValidationExtension)
     {
         throw std::runtime_error("unknown extension found when extracting domain enum extension");
     }
 
-    return ret;
+    const std::string temp_valexdate_string = Fred::Corba::unwrap_string_from_const_char_ptr(
+            enum_ext->valExDate);
+    boost::gregorian::date valexdate;
+    try
+    {
+        valexdate = boost::gregorian::from_simple_string(temp_valexdate_string);
+    }
+    catch (...)
+    {
+        // conversion errors ignored here, implementation must later handle `not-a-date-time` value correctly
+    }
+
+    return ::Epp::Domain::EnumValidationExtension(valexdate,
+        enum_ext->publish == ccReg::DISCL_DISPLAY);
 }
 
 

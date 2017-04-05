@@ -219,7 +219,7 @@ RenewDomainResult renew_domain(
         parameter_value_policy_errors.add_extended_error(
                 EppExtendedError::of_vector_parameter(
                         Param::domain_ext_val_date,
-                        boost::numeric_cast<unsigned short>(0),
+                        0,
                         Reason::valexpdate_not_used));
 
         throw EppResponseFailure(parameter_value_policy_errors);
@@ -248,7 +248,7 @@ RenewDomainResult renew_domain(
             parameter_value_range_errors.add_extended_error(
                     EppExtendedError::of_vector_parameter(
                             Param::domain_ext_val_date,
-                            boost::numeric_cast<unsigned short>(0),
+                            0,
                             Reason::valexpdate_not_valid));
         }
     }

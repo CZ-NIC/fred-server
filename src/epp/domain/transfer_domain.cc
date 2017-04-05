@@ -94,7 +94,7 @@ unsigned long long transfer_domain(
     }
     catch(const Fred::InfoDomainByHandle::Exception& ex)
     {
-        if(ex.is_set_unknown_fqdn())
+        if (ex.is_set_unknown_fqdn())
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
