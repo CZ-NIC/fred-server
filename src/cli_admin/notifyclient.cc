@@ -321,7 +321,8 @@ void NotifyClient::sms_send()
 
      Fred::Messages::ManagerPtr messages_manager = Fred::Messages::create_manager();
 
-     HPCfgMap hpmail_config = readConfigFile<HandleHPMailArgs>(conf_file);
+     HPCfgMap hpmail_config = readConfigFile<HandleHPMailArgs>(conf_file,
+             CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump());
 
      std::string domestic_country_name = "Czech Republic";
      const std::size_t max_attempts_limit = 3;
@@ -468,7 +469,8 @@ void NotifyClient::sms_send()
       TRACE("[CALL] Fred::Notify::sendFile()");
 
 
-      HPCfgMap hpmail_config = readConfigFile<HandleHPMailArgs>(conf_file);
+      HPCfgMap hpmail_config = readConfigFile<HandleHPMailArgs>(conf_file,
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump());
 
       LOGGER(PACKAGE).debug(boost::format("File to send %1% ") % filename);
 
@@ -860,7 +862,8 @@ void notify_letters_optys_send_impl(
         = Fred::Messages::create_manager();
 
     //optys config
-    std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysMailArgs>(optys_config_file);
+    std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysMailArgs>(optys_config_file,
+            CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump());
 
     std::string domestic_country_name = "Czech Republic";
     const std::size_t max_attempts_limit = 3;

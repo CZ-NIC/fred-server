@@ -40,7 +40,8 @@ namespace Admin {
  */
 template <class HANDLE_ARGS>
 std::map<std::string, std::string> readConfigFile(
-        const std::string& conf_file)
+        const std::string& conf_file,
+        bool dump_config_into_debug_log)
 {
     boost::shared_ptr<HANDLE_ARGS> handle_args_ptr(new HANDLE_ARGS);
 
@@ -64,7 +65,7 @@ std::map<std::string, std::string> readConfigFile(
     std::map<std::string, std::string> set_cfg = handle_args_ptr->get_map();
 
     // config dump
-    if (CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump())
+    if (dump_config_into_debug_log)
     {
         for (std::string config_item = AccumulatedConfig::get_instance().pop_front();
              !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
