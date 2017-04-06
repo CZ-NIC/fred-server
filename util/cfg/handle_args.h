@@ -48,7 +48,7 @@
 class HandleArgs
 {
 public:
-    virtual ~HandleArgs() { };
+    virtual ~HandleArgs() { }
     virtual boost::shared_ptr<boost::program_options::options_description>
         get_options_description()=0;
     virtual void handle( int argc, char* argv[], FakedArgs &fa ) = 0;
