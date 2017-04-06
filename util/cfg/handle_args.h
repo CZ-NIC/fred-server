@@ -100,35 +100,42 @@ class VMConfigData
 {
 public:
     VMConfigData(
-        const std::string& _key,
-        const std::string& _value,
-        bool _is_value_default,
-        bool _is_value_empty)
-    : key_(_key),
-      value_(_value),
-      is_default_(_is_value_default),
-      is_empty_(_is_value_empty)
-    {}
+            const std::string& _key,
+            const std::string& _value,
+            bool _is_value_default,
+            bool _is_value_empty)
+        : key_(_key),
+          value_(_value),
+          is_default_(_is_value_default),
+          is_empty_(_is_value_empty)
+    {
+    }
+
 
     std::string get_key() const
     {
         return key_;
     }
 
+
     std::string get_value() const
     {
         return value_;
     }
+
 
     bool is_value_default() const
     {
         return is_default_;
     }
 
+
     bool is_value_empty() const
     {
         return is_empty_;
     }
+
+
 private:
     std::string key_;
     std::string value_;
@@ -145,9 +152,11 @@ class AccumulatedConfig
 public:
     static AccumulatedConfig& get_instance()
     {
-        static AccumulatedConfig instance; //lazy init
+        static AccumulatedConfig instance; // lazy init
         return instance;
     }
+
+
     /**
      * adds config to be printed later, performs
      */

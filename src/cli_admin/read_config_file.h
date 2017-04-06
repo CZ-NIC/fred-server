@@ -63,17 +63,13 @@ std::map<std::string, std::string> readConfigFile(
 
     std::map<std::string, std::string> set_cfg = handle_args_ptr->get_map();
 
-    //config dump
+    // config dump
     if (CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump())
     {
-        for (std::string config_item =
-                        AccumulatedConfig::get_instance().pop_front();
-                !config_item.empty();
-                config_item =
-                        AccumulatedConfig::get_instance().pop_front())
+        for (std::string config_item = AccumulatedConfig::get_instance().pop_front();
+             !config_item.empty(); config_item = AccumulatedConfig::get_instance().pop_front())
         {
-            Logging::Manager::instance_ref().get(PACKAGE).debug(
-                    config_item);
+            Logging::Manager::instance_ref().get(PACKAGE).debug(config_item);
         }
     }
 

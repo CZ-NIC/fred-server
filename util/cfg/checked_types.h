@@ -21,16 +21,17 @@
  *  checked config option types
  */
 
-#ifndef CHECKED_TYPES_H_f12642247ed944ddaee5a054d16eead9
-#define CHECKED_TYPES_H_f12642247ed944ddaee5a054d16eead9
+#ifndef CHECKED_TYPES_H_507789EEC9934471ACB32A3798A28B0A
+#define CHECKED_TYPES_H_507789EEC9934471ACB32A3798A28B0A
 
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <string>
 
 // types checked by custom validator
 struct Checked
 {
+
     typedef std::string string;
     typedef unsigned long long ulonglong;
     typedef unsigned long ulong;
@@ -48,42 +49,53 @@ struct Checked
             return s_;
         }
 
+
         explicit string_fpnumber(const std::string _s)
-        : s_(_s)
-        {}
+            : s_(_s)
+        {
+        }
+
 
         string_fpnumber()
-        {}
+        {
+        }
 
-        string_fpnumber(const string_fpnumber & _s)
-        : s_(_s.to_string())
-        {}
 
-        string_fpnumber & operator=(const string_fpnumber & rhs)
+        string_fpnumber(const string_fpnumber& _s)
+            : s_(_s.to_string())
+        {
+        }
+
+
+        string_fpnumber& operator=(const string_fpnumber& rhs)
         {
             s_ = rhs.s_;
             return *this;
         }
 
-        string_fpnumber & operator=(const std::string & rhs)
+
+        string_fpnumber& operator=(const std::string& rhs)
         {
             s_ = rhs;
             return *this;
         }
 
-        bool operator==(const string_fpnumber & rhs) const
+
+        bool operator==(const string_fpnumber& rhs) const
         {
             return s_ == rhs.s_;
         }
 
-        bool operator<(const string_fpnumber & rhs) const
+
+        bool operator<(const string_fpnumber& rhs) const
         {
             return s_ < rhs.s_;
         }
+
+
     private:
         std::string s_;
     };
-
 };
 
 
