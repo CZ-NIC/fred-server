@@ -158,7 +158,7 @@ public:
 
 
     /**
-     * adds config to be printed later, performs
+     * adds config to be printed later
      */
     void append(const boost::program_options::variables_map& vm)
     {
