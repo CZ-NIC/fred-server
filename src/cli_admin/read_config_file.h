@@ -39,7 +39,7 @@ namespace Admin {
  * read extra config file into key-value config map
  */
 template <class HANDLE_ARGS>
-std::map<std::string, std::string> readConfigFile(
+std::map<std::string, std::string> read_config_file(
         const std::string& conf_file,
         bool dump_config_into_debug_log)
 {

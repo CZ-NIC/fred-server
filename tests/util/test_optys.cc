@@ -166,7 +166,7 @@ struct undelivered_fixture : virtual Test::instantiate_db_template
             ).str();
 
         //optys config
-        std::map<std::string, std::string> set_cfg = Admin::readConfigFile<HandleOptysUndeliveredArgs>(std::string(OPTYS_CONFIG),
+        std::map<std::string, std::string> set_cfg = Admin::read_config_file<HandleOptysUndeliveredArgs>(std::string(OPTYS_CONFIG),
                 CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump);
         local_download_dir = map_at(set_cfg, "local_download_dir");
         BOOST_TEST_MESSAGE(local_download_dir);
