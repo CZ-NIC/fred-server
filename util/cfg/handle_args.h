@@ -31,6 +31,7 @@
 #include <exception>
 #include <string>
 #include <deque>
+#include <vector>
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/join.hpp>
