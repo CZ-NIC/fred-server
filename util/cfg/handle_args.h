@@ -227,17 +227,16 @@ public:
                     value = "ERROR: unknown type";
                 }
             }
-            catch(const std::exception& ex)
+            catch (const std::exception& ex)
             {
                 value = "ERROR: ";
                 value += ex.what();
             }
 
             data_.push_back(VMConfigData(it->first,
-                value,
-                it->second.defaulted(),
-                it->second.empty()
-                ));
+                    value,
+                    it->second.defaulted(),
+                    it->second.empty()));
         }
     }
 
@@ -249,22 +248,14 @@ public:
     {
         std::string text;
 
-        if(!data_.empty())
+        if (!data_.empty())
         {
-            const boost::regex hide_value ("user|login_name|password|certificate"
-                    , boost::regex::icase);
-
-            const std::string key = data_.front().get_key();
-            const std::string value = boost::regex_search(key, hide_value)
-                ? std::string("*** hidden ***")
-                : data_.front().get_value();
-
             text += "config dump: ";
-            text += key;
-            text+=": ";
-            text += value;
-            text += data_.front().is_value_default() ? " DEFAULT" : "" ;
-            text += data_.front().is_value_empty() ? " EMPTY" : "" ;
+            text += data_.front().get_key();
+            text += ": ";
+            text += data_.front().get_value();
+            text += data_.front().is_value_default() ? " DEFAULT" : "";
+            text += data_.front().is_value_empty() ? " EMPTY" : "";
 
             data_.pop_front();
         }
