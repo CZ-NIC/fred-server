@@ -95,7 +95,7 @@ public:
 
 /**
  * \class VMConfigData
- * \brief internal representation of config data to be printed by class AccumulatedConfig
+ * \brief internal representation of config data to be accumulated by AccumulatedConfig class
  */
 class VMConfigData
 {
@@ -159,7 +159,7 @@ public:
 
 
     /**
-     * adds config to be printed later
+     * gets configuration from the variables_map and appends it into its internal data structure
      */
     void append(const boost::program_options::variables_map& vm)
     {
@@ -243,16 +243,17 @@ public:
                 value += ex.what();
             }
 
-            data_.push_back(VMConfigData(it->first,
-                    value,
-                    it->second.defaulted(),
-                    it->second.empty()));
+            data_.push_back(
+                    VMConfigData(
+                            it->first,
+                            value,
+                            it->second.defaulted(),
+                            it->second.empty()));
         }
     }
 
     /**
-     * return next config item in text form or empty string in case no further item available
-     * hides sensitive information
+     * returns next config item in text form or empty string in case no further item available
      */
     std::string pop_front()
     {
