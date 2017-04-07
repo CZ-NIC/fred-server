@@ -26,7 +26,10 @@ namespace Admin {
 /**
  * Get undelivered letter IDs from Optys.
  */
-void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file, bool all_local_files_only);
+void notify_letters_optys_get_undelivered_impl(
+        const std::string& optys_config_file,
+        bool all_local_files_only,
+        bool dump_config_to_log);
 } // namespace Admin;
 
 #endif

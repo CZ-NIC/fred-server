@@ -203,7 +203,8 @@ BOOST_FIXTURE_TEST_CASE(test_undelivered_proc, undelivered_fixture)
     BOOST_CHECK_NO_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
     ));
 
 
@@ -255,7 +256,8 @@ BOOST_FIXTURE_TEST_CASE(test_ignore_empty_line, undelivered_fixture)
     BOOST_CHECK_NO_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
     ));
 
     //check undelivered
@@ -292,7 +294,8 @@ BOOST_AUTO_TEST_CASE(test_bad_config_file)
     BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG)+"_bad",
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
         ), std::runtime_error);
 }
 
@@ -309,7 +312,8 @@ BOOST_FIXTURE_TEST_CASE(test_local_download_dir_not_found, undelivered_fixture)
     BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
         ), std::runtime_error);
 }
 
@@ -326,7 +330,8 @@ BOOST_FIXTURE_TEST_CASE(test_unable_to_read_file, undelivered_fixture)
     BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
     ), std::runtime_error);
 
     //check undelivered not set
@@ -384,7 +389,8 @@ BOOST_FIXTURE_TEST_CASE(test_bad_csv_data_file, undelivered_fixture)
     BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
     ), std::runtime_error);
 
     //check undelivered not set
@@ -442,7 +448,8 @@ BOOST_FIXTURE_TEST_CASE(test_wrong_id_in_csv_data, undelivered_fixture)
     BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
     ), std::runtime_error);
 
     {
@@ -506,7 +513,8 @@ BOOST_FIXTURE_TEST_CASE(test_empty_csv_file, undelivered_fixture)
     BOOST_CHECK_THROW(
     Admin::notify_letters_optys_get_undelivered_impl(
         std::string(OPTYS_CONFIG),
-        true//all_local_files_only
+        true,//all_local_files_only
+        CfgArgs::instance()->get_handler_ptr_by_type<HandleLoggingArgs>()->log_config_dump
     ), std::runtime_error);
 
     //check undelivered not set
