@@ -19,9 +19,9 @@
 #ifndef POLL_REQUEST_GET_UPDATE_KEYSET_DETAILS_LOCALIZED_H_A84E5561C46F4690A026D028B3DA45D5
 #define POLL_REQUEST_GET_UPDATE_KEYSET_DETAILS_LOCALIZED_H_A84E5561C46F4690A026D028B3DA45D5
 
-#include "src/epp/keyset/impl/info_keyset_localized_output_data.h"
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/keyset/info_keyset_localized_output_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/session_data.h"
 
 #include <string>
 

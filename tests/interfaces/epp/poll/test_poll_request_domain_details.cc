@@ -20,10 +20,11 @@
 #include "tests/setup/fixtures_utils.h"
 #include "tests/interfaces/epp/util.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/epp/poll/poll_request_get_update_domain_details.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_code.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -75,7 +76,7 @@ void check_equal(
     BOOST_CHECK_EQUAL(output_data.tmpcontact.size(), 0);
 }
 
-struct HasDomainUpdate : virtual Test::autorollbacking_context
+struct HasDomainUpdate : virtual Test::Backend::Epp::autorollbacking_context
 {
     Fred::InfoDomainData old_domain_data;
     Fred::InfoDomainData new_domain_data;

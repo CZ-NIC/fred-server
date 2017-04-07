@@ -19,8 +19,8 @@
 #ifndef POLL_ACKNOWLEDGEMENT_LOCALIZED_H_B65E41A7524C4C0097F69AAF8EC1459F
 #define POLL_ACKNOWLEDGEMENT_LOCALIZED_H_B65E41A7524C4C0097F69AAF8EC1459F
 
-#include "src/epp/impl/session_lang.h"
-#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/session_lang.h"
+#include "src/epp/epp_response_success_localized.h"
 
 #include <string>
 

@@ -18,16 +18,15 @@
 
 #include "src/epp/poll/poll_request_get_update_domain_details_localized.h"
 #include "src/epp/poll/poll_request_get_update_domain_details.h"
-#include "src/epp/impl/localization.h"
 #include "src/epp/impl/action.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_response_success.h"
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_success.h"
-#include "src/epp/impl/localization.h"
+#include "src/epp/localization.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_response_failure_localized.h"
+#include "src/epp/epp_response_success.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_success.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -61,7 +60,7 @@ PollRequestUpdateDomainLocalizedResponse poll_request_get_update_domain_details_
                     output_data.old_data.registrant,
                     output_data.old_data.nsset,
                     output_data.old_data.keyset,
-                    localize_object_states(ctx, output_data.old_data.states, _session_data.lang),
+                    localize_object_states<Epp::Domain::StatusValue>(ctx, output_data.old_data.states, _session_data.lang),
                     output_data.old_data.sponsoring_registrar_handle,
                     output_data.old_data.creating_registrar_handle,
                     output_data.old_data.last_update_registrar_handle,
@@ -79,7 +78,7 @@ PollRequestUpdateDomainLocalizedResponse poll_request_get_update_domain_details_
                     output_data.new_data.registrant,
                     output_data.new_data.nsset,
                     output_data.new_data.keyset,
-                    localize_object_states(ctx, output_data.new_data.states, _session_data.lang),
+                    localize_object_states<Epp::Domain::StatusValue>(ctx, output_data.new_data.states, _session_data.lang),
                     output_data.new_data.sponsoring_registrar_handle,
                     output_data.new_data.creating_registrar_handle,
                     output_data.new_data.last_update_registrar_handle,

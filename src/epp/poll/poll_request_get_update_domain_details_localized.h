@@ -19,9 +19,9 @@
 #ifndef POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_LOCALIZED_H_38D1DA74972D48A78DAEF6DB61B14217
 #define POLL_REQUEST_GET_UPDATE_DOMAIN_DETAILS_LOCALIZED_H_38D1DA74972D48A78DAEF6DB61B14217
 
-#include "src/epp/domain/impl/info_domain_localized_output_data.h"
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/session_data.h"
+#include "src/epp/domain/info_domain_localized_output_data.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/session_data.h"
 
 #include <string>
 

@@ -19,7 +19,7 @@
 #ifndef POLL_REQUEST_H_EE8A599182D141B7987A82D5DBD174D1
 #define POLL_REQUEST_H_EE8A599182D141B7987A82D5DBD174D1
 
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "util/decimal/decimal.h"
 #include "src/fredlib/opcontext.h"
 

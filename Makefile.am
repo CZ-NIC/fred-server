@@ -1655,6 +1655,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/renew_domain_localized.h \
 		src/epp/domain/impl/domain_billing.cc \
 		src/epp/domain/impl/domain_billing.h \
+		src/epp/domain/impl/get_domain_info.cc \
+		src/epp/domain/impl/get_domain_info.h \
 		src/epp/domain/update_domain_localized.cc \
 		src/epp/domain/update_domain_localized.h \
 		src/epp/domain/update_domain.cc \
@@ -1678,6 +1680,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/update_keyset_localized.cc \
 		src/epp/keyset/update_keyset_localized.h \
 		src/epp/keyset/impl/limits.h \
+		src/epp/keyset/impl/get_keyset_info.cc \
+		src/epp/keyset/impl/get_keyset_info.h \
 		src/epp/keyset/check_keyset.cc \
 		src/epp/keyset/check_keyset.h \
 		src/epp/keyset/keyset_handle_registration_obstruction.h \
@@ -1719,6 +1723,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/transfer_nsset.h \
 		src/epp/nsset/impl/nsset.cc \
 		src/epp/nsset/impl/nsset.h \
+		src/epp/nsset/impl/get_nsset_info.cc \
+		src/epp/nsset/impl/get_nsset_info.h \
 		src/epp/nsset/status_value.h
 
 #

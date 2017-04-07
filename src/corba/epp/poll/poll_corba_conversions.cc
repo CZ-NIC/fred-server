@@ -87,9 +87,9 @@ template<typename Flag>
 PollMessage wrap_transfer_event_data_into_poll_message(const Epp::Poll::TransferEvent::Data<Flag>& _src)
 {
     ccReg::PollMsg_HandleDateReg hdm;
-    hdm.date = Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.transfer_date));
-    hdm.handle = Corba::wrap_string_to_corba_string(_src.object_handle);
-    hdm.clID = Corba::wrap_string_to_corba_string(_src.dst_registrar_handle);
+    hdm.date = Fred::Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.transfer_date));
+    hdm.handle = Fred::Corba::wrap_string_to_corba_string(_src.object_handle);
+    hdm.clID = Fred::Corba::wrap_string_to_corba_string(_src.dst_registrar_handle);
     PollMessage ret;
     ret.content = new CORBA::Any;
     ret.content <<= hdm;
@@ -181,8 +181,8 @@ template<typename Flag>
 PollMessage wrap_message_event_data_into_poll_message(const Epp::Poll::MessageEvent::Data<Flag>& _src)
 {
     ccReg::PollMsg_HandleDateReg hdm;
-    hdm.date = Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.date));
-    hdm.handle = Corba::wrap_string_to_corba_string(_src.handle);
+    hdm.date = Fred::Corba::wrap_string_to_corba_string(to_iso_extended_string(_src.date));
+    hdm.handle = Fred::Corba::wrap_string_to_corba_string(_src.handle);
     PollMessage ret;
     ret.content = new CORBA::Any;
     ret.content <<= hdm;
@@ -198,9 +198,9 @@ PollMessage wrap_message_event_into_poll_message(const Epp::Poll::MessageEvent& 
 PollMessage wrap_low_credit_event_into_poll_message(const Epp::Poll::LowCreditEvent& _src)
 {
     ccReg::PollMsg_LowCredit hdm;
-    hdm.zone = Corba::wrap_string_to_corba_string(_src.zone);
-    hdm.limit = Corba::wrap_string_to_corba_string(_src.credit.get_string(".2f"));
-    hdm.credit = Corba::wrap_string_to_corba_string(_src.limit.get_string(".2f"));
+    hdm.zone = Fred::Corba::wrap_string_to_corba_string(_src.zone);
+    hdm.limit = Fred::Corba::wrap_string_to_corba_string(_src.credit.get_string(".2f"));
+    hdm.credit = Fred::Corba::wrap_string_to_corba_string(_src.limit.get_string(".2f"));
     PollMessage ret;
     ret.content = new CORBA::Any;
     ret.content <<= hdm;
@@ -211,17 +211,17 @@ PollMessage wrap_low_credit_event_into_poll_message(const Epp::Poll::LowCreditEv
 PollMessage wrap_tech_check_event_into_poll_message(const Epp::Poll::TechCheckEvent& _src)
 {
     ccReg::PollMsg_Techcheck hdm;
-    hdm.handle = Corba::wrap_string_to_corba_string(_src.handle);
+    hdm.handle = Fred::Corba::wrap_string_to_corba_string(_src.handle);
     hdm.fqdns.length(_src.fqdns.size());
     for (std::size_t i = 0; i < _src.fqdns.size(); ++i)
     {
-        hdm.fqdns[i] = Corba::wrap_string_to_corba_string(_src.fqdns[i]);
+        hdm.fqdns[i] = Fred::Corba::wrap_string_to_corba_string(_src.fqdns[i]);
     }
     for (std::size_t i = 0; i < _src.tests.size(); ++i)
     {
-        hdm.tests[i].testname = Corba::wrap_string_to_corba_string(_src.tests[i].testname);
+        hdm.tests[i].testname = Fred::Corba::wrap_string_to_corba_string(_src.tests[i].testname);
         hdm.tests[i].status = _src.tests[i].status;
-        hdm.tests[i].note = Corba::wrap_string_to_corba_string(_src.tests[i].note);
+        hdm.tests[i].note = Fred::Corba::wrap_string_to_corba_string(_src.tests[i].note);
     }
     PollMessage ret;
     ret.content = new CORBA::Any;
@@ -233,11 +233,13 @@ PollMessage wrap_tech_check_event_into_poll_message(const Epp::Poll::TechCheckEv
 PollMessage wrap_low_request_fee_info_event_into_poll_message(const Epp::Poll::RequestFeeInfoEvent& _src)
 {
     ccReg::PollMsg_RequestFeeInfo hdm;
-    hdm.periodFrom = Corba::wrap_string_to_corba_string(convert_time_to_local_rfc3339(_src.from));
-    hdm.periodTo = Corba::wrap_string_to_corba_string(convert_time_to_local_rfc3339(_src.to - boost::posix_time::seconds(1)));
-    Corba::wrap_int(_src.free_count, hdm.totalFreeCount);
-    Corba::wrap_int(_src.used_count, hdm.usedCount);
-    hdm.price = Corba::wrap_string_to_corba_string(_src.price.get_string(".2f"));
+    hdm.periodFrom = Fred::Corba::wrap_string_to_corba_string(
+        Fred::Corba::convert_time_to_local_rfc3339(_src.from));
+    hdm.periodTo = Fred::Corba::wrap_string_to_corba_string(
+        Fred::Corba::convert_time_to_local_rfc3339(_src.to - boost::posix_time::seconds(1)));
+    Fred::Corba::wrap_int(_src.free_count, hdm.totalFreeCount);
+    Fred::Corba::wrap_int(_src.used_count, hdm.usedCount);
+    hdm.price = Fred::Corba::wrap_string_to_corba_string(_src.price.get_string(".2f"));
     PollMessage ret;
     ret.content = new CORBA::Any;
     ret.content <<= hdm;
@@ -278,8 +280,8 @@ template<typename Flag>
 PollMessage wrap_update_info_event_data_into_poll_message(const Epp::Poll::UpdateInfoEvent::Data<Flag>& _src)
 {
     ccReg::PollMsg_Update hdm;
-    hdm.opTRID = Corba::wrap_string_to_corba_string(Util::make_svtrid(_src.transaction_id));
-    Corba::wrap_int(_src.poll_id, hdm.pollID);
+    hdm.opTRID = Fred::Corba::wrap_string_to_corba_string(Util::make_svtrid(_src.transaction_id));
+    Fred::Corba::wrap_int(_src.poll_id, hdm.pollID);
     PollMessage ret;
     ret.content = new CORBA::Any;
     ret.content <<= hdm;

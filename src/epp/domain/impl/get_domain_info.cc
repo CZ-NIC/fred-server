@@ -52,7 +52,7 @@ InfoDomainOutputData get_domain_info(
     {
         if (object_state_it->is_external)
         {
-            ret.states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(object_state_it->state_name));
+            ret.states.insert(Conversion::Enums::from_status_value_name<Epp::Domain::StatusValue>(object_state_it->state_name));
         }
     }
 

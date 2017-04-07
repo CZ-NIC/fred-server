@@ -19,10 +19,10 @@
 #ifndef POLL_REQUEST_LOCALIZED_H_4E8C8F6FEE144D289DABEA9BFFBF96D4
 #define POLL_REQUEST_LOCALIZED_H_4E8C8F6FEE144D289DABEA9BFFBF96D4
 
-#include "src/epp/impl/session_lang.h"
+#include "src/epp/session_lang.h"
 #include "util/decimal/decimal.h"
 #include "src/fredlib/opcontext.h"
-#include "src/epp/impl/epp_response_success_localized.h"
+#include "src/epp/epp_response_success_localized.h"
 #include "src/epp/poll/poll_request.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>

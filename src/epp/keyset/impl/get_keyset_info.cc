@@ -37,7 +37,7 @@ InfoKeysetOutputData get_keyset_info(
          data_it != keyset_states_data.end();
          ++data_it)
     {
-        ret.states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(data_it->state_name));
+        ret.states.insert(Conversion::Enums::from_status_value_name<Epp::Keyset::StatusValue>(data_it->state_name));
     }
     ret.crdate = data.creation_time;
     ret.last_update = data.update_time;

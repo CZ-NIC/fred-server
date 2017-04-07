@@ -20,7 +20,6 @@
 #include "tests/setup/fixtures_utils.h"
 #include "tests/interfaces/epp/util.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
-#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/domain/transfer_domain.h"
 #include "src/fredlib/contact/transfer_contact.h"
 #include "src/fredlib/nsset/transfer_nsset.h"
@@ -28,11 +27,12 @@
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/object/object_type.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/epp/poll/poll_request.h"
 #include "src/epp/poll/message_type.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_code.h"
 
 #include <boost/test/unit_test.hpp>
 #include <boost/variant.hpp>
@@ -293,7 +293,7 @@ void create_poll_techeck_record(
 
 // fixtures
 
-struct HasPollUpdateDomainMessage : virtual Test::autorollbacking_context
+struct HasPollUpdateDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     unsigned long long history_id;
 
@@ -309,7 +309,7 @@ struct HasPollUpdateDomainMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_domain> SubMessage;
 };
 
-struct HasPollUpdateNssetMessage : virtual Test::autorollbacking_context
+struct HasPollUpdateNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     unsigned long long history_id;
 
@@ -325,7 +325,7 @@ struct HasPollUpdateNssetMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_nsset> SubMessage;
 };
 
-struct HasPollUpdateKeysetMessage : virtual Test::autorollbacking_context
+struct HasPollUpdateKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     unsigned long long history_id;
 
@@ -370,7 +370,7 @@ struct HasPollUpdate : T
     }
 };
 
-struct HasPollTransferDomainMessage : virtual Test::autorollbacking_context
+struct HasPollTransferDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string object_handle;
     std::string dst_registrar_handle;
@@ -394,7 +394,7 @@ struct HasPollTransferDomainMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_domain> SubMessage;
 };
 
-struct HasPollTransferContactMessage : virtual Test::autorollbacking_context
+struct HasPollTransferContactMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string object_handle;
     std::string dst_registrar_handle;
@@ -418,7 +418,7 @@ struct HasPollTransferContactMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_contact> SubMessage;
 };
 
-struct HasPollTransferNssetMessage : virtual Test::autorollbacking_context
+struct HasPollTransferNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string object_handle;
     std::string dst_registrar_handle;
@@ -442,7 +442,7 @@ struct HasPollTransferNssetMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_nsset> SubMessage;
 };
 
-struct HasPollTransferKeysetMessage : virtual Test::autorollbacking_context
+struct HasPollTransferKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string object_handle;
     std::string dst_registrar_handle;
@@ -498,7 +498,7 @@ struct HasPollTransfer : T
     }
 };
 
-struct HasPollRequestFeeInfoMessage : virtual Test::autorollbacking_context
+struct HasPollRequestFeeInfoMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     unsigned long long message_id;
     unsigned long long registrar_id;
@@ -548,7 +548,7 @@ struct HasPollRequestFeeInfoMessage : virtual Test::autorollbacking_context
     }
 };
 
-struct HasPollRequestLowCreditMessage : virtual Test::autorollbacking_context
+struct HasPollRequestLowCreditMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     unsigned long long message_id;
     unsigned long long registrar_id;
@@ -591,7 +591,7 @@ struct HasPollRequestLowCreditMessage : virtual Test::autorollbacking_context
     }
 };
 
-struct HasPollDeleteDomainMessage : virtual Test::autorollbacking_context
+struct HasPollDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -612,7 +612,7 @@ struct HasPollDeleteDomainMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::delete_domain> SubMessage;
 };
 
-struct HasPollDeleteContactMessage : virtual Test::autorollbacking_context
+struct HasPollDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -633,7 +633,7 @@ struct HasPollDeleteContactMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::delete_contact> SubMessage;
 };
 
-struct HasPollValidationMessage : virtual Test::autorollbacking_context
+struct HasPollValidationMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -657,7 +657,7 @@ struct HasPollValidationMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::validation> SubMessage;
 };
 
-struct HasPollImpValidationMessage : virtual Test::autorollbacking_context
+struct HasPollImpValidationMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -681,7 +681,7 @@ struct HasPollImpValidationMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::imp_validation> SubMessage;
 };
 
-struct HasPollExpirationMessage : virtual Test::autorollbacking_context
+struct HasPollExpirationMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -705,7 +705,7 @@ struct HasPollExpirationMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::expiration> SubMessage;
 };
 
-struct HasPollImpExpirationMessage : virtual Test::autorollbacking_context
+struct HasPollImpExpirationMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -729,7 +729,7 @@ struct HasPollImpExpirationMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::imp_expiration> SubMessage;
 };
 
-struct HasPollIdleDeleteDomainMessage : virtual Test::autorollbacking_context
+struct HasPollIdleDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -753,7 +753,7 @@ struct HasPollIdleDeleteDomainMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_domain> SubMessage;
 };
 
-struct HasPollIdleDeleteContactMessage : virtual Test::autorollbacking_context
+struct HasPollIdleDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -775,7 +775,7 @@ struct HasPollIdleDeleteContactMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_contact> SubMessage;
 };
 
-struct HasPollIdleDeleteNssetMessage : virtual Test::autorollbacking_context
+struct HasPollIdleDeleteNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -797,7 +797,7 @@ struct HasPollIdleDeleteNssetMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_nsset> SubMessage;
 };
 
-struct HasPollIdleDeleteKeysetMessage : virtual Test::autorollbacking_context
+struct HasPollIdleDeleteKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -819,7 +819,7 @@ struct HasPollIdleDeleteKeysetMessage : virtual Test::autorollbacking_context
     typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_keyset> SubMessage;
 };
 
-struct HasPollOutzoneUnguardedMessage : virtual Test::autorollbacking_context
+struct HasPollOutzoneUnguardedMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     std::string handle;
     boost::gregorian::date date;
@@ -872,7 +872,7 @@ struct HasPollMessage : T
     }
 };
 
-struct HasPollTechCheckMessage : virtual Test::autorollbacking_context
+struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     Epp::Poll::TechCheckEvent golden;
     const std::string name;

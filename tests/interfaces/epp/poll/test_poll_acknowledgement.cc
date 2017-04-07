@@ -20,10 +20,11 @@
 #include "tests/setup/fixtures_utils.h"
 #include "tests/interfaces/epp/util.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/epp/poll/poll_acknowledgement.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_code.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -32,7 +33,7 @@ BOOST_AUTO_TEST_SUITE(PollAcknowledgement)
 
 namespace {
 
-struct HasPollInfoMessage : virtual Test::autorollbacking_context
+struct HasPollInfoMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     HasPollInfoMessage()
     {
@@ -41,7 +42,7 @@ struct HasPollInfoMessage : virtual Test::autorollbacking_context
     }
 };
 
-struct HasTwoPollInfoMessages : virtual Test::autorollbacking_context
+struct HasTwoPollInfoMessages : virtual Test::Backend::Epp::autorollbacking_context
 {
     HasTwoPollInfoMessages()
     {

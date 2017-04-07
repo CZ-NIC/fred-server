@@ -20,10 +20,11 @@
 #include "tests/setup/fixtures_utils.h"
 #include "tests/interfaces/epp/util.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/epp/poll/poll_request_get_update_keyset_details.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_code.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -72,7 +73,7 @@ void check_equal(
     BOOST_CHECK_EQUAL(tech_contacts.size(), 0);
 }
 
-struct HasKeysetUpdate : virtual Test::autorollbacking_context
+struct HasKeysetUpdate : virtual Test::Backend::Epp::autorollbacking_context
 {
     Fred::InfoKeysetData old_keyset_data;
     Fred::InfoKeysetData new_keyset_data;

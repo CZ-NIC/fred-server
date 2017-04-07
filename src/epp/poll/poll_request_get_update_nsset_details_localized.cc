@@ -20,16 +20,15 @@
 #include "src/epp/poll/poll_request_get_update_nsset_details.h"
 #include "src/epp/nsset/info_nsset.h"
 #include "src/fredlib/object_state/get_object_states.h"
-#include "src/epp/impl/localization.h"
 #include "src/epp/impl/action.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_response_success.h"
-#include "src/epp/impl/epp_response_success_localized.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_success.h"
-#include "src/epp/impl/localization.h"
+#include "src/epp/localization.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_response_failure_localized.h"
+#include "src/epp/epp_response_success.h"
+#include "src/epp/epp_response_success_localized.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_success.h"
 #include "util/log/context.h"
 
 #include <boost/format.hpp>
@@ -49,13 +48,13 @@ void filter_states(
     Fred::OperationContext& _ctx,
     Epp::Nsset::InfoNssetOutputData& _output_data)
 {
-    std::set<std::string> filtered_states;
+    std::set<Epp::Nsset::StatusValue::Enum> filtered_states;
 
     const std::vector<Fred::ObjectStateData> state_definitions =
         Fred::GetObjectStates(
             Fred::InfoNssetByHandle(_output_data.handle).exec(_ctx).info_nsset_data.id).exec(_ctx);
 
-    for(std::set<std::string>::const_iterator state_it = _output_data.states.begin();
+    for(std::set<Epp::Nsset::StatusValue::Enum>::const_iterator state_it = _output_data.states.begin();
         state_it != _output_data.states.end();
         ++state_it)
     {
@@ -70,11 +69,6 @@ void filter_states(
         }
     }
     _output_data.states = filtered_states;
-
-    if (_output_data.states.empty())
-    {
-        _output_data.states.insert("ok");
-    }
 }
 
 } // namespace Epp::Poll::{anonymous}
@@ -105,7 +99,7 @@ PollRequestUpdateNssetLocalizedResponse poll_request_get_update_nsset_details_lo
                     output_data.old_data.sponsoring_registrar_handle,
                     output_data.old_data.creating_registrar_handle,
                     output_data.old_data.last_update_registrar_handle,
-                    localize_object_states_deprecated(ctx, output_data.old_data.states, _session_data.lang),
+                    localize_object_states<Epp::Nsset::StatusValue>(ctx, output_data.old_data.states, _session_data.lang),
                     output_data.old_data.crdate,
                     output_data.old_data.last_update,
                     output_data.old_data.last_transfer,
@@ -119,7 +113,7 @@ PollRequestUpdateNssetLocalizedResponse poll_request_get_update_nsset_details_lo
                     output_data.new_data.sponsoring_registrar_handle,
                     output_data.new_data.creating_registrar_handle,
                     output_data.new_data.last_update_registrar_handle,
-                    localize_object_states_deprecated(ctx, output_data.new_data.states, _session_data.lang),
+                    localize_object_states<Epp::Nsset::StatusValue>(ctx, output_data.new_data.states, _session_data.lang),
                     output_data.new_data.crdate,
                     output_data.new_data.last_update,
                     output_data.new_data.last_transfer,

@@ -104,7 +104,9 @@ unsigned long long transfer_keyset(
                     keyset_data_before_transfer.id,
                     session_registrar.handle,
                     _authinfopw,
-                    _logd_request_id.isset() ? _logd_request_id.get_value() : Nullable< unsigned long long >())
+                    _session_data.logd_request_id.isset()
+                    ? _session_data.logd_request_id.get_value()
+                    : Nullable< unsigned long long >())
             .exec(_ctx);
 
         Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_keyset>()

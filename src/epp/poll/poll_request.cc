@@ -18,9 +18,9 @@
 
 #include "src/epp/poll/poll_request.h"
 #include "src/epp/poll/message_type.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
 #include "util/db/param_query_composition.h"
 
 #include <cstddef>

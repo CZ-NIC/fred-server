@@ -20,10 +20,11 @@
 #include "tests/setup/fixtures_utils.h"
 #include "tests/interfaces/epp/util.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/epp/poll/poll_request_get_update_nsset_details.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_code.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_code.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -67,7 +68,7 @@ void check_equal(const Epp::Nsset::InfoNssetOutputData& nsset_data, const Fred::
     BOOST_CHECK_EQUAL(nsset_data.tech_check_level, info_data.tech_check_level);
 }
 
-struct HasNssetUpdate : virtual Test::autorollbacking_context
+struct HasNssetUpdate : virtual Test::Backend::Epp::autorollbacking_context
 {
     Fred::InfoNssetData old_nsset_data;
     Fred::InfoNssetData new_nsset_data;

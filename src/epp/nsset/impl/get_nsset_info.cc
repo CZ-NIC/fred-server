@@ -32,12 +32,12 @@ InfoNssetOutputData get_nsset_info(
     const std::vector<Fred::ObjectStateData>& object_states_data,
     bool authinfopw_has_to_be_hidden)
 {
-    std::set<std::string> object_states;
+    std::set<Epp::Nsset::StatusValue::Enum> object_states;
     for (std::vector<Fred::ObjectStateData>::const_iterator object_state_it = object_states_data.begin();
         object_state_it != object_states_data.end();
         ++object_state_it)
     {
-        object_states.insert(object_state_it->state_name);
+        object_states.insert(Conversion::Enums::from_status_value_name<Epp::Nsset::StatusValue>(object_state_it->state_name));
     }
 
     std::vector<std::string> tech_contacts;

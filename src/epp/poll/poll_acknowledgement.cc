@@ -17,11 +17,11 @@
  */
 
 #include "src/epp/poll/poll_acknowledgement.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_response_success.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_failure.h"
-#include "src/epp/impl/epp_result_success.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_response_success.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_failure.h"
+#include "src/epp/epp_result_success.h"
 #include "util/db/param_query_composition.h"
 
 namespace Epp {
@@ -49,7 +49,7 @@ PollAcknowledgementOutputData poll_acknowledgement(
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
     }
-    else if (sql_command_result.size() > 1)
+    if (sql_command_result.size() > 1)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }

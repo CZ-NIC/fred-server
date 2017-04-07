@@ -21,7 +21,7 @@
 
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/keyset/info_keyset.h"
-#include "src/epp/keyset/impl/info_keyset_output_data.h"
+#include "src/epp/keyset/info_keyset_output_data.h"
 
 namespace Epp {
 namespace Poll {

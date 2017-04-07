@@ -62,7 +62,6 @@
 #include "src/fredlib/nsset.h"
 #include "src/fredlib/keyset.h"
 #include "src/fredlib/info_buffer.h"
-#include "src/fredlib/poll.h"
 #include "src/fredlib/zone.h"
 #include "src/fredlib/invoicing/invoice.h"
 #include <memory>
@@ -114,13 +113,13 @@
 #include "src/epp/poll/poll_request_get_update_nsset_details_localized.h"
 #include "src/epp/poll/poll_request_get_update_keyset_details_localized.h"
 
-#include "src/epp/impl/reason.h"
-#include "src/epp/impl/param.h"
-#include "src/epp/impl/session_lang.h"
-#include "src/epp/impl/get_registrar_session_data.h"
-#include "src/epp/impl/registrar_session_data.h"
-#include "src/epp/impl/request_params.h"
-#include "src/epp/impl/localization.h"
+#include "src/epp/reason.h"
+#include "src/epp/param.h"
+#include "src/epp/session_lang.h"
+#include "src/epp/get_registrar_session_data.h"
+#include "src/epp/registrar_session_data.h"
+#include "src/epp/request_params.h"
+#include "src/epp/localization.h"
 #include "src/epp/impl/disclose_policy.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
@@ -1226,14 +1225,14 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
     CORBA::String_out _next_msg_id,
     const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
         const Epp::RegistrarSessionData registrar_session_data =
             Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        const std::string message_id = Corba::unwrap_string_from_const_char_ptr(_msg_id);
+        const std::string message_id = Fred::Corba::unwrap_string_from_const_char_ptr(_msg_id);
 
         const Epp::Poll::PollAcknowledgementLocalizedResponse poll_acknowledgement_response =
             Epp::Poll::poll_acknowledgement_localized(
@@ -1250,14 +1249,14 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
                                          server_transaction_handle.c_str());
         }
 
-        CORBA::String_var next_msg_id = Corba::wrap_string_to_corba_string(poll_acknowledgement_response
+        CORBA::String_var next_msg_id = Fred::Corba::wrap_string_to_corba_string(poll_acknowledgement_response
                                                                            .data
                                                                            .oldest_unseen_message_id);
 
-        Corba::wrap_int(poll_acknowledgement_response.data.number_of_unseen_messages, _count);
+        Fred::Corba::wrap_int(poll_acknowledgement_response.data.number_of_unseen_messages, _count);
 
         ccReg::Response_var return_value = new ccReg::Response(
-            Corba::wrap_Epp_EppResponseSuccessLocalized(
+            Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
                 poll_acknowledgement_response.epp_response,
                 server_transaction_handle));
 
@@ -1265,7 +1264,7 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
         return return_value._retn();
     }
     catch (const Epp::EppResponseFailureLocalized& e) {
-        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
@@ -1277,7 +1276,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
     CORBA::Any_OUT_arg _msg,
     const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
@@ -1305,18 +1304,18 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         _type = message_and_type.type;
 
         ccReg::timestamp_var create_time =
-            Corba::wrap_string_to_corba_string(
-                Corba::convert_time_to_local_rfc3339(poll_request_response.data.creation_time));
+            Fred::Corba::wrap_string_to_corba_string(
+                Fred::Corba::convert_time_to_local_rfc3339(poll_request_response.data.creation_time));
 
-        Corba::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
+        Fred::Corba::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
 
         const std::string msg_id_string = boost::lexical_cast<std::string>(poll_request_response
                                                                            .data
                                                                            .message_id);
-        CORBA::String_var msg_id = Corba::wrap_string_to_corba_string(msg_id_string);
+        CORBA::String_var msg_id = Fred::Corba::wrap_string_to_corba_string(msg_id_string);
 
         ccReg::Response_var return_value = new ccReg::Response(
-            Corba::wrap_Epp_EppResponseSuccessLocalized(
+            Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
                 poll_request_response.epp_response,
                 server_transaction_handle));
 
@@ -1325,7 +1324,7 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
         return return_value._retn();
     }
     catch (const Epp::EppResponseFailureLocalized& e) {
-        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
@@ -1346,7 +1345,7 @@ ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
     ccReg::Domain_out _new_data,
     const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
@@ -1359,19 +1358,24 @@ ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
                 Epp::SessionData(
                     registrar_session_data.registrar_id,
                     registrar_session_data.language,
-                    server_transaction_handle));
+                    server_transaction_handle,
+                    epp_request_params.log_request_id.get_value_or(0)));
 
         ccReg::Domain_var old_data = new ccReg::Domain;
-        Corba::wrap_Epp_Domain_InfoDomainLocalizedOutputData(domain_update_response.data.old_data, old_data);
+        Fred::Corba::Epp::Domain::wrap_Epp_Domain_InfoDomainLocalizedOutputData(
+            domain_update_response.data.old_data,
+            old_data);
 
         ccReg::Domain_var new_data = new ccReg::Domain;
-        Corba::wrap_Epp_Domain_InfoDomainLocalizedOutputData(domain_update_response.data.new_data, new_data);
+        Fred::Corba::Epp::Domain::wrap_Epp_Domain_InfoDomainLocalizedOutputData(
+            domain_update_response.data.new_data,
+            new_data);
 
         _old_data = old_data._retn();
         _new_data = new_data._retn();
     }
     catch (const Epp::EppResponseFailureLocalized& e) {
-        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
@@ -1392,7 +1396,7 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
     ccReg::NSSet_out _new_data,
     const ccReg::EppParams &_epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
@@ -1405,16 +1409,19 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
                 Epp::SessionData(
                     registrar_session_data.registrar_id,
                     registrar_session_data.language,
-                    server_transaction_handle));
+                    server_transaction_handle,
+                    epp_request_params.log_request_id.get_value_or(0)));
 
-        ccReg::NSSet_var old_data = new ccReg::NSSet(Corba::wrap_localized_info_nsset(nsset_update_response.data.old_data));
-        ccReg::NSSet_var new_data = new ccReg::NSSet(Corba::wrap_localized_info_nsset(nsset_update_response.data.new_data));
+        ccReg::NSSet_var old_data =
+            new ccReg::NSSet(Fred::Corba::wrap_localized_info_nsset(nsset_update_response.data.old_data));
+        ccReg::NSSet_var new_data =
+            new ccReg::NSSet(Fred::Corba::wrap_localized_info_nsset(nsset_update_response.data.new_data));
 
         _old_data = old_data._retn();
         _new_data = new_data._retn();
     }
     catch (const Epp::EppResponseFailureLocalized& e) {
-        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
@@ -1435,7 +1442,7 @@ ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
     ccReg::KeySet_out _new_data,
     const ccReg::EppParams &_epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
     try {
@@ -1448,19 +1455,24 @@ ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
                 Epp::SessionData(
                     registrar_session_data.registrar_id,
                     registrar_session_data.language,
-                    server_transaction_handle));
+                    server_transaction_handle,
+                    epp_request_params.log_request_id.get_value_or(0)));
 
         ccReg::KeySet_var old_data = new ccReg::KeySet;
-        Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(keyset_update_response.data.old_data, old_data);
+        Fred::Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
+            keyset_update_response.data.old_data,
+            old_data);
 
         ccReg::KeySet_var new_data = new ccReg::KeySet;
-        Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(keyset_update_response.data.new_data, new_data);
+        Fred::Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
+            keyset_update_response.data.new_data,
+            new_data);
 
         _old_data = old_data._retn();
         _new_data = new_data._retn();
     }
     catch (const Epp::EppResponseFailureLocalized& e) {
-        throw Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 

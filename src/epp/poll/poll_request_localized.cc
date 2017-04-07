@@ -19,11 +19,11 @@
 #include "src/epp/poll/poll_request_localized.h"
 
 #include "src/epp/impl/action.h"
-#include "src/epp/impl/epp_response_failure.h"
-#include "src/epp/impl/epp_response_failure_localized.h"
-#include "src/epp/impl/epp_result_code.h"
-#include "src/epp/impl/epp_result_success.h"
-#include "src/epp/impl/epp_result_failure.h"
+#include "src/epp/epp_response_failure.h"
+#include "src/epp/epp_response_failure_localized.h"
+#include "src/epp/epp_result_code.h"
+#include "src/epp/epp_result_success.h"
+#include "src/epp/epp_result_failure.h"
 #include "src/fredlib/opcontext.h"
 #include "util/log/context.h"
 
