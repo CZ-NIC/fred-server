@@ -262,6 +262,18 @@ namespace Fred
         templateMap[GT_MOJEID_CARD] = GenProcType(
           "mojeid_card_optys.xsl", true, "application/pdf"
         );
+        templateMap[GT_RECORD_STATEMENT_DOMAIN] = GenProcType(
+          "record_statement_domain.xsl", true, "application/pdf"
+        );
+        templateMap[GT_RECORD_STATEMENT_NSSET] = GenProcType(
+          "record_statement_nsset.xsl", true, "application/pdf"
+        );
+        templateMap[GT_RECORD_STATEMENT_KEYSET] = GenProcType(
+          "record_statement_keyset.xsl", true, "application/pdf"
+        );
+        templateMap[GT_RECORD_STATEMENT_CONTACT] = GenProcType(
+          "record_statement_contact.xsl", true, "application/pdf"
+        );
 
       }
       std::auto_ptr<Fred::Document::Generator> createOutputGenerator(

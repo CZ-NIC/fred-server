@@ -29,6 +29,10 @@ namespace Fred
       GT_ADMIN_CONTACT_VERIFICATION_CONTACT_CHECK_THANK_YOU,
       GT_CONTACT_IDENTIFICATION_LETTER_PIN3_OPTYS,
       GT_MOJEID_CARD, ///< letter with mojeid (emergency) card
+      GT_RECORD_STATEMENT_DOMAIN, ///< domain record statement pdf printout
+      GT_RECORD_STATEMENT_NSSET, ///< nsset record statement pdf printout
+      GT_RECORD_STATEMENT_KEYSET, ///< keyset record statement pdf printout
+      GT_RECORD_STATEMENT_CONTACT, ///< contact record statement pdf printout
     };
     /// generator that has to be filled with stream of data
     class Generator {

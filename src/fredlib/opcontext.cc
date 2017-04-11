@@ -140,4 +140,11 @@ void rollback_transaction(const std::string &_transaction_id)
     conn_ptr->exec("ROLLBACK PREPARED '" + _transaction_id + "'");
 }
 
+OperationContext& select_operation_context(
+    OperationContext& internal_ctx,
+    OperationContext* external_ctx)
+{
+    return external_ctx ? *external_ctx : internal_ctx;
+}
+
 }//Fred

@@ -108,7 +108,11 @@ CLEANFILES = \
 		src/corba/AutomaticKeysetManagementSK.cc \
 		src/corba/AutomaticKeysetManagementDynSK.cc \
 		src/corba/AutomaticKeysetManagementSK.h \
-		src/corba/AutomaticKeysetManagement.hh
+		src/corba/AutomaticKeysetManagement.hh \
+		src/corba/RecordStatementSK.cc \
+		src/corba/RecordStatementDynSK.cc \
+		src/corba/RecordStatementSK.h \
+		src/corba/RecordStatement.hh
 
 
 
@@ -333,6 +337,7 @@ noinst_LIBRARIES = \
 		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbapublicrequest.a \
 		src/corba/libcorbaautomatickeysetmanagement.a \
+		src/corba/libcorbarecordstatement.a \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorba_conversion_test.a \
@@ -359,6 +364,7 @@ sbin_PROGRAMS = \
 		src/corba/mojeid/messages/fred-mojeid-msggen \
 		src/corba/domain_browser/fred-dbifd \
 		src/corba/automatic_keyset_management/fred-akmd \
+		src/corba/record_statement/fred-rsifd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log \
 		tools/contact_migration/mojeid_contact_address_import \
@@ -1227,7 +1233,8 @@ BUILT_SOURCES = \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/corba_conversion_testSK.cc \
 		src/corba/NotificationSK.cc \
-		src/corba/AutomaticKeysetManagementSK.cc
+		src/corba/AutomaticKeysetManagementSK.cc \
+		src/corba/RecordStatementSK.cc
 
 
 # src/corba/libcorba.a
@@ -1378,6 +1385,11 @@ nodist_src_corba_libcorbaautomatickeysetmanagement_a_SOURCES = \
 		src/corba/AutomaticKeysetManagementDynSK.cc \
 		src/corba/AutomaticKeysetManagement.hh
 
+nodist_src_corba_libcorbarecordstatement_a_SOURCES = \
+		src/corba/RecordStatementSK.cc \
+		src/corba/RecordStatementDynSK.cc \
+		src/corba/RecordStatement.hh
+
 #
 # nodist corba libs
 
@@ -1408,6 +1420,7 @@ src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl 
 src/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
 src/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
 src/corba/AutomaticKeysetManagementSK.cc: $(IDLDIR)/AutomaticKeysetManagement.idl
+src/corba/RecordStatementSK.cc: $(IDLDIR)/RecordStatement.idl
 
 src/corba/%.cc:
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $<
@@ -2299,6 +2312,44 @@ src_corba_automatic_keyset_management_fred_akmd_LDADD = \
 # src/corba/automatic_keyset_management/fred-akmd
 
 
+# src/corba/record_statement/fred-rsifd
+#
+src_corba_record_statement_fred_rsifd_SOURCES = \
+		src/record_statement/record_statement.cc \
+		src/record_statement/record_statement.hh \
+		src/record_statement/record_statement_exception.hh \
+		src/record_statement/impl/record_statement_xml.cc \
+		src/record_statement/impl/record_statement_xml.hh \
+		src/corba/nameservice.cc \
+		src/corba/record_statement/record_statement_i.cc \
+		src/corba/record_statement/record_statement_i.hh \
+		src/corba/record_statement/fred-rsifd.cc
+
+src_corba_record_statement_fred_rsifd_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+src_corba_record_statement_fred_rsifd_LDADD = \
+		src/fredlib/libfred.a \
+		src/corba/util/libcorbautil.a \
+		src/corba/libcorba.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbarecordstatement.a \
+		$(LIBIDN_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# src/corba/record_statement/fred-rsifd
+
+
 # src/cli_admin/fred-admin
 #
 src_cli_admin_fred_admin_SOURCES = \
@@ -2536,7 +2587,8 @@ SERVER_TESTS = \
 		tests/test-blocking \
 		tests/test-fredlib \
 		tests/test-optys \
-		tests/test-corba-conversion
+		tests/test-corba-conversion \
+		tests/interfaces/test-record-statement
 
 # tests/interfaces/test-admin-contact-verification
 #
@@ -3281,7 +3333,6 @@ tests_test_corba_conversion_LDADD = \
 
 # tests/interfaces/test-automatic-keyset-management
 #
-
 tests_interfaces_test_automatic_keyset_management_SOURCES = \
 		src/corba/nameservice.h \
 		src/corba/nameservice.cc \
@@ -3346,10 +3397,50 @@ tests_interfaces_test_automatic_keyset_management_LDADD = \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB) \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
-
 #
 # tests_interfaces_test_automatic_keyset_management
 
+# tests/interfaces/test-record-statement
+#
+tests_interfaces_test_record_statement_SOURCES = \
+		src/record_statement/record_statement.cc \
+		src/record_statement/record_statement.hh \
+		src/record_statement/impl/record_statement_xml.cc \
+		src/record_statement/impl/record_statement_xml.hh \
+		tests/interfaces/record_statement/util.h \
+		tests/interfaces/record_statement/fixture.h \
+		tests/interfaces/record_statement/main.cc \
+		tests/interfaces/record_statement/test_record_statement.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_record_statement_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_record_statement_LDADD = \
+		src/fredlib/libfred.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		-lmpdec -lm -lrt \
+		src/corba/libcorba.a \
+		src/corba/libmailer.a \
+		src/corba/libcorbadatatypes.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests_interfaces_test_record_statement
 
 # non-corba tests with overloaded global operator new
 #

@@ -24,6 +24,8 @@
 #include <fredlib/contact.h>
 #include <fredlib/nsset.h>
 #include <fredlib/keyset.h>
+#include "src/fredlib/registrar/info_registrar.h"
+#include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/domain/info_domain_impl.h"
 
 #include "util/random_data_generator.h"
@@ -195,6 +197,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
     BOOST_CHECK(Fred::InfoDomainHistoryByRoid(xmark+test_info_domain_output.info_domain_data.roid).exec(ctx).empty());
     BOOST_CHECK(Fred::InfoDomainHistoryById(0).exec(ctx).empty());
 }
+
 
 BOOST_FIXTURE_TEST_CASE(test_info_domain_output_timestamp, test_domain_fixture)
 {

@@ -36,7 +36,10 @@ namespace Util
 typedef boost::function<void (std::string&, unsigned)> XmlIndentingCallback;
 typedef boost::function<void (std::string&)> XmlCallback;
 
+std::string XmlEscapeCdata(std::string data);
 std::string XmlUnparsedCData(const std::string& data);
+std::string XmlEscapeTag(std::string data);
+std::string XmlEscapeAttr(std::string data);
 
 class XmlIndentingCallbackCaller
 {
@@ -131,6 +134,7 @@ class XmlTagPair
     const std::string tag_;
     const std::vector<XmlCallback> cb_content_;
     const std::string txt_content_;
+    const std::string attributes_;
 public:
 
     XmlTagPair(const std::string& tag)
@@ -147,10 +151,28 @@ public:
     , cb_content_(cb_content)
     {}
 
+    XmlTagPair(const std::string& tag, const std::string& txt_content, const std::string& attributes)
+    : tag_(tag)
+    , txt_content_(txt_content)
+    , attributes_(attributes)
+    {}
+
+    XmlTagPair(const std::string& tag,const std::vector<XmlCallback>& cb_content, const std::string& attributes)
+    : tag_(tag)
+    , cb_content_(cb_content)
+    , attributes_(attributes)
+    {}
+
+
     void operator()(std::string& xmlout)
     {
         xmlout += "<";
         xmlout += tag_;
+        if(!attributes_.empty())
+        {
+            xmlout += " ";
+            xmlout += attributes_;
+        }
         xmlout += ">";
 
         if(cb_content_.empty())

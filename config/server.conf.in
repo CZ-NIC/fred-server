@@ -112,6 +112,10 @@ docgen_domain_count_limit = 100
 # Path to filemanager_client
 fileclient_path = @BINDIR@/filemanager_client
 
+# Registry timezone in Olson format.
+# Must be the same as local system timezone
+# Value must be from PostgreSQL pg_timezone_names.name.
+registry_timezone = Europe/Prague
 
 ################################################################################
 ## Daemon-specific settings

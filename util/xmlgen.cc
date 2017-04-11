@@ -23,8 +23,17 @@
 
 #include "util/xmlgen.h"
 
+#include <boost/algorithm/string/replace.hpp>
+
 namespace Util
 {
+    std::string XmlEscapeCdata(std::string data)
+    {
+        boost::replace_all(data, "]]>", "]]]]><![CDATA[>");
+        return data;
+    }
+
+
     std::string XmlUnparsedCData(const std::string& data)
     {
         std::string ret("<![CDATA[");
@@ -32,4 +41,21 @@ namespace Util
         ret+="]]>";
         return ret;
     }
+
+    std::string XmlEscapeTag(std::string data)
+    {
+        boost::replace_all(data, "&", "&amp;");
+        boost::replace_all(data, "<", "&lt;");
+        boost::replace_all(data, ">", "&gt;");
+        return data;
+    }
+
+    std::string XmlEscapeAttr(std::string data)
+    {
+        boost::replace_all(data, "\"", "&quot;");
+        boost::replace_all(data, "'", "&apos;");
+        return data;
+    }
+
+
 } //namespace Util

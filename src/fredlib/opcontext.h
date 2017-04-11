@@ -158,6 +158,13 @@ void commit_transaction(const std::string &_transaction_id);
  */
 void rollback_transaction(const std::string &_transaction_id);
 
+/**
+ * use external context if available, e.g. for testing
+ */
+OperationContext& select_operation_context(
+    OperationContext& internal_ctx,
+    OperationContext* external_ctx);
+
 }//namespace Fred
 
 #endif //OPCONTEXT_H_514FF01C2C974C899314DD0B8DE0E372
