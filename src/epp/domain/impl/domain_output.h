@@ -16,25 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_DOMAIN_INFO_H_8608F5F96416401DBBBBB6E96ADC6F9B
-#define GET_DOMAIN_INFO_H_8608F5F96416401DBBBBB6E96ADC6F9B
+#ifndef DOMAIN_OUTPUT_H_33D3AFAA0E8044C39744204635F10659
+#define DOMAIN_OUTPUT_H_33D3AFAA0E8044C39744204635F10659
 
-#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/info_domain_data.h"
-#include "src/fredlib/object_state/get_object_states.h"
 #include "src/epp/domain/info_domain.h"
-
-#include <vector>
 
 namespace Epp {
 namespace Domain {
 
-InfoDomainOutputData get_domain_info(
-    const Fred::InfoDomainData& data,
-    const std::vector<Fred::ObjectStateData>& object_states_data,
-    bool authinfopw_has_to_be_hidden);
+InfoDomainOutputData get_info_domain_output(
+    Fred::OperationContext& _ctx,
+    const Fred::InfoDomainData& _data,
+    unsigned long long _registrar_id);
 
 } // namespace Epp::Domain
 } // namespace Epp
+
 
 #endif

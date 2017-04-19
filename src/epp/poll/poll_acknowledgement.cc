@@ -58,7 +58,7 @@ PollAcknowledgementOutputData poll_acknowledgement(
 
     poll_acknowledgement_output_data.number_of_unseen_messages =
         static_cast<unsigned long long>(sql_command_result[0][0]);
-    if(poll_acknowledgement_output_data.number_of_unseen_messages == 0)
+    if (poll_acknowledgement_output_data.number_of_unseen_messages == 0)
     {
         return poll_acknowledgement_output_data;
     }

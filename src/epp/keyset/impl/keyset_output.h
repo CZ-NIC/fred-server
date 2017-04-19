@@ -16,23 +16,20 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GET_KEYSET_INFO_H_77F8A11467AE4C6D9F92CA89267E0172
-#define GET_KEYSET_INFO_H_77F8A11467AE4C6D9F92CA89267E0172
+#ifndef KEYSET_OUTPUT_H_0B6E9FCC43D34765ADF95835FBEA9426
+#define KEYSET_OUTPUT_H_0B6E9FCC43D34765ADF95835FBEA9426
 
-#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/opcontext.h"
 #include "src/fredlib/keyset/info_keyset_data.h"
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/epp/keyset/info_keyset.h"
-
-#include <vector>
+#include "src/epp/keyset/info_keyset_output_data.h"
 
 namespace Epp {
 namespace Keyset {
 
-InfoKeysetOutputData get_keyset_info(
-    const Fred::InfoKeysetData& data,
-    const std::vector<Fred::ObjectStateData>& object_states_data,
-    bool authinfopw_has_to_be_hidden);
+InfoKeysetOutputData get_info_keyset_output(
+    Fred::OperationContext& _ctx,
+    const Fred::InfoKeysetData& _data,
+    unsigned long long _registrar_id);
 
 } // namespace Epp::Keyset
 } // namespace Epp

@@ -20,7 +20,6 @@
 #define POLL_REQUEST_GET_UPDATE_NSSET_DETAILS_H_FBF6E660C9A8487D836B76EBE1386F18
 
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/nsset/info_nsset.h"
 #include "src/epp/nsset/info_nsset.h"
 
 namespace Epp {

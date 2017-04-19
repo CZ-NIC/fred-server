@@ -23,8 +23,6 @@
 #include "src/epp/epp_response_success_localized.h"
 #include "src/epp/session_data.h"
 
-#include <string>
-
 namespace Epp {
 namespace Poll {
 

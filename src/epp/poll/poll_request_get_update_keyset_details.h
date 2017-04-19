@@ -20,7 +20,6 @@
 #define POLL_REQUEST_GET_UPDATE_KEYSET_DETAILS_H_0C634699015A4D1B82588E2B54A52D87
 
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/keyset/info_keyset.h"
 #include "src/epp/keyset/info_keyset_output_data.h"
 
 namespace Epp {

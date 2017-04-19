@@ -41,12 +41,12 @@ PollRequestLocalizedResponse poll_request_localized(
     SessionLang::Enum _lang,
     const std::string& _server_transaction_handle)
 {
-    try {
-        Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
-        Logging::Context logging_ctx3(_server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollResponse)));//?
+    Logging::Context logging_ctx("rifd");
+    Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _registrar_id));
+    Logging::Context logging_ctx3(_server_transaction_handle);
+    Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollResponse)));//?
 
+    try {
         Fred::OperationContextCreator ctx;
 
         const PollRequestOutputData output_data = poll_request(ctx, _registrar_id);
@@ -58,7 +58,7 @@ PollRequestLocalizedResponse poll_request_localized(
                 output_data.number_of_unseen_messages,
                 output_data.message);
 
-        PollRequestLocalizedResponse ret(
+        const PollRequestLocalizedResponse ret(
             EppResponseSuccessLocalized(
                 ctx,
                 EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully_ack_to_dequeue)),

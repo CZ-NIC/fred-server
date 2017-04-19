@@ -186,7 +186,7 @@ unsigned long long create_poll_request_fee_message(
     const Decimal &_price)
 {
     const unsigned long long poll_msg_id =
-        create_message_and_get_message_id(_ctx, _registrar_id, Epp::Poll::MessageType::request_fee_info);
+        create_message_and_get_message_id(_ctx, _registrar_id, ::Epp::Poll::MessageType::request_fee_info);
 
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(
         "INSERT INTO poll_request_fee "
@@ -215,7 +215,7 @@ unsigned long long create_poll_low_credit_message(
     const Decimal& _credit)
 {
     const unsigned long long poll_msg_id =
-        create_message_and_get_message_id(_ctx, _registrar_id, Epp::Poll::MessageType::credit);
+        create_message_and_get_message_id(_ctx, _registrar_id, ::Epp::Poll::MessageType::credit);
 
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(
         "INSERT INTO poll_credit "
@@ -306,7 +306,7 @@ struct HasPollUpdateDomainMessage : virtual Test::Backend::Epp::autorollbacking_
         Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_domain> SubMessage;
+    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateDomain> SubMessage;
 };
 
 struct HasPollUpdateNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -322,7 +322,7 @@ struct HasPollUpdateNssetMessage : virtual Test::Backend::Epp::autorollbacking_c
         Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_nsset> SubMessage;
+    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateNsset> SubMessage;
 };
 
 struct HasPollUpdateKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -338,7 +338,7 @@ struct HasPollUpdateKeysetMessage : virtual Test::Backend::Epp::autorollbacking_
         Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::update_keyset> SubMessage;
+    typedef Epp::Poll::UpdateInfoEvent::Data<Epp::Poll::UpdateInfoEvent::UpdateKeyset> SubMessage;
 };
 
 template<typename T>
@@ -391,7 +391,7 @@ struct HasPollTransferDomainMessage : virtual Test::Backend::Epp::autorollbackin
         Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_domain>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_domain> SubMessage;
+    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferDomain> SubMessage;
 };
 
 struct HasPollTransferContactMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -415,7 +415,7 @@ struct HasPollTransferContactMessage : virtual Test::Backend::Epp::autorollbacki
         Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_contact>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_contact> SubMessage;
+    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferContact> SubMessage;
 };
 
 struct HasPollTransferNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -439,7 +439,7 @@ struct HasPollTransferNssetMessage : virtual Test::Backend::Epp::autorollbacking
         Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_nsset>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_nsset> SubMessage;
+    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferNsset> SubMessage;
 };
 
 struct HasPollTransferKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -463,7 +463,7 @@ struct HasPollTransferKeysetMessage : virtual Test::Backend::Epp::autorollbackin
         Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::transfer_keyset>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::transfer_keyset> SubMessage;
+    typedef Epp::Poll::TransferEvent::Data<Epp::Poll::TransferEvent::TransferKeyset> SubMessage;
 };
 
 template<typename T>
@@ -609,7 +609,7 @@ struct HasPollDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_
         Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_domain>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::delete_domain> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::DeleteDomain> SubMessage;
 };
 
 struct HasPollDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -630,7 +630,7 @@ struct HasPollDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking
         Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>().exec(ctx, history_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::delete_contact> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::DeleteContact> SubMessage;
 };
 
 struct HasPollValidationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -648,13 +648,13 @@ struct HasPollValidationMessage : virtual Test::Backend::Epp::autorollbacking_co
             Fred::CreateDomain(handle, registrar.info_data.handle, contact.info_data.handle)
             .set_enum_validation_expiration(date).exec(ctx, "Europe/Prague");
         const unsigned long long poll_msg_id =
-            create_message_and_get_message_id(ctx, registrar.info_data.id, Epp::Poll::MessageType::validation);
+            create_message_and_get_message_id(ctx, registrar.info_data.id, ::Epp::Poll::MessageType::validation);
         const unsigned long long state_change_id =
             create_poll_object_state_record_validation(ctx, "notValidated", result.create_object_result.object_id);
         create_poll_statechange_record(ctx, poll_msg_id, state_change_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::validation> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::Validation> SubMessage;
 };
 
 struct HasPollImpValidationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -678,7 +678,7 @@ struct HasPollImpValidationMessage : virtual Test::Backend::Epp::autorollbacking
         create_poll_statechange_record(ctx, poll_msg_id, state_change_id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::imp_validation> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::ImpValidation> SubMessage;
 };
 
 struct HasPollExpirationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -702,7 +702,7 @@ struct HasPollExpirationMessage : virtual Test::Backend::Epp::autorollbacking_co
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::expiration> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::Expiration> SubMessage;
 };
 
 struct HasPollImpExpirationMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -726,7 +726,7 @@ struct HasPollImpExpirationMessage : virtual Test::Backend::Epp::autorollbacking
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::imp_expiration> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::ImpExpiration> SubMessage;
 };
 
 struct HasPollIdleDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -750,7 +750,7 @@ struct HasPollIdleDeleteDomainMessage : virtual Test::Backend::Epp::autorollback
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_domain> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteDomain> SubMessage;
 };
 
 struct HasPollIdleDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -772,7 +772,7 @@ struct HasPollIdleDeleteContactMessage : virtual Test::Backend::Epp::autorollbac
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_contact> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteContact> SubMessage;
 };
 
 struct HasPollIdleDeleteNssetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -794,7 +794,7 @@ struct HasPollIdleDeleteNssetMessage : virtual Test::Backend::Epp::autorollbacki
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_nsset> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteNsset> SubMessage;
 };
 
 struct HasPollIdleDeleteKeysetMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -816,7 +816,7 @@ struct HasPollIdleDeleteKeysetMessage : virtual Test::Backend::Epp::autorollback
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::idle_delete_keyset> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::IdleDeleteKeyset> SubMessage;
 };
 
 struct HasPollOutzoneUnguardedMessage : virtual Test::Backend::Epp::autorollbacking_context
@@ -840,7 +840,7 @@ struct HasPollOutzoneUnguardedMessage : virtual Test::Backend::Epp::autorollback
         create_poll_statechange_record(ctx, poll_msg_id, state_record_data.id);
     }
 
-    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::outzone> SubMessage;
+    typedef Epp::Poll::MessageEvent::Data<Epp::Poll::MessageEvent::Outzone> SubMessage;
 };
 
 template<typename T>
@@ -885,7 +885,7 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
             .set_tech_check_level(3).exec(ctx);
 
         const unsigned long long message_id =
-            create_message_and_get_message_id(ctx, registrar.info_data.id, Epp::Poll::MessageType::techcheck);
+            create_message_and_get_message_id(ctx, registrar.info_data.id, ::Epp::Poll::MessageType::techcheck);
         const unsigned long long check_nsset_id =
             create_check_nsset_record(ctx, result.create_object_result.object_id);
 

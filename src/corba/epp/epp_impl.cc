@@ -1297,8 +1297,8 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
                                          server_transaction_handle.c_str());
         }
 
-        Corba::PollMessage message_and_type;
-        message_and_type = Corba::wrap_event_into_poll_message(poll_request_response.data.message);
+        Fred::Corba::PollMessage message_and_type;
+        message_and_type = Fred::Corba::wrap_into_poll_message(poll_request_response.data.message);
         _msg = message_and_type.content._retn();
 
         _type = message_and_type.type;

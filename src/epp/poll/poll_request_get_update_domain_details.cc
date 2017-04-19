@@ -18,7 +18,6 @@
 
 #include "src/epp/poll/poll_request_get_update_domain_details.h"
 #include "src/epp/poll/message_type.h"
-#include "src/epp/domain/impl/get_domain_info.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_success.h"
 #include "src/epp/epp_result_code.h"
@@ -26,33 +25,10 @@
 #include "src/epp/epp_result_success.h"
 #include "util/db/param_query_composition.h"
 #include "src/fredlib/domain/info_domain.h"
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/registrar/info_registrar.h"
+#include "src/epp/domain/impl/domain_output.h"
 
 namespace Epp {
 namespace Poll {
-
-namespace {
-
-Epp::Domain::InfoDomainOutputData get_info_domain_output_data(
-    Fred::OperationContext& _ctx,
-    unsigned long long _session_registrar_id,
-    unsigned long long _history_id)
-{
-    const Fred::InfoDomainData info_domain_data =
-        Fred::InfoDomainHistoryByHistoryid(_history_id).exec(_ctx).info_domain_data;
-
-    const std::vector<Fred::ObjectStateData> domain_states_data = Fred::GetObjectStates(info_domain_data.id).exec(_ctx);
-
-    const std::string callers_registrar_handle =
-        Fred::InfoRegistrarById(_session_registrar_id).exec(_ctx).info_registrar_data.handle;
-    const bool callers_is_sponsoring_registrar = info_domain_data.sponsoring_registrar_handle == callers_registrar_handle;
-    const bool authinfopw_has_to_be_hidden = !callers_is_sponsoring_registrar;
-
-    return Epp::Domain::get_domain_info(info_domain_data, domain_states_data, authinfopw_has_to_be_hidden);
-}
-
-} // namespace Epp::Poll::{anonymous}
 
 PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
     Fred::OperationContext& _ctx,
@@ -90,8 +66,13 @@ PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
 
     PollRequestUpdateDomainOutputData ret;
     try {
-        ret.old_data = get_info_domain_output_data(_ctx, _registrar_id, old_history_id);
-        ret.new_data = get_info_domain_output_data(_ctx, _registrar_id, new_history_id);
+        const Fred::InfoDomainData old_info_domain_data =
+            Fred::InfoDomainHistoryByHistoryid(old_history_id).exec(_ctx).info_domain_data;
+        ret.old_data = Epp::Domain::get_info_domain_output(_ctx, old_info_domain_data, _registrar_id);
+
+        const Fred::InfoDomainData new_info_domain_data =
+            Fred::InfoDomainHistoryByHistoryid(new_history_id).exec(_ctx).info_domain_data;
+        ret.new_data = Epp::Domain::get_info_domain_output(_ctx, new_info_domain_data, _registrar_id);
     }
     catch (const Fred::InfoDomainHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));

@@ -55,7 +55,8 @@ TransferEvent get_transfer_event(
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));
     }
 
-    const boost::gregorian::date transfer_date = boost::gregorian::from_string(static_cast<std::string>(sql_query_result[0][0]));
+    const boost::gregorian::date transfer_date =
+        boost::gregorian::from_string(static_cast<std::string>(sql_query_result[0][0]));
     const std::string object_handle = static_cast<std::string>(sql_query_result[0][1]);
     const std::string dst_registrar_handle = static_cast<std::string>(sql_query_result[0][2]);
 
@@ -64,25 +65,29 @@ TransferEvent get_transfer_event(
     {
         case MessageType::transfer_contact:
         {
-            const TransferEvent::Data<TransferEvent::transfer_contact> specific_message = { transfer_date, object_handle, dst_registrar_handle };
+            const TransferEvent::Data<TransferEvent::TransferContact> specific_message =
+                { transfer_date, object_handle, dst_registrar_handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::transfer_nsset:
         {
-            const TransferEvent::Data<TransferEvent::transfer_nsset> specific_message = { transfer_date, object_handle, dst_registrar_handle };
+            const TransferEvent::Data<TransferEvent::TransferNsset> specific_message =
+                { transfer_date, object_handle, dst_registrar_handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::transfer_domain:
         {
-            const TransferEvent::Data<TransferEvent::transfer_domain> specific_message = { transfer_date, object_handle, dst_registrar_handle };
+            const TransferEvent::Data<TransferEvent::TransferDomain> specific_message =
+                { transfer_date, object_handle, dst_registrar_handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::transfer_keyset:
         {
-            const TransferEvent::Data<TransferEvent::transfer_keyset> specific_message = { transfer_date, object_handle, dst_registrar_handle };
+            const TransferEvent::Data<TransferEvent::TransferKeyset> specific_message =
+                { transfer_date, object_handle, dst_registrar_handle };
             ret.message = specific_message;
             break;
         }
@@ -124,13 +129,13 @@ MessageEvent get_message_event_delete(
     {
         case MessageType::delete_domain:
         {
-            const MessageEvent::Data<MessageEvent::delete_domain> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::DeleteDomain> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::delete_contact:
         {
-            const MessageEvent::Data<MessageEvent::delete_contact> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::DeleteContact> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
@@ -174,13 +179,13 @@ MessageEvent get_message_event_validation(
     {
         case MessageType::validation:
         {
-            const MessageEvent::Data<MessageEvent::validation> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::Validation> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::imp_validation:
         {
-            const MessageEvent::Data<MessageEvent::imp_validation> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::ImpValidation> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
@@ -224,43 +229,43 @@ MessageEvent get_message_event_rest(
     {
         case MessageType::idle_delete_contact:
         {
-            const MessageEvent::Data<MessageEvent::idle_delete_contact> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::IdleDeleteContact> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::idle_delete_nsset:
         {
-            const MessageEvent::Data<MessageEvent::idle_delete_nsset> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::IdleDeleteNsset> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::idle_delete_domain:
         {
-            const MessageEvent::Data<MessageEvent::idle_delete_domain> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::IdleDeleteDomain> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::idle_delete_keyset:
         {
-            const MessageEvent::Data<MessageEvent::idle_delete_keyset> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::IdleDeleteKeyset> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::imp_expiration:
         {
-            const MessageEvent::Data<MessageEvent::imp_expiration> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::ImpExpiration> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::expiration:
         {
-            const MessageEvent::Data<MessageEvent::expiration> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::Expiration> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
         case MessageType::outzone:
         {
-            const MessageEvent::Data<MessageEvent::outzone> specific_message = { date, handle };
+            const MessageEvent::Data<MessageEvent::Outzone> specific_message = { date, handle };
             ret.message = specific_message;
             break;
         }
@@ -435,19 +440,19 @@ UpdateInfoEvent get_update_info_event(
     {
         case MessageType::update_domain:
         {
-            const UpdateInfoEvent::Data<UpdateInfoEvent::update_domain> specific_message = { transaction_id, _message_id };
+            const UpdateInfoEvent::Data<UpdateInfoEvent::UpdateDomain> specific_message = { transaction_id, _message_id };
             ret.message = specific_message;
             break;
         }
         case MessageType::update_nsset:
         {
-            const UpdateInfoEvent::Data<UpdateInfoEvent::update_nsset> specific_message = { transaction_id, _message_id };
+            const UpdateInfoEvent::Data<UpdateInfoEvent::UpdateNsset> specific_message = { transaction_id, _message_id };
             ret.message = specific_message;
             break;
         }
         case MessageType::update_keyset:
         {
-            const UpdateInfoEvent::Data<UpdateInfoEvent::update_keyset> specific_message = { transaction_id, _message_id };
+            const UpdateInfoEvent::Data<UpdateInfoEvent::UpdateKeyset> specific_message = { transaction_id, _message_id };
             ret.message = specific_message;
             break;
         }

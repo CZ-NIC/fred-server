@@ -23,6 +23,9 @@
 
 #include <boost/variant.hpp>
 
+
+namespace Fred
+{
 namespace Corba
 {
 
@@ -60,25 +63,25 @@ struct TransferEventWrapper : boost::static_visitor<PollMessage>
 template<typename> struct TransferTypes;
 
 template<>
-struct TransferTypes<Epp::Poll::TransferEvent::transfer_contact>
+struct TransferTypes<Epp::Poll::TransferEvent::TransferContact>
 {
     static const ccReg::PollType value = ccReg::polltype_transfer_contact;
 };
 
 template<>
-struct TransferTypes<Epp::Poll::TransferEvent::transfer_domain>
+struct TransferTypes<Epp::Poll::TransferEvent::TransferDomain>
 {
     static const ccReg::PollType value = ccReg::polltype_transfer_domain;
 };
 
 template<>
-struct TransferTypes<Epp::Poll::TransferEvent::transfer_nsset>
+struct TransferTypes<Epp::Poll::TransferEvent::TransferNsset>
 {
     static const ccReg::PollType value = ccReg::polltype_transfer_nsset;
 };
 
 template<>
-struct TransferTypes<Epp::Poll::TransferEvent::transfer_keyset>
+struct TransferTypes<Epp::Poll::TransferEvent::TransferKeyset>
 {
     static const ccReg::PollType value = ccReg::polltype_transfer_keyset;
 };
@@ -114,65 +117,65 @@ struct MessageEventWrapper : boost::static_visitor<PollMessage>
 template<typename> struct MessageTypes;
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::delete_contact>
+struct MessageTypes<Epp::Poll::MessageEvent::DeleteContact>
 {
     static const ccReg::PollType value = ccReg::polltype_delete_contact;
 };
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::idle_delete_contact>
+struct MessageTypes<Epp::Poll::MessageEvent::IdleDeleteContact>
 {
     static const ccReg::PollType value = ccReg::polltype_delete_contact;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::idle_delete_domain>
+struct MessageTypes<Epp::Poll::MessageEvent::IdleDeleteDomain>
 {
     static const ccReg::PollType value = ccReg::polltype_delete_domain;
 };
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::delete_domain>
+struct MessageTypes<Epp::Poll::MessageEvent::DeleteDomain>
 {
     static const ccReg::PollType value = ccReg::polltype_delete_domain;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::validation>
+struct MessageTypes<Epp::Poll::MessageEvent::Validation>
 {
     static const ccReg::PollType value = ccReg::polltype_validation;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::outzone>
+struct MessageTypes<Epp::Poll::MessageEvent::Outzone>
 {
     static const ccReg::PollType value = ccReg::polltype_outzone;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::idle_delete_keyset>
+struct MessageTypes<Epp::Poll::MessageEvent::IdleDeleteKeyset>
 {
     static const ccReg::PollType value = ccReg::polltype_delete_keyset;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::idle_delete_nsset>
+struct MessageTypes<Epp::Poll::MessageEvent::IdleDeleteNsset>
 {
     static const ccReg::PollType value = ccReg::polltype_delete_nsset;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::imp_expiration>
+struct MessageTypes<Epp::Poll::MessageEvent::ImpExpiration>
 {
     static const ccReg::PollType value = ccReg::polltype_impexpiration;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::expiration>
+struct MessageTypes<Epp::Poll::MessageEvent::Expiration>
 {
     static const ccReg::PollType value = ccReg::polltype_expiration;
 };
 
 template<>
-struct MessageTypes<Epp::Poll::MessageEvent::imp_validation>
+struct MessageTypes<Epp::Poll::MessageEvent::ImpValidation>
 {
     static const ccReg::PollType value = ccReg::polltype_impvalidation;
 };
@@ -259,19 +262,19 @@ struct UpdateInfoEventWrapper : boost::static_visitor<PollMessage>
 template<typename> struct UpdateInfoTypes;
 
 template<>
-struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::update_domain>
+struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::UpdateDomain>
 {
     static const ccReg::PollType value = ccReg::polltype_update_domain;
 };
 
 template<>
-struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::update_keyset>
+struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::UpdateKeyset>
 {
     static const ccReg::PollType value = ccReg::polltype_update_keyset;
 };
 
 template<>
-struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::update_nsset>
+struct UpdateInfoTypes<Epp::Poll::UpdateInfoEvent::UpdateNsset>
 {
     static const ccReg::PollType value = ccReg::polltype_update_nsset;
 };
@@ -329,9 +332,10 @@ struct ConvertorToPollMessage : boost::static_visitor<Corba::PollMessage>
 
 } // namespace Corba::{anonymous}
 
-PollMessage wrap_event_into_poll_message(const Epp::Poll::PollRequestOutputData::Message& _src)
+PollMessage wrap_into_poll_message(const ::Epp::Poll::PollRequestOutputData::Message& _src)
 {
     return boost::apply_visitor(ConvertorToPollMessage(), _src);
 }
 
-} // namespace Corba
+} // namespace Fred::Corba
+} // namespace Fred

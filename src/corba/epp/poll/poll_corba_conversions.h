@@ -19,10 +19,11 @@
 #ifndef POLL_CORBA_CONVERSIONS_H_F60DDE04DB084511B791D6DF93B5643B
 #define POLL_CORBA_CONVERSIONS_H_F60DDE04DB084511B791D6DF93B5643B
 
-#include "src/epp/poll/poll_request_localized.h"
-#include "src/corba/util/corba_conversions_string.h"
+#include "src/epp/poll/poll_request.h"
 #include "src/corba/EPP.hh"
 
+namespace Fred
+{
 namespace Corba
 {
 
@@ -32,8 +33,9 @@ struct PollMessage
     ccReg::PollType type;
 };
 
-PollMessage wrap_event_into_poll_message(const Epp::Poll::PollRequestOutputData::Message& _src);
+PollMessage wrap_into_poll_message(const ::Epp::Poll::PollRequestOutputData::Message& _src);
 
-} // namespace Corba
+} // namespace Fred::Corba
+} // namespace Fred
 
 #endif

@@ -17,42 +17,19 @@
  */
 
 #include "src/epp/poll/poll_request_get_update_nsset_details.h"
+#include "src/epp/nsset/impl/nsset_output.h"
 #include "src/epp/poll/message_type.h"
-#include "src/epp/nsset/impl/get_nsset_info.h"
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_response_success.h"
 #include "src/epp/epp_result_code.h"
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/epp_result_success.h"
 #include "util/db/param_query_composition.h"
-#include "src/fredlib/nsset/info_nsset_data.h"
+#include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/registrar/info_registrar.h"
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/epp/nsset/impl/nsset.h"
 
 namespace Epp {
 namespace Poll {
-
-namespace {
-
-Epp::Nsset::InfoNssetOutputData get_info_nsset_output_data(
-    Fred::OperationContext& _ctx,
-    unsigned long long _registrar_id,
-    unsigned long long _history_id)
-{
-    const Fred::InfoNssetData info_nsset_data = Fred::InfoNssetHistoryByHistoryid(_history_id).exec(_ctx).info_nsset_data;
-
-    const std::vector<Fred::ObjectStateData> nsset_states_data = Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
-
-    const std::string callers_registrar_handle =
-        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
-    const bool callers_is_sponsoring_registrar = info_nsset_data.sponsoring_registrar_handle == callers_registrar_handle;
-    const bool authinfopw_has_to_be_hidden = !callers_is_sponsoring_registrar;
-
-    return Epp::Nsset::get_nsset_info(info_nsset_data, nsset_states_data, authinfopw_has_to_be_hidden);
-}
-
-} // namespace Epp::Poll::{anonymous}
 
 PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     Fred::OperationContext& _ctx,
@@ -88,11 +65,15 @@ PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     const unsigned long long old_history_id = static_cast<unsigned long long>(sql_query_result[0][0]);
     const unsigned long long new_history_id = static_cast<unsigned long long>(sql_query_result[0][1]);
 
-
     try {
-        PollRequestUpdateNssetOutputData ret(
-            get_info_nsset_output_data(_ctx, _registrar_id, old_history_id),
-            get_info_nsset_output_data(_ctx, _registrar_id, new_history_id));
+        const Fred::InfoNssetData old_info_nsset_data =
+            Fred::InfoNssetHistoryByHistoryid(old_history_id).exec(_ctx).info_nsset_data;
+        const Fred::InfoNssetData new_info_nsset_data =
+            Fred::InfoNssetHistoryByHistoryid(new_history_id).exec(_ctx).info_nsset_data;
+
+        const PollRequestUpdateNssetOutputData ret(
+            Epp::Nsset::get_info_nsset_output(_ctx, old_info_nsset_data, _registrar_id),
+            Epp::Nsset::get_info_nsset_output(_ctx, new_info_nsset_data, _registrar_id));
         return ret;
     }
     catch (const Fred::InfoNssetHistoryByHistoryid::Exception&) {

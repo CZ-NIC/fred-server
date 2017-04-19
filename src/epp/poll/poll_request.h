@@ -34,10 +34,10 @@ namespace Poll {
 
 struct TransferEvent
 {
-    struct transfer_contact;
-    struct transfer_nsset;
-    struct transfer_domain;
-    struct transfer_keyset;
+    struct TransferContact;
+    struct TransferNsset;
+    struct TransferDomain;
+    struct TransferKeyset;
 
     template<typename T>
     struct Data
@@ -48,10 +48,10 @@ struct TransferEvent
     };
 
     typedef boost::variant<
-        Data<transfer_contact>,
-        Data<transfer_nsset>,
-        Data<transfer_domain>,
-        Data<transfer_keyset>
+        Data<TransferContact>,
+        Data<TransferNsset>,
+        Data<TransferDomain>,
+        Data<TransferKeyset>
         > Message;
 
     Message message;
@@ -59,17 +59,17 @@ struct TransferEvent
 
 struct MessageEvent
 {
-    struct delete_domain;
-    struct delete_contact;
-    struct validation;
-    struct outzone;
-    struct idle_delete_contact;
-    struct idle_delete_nsset;
-    struct idle_delete_domain;
-    struct idle_delete_keyset;
-    struct imp_expiration;
-    struct expiration;
-    struct imp_validation;
+    struct DeleteDomain;
+    struct DeleteContact;
+    struct Validation;
+    struct Outzone;
+    struct IdleDeleteContact;
+    struct IdleDeleteNsset;
+    struct IdleDeleteDomain;
+    struct IdleDeleteKeyset;
+    struct ImpExpiration;
+    struct Expiration;
+    struct ImpValidation;
 
     template<typename T>
     struct Data
@@ -79,17 +79,17 @@ struct MessageEvent
     };
 
     typedef boost::variant<
-        Data<delete_domain>,
-        Data<delete_contact>,
-        Data<validation>,
-        Data<outzone>,
-        Data<idle_delete_contact>,
-        Data<idle_delete_nsset>,
-        Data<idle_delete_domain>,
-        Data<idle_delete_keyset>,
-        Data<imp_expiration>,
-        Data<expiration>,
-        Data<imp_validation>
+        Data<DeleteDomain>,
+        Data<DeleteContact>,
+        Data<Validation>,
+        Data<Outzone>,
+        Data<IdleDeleteContact>,
+        Data<IdleDeleteNsset>,
+        Data<IdleDeleteDomain>,
+        Data<IdleDeleteKeyset>,
+        Data<ImpExpiration>,
+        Data<Expiration>,
+        Data<ImpValidation>
         > Message;
 
     Message message;
@@ -127,9 +127,9 @@ struct RequestFeeInfoEvent
 
 struct UpdateInfoEvent
 {
-    struct update_domain;
-    struct update_nsset;
-    struct update_keyset;
+    struct UpdateDomain;
+    struct UpdateNsset;
+    struct UpdateKeyset;
 
     template<typename T>
     struct Data
@@ -139,9 +139,9 @@ struct UpdateInfoEvent
     };
 
     typedef boost::variant<
-        Data<update_domain>,
-        Data<update_nsset>,
-        Data<update_keyset>
+        Data<UpdateDomain>,
+        Data<UpdateNsset>,
+        Data<UpdateKeyset>
         > Message;
 
     Message message;

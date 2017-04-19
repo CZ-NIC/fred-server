@@ -20,6 +20,7 @@
 #include "src/epp/poll/poll_request_get_update_nsset_details.h"
 #include "src/epp/nsset/info_nsset.h"
 #include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/nsset/info_nsset.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/localization.h"
 #include "src/epp/epp_response_failure.h"
@@ -77,12 +78,12 @@ PollRequestUpdateNssetLocalizedResponse poll_request_get_update_nsset_details_lo
     unsigned long long _message_id,
     const SessionData& _session_data)
 {
-    try {
-        Logging::Context logging_ctx("rifd");
-        Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
-        Logging::Context logging_ctx3(_session_data.server_transaction_handle);
-        Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollResponse)));
+    Logging::Context logging_ctx("rifd");
+    Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
+    Logging::Context logging_ctx3(_session_data.server_transaction_handle);
+    Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::PollResponse)));
 
+    try {
         Fred::OperationContextCreator ctx;
 
         PollRequestUpdateNssetOutputData output_data =
