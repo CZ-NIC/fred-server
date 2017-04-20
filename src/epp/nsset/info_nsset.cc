@@ -24,6 +24,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
 #include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 #include <string>
 
@@ -48,7 +49,15 @@ InfoNssetOutputData info_nsset(
         const Fred::InfoNssetData info_nsset_data =
             Fred::InfoNssetByHandle(_nsset_handle).exec(_ctx, "UTC").info_nsset_data;
 
-        return get_info_nsset_output(_ctx, info_nsset_data, _session_data.registrar_id);
+        const std::string session_registrar_handle =
+            Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool authinfopw_has_to_be_hidden =
+            info_nsset_data.sponsoring_registrar_handle != session_registrar_handle;
+
+        const std::vector<Fred::ObjectStateData> object_states_data =
+            Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
+
+        return get_info_nsset_output(info_nsset_data, object_states_data, authinfopw_has_to_be_hidden);
     }
     catch (const Fred::InfoNssetByHandle::Exception& e)
     {

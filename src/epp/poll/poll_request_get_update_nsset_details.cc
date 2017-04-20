@@ -31,6 +31,29 @@
 namespace Epp {
 namespace Poll {
 
+namespace {
+
+Epp::Nsset::InfoNssetOutputData get_nsset_output_data_by_history_id(
+    Fred::OperationContext& _ctx,
+    unsigned long long _history_id,
+    unsigned long long _registrar_id)
+{
+    const Fred::InfoNssetData info_nsset_data =
+        Fred::InfoNssetHistoryByHistoryid(_history_id).exec(_ctx).info_nsset_data;
+
+    const std::string session_registrar_handle =
+        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
+    const bool authinfopw_has_to_be_hidden =
+        info_nsset_data.sponsoring_registrar_handle != session_registrar_handle;
+
+    const std::vector<Fred::ObjectStateData> object_states_data =
+        Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
+
+    return Epp::Nsset::get_info_nsset_output(info_nsset_data, object_states_data, authinfopw_has_to_be_hidden);
+}
+
+} // namespace Epp::Poll::{anonymous}
+
 PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     Fred::OperationContext& _ctx,
     unsigned long long _message_id,
@@ -66,14 +89,9 @@ PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     const unsigned long long new_history_id = static_cast<unsigned long long>(sql_query_result[0][1]);
 
     try {
-        const Fred::InfoNssetData old_info_nsset_data =
-            Fred::InfoNssetHistoryByHistoryid(old_history_id).exec(_ctx).info_nsset_data;
-        const Fred::InfoNssetData new_info_nsset_data =
-            Fred::InfoNssetHistoryByHistoryid(new_history_id).exec(_ctx).info_nsset_data;
-
         const PollRequestUpdateNssetOutputData ret(
-            Epp::Nsset::get_info_nsset_output(_ctx, old_info_nsset_data, _registrar_id),
-            Epp::Nsset::get_info_nsset_output(_ctx, new_info_nsset_data, _registrar_id));
+            get_nsset_output_data_by_history_id(_ctx, old_history_id, _registrar_id),
+            get_nsset_output_data_by_history_id(_ctx, new_history_id, _registrar_id));
         return ret;
     }
     catch (const Fred::InfoNssetHistoryByHistoryid::Exception&) {

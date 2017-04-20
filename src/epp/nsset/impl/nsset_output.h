@@ -19,17 +19,17 @@
 #ifndef NSSET_OUTPUT_H_23CC782463CD425BB913B83178B77AC6
 #define NSSET_OUTPUT_H_23CC782463CD425BB913B83178B77AC6
 
-#include "src/fredlib/opcontext.h"
 #include "src/fredlib/nsset/info_nsset_data.h"
 #include "src/epp/nsset/info_nsset.h"
+#include "src/fredlib/object_state/get_object_states.h"
 
 namespace Epp {
 namespace Nsset {
 
 InfoNssetOutputData get_info_nsset_output(
-    Fred::OperationContext& _ctx,
     const Fred::InfoNssetData& _data,
-    unsigned long long _registrar_id);
+    const std::vector<Fred::ObjectStateData>& _object_state_data,
+    bool _authinfopw_has_to_be_hidden);
 
 } // namespace Epp::Nsset
 } // namespace Epp
