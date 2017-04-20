@@ -19,7 +19,6 @@
 #include "src/epp/poll/poll_request_get_update_nsset_details_localized.h"
 #include "src/epp/poll/poll_request_get_update_nsset_details.h"
 #include "src/epp/nsset/info_nsset.h"
-#include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/epp/impl/action.h"
 #include "src/epp/localization.h"
@@ -40,40 +39,6 @@
 namespace Epp {
 namespace Poll {
 
-namespace {
-
-// a bunch of workarounds -- taken from info_nsset_localized.cc
-// TODO udelat pres ziskani externich stavu, zatim na to neni ve fredlibu rozhrani
-// TODO Fred::GetObjectStates pro "handle"
-void filter_states(
-    Fred::OperationContext& _ctx,
-    Epp::Nsset::InfoNssetOutputData& _output_data)
-{
-    std::set<Epp::Nsset::StatusValue::Enum> filtered_states;
-
-    const std::vector<Fred::ObjectStateData> state_definitions =
-        Fred::GetObjectStates(
-            Fred::InfoNssetByHandle(_output_data.handle).exec(_ctx).info_nsset_data.id).exec(_ctx);
-
-    for(std::set<Epp::Nsset::StatusValue::Enum>::const_iterator state_it = _output_data.states.begin();
-        state_it != _output_data.states.end();
-        ++state_it)
-    {
-        for(std::vector<Fred::ObjectStateData>::const_iterator state_def_it = state_definitions.begin();
-            state_def_it != state_definitions.end();
-            ++state_def_it)
-        {
-            if (state_def_it->is_external)
-            {
-                filtered_states.insert(*state_it);
-            }
-        }
-    }
-    _output_data.states = filtered_states;
-}
-
-} // namespace Epp::Poll::{anonymous}
-
 PollRequestUpdateNssetLocalizedResponse poll_request_get_update_nsset_details_localized(
     unsigned long long _message_id,
     const SessionData& _session_data)
@@ -86,11 +51,8 @@ PollRequestUpdateNssetLocalizedResponse poll_request_get_update_nsset_details_lo
     try {
         Fred::OperationContextCreator ctx;
 
-        PollRequestUpdateNssetOutputData output_data =
+        const PollRequestUpdateNssetOutputData output_data =
             poll_request_get_update_nsset_details(ctx, _message_id, _session_data.registrar_id);
-
-        filter_states(ctx, output_data.old_data);
-        filter_states(ctx, output_data.new_data);
 
         const PollRequestUpdateNssetLocalizedOutputData localized_output_data =
             PollRequestUpdateNssetLocalizedOutputData(
