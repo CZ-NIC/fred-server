@@ -19,17 +19,19 @@
 #ifndef KEYSET_OUTPUT_H_0B6E9FCC43D34765ADF95835FBEA9426
 #define KEYSET_OUTPUT_H_0B6E9FCC43D34765ADF95835FBEA9426
 
-#include "src/fredlib/opcontext.h"
 #include "src/fredlib/keyset/info_keyset_data.h"
 #include "src/epp/keyset/info_keyset_output_data.h"
+#include "src/fredlib/object_state/get_object_states.h"
+
+#include <vector>
 
 namespace Epp {
 namespace Keyset {
 
 InfoKeysetOutputData get_info_keyset_output(
-    Fred::OperationContext& _ctx,
     const Fred::InfoKeysetData& _data,
-    unsigned long long _registrar_id);
+    const std::vector<Fred::ObjectStateData>& _object_state_data,
+    bool _authinfopw_has_to_be_hidden);
 
 } // namespace Epp::Keyset
 } // namespace Epp

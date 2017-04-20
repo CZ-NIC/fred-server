@@ -26,9 +26,32 @@
 #include "src/epp/epp_result_success.h"
 #include "util/db/param_query_composition.h"
 #include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
 namespace Poll {
+
+namespace {
+
+Epp::Keyset::InfoKeysetOutputData get_keyset_output_data_by_history_id(
+    Fred::OperationContext& _ctx,
+    unsigned long long _history_id,
+    unsigned long long _registrar_id)
+{
+    const Fred::InfoKeysetData history_data =
+        Fred::InfoKeysetHistoryByHistoryid(_history_id).exec(_ctx).info_keyset_data;
+
+    const std::string session_registrar_handle =
+        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
+    const bool authinfopw_has_to_be_hidden = history_data.sponsoring_registrar_handle != session_registrar_handle;
+
+    const std::vector<Fred::ObjectStateData> keyset_states_data = Fred::GetObjectStates(history_data.id).exec(_ctx);
+
+    return Epp::Keyset::get_info_keyset_output(history_data, keyset_states_data, authinfopw_has_to_be_hidden);
+
+}
+
+} // namespace Epp::Poll::{anonymous}
 
 PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
     Fred::OperationContext& _ctx,
@@ -66,13 +89,8 @@ PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
 
     PollRequestUpdateKeysetOutputData ret;
     try {
-        const Fred::InfoKeysetData old_history_data =
-            Fred::InfoKeysetHistoryByHistoryid(old_history_id).exec(_ctx).info_keyset_data;
-        ret.old_data = Epp::Keyset::get_info_keyset_output(_ctx, old_history_data, _registrar_id);
-        const Fred::InfoKeysetData new_history_data =
-            Fred::InfoKeysetHistoryByHistoryid(new_history_id).exec(_ctx).info_keyset_data;
-        ret.new_data = Epp::Keyset::get_info_keyset_output(_ctx, new_history_data, _registrar_id);
-
+        ret.old_data = get_keyset_output_data_by_history_id(_ctx, old_history_id, _registrar_id);
+        ret.new_data = get_keyset_output_data_by_history_id(_ctx, new_history_id, _registrar_id);
     }
     catch (const Fred::InfoKeysetHistoryByHistoryid::Exception&) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::command_failed));

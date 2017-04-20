@@ -24,6 +24,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/exception.h"
 #include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 #include <string>
 
@@ -47,7 +48,13 @@ InfoKeysetOutputData info_keyset(
         const Fred::InfoKeysetData info_keyset_data =
             Fred::InfoKeysetByHandle(_keyset_handle).exec(_ctx, "UTC").info_keyset_data;
 
-        return get_info_keyset_output(_ctx, info_keyset_data, _session_data.registrar_id);
+        const std::string session_registrar_handle =
+            Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool authinfopw_has_to_be_hidden = info_keyset_data.sponsoring_registrar_handle != session_registrar_handle;
+
+        const std::vector<Fred::ObjectStateData> keyset_states_data = Fred::GetObjectStates(info_keyset_data.id).exec(_ctx);
+
+        return get_info_keyset_output(info_keyset_data, keyset_states_data, authinfopw_has_to_be_hidden);
     }
     catch (const Fred::InfoKeysetByHandle::Exception& e)
     {

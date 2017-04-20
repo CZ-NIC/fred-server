@@ -19,16 +19,14 @@
 #include "src/epp/keyset/impl/keyset_output.h"
 #include "src/epp/keyset/status_value.h"
 #include "src/fredlib/keyset/info_keyset.h"
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/registrar/info_registrar.h"
 
 namespace Epp {
 namespace Keyset {
 
 InfoKeysetOutputData get_info_keyset_output(
-    Fred::OperationContext& _ctx,
     const Fred::InfoKeysetData& _data,
-    unsigned long long _registrar_id)
+    const std::vector<Fred::ObjectStateData>& _object_state_data,
+    bool _authinfopw_has_to_be_hidden)
 {
     InfoKeysetOutputData ret;
 
@@ -38,11 +36,9 @@ InfoKeysetOutputData get_info_keyset_output(
     ret.creating_registrar_handle = _data.create_registrar_handle;
     ret.last_update_registrar_handle = _data.update_registrar_handle;
     {
-        typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
 
-        ObjectStatesData keyset_states_data = Fred::GetObjectStates(_data.id).exec(_ctx);
-        for (ObjectStatesData::const_iterator object_state = keyset_states_data.begin();
-             object_state != keyset_states_data.end();
+        for (std::vector<Fred::ObjectStateData>::const_iterator object_state = _object_state_data.begin();
+             object_state != _object_state_data.end();
              ++object_state)
         {
             if (object_state->is_external)
@@ -57,10 +53,7 @@ InfoKeysetOutputData get_info_keyset_output(
     ret.last_update = _data.update_time;
     ret.last_transfer = _data.transfer_time;
     // show object authinfopw only to sponsoring registrar
-    const std::string session_registrar_handle =
-        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
-    const bool authinfopw_has_to_be_hidden = _data.sponsoring_registrar_handle != session_registrar_handle;
-    ret.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
+    ret.authinfopw = _authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
     // ret.ds_records = ... // Fred::InfoKeysetData doesn't contain any ds record informations
     {
         typedef std::vector<Fred::DnsKey> FredDnsKeys;
