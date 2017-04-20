@@ -73,14 +73,14 @@ Epp::Nsset::InfoNssetOutputData get_nsset_output_data_by_history_id(
 
     const std::string session_registrar_handle =
         Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
-    const bool authinfopw_has_to_be_hidden =
-        info_nsset_data.sponsoring_registrar_handle != session_registrar_handle;
+    const bool info_is_for_sponsored_registrar =
+        info_nsset_data.sponsoring_registrar_handle == session_registrar_handle;
 
     const std::vector<Fred::ObjectStateData> object_states_data =
         Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
 
     Epp::Nsset::InfoNssetOutputData ret =
-        Epp::Nsset::get_info_nsset_output(info_nsset_data, object_states_data, authinfopw_has_to_be_hidden);
+        Epp::Nsset::get_info_nsset_output(info_nsset_data, object_states_data, info_is_for_sponsored_registrar);
 
     filter_states(_ctx, ret);
 

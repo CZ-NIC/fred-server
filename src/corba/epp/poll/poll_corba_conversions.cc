@@ -330,7 +330,7 @@ struct ConvertorToPollMessage : boost::static_visitor<Corba::PollMessage>
     }
 };
 
-} // namespace Corba::{anonymous}
+} // namespace Fred::Corba::{anonymous}
 
 PollMessage wrap_into_poll_message(const ::Epp::Poll::PollRequestOutputData::Message& _src)
 {

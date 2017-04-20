@@ -31,7 +31,7 @@ namespace Keyset {
 InfoKeysetOutputData get_info_keyset_output(
     const Fred::InfoKeysetData& _data,
     const std::vector<Fred::ObjectStateData>& _object_state_data,
-    bool _authinfopw_has_to_be_hidden);
+    bool _info_is_for_sponsored_registrar);
 
 } // namespace Epp::Keyset
 } // namespace Epp

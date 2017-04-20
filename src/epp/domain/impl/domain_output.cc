@@ -32,7 +32,7 @@ namespace Domain {
 InfoDomainOutputData get_info_domain_output(
     const Fred::InfoDomainData& _data,
     const std::vector<Fred::ObjectStateData>& _object_state_data,
-    bool _authinfopw_has_to_be_hidden)
+    bool _info_is_for_sponsored_registrar)
 {
     InfoDomainOutputData ret;
 
@@ -70,7 +70,7 @@ InfoDomainOutputData get_info_domain_output(
     ret.exdate = _data.expiration_date;
 
     // show object authinfopw only to sponsoring registrar
-    ret.authinfopw = _authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
+    ret.authinfopw = _info_is_for_sponsored_registrar ? _data.authinfopw : boost::optional<std::string>();
 
     for (std::vector<Fred::ObjectIdHandlePair>::const_iterator object_id_handle_pair =
              _data.admin_contacts.begin();

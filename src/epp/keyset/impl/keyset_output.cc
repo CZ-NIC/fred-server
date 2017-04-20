@@ -26,7 +26,7 @@ namespace Keyset {
 InfoKeysetOutputData get_info_keyset_output(
     const Fred::InfoKeysetData& _data,
     const std::vector<Fred::ObjectStateData>& _object_state_data,
-    bool _authinfopw_has_to_be_hidden)
+    bool _info_is_for_sponsored_registrar)
 {
     InfoKeysetOutputData ret;
 
@@ -53,7 +53,7 @@ InfoKeysetOutputData get_info_keyset_output(
     ret.last_update = _data.update_time;
     ret.last_transfer = _data.transfer_time;
     // show object authinfopw only to sponsoring registrar
-    ret.authinfopw = _authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
+    ret.authinfopw = _info_is_for_sponsored_registrar ? _data.authinfopw : boost::optional<std::string>();
     // ret.ds_records = ... // Fred::InfoKeysetData doesn't contain any ds record informations
     {
         typedef std::vector<Fred::DnsKey> FredDnsKeys;

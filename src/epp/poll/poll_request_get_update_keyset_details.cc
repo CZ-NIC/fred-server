@@ -43,11 +43,11 @@ Epp::Keyset::InfoKeysetOutputData get_keyset_output_data_by_history_id(
 
     const std::string session_registrar_handle =
         Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
-    const bool authinfopw_has_to_be_hidden = history_data.sponsoring_registrar_handle != session_registrar_handle;
+    const bool info_is_for_sponsored_registrar = history_data.sponsoring_registrar_handle == session_registrar_handle;
 
     const std::vector<Fred::ObjectStateData> keyset_states_data = Fred::GetObjectStates(history_data.id).exec(_ctx);
 
-    return Epp::Keyset::get_info_keyset_output(history_data, keyset_states_data, authinfopw_has_to_be_hidden);
+    return Epp::Keyset::get_info_keyset_output(history_data, keyset_states_data, info_is_for_sponsored_registrar);
 
 }
 
