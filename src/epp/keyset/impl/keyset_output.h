@@ -31,7 +31,7 @@ namespace Keyset {
 InfoKeysetOutputData get_info_keyset_output(
     const Fred::InfoKeysetData& _data,
     const std::vector<Fred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsored_registrar);
+    bool _info_is_for_sponsoring_registrar);
 
 } // namespace Epp::Keyset
 } // namespace Epp

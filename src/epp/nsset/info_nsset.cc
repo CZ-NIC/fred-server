@@ -51,13 +51,13 @@ InfoNssetOutputData info_nsset(
 
         const std::string session_registrar_handle =
             Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
-        const bool info_is_for_sponsored_registrar =
+        const bool info_is_for_sponsoring_registrar =
             info_nsset_data.sponsoring_registrar_handle == session_registrar_handle;
 
         const std::vector<Fred::ObjectStateData> object_states_data =
             Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
 
-        return get_info_nsset_output(info_nsset_data, object_states_data, info_is_for_sponsored_registrar);
+        return get_info_nsset_output(info_nsset_data, object_states_data, info_is_for_sponsoring_registrar);
     }
     catch (const Fred::InfoNssetByHandle::Exception& e)
     {

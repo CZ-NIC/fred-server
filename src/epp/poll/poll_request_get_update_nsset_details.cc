@@ -33,36 +33,6 @@ namespace Poll {
 
 namespace {
 
-// a bunch of workarounds -- taken from info_nsset_localized.cc
-// TODO udelat pres ziskani externich stavu, zatim na to neni ve fredlibu rozhrani
-// TODO Fred::GetObjectStates pro "handle"
-void filter_states(
-    Fred::OperationContext& _ctx,
-    Epp::Nsset::InfoNssetOutputData& _output_data)
-{
-    std::set<Epp::Nsset::StatusValue::Enum> filtered_states;
-
-    const std::vector<Fred::ObjectStateData> state_definitions =
-        Fred::GetObjectStates(
-            Fred::InfoNssetByHandle(_output_data.handle).exec(_ctx).info_nsset_data.id).exec(_ctx);
-
-    for(std::set<Epp::Nsset::StatusValue::Enum>::const_iterator state_it = _output_data.states.begin();
-        state_it != _output_data.states.end();
-        ++state_it)
-    {
-        for(std::vector<Fred::ObjectStateData>::const_iterator state_def_it = state_definitions.begin();
-            state_def_it != state_definitions.end();
-            ++state_def_it)
-        {
-            if (state_def_it->is_external)
-            {
-                filtered_states.insert(*state_it);
-            }
-        }
-    }
-    _output_data.states = filtered_states;
-}
-
 Epp::Nsset::InfoNssetOutputData get_nsset_output_data_by_history_id(
     Fred::OperationContext& _ctx,
     unsigned long long _history_id,
@@ -73,18 +43,13 @@ Epp::Nsset::InfoNssetOutputData get_nsset_output_data_by_history_id(
 
     const std::string session_registrar_handle =
         Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
-    const bool info_is_for_sponsored_registrar =
+    const bool info_is_for_sponsoring_registrar =
         info_nsset_data.sponsoring_registrar_handle == session_registrar_handle;
 
     const std::vector<Fred::ObjectStateData> object_states_data =
         Fred::GetObjectStates(info_nsset_data.id).exec(_ctx);
 
-    Epp::Nsset::InfoNssetOutputData ret =
-        Epp::Nsset::get_info_nsset_output(info_nsset_data, object_states_data, info_is_for_sponsored_registrar);
-
-    filter_states(_ctx, ret);
-
-    return ret;
+    return Epp::Nsset::get_info_nsset_output(info_nsset_data, object_states_data, info_is_for_sponsoring_registrar);
 }
 
 } // namespace Epp::Poll::{anonymous}

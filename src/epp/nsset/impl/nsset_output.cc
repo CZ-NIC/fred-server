@@ -36,7 +36,7 @@ namespace Nsset {
 InfoNssetOutputData get_info_nsset_output(
     const Fred::InfoNssetData& _data,
     const std::vector<Fred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsored_registrar)
+    bool _info_is_for_sponsoring_registrar)
 {
     std::vector<std::string> tech_contacts;
     tech_contacts.reserve(_data.tech_contacts.size());
@@ -59,6 +59,7 @@ InfoNssetOutputData get_info_nsset_output(
         }
     }
 
+    const bool authinfopw_has_to_be_hidden = !_info_is_for_sponsoring_registrar;
     return InfoNssetOutputData(
         _data.handle,
         _data.roid,
@@ -69,8 +70,7 @@ InfoNssetOutputData get_info_nsset_output(
         _data.creation_time,
         _data.update_time,
         _data.transfer_time,
-        // show object authinfopw only to sponsoring registrar
-        _info_is_for_sponsored_registrar ? _data.authinfopw : boost::optional<std::string>(),
+        authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw,
         make_epp_dnshosts_output(_data.dns_hosts),
         tech_contacts,
         _data.tech_check_level.get_value_or(0));

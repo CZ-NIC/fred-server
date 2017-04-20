@@ -31,7 +31,7 @@ namespace Domain {
 InfoDomainOutputData get_info_domain_output(
     const Fred::InfoDomainData& _data,
     const std::vector<Fred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsored_registrar);
+    bool _info_is_for_sponsoring_registrar);
 
 } // namespace Epp::Domain
 } // namespace Epp

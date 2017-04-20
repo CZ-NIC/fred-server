@@ -50,11 +50,11 @@ InfoKeysetOutputData info_keyset(
 
         const std::string session_registrar_handle =
             Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
-        const bool info_is_for_sponsored_registrar = info_keyset_data.sponsoring_registrar_handle == session_registrar_handle;
+        const bool info_is_for_sponsoring_registrar = info_keyset_data.sponsoring_registrar_handle == session_registrar_handle;
 
         const std::vector<Fred::ObjectStateData> keyset_states_data = Fred::GetObjectStates(info_keyset_data.id).exec(_ctx);
 
-        return get_info_keyset_output(info_keyset_data, keyset_states_data, info_is_for_sponsored_registrar);
+        return get_info_keyset_output(info_keyset_data, keyset_states_data, info_is_for_sponsoring_registrar);
     }
     catch (const Fred::InfoKeysetByHandle::Exception& e)
     {

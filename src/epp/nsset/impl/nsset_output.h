@@ -29,7 +29,7 @@ namespace Nsset {
 InfoNssetOutputData get_info_nsset_output(
     const Fred::InfoNssetData& _data,
     const std::vector<Fred::ObjectStateData>& _object_state_data,
-    bool _info_is_for_sponsored_registrar);
+    bool _info_is_for_sponsoring_registrar);
 
 } // namespace Epp::Nsset
 } // namespace Epp

@@ -52,13 +52,13 @@ InfoDomainOutputData info_domain(
 
         const std::string session_registrar_handle =
             Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
-        const bool info_is_for_sponsored_registrar =
+        const bool info_is_for_sponsoring_registrar =
             info_domain_data.sponsoring_registrar_handle == session_registrar_handle;
 
         const std::vector<Fred::ObjectStateData> object_state_data =
             Fred::GetObjectStates(info_domain_data.id).exec(_ctx);
 
-        return get_info_domain_output(info_domain_data, object_state_data, info_is_for_sponsored_registrar);
+        return get_info_domain_output(info_domain_data, object_state_data, info_is_for_sponsoring_registrar);
     }
     catch (const Fred::InfoDomainByHandle::Exception& e)
     {
