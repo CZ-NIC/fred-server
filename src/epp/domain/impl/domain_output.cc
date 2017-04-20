@@ -21,22 +21,18 @@
 #include "util/db/nullable.h"
 #include "src/fredlib/object/object_id_handle_pair.h"
 #include "src/fredlib/object/object_state.h"
-#include "src/fredlib/object_state/get_object_states.h"
-#include "src/fredlib/registrar/info_registrar.h"
-#include "src/fredlib/registrar/info_registrar.h"
 #include "src/epp/domain/status_value.h"
 #include "util/enum_conversion.h"
 
 #include <string>
-#include <vector>
 
 namespace Epp {
 namespace Domain {
 
 InfoDomainOutputData get_info_domain_output(
-    Fred::OperationContext& _ctx,
     const Fred::InfoDomainData& _data,
-    unsigned long long _registrar_id)
+    const std::vector<Fred::ObjectStateData>& _object_state_data,
+    bool _authinfopw_has_to_be_hidden)
 {
     InfoDomainOutputData ret;
 
@@ -51,11 +47,8 @@ InfoDomainOutputData get_info_domain_output(
         : Nullable<std::string>(_data.keyset.get_value().handle);
 
     {
-        typedef std::vector<Fred::ObjectStateData> ObjectStatesData;
-
-        ObjectStatesData domain_states_data = Fred::GetObjectStates(_data.id).exec(_ctx);
-        for (ObjectStatesData::const_iterator object_state_ptr = domain_states_data.begin();
-             object_state_ptr != domain_states_data.end();
+        for (std::vector<Fred::ObjectStateData>::const_iterator object_state_ptr = _object_state_data.begin();
+             object_state_ptr != _object_state_data.end();
              ++object_state_ptr)
         {
             if (object_state_ptr->is_external)
@@ -77,10 +70,7 @@ InfoDomainOutputData get_info_domain_output(
     ret.exdate = _data.expiration_date;
 
     // show object authinfopw only to sponsoring registrar
-    const std::string session_registrar_handle =
-        Fred::InfoRegistrarById(_registrar_id).exec(_ctx).info_registrar_data.handle;
-    const bool authinfopw_has_to_be_hidden = _data.sponsoring_registrar_handle != session_registrar_handle;
-    ret.authinfopw = authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
+    ret.authinfopw = _authinfopw_has_to_be_hidden ? boost::optional<std::string>() : _data.authinfopw;
 
     for (std::vector<Fred::ObjectIdHandlePair>::const_iterator object_id_handle_pair =
              _data.admin_contacts.begin();

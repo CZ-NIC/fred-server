@@ -26,6 +26,7 @@
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/fredlib/zone/zone.h"
+#include "src/fredlib/registrar/info_registrar.h"
 
 #include <string>
 
@@ -49,7 +50,15 @@ InfoDomainOutputData info_domain(
         const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(
                 Fred::Zone::rem_trailing_dot(_fqdn)).exec(_ctx, "UTC").info_domain_data;
 
-        return get_info_domain_output(_ctx, info_domain_data, _session_data.registrar_id);
+        const std::string session_registrar_handle =
+            Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
+        const bool authinfopw_has_to_be_hidden =
+            info_domain_data.sponsoring_registrar_handle != session_registrar_handle;
+
+        const std::vector<Fred::ObjectStateData> object_state_data =
+            Fred::GetObjectStates(info_domain_data.id).exec(_ctx);
+
+        return get_info_domain_output(info_domain_data, object_state_data,  authinfopw_has_to_be_hidden);
     }
     catch (const Fred::InfoDomainByHandle::Exception& e)
     {

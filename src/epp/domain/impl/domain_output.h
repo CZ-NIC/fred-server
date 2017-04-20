@@ -19,17 +19,19 @@
 #ifndef DOMAIN_OUTPUT_H_33D3AFAA0E8044C39744204635F10659
 #define DOMAIN_OUTPUT_H_33D3AFAA0E8044C39744204635F10659
 
-#include "src/fredlib/opcontext.h"
 #include "src/fredlib/domain/info_domain_data.h"
 #include "src/epp/domain/info_domain.h"
+#include "src/fredlib/object_state/get_object_states.h"
+
+#include <vector>
 
 namespace Epp {
 namespace Domain {
 
 InfoDomainOutputData get_info_domain_output(
-    Fred::OperationContext& _ctx,
     const Fred::InfoDomainData& _data,
-    unsigned long long _registrar_id);
+    const std::vector<Fred::ObjectStateData>& _object_state_data,
+    bool _authinfopw_has_to_be_hidden);
 
 } // namespace Epp::Domain
 } // namespace Epp
