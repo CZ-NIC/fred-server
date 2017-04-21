@@ -322,10 +322,6 @@ std::vector<Test> get_tech_check_event_tests(
               "WHERE pt.msgid=").param_bigint(_message_id)(" AND mt.name=")
               .param_text(Conversion::Enums::to_db_handle(_message_type));
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
-    if (sql_query_result.size() == 0)
-    {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
-    }
 
     std::vector<Test> ret;
     for (std::size_t i = 0; i < sql_query_result.size(); ++i)
