@@ -10,7 +10,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
-struct whois_impl_instance_fixture : Test::Fixture::instantiate_db_template
+struct whois_impl_instance_fixture : Test::instantiate_db_template
 {
     Registry::WhoisImpl::Server_impl impl;
 

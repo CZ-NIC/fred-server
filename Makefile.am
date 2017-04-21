@@ -201,6 +201,7 @@ noinst_HEADERS = \
 		src/corba/util/corba_conversions_datetime.h \
 		src/corba/util/corba_conversions_nullable_types.h \
 		src/corba/util/corba_conversions_string.h \
+		src/corba/util/corba_conversions_int.h \
 		util/is_equal_optional_nullable.h \
 		tests/fredlib/util.h \
 		tests/fredlib/enum_to_db_handle_conversion.h \
@@ -237,7 +238,6 @@ noinst_HEADERS = \
 		tests/util/corba_conversion_test.idl \
 		src/fredlib/object/object_type.h \
 		src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h \
-		src/epp/localized_response.h \
 		src/epp/exception.h \
 		src/epp/session_lang.h \
 		src/epp/contact/contact_change.h \
@@ -245,11 +245,14 @@ noinst_HEADERS = \
 		src/corba/epp/epp_legacy_compatibility.h \
 		src/epp/registrar_session_data.h \
 		src/epp/request_params.h \
-		src/epp/error.h \
-		src/epp/action.h \
-		src/epp/exception_aggregate_param_errors.h \
+		src/epp/epp_response_failure.h \
+		src/epp/epp_response_success.h \
+		src/epp/epp_result_failure.h \
+		src/epp/epp_result_success.h \
+		src/epp/epp_result_code.h \
+		src/epp/impl/action.h \
 		src/epp/impl/util.h \
-		src/fredlib/object/states_info.h \
+		src/fredlib/object/object_states_info.h \
 		src/fredlib/object/object_state.h \
 		src/epp/contact/contact_handle_state_to_check_result.h \
 		src/fredlib/public_request/public_request_status.h \
@@ -257,6 +260,7 @@ noinst_HEADERS = \
 		src/fredlib/public_request/info_public_request.h \
 		src/fredlib/public_request/info_public_request_auth.h \
 		tests/interfaces/epp/util.h \
+		tests/interfaces/epp/fixture.h \
 		tests/interfaces/epp/contact/fixture.h \
 		tests/interfaces/epp/domain/fixture.h \
 		src/corba/mojeid/mojeid_corba_conversion.h \
@@ -272,10 +276,10 @@ noinst_HEADERS = \
 		src/corba/mojeid/service_name.h \
 		src/fredlib/nsset/handle_state.h \
 		src/fredlib/keyset/handle_state.h \
-		src/epp/nsset/nsset_dns_host_output.h \
-		src/epp/nsset/nsset_dns_host_input.h \
+		src/epp/nsset/dns_host_output.h \
+		src/epp/nsset/dns_host_input.h \
 		src/epp/nsset/nsset_handle_state_to_check_result.h \
-		src/epp/nsset/nsset_constants.h \
+		src/epp/nsset/impl/limits.h \
 		tests/interfaces/epp/nsset/fixture.h
 
 noinst_LIBRARIES = \
@@ -803,14 +807,6 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/obj_types.h \
 		src/fredlib/object_states.cc \
 		src/fredlib/object_states.h \
-		src/fredlib/contact_diff.cc \
-		src/fredlib/contact_diff.h \
-		src/fredlib/domain_diff.cc \
-		src/fredlib/domain_diff.h \
-		src/fredlib/nsset_diff.cc \
-		src/fredlib/nsset_diff.h \
-		src/fredlib/keyset_diff.cc \
-		src/fredlib/keyset_diff.h \
 		src/fredlib/common_diff.cc \
 		src/fredlib/common_diff.h \
 		src/fredlib/reminder.cc \
@@ -1535,160 +1531,184 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/epp_session.cc \
 		src/corba/epp/epp_impl.cc \
 		src/corba/epp/epp_impl.h \
+		src/corba/epp/contact/contact_corba_conversions.cc \
+		src/corba/epp/contact/contact_corba_conversions.h \
+		src/corba/epp/domain/domain_corba_conversions.cc \
+		src/corba/epp/domain/domain_corba_conversions.h \
+		src/corba/epp/keyset/keyset_corba_conversions.cc \
+		src/corba/epp/keyset/keyset_corba_conversions.h \
+		src/corba/epp/nsset/nsset_corba_conversions.cc \
+		src/corba/epp/nsset/nsset_corba_conversions.h \
 		src/corba/epp/corba_conversions.h \
 		src/corba/epp/corba_conversions.cc \
 		src/corba/epp/messages.cc \
 		src/corba/epp/messages.h \
 		src/corba/epp/tech_check.cc \
 		src/corba/epp/tech_check.h \
-		src/corba/epp/countrycode.cc \
-		src/corba/epp/countrycode.h \
 		src/corba/epp/action.h \
 		src/corba/epp/reason.h \
 		src/corba/epp/response.h \
-		src/corba/epp/domain/domain_check_corba_conversions.h \
-		src/corba/epp/domain/domain_check_corba_conversions.cc \
-		src/corba/epp/domain/domain_info_corba_conversions.h \
-		src/corba/epp/domain/domain_info_corba_conversions.cc \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_string.cc \
-		src/epp/disclose_policy.h \
+		src/corba/util/corba_conversions_int.h \
+		src/epp/impl/disclose_policy.h \
 		src/epp/localization.h \
 		src/epp/localization.cc \
-		src/epp/localized_response.h \
-		src/epp/localized_states.h \
+		src/epp/object_states_localized.h \
 		src/epp/param.h \
 		src/epp/reason.h \
-		src/epp/response.h \
-		src/epp/error.h \
-		src/epp/parameter_errors.h \
-		src/epp/parameter_errors.cc \
-		src/epp/conditionally_enqueue_notification.h \
-		src/epp/conditionally_enqueue_notification.cc \
-		src/epp/contact/contact_create.cc \
-		src/epp/contact/contact_create.h \
-		src/epp/contact/contact_create_impl.cc \
-		src/epp/contact/contact_create_impl.h \
+		src/epp/impl/response.h \
+		src/epp/epp_response_failure.h \
+		src/epp/epp_response_failure_localized.h \
+		src/epp/epp_response_failure_localized.cc \
+		src/epp/epp_response_success.h \
+		src/epp/epp_response_success_localized.h \
+		src/epp/epp_response_success_localized.cc \
+		src/epp/epp_result_failure.h \
+		src/epp/epp_result_failure.cc \
+		src/epp/epp_result_failure_localized.h \
+		src/epp/epp_result_failure_localized.cc \
+		src/epp/epp_result_success.h \
+		src/epp/epp_result_success_localized.h \
+		src/epp/epp_result_success_localized.cc \
+		src/epp/epp_extended_error.h \
+		src/epp/epp_extended_error.cc \
+		src/epp/epp_extended_error_localized.h \
+		src/epp/epp_extended_error_localized.cc \
+		src/epp/epp_result_code.h \
+		src/epp/notification_data.h \
+		src/epp/session_data.h \
+		src/epp/session_data.cc \
+		src/epp/impl/conditionally_enqueue_notification.h \
+		src/epp/impl/conditionally_enqueue_notification.cc \
+		src/epp/contact/create_contact_localized.cc \
+		src/epp/contact/create_contact_localized.h \
+		src/epp/contact/create_contact.cc \
+		src/epp/contact/create_contact.h \
+		src/epp/contact/util.cc \
+		src/epp/contact/util.h \
 		src/epp/contact/contact_change.cc \
-		src/epp/contact/contact_update.cc \
-		src/epp/contact/contact_update.h \
-		src/epp/contact/contact_update_impl.cc \
-		src/epp/contact/contact_update_impl.h \
-		src/epp/contact/contact_info.cc \
-		src/epp/contact/contact_info.h \
-		src/epp/contact/contact_info_impl.cc \
-		src/epp/contact/contact_info_impl.h \
-		src/epp/contact/contact_delete.cc \
-		src/epp/contact/contact_delete.h \
-		src/epp/contact/contact_delete_impl.cc \
-		src/epp/contact/contact_delete_impl.h \
-		src/epp/contact/contact_check.cc \
-		src/epp/contact/contact_check.h \
-		src/epp/contact/contact_check_impl.cc \
-		src/epp/contact/contact_check_impl.h \
-		src/epp/contact/contact_transfer.cc \
-		src/epp/contact/contact_transfer.h \
-		src/epp/contact/contact_transfer_impl.cc \
-		src/epp/contact/contact_transfer_impl.h \
+		src/epp/contact/update_contact_localized.cc \
+		src/epp/contact/update_contact_localized.h \
+		src/epp/contact/update_contact.cc \
+		src/epp/contact/update_contact.h \
+		src/epp/contact/info_contact_localized.cc \
+		src/epp/contact/info_contact_localized.h \
+		src/epp/contact/info_contact.cc \
+		src/epp/contact/info_contact.h \
+		src/epp/contact/delete_contact_localized.cc \
+		src/epp/contact/delete_contact_localized.h \
+		src/epp/contact/delete_contact.cc \
+		src/epp/contact/delete_contact.h \
+		src/epp/contact/check_contact_localized.cc \
+		src/epp/contact/check_contact_localized.h \
+		src/epp/contact/check_contact.cc \
+		src/epp/contact/check_contact.h \
+		src/epp/contact/transfer_contact_localized.cc \
+		src/epp/contact/transfer_contact_localized.h \
+		src/epp/contact/transfer_contact.cc \
+		src/epp/contact/transfer_contact.h \
 		src/epp/contact/contact_handle_registration_obstruction.h \
-		src/epp/contact/disclose.h \
-		src/epp/contact/post_contact_update_hooks.cc \
-		src/epp/contact/post_contact_update_hooks.h \
-		src/epp/domain/domain_check.cc \
-		src/epp/domain/domain_check.h \
-		src/epp/domain/domain_check_impl.cc \
-		src/epp/domain/domain_check_impl.h \
-		src/epp/domain/domain_check_localization.cc \
-		src/epp/domain/domain_check_localization.h \
-		src/epp/domain/domain_delete.cc \
-		src/epp/domain/domain_delete.h \
-		src/epp/domain/domain_delete_impl.cc \
-		src/epp/domain/domain_delete_impl.h \
-		src/epp/domain/domain_info.cc \
-		src/epp/domain/domain_info.h \
-		src/epp/domain/domain_info_impl.cc \
-		src/epp/domain/domain_info_impl.h \
-		src/epp/domain/domain_transfer.cc \
-		src/epp/domain/domain_transfer.h \
-		src/epp/domain/domain_transfer_impl.cc \
-		src/epp/domain/domain_transfer_impl.h \
-		src/epp/domain/domain_create.cc \
-		src/epp/domain/domain_create.h \
+		src/epp/contact/contact_disclose.h \
+		src/epp/contact/update_contact_post_hooks.cc \
+		src/epp/contact/update_contact_post_hooks.h \
+		src/epp/contact/create_contact_input_data.cc \
+		src/epp/contact/create_contact_input_data.h \
+		src/epp/contact/status_value.h \
+		src/epp/domain/check_domain_localized.cc \
+		src/epp/domain/check_domain_localized.h \
+		src/epp/domain/check_domain.cc \
+		src/epp/domain/check_domain.h \
+		src/epp/domain/delete_domain_localized.cc \
+		src/epp/domain/delete_domain_localized.h \
+		src/epp/domain/delete_domain.cc \
+		src/epp/domain/delete_domain.h \
+		src/epp/domain/info_domain_localized.cc \
+		src/epp/domain/info_domain_localized.h \
+		src/epp/domain/info_domain.cc \
+		src/epp/domain/info_domain.h \
+		src/epp/domain/transfer_domain_localized.cc \
+		src/epp/domain/transfer_domain_localized.h \
+		src/epp/domain/transfer_domain.cc \
+		src/epp/domain/transfer_domain.h \
+		src/epp/domain/create_domain_localized.cc \
+		src/epp/domain/create_domain_localized.h \
 		src/epp/domain/domain_registration_time.h \
 		src/epp/domain/domain_enum_validation.h \
 		src/epp/domain/domain_enum_validation.cc \
-		src/epp/domain/domain_create_impl.cc \
-		src/epp/domain/domain_create_impl.h \
-		src/epp/domain/domain_renew_impl.cc \
-		src/epp/domain/domain_renew_impl.h \
-		src/epp/domain/domain_renew.cc \
-		src/epp/domain/domain_renew.h \
-		src/epp/domain/domain_billing.cc \
-		src/epp/domain/domain_billing.h \
-		src/epp/domain/domain_update.cc \
-		src/epp/domain/domain_update.h \
-		src/epp/domain/domain_update_impl.cc \
-		src/epp/domain/domain_update_impl.h \
+		src/epp/domain/create_domain.cc \
+		src/epp/domain/create_domain.h \
+		src/epp/domain/renew_domain.cc \
+		src/epp/domain/renew_domain.h \
+		src/epp/domain/renew_domain_localized.cc \
+		src/epp/domain/renew_domain_localized.h \
+		src/epp/domain/impl/domain_billing.cc \
+		src/epp/domain/impl/domain_billing.h \
+		src/epp/domain/update_domain_localized.cc \
+		src/epp/domain/update_domain_localized.h \
+		src/epp/domain/update_domain.cc \
+		src/epp/domain/update_domain.h \
 		src/epp/domain/domain_registration_obstruction.h \
+		src/epp/domain/status_value.h \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/epp/keyset/ds_record.h \
-		src/epp/keyset/info_data.h \
-		src/epp/keyset/info.cc \
-		src/epp/keyset/info.h \
-		src/epp/keyset/localized_info.cc \
-		src/epp/keyset/localized_info.h \
-		src/epp/keyset/create.cc \
-		src/epp/keyset/create.h \
-		src/epp/keyset/localized_create.cc \
-		src/epp/keyset/localized_create.h \
-		src/epp/keyset/update.cc \
-		src/epp/keyset/update.h \
-		src/epp/keyset/localized_update.cc \
-		src/epp/keyset/localized_update.h \
-		src/epp/keyset/limits.h \
-		src/epp/keyset/check.cc \
-		src/epp/keyset/check.h \
-		src/epp/keyset/handle_check_result.h \
-		src/epp/keyset/localized_check.cc \
-		src/epp/keyset/localized_check.h \
-		src/epp/keyset/delete.cc \
-		src/epp/keyset/delete.h \
-		src/epp/keyset/localized_delete.cc \
-		src/epp/keyset/localized_delete.h \
-		src/epp/keyset/transfer.cc \
-		src/epp/keyset/transfer.h \
-		src/epp/keyset/localized_transfer.cc \
-		src/epp/keyset/localized_transfer.h \
-		src/epp/nsset/nsset_check.cc \
-		src/epp/nsset/nsset_check.h \
-		src/epp/nsset/nsset_check_impl.cc \
-		src/epp/nsset/nsset_check_impl.h \
+		src/epp/keyset/info_keyset_output_data.h \
+		src/epp/keyset/info_keyset.cc \
+		src/epp/keyset/info_keyset.h \
+		src/epp/keyset/info_keyset_localized.cc \
+		src/epp/keyset/info_keyset_localized.h \
+		src/epp/keyset/create_keyset.cc \
+		src/epp/keyset/create_keyset.h \
+		src/epp/keyset/create_keyset_localized.cc \
+		src/epp/keyset/create_keyset_localized.h \
+		src/epp/keyset/update_keyset.cc \
+		src/epp/keyset/update_keyset.h \
+		src/epp/keyset/update_keyset_localized.cc \
+		src/epp/keyset/update_keyset_localized.h \
+		src/epp/keyset/impl/limits.h \
+		src/epp/keyset/check_keyset.cc \
+		src/epp/keyset/check_keyset.h \
+		src/epp/keyset/keyset_handle_registration_obstruction.h \
+		src/epp/keyset/check_keyset_localized.cc \
+		src/epp/keyset/check_keyset_localized.h \
+		src/epp/keyset/delete_keyset.cc \
+		src/epp/keyset/delete_keyset.h \
+		src/epp/keyset/delete_keyset_localized.cc \
+		src/epp/keyset/delete_keyset_localized.h \
+		src/epp/keyset/transfer_keyset.cc \
+		src/epp/keyset/transfer_keyset.h \
+		src/epp/keyset/transfer_keyset_localized.cc \
+		src/epp/keyset/transfer_keyset_localized.h \
+		src/epp/keyset/status_value.h \
+		src/epp/nsset/check_nsset_localized.cc \
+		src/epp/nsset/check_nsset_localized.h \
+		src/epp/nsset/check_nsset.cc \
+		src/epp/nsset/check_nsset.h \
 		src/epp/nsset/nsset_handle_registration_obstruction.h\
-		src/epp/nsset/nsset_info.cc \
-		src/epp/nsset/nsset_info.h \
-		src/epp/nsset/nsset_info_impl.cc \
-		src/epp/nsset/nsset_info_impl.h \
-		src/epp/nsset/nsset_delete.cc \
-		src/epp/nsset/nsset_delete.h \
-		src/epp/nsset/nsset_delete_impl.cc \
-		src/epp/nsset/nsset_delete_impl.h \
-		src/epp/nsset/nsset_create.cc \
-		src/epp/nsset/nsset_create.h \
-		src/epp/nsset/nsset_create_impl.cc \
-		src/epp/nsset/nsset_create_impl.h \
-		src/epp/nsset/nsset_update.cc \
-		src/epp/nsset/nsset_update.h \
-		src/epp/nsset/nsset_update_impl.cc \
-		src/epp/nsset/nsset_update_impl.h \
-		src/epp/nsset/nsset_transfer.cc \
-		src/epp/nsset/nsset_transfer.h \
-		src/epp/nsset/nsset_transfer_impl.cc \
-		src/epp/nsset/nsset_transfer_impl.h \
-		src/epp/nsset/nsset_impl.cc \
-		src/epp/nsset/nsset_impl.h \
-		util/corba_conversion.h \
-		util/corba_conversion.cc
+		src/epp/nsset/info_nsset_localized.cc \
+		src/epp/nsset/info_nsset_localized.h \
+		src/epp/nsset/info_nsset.cc \
+		src/epp/nsset/info_nsset.h \
+		src/epp/nsset/delete_nsset_localized.cc \
+		src/epp/nsset/delete_nsset_localized.h \
+		src/epp/nsset/delete_nsset.cc \
+		src/epp/nsset/delete_nsset.h \
+		src/epp/nsset/create_nsset_localized.cc \
+		src/epp/nsset/create_nsset_localized.h \
+		src/epp/nsset/create_nsset.cc \
+		src/epp/nsset/create_nsset.h \
+		src/epp/nsset/update_nsset_localized.cc \
+		src/epp/nsset/update_nsset_localized.h \
+		src/epp/nsset/update_nsset.cc \
+		src/epp/nsset/update_nsset.h \
+		src/epp/nsset/transfer_nsset_localized.cc \
+		src/epp/nsset/transfer_nsset_localized.h \
+		src/epp/nsset/transfer_nsset.cc \
+		src/epp/nsset/transfer_nsset.h \
+		src/epp/nsset/impl/nsset.cc \
+		src/epp/nsset/impl/nsset.h \
+		src/epp/nsset/status_value.h
 
 #
 # src/corba/epp/libepp_impl.a
@@ -2495,37 +2515,36 @@ tests_interfaces_test_admin_notification_LDADD = \
 #
 tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/util.h \
+		tests/interfaces/epp/fixture.h \
 		tests/interfaces/epp/main.cc \
 		tests/interfaces/epp/test_conditionally_enqueue_notification.cc \
 		tests/interfaces/epp/contact/fixture.h \
-		tests/interfaces/epp/contact/test_contact_create_impl.cc \
-		tests/interfaces/epp/contact/test_contact_delete_impl.cc \
-		tests/interfaces/epp/contact/test_contact_info_impl.cc \
-		tests/interfaces/epp/contact/test_contact_update_impl.cc \
-		tests/interfaces/epp/contact/test_contact_check_impl.cc \
-		tests/interfaces/epp/contact/test_contact_transfer_impl.cc \
+		tests/interfaces/epp/contact/test_create_contact.cc \
+		tests/interfaces/epp/contact/test_delete_contact.cc \
+		tests/interfaces/epp/contact/test_info_contact.cc \
+		tests/interfaces/epp/contact/test_update_contact.cc \
+		tests/interfaces/epp/contact/test_check_contact.cc \
+		tests/interfaces/epp/contact/test_transfer_contact.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
 		tests/interfaces/epp/domain/fixture.h \
 		tests/interfaces/epp/domain/fixture.cc \
-		tests/interfaces/epp/domain/test_domain_check_impl.cc \
-		tests/interfaces/epp/domain/test_domain_delete_impl.cc \
-		tests/interfaces/epp/domain/test_domain_info_impl.cc \
-		tests/interfaces/epp/domain/test_domain_transfer_impl.cc \
-		tests/interfaces/epp/domain/test_domain_update_impl.cc \
-		tests/interfaces/epp/domain/test_domain_create_impl.cc \
-		tests/interfaces/epp/domain/test_domain_renew_impl.cc \
-		tests/interfaces/epp/domain/test_domain_billing_impl.cc \
+		tests/interfaces/epp/domain/test_check_domain.cc \
+		tests/interfaces/epp/domain/test_delete_domain.cc \
+		tests/interfaces/epp/domain/test_info_domain.cc \
+		tests/interfaces/epp/domain/test_transfer_domain.cc \
+		tests/interfaces/epp/domain/test_update_domain.cc \
+		tests/interfaces/epp/domain/test_create_domain.cc \
+		tests/interfaces/epp/domain/test_renew_domain.cc \
+		tests/interfaces/epp/domain/test_domain_billing.cc \
 		tests/interfaces/epp/keyset/fixture.h \
 		tests/interfaces/epp/keyset/fixture.cc \
-		tests/interfaces/epp/keyset/test_create.cc \
-		tests/interfaces/epp/nsset/test_nsset_check_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_info_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_delete_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_create_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_update_impl.cc \
-		tests/interfaces/epp/nsset/test_nsset_transfer_impl.cc \
-		util/corba_conversion.h \
-		util/corba_conversion.cc \
+		tests/interfaces/epp/keyset/test_create_keyset.cc \
+		tests/interfaces/epp/nsset/test_check_nsset.cc \
+		tests/interfaces/epp/nsset/test_info_nsset.cc \
+		tests/interfaces/epp/nsset/test_delete_nsset.cc \
+		tests/interfaces/epp/nsset/test_create_nsset.cc \
+		tests/interfaces/epp/nsset/test_update_nsset.cc \
+		tests/interfaces/epp/nsset/test_transfer_nsset.cc \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
@@ -2690,7 +2709,8 @@ tests_test_server_SOURCES = \
 		src/fredlib/object_state/cancel_object_state_request_id.h \
 		src/domain_browser/domain_browser.cc \
 		src/domain_browser/domain_browser.h \
-		tests/interfaces/domain_browser/test_domain_browser.cc
+		tests/interfaces/domain_browser/test_domain_browser.cc \
+		tests/setup/fixtures.h
 
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \

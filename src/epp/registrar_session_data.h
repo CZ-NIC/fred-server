@@ -16,30 +16,30 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef CORBA_EPP_REGISTRAR_SESSION_DATA_54154540219
-#define CORBA_EPP_REGISTRAR_SESSION_DATA_54154540219
+#ifndef REGISTRAR_SESSION_DATA_H_A3D31CFA54E64CDE926827804909B0B3
+#define REGISTRAR_SESSION_DATA_H_A3D31CFA54E64CDE926827804909B0B3
 
 #include "src/epp/session_lang.h"
 
 namespace Epp {
 
-struct RegistrarSessionData {
+struct RegistrarSessionData
+{
     unsigned long long registrar_id;
     SessionLang::Enum language;
 
+
     RegistrarSessionData(
-        unsigned long long _registrar_id,
-        SessionLang::Enum _language
-    ) :
-        registrar_id(_registrar_id),
-        language(_language)
-    { }
+            unsigned long long _registrar_id,
+            SessionLang::Enum _language)
+        : registrar_id(_registrar_id),
+          language(_language)
+    {
+    }
+
+
 };
 
-}
+} // namespace Epp
 
 #endif

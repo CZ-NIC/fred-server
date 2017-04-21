@@ -35,7 +35,7 @@
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(CreatePdf)
 
-class create_pdf_fixture : public Test::Fixture::instantiate_db_template
+class create_pdf_fixture : public Test::instantiate_db_template
 {
 public:
     create_pdf_fixture()

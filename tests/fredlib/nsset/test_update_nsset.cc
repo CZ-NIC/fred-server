@@ -26,7 +26,7 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-BOOST_FIXTURE_TEST_SUITE(TestUpdateNsset, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestUpdateNsset, Test::instantiate_db_template)
 
 const std::string server_name = "test-update-nsset";
 
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(info_nsset)
     Fred::InfoNssetOutput nsset_info2 = Fred::InfoNssetByHandle(test_nsset_handle).set_lock().exec(ctx);
 }
 
-struct update_nsset_fixture : public Test::Fixture::instantiate_db_template
+struct update_nsset_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

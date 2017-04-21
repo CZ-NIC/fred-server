@@ -31,7 +31,7 @@
 
 const std::string server_name = "test-create-public-request-auth";
 
-struct create_public_request_auth_fixture : public virtual Test::Fixture::instantiate_db_template
+struct create_public_request_auth_fixture : public virtual Test::instantiate_db_template
 {
     create_public_request_auth_fixture()
     :   xmark(RandomDataGenerator().xnumstring(6)),

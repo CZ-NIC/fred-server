@@ -25,7 +25,7 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-BOOST_FIXTURE_TEST_SUITE(TestDomainName, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestDomainName, Test::instantiate_db_template)
 
 const std::string server_name = "test-domain-name";
 

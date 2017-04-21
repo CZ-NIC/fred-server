@@ -36,7 +36,7 @@
 
 const std::string server_name = "test-update-domain";
 
-struct update_domain_fixture : virtual public Test::Fixture::instantiate_db_template
+struct update_domain_fixture : virtual public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -103,7 +103,7 @@ struct update_domain_fixture : virtual public Test::Fixture::instantiate_db_temp
 };
 
 struct update_domain_admin_nsset_keyset_fixture
-: virtual update_domain_fixture, virtual public Test::Fixture::instantiate_db_template
+: virtual update_domain_fixture, virtual public Test::instantiate_db_template
 {
     std::string admin_contact_handle;
     std::string admin_contact1_handle;
@@ -162,7 +162,7 @@ BOOST_FIXTURE_TEST_SUITE(TestUpdateDomain, update_domain_fixture)
  * test UpdateDomain::Exception
  * test create and throw exception with special data
  */
-BOOST_FIXTURE_TEST_CASE(update_domain_exception, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_CASE(update_domain_exception, Test::instantiate_db_template)
 {
     //good path exception
     BOOST_CHECK_THROW (BOOST_THROW_EXCEPTION(Fred::UpdateDomain::Exception().set_unknown_domain_fqdn("badfqdn.cz"));

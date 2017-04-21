@@ -48,7 +48,7 @@
 #include <boost/foreach.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestUpdateContactTest_integ, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestUpdateContactTest_integ, Test::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification-update_test_integ";
 

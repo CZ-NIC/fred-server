@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "src/whois/whois.h"
 
 #include "src/whois/zone_list.h"
@@ -584,7 +602,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
         {
             if (e.is_set_unknown_handle())
             {
-                if (Fred::KeySet::get_handle_syntax_validity(handle) == Fred::KeySet::HandleState::invalid)
+                if (Fred::Keyset::get_handle_syntax_validity(handle) == Fred::Keyset::HandleState::invalid)
                 {
                     throw InvalidHandle();
                 }
@@ -919,7 +937,7 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle, unsigned
                     .exec(ctx, get_output_timezone());
         if (domain_info.empty())
         {
-            if (Fred::KeySet::get_handle_syntax_validity(handle) == Fred::KeySet::HandleState::invalid)
+            if (Fred::Keyset::get_handle_syntax_validity(handle) == Fred::Keyset::HandleState::invalid)
             {
                 throw InvalidHandle();
             }

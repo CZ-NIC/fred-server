@@ -30,7 +30,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestInfoNsset);
 
-struct info_nsset_fixture : public Test::Fixture::instantiate_db_template
+struct info_nsset_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

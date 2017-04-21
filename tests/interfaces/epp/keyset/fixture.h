@@ -16,20 +16,100 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
+#ifndef FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
+#define FIXTURE_H_266C91BC21244C9C83BA2220FF3A82DB
 
-#ifndef FIXTURE_H_9B8B417BFEDF100B23D6A39540F8D033//date "+%s"|md5sum|tr "[a-f]" "[A-F]"
-#define FIXTURE_H_9B8B417BFEDF100B23D6A39540F8D033
-
+#include "src/epp/keyset/check_keyset_config_data.h"
+#include "src/epp/keyset/create_keyset_config_data.h"
+#include "src/epp/keyset/create_keyset_localized.h"
+#include "src/epp/keyset/delete_keyset_config_data.h"
+#include "src/epp/keyset/info_keyset_config_data.h"
+#include "src/epp/keyset/transfer_keyset_config_data.h"
+#include "src/epp/keyset/update_keyset_config_data.h"
+#include "src/fredlib/keyset/handle_state.h"
+#include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/fixture.h"
 #include "tests/setup/fixtures.h"
 #include "tests/setup/fixtures_utils.h"
-#include "src/fredlib/keyset/handle_state.h"
 
+#include <string>
 #include <vector>
 
 namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Keyset {
+
+struct DefaultCheckKeysetConfigData : ::Epp::Keyset::CheckKeysetConfigData
+{
+    DefaultCheckKeysetConfigData()
+        : CheckKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultInfoKeysetConfigData : ::Epp::Keyset::InfoKeysetConfigData
+{
+    DefaultInfoKeysetConfigData()
+        : InfoKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultCreateKeysetConfigData : ::Epp::Keyset::CreateKeysetConfigData
+{
+    DefaultCreateKeysetConfigData()
+        : CreateKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultUpdateKeysetConfigData : ::Epp::Keyset::UpdateKeysetConfigData
+{
+    DefaultUpdateKeysetConfigData()
+        : UpdateKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultDeleteKeysetConfigData : ::Epp::Keyset::DeleteKeysetConfigData
+{
+    DefaultDeleteKeysetConfigData()
+        : DeleteKeysetConfigData(false)
+    {
+    }
+};
+
+struct DefaultTransferKeysetConfigData : ::Epp::Keyset::TransferKeysetConfigData
+{
+    DefaultTransferKeysetConfigData()
+        : TransferKeysetConfigData(false)
+    {
+    }
+};
+
+struct Keyset {
+    std::string handle;
+    Keyset(Fred::OperationContext& _ctx, const std::string& _registrar_handle) {
+        handle = "KEYSET";
+        Fred::CreateKeyset(handle, _registrar_handle).exec(_ctx);
+    }
+};
+
+struct KeysetWithTechContact
+{
+    Contact::Contact tech_contact;
+    std::string handle;
+
+    KeysetWithTechContact(Fred::OperationContext& _ctx, const std::string& _registrar_handle)
+        : tech_contact(_ctx, _registrar_handle, "KEYSETTECHCONTACT"),
+          handle("KEYSET")
+    {
+        Fred::CreateKeyset(handle, _registrar_handle)
+                .set_tech_contacts(boost::assign::list_of(tech_contact.data.handle))
+                .exec(_ctx);
+    }
+};
 
 class RegistrarProvider
 {
@@ -61,19 +141,21 @@ private:
     const std::vector< Fred::InfoContactData > contact_;
 };
 
-class ObjectsProvider:private Fixture::instantiate_db_template,
-                      public RegistrarProvider,
-                      public ContactProvider
+class ObjectsProvider : private instantiate_db_template,
+                        public RegistrarProvider,
+                        public ContactProvider
 {
 public:
     ObjectsProvider();
     ~ObjectsProvider() { }
-    template < Fred::KeySet::HandleState::Registrability REGISTRABILITY,
-               Fred::KeySet::HandleState::SyntaxValidity VALIDITY >
+    template < Fred::Keyset::HandleState::Registrability REGISTRABILITY,
+               Fred::Keyset::HandleState::SyntaxValidity VALIDITY >
     static std::string get_keyset_handle(Fred::OperationContext&);
 };
 
+} // namespace Test::Backend::Epp::Keyset
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
+} // namespace Test
 
-}//namespace Test
-
-#endif//FIXTURE_H_9B8B417BFEDF100B23D6A39540F8D033
+#endif

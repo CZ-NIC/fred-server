@@ -1,5 +1,23 @@
-#ifndef _INFO_BUFFER_H_
-#define _INFO_BUFFER_H_
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef INFO_BUFFER_H_C0D4DC79F2854D9EB9DA25D99E3294CC
+#define INFO_BUFFER_H_C0D4DC79F2854D9EB9DA25D99E3294CC
 
 #include <string>
 #include <stdexcept>
@@ -8,7 +26,7 @@
 #include "src/fredlib/contact.h"
 #include "src/fredlib/nsset.h"
 #include "src/fredlib/keyset.h"
-#include "src/fredlib/exceptions.h" 
+#include "src/fredlib/exceptions.h"
 
 namespace Fred
 {
@@ -38,7 +56,7 @@ namespace Fred
     class Chunk
     {
      public:
-      /// destructor 
+      /// destructor
       virtual ~Chunk() {}
       /// returns number of records in chunk
       virtual unsigned long getCount() const = 0;
@@ -49,14 +67,14 @@ namespace Fred
     class Manager
     {
      public:
-      /// destructor 
+      /// destructor
       virtual ~Manager() {}
       /// factory method
       static Manager *create(
         DBSharedPtr db, Domain::Manager *dm,
-        NSSet::Manager *nm, 
-        Contact::Manager *cm, 
-        KeySet::Manager *km
+        Nsset::Manager *nm,
+        Contact::Manager *cm,
+        Keyset::Manager *km
       );
       virtual unsigned long info(
         const std::string &registrar, Type infotype, const std::string& request
@@ -65,12 +83,12 @@ namespace Fred
       virtual unsigned long info(
         TID registrar, Type infotype, const std::string& request
       ) throw (SQL_ERROR, INVALID_REGISTRAR) = 0;
-      /// get chunk of result of specified size and update pointer 
-      virtual Chunk* getChunk(TID registrar, unsigned size) 
+      /// get chunk of result of specified size and update pointer
+      virtual Chunk* getChunk(TID registrar, unsigned size)
         throw (SQL_ERROR, INVALID_REGISTRAR) = 0;
-      virtual Chunk* getChunk(const std::string &registrar, unsigned size) 
+      virtual Chunk* getChunk(const std::string &registrar, unsigned size)
         throw (SQL_ERROR, INVALID_REGISTRAR) = 0;
-    }; 
+    };
   };
 };
 

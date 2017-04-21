@@ -33,7 +33,10 @@
 #include <set>
 #include <string>
 
-BOOST_AUTO_TEST_SUITE(TestAdminNotification)
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Admin)
+BOOST_AUTO_TEST_SUITE(Notification)
 BOOST_AUTO_TEST_SUITE(SetDomainOutzoneUnguardedWarningEmails)
 
 size_t count_domain_emails(const unsigned long long domain_id) {
@@ -50,42 +53,45 @@ size_t count_domain_emails(const unsigned long long domain_id) {
 BOOST_FIXTURE_TEST_CASE(set_invalid_email, HasInvalidEmail)
 {
     BOOST_CHECK_THROW(
-        Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map),
-        Admin::Notification::DomainEmailValidationError
+        ::Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map),
+        ::Admin::Notification::DomainEmailValidationError
     );
 }
 
 BOOST_FIXTURE_TEST_CASE(set_valid_email, HasValidEmail)
 {
-    Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
+    ::Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
     BOOST_CHECK_EQUAL(count_domain_emails(domain.id), domain_emails_map[domain.id].size());
 }
 
 BOOST_FIXTURE_TEST_CASE(set_valid_emails, HasValidEmails)
 {
-    Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
+    ::Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
     BOOST_CHECK_EQUAL(count_domain_emails(domain.id), domain_emails_map[domain.id].size());
 }
 
 BOOST_FIXTURE_TEST_CASE(set_same_emails, HasSameEmails)
 {
-    Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
+    ::Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
     BOOST_CHECK_EQUAL(count_domain_emails(domain.id), domain_emails_map[domain.id].size());
 }
 
 BOOST_FIXTURE_TEST_CASE(set_empty_email, HasEmptyEmail)
 {
-    Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
+    ::Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
     BOOST_CHECK_EQUAL(count_domain_emails(domain.id), domain_emails_map[domain.id].size() - 1);
 }
 
 BOOST_FIXTURE_TEST_CASE(set_no_emails, HasNoEmails)
 {
-    Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
+    ::Admin::Notification::set_domain_outzone_unguarded_warning_emails(domain_emails_map);
     BOOST_CHECK_EQUAL(count_domain_emails(domain.id), domain_emails_map[domain.id].size());
-    Admin::Notification::set_domain_outzone_unguarded_warning_emails(none_domain_emails_map);
+    ::Admin::Notification::set_domain_outzone_unguarded_warning_emails(none_domain_emails_map);
     BOOST_CHECK_EQUAL(count_domain_emails(domain.id), none_domain_emails_map[domain.id].size());
 }
 
 BOOST_AUTO_TEST_SUITE_END();
 BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END();
+
+} // namespace Test

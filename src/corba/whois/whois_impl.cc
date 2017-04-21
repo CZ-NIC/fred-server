@@ -149,7 +149,7 @@ void ccReg_Whois_i::fillContact(ccReg::ContactDetail* cc,
     cc->statusList[i] = slist[i];
 }//ccReg_Whois_i::fillContact
 
-void ccReg_Whois_i::fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n)
+void ccReg_Whois_i::fillNSSet(ccReg::NSSetDetail* cn, Fred::Nsset::Nsset* n)
 {
   cn->id = n->getId();
   cn->handle = DUPSTRFUN(n->getHandle);
@@ -191,7 +191,7 @@ void ccReg_Whois_i::fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n)
 }//ccReg_Whois_i::fillNSSet
 
 void ccReg_Whois_i::fillKeySet(ccReg::KeySetDetail *ck
-        , Fred::KeySet::KeySet *k)
+        , Fred::Keyset::Keyset *k)
 {
     ck->id = k->getId();
     ck->handle          = DUPSTRFUN(k->getHandle);
@@ -256,8 +256,8 @@ void ccReg_Whois_i::fillDomain(ccReg::DomainDetail* cd,
   cd->registrantHandle = DUPSTRFUN(d->getRegistrantHandle);
   cd->expirationDate = DUPSTRDATED(d->getExpirationDate);
   cd->valExDate = DUPSTRDATED(d->getValExDate);
-  cd->nssetHandle = DUPSTRFUN(d->getNSSetHandle);
-  cd->keysetHandle = DUPSTRFUN(d->getKeySetHandle);
+  cd->nssetHandle = DUPSTRFUN(d->getNssetHandle);
+  cd->keysetHandle = DUPSTRFUN(d->getKeysetHandle);
   cd->admins.length(d->getAdminCount(1));
   cd->temps.length(d->getAdminCount(2));
   std::vector<unsigned> slist;
@@ -520,8 +520,8 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
 
         std::auto_ptr<Fred::Manager>
             r(Fred::Manager::create(ldb_disconnect_guard, registry_restricted_handles_));
-        Fred::NSSet::Manager *nr = r->getNSSetManager();
-        std::auto_ptr<Fred::NSSet::List> nl(nr->createList());
+        Fred::Nsset::Manager *nr = r->getNssetManager();
+        std::auto_ptr<Fred::Nsset::List> nl(nr->createList());
         nl->setWildcardExpansion(false);
         nl->setHandleFilter(handle);
         nl->reload();
@@ -529,7 +529,7 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
         throw ccReg::Whois::ObjectNotFound();
         }
         ccReg::NSSetDetail* cn = new ccReg::NSSetDetail;
-        fillNSSet(cn, nl->getNSSet(0));
+        fillNSSet(cn, nl->getNsset(0));
         return cn;
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )
@@ -587,8 +587,8 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
 
         std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
             ,registry_restricted_handles_));
-        Fred::KeySet::Manager *kr = r->getKeySetManager();
-        std::auto_ptr<Fred::KeySet::List> kl(kr->createList());
+        Fred::Keyset::Manager *kr = r->getKeysetManager();
+        std::auto_ptr<Fred::Keyset::List> kl(kr->createList());
         kl->setWildcardExpansion(false);
         kl->setHandleFilter(handle);
         kl->reload();
@@ -598,7 +598,7 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
         }
 
         ccReg::KeySetDetail *ck = new ccReg::KeySetDetail;
-        fillKeySet(ck, kl->getKeySet(0));
+        fillKeySet(ck, kl->getKeyset(0));
         return ck;
     }//try
     catch (const ccReg::Whois::ObjectNotFound& )
@@ -672,10 +672,10 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
           dl->setTempHandleFilter(key);
           break;
         case ccReg::DIKT_NSSET:
-          dl->setNSSetHandleFilter(key);
+          dl->setNssetHandleFilter(key);
           break;
         case ccReg::DIKT_KEYSET:
-          dl->setKeySetHandleFilter(key);
+          dl->setKeysetHandleFilter(key);
           break;
         }
         dl->setLimit(limit);
@@ -753,8 +753,8 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
                 Fred::Manager::create(ldb_disconnect_guard
                         , registry_restricted_handles_));
         Fred::Zone::Manager *zm = r->getZoneManager();
-        Fred::NSSet::Manager *nm = r->getNSSetManager();
-        std::auto_ptr<Fred::NSSet::List> nl(nm->createList());
+        Fred::Nsset::Manager *nm = r->getNssetManager();
+        std::auto_ptr<Fred::Nsset::List> nl(nm->createList());
         switch (type) {
         case ccReg::NIKT_NS : nl->setHostNameFilter(zm->utf8_to_punycode(key)); break;
         case ccReg::NIKT_TECH : nl->setAdminFilter(key); break;
@@ -764,7 +764,7 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
         ccReg::NSSetDetails_var nlist = new ccReg::NSSetDetails;
         nlist->length(nl->getCount());
         for (unsigned i=0; i<nl->getCount(); i++)
-        fillNSSet(&nlist[i], nl->getNSSet(i));
+        fillNSSet(&nlist[i], nl->getNsset(i));
         return nlist._retn();
     }//try
     catch (const ccReg::Whois::InternalServerError& )
@@ -815,8 +815,8 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
         std::auto_ptr<Fred::Manager> r(
                 Fred::Manager::create(ldb_disconnect_guard
                         , registry_restricted_handles_));
-        Fred::KeySet::Manager *km = r->getKeySetManager();
-        std::auto_ptr<Fred::KeySet::List> kl(km->createList());
+        Fred::Keyset::Manager *km = r->getKeysetManager();
+        std::auto_ptr<Fred::Keyset::List> kl(km->createList());
         switch (type) {
             case ccReg::KIKT_TECH:
                 kl->setAdminFilter(key);
@@ -827,7 +827,7 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
         ccReg::KeySetDetails_var klist = new ccReg::KeySetDetails;
         klist->length(kl->getCount());
         for (unsigned int i = 0; i < kl->getCount(); i++)
-            fillKeySet(&klist[i], kl->getKeySet(i));
+            fillKeySet(&klist[i], kl->getKeyset(i));
         return klist._retn();
     }//try
     catch (const ccReg::Whois::InternalServerError& )
@@ -1128,7 +1128,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getKeySetStatusDescList: ccReg::Whois::InternalServerError");
+                , "getKeysetStatusDescList: ccReg::Whois::InternalServerError");
         throw;
     }
     catch (const std::exception& ex)
@@ -1136,7 +1136,7 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                , "getKeySetStatusDescList: std::exception %s", ex.what());
+                , "getKeysetStatusDescList: std::exception %s", ex.what());
         throw ccReg::Whois::InternalServerError();
     }
     catch (...)
@@ -1144,8 +1144,8 @@ Registry::ObjectStatusDescSeq* ccReg_Whois_i::getKeySetStatusDescList(const char
         Logging::Manager::instance_ref()
             .get(server_name_.c_str())
             .message( ERROR_LOG
-                    , "getKeySetStatusDescList: unknown exception ");
+                    , "getKeysetStatusDescList: unknown exception ");
         throw ccReg::Whois::InternalServerError();
     }
-}//ccReg_Whois_i::getKeySetStatusDescList
+}//ccReg_Whois_i::getKeysetStatusDescList
 

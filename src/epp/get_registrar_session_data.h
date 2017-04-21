@@ -16,12 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef SRC_EPP_GET_REGISTRAR_SESSION_DATA_38454101632052
-#define SRC_EPP_GET_REGISTRAR_SESSION_DATA_38454101632052
+#ifndef GET_REGISTRAR_SESSION_DATA_H_B7B802E9C549405F85FE4DE10A393EAD
+#define GET_REGISTRAR_SESSION_DATA_H_B7B802E9C549405F85FE4DE10A393EAD
 
 #include "src/corba/epp/epp_session.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
@@ -29,12 +25,13 @@
 
 namespace Epp {
 
-    inline RegistrarSessionData get_registrar_session_data(EppSessionContainer& _epp_sessions, unsigned long long _session_id) {
-        return RegistrarSessionData(
+inline RegistrarSessionData get_registrar_session_data(EppSessionContainer& _epp_sessions, unsigned long long _session_id)
+{
+    return RegistrarSessionData(
             Legacy::get_registrar_id(_epp_sessions, _session_id),
-            Legacy::get_lang(_epp_sessions, _session_id)
-        );
-    }
+            Legacy::get_lang(_epp_sessions, _session_id));
+}
+
 }
 
 #endif

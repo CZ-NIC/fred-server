@@ -130,12 +130,6 @@ int main(int argc, char *argv[])
                                                   % ts);
             CORBA::string_free(version);
 
-            // load all country code from table enum_country
-            if (myccReg_EPP_i->LoadCountryCode() <= 0) {
-              LOGGER(PACKAGE).alert("database error: load country code");
-              exit(-5);
-            }
-
             // load error messages to memory
             if (myccReg_EPP_i->LoadErrorMessages() <= 0) {
               LOGGER(PACKAGE).alert("database error: load error messages");

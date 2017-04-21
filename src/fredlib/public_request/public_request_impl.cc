@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "public_request_impl.h"
 #include "log/logger.h"
 #include "util.h"
@@ -40,11 +58,11 @@ std::string ObjectType2Str(ObjectType type)
         case OT_CONTACT:
             return "Contact";
         case OT_NSSET:
-            return "NSSet";
+            return "Nsset";
         case OT_DOMAIN:
             return "Domain";
         case OT_KEYSET:
-            return "KeySet";
+            return "Keyset";
         default:
             return "Type unknown";
     }
@@ -60,7 +78,7 @@ void insertNewStateRequest(
 }
 
 
-/* 
+/*
  * check if object states interfere with requested states
  */
 bool queryBlockRequest(
@@ -200,7 +218,7 @@ bool object_was_changed_since_request_create(const unsigned long long _request_i
     }
     return false;
 }
-   
+
 
 
 PublicRequestImpl::PublicRequestImpl()

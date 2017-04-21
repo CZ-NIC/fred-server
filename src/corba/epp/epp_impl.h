@@ -1,4 +1,21 @@
-#include "src/corba/epp/countrycode.h"
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "src/corba/epp/messages.h"
 #include "src/corba/epp/epp_session.h"
 #include "src/corba/mailer_manager.h"
@@ -41,7 +58,7 @@ private:
   std::string database; // connection string to database
   MailerManager *mm;
   Database::Manager *dbman;
-  
+
   NameService *ns;
 
   //conf
@@ -67,7 +84,6 @@ private:
   std::auto_ptr<Fred::Manager> regMan;
 
 
-  void extractEnumDomainExtension(std::string&, ccReg::Disclose &publish, const ccReg::ExtensionList&);
   // is IDN allowed? implements logic: system registrator has always IDN allowed
   bool idn_allowed(EPPAction& action) const;
 
@@ -118,10 +134,6 @@ public:
   int getZoneMax(DBSharedPtr db, const char *fqdn);
   int getFQDN(DBSharedPtr db, char *FQDN, const char *fqdn);
 
-
-  // parse extension for domain enum.exdate
-  void GetValExpDateFromExtension(char *valexpDate, const ccReg::ExtensionList& ext);
-
   // get RegistrarID
   int GetRegistrarID(unsigned long long clientID);
   // get uses language
@@ -129,7 +141,7 @@ public:
 
   // send    exception ServerIntError
   void ServerInternalError(const char *fce, const char *svTRID="DUMMY-SVTRID");
-  // EPP exception 
+  // EPP exception
   void EppError(short errCode, const char *errMsg, const char *svTRID,
     ccReg::Errors_var& errors);
 
@@ -172,16 +184,11 @@ public:
   int DefaultValExpInterval()
   {
     return 14;
-  } //  protected period for expiration validity of enum domain 
+  } //  protected period for expiration validity of enum domain
   // for disclose flags
   bool get_DISCLOSE(bool db);
   char update_DISCLOSE(bool d, ccReg::Disclose flag);
   bool setvalue_DISCLOSE(bool d, ccReg::Disclose flag);
-
-  // load country code
-  int LoadCountryCode();
-  // test country code
-  bool TestCountryCode(const char *cc);
 
   // load and get message of lang from enum_error
   int LoadErrorMessages();
@@ -211,157 +218,358 @@ public:
   void sessionClosed(CORBA::ULongLong clientID);
 
   // methods corresponding to defined IDL attributes and operations
+ /**
+  * GetTransaction returns for client from entered clTRID generated server
+  *              transaction ID
+  *
+  * \param clTRID - client transaction number
+  * \param clientID - client identification
+  * \param requestId - fred-logd request ID
+  * \param errCode - save error report from client into table action
+  *
+  * \return svTRID and errCode msg
+  */
   ccReg::Response* GetTransaction(CORBA::Short errCode, CORBA::ULongLong clientID, ccReg::TID requestId, const char* clTRID, const ccReg::XmlErrors& errorCodes, ccReg::ErrorStrings_out errStrings);
+ /**
+  * PollAcknowledgement confirmation of message income msgID returns number of message, which are left count and next message newmsgID
+  *
+  * \param msgID - front message number
+  * \param count -  messages numbers
+  * \param newmsgID - number of new message
+  * \param params - common EPP parametres
+  *
+  * \return svTRID and errCode
+  */
   ccReg::Response* PollAcknowledgement(const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID, const ccReg::EppParams &params);
+ /**
+  * PollRequest retrieve message msgID from front return number of messages in front and message content
+  *
+  * \param
+  * \param msgID - id of required message in front
+  * \param count - number
+  * \param qDate - message date and time
+  * \param type - message type
+  * \param msg  - message content as structure
+  * \param params - common EPP parametres
+  *
+  * \return svTRID and errCode
+  */
   ccReg::Response* PollRequest(CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate, ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params);
   void PollRequestGetUpdateDomainDetails(CORBA::ULongLong _poll_id, ccReg::Domain_out _old_data, ccReg::Domain_out _new_data, const ccReg::EppParams &params);
   void PollRequestGetUpdateNSSetDetails(CORBA::ULongLong _poll_id, ccReg::NSSet_out _old_data, ccReg::NSSet_out _new_data, const ccReg::EppParams &params);
   void PollRequestGetUpdateKeySetDetails(CORBA::ULongLong _poll_id, ccReg::KeySet_out _old_data, ccReg::KeySet_out _new_data, const ccReg::EppParams &params);
 
+ /**
+  * ClientLogin client login acquire of clientID from table login login through password registrar and its possible change
+  *
+  * \param ClID - registrar identifier
+  * \param passwd - current password
+  * \param newpasswd - new password for change
+  * \param clTRID - transaction client number
+  * \param XML - xml representation of the command
+  * \param clientID - connected client id
+  * \param requestId - fred-logd request ID associated with login
+  * \param certID - certificate fingerprint
+  * \param language - communication language of client en or cs empty value = en
+  *
+  * \return svTRID and errCode
+  */
   ccReg::Response* ClientLogin(const char* ClID, const char* passwd, const char* newpass, const char *clTRID, const char* XML, CORBA::ULongLong& out_clientID, ccReg::TID requestId, const char* certID, ccReg::Languages lang);
+
+ /**
+  * ClientLogout client logout for record into table login
+  *              about logout date
+  * \param params - common EPP parametres
+  *
+  * \return svTRID and errCode
+  */
+
   ccReg::Response* ClientLogout(const ccReg::EppParams &params);
+ /**
+  * ClientCredit information about credit amount of logged registrar
+  *
+  * \param params - common EPP parametres
+  * \param credit - credit amount in haler
+  *
+  * \return svTRID and errCode
+  */
   ccReg::Response* ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &params);
-  ccReg::Response* ContactCheck(const ccReg::Check& handle, ccReg::CheckResp_out a, const ccReg::EppParams &params);
-  ccReg::Response* ContactInfo(const char* handle, ccReg::Contact_out c, const ccReg::EppParams &params);
-  ccReg::Response* ContactDelete(const char* handle, const ccReg::EppParams &params);
-  ccReg::Response* ContactUpdate(const char* handle, const ccReg::ContactChange& c, const ccReg::EppParams &params);
-  ccReg::Response* ContactCreate(const char* handle, const ccReg::ContactChange& c, ccReg::timestamp_out crDate, const ccReg::EppParams &params);
-  ccReg::Response* ContactTransfer(const char* handle, const char* authInfo, const ccReg::EppParams &params);
 
-  ccReg::Response* NSSetCheck(const ccReg::Check& _handles_to_be_checked, ccReg::CheckResp_out _check_results, const ccReg::EppParams &_epp_params);
 
-  ccReg::Response* NSSetInfo(const char* handle, ccReg::NSSet_out n, const ccReg::EppParams &params);
+    ccReg::Response* ContactCheck(
+            const ccReg::Check& _handles_to_be_checked,
+            ccReg::CheckResp_out _check_results,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response* NSSetDelete(const char* handle, const ccReg::EppParams &params);
+    ccReg::Response* ContactCreate(
+            const char* _handle,
+            const ccReg::ContactChange& _contact_data,
+            ccReg::timestamp_out _creation_time,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response* NSSetCreate(const char* handle, const char* authInfoPw, const ccReg::TechContact& tech, const ccReg::DNSHost& dns, CORBA::Short level, ccReg::timestamp_out crDate, const ccReg::EppParams &params);
+    ccReg::Response* ContactDelete(
+            const char* _handle,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response* NSSetUpdate(const char* handle, const char* authInfo_chg, const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem, const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem, CORBA::Short level, const ccReg::EppParams &params);
+    ccReg::Response* ContactInfo(
+            const char* _handle,
+            ccReg::Contact_out _contact_info,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response* NSSetTransfer(const char* handle, const char* authInfo, const ccReg::EppParams &params);
+    ccReg::Response* ContactTransfer(
+            const char* _handle,
+            const char* _authinfopw,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response *KeySetCheck( const ccReg::Check &handle, ccReg::CheckResp_out a, const ccReg::EppParams &params);
+    ccReg::Response* ContactUpdate(
+            const char* _handle,
+            const ccReg::ContactChange& _contact_change_data,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response *KeySetInfo( const char *handle, ccReg::KeySet_out k, const ccReg::EppParams &params);
+    ccReg::Response* NSSetCheck(
+            const ccReg::Check& _nsset_handles_to_be_checked,
+            ccReg::CheckResp_out _check_results,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response *KeySetDelete( const char *handle, const ccReg::EppParams &params);
-
-  ccReg::Response *KeySetCreate( const char *handle, const char *authInfoPw, const ccReg::TechContact &tech, const ccReg::DSRecord &dsrec, const ccReg::DNSKey &dnsk, ccReg::timestamp_out crDate, const ccReg::EppParams &params);
-
-  ccReg::Response *KeySetUpdate( const char *handle, const char *authInfo_chg, const ccReg::TechContact &tech_add, const ccReg::TechContact &tech_rem, const ccReg::DSRecord &dsrec_add, const ccReg::DSRecord &dsrec_rem, const ccReg::DNSKey &dnsk_add, const ccReg::DNSKey &dnsk_rem, const ccReg::EppParams &params);
-
-  ccReg::Response *KeySetTransfer( const char *handle, const char *authInfo, const ccReg::EppParams &params);
+     /**
+      * @brief creation Nsset and subservient DNS hosts
+      *
+      * @param handle - nsset identifier
+      * @param _authinfopw - authentication
+      * @param _tech_contacts - sequence of technical contact
+      * @param _dns_hosts - sequence of DNS records
+      * @param _tech_check_level - tech check level
+      * @param _create_time - object creation date
+      * @param _epp_params - common EPP parametres
+      *
+      * @return svTRID and errCode
+      */
+    ccReg::Response* NSSetCreate(
+            const char* handle,
+            const char* _authinfopw,
+            const ccReg::TechContact& _tech_contacts,
+            const ccReg::DNSHost& _dns_hosts,
+            CORBA::Short _tech_check_level,
+            ccReg::timestamp_out _create_time,
+            const ccReg::EppParams& _epp_params);
 
     /**
-     * DomainCheck - retrieve states of domains identified by their FQDNs
-     *
-     * \param _domain_fqdns - identifiers of domains to check
-     * \param _domain_check_results - output sequence of check results
-     * \param _epp_params - parameters of EPP session
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
+      * @brief deleting Nsset and saving it into history Nsset can be only deleted by registrar who created it or those who administers it nsset cannot be deleted if there is link into domain table
+      *
+      * @param _nsset_handle  - nsset identifier
+      * @param _epp_params - common EPP parametres
+      *
+      * @return svTRID and errCode
+      */
+    ccReg::Response* NSSetDelete(
+            const char* _nsset_handle,
+            const ccReg::EppParams& _epp_params);
+
+    /**
+      * @brief returns detailed information about nsset and subservient DNS hosts empty value if contact doesn't exist
+      *
+      * @param _nsset_handle - identifier of contact
+      * @param _nsset_info - structure of Nsset detailed description
+      * @param _epp_params - common EPP parameters
+      *
+      * @return svTRID and errCode
+      */
+    ccReg::Response* NSSetInfo(
+            const char* _nsset_handle,
+            ccReg::NSSet_out _nsset_info,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* NSSetTransfer(
+            const char* _nsset_handle,
+            const char* _authinfopw,
+            const ccReg::EppParams& _epp_params);
+
+    /**
+      * @brief change of Nsset and subservient DNS hosts and technical contacts and saving changes into history
+      *
+      * @param _nsset_handle - nsset identifier
+      * @param _authinfopw_chg - authentication change
+      * @param _dns_hosts_add - sequence of added DNS records
+      * @param _dns_hosts_rem - sequence of DNS records for deleting
+      * @param _tech_contacts_add - sequence of added technical contacts
+      * @param _tech_contacts_rem - sequence of technical contact for deleting
+      * @param _tech_check_level - tech check level
+      * @param _epp_params - common EPP parametres
+      *
+      * @return svTRID and errCode
+      */
+    ccReg::Response* NSSetUpdate(
+            const char* _nsset_handle,
+            const char* _authinfopw_chg,
+            const ccReg::DNSHost& _dns_hosts_add,
+            const ccReg::DNSHost& _dns_hosts_rem,
+            const ccReg::TechContact& _tech_contacts_add,
+            const ccReg::TechContact& _tech_contacts_rem,
+            CORBA::Short _tech_check_level,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* KeySetCheck(
+            const ccReg::Check& _keyset_handles_to_be_checked,
+            ccReg::CheckResp_out _check_results,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* KeySetCreate(
+            const char* _keyset_handle,
+            const char* _authinfopw,
+            const ccReg::TechContact& _tech_contacts,
+            const ccReg::DSRecord& _ds_records,
+            const ccReg::DNSKey& _dns_keys,
+            ccReg::timestamp_out _create_time,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* KeySetDelete(
+            const char* _keyset_handle,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* KeySetInfo(
+            const char* _keyset_handle,
+            ccReg::KeySet_out _keyset_info,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* KeySetTransfer(
+            const char* _keyset_handle,
+            const char* _authinfopw,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* KeySetUpdate(
+            const char* _keyset_handle,
+            const char* _authinfopw_chg,
+            const ccReg::TechContact& _tech_contacts_add,
+            const ccReg::TechContact& _tech_contacts_rem,
+            const ccReg::DSRecord& _ds_records_add,
+            const ccReg::DSRecord& _ds_records_rem,
+            const ccReg::DNSKey& _dns_keys_add,
+            const ccReg::DNSKey& _dns_keys_rem,
+            const ccReg::EppParams& _epp_params);
+
+    /**
+       * DomainCheck - retrieve states of domains identified by their FQDNs
+       *
+       * \param _fqdns - identifiers of domains to check
+       * \param _domain_check_results - output sequence of check results
+       * \param _epp_params - parameters of EPP session
+       *
+       * \return ccReg::Response
+       *
+       * \throws ccReg::EPP::EppError
+       */
     ccReg::Response* DomainCheck(
-        const ccReg::Check& _domain_fqdns,
-        ccReg::CheckResp_out _domain_check_results,
-        const ccReg::EppParams& _epp_params
-    );
+            const ccReg::Check& _fqdns,
+            ccReg::CheckResp_out _domain_check_results,
+            const ccReg::EppParams& _epp_params);
+
+    ccReg::Response* DomainCreate(
+            const char* _fqdn,
+            const char* _registrant,
+            const char* _nsset,
+            const char* _keyset,
+            const char* _authinfopw,
+            const ccReg::Period_str& _period,
+            const ccReg::AdminContact& _admin_contacts,
+            ccReg::timestamp_out _create_time,
+            ccReg::date_out _exdate,
+            const ccReg::EppParams& _epp_params,
+            const ccReg::ExtensionList& _enum_validation_extension_list);
 
     /**
-     * DomainInfo - get information obout domain identified by its FQDN
-     *
-     * \param _domain_fqdn - identifier of domain - fully qualified domain name
-     * \param _domain_info - output information
-     * \param _epp_params - parameters of EPP session
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
-    ccReg::Response* DomainInfo(
-        const char* _domain_fqdn,
-        ccReg::Domain_out _domain_info,
-        const ccReg::EppParams& _epp_params
-    );
-
-    /**
-     * DomainDelete - delete domain identified by its FQDN
-     *
-     * \param _domain_fqdn - identifier of domain - fully qualified domain name
-     * \param _epp_params - parameters of EPP session
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
+      * DomainDelete - delete domain identified by its FQDN
+      *
+      * \param _fqdn - identifier of domain - fully qualified domain name
+      * \param _epp_params - parameters of EPP session
+      *
+      * \return ccReg::Response
+      *
+      * \throws ccReg::EPP::EppError
+      */
     ccReg::Response* DomainDelete(
-        const char* _domain_fqdn,
-        const ccReg::EppParams& _epp_params
-    );
+            const char* _fqdn,
+            const ccReg::EppParams& _epp_params);
 
     /**
-     * DomainUpdate - update data of domain identified by its FQDN
-     *
-     * \param _domain_fqdn - identifiers of domains to check
-     * \param _registrant_chg - change of domain holder
-     * \param _auth_info_pw_chg  - change of password
-     * \param _nsset_chg - change of nsset
-     * \param _keyset_chg - change of keyset
-     * \param _admin_contacts_add - sequence of added administration contacts
-     * \param _admin_contacts_rem - sequence of deleted administration contacts
-     * \param _tmpcontacts_rem - OBSOLETE sequence of deleted temporary contacts
-     * \param _epp_params - common EPP parametres
-     * \param _ext - ExtensionList
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
-    ccReg::Response* DomainUpdate(
-        const char* _domain_fqdn,
-        const char* _registrant_chg,
-        const char* _auth_info_pw_chg,
-        const char* _nsset_chg,
-        const char* _keyset_chg,
-        const ccReg::AdminContact& _admin_contacts_add,
-        const ccReg::AdminContact& _admin_contacts_rem,
-        const ccReg::AdminContact& _tmpcontacts_rem,
-        const ccReg::EppParams& _epp_params,
-        const ccReg::ExtensionList& _ext
-    );
+      * DomainInfo - get information obout domain identified by its FQDN
+      *
+      * \param _fqdn - identifier of domain - fully qualified domain name
+      * \param _domain_info - output information
+      * \param _epp_params - parameters of EPP session
+      *
+      * \return ccReg::Response
+      *
+      * \throws ccReg::EPP::EppError
+      */
+    ccReg::Response* DomainInfo(
+            const char* _fqdn,
+            ccReg::Domain_out _domain_info,
+            const ccReg::EppParams& _epp_params);
 
-  ccReg::Response* DomainCreate(const char* fqdn, const char* Registrant, const char* nsset, const char *keyset, const char* AuthInfoPw, const ccReg::Period_str& period, const ccReg::AdminContact& admin, ccReg::timestamp_out crDate, ccReg::date_out exDate, const ccReg::EppParams &params, const ccReg::ExtensionList& ext);
-
-  ccReg::Response* DomainRenew(const char* fqdn, const char* curExpDate, const ccReg::Period_str& period, ccReg::timestamp_out exDate, const ccReg::EppParams &params, const ccReg::ExtensionList& ext);
+    ccReg::Response* DomainRenew(
+            const char* _fqdn,
+            const char* _current_exdate,
+            const ccReg::Period_str& _period,
+            ccReg::timestamp_out _exdate,
+            const ccReg::EppParams& _epp_params,
+            const ccReg::ExtensionList& _enum_validation_extension_list);
 
     /**
-     * DomainTransfer - transfer domain to other registrar
-     *
-     * \param _domain_fqdn - identifier of domain to transfer
-     * \param _auth_info_pw - secret authorization information
-     * \param _epp_params - parameters of EPP session
-     *
-     * \return ccReg::Response
-     *
-     * \throws ccReg::EPP::EppError
-     */
+       * DomainTransfer - transfer domain to other registrar
+       *
+       * \param _fqdn - identifier of domain to transfer
+       * \param _authinfopw - secret authorization information
+       * \param _epp_params - parameters of EPP session
+       *
+       * \return ccReg::Response
+       *
+       * \throws ccReg::EPP::EppError
+       */
     ccReg::Response* DomainTransfer(
-        const char* _domain_fqdn,
-        const char* _auth_info_pw,
-        const ccReg::EppParams& _epp_params
-    );
+            const char* _fqdn,
+            const char* _authinfopw,
+            const ccReg::EppParams& _epp_params);
+
+    /**
+      * DomainUpdate - update data of domain identified by its FQDN
+      *
+      * \param _fqdn - identifiers of domains to check
+      * \param _registrant_chg - change of domain holder
+      * \param _authinfopw_chg  - change of password
+      * \param _nsset_chg - change of nsset
+      * \param _keyset_chg - change of keyset
+      * \param _admin_contacts_add - sequence of added administration contacts
+      * \param _admin_contacts_rem - sequence of deleted administration contacts
+      * \param _tmpcontacts_rem - OBSOLETE sequence of deleted temporary contacts
+      * \param _epp_params - common EPP parametres
+      * \param _enum_validation_extension_list - ExtensionList
+      *
+      * \return ccReg::Response
+      *
+      * \throws ccReg::EPP::EppError
+      */
+    ccReg::Response* DomainUpdate(
+            const char* _fqdn,
+            const char* _registrant_chg,
+            const char* _authinfopw_chg,
+            const char* _nsset_chg,
+            const char* _keyset_chg,
+            const ccReg::AdminContact& _admin_contacts_add,
+            const ccReg::AdminContact& _admin_contacts_rem,
+            const ccReg::AdminContact& _tmpcontacts_rem,
+            const ccReg::EppParams& _epp_params,
+            const ccReg::ExtensionList& _enum_validation_extension_list);
+
 
   // tech check nsset
-  ccReg::Response* nssetTest(const char* handle, CORBA::Short level, const ccReg::Lists& fqdns, const ccReg::EppParams &params);
+  ccReg::Response* nssetTest(const char* handle, CORBA::Short _tech_check_level, const ccReg::Lists& fqdns, const ccReg::EppParams &params);
 
-  //common function for transfer object 
+  //common function for transfer object
   ccReg::Response* ObjectTransfer(short act, const char*table, const char *fname, const char *name, const char* authInfo, const ccReg::EppParams &params);
 
-  // 
+  //
   ccReg::Response* domainSendAuthInfo(const char* fqdn, const ccReg::EppParams &params);
-  
+
   ccReg::Response* contactSendAuthInfo(const char* handle, const ccReg::EppParams &params);
 
   ccReg::Response* nssetSendAuthInfo(const char* handle, const ccReg::EppParams &params);
@@ -389,9 +597,8 @@ public:
 
 
 private:
-  EppSessionContainer epp_sessions;
+  EppSessionContainer epp_sessions_;
   Mesg *ErrorMsg;
   Mesg *ReasonMsg;
-  std::auto_ptr<CountryCode> CC;
   int max_zone;
 };

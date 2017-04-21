@@ -16,31 +16,24 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
+#ifndef UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
+#define UTIL_H_1EFC4C4310E84E82A77F0ABA8DB8B97F
 
-#ifndef EPP_UTIL_H_873559873922
-#define EPP_UTIL_H_873559873922
-
+#include "src/fredlib/db_settings.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/contact/info_contact_data.h"
-#include "util/optional_value.h"
-#include "src/epp/contact/contact_info.h"
-#include "src/admin/contact/verification/contact_states/enum.h"
 
 #include <string>
 
-// TODO fredlib_modification mozna by vsechno tohle casem melo byt soucasti fredlibu
 namespace Epp {
 
-    inline bool is_country_code_valid(Fred::OperationContext& ctx, const std::string& cc) {
-        return
-            ctx.get_conn().exec_params(
+inline bool is_country_code_valid(Fred::OperationContext& ctx, const std::string& cc) {
+    return
+        ctx.get_conn().exec_params(
                 "SELECT 1 FROM enum_country WHERE id = $1::text FOR SHARE ",
                 Database::query_param_list(cc)
-            ).size() > 0;
-    }
+                ).size() > 0;
 }
+
+} // namespace Epp
 
 #endif

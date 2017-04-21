@@ -16,12 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef EPP_REASON_H_976354250151
-#define EPP_REASON_H_976354250151
+#ifndef REASON_H_7629BFD8BB7641BE890C92F2BEC79615
+#define REASON_H_7629BFD8BB7641BE890C92F2BEC79615
 
 #include "src/epp/exception.h"
 

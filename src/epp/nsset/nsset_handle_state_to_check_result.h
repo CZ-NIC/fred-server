@@ -16,12 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef EPP_NSSET_HANDLE_STATE_TO_CHECK_RESULT_7a5cc83493334c2688b66475f085fe65
-#define EPP_NSSET_HANDLE_STATE_TO_CHECK_RESULT_7a5cc83493334c2688b66475f085fe65
+#ifndef NSSET_HANDLE_STATE_TO_CHECK_RESULT_H_3A20C6DC9F7A4471B4F76A233BE2B068
+#define NSSET_HANDLE_STATE_TO_CHECK_RESULT_H_3A20C6DC9F7A4471B4F76A233BE2B068
 
 #include <stdexcept>
 
@@ -31,27 +27,28 @@
 #include "util/db/nullable.h"
 
 namespace Epp {
+namespace Nsset {
 
 inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_check_result(
-    const Fred::NssetHandleState::SyntaxValidity::Enum _handle_validity,
-    const Fred::NssetHandleState::Registrability::Enum _handle_in_registry
-) {
-    if(_handle_in_registry == Fred::NssetHandleState::Registrability::registered)
+        const Fred::NssetHandleState::SyntaxValidity::Enum _handle_validity,
+        const Fred::NssetHandleState::Registrability::Enum _handle_in_registry)
+{
+    if (_handle_in_registry == Fred::NssetHandleState::Registrability::registered)
     {
         return NssetHandleRegistrationObstruction::registered_handle;
     }
 
-    if(_handle_in_registry == Fred::NssetHandleState::Registrability::in_protection_period)
+    if (_handle_in_registry == Fred::NssetHandleState::Registrability::in_protection_period)
     {
         return NssetHandleRegistrationObstruction::protected_handle;
     }
 
-    if(_handle_validity == Fred::NssetHandleState::SyntaxValidity::invalid)
+    if (_handle_validity == Fred::NssetHandleState::SyntaxValidity::invalid)
     {
         return NssetHandleRegistrationObstruction::invalid_handle;
     }
 
-    if(_handle_in_registry == Fred::NssetHandleState::Registrability::unregistered)
+    if (_handle_in_registry == Fred::NssetHandleState::Registrability::unregistered)
     {
         return Nullable<NssetHandleRegistrationObstruction::Enum>();
     }
@@ -59,6 +56,8 @@ inline Nullable<NssetHandleRegistrationObstruction::Enum> nsset_handle_state_to_
     throw std::runtime_error("invalid NssetHandleState");
 }
 
-}
+
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

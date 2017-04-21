@@ -16,12 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef SRC_EPP_SESSION_LANG_505343440
-#define SRC_EPP_SESSION_LANG_505343440
+#ifndef SESSION_LANG_H_925FC52CA2FA45B5A1F584AE8E94AB22
+#define SESSION_LANG_H_925FC52CA2FA45B5A1F584AE8E94AB22
 
 #include "src/epp/exception.h"
 
@@ -36,27 +32,21 @@ struct SessionLang
         en,
         cs
     };
+
+    /**
+     * @throws Epp::InvalidSessionLang
+     */
+    static std::string to_db_handle(Epp::SessionLang::Enum _lang)
+    {
+        switch (_lang)
+        {
+            case Epp::SessionLang::en: return "en";
+            case Epp::SessionLang::cs: return "cs";
+        }
+        throw Epp::InvalidSessionLang();
+    }
 };
 
-}//namespace Epp
-
-namespace Conversion {
-namespace Enums {
-
-/**
- * @throws Epp::InvalidSessionLang
- */
-inline std::string to_db_handle(Epp::SessionLang::Enum lang)
-{
-    switch (lang)
-    {
-        case Epp::SessionLang::en: return "en";
-        case Epp::SessionLang::cs: return "cs";
-    }
-    throw Epp::InvalidSessionLang();
-}
-
-}//namespace Conversion::Enums
-}//namespace Conversion
+} // namespace Epp
 
 #endif

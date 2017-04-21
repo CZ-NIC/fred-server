@@ -1,5 +1,23 @@
-#ifndef SESSION_IMPL_H_
-#define SESSION_IMPL_H_
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef SESSION_IMPL_H_146170455BCB4EF3A51D48318648B086
+#define SESSION_IMPL_H_146170455BCB4EF3A51D48318648B086
 
 #include <memory>
 #include <string>
@@ -78,8 +96,8 @@ private:
   // ccReg_Statement_i* m_statements;
   ccReg_Filters_i* m_filters;
   ccReg_User_i* m_user;
-  ccReg_Files_i* m_files;  
-  ccReg_LogSession_i* m_logsession;  
+  ccReg_Files_i* m_files;
+  ccReg_LogSession_i* m_logsession;
 
   std::auto_ptr<Fred::Manager> m_registry_manager;
   std::auto_ptr<Fred::PublicRequest::Manager> m_publicrequest_manager;
@@ -130,8 +148,8 @@ private:
 
   Registry::Domain::Detail* createHistoryDomainDetail(Fred::Domain::List* _list);
   Registry::Contact::Detail* createHistoryContactDetail(Fred::Contact::List* _list);
-  Registry::NSSet::Detail* createHistoryNSSetDetail(Fred::NSSet::List* _list);
-  Registry::KeySet::Detail* createHistoryKeySetDetail(Fred::KeySet::List* _list);
+  Registry::NSSet::Detail* createHistoryNSSetDetail(Fred::Nsset::List* _list);
+  Registry::KeySet::Detail* createHistoryKeySetDetail(Fred::Keyset::List* _list);
   Registry::Registrar::Detail* createRegistrarDetail(Fred::Registrar::Registrar* _registrar);
   Registry::PublicRequest::Detail* createPublicRequestDetail(Fred::PublicRequest::PublicRequest* _request);
   Registry::Mailing::Detail* createMailDetail(Fred::Mail::Mail *_mail);

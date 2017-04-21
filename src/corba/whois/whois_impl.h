@@ -1,5 +1,23 @@
-#ifndef _WHOIS_IMPL_H_
-#define _WHOIS_IMPL_H_
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef WHOIS_IMPL_H_65FAB81BA55942308A1648E27C426A25
+#define WHOIS_IMPL_H_65FAB81BA55942308A1648E27C426A25
 
 #include <memory>
 #include <string>
@@ -23,8 +41,8 @@ private:
                      Fred::Registrar::Registrar *reg);
 
   void fillContact(ccReg::ContactDetail* cv, Fred::Contact::Contact* c);
-  void fillNSSet(ccReg::NSSetDetail* cn, Fred::NSSet::NSSet* n);
-  void fillKeySet(ccReg::KeySetDetail* cn, Fred::KeySet::KeySet* n);
+  void fillNSSet(ccReg::NSSetDetail* cn, Fred::Nsset::Nsset* n);
+  void fillKeySet(ccReg::KeySetDetail* cn, Fred::Keyset::Keyset* n);
   void fillDomain(ccReg::DomainDetail* cd, Fred::Domain::Domain* d);
 
 public:
@@ -58,4 +76,4 @@ public:
 
 };//class ccReg_Whois_i
 
-#endif //WHOIS_IMPL_H
+#endif

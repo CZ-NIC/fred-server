@@ -16,12 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef EPP_CONTACT_HANDLE_REGISTRATION_OBSTRUCTION_H_03971013458
-#define EPP_CONTACT_HANDLE_REGISTRATION_OBSTRUCTION_H_03971013458
+#ifndef CONTACT_HANDLE_REGISTRATION_OBSTRUCTION_H_61A92CEC0BE84C5EBED69DC29CD3BDA0
+#define CONTACT_HANDLE_REGISTRATION_OBSTRUCTION_H_61A92CEC0BE84C5EBED69DC29CD3BDA0
 
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
@@ -29,6 +25,7 @@
 #include <set>
 
 namespace Epp {
+namespace Contact {
 
 struct ContactHandleRegistrationObstruction
 {
@@ -37,7 +34,9 @@ struct ContactHandleRegistrationObstruction
         invalid_handle,
         protected_handle,
         registered_handle
+
     };
+
 
     /**
      * @throws MissingLocalizedDescription
@@ -46,14 +45,45 @@ struct ContactHandleRegistrationObstruction
     {
         switch (value)
         {
-            case invalid_handle:    return Reason::invalid_handle;
-            case registered_handle: return Reason::existing;
-            case protected_handle:  return Reason::protected_period;
+            case invalid_handle:
+                return Reason::invalid_handle;
+
+            case registered_handle:
+                return Reason::existing;
+
+            case protected_handle:
+                return Reason::protected_period;
         }
         throw MissingLocalizedDescription();
     }
+
+
+    /**
+     * @throws MissingLocalizedDescription
+     */
+    static Enum from_reason(Reason::Enum value)
+    {
+        switch (value)
+        {
+            case Reason::invalid_handle:
+                return invalid_handle;
+
+            case Reason::existing:
+                return registered_handle;
+
+            case Reason::protected_period:
+                return protected_handle;
+
+            default:
+                throw MissingLocalizedDescription();
+        }
+    }
+
+
 };
 
-}
+
+} // namespace Epp::Contact
+} // namespace Epp
 
 #endif

@@ -16,475 +16,847 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file fixture.h
- *  <++>
- */
-
 #ifndef FIXTURE_H_389DB6E81FF44407AFC3763706918744
 #define FIXTURE_H_389DB6E81FF44407AFC3763706918744
 
+#include "tests/interfaces/epp/fixture.h"
+#include "tests/interfaces/epp/contact/fixture.h"
+#include "tests/interfaces/epp/nsset/fixture.h"
+#include "tests/interfaces/epp/keyset/fixture.h"
+#include "tests/interfaces/epp/util.h"
+#include "tests/setup/fixtures.h"
+
+#include "src/epp/domain/check_domain_config_data.h"
+#include "src/epp/domain/create_domain_config_data.h"
+#include "src/epp/domain/create_domain_input_data.h"
+#include "src/epp/domain/create_domain_localized.h"
+#include "src/epp/domain/delete_domain_config_data.h"
 #include "src/epp/domain/domain_enum_validation.h"
+#include "src/epp/domain/domain_registration_time.h"
+#include "src/epp/domain/info_domain_config_data.h"
+#include "src/epp/domain/renew_domain_config_data.h"
+#include "src/epp/domain/renew_domain_input_data.h"
+#include "src/epp/domain/renew_domain_localized.h"
+#include "src/epp/domain/transfer_domain_config_data.h"
+#include "src/epp/domain/update_domain_config_data.h"
+#include "src/epp/domain/update_domain_input_data.h"
 #include "src/fredlib/contact/create_contact.h"
 #include "src/fredlib/domain/create_domain.h"
-#include "src/fredlib/nsset/create_nsset.h"
-#include "src/fredlib/keyset/create_keyset.h"
 #include "src/fredlib/domain/info_domain.h"
-#include "src/fredlib/nsset/create_nsset.h"
 #include "src/fredlib/keyset/create_keyset.h"
+#include "src/fredlib/nsset/create_nsset.h"
+#include "src/fredlib/nsset/nsset_dns_host.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
-#include "tests/interfaces/epp/util.h"
-#include "src/epp/domain/domain_create.h"
-#include "src/epp/domain/domain_renew.h"
-#include "tests/setup/fixtures.h"
-#include "util/optional_value.h"
 #include "util/db/nullable.h"
+#include "util/optional_value.h"
 #include "util/util.h"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/gregorian/gregorian.hpp>
-
 #include <boost/asio/ip/address.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/optional.hpp>
 
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
+
+namespace Test {
+namespace Backend {
+namespace Epp {
+namespace Domain {
 
 std::vector<std::string> vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(const std::vector<Fred::ObjectIdHandlePair>& admin_contacts);
 
-struct HasInfoRegistrarData : virtual Test::autorollbacking_context {
-    Fred::InfoRegistrarData info_registrar_data_;
-
-    HasInfoRegistrarData() {
-        const std::string registrar_handle = "REGISTRAR1";
-        Fred::CreateRegistrar(registrar_handle).exec(ctx);
-        info_registrar_data_ = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
+struct DefaultCheckDomainConfigData : ::Epp::Domain::CheckDomainConfigData
+{
+    DefaultCheckDomainConfigData()
+        : CheckDomainConfigData(false)
+    {
     }
 };
 
-struct HasRegistrarNotInZone : virtual Test::autorollbacking_context {
-    Fred::InfoRegistrarData registrar_data_not_in_zone_;
-
-    HasRegistrarNotInZone() {
-        const std::string registrar_handle = "REGNOZONE";
-        Fred::CreateRegistrar(registrar_handle).exec(ctx);
-        registrar_data_not_in_zone_ = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
+struct DefaultInfoDomainConfigData : ::Epp::Domain::InfoDomainConfigData
+{
+    DefaultInfoDomainConfigData()
+        : InfoDomainConfigData(false)
+    {
     }
 };
 
-
-struct HasDifferentInfoRegistrarData : virtual Test::autorollbacking_context {
-    Fred::InfoRegistrarData different_info_registrar_data_;
-
-    HasDifferentInfoRegistrarData() {
-        const std::string different_registrar_handle = "REGISTRARX";
-        Fred::CreateRegistrar(different_registrar_handle).exec(ctx);
-        different_info_registrar_data_ = Fred::InfoRegistrarByHandle(different_registrar_handle).exec(ctx).info_registrar_data;
-        ctx.get_conn().exec_params(
-            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
-                "SELECT $1::bigint, z.id, NOW() "
-                    "FROM zone z "
-                    "WHERE z.fqdn = $2::text",
-            Database::query_param_list(different_info_registrar_data_.id)
-            ("cz")
-        );
+struct DefaultCreateDomainConfigData : ::Epp::Domain::CreateDomainConfigData
+{
+    DefaultCreateDomainConfigData()
+        : CreateDomainConfigData(false)
+    {
     }
 };
 
-struct HasSystemRegistrar : virtual Test::autorollbacking_context {
-    Fred::InfoRegistrarData system_registrar_data_;
-
-    HasSystemRegistrar() {
-        const std::string registrar_handle = "REGISTRAR0";
-        Fred::CreateRegistrar(registrar_handle).set_system(true).exec(ctx);
-        system_registrar_data_ = Fred::InfoRegistrarByHandle(registrar_handle).exec(ctx).info_registrar_data;
+struct DefaultUpdateDomainConfigData : ::Epp::Domain::UpdateDomainConfigData
+{
+    DefaultUpdateDomainConfigData()
+        : UpdateDomainConfigData(
+                  false, // rifd_epp_operations_charging,
+                  true)  // rifd_epp_update_domain_keyset_clear
+    {
     }
 };
 
-struct HasInfoDomainData : HasInfoRegistrarData {
-    Fred::InfoDomainData info_domain_data_;
-    Fred::InfoDomainData info_enum_domain_data_;
-
-    HasInfoDomainData() {
-        namespace ip = boost::asio::ip;
-
-        const std::string registrant_handle = "REGISTRANT1";
-        Fred::CreateContact(registrant_handle, info_registrar_data_.handle).exec(ctx);
-
-        const std::string admin_handle = "ADMIN1";
-        Fred::CreateContact(admin_handle, info_registrar_data_.handle).exec(ctx);
-        const std::vector<std::string> admin_contacts = Util::vector_of<std::string>
-            (admin_handle);
-
-        const std::string tech_handle = "TECH1";
-        Fred::CreateContact(tech_handle, info_registrar_data_.handle).exec(ctx);
-
-        const std::string nsset_handle = "NSSET1";
-        Fred::CreateNsset(nsset_handle, info_registrar_data_.handle)
-        .set_tech_contacts(Util::vector_of<std::string>(tech_handle))
-        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.3"))(ip::address::from_string("11.1.1.3"))))
-            (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.4"))(ip::address::from_string("11.1.1.4"))))
-            )
-        .exec(ctx);
-
-        const std::string keyset_handle = "KEYSET1";
-        Fred::CreateKeyset(keyset_handle, info_registrar_data_.handle)
-            .set_tech_contacts( boost::assign::list_of(tech_handle) )
-            .exec(ctx);
-
-        const std::string fqdn = "derf.cz";
-        Fred::CreateDomain(fqdn, info_registrar_data_.handle, registrant_handle).set_nsset(nsset_handle).set_keyset(keyset_handle).set_admin_contacts(admin_contacts).exec(ctx);
-
-        info_domain_data_ = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
-
-        const std::string enum_fqdn = "5.5.1.3.5.0.2.4.e164.arpa";
-        Fred::CreateDomain(enum_fqdn, info_registrar_data_.handle, registrant_handle)
-            .set_enum_validation_expiration(info_domain_data_.creation_time.date() + boost::gregorian::months(3))
-            .set_nsset(nsset_handle).set_keyset(keyset_handle).set_admin_contacts(admin_contacts).exec(ctx);
-
-        info_enum_domain_data_ = Fred::InfoDomainByHandle(enum_fqdn).exec(ctx, "UTC").info_domain_data;
-
-        ctx.get_conn().exec_params(
-            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
-                "SELECT $1::bigint, z.id, NOW() "
-                    "FROM zone z "
-                    "WHERE z.fqdn = $2::text",
-            Database::query_param_list(info_registrar_data_.id)
-            ("cz")
-        );
-
-        ctx.get_conn().exec_params(
-            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
-                "SELECT $1::bigint, z.id, NOW() "
-                    "FROM zone z "
-                    "WHERE z.fqdn = $2::text",
-            Database::query_param_list(info_registrar_data_.id)
-            ("0.2.4.e164.arpa")
-        );
+struct DefaultDeleteDomainConfigData : ::Epp::Domain::DeleteDomainConfigData
+{
+    DefaultDeleteDomainConfigData()
+        : DeleteDomainConfigData(false)
+    {
     }
 };
 
-struct HasInfoDomainDataAndDifferentInfoRegistrarData : HasInfoDomainData, HasDifferentInfoRegistrarData { };
-
-struct HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess : HasInfoRegistrarData {
-    Fred::InfoDomainData info_domain_data_;
-
-    HasInfoDomainDataWithInfoRegistrarDataOfRegistrarWithoutZoneAccess() {
-        const std::string fqdn = "derf.cz";
-        const std::string registrant = "TNARTSIGER1";
-        Fred::CreateContact(registrant, info_registrar_data_.handle).exec(ctx);
-        Fred::CreateDomain(fqdn, info_registrar_data_.handle, registrant).exec(ctx);
-        info_domain_data_ = Fred::InfoDomainByHandle(fqdn).exec(ctx, "UTC").info_domain_data;
+struct DefaultTransferDomainConfigData : ::Epp::Domain::TransferDomainConfigData
+{
+    DefaultTransferDomainConfigData()
+        : TransferDomainConfigData(false)
+    {
     }
 };
 
-struct HasFqdnOfBlacklistedDomain : HasInfoRegistrarData {
-    std::string blacklisted_domain_fqdn_;
-    HasFqdnOfBlacklistedDomain() {
-        blacklisted_domain_fqdn_ = std::string("blacklisted-domain.cz");
-        ctx.get_conn().exec_params(
-            "INSERT INTO domain_blacklist (regexp, valid_from, reason) "
+struct DefaultRenewDomainConfigData : ::Epp::Domain::RenewDomainConfigData
+{
+    DefaultRenewDomainConfigData()
+        : RenewDomainConfigData(false)
+    {
+    }
+};
+
+struct DefaultCreateDomainInputData : ::Epp::Domain::CreateDomainInputData
+{
+    DefaultCreateDomainInputData()
+        : CreateDomainInputData(
+                  "", // _fqdn
+                  "", // _registrant
+                  "", // _nsset
+                  "", // _keyset
+                  boost::optional<std::string>("authinfopw"), //_authinfopw
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
+                  std::vector<std::string>(), // Util::vector_of<std::string>("CONTACT1")("CONTACT2"),
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
+    {
+    }
+};
+
+struct CreateDomainInputData
+{
+    ::Epp::Domain::CreateDomainInputData data;
+
+    CreateDomainInputData(
+            const std::string& _fqdn,
+            const std::string& _registrant,
+            const std::string& _nsset,
+            const std::string& _keyset,
+            const std::vector<std::string>& _admin_contacts_add)
+        : data(
+                  _fqdn,
+                  _registrant,
+                  _nsset,
+                  _keyset,
+                  boost::optional<std::string>("authinfopw"), //_authinfopw
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
+                  _admin_contacts_add,
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
+    {
+    }
+};
+
+struct DefaultRenewDomainInputData : ::Epp::Domain::RenewDomainInputData
+{
+    DefaultRenewDomainInputData()
+        : RenewDomainInputData(
+            "", // _fqdn
+            "", // _current_exdate
+            ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
+            boost::optional< ::Epp::Domain::EnumValidationExtension>())
+    {
+    }
+};
+
+struct RenewDomainInputData
+{
+    ::Epp::Domain::RenewDomainInputData data;
+
+    RenewDomainInputData(
+            const std::string& _fqdn)
+        : data(
+                  _fqdn, // _fqdn
+                  "", // _current_exdate
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year), // _period
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
+    {
+    }
+
+    RenewDomainInputData(
+            const std::string& _fqdn,
+            const std::string& _current_exdate,
+            const ::Epp::Domain::DomainRegistrationTime& _period,
+            const boost::optional< ::Epp::Domain::EnumValidationExtension>& _enum_validation_extension)
+        : data(
+                  _fqdn,
+                  _current_exdate,
+                  _period,
+                  _enum_validation_extension)
+    {
+    }
+};
+
+struct DefaultUpdateDomainInputData : ::Epp::Domain::UpdateDomainInputData
+{
+    DefaultUpdateDomainInputData()
+        : UpdateDomainInputData(
+                  "domain.cz",
+                  Optional<std::string>(), // registrant_chg
+                  Optional<std::string>(), // authinfopw_chg
+                  Optional<Nullable<std::string> >(), // nsset_chg
+                  Optional<Nullable<std::string> >(), // keyset_chg
+                  std::vector<std::string>(), // admin_contacts_add
+                  std::vector<std::string>(), // admin_contacts_rem
+                  std::vector<std::string>(), // tmpcontacts_rem
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>()) // enum_validation
+    {
+    }
+};
+
+struct UpdateDomainInputData
+{
+    ::Epp::Domain::UpdateDomainInputData data;
+
+    UpdateDomainInputData(
+            const std::string& _fqdn)
+        : data(
+                _fqdn,
+                Optional<std::string>("a"), // registrant_chg
+                Optional<std::string>("b"), // authinfopw_chg
+                Optional<Nullable<std::string> >("c"), // nsset_chg
+                Optional<Nullable<std::string> >("d"), // keyset_chg
+                std::vector<std::string>(), // admin_contacts_add
+                std::vector<std::string>(), // admin_contacts_rem
+                std::vector<std::string>(), // tmpcontacts_rem
+                boost::optional< ::Epp::Domain::EnumValidationExtension>()) // enum_validation
+    {
+    }
+};
+
+struct Domain
+{
+    Contact::Contact registrant;
+    Fred::InfoDomainData data;
+
+
+    Domain(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _fqdn = "freddy.cz",
+            const std::string& _registrant_handle = "REGISTRANT")
+        : registrant(_ctx, _registrar_handle, _registrant_handle)
+    {
+        Fred::CreateDomain(_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
+        data = Fred::InfoDomainByHandle(_fqdn).exec(_ctx, "UTC").info_domain_data;
+    }
+
+
+};
+
+struct EnumDomain
+{
+    Contact::Contact registrant;
+    Fred::InfoDomainData data;
+
+
+    EnumDomain(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _enum_fqdn = "5.5.1.3.5.0.2.4.e164.arpa",
+            const std::string& _registrant_handle = "REGISTRANT")
+        : registrant(_ctx, _registrar_handle, _registrant_handle)
+    {
+
+        const std::string tmp_fqdn = "tmpdomain.cz";
+
+        Fred::CreateDomain(tmp_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
+        data = Fred::InfoDomainByHandle(tmp_fqdn).exec(_ctx, "UTC").info_domain_data;
+
+        Fred::CreateDomain(_enum_fqdn, _registrar_handle, registrant.data.handle)
+        .set_enum_validation_expiration(data.creation_time.date() + boost::gregorian::months(3))
+        // .set_nsset(nsset_handle)
+        // .set_keyset(keyset_handle)
+        // .set_admin_contacts(admin_contacts)
+        .exec(_ctx);
+
+        data = Fred::InfoDomainByHandle(_enum_fqdn).exec(_ctx, "UTC").info_domain_data;
+    }
+
+
+};
+
+struct NonexistentEnumDomain
+    : EnumDomain
+{
+
+
+    NonexistentEnumDomain(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _registrant_handle = "REGISTRANT")
+        : EnumDomain(
+                  _ctx,
+                  _registrar_handle,
+                  "5.5.1.3.5.0.2.4.e164.arpa",
+                  _registrant_handle)
+    {
+        data.fqdn = NonexistentEnumFqdn().fqdn;
+    }
+
+
+};
+
+struct BlacklistedDomain
+    : Domain
+{
+
+
+    BlacklistedDomain(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _registrant_handle = "REGISTRANT")
+        : Domain(_ctx, _registrar_handle, "blacklisteddomain.cz", _registrant_handle)
+    {
+        _ctx.get_conn().exec_params(
+                "INSERT INTO domain_blacklist (regexp, valid_from, reason) "
                 "VALUES ($1::text, NOW(), '')",
-            Database::query_param_list(blacklisted_domain_fqdn_)
-        );
+                Database::query_param_list(data.fqdn));
     }
+
+
 };
 
-struct HasInfoDomainDataOfRegisteredBlacklistedDomain : HasInfoDomainData {
-    HasInfoDomainDataOfRegisteredBlacklistedDomain() {
-        ctx.get_conn().exec_params(
-            "INSERT INTO domain_blacklist (regexp, valid_from, reason) "
-                "VALUES ($1::text, NOW(), '')",
-            Database::query_param_list(info_domain_data_.fqdn)
-        );
-    }
-};
+struct DomainWithStatusRequest
+    : Domain
+{
+    const std::string status;
 
-struct HasInfoDomainDataWithStatusRequest : HasInfoDomainData {
-    const std::string status_;
 
-    HasInfoDomainDataWithStatusRequest(const std::string& _status)
-    : status_(_status)
+    DomainWithStatusRequest(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _status)
+        : Domain(_ctx, _registrar_handle, "domainwith" + boost::algorithm::to_lower_copy(_status) + ".cz"),
+          status(_status)
     {
-        ctx.get_conn().exec_params(
-            "UPDATE enum_object_states SET manual = 'true'::bool WHERE name = $1::text",
-            Database::query_param_list(_status)
-        );
-
-        const std::set<std::string> statuses = boost::assign::list_of(_status);
-
-        Fred::CreateObjectStateRequestId(info_domain_data_.id, statuses).exec(ctx);
-
-        // ensure object has only request, not the state itself
-        {
-            std::vector<std::string> object_states_before;
-            {
-                BOOST_FOREACH(const Fred::ObjectStateData& state, Fred::GetObjectStates(info_domain_data_.id).exec(ctx) ) {
-                    object_states_before.push_back(state.state_name);
-                }
-            }
-
-            BOOST_CHECK(
-                std::find( object_states_before.begin(), object_states_before.end(), _status )
-                ==
-                object_states_before.end()
-            );
-        }
+        ObjectWithStatus(_ctx, data.id, _status);
     }
+
+
 };
 
-struct HasObjectWithStatus : HasInfoDomainDataWithStatusRequest {
-    HasObjectWithStatus(const std::string& _status)
-    : HasInfoDomainDataWithStatusRequest(_status)
+struct DomainWithStatus
+    : DomainWithStatusRequest
+{
+
+
+    DomainWithStatus(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _status)
+        : DomainWithStatusRequest(
+                  _ctx,
+                  _registrar_handle,
+                  _status)
     {
-        Fred::PerformObjectStateRequest(info_domain_data_.id).exec(ctx);
+        Fred::PerformObjectStateRequest(data.id).exec(_ctx);
     }
+
+
 };
 
-struct HasInfoDomainDataWithServerDeleteProhibited : HasObjectWithStatus {
-    HasInfoDomainDataWithServerDeleteProhibited()
-    : HasObjectWithStatus("serverDeleteProhibited")
-    { }
-};
+struct DomainWithStatusServerDeleteProhibited
+    : DomainWithStatus
+{
 
-struct HasInfoDomainDataWithServerUpdateProhibited : HasObjectWithStatus {
-    HasInfoDomainDataWithServerUpdateProhibited()
-    : HasObjectWithStatus("serverUpdateProhibited")
-    { }
-};
 
-struct HasInfoDomainDataWithServerTransferProhibited : HasObjectWithStatus {
-    HasInfoDomainDataWithServerTransferProhibited()
-    : HasObjectWithStatus("serverTransferProhibited")
-    { }
-};
-struct HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited : HasDifferentInfoRegistrarData, HasObjectWithStatus {
-    HasInfoDomainDataWithDifferentInfoRegistrarDataAndServerTransferProhibited ()
-    : HasDifferentInfoRegistrarData(),
-      HasObjectWithStatus("serverTransferProhibited")
-    { }
-};
-
-struct HasInfoDomainDataWithStatusRequestAndServerTransferProhibited : HasInfoDomainDataWithStatusRequest {
-    HasInfoDomainDataWithStatusRequestAndServerTransferProhibited()
-    : HasInfoDomainDataWithStatusRequest("serverTransferProhibited")
-    { }
-};
-
-struct HasDomainWithServerUpdateProhoibitedRequest : HasInfoDomainDataWithStatusRequest {
-    HasDomainWithServerUpdateProhoibitedRequest()
-    : HasInfoDomainDataWithStatusRequest("serverUpdateProhibited")
-    { }
-};
-
-struct HasInfoDomainDataWithServerUpdateProhibitedRequest : HasInfoDomainDataWithStatusRequest {
-    HasInfoDomainDataWithServerUpdateProhibitedRequest()
-    : HasInfoDomainDataWithStatusRequest("serverUpdateProhibited")
-    { }
-};
-
-struct HasInfoDomainDataOfNonexistentDomain : HasInfoDomainData {
-    HasInfoDomainDataOfNonexistentDomain() {
-        const std::string nonexistent_domain_fqdn = "nonexistent-domain.cz";
-        info_domain_data_.fqdn = nonexistent_domain_fqdn;
+    DomainWithStatusServerDeleteProhibited(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle)
+        : DomainWithStatus(_ctx, _registrar_handle, "serverDeleteProhibited")
+    {
     }
+
+
 };
 
-struct HasInfoDomainDataOfNonexistentEnumDomain : HasInfoDomainData {
-    HasInfoDomainDataOfNonexistentEnumDomain() {
-        const std::string nonexistent_domain_fqdn = "5.1.3.5.0.2.4.e164.arpa";
-        info_enum_domain_data_.fqdn = nonexistent_domain_fqdn;
+struct DomainWithStatusServerUpdateProhibited
+    : DomainWithStatus
+{
+
+
+    DomainWithStatusServerUpdateProhibited(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle)
+        : DomainWithStatus(_ctx, _registrar_handle, "serverUpdateProhibited")
+    {
     }
+
+
 };
 
-struct HasDomainData : HasInfoRegistrarData {
-    const std::string contact1;
-    const std::string contact2;
-    const std::string contact3;
-    const std::string contact4;
-    const std::string contact5;
-
-    const std::string nsset1;
-    const std::string nsset2;
-
-    const std::string keyset1;
-    const std::string keyset2;
-
-    const std::string fqdn1;
-    const std::string fqdn2;
-    const std::string enum_fqdn;
-
-    const std::string authinfopw1;
-    const std::string authinfopw2;
-
-    Epp::DomainCreateInputData domain1_create_input_data;
-    Epp::DomainCreateInputData domain2_create_input_data;
+struct DomainWithServerTransferProhibited
+    : DomainWithStatus
+{
 
 
-    Epp::DomainRenewInputData domain1_renew_input_data;
+    DomainWithServerTransferProhibited(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle)
+        : DomainWithStatus(_ctx, _registrar_handle, "serverTransferProhibited")
+    {
+    }
 
-    boost::optional<Epp::DomainRenewInputData> domain2_renew_input_data;
+
+};
+
+struct DomainWithStatusRequestServerTransferProhibited
+    : DomainWithStatusRequest
+{
 
 
-    HasDomainData()
-    : contact1("TESTCONTACT1")
-    , contact2("TESTCONTACT2")
-    , contact3("TESTCONTACT3")
-    , contact4("TESTCONTACT4")
-    , contact5("TESTCONTACT5")
+    DomainWithStatusRequestServerTransferProhibited(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle)
+        : DomainWithStatusRequest(_ctx, _registrar_handle, "serverTransferProhibited")
+    {
+    }
 
-    , nsset1("TESTNSSET1")
-    , nsset2("TESTNSSET2")
 
-    , keyset1("TESTKEYSET1")
-    , keyset2("TESTKEYSET2")
+};
 
-    , fqdn1("testdomain1.cz")
-    , fqdn2("testdomain2.cz")
-    , enum_fqdn("5.5.1.3.5.0.2.4.e164.arpa")
+struct DomainWithStatusRequestServerUpdateProhibited
+    : DomainWithStatusRequest
+{
 
-    , authinfopw1("transferheslo")
-    , authinfopw2("transferheslo")
 
-    , domain1_create_input_data (fqdn1, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw1),
-        Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
-        Util::vector_of<std::string>(contact2)(contact3),
-        std::vector<Epp::ENUMValidationExtension>())
+    DomainWithStatusRequestServerUpdateProhibited(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle)
+        : DomainWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
+    {
+    }
 
-    , domain2_create_input_data (fqdn2, contact1, nsset1, keyset1, boost::optional<std::string>(authinfopw2),
-            Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
-            Util::vector_of<std::string>(contact2)(contact3),
-            std::vector<Epp::ENUMValidationExtension>())
 
-    , domain1_renew_input_data(fqdn1, std::string(""),
-            Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),
-            std::vector<Epp::ENUMValidationExtension>())
+};
+
+struct FullDomain
+{
+    Contact::Contact registrant;
+    Fred::InfoDomainData data;
+
+
+    FullDomain(
+            Fred::OperationContext& _ctx,
+            const std::string& _registrar_handle,
+            const std::string& _fqdn = "freddy.cz",
+            const std::string& _registrant_handle = "REGISTRANT")
+        : registrant(_ctx, _registrar_handle, _registrant_handle)
+    {
+        Fred::CreateContact("CONTACT1", _registrar_handle).exec(_ctx);
+
+        Fred::CreateNsset("NSSET1", _registrar_handle).exec(_ctx);
+
+        Fred::CreateKeyset("KEYSET1", _registrar_handle).exec(_ctx);
+
+        Fred::CreateDomain("fulldomain.cz", _registrar_handle, _registrant_handle)
+                .set_admin_contacts(Util::vector_of<std::string>("CONTACT1"))
+                .set_nsset(std::string("NSSET1"))
+                .set_keyset(std::string("KEYSET1"))
+                .exec(_ctx);
+
+        data = Fred::InfoDomainByHandle("fulldomain.cz").exec(_ctx, "UTC").info_domain_data;
+    }
+
+
+};
+
+
+// fixtures
+
+struct HasSystemRegistrarWithSessionAndDomain
+{
+    SystemRegistrar system_registrar;
+    Session session;
+    Domain domain;
+
+
+    HasSystemRegistrarWithSessionAndDomain(Fred::OperationContext& _ctx)
+        : system_registrar(_ctx),
+          session(_ctx, system_registrar.data.id),
+          domain(_ctx, system_registrar.data.handle)
 
     {
-        Fred::CreateContact(contact1, info_registrar_data_.handle).exec(ctx);
-        Fred::CreateContact(contact2, info_registrar_data_.handle).exec(ctx);
-        Fred::CreateContact(contact3, info_registrar_data_.handle).exec(ctx);
-        Fred::CreateContact(contact4, info_registrar_data_.handle).exec(ctx);
-        Fred::CreateContact(contact5, info_registrar_data_.handle).exec(ctx);
-
-        Fred::CreateNsset(nsset1, info_registrar_data_.handle).exec(ctx);
-        Fred::CreateNsset(nsset2, info_registrar_data_.handle).exec(ctx);
-
-        Fred::CreateKeyset(keyset1, info_registrar_data_.handle).exec(ctx);
-        Fred::CreateKeyset(keyset2, info_registrar_data_.handle).exec(ctx);
-
-        Fred::CreateDomain::Result create_result_fqdn2 =
-        Fred::CreateDomain(fqdn2, info_registrar_data_.handle, contact1)
-        .set_admin_contacts(Util::vector_of<std::string>(contact2)(contact3))
-        .set_nsset(nsset1).set_keyset(keyset1).exec(ctx);
-
-        Fred::CreateDomain(enum_fqdn, info_registrar_data_.handle, contact1)
-            .set_enum_validation_expiration(create_result_fqdn2.creation_time.date() + boost::gregorian::months(3))
-            .set_nsset(nsset1).set_keyset(keyset1).set_admin_contacts(Util::vector_of<std::string>(contact2)(contact3)).exec(ctx);
-
-        domain2_renew_input_data = Epp::DomainRenewInputData(fqdn2,
-                boost::gregorian::to_iso_extended_string(Fred::InfoDomainByHandle(fqdn2).exec(ctx).info_domain_data.expiration_date),
-                Epp::DomainRegistrationTime(1,Epp::DomainRegistrationTime::Unit::year),std::vector<Epp::ENUMValidationExtension>());
-
-        ctx.get_conn().exec_params(
-            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
-                "SELECT $1::bigint, z.id, NOW() "
-                    "FROM zone z "
-                    "WHERE z.fqdn = $2::text",
-            Database::query_param_list(info_registrar_data_.id)
-            ("cz")
-        );
-
-        ctx.get_conn().exec_params(
-            "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
-                "SELECT $1::bigint, z.id, NOW() "
-                    "FROM zone z "
-                    "WHERE z.fqdn = $2::text",
-            Database::query_param_list(info_registrar_data_.id)
-            ("0.2.4.e164.arpa")
-        );
     }
+
+
+};
+
+struct HasRegistrarWithSessionAndDomain
+{
+    Registrar registrar;
+    Session session;
+    Domain domain;
+
+
+    HasRegistrarWithSessionAndDomain(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          domain(_ctx, registrar.data.handle)
+    {
+    }
+
+
+};
+
+struct HasRegistrarWithSessionAndBlacklistedDomain
+{
+    Registrar registrar;
+    Session session;
+    BlacklistedDomain blacklisted_domain;
+
+
+    HasRegistrarWithSessionAndBlacklistedDomain(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          blacklisted_domain(_ctx, registrar.data.handle)
+
+    {
+    }
+
+
+};
+
+struct HasSystemRegistrarWithSessionAndBlacklistedDomain
+{
+    SystemRegistrar system_registrar;
+    Session session;
+    BlacklistedDomain blacklisted_domain;
+
+
+    HasSystemRegistrarWithSessionAndBlacklistedDomain(Fred::OperationContext& _ctx)
+        : system_registrar(_ctx),
+          session(_ctx, system_registrar.data.id),
+          blacklisted_domain(_ctx, system_registrar.data.handle)
+    {
+    }
+
+
+};
+
+struct HasRegistrarNotInZoneWithSessionAndDomain
+{
+    SystemRegistrar registrar_not_in_zone;
+    Session session;
+    Domain domain;
+
+
+    HasRegistrarNotInZoneWithSessionAndDomain(Fred::OperationContext& _ctx)
+        : registrar_not_in_zone(_ctx),
+          session(_ctx, registrar_not_in_zone.data.id),
+          domain(_ctx, registrar_not_in_zone.data.handle)
+
+    {
+    }
+
+
+};
+
+struct HasRegistrarWithSessionAndDomainAndDifferentRegistrar
+{
+    Registrar registrar;
+    Session session;
+    Domain domain;
+    Registrar different_registrar;
+
+
+    HasRegistrarWithSessionAndDomainAndDifferentRegistrar(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          domain(_ctx, registrar.data.handle),
+          different_registrar(_ctx, "REG-TEST2")
+    {
+    }
+
+
+};
+
+struct HasRegistrarWithSessionAndDomainOfDifferentRegistrar
+{
+    Registrar registrar;
+    Session session;
+    Registrar different_registrar;
+    Domain domain_of_different_registrar;
+
+
+    HasRegistrarWithSessionAndDomainOfDifferentRegistrar(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          different_registrar(_ctx, "REG-TEST2"),
+          domain_of_different_registrar(_ctx, different_registrar.data.handle)
+    {
+    }
+
+
+};
+
+struct HasDomainWithdServerTransferProhibitedAndDifferentRegistrar
+{
+    Registrar different_registrar;
+    DomainWithServerTransferProhibited domain_with_server_transfer_prohibited;
+
+
+    HasDomainWithdServerTransferProhibitedAndDifferentRegistrar(Fred::OperationContext& _ctx)
+        : different_registrar(_ctx, "REG-TEST2"),
+          domain_with_server_transfer_prohibited(_ctx, different_registrar.data.handle + "DIFFERENT")
+    {
+        BOOST_REQUIRE(
+                domain_with_server_transfer_prohibited.data.sponsoring_registrar_handle !=
+                different_registrar.data.handle);
+    }
+
+
 };
 
 
-struct HasDomainDataAndRegistrar : HasDomainData, HasRegistrarNotInZone {};
+struct HasRegistrarWithSessionAndCreateDomainInputData
+{
+    Registrar registrar;
+    Session session;
+    Contact::Contact registrant;
+    Nsset::Nsset nsset;
+    Keyset::Keyset keyset;
+    Contact::Contact contact1;
+    Contact::Contact contact2;
+    CreateDomainInputData create_domain_input_data;
 
-struct HasDomainDataAndSystemRegistrar : HasDomainData, HasSystemRegistrar {};
 
-struct HasInfoDomainDataOfDomainWithInvalidFqdn : HasInfoDomainData {
-    HasInfoDomainDataOfDomainWithInvalidFqdn() {
-        const std::string domain_invalid_fqdn = "!domain.cz";
-        info_domain_data_.fqdn = domain_invalid_fqdn;
+    HasRegistrarWithSessionAndCreateDomainInputData(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          registrant(_ctx, registrar.data.handle),
+          nsset(_ctx, registrar.data.handle),
+          keyset(_ctx, registrar.data.handle),
+          contact1(_ctx, registrar.data.handle, "CONTACT1"),
+          contact2(_ctx, registrar.data.handle, "CONTACT2"),
+          create_domain_input_data("newdomain.cz",
+                  registrant.data.handle,
+                  nsset.data.handle,
+                  keyset.handle,
+                  Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle))
+    {
+    }
+
+
+};
+
+struct HasRegistrarWithSessionAndRenewDomainInputData
+{
+    Registrar registrar;
+    Session session;
+    Contact::Contact registrant;
+    RenewDomainInputData renew_domain_input_data;
+
+    HasRegistrarWithSessionAndRenewDomainInputData(Fred::OperationContext& _ctx)
+            : registrar(_ctx),
+              session(_ctx, registrar.data.id),
+              registrant(_ctx, registrar.data.handle),
+              renew_domain_input_data("domainforrenewal.cz")
+    {
     }
 };
 
-struct HasDataForDomainUpdate : HasInfoDomainData {
+struct HasRegistrarWithSessionAndDomainAndRenewDomainInputData
+{
+    Registrar registrar;
+    Session session;
+    Contact::Contact registrant;
+    Domain domain;
+    RenewDomainInputData renew_domain_input_data;
+
+    HasRegistrarWithSessionAndDomainAndRenewDomainInputData(Fred::OperationContext & _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          registrant(_ctx, registrar.data.handle),
+          domain(_ctx, registrar.data.handle),
+          renew_domain_input_data(
+              domain.data.fqdn,
+              boost::gregorian::to_iso_extended_string(domain.data.expiration_date),
+              ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
+              boost::optional< ::Epp::Domain::EnumValidationExtension>())
+    {
+    }
+
+};
+
+struct HasRegistrarWithSessionAndCreateDomainInputDataAndRenewDomainInputData
+{
+    Registrar registrar;
+    Session session;
+    Contact::Contact registrant;
+    Nsset::Nsset nsset;
+    Keyset::Keyset keyset;
+    Contact::Contact contact1;
+    Contact::Contact contact2;
+    CreateDomainInputData create_domain_input_data;
+    RenewDomainInputData renew_domain_input_data;
+
+    HasRegistrarWithSessionAndCreateDomainInputDataAndRenewDomainInputData(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          registrant(_ctx, registrar.data.handle),
+          nsset(_ctx, registrar.data.handle),
+          keyset(_ctx, registrar.data.handle),
+          contact1(_ctx, registrar.data.handle, "CONTACT1"),
+          contact2(_ctx, registrar.data.handle, "CONTACT2"),
+          create_domain_input_data(
+              "nonexistentdomain.cz",
+              registrant.data.handle,
+              nsset.data.handle,
+              keyset.handle,
+              Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle)),
+          renew_domain_input_data(
+              create_domain_input_data.data.fqdn,
+              "",
+              ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
+              boost::optional< ::Epp::Domain::EnumValidationExtension>())
+    {
+    }
+
+};
+
+struct HasRegistrarWithSessionAndDomainAndCreateDomainInputDataAndRenewDomainInputData
+{
+    Registrar registrar;
+    Session session;
+    Contact::Contact registrant;
+    Nsset::Nsset nsset;
+    Keyset::Keyset keyset;
+    Contact::Contact contact1;
+    Contact::Contact contact2;
+    Domain domain;
+    CreateDomainInputData create_domain_input_data;
+    RenewDomainInputData renew_domain_input_data;
+
+    HasRegistrarWithSessionAndDomainAndCreateDomainInputDataAndRenewDomainInputData(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          registrant(_ctx, registrar.data.handle),
+          nsset(_ctx, registrar.data.handle),
+          keyset(_ctx, registrar.data.handle),
+          contact1(_ctx, registrar.data.handle, "CONTACT1"),
+          contact2(_ctx, registrar.data.handle, "CONTACT2"),
+          domain(_ctx, registrar.data.handle),
+          create_domain_input_data(
+                  domain.data.fqdn,
+                  registrant.data.handle,
+                  nsset.data.handle,
+                  keyset.handle,
+                  Util::vector_of<std::string>(contact1.data.handle)(contact2.data.handle)),
+          renew_domain_input_data(
+                  domain.data.fqdn,
+                  boost::gregorian::to_iso_extended_string(domain.data.expiration_date),
+                  ::Epp::Domain::DomainRegistrationTime(1, ::Epp::Domain::DomainRegistrationTime::Unit::year),
+                  boost::optional< ::Epp::Domain::EnumValidationExtension>())
+    {
+    }
+};
+
+struct HasDataForUpdateDomain
+{
+    Registrar registrar;
+    Session session;
+    FullDomain domain;
+
     const std::string new_registrant_handle_;
-    const std::string new_auth_info_pw_;
+    const std::string new_authinfopw_;
     const std::string new_nsset_handle_;
     const std::string new_keyset_handle_;
     Optional<std::string> registrant_chg_;
-    Optional<std::string> auth_info_pw_chg_;
+    Optional<std::string> authinfopw_chg_;
     Optional<Nullable<std::string> > nsset_chg_;
     Optional<Nullable<std::string> > keyset_chg_;
     std::vector<std::string> admin_contacts_add_;
     std::vector<std::string> admin_contacts_rem_;
     std::vector<std::string> tmpcontacts_rem_;
-    std::vector<Epp::ENUMValidationExtension> enum_validation_list_;
+    boost::optional< ::Epp::Domain::EnumValidationExtension> enum_validation_;
 
-    HasDataForDomainUpdate()
-        : new_registrant_handle_("REGISTRANT2"),
-          new_auth_info_pw_(" auth info "),
+    HasDataForUpdateDomain(Fred::OperationContext& _ctx)
+        : registrar(_ctx),
+          session(_ctx, registrar.data.id),
+          domain(_ctx, registrar.data.handle),
+          new_registrant_handle_("REGISTRANT2"),
+          new_authinfopw_(" auth info "),
           new_nsset_handle_("NSSET2"),
           new_keyset_handle_("KEYSET2")
     {
         namespace ip = boost::asio::ip;
 
-        Fred::CreateContact(new_registrant_handle_, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateContact(new_registrant_handle_, registrar.data.handle).exec(_ctx);
 
-        const std::string admin_handle2 = "ADMIN2";
-        Fred::CreateContact(admin_handle2, info_registrar_data_.handle).exec(ctx);
-        const std::string admin_handle3 = "ADMIN3";
-        Fred::CreateContact(admin_handle3, info_registrar_data_.handle).exec(ctx);
+        const std::string admin_handle2 = "CONTACT2";
+        Fred::CreateContact(admin_handle2, registrar.data.handle).exec(_ctx);
+        const std::string admin_handle3 = "CONTACT3";
+        Fred::CreateContact(admin_handle3, registrar.data.handle).exec(_ctx);
 
         const std::string tech_handle = "TECH2";
-        Fred::CreateContact(tech_handle, info_registrar_data_.handle).exec(ctx);
+        Fred::CreateContact(tech_handle, registrar.data.handle).exec(_ctx);
 
-        Fred::CreateNsset(new_nsset_handle_, info_registrar_data_.handle)
-        .set_tech_contacts(Util::vector_of<std::string>(tech_handle))
-        .set_dns_hosts(Util::vector_of<Fred::DnsHost>
-            (Fred::DnsHost("a.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.3"))(ip::address::from_string("11.1.1.3"))))
-            (Fred::DnsHost("c.ns.nic.cz",  Util::vector_of<ip::address>(ip::address::from_string("11.0.0.4"))(ip::address::from_string("11.1.1.4"))))
-            )
-        .exec(ctx);
+        Fred::CreateNsset(new_nsset_handle_, registrar.data.handle)
+                .set_tech_contacts(Util::vector_of<std::string>(tech_handle))
+                .set_dns_hosts(
+                        Util::vector_of<Fred::DnsHost>
+                        (Fred::DnsHost("a.ns.nic.cz",
+                                Util::vector_of<ip::address>
+                                        (ip::address::from_string("11.0.0.3"))
+                                        (ip::address::from_string("11.1.1.3"))))
+                        (Fred::DnsHost("c.ns.nic.cz",
+                                Util::vector_of<ip::address>
+                                     (ip::address::from_string("11.0.0.4"))
+                                     (ip::address::from_string("11.1.1.4")))))
+                .exec(_ctx);
 
-        Fred::CreateKeyset(new_keyset_handle_, info_registrar_data_.handle)
-            .set_tech_contacts( boost::assign::list_of(tech_handle) )
-            .exec(ctx);
+        Fred::CreateKeyset(new_keyset_handle_, registrar.data.handle)
+                .set_tech_contacts(boost::assign::list_of(tech_handle))
+                .exec(_ctx);
+
 
         registrant_chg_ = Optional<std::string>(new_registrant_handle_);
-        auth_info_pw_chg_ = Optional<std::string>(new_auth_info_pw_);
+        authinfopw_chg_ = Optional<std::string>(new_authinfopw_);
 
         nsset_chg_ = Optional<Nullable<std::string> >(new_nsset_handle_);
         keyset_chg_ = Optional<Nullable<std::string> >(new_keyset_handle_);
 
         admin_contacts_add_ = Util::vector_of<std::string>
-            (admin_handle2)
-            (admin_handle3);
+                                  (admin_handle2)
+                                  (admin_handle3);
 
-        admin_contacts_rem_ = vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(info_domain_data_.admin_contacts);
+        admin_contacts_rem_ = vector_of_Fred_ObjectIdHandlePair_to_vector_of_string(
+                domain.data.admin_contacts);
 
         tmpcontacts_rem_ = Util::vector_of<std::string>
-            ("WHATEVER");
+                               ("WHATEVER");
 
     }
+
 };
+
+} // namespace Test::Backend::Epp::Domain
+} // namespace Test::Backend::Epp
+} // namespace Test::Backend
+} // namespace Test
 
 #endif

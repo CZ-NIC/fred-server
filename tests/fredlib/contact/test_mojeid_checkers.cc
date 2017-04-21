@@ -29,7 +29,7 @@
 
 const std::string server_name = "test-contact-checkers";
 
-struct test_contact_checkers_fixture : public Test::Fixture::instantiate_db_template
+struct test_contact_checkers_fixture : public Test::instantiate_db_template
 {
     enum
     {

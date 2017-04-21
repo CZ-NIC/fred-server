@@ -18,45 +18,55 @@
 
 #include "src/epp/domain/domain_enum_validation.h"
 
+#include <string>
+
+namespace Epp {
+namespace Domain {
 
 bool is_new_enum_domain_validation_expiration_date_invalid(
-        const boost::gregorian::date& new_valexdate,//local date
-        const boost::gregorian::date& current_local_date ,
-        const unsigned enum_validation_period,//in months
-        const boost::optional<boost::gregorian::date>& current_valexdate, //if not set, ENUM domain is not currently validated
-        Fred::OperationContext& _ctx
-        )
+        const boost::gregorian::date& new_valexdate, // local date
+        const boost::gregorian::date& current_local_date,
+        const unsigned enum_validation_period,                            // in months
+        const boost::optional<boost::gregorian::date>& current_valexdate, // if not set, ENUM domain is not currently validated
+        Fred::OperationContext& _ctx)
+{
+    bool validation_continuation = false;
+    if (current_valexdate.is_initialized())
     {
-        bool validation_continuation = false;
-        if(current_valexdate.is_initialized())
-        {
-            const boost::gregorian::date validation_continuation_begin = boost::gregorian::from_simple_string(
-                static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
-                    ("SELECT (").param_date(*current_valexdate)
-                    (" - val::bigint * ('1 day'::interval))::date ")
-                    ("FROM enum_parameters WHERE name = 'enum_validation_continuation_window'")
-                    )[0][0]));
-
-            if(current_local_date >= validation_continuation_begin
-                && current_local_date < *current_valexdate)
-            {
-                validation_continuation = true;
-            }
-        }
-
-        const boost::gregorian::date max_valexdate = boost::gregorian::from_simple_string(
+        // clang-format off
+        const boost::gregorian::date validation_continuation_begin = boost::gregorian::from_simple_string(
             static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
-            ("SELECT (").param_date(validation_continuation ? *current_valexdate : current_local_date)
-            (" + ").param_bigint(enum_validation_period)(" * ('1 month'::interval))::date ")
-            )[0][0]));
-        ;
+                ("SELECT (").param_date(*current_valexdate)
+                (" - val::bigint * ('1 day'::interval))::date ")
+                ("FROM enum_parameters WHERE name = 'enum_validation_continuation_window'")
+                )[0][0]));
+        // clang-format on
 
-        //if new_valexdate is not valid
-        if(new_valexdate.is_special()
+        if (current_local_date >= validation_continuation_begin
+            && current_local_date < *current_valexdate)
+        {
+            validation_continuation = true;
+        }
+    }
+
+    // clang-format off
+    const boost::gregorian::date max_valexdate = boost::gregorian::from_simple_string(
+        static_cast<std::string>(_ctx.get_conn().exec_params(Database::ParamQuery
+        ("SELECT (").param_date(validation_continuation ? *current_valexdate : current_local_date)
+        (" + ").param_bigint(enum_validation_period)(" * ('1 month'::interval))::date ")
+        )[0][0]));
+    // clang-format on
+
+    // if new_valexdate is not valid
+    if (new_valexdate.is_special()
         || new_valexdate <= current_local_date
         || new_valexdate > max_valexdate)
-        {
-            return true;
-        }
-        return false;
+    {
+        return true;
     }
+    return false;
+}
+
+
+} // namespace Epp::Domain
+} // namespace Epp

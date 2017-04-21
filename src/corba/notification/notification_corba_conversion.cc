@@ -35,7 +35,7 @@ void unwrap_DomainEmailSeq(const Registry::Notification::DomainEmailSeq &domain_
     for (unsigned long long index = 0; index < domain_email_seq.length(); ++index) {
         unsigned long long domain_id;
         CorbaConversion::unwrap_int(domain_email_seq[index].domain_id, domain_id);
-        const std::string email = Corba::unwrap_string(domain_email_seq[index].email);
+        const std::string email = Fred::Corba::unwrap_string(domain_email_seq[index].email);
         domain_emails_map[domain_id].insert(email);
     }
 }

@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <math.h>
 #include <memory>
 #include <iomanip>
@@ -56,7 +74,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
 
   m_registry_manager.reset(Fred::Manager::create(db_disconnect_guard_,
                                                      restricted_handles_));
-  
+
   m_logsession_manager.reset(Fred::Session::Manager::create());
 
   m_registry_manager->dbManagerInit();
@@ -68,8 +86,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
                                                                ns->getHostName());
   m_publicrequest_manager.reset(Fred::PublicRequest::Manager::create(m_registry_manager->getDomainManager(),
                                                                          m_registry_manager->getContactManager(),
-                                                                         m_registry_manager->getNSSetManager(),
-                                                                         m_registry_manager->getKeySetManager(),
+                                                                         m_registry_manager->getNssetManager(),
+                                                                         m_registry_manager->getKeysetManager(),
                                                                          &m_mailer_manager,
                                                                          m_document_manager.get(),
                                                                          m_registry_manager->getMessageManager()));
@@ -82,8 +100,8 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
 
   m_domains = new ccReg_Domains_i(m_registry_manager->getDomainManager()->createList(), &settings_);
   m_contacts = new ccReg_Contacts_i(m_registry_manager->getContactManager()->createList(), &settings_);
-  m_nssets = new ccReg_NSSets_i(m_registry_manager->getNSSetManager()->createList(), &settings_);
-  m_keysets = new ccReg_KeySets_i(m_registry_manager->getKeySetManager()->createList(), &settings_);
+  m_nssets = new ccReg_NSSets_i(m_registry_manager->getNssetManager()->createList(), &settings_);
+  m_keysets = new ccReg_KeySets_i(m_registry_manager->getKeysetManager()->createList(), &settings_);
   m_registrars = new ccReg_Registrars_i(m_registry_manager->getRegistrarManager()->createList()
           ,m_registry_manager->getZoneManager()->createList());
   m_invoices = new ccReg_Invoices_i(m_invoicing_manager->createList());
@@ -92,7 +110,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_payments = new ccReg_Payments_i(m_banking_manager->createPaymentList());
   // m_statementheads = new ccReg_StatementHeads_i(m_banking_manager->createList());
   m_mails = new ccReg_Mails_i(mail_manager_->createList(), ns);
-  m_files = new ccReg_Files_i(file_manager_->createList());  
+  m_files = new ccReg_Files_i(file_manager_->createList());
   m_logsession = new ccReg_LogSession_i(m_logsession_manager->createList());
   m_zones = new ccReg_Zones_i(m_registry_manager->getZoneManager()->createList());
   m_messages = new ccReg_Messages_i(m_registry_manager->getMessageManager()->createList());
@@ -103,7 +121,7 @@ ccReg_Session_i::ccReg_Session_i(const std::string& _session_id,
   m_nssets->setDB();
   m_keysets->setDB();
   m_publicrequests->setDB();
-  m_invoices->setDB();  
+  m_invoices->setDB();
   m_logsession->setDB();
   m_payments->setDB();
   // m_statementheads->setDB();
@@ -445,8 +463,8 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing nsset filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::NSSet::List>
-        tmp_nsset_list(m_registry_manager->getNSSetManager()->createList());
+    std::auto_ptr<Fred::Nsset::List>
+        tmp_nsset_list(m_registry_manager->getNssetManager()->createList());
 
     Database::Filters::Union uf(&settings_);
     Database::Filters::NSSet *filter = new Database::Filters::NSSetHistoryImpl();
@@ -474,8 +492,8 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
     else {
         LOGGER(PACKAGE).debug(boost::format("constructing keyset filter for object id=%1%' detail") % _id);
 
-        std::auto_ptr <Fred::KeySet::List>
-            tmp_keyset_list(m_registry_manager->getKeySetManager()->createList());
+        std::auto_ptr <Fred::Keyset::List>
+            tmp_keyset_list(m_registry_manager->getKeysetManager()->createList());
 
         Database::Filters::Union uf(&settings_);
         Database::Filters::KeySet *filter = new Database::Filters::KeySetHistoryImpl();
@@ -629,7 +647,7 @@ Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
 
 // ccReg::Logger::Detail*  ccReg_Session_i::getRequestDetail(ccReg::TID _id) {
 ccReg::Logger::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
-	
+
         ccReg::Logger_ptr logger;
 
 	LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
@@ -643,7 +661,7 @@ ccReg::Logger::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
         if (CORBA::is_nil(logger)) throw ccReg::Admin::ServiceUnavailable();
 
         return logger->getDetail(_id);
-                
+
 }
 
 Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TID _id) {
@@ -651,16 +669,16 @@ Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TI
 
 	std::auto_ptr<Fred::Banking::PaymentList> item_list(m_banking_manager->createPaymentList());
 
-	Database::Filters::Union union_filter;	
+	Database::Filters::Union union_filter;
 	Database::Filters::BankPayment *filter = new Database::Filters::BankPaymentImpl();
 
 	filter->addId().setValue(Database::ID(_id));
 	union_filter.addFilter(filter);
 
         // TODO
-	// item_list->setPartialLoad(false);	
+	// item_list->setPartialLoad(false);
 	item_list->reload(union_filter);
-	
+
 	if(item_list->size() != 1) {
 		throw ccReg::Admin::ObjectNotFound();
 	}
@@ -682,12 +700,12 @@ Registry::Banking::BankHead::Detail *ccReg_Session_i::getStatementDetail(ccReg::
 
 	list->setPartialLoad(false);
 	list->reload(union_filter);
-	
+
 	if (list->size() != 1) {
 		throw ccReg::Admin::ObjectNotFound();
 	}
 	return createStatementDetail(head_list->get(0));
-    
+
 }
 */
 
@@ -811,8 +829,8 @@ Registry::Domain::Detail* ccReg_Session_i::createHistoryDomainDetail(Fred::Domai
     MAP_HISTORY_DATE(expirationDate, getExpirationDate)
     MAP_HISTORY_DATE(valExDate, getValExDate)
     MAP_HISTORY_BOOL(publish, getPublish)
-    MAP_HISTORY_OID(nsset, getNSSetId, getNSSetHandle, ccReg::FT_NSSET)
-    MAP_HISTORY_OID(keyset, getKeySetId, getKeySetHandle, ccReg::FT_KEYSET)
+    MAP_HISTORY_OID(nsset, getNssetId, getNssetHandle, ccReg::FT_NSSET)
+    MAP_HISTORY_OID(keyset, getKeysetId, getKeysetHandle, ccReg::FT_KEYSET)
 
     /* admin list */
     try {
@@ -1003,7 +1021,7 @@ LOGGER(PACKAGE).debug(boost::format("history detail -- (id=%1%) checking state %
   return detail;
 }
 
-Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Fred::NSSet::List* _list) {
+Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Fred::Nsset::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryNSSetDetail()");
   Registry::NSSet::Detail *detail = new Registry::NSSet::Detail();
 
@@ -1012,8 +1030,8 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Fred::NSSet::
 
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
-    Fred::NSSet::NSSet *act  = _list->getNSSet(n);
-    Fred::NSSet::NSSet *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getNSSet(n + 1));
+    Fred::Nsset::Nsset *act  = _list->getNsset(n);
+    Fred::Nsset::Nsset *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getNsset(n + 1));
 
     /* just copy static data */
     if (act == prev) {
@@ -1127,7 +1145,7 @@ Registry::NSSet::Detail* ccReg_Session_i::createHistoryNSSetDetail(Fred::NSSet::
 }
 
 
-Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Fred::KeySet::List* _list) {
+Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Fred::Keyset::List* _list) {
   TRACE("[CALL] ccReg_Session_i::createHistoryKeySetDetail()");
   Registry::KeySet::Detail *detail = new Registry::KeySet::Detail();
 
@@ -1136,8 +1154,8 @@ Registry::KeySet::Detail* ccReg_Session_i::createHistoryKeySetDetail(Fred::KeySe
 
   /* we going backwards because at the end there are latest data */
   for (int n = _list->size() - 1; n >= 0; --n) {
-    Fred::KeySet::KeySet *act  = _list->getKeySet(n);
-    Fred::KeySet::KeySet *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getKeySet(n + 1));
+    Fred::Keyset::Keyset *act  = _list->getKeyset(n);
+    Fred::Keyset::Keyset *prev = ((unsigned)n == _list->size() - 1 ? act : _list->getKeyset(n + 1));
 
     /* just copy static data */
     if (act == prev) {
@@ -1639,7 +1657,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Fred::Invoicin
 
   detail->fileXML.id     = _invoice->getFileXmlId();
   detail->fileXML.handle = DUPSTRC(_invoice->getFileXmlHandle());
-  
+
   detail->fileXML.type   = ccReg::FT_FILE;
 
   detail->payments.length(_invoice->getSourceCount());
@@ -1650,7 +1668,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::createInvoiceDetail(Fred::Invoicin
     detail->payments[n].balance = DUPSTRC(formatMoney(ps->getCredit()));
     detail->payments[n].number = DUPSTRC(stringify(ps->getNumber()));
   }
-  
+
   detail->paymentActions.length(_invoice->getActionCount());
   for (unsigned n = 0; n < _invoice->getActionCount(); ++n) {
     const Fred::Invoicing::PaymentAction *pa = _invoice->getAction(n);

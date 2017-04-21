@@ -17,7 +17,7 @@ inline bool check_std_exception(const std::exception &e)
 namespace Test
 {
 
-struct autocommitting_context : virtual Fixture::instantiate_db_template {
+struct autocommitting_context : virtual Test::instantiate_db_template {
     Fred::OperationContextCreator ctx;
 
     virtual ~autocommitting_context() {

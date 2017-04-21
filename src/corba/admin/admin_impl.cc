@@ -141,7 +141,7 @@ ccReg_Admin_i::~ccReg_Admin_i() {
   session_garbage_thread_->join();
   // session_garbage_thread_->join();
   delete session_garbage_thread_;
-  
+
   /// sessions cleanup
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   SessionListType::iterator it = m_session_list.begin();
@@ -205,11 +205,11 @@ void ccReg_Admin_i::garbageSession() {
   Logging::Context ctx2("session-garbage");
 
   LOGGER(PACKAGE).debug("thread started...");
-  
+
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   while (session_garbage_active_) {
     LOGGER(PACKAGE).debug("procedure sleeped");
-    
+
     boost::xtime sleep_time;
 #if BOOST_VERSION >= 105000
     boost::xtime_get(&sleep_time, boost::TIME_UTC_);
@@ -218,16 +218,16 @@ void ccReg_Admin_i::garbageSession() {
 #endif
     sleep_time.sec += adifd_session_garbage_;
     cond_.timed_wait(scoped_lock, sleep_time);
-    
+
     LOGGER(PACKAGE).debug("procedure invoked");
-  
+
     SessionListType::iterator it = m_session_list.begin();
     while (it != m_session_list.end()) {
       if (it->second->isTimeouted()) {
         std::string session_id = it->first;
         delete it->second;
         m_session_list.erase(it++);
-        LOGGER(PACKAGE).debug(boost::format("session '%1%' deleted -- remains '%2%'") 
+        LOGGER(PACKAGE).debug(boost::format("session '%1%' deleted -- remains '%2%'")
             % session_id % m_session_list.size());
       }
       else {
@@ -273,7 +273,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
       }
     }
 
-    LOGGER(PACKAGE).info(boost::format("destroying oldest session -- %1% (last activity at %2%)") 
+    LOGGER(PACKAGE).info(boost::format("destroying oldest session -- %1% (last activity at %2%)")
                                        % it_oldest->second->getId()
                                        % it_oldest->second->getLastActivity());
     delete it_oldest->second;
@@ -284,7 +284,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
 
   std::string session_id = "sessid#" + Random::string_alphanum(5) + "-" + username;
 
-  
+
   ccReg_Session_i *session = new ccReg_Session_i(session_id, m_connection_string, ns,
           restricted_handles_,
           docgen_path_,
@@ -293,7 +293,7 @@ char* ccReg_Admin_i::createSession(const char* username) {
           adifd_session_timeout_,
           bankingInvoicing._this(), user_info);
 
-  m_session_list[session_id] = session; 
+  m_session_list[session_id] = session;
 
 
   LOGGER(PACKAGE).notice(boost::format("admin session '%1%' created -- total number of sessions is '%2%'")
@@ -307,7 +307,7 @@ void ccReg_Admin_i::destroySession(const char* _session_id) {
   ConnectionReleaser releaser;
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::destroySession('%1%')") % _session_id);
-  
+
   boost::mutex::scoped_lock scoped_lock(m_session_list_mutex);
   SessionListType::iterator it = m_session_list.find(_session_id);
   if (it == m_session_list.end()) {
@@ -500,19 +500,19 @@ Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
 
   std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
-  /* 
-   * TEMP: this is for loading country codes from database - until new database 
-   * library is not fully integrated into registrar library 
-   */ 
+  /*
+   * TEMP: this is for loading country codes from database - until new database
+   * library is not fully integrated into registrar library
+   */
   r->dbManagerInit();
-  
+
   Registry::CountryDescSeq *cd = new Registry::CountryDescSeq;
   cd->length(r->getCountryDescSize());
   for (unsigned i=0; i<r->getCountryDescSize(); i++) {
     (*cd)[i].cc = DUPSTRC(r->getCountryDescByIdx(i).cc);
     (*cd)[i].name = DUPSTRC(r->getCountryDescByIdx(i).name);
   }
-  
+
   return cd;
 }
 
@@ -609,12 +609,12 @@ void ccReg_Admin_i::generateLetters() {
     std::auto_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(db,
                                            restricted_handles_));
-    std::auto_ptr<Fred::NSSet::Manager> nssMan(
-        Fred::NSSet::Manager::create(db,
+    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+        Fred::Nsset::Manager::create(db,
                                          zoneMan.get(),
                                          restricted_handles_));
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
+    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+            Fred::Keyset::Manager::create(
                     db,
                 restricted_handles_));
     std::auto_ptr<Fred::Registrar::Manager> rMan(
@@ -625,7 +625,7 @@ void ccReg_Admin_i::generateLetters() {
                                           conMan.get(),
                                           nssMan.get(),
                                           keyMan.get(),
-                                          domMan.get(), 
+                                          domMan.get(),
                                           docman.get(),
                                           rMan.get(),
                                           msgMan
@@ -685,7 +685,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
                                               const char *_reason,
                                               const char *_email_to_answer,
                                               const ccReg::Admin::ObjectIdList& _object_ids,
-                                              const ccReg::TID requestId) 
+                                              const ccReg::TID requestId)
   throw (
     ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND,
     ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
@@ -696,9 +696,9 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
 
   TRACE(boost::format("[CALL] ccReg_Admin_i::createPublicRequest(%1%, '%2%', '%3%', %4%, %5%)") %
         _type %  _reason % _email_to_answer % &_object_ids % requestId);
-  
+
   MailerManager mailer_manager(ns);
-  
+
   std::auto_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
               docgen_path_,
@@ -710,17 +710,17 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
           Fred::PublicRequest::Manager::create(
               registry_manager_->getDomainManager(),
               registry_manager_->getContactManager(),
-              registry_manager_->getNSSetManager(),
-              registry_manager_->getKeySetManager(),
+              registry_manager_->getNssetManager(),
+              registry_manager_->getKeysetManager(),
               &mailer_manager,
               doc_manager.get(),
               registry_manager_->getMessageManager())
           );
-  
+
 #define REQUEST_TYPE_CORBA2DB_CASE(type)            \
   case Registry::PublicRequest::type:                  \
     request_type = Fred::PublicRequest::type; break;
-  
+
   Fred::PublicRequest::Type request_type;
   switch (_type)  {
     REQUEST_TYPE_CORBA2DB_CASE(PRT_AUTHINFO_AUTO_RIF)
@@ -740,7 +740,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
                                           % _type);
       throw ccReg::Admin::INVALID_INPUT();
   }
-  
+
   std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(request_type));
   new_request->setType(request_type);
   new_request->setRegistrarId(0);
@@ -769,9 +769,9 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
   }
 }
 
-void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid) 
+void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
     throw (
-    ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND, 
+    ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND,
     ccReg::Admin::MAILER_ERROR, ccReg::Admin::REQUEST_BLOCKED
   ) {
   Logging::Context ctx(server_name_);
@@ -780,7 +780,7 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   TRACE(boost::format("[CALL] ccReg_Admin_i::processPublicRequest(%1%, %2%)") %
   	id % invalid);
 
-  MailerManager mailer_manager(ns);  
+  MailerManager mailer_manager(ns);
   std::auto_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
               docgen_path_,
@@ -792,8 +792,8 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
           Fred::PublicRequest::Manager::create(
               registry_manager_->getDomainManager(),
               registry_manager_->getContactManager(),
-              registry_manager_->getNSSetManager(),
-              registry_manager_->getKeySetManager(),
+              registry_manager_->getNssetManager(),
+              registry_manager_->getKeysetManager(),
               &mailer_manager,
               doc_manager.get(),
               registry_manager_->getMessageManager())
@@ -829,7 +829,7 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
         id % lang);
 
   MailerManager mailer_manager(ns);
-   
+
   std::auto_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
               docgen_path_,
@@ -841,8 +841,8 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
           Fred::PublicRequest::Manager::create(
               registry_manager_->getDomainManager(),
               registry_manager_->getContactManager(),
-              registry_manager_->getNSSetManager(),
-              registry_manager_->getKeySetManager(),
+              registry_manager_->getNssetManager(),
+              registry_manager_->getKeysetManager(),
               &mailer_manager,
               doc_manager.get(),
               registry_manager_->getMessageManager())
@@ -873,7 +873,7 @@ ccReg::TID ccReg_Admin_i::resendPin3Letter(ccReg::TID publicRequestId)
     ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_Admin_i::resendPin3Letter(%1%)") % publicRequestId);
-  
+
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -996,7 +996,7 @@ ccReg::TID ccReg_Admin_i::resendPin2SMS(ccReg::TID publicRequestId)
     ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_Admin_i::resendPin2SMS(%1%)") % publicRequestId);
-  
+
     try {
         Database::Connection conn = Database::Manager::acquire();
         Database::Transaction tx(conn);
@@ -1112,7 +1112,7 @@ std::string ccReg_Admin_i::_createQueryForEnumDomainsByRegistrant(const std::str
               "JOIN contact c ON (c.id = d.registrant)";
 
   std::string where_part = "";
-  /* escape default wildcard chars % and _ in given name (we want to handle them as 
+  /* escape default wildcard chars % and _ in given name (we want to handle them as
    * normal characters), then * and ? are * translated to this wildcards (% and _)
    * (XXX maybe some easier way? */
   std::string namecopy = name;

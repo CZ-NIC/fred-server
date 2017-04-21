@@ -268,7 +268,7 @@ void create_check_for_all_unchecked_contacts(const std::string& testsuite_handle
 }
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestFillAutomaticQueue, Test::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification_integration-fill_automatic_check_queue";
 

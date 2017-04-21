@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "public_request.h"
 #include "public_request_impl.h"
 
@@ -177,8 +195,8 @@ class ManagerImpl : virtual public Manager {
 private:
   Domain::Manager   *domain_manager_;
   Contact::Manager  *contact_manager_;
-  NSSet::Manager    *nsset_manager_;
-  KeySet::Manager   *keyset_manager_;
+  Nsset::Manager    *nsset_manager_;
+  Keyset::Manager   *keyset_manager_;
   Mailer::Manager   *mailer_manager_;
   Document::Manager *doc_manager_;
   Messages::ManagerPtr messages_manager;
@@ -189,8 +207,8 @@ private:
 public:
   ManagerImpl(Domain::Manager   *_domain_manager,
               Contact::Manager  *_contact_manager,
-              NSSet::Manager    *_nsset_manager,
-              KeySet::Manager   *_keyset_manager,
+              Nsset::Manager    *_nsset_manager,
+              Keyset::Manager   *_keyset_manager,
               Mailer::Manager   *_mailer_manager,
               Document::Manager *_doc_manager,
               Messages::ManagerPtr _messages_manager)
@@ -432,8 +450,8 @@ public:
 
 Manager* Manager::create(Domain::Manager    *_domain_manager,
                          Contact::Manager   *_contact_manager,
-                         NSSet::Manager     *_nsset_manager,
-                         KeySet::Manager    *_keyset_manager,
+                         Nsset::Manager     *_nsset_manager,
+                         Keyset::Manager    *_keyset_manager,
                          Mailer::Manager    *_mailer_manager,
                          Document::Manager  *_doc_manager,
                          Messages::ManagerPtr _messages_manager)

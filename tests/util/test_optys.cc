@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(test_csv_file_name)
 /**
  * fake some 'sent' letters into message_archive and csv data of undelivered letters
  */
-struct undelivered_fixture : virtual Test::Fixture::instantiate_db_template
+struct undelivered_fixture : virtual Test::instantiate_db_template
 {
     std::set<unsigned long long> msg_id_set;
     std::string msg_id_str;

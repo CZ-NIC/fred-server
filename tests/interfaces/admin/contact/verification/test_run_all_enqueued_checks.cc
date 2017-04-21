@@ -125,7 +125,7 @@ namespace TestStatus = Fred::ContactTestStatus;
 namespace CheckStatus = Fred::ContactCheckStatus;
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestRunEnqueuedChecks, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestRunEnqueuedChecks, Test::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification_integration-run_all_enqueued_checks";
 

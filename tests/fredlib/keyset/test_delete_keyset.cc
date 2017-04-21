@@ -29,7 +29,7 @@
 
 const std::string server_name = "test-delete-keyset";
 
-struct delete_keyset_fixture : public Test::Fixture::instantiate_db_template
+struct delete_keyset_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

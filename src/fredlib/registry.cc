@@ -98,8 +98,8 @@ class ManagerImpl : virtual public Manager {
   std::auto_ptr<Domain::Manager> m_domain_manager;
   Registrar::Manager::AutoPtr m_registrar_manager;
   std::auto_ptr<Contact::Manager> m_contact_manager;
-  std::auto_ptr<NSSet::Manager> m_nsset_manager;
-  std::auto_ptr<KeySet::Manager> m_keyset_manager;
+  std::auto_ptr<Nsset::Manager> m_nsset_manager;
+  std::auto_ptr<Keyset::Manager> m_keyset_manager;
   std::auto_ptr<Filter::Manager> m_filter_manager;
 
   std::vector<CountryDesc> m_countries;
@@ -115,11 +115,11 @@ public:
   {
     m_domain_manager.reset(Domain::Manager::create(db, m_zone_manager.get()));
     m_contact_manager.reset(Contact::Manager::create(db, m_restricted_handles));
-    m_nsset_manager.reset(NSSet::Manager::create(db,
+    m_nsset_manager.reset(Nsset::Manager::create(db,
                                                  m_zone_manager.get(),
                                                  m_restricted_handles));
-    m_keyset_manager.reset(KeySet::Manager::create(db, m_restricted_handles));
-	
+    m_keyset_manager.reset(Keyset::Manager::create(db, m_restricted_handles));
+
     // TEMP: this will be ok when DBase::Manager ptr will be initilized
     // here in constructor (not in dbManagerInit method)
     // m_filter_manager.reset(Filter::Manager::create(m_db_manager));
@@ -154,11 +154,11 @@ public:
     return m_contact_manager.get();
   }
 
-  NSSet::Manager *getNSSetManager() const {
+  Nsset::Manager *getNssetManager() const {
     return m_nsset_manager.get();
   }
 
-  KeySet::Manager *getKeySetManager() const
+  Keyset::Manager *getKeysetManager() const
   {
       return m_keyset_manager.get();
   }
@@ -168,9 +168,9 @@ public:
   }
 
   /// interface method implementation
-  void checkHandle(const std::string& handle, 
-									 CheckHandleList& chl, 
-									 bool allowIDN) const {
+  void checkHandle(const std::string& handle,
+      CheckHandleList& chl,
+      bool allowIDN) const {
     CheckHandle ch;
     bool isEnum = false;
     try {
@@ -228,31 +228,31 @@ public:
       chCon.handleClass= CH_REGISTRED;
       chl.push_back(chCon);
     }
-    // check if handle is registred nsset   
-    NameIdPair conflictNSSet;
-    if (getNSSetManager()->checkAvail(handle, conflictNSSet) == NSSet::Manager::CA_REGISTRED) {
+    // check if handle is registred nsset
+    NameIdPair conflictNsset;
+    if (getNssetManager()->checkAvail(handle, conflictNsset) == Nsset::Manager::CA_REGISTRED) {
       CheckHandle chNss;
       chNss.type = HT_NSSET;
       chNss.handleClass= CH_REGISTRED;
       chl.push_back(chNss);
     }
     // check if handle is registered keyset
-    NameIdPair conflictKeySet;
-    if (getKeySetManager()->checkAvail(handle, conflictKeySet) ==
-            KeySet::Manager::CA_REGISTRED) {
+    NameIdPair conflictKeyset;
+    if (getKeysetManager()->checkAvail(handle, conflictKeyset) ==
+            Keyset::Manager::CA_REGISTRED) {
         CheckHandle chKey;
         chKey.type = HT_KEYSET;
         chKey.handleClass = CH_REGISTRED;
         chl.push_back(chKey);
     }
-    // check if handle is registrant   
+    // check if handle is registrant
     if (getRegistrarManager()->checkHandle(handle)) {
       CheckHandle chReg;
       chReg.type = HT_REGISTRAR;
       chReg.handleClass= CH_REGISTRED;
       chl.push_back(chReg);
     }
-    // if empty return OTHER   
+    // if empty return OTHER
     if (!chl.size()) {
       CheckHandle chOth;
       chOth.type = HT_OTHER;
@@ -270,16 +270,16 @@ public:
     try {
       Database::Connection conn = Database::Manager::acquire();
       Database::Result r_country = conn.exec(country_query);
-      
+
       m_countries.clear();
       for (Database::Result::Iterator it = r_country.begin(); it != r_country.end(); ++it) {
         Database::Row::Iterator col = (*it).begin();
         CountryDesc desc;
-        
+
         std::string cc      = *col;
         std::string name_cs = *(++col);
         std::string name    = *(++col);
-        
+
         desc.cc = cc;
         desc.name = (!name_cs.empty() ? name_cs : name);
         m_countries.push_back(desc);
@@ -328,7 +328,7 @@ public:
     }
     unsigned states_loaded = db->GetSelectRows();
     db->FreeSelect();
-    
+
     if (!db->ExecSelect("SELECT state_id, lang, description FROM enum_object_states_desc"))
       throw SQL_ERROR();
     for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++) {
@@ -340,7 +340,7 @@ public:
 
     }
     db->FreeSelect();
-    
+
     LOGGER(PACKAGE).debug(boost::format("loaded '%1%' object states description from database")
         % states_loaded);
   }
@@ -398,7 +398,7 @@ public:
   /// TEMP: method for initialization new Database manager
   virtual void dbManagerInit() {
     m_filter_manager.reset(Filter::Manager::create());
-    
+
     /// load country codes descrition from database
     loadCountryDesc();
   }

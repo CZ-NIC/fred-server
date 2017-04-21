@@ -36,7 +36,7 @@ DECLARE_VECTOR_OF_EXCEPTION_DATA(contact1_handle, std::string);
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact2_handle, std::string);
 DECLARE_VECTOR_OF_EXCEPTION_DATA(contact3_handle, int);
 
-BOOST_FIXTURE_TEST_SUITE(TestOperationException, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestOperationException, Test::instantiate_db_template)
 
 const std::string server_name = "test-opexception";
 

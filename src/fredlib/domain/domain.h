@@ -79,8 +79,6 @@ DomainFqdnSyntaxValidity::Enum get_domain_fqdn_syntax_validity(
  * \param is_registrar_system  if true, will return results appropriate for system registrar
  *
  * \return  domain registrability status.  Does NOT include advanced FQDN syntax check.
- *
- * \throw  ExceptionInvalidFqdn
  */
 DomainRegistrability::Enum get_domain_registrability_by_domain_fqdn(
         OperationContext& ctx,

@@ -16,12 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef EPP_NSSET_HANDLE_REGISTRATION_OBSTRUCTION_H_8f8b86441d374ace8a52657920472ff8
-#define EPP_NSSET_HANDLE_REGISTRATION_OBSTRUCTION_H_8f8b86441d374ace8a52657920472ff8
+#ifndef NSSET_HANDLE_REGISTRATION_OBSTRUCTION_H_B9385F9E00844915977172923139E5BD
+#define NSSET_HANDLE_REGISTRATION_OBSTRUCTION_H_B9385F9E00844915977172923139E5BD
 
 #include <boost/assign/list_of.hpp>
 #include <set>
@@ -30,33 +26,64 @@
 #include "src/epp/exception.h"
 #include "src/epp/reason.h"
 
-namespace Epp
+namespace Epp {
+namespace Nsset {
+
+struct NssetHandleRegistrationObstruction
 {
-
-    struct NssetHandleRegistrationObstruction
+    enum Enum
     {
-        enum Enum
-        {
-            invalid_handle,
-            protected_handle,
-            registered_handle
-        };
+        invalid_handle,
+        protected_handle,
+        registered_handle
 
-        /**
-         * @throws MissingLocalizedDescription
-         */
-        static Reason::Enum to_reason(Enum value)
-        {
-            switch (value)
-            {
-                case invalid_handle:    return Reason::invalid_handle;
-                case registered_handle: return Reason::existing;
-                case protected_handle:  return Reason::protected_period;
-            }
-            throw MissingLocalizedDescription();
-        }
     };
 
-}
+    /**
+     * @throws MissingLocalizedDescription
+     */
+    static Reason::Enum to_reason(Enum value)
+    {
+        switch (value)
+        {
+            case invalid_handle:
+                return Reason::invalid_handle;
+
+            case registered_handle:
+                return Reason::existing;
+
+            case protected_handle:
+                return Reason::protected_period;
+        }
+        throw MissingLocalizedDescription();
+    }
+
+
+    /**
+     * @throws MissingLocalizedDescription
+     */
+    static Enum from_reason(Reason::Enum value)
+    {
+        switch (value)
+        {
+            case Reason::invalid_handle:
+                return invalid_handle;
+
+            case Reason::existing:
+                return registered_handle;
+
+            case Reason::protected_period:
+                return protected_handle;
+
+            default:
+                throw MissingLocalizedDescription();
+        }
+    }
+
+
+};
+
+} // namespace Epp::Nsset
+} // namespace Epp
 
 #endif

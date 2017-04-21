@@ -31,7 +31,7 @@
 
 const std::string server_name = "test-create-admin-object-state-restore-request-id";
 
-struct create_admin_object_state_restore_request_id_fixture : public Test::Fixture::instantiate_db_template
+struct create_admin_object_state_restore_request_id_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

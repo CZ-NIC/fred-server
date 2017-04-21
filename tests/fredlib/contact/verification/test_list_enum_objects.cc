@@ -34,7 +34,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestListEnumObjects_integ, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestListEnumObjects_integ, Test::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification-list_enum_objects_integ";
 

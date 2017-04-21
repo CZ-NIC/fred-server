@@ -1,6 +1,24 @@
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "pagetable_keysets.h"
 
-ccReg_KeySets_i::ccReg_KeySets_i(Fred::KeySet::List *kl, const Settings *_ptr) : m_kl(kl)
+ccReg_KeySets_i::ccReg_KeySets_i(Fred::Keyset::List *kl, const Settings *_ptr) : m_kl(kl)
 {
     uf.settings(_ptr);
 }
@@ -42,7 +60,7 @@ ccReg_KeySets_i::getRow(CORBA::UShort row)
 {
   Logging::Context ctx(base_context_);
 
-    const Fred::KeySet::KeySet *k = m_kl->getKeySet(row);
+    const Fred::Keyset::Keyset *k = m_kl->getKeyset(row);
     if (!k)
         throw Registry::Table::INVALID_ROW();
     Registry::TableRow *tr = new Registry::TableRow;
@@ -67,19 +85,19 @@ ccReg_KeySets_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir)
             % column % dir);
     switch (column) {
         case 0:
-            m_kl->sort(Fred::KeySet::MT_HANDLE, dir);
+            m_kl->sort(Fred::Keyset::MT_HANDLE, dir);
             sorted_by_ = 0;
             break;
         case 1:
-            m_kl->sort(Fred::KeySet::MT_CRDATE, dir);
+            m_kl->sort(Fred::Keyset::MT_CRDATE, dir);
             sorted_by_ = 1;
             break;
         case 2:
-            m_kl->sort(Fred::KeySet::MT_ERDATE, dir);
+            m_kl->sort(Fred::Keyset::MT_ERDATE, dir);
             sorted_by_ = 2;
             break;
         case 3:
-            m_kl->sort(Fred::KeySet::MT_REGISTRAR_HANDLE, dir);
+            m_kl->sort(Fred::Keyset::MT_REGISTRAR_HANDLE, dir);
             sorted_by_ = 3;
             break;
     }
@@ -91,7 +109,7 @@ ccReg_KeySets_i::getRowId(CORBA::UShort row)
 {
   Logging::Context ctx(base_context_);
 
-    const Fred::KeySet::KeySet *k = m_kl->getKeySet(row);
+    const Fred::Keyset::Keyset *k = m_kl->getKeyset(row);
     if (!k)
         throw Registry::Table::INVALID_ROW();
     return k->getId();
@@ -181,20 +199,20 @@ ccReg_KeySets_i::saveFilter(const char *name)
   ConnectionReleaser releaser;
 
     TRACE(boost::format("[CALL] ccReg_KeySets_i::saveFilter('%1%')") % name);
-    
+
     std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
             Fred::Filter::Manager::create());
     tmp_filter_manager->save(Fred::Filter::FT_KEYSET, name, uf);
 }
 
-Fred::KeySet::KeySet *
+Fred::Keyset::Keyset *
 ccReg_KeySets_i::findId(ccReg::TID id)
 {
   Logging::Context ctx(base_context_);
 
     try {
-        Fred::KeySet::KeySet *keyset =
-            dynamic_cast<Fred::KeySet::KeySet *>(m_kl->findId(id));
+        Fred::Keyset::Keyset *keyset =
+            dynamic_cast<Fred::Keyset::Keyset *>(m_kl->findId(id));
         if (keyset)
             return keyset;
         return 0;

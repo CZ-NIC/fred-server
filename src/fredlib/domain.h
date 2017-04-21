@@ -1,5 +1,23 @@
-#ifndef DOMAIN_H_
-#define DOMAIN_H_
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef DOMAIN_H_1EA14F0B7B81445DAECFB5CB355FF522
+#define DOMAIN_H_1EA14F0B7B81445DAECFB5CB355FF522
 
 #include <string>
 #include <vector>
@@ -17,7 +35,7 @@
 
 using namespace boost::gregorian;
 
-/// forward declared parameter type 
+/// forward declared parameter type
 class DB;
 
 namespace Fred {
@@ -49,7 +67,7 @@ enum MemberType {
 };
 
 
-/// return type for checkAvail method 
+/// return type for checkAvail method
 enum CheckAvailType {
   CA_INVALID_HANDLE, ///< bad formed handle
   CA_BAD_ZONE, ///< domain outside of registry
@@ -77,17 +95,17 @@ public:
   /// return id of zone
   virtual TID getZoneId() const = 0;
   /// return handle of nsset
-  virtual const std::string& getNSSetHandle() const = 0;
+  virtual const std::string& getNssetHandle() const = 0;
   /// return id of nsset
-  virtual TID getNSSetId() const = 0;
+  virtual TID getNssetId() const = 0;
   /// set nsset
-  virtual void setNSSetId(TID nsset) = 0;
+  virtual void setNssetId(TID nsset) = 0;
   /// return handle of keyset
-  virtual const std::string &getKeySetHandle() const = 0;
+  virtual const std::string &getKeysetHandle() const = 0;
   /// return id of keyset
-  virtual TID getKeySetId() const = 0;
+  virtual TID getKeysetId() const = 0;
   /// set keyset
-  virtual void setKeySetId(TID keyset) = 0;
+  virtual void setKeysetId(TID keyset) = 0;
   /// return handle of registrant
   virtual const std::string& getRegistrantHandle() const = 0;
   /// return name of registrant
@@ -98,7 +116,7 @@ public:
   virtual const std::string& getRegistrantPhone() const = 0;
   /// return id of registrant
   virtual TID getRegistrantId() const = 0;
-  /// set registrant 
+  /// set registrant
   virtual void setRegistrantId(TID registrant) = 0;
   /// return count of admin contacts
   virtual unsigned getAdminCount(unsigned role=1) const = 0;
@@ -151,13 +169,13 @@ public:
   virtual void
       setRegistrantHandleFilter(const std::string& registrantHandle) = 0;
   /// set filter for nsset
-  virtual void setNSSetFilter(TID nssetId) = 0;
+  virtual void setNssetFilter(TID nssetId) = 0;
   /// set filter for nsset handle
-  virtual void setNSSetHandleFilter(const std::string& nssetHandle) = 0;
+  virtual void setNssetHandleFilter(const std::string& nssetHandle) = 0;
   /// set filter for keyset
-  virtual void setKeySetFilter(TID keysetId) = 0;
+  virtual void setKeysetFilter(TID keysetId) = 0;
   /// set filter for keyset handle
-  virtual void setKeySetHandleFilter(const std::string &keysetHandle) = 0;
+  virtual void setKeysetHandleFilter(const std::string &keysetHandle) = 0;
   //virtual void setKeysetHandleFilter(const std::string &_keysetHandle) = 0;
   /// set filter for admin
   virtual void setAdminFilter(TID adminId) = 0;
@@ -171,15 +189,15 @@ public:
   virtual void setContactFilter(TID contactId) = 0;
   /// set filter for handle of contact in any role
   virtual void setContactHandleFilter(const std::string& cHandle) = 0;
-  /// set filter for domain name 
+  /// set filter for domain name
   virtual void setFQDNFilter(const std::string& fqdn) = 0;
   /// set filter for period of expiration date
   virtual void setExpirationDateFilter(time_period period) = 0;
   /// set filter for period of val. expiration date
   virtual void setValExDateFilter(time_period period) = 0;
-  /// set filter for admin handle in associated nsset 
+  /// set filter for admin handle in associated nsset
   virtual void setTechAdminHandleFilter(const std::string& handle) = 0;
-  /// set filter for IP address in associated nsset 
+  /// set filter for IP address in associated nsset
   virtual void setHostIPFilter(const std::string& ip) = 0;
   /// set filter for zone generation status
   virtual void setZoneStatusFilter(unsigned status) = 0;
@@ -197,14 +215,14 @@ public:
 /// main entry class
 class Manager {
 public:
-  /// destructor 
+  /// destructor
   virtual ~Manager() {
   }
   /// check handle of domain without contacting database
-  virtual CheckAvailType checkHandle(const std::string& fqdn, 
+  virtual CheckAvailType checkHandle(const std::string& fqdn,
                                      bool allowIDN) const = 0;
-  /// check availability of domain  
-  virtual CheckAvailType checkAvail(const std::string& fqdn, 
+  /// check availability of domain
+  virtual CheckAvailType checkAvail(const std::string& fqdn,
                                     NameIdPair& conflictFqdn,
                                     bool allowIDN,
                                     bool lock = false
@@ -215,7 +233,7 @@ public:
   virtual unsigned long getSignedDomainCount(const std::string & _fqdn) const = 0;
   /// return current count of enum numbers
   virtual unsigned long getEnumNumberCount() const = 0;
-  /// test fqdn to be delete pending 
+  /// test fqdn to be delete pending
   virtual bool isDeletePending(const std::string &_fqdn) const = 0;
   /// create list of domains
   virtual List *createList() = 0;

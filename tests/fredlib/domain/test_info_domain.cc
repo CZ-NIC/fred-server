@@ -32,7 +32,7 @@
 
 BOOST_AUTO_TEST_SUITE(TestInfoDomain)
 
-struct test_domain_fixture : public Test::Fixture::instantiate_db_template
+struct test_domain_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

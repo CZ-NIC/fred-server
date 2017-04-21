@@ -50,6 +50,10 @@
 #include "response.h"  // errors code
 #include "reason.h"    // reason messages code
 
+#include "src/epp/epp_response_failure_localized.h"
+#include "src/epp/session_data.h"
+#include "src/epp/notification_data.h"
+
 // logger
 #include "src/old_utils/log.h"
 
@@ -76,33 +80,36 @@
 #include "log/logger.h"
 #include "log/context.h"
 
-#include "src/epp/nsset/nsset_check.h"
-#include "src/epp/nsset/nsset_info.h"
-#include "src/epp/nsset/nsset_delete.h"
-#include "src/epp/nsset/nsset_create.h"
-#include "src/epp/nsset/nsset_update.h"
-#include "src/epp/nsset/nsset_transfer.h"
+#include "src/epp/contact/create_contact_localized.h"
+#include "src/epp/contact/delete_contact_localized.h"
+#include "src/epp/contact/create_contact_input_data.h"
+#include "src/epp/contact/update_contact_post_hooks.h"
+#include "src/epp/contact/info_contact_localized.h"
+#include "src/epp/contact/transfer_contact_localized.h"
+#include "src/epp/contact/update_contact_localized.h"
 
-#include "src/epp/contact/contact_update.h"
-#include "src/epp/contact/contact_create.h"
-#include "src/epp/contact/contact_info.h"
-#include "src/epp/contact/contact_delete.h"
-#include "src/epp/contact/contact_transfer.h"
-#include "src/epp/contact/post_contact_update_hooks.h"
-#include "src/epp/domain/domain_check.h"
-#include "src/epp/domain/domain_delete.h"
-#include "src/epp/domain/domain_info.h"
-#include "src/epp/domain/domain_transfer.h"
-#include "src/epp/domain/domain_create.h"
-#include "src/epp/domain/domain_renew.h"
-#include "src/epp/domain/domain_update.h"
-#include "src/epp/keyset/localized_info.h"
-#include "src/epp/keyset/localized_create.h"
-#include "src/epp/keyset/localized_update.h"
-#include "src/epp/keyset/localized_check.h"
-#include "src/epp/keyset/localized_delete.h"
-#include "src/epp/keyset/localized_transfer.h"
-#include "src/epp/response.h"
+#include "src/epp/domain/check_domain_localized.h"
+#include "src/epp/domain/create_domain_localized.h"
+#include "src/epp/domain/delete_domain_localized.h"
+#include "src/epp/domain/info_domain_localized.h"
+#include "src/epp/domain/renew_domain_localized.h"
+#include "src/epp/domain/transfer_domain_localized.h"
+#include "src/epp/domain/update_domain_localized.h"
+
+#include "src/epp/keyset/check_keyset_localized.h"
+#include "src/epp/keyset/create_keyset_localized.h"
+#include "src/epp/keyset/delete_keyset_localized.h"
+#include "src/epp/keyset/info_keyset_localized.h"
+#include "src/epp/keyset/transfer_keyset_localized.h"
+#include "src/epp/keyset/update_keyset_localized.h"
+
+#include "src/epp/nsset/check_nsset_localized.h"
+#include "src/epp/nsset/create_nsset_localized.h"
+#include "src/epp/nsset/delete_nsset_localized.h"
+#include "src/epp/nsset/info_nsset_localized.h"
+#include "src/epp/nsset/transfer_nsset_localized.h"
+#include "src/epp/nsset/update_nsset_localized.h"
+
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
 #include "src/epp/session_lang.h"
@@ -110,15 +117,48 @@
 #include "src/epp/registrar_session_data.h"
 #include "src/epp/request_params.h"
 #include "src/epp/localization.h"
-#include "src/epp/disclose_policy.h"
+#include "src/epp/impl/disclose_policy.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/object_state/object_has_state.h"
-#include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/epp/contact/contact_corba_conversions.h"
 #include "src/corba/epp/corba_conversions.h"
-#include "src/corba/epp/domain/domain_check_corba_conversions.h"
-#include "src/corba/epp/domain/domain_info_corba_conversions.h"
+#include "src/corba/epp/domain/domain_corba_conversions.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
+#include "src/corba/epp/keyset/keyset_corba_conversions.h"
+#include "src/corba/epp/nsset/nsset_corba_conversions.h"
+#include "src/corba/util/corba_conversions_string.h"
 #include "util/util.h"
+
+#include "src/epp/contact/check_contact_config_data.h"
+#include "src/epp/contact/create_contact_config_data.h"
+#include "src/epp/contact/delete_contact_config_data.h"
+#include "src/epp/contact/info_contact_config_data.h"
+#include "src/epp/contact/transfer_contact_config_data.h"
+#include "src/epp/contact/update_contact_config_data.h"
+
+#include "src/epp/domain/check_domain_config_data.h"
+#include "src/epp/domain/create_domain_config_data.h"
+#include "src/epp/domain/delete_domain_config_data.h"
+#include "src/epp/domain/info_domain_config_data.h"
+#include "src/epp/domain/renew_domain_config_data.h"
+#include "src/epp/domain/transfer_domain_config_data.h"
+#include "src/epp/domain/update_domain_config_data.h"
+
+#include "src/epp/keyset/check_keyset_config_data.h"
+#include "src/epp/keyset/create_keyset_config_data.h"
+#include "src/epp/keyset/delete_keyset_config_data.h"
+#include "src/epp/keyset/info_keyset_config_data.h"
+#include "src/epp/keyset/transfer_keyset_config_data.h"
+#include "src/epp/keyset/update_keyset_config_data.h"
+
+#include "src/epp/nsset/check_nsset_config_data.h"
+#include "src/epp/nsset/create_nsset_config_data.h"
+#include "src/epp/nsset/delete_nsset_config_data.h"
+#include "src/epp/nsset/info_nsset_config_data.h"
+#include "src/epp/nsset/transfer_nsset_config_data.h"
+#include "src/epp/nsset/update_nsset_config_data.h"
+
+#include <vector>
 
 struct NotificationParams //for enqueue_notification call in ~EPPAction()
 {
@@ -377,44 +417,44 @@ DBSharedPtr db, const char *handle, bool restricted_handles
   return ret;
 }
 
-/// replace GetNSSetID
-static long int getIdOfNSSet(
+/// replace GetNssetID
+static long int getIdOfNsset(
 DBSharedPtr db, const char *handle, bool restricted_handles
     , bool lock_epp_commands, bool lock = false)
 {
   if (lock && !lock_epp_commands) lock = false;
   std::auto_ptr<Fred::Zone::Manager>
       zman(Fred::Zone::Manager::create() );
-  std::auto_ptr<Fred::NSSet::Manager> man(Fred::NSSet::Manager::create(
+  std::auto_ptr<Fred::Nsset::Manager> man(Fred::Nsset::Manager::create(
       db, zman.get(), restricted_handles) );
-  Fred::NSSet::Manager::CheckAvailType caType;
+  Fred::Nsset::Manager::CheckAvailType caType;
   long int ret = -1;
   try {
     Fred::NameIdPair nameId;
     caType = man->checkAvail(handle,nameId,lock);
     ret = nameId.id;
-    if (caType == Fred::NSSet::Manager::CA_INVALID_HANDLE)
+    if (caType == Fred::Nsset::Manager::CA_INVALID_HANDLE)
     ret = -1;
   } catch (...) {}
   return ret;
 }
 
-/// replace GetKeySetID
+/// replace GetKeysetID
 static long int
-getIdOfKeySet(DBSharedPtr db, const char *handle, bool restricted_handles
+getIdOfKeyset(DBSharedPtr db, const char *handle, bool restricted_handles
     , bool lock_epp_commands, bool lock = false)
 {
     if (lock && !lock_epp_commands)
         lock = false;
-    std::auto_ptr<Fred::KeySet::Manager> man(
-            Fred::KeySet::Manager::create(db, restricted_handles));
-    Fred::KeySet::Manager::CheckAvailType caType;
+    std::auto_ptr<Fred::Keyset::Manager> man(
+            Fred::Keyset::Manager::create(db, restricted_handles));
+    Fred::Keyset::Manager::CheckAvailType caType;
     long int ret = -1;
     try {
         Fred::NameIdPair nameId;
         caType = man->checkAvail(handle, nameId, lock);
         ret = nameId.id;
-        if (caType == Fred::KeySet::Manager::CA_INVALID_HANDLE)
+        if (caType == Fred::Keyset::Manager::CA_INVALID_HANDLE)
             ret = -1;
     } catch (...) {}
     return ret;
@@ -476,8 +516,8 @@ void corba_domain_data_copy(
     }
   }
   // fill domain specific data
-  d->nsset = CORBA::string_dup(dom->getNSSetHandle().c_str());
-  d->keyset = CORBA::string_dup(dom->getKeySetHandle().c_str());
+  d->nsset = CORBA::string_dup(dom->getNssetHandle().c_str());
+  d->keyset = CORBA::string_dup(dom->getKeysetHandle().c_str());
   d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
   // registrant and contacts are disabled for other registrars
   // in case of enum domain
@@ -519,7 +559,7 @@ void corba_nsset_data_copy(
         EPPAction &a,
         const Fred::Manager * const regMan,
         ccReg::NSSet *n,
-        const Fred::NSSet::NSSet * const nss)
+        const Fred::Nsset::Nsset * const nss)
 {
   // fill common object data
   n->ROID = CORBA::string_dup(nss->getROID().c_str());
@@ -564,7 +604,7 @@ void corba_nsset_data_copy(
     n->tech[i] = CORBA::string_dup(nss->getAdminByIdx(i).c_str());
   n->dns.length(nss->getHostCount());
   for (unsigned i=0; i<nss->getHostCount(); i++) {
-    const Fred::NSSet::Host *h = nss->getHostByIdx(i);
+    const Fred::Nsset::Host *h = nss->getHostByIdx(i);
     n->dns[i].fqdn = CORBA::string_dup(h->getName().c_str());
     n->dns[i].inet.length(h->getAddrCount());
     for (unsigned j=0; j<h->getAddrCount(); j++)
@@ -585,7 +625,7 @@ void corba_keyset_data_copy(
         EPPAction &a,
         const Fred::Manager * const regMan,
         ccReg::KeySet *k,
-        const Fred::KeySet::KeySet * const kss)
+        const Fred::Keyset::Keyset * const kss)
 {
     //fill common object data
     k->ROID = CORBA::string_dup(kss->getROID().c_str());
@@ -636,7 +676,7 @@ void corba_keyset_data_copy(
     // dsrecord
     k->dsrec.length(kss->getDSRecordCount());
     for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
-        const Fred::KeySet::DSRecord *dsr = kss->getDSRecordByIdx(i);
+        const Fred::Keyset::DSRecord *dsr = kss->getDSRecordByIdx(i);
         k->dsrec[i].keyTag = dsr->getKeyTag();
         k->dsrec[i].alg = dsr->getAlg();
         k->dsrec[i].digestType = dsr->getDigestType();
@@ -647,7 +687,7 @@ void corba_keyset_data_copy(
     // dnskey record
     k->dnsk.length(kss->getDNSKeyCount());
     for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
-        const Fred::KeySet::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
+        const Fred::Keyset::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
         k->dnsk[i].flags = dnsk->getFlags();
         k->dnsk[i].protocol = dnsk->getProtocol();
         k->dnsk[i].alg = dnsk->getAlg();
@@ -703,10 +743,9 @@ ccReg_EPP_i::ccReg_EPP_i(
     epp_update_contact_enqueue_check_(epp_update_contact_enqueue_check),
     db_disconnect_guard_(),
     regMan(),
-    epp_sessions(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
+    epp_sessions_(rifd_session_max, rifd_session_registrar_max, rifd_session_timeout),
     ErrorMsg(),
     ReasonMsg(),
-    CC(),
     max_zone()
 {
   Logging::Context::clear();
@@ -775,20 +814,20 @@ void ccReg_EPP_i::destroyAllRegistrarSessions(CORBA::Long reg_id)
     Logging::Context ctx("rifd");
     ConnectionReleaser releaser;
 
-    epp_sessions.destroy_all_registrar_sessions(reg_id);
+    epp_sessions_.destroy_all_registrar_sessions(reg_id);
 
 }
 
 int ccReg_EPP_i::GetRegistrarID(
   unsigned long long clientID)
 {
-  return epp_sessions.get_registrar_id(clientID);
+  return epp_sessions_.get_registrar_id(clientID);
 }
 
 int ccReg_EPP_i::GetRegistrarLang(
   unsigned long long clientID)
 {
-  return epp_sessions.get_registrar_lang(clientID);
+  return epp_sessions_.get_registrar_lang(clientID);
 }
 
 // Load table to memory for speed
@@ -922,32 +961,6 @@ short ccReg_EPP_i::SetReasonDomainFQDN(
   return 0;
 }
 
-// load country code table  enum_country from database
-int ccReg_EPP_i::LoadCountryCode()
-{
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  ConnectionReleaser releaser;
-
-  try
-  {
-      CC.reset(new CountryCode);
-      CC->load();
-      return CC->GetNum();
-  }
-  catch(...)
-  {
-      return -1;
-  }
-}
-
-bool ccReg_EPP_i::TestCountryCode(
-  const char *cc)
-{
-    LOG( NOTICE_LOG , "CCREG:: TestCountryCode  [%s]" , cc );
-    return CC->TestCountryCode(cc);
-}
-
 // get version of the server and actual time
 char* ccReg_EPP_i::version(
   ccReg::timestamp_out datetime)
@@ -967,55 +980,6 @@ char* ccReg_EPP_i::version(
   datetime = CORBA::string_dup(dateStr);
 
   return CORBA::string_dup("DSDng");
-}
-
-void ccReg_EPP_i::extractEnumDomainExtension(std::string &valexdate, ccReg::Disclose &publish,
-        const ccReg::ExtensionList &ext)
-{
-    const ccReg::ENUMValidationExtension *enum_ext;
-    unsigned int len = ext.length();
-
-    for (unsigned int i = 0; i < len; ++i) {
-        if (ext[i] >>= enum_ext) {
-            /* extract validation exdate */
-            valexdate = enum_ext->valExDate;
-            /* extract enum publish flag */
-            publish = enum_ext->publish;
-            LOGGER(PACKAGE).debug(boost::format("valexdate=%1% publish=%2%")
-                    % valexdate % publish);
-        }
-        else {
-            LOGGER(PACKAGE).debug(boost::format("unknown extension found when"
-                    " extracting domain enum extension (list idx=%1%)") % i);
-            break;
-        }
-    }
-}
-
-// parse extension fom domain.ValExDate
-void ccReg_EPP_i::GetValExpDateFromExtension(
-  char *valexpDate, const ccReg::ExtensionList& ext)
-{
-  int len, i;
-  const ccReg::ENUMValidationExtension * enumVal;
-
-  valexpDate[0] = 0;
-
-  len = ext.length();
-  if (len > 0) {
-    LOG( DEBUG_LOG, "extension length %d", (int ) ext.length() );
-    for (i = 0; i < len; i++) {
-      if (ext[i] >>= enumVal) {
-        strncpy(valexpDate, enumVal->valExDate, MAX_DATE);
-        LOG( DEBUG_LOG, "enumVal %s ", valexpDate );
-      } else {
-        LOG( ERROR_LOG, "Unknown value extension[%d]", i );
-        break;
-      }
-
-    }
-  }
-
 }
 
 // Handle disclose flags at the contact based on the DefaultPolicy of the serve
@@ -1414,25 +1378,9 @@ void ccReg_EPP_i::sessionClosed(
   ConnectionReleaser releaser;
 
   LOGGER(PACKAGE).debug( boost::format("sessionClosed called for clientID %1%") % clientID);
-  epp_sessions.logout_session(clientID);
+  epp_sessions_.logout_session(clientID);
 }
 
-
-/***********************************************************************
- *
- * FUNCTION:	GetTransaction
- *
- * DESCRIPTION: returns for client from entered clTRID generated server
- *              transaction ID
- *
- * PARAMETERS:  clTRID - client transaction number
- *              clientID - client identification
- *              requestId - fred-logd request ID
- *              errCode - save error report from client into table action
- *
- * RETURNED:    svTRID and errCode msg
- *
- ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::GetTransaction(
   CORBA::Short errCode, CORBA::ULongLong clientID, ccReg::TID requestId, const char* clTRID,
@@ -1509,22 +1457,6 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
 
 }
 
-/***********************************************************************
- * FUNCTION:    PollAcknowledgement
- *
- * DESCRIPTION: confirmation of message income msgID
- *		returns number of message, which are left count
- *		and next message newmsgID
- *
- * PARAMETERS:  msgID - front message number
- *        OUT:  count -  messages numbers
- *        OUT:  newmsgID - number of new message
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
   const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID,
   const ccReg::EppParams &params)
@@ -1567,25 +1499,6 @@ ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
   // will never be called
   return NULL;
 }
-
-/***********************************************************************
- *
- * FUNCTION:    PollRequest
- *
- * DESCRIPTION: retrieve message msgID from front
- *              return number of messages in front and message content
- *
- * PARAMETERS:
- *        OUT:  msgID - id of required message in front
- *        OUT:  count - number
- *        OUT:  qDate - message date and time
- *        OUT:  type - message type
- *        OUT:  msg  - message content as structure
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
   CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate,
@@ -1889,12 +1802,12 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
 
         std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
         rmgr->initStates();
-        std::auto_ptr<const Fred::NSSet::NSSet> old_data = Fred::get_object_by_hid<
-            Fred::NSSet::NSSet, Fred::NSSet::Manager, Fred::NSSet::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNSSetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::NSSet::NSSet> new_data = Fred::get_object_by_hid<
-            Fred::NSSet::NSSet, Fred::NSSet::Manager, Fred::NSSet::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNSSetManager(), static_cast<unsigned long long>(hids[0][1]));
+        std::auto_ptr<const Fred::Nsset::Nsset> old_data = Fred::get_object_by_hid<
+            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
+                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::Nsset::Nsset> new_data = Fred::get_object_by_hid<
+            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
+                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][1]));
 
         corba_nsset_data_copy(a, rmgr.get(), _old_data, old_data.get());
         corba_nsset_data_copy(a, rmgr.get(), _new_data, new_data.get());
@@ -1909,7 +1822,7 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
     {
         LOGGER(PACKAGE).error("unknown error");
     }
-    this->ServerInternalError(">> PollRequestGetUpdateNSSetDetails - failed internal");
+    this->ServerInternalError(">> PollRequestGetUpdateNssetDetails - failed internal");
 }
 
 
@@ -1959,12 +1872,12 @@ ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
 
         std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
         rmgr->initStates();
-        std::auto_ptr<const Fred::KeySet::KeySet> old_data = Fred::get_object_by_hid<
-            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::KeySet::KeySet> new_data = Fred::get_object_by_hid<
-            Fred::KeySet::KeySet, Fred::KeySet::Manager, Fred::KeySet::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeySetManager(), static_cast<unsigned long long>(hids[0][1]));
+        std::auto_ptr<const Fred::Keyset::Keyset> old_data = Fred::get_object_by_hid<
+            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][0]));
+        std::auto_ptr<const Fred::Keyset::Keyset> new_data = Fred::get_object_by_hid<
+            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
+                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][1]));
 
         corba_keyset_data_copy(a, rmgr.get(), _old_data, old_data.get());
         corba_keyset_data_copy(a, rmgr.get(), _new_data, new_data.get());
@@ -1979,21 +1892,9 @@ ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
     {
         LOGGER(PACKAGE).error("unknown error");
     }
-    this->ServerInternalError(">> PollRequestGetUpdateKeySetDetails - failed internal");
+    this->ServerInternalError(">> PollRequestGetUpdateKeysetDetails - failed internal");
 }
 
-
-/***********************************************************************
- *
- * FUNCTION:    ClientCredit
- *
- * DESCRIPTION: information about credit amount of logged registrar
- * PARAMETERS:  params - common EPP parametres
- *        OUT:  credit - credit amount in haler
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
 
 ccReg::Response *
 ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &params)
@@ -2046,18 +1947,6 @@ ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &
     return action.getRet()._retn();
 }
 
-/***********************************************************************
- *
- * FUNCTION:    ClientLogout
- *
- * DESCRIPTION: client logout for record into table login
- *              about logout date
- * PARAMETERS:  params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
 ccReg::Response *
 ccReg_EPP_i::ClientLogout(const ccReg::EppParams &params)
 {
@@ -2069,32 +1958,11 @@ ccReg_EPP_i::ClientLogout(const ccReg::EppParams &params)
     LOG( NOTICE_LOG, "ClientLogout: clientID -> %llu clTRID [%s]", params.loginID, static_cast<const char*>(params.clTRID) );
     EPPAction action(this, params.loginID, EPP_ClientLogout, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
 
-    epp_sessions.logout_session(params.loginID);
+    epp_sessions_.logout_session(params.loginID);
     action.setCode(COMMAND_LOGOUT);
 
     return action.getRet()._retn();
 }
-
-/***********************************************************************
- *
- * FUNCTION:    ClientLogin
- *
- * DESCRIPTION: client login acquire of clientID from table login
- *              login through password registrar and its possible change
- *
- * PARAMETERS:  ClID - registrar identifier
- *              passwd - current password
- *              newpasswd - new password for change
- *              clTRID - transaction client number
- *              XML - xml representation of the command
- *        OUT:  clientID - connected client id
- *              requestId - fred-logd request ID associated with login
- *              certID - certificate fingerprint
- *              language - communication language of client en or cs empty value = en
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
 
 ccReg::Response * ccReg_EPP_i::ClientLogin(
   const char *ClID, const char *passwd, const char *newpass,
@@ -2170,7 +2038,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
 
                 if (ret->code == 0) {
                     try {
-                        out_clientID = epp_sessions.login_session(regID, language);
+                        out_clientID = epp_sessions_.login_session(regID, language);
 
                         LOGGER(PACKAGE).notice(boost::format("ClientLogin: username %1%, regID %2%, clTRID %3%, lang %4% got clientID %5%")
                                                     % ClID % regID % static_cast<const char*>(clTRID) % language % out_clientID);
@@ -2219,953 +2087,1320 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
 }
 
 ccReg::Response* ccReg_EPP_i::ContactCheck(
-    const ccReg::Check& _handles_to_be_checked,
-    ccReg::CheckResp_out _check_results,
-    const ccReg::EppParams& _epp_params
-) {
-    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
+        const ccReg::Check& _contact_handles_to_be_checked,
+        ccReg::CheckResp_out _check_results,
+        const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        /* output data must be ordered exactly the same */
-        const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        // output data must be ordered exactly the same
+        const std::vector<std::string> handles_to_be_checked = Fred::Corba::unwrap_handle_sequence_to_string_vector(_contact_handles_to_be_checked);
 
-        const Epp::LocalizedCheckContactResponse response = Epp::contact_check(
-            std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
-            session_data.registrar_id,
-            session_data.language,
-            server_transaction_handle
-        );
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
-        ccReg::CheckResp_var check_results = new ccReg::CheckResp(
-            Corba::wrap_localized_check_info(
-                handles_to_be_checked,
-                response.contact_statuses
-            )
-        );
+        const Epp::Contact::CheckContactConfigData check_contact_config_data(
+                rifd_epp_operations_charging_);
 
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-        _check_results = check_results._retn();
+        const Epp::Contact::CheckContactLocalizedResponse check_contact_localized_response =
+                Epp::Contact::check_contact_localized(
+                        std::set<std::string>(handles_to_be_checked.begin(), handles_to_be_checked.end()),
+                        check_contact_config_data,
+                        session_data);
+
+        ccReg::CheckResp_var contact_check_results = new ccReg::CheckResp(
+                Fred::Corba::wrap_localized_check_info(
+                        handles_to_be_checked,
+                        check_contact_localized_response.contact_statuses));
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                check_contact_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        _check_results = contact_check_results._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetCheck(
-  const ccReg::Check& _handles_to_be_checked, ccReg::CheckResp_out _check_results, const ccReg::EppParams &_epp_params)
+        const ccReg::Check& _nsset_handles_to_be_checked,
+        ccReg::CheckResp_out _check_results,
+        const ccReg::EppParams& _epp_params)
 {
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    const std::string server_transaction_handle = Util::make_svtrid(_epp_params.requestID);
     try {
-        /* output data must be ordered exactly the same */
-        const std::vector<std::string> handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        // output data must be ordered exactly the same
+        const std::vector<std::string> handles_to_be_checked = Fred::Corba::unwrap_handle_sequence_to_string_vector(_nsset_handles_to_be_checked);
 
-        const Epp::LocalizedCheckNssetResponse response = Epp::nsset_check(
-                    std::set<std::string>( handles_to_be_checked.begin(), handles_to_be_checked.end() ),
-                    session_data.registrar_id,
-                    session_data.language,
-                    server_transaction_handle
-                );
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Nsset::CheckNssetConfigData check_nsset_config_data(
+                rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::Nsset::CheckNssetLocalizedResponse check_nsset_localized_response =
+                Epp::Nsset::check_nsset_localized(
+                        std::set<std::string>(handles_to_be_checked.begin(), handles_to_be_checked.end()),
+                        check_nsset_config_data,
+                        session_data);
 
         ccReg::CheckResp_var check_results = new ccReg::CheckResp(
-            Corba::wrap_localized_check_info(
+            Fred::Corba::wrap_localized_check_info(
                 handles_to_be_checked,
-                response.nsset_statuses
+                check_nsset_localized_response.nsset_statuses
             )
         );
 
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                check_nsset_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
 
-        /* No exception shall be thrown from here onwards. */
+        // no exception shall be thrown from here onwards
 
         _check_results = check_results._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainCheck(
-    const ccReg::Check& _domain_fqdns,
-    ccReg::CheckResp_out _domain_check_results,
-    const ccReg::EppParams& _epp_params)
+        const ccReg::Check& _fqdns,
+        ccReg::CheckResp_out _domain_check_results,
+        const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
-    try {
-        /* output data must be ordered exactly the same */
-        const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
-        const std::vector<std::string> domain_fqdns = Corba::unwrap_handle_sequence_to_string_vector(_domain_fqdns);
 
-        const Epp::Domain::DomainCheckResponse domain_check_response = Epp::Domain::domain_check(
-            std::set<std::string>(domain_fqdns.begin(), domain_fqdns.end()),
-            epp_registrar_session_data.registrar_id,
-            epp_registrar_session_data.language,
-            server_transaction_handle
-        );
+    try {
+        // output data must be ordered exactly the same
+        const std::vector<std::string> fqdns = Fred::Corba::unwrap_handle_sequence_to_string_vector(_fqdns);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Domain::CheckDomainConfigData check_domain_config_data(
+                rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::Domain::CheckDomainLocalizedResponse check_domain_localized_response =
+                Epp::Domain::check_domain_localized(
+                        std::set<std::string>(fqdns.begin(), fqdns.end()),
+                        check_domain_config_data,
+                        session_data);
 
         ccReg::CheckResp_var domain_check_results = new ccReg::CheckResp(
-            Corba::wrap_Epp_Domain_DomainFqdnToDomainLocalizedRegistrationObstruction(
-                domain_fqdns,
-                domain_check_response.domain_fqdn_to_domain_localized_registration_obstruction
-            )
-        );
+                Fred::Corba::Epp::Domain::wrap_Epp_Domain_CheckDomainLocalizedResponse(
+                        fqdns,
+                        check_domain_localized_response.fqdn_to_domain_localized_registration_obstruction));
 
-        ccReg::Response_var return_value = new ccReg::Response(Corba::wrap_response(domain_check_response.localized_success_response, server_transaction_handle));
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                check_domain_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
 
-        /* No exception shall be thrown from here onwards. */
+        // no exception shall be thrown from here onwards
 
         _domain_check_results = domain_check_results._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::KeySetCheck(
-    const ccReg::Check& _handles_to_be_checked,
+    const ccReg::Check& _keyset_handles_to_be_checked,
     ccReg::CheckResp_out _check_results,
     const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
-    try {
-        const Epp::RegistrarSessionData session_data =
-            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
 
-        const std::vector< std::string > handles_to_be_checked = Corba::unwrap_handle_sequence_to_string_vector(_handles_to_be_checked);
-        const Epp::KeySet::Localized::HandlesCheck localized_response = Epp::KeySet::Localized::check(
-            std::set< std::string >(handles_to_be_checked.begin(), handles_to_be_checked.end()),
-            session_data.registrar_id,
-            session_data.language,
-            server_transaction_handle);
+    try {
+        const std::vector<std::string> handles_to_be_checked =
+            Fred::Corba::unwrap_handle_sequence_to_string_vector(_keyset_handles_to_be_checked);
+
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
+
+        const Epp::Keyset::CheckKeysetConfigData check_keyset_config_data(
+                rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::Keyset::CheckKeysetLocalizedResponse localized_response =
+                Epp::Keyset::check_keyset_localized(
+                        std::set<std::string>(handles_to_be_checked.begin(), handles_to_be_checked.end()),
+                        check_keyset_config_data,
+                        session_data);
 
         ccReg::CheckResp_var check_results = new ccReg::CheckResp;
-        Corba::wrap_Epp_KeySet_Localized_HandlesCheck_Results(handles_to_be_checked, localized_response.results, check_results);
+        Fred::Corba::wrap_Epp_Keyset_Localized_CheckKeysetLocalizedResponse_Results(
+                handles_to_be_checked,
+                localized_response.results,
+                check_results);
 
         ccReg::Response_var return_value =
-            new ccReg::Response(Corba::wrap_response(localized_response.ok_response, server_transaction_handle));
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                localized_response.epp_response_success_localized,
+                                server_transaction_handle));
 
-        /* No exception shall be thrown from here onwards. */
+        // no exception shall be thrown from here onwards
+
         _check_results = check_results._retn();
         return return_value._retn();
+
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::ContactInfo(
-    const char* const _handle,
-    ccReg::Contact_out _info_result,
-    const ccReg::EppParams& _epp_params
-) {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+        const char* const _contact_handle,
+        ccReg::Contact_out _contact_info,
+        const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
+        const Epp::Contact::InfoContactConfigData info_contact_config_data(
+                rifd_epp_operations_charging_);
 
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(
-            epp_sessions,
-            Corba::unwrap_EppParams(_epp_params).session_id
-        );
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        const Epp::LocalizedInfoContactResponse response = Epp::contact_info(
-            Corba::unwrap_string(_handle),
-            session_data.registrar_id,
-            session_data.language,
-            server_transaction_handle
-        );
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-        ccReg::Contact_var info_result = new ccReg::Contact;
-        Corba::wrap_LocalizedContactInfoOutputData(response.payload, info_result.inout());
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        const Epp::Contact::InfoContactLocalizedResponse info_contact_localized_response =
+                Epp::Contact::info_contact_localized(
+                        Fred::Corba::unwrap_string(_contact_handle),
+                        info_contact_config_data,
+                        session_data);
 
-        /* No exception shall be thrown from here onwards. */
+        ccReg::Contact_var contact_info = new ccReg::Contact;
+        Fred::Corba::wrap_InfoContactLocalizedOutputData(info_contact_localized_response.data, contact_info.inout());
 
-        _info_result = info_result._retn();
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                info_contact_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        _contact_info = contact_info._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::ContactDelete(
-    const char* const _handle,
-    const ccReg::EppParams& _epp_params
-) {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+        const char* const _contact_handle,
+        const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::Contact::DeleteContactConfigData delete_contact_config_data(
+                rifd_epp_operations_charging_);
 
-        const Epp::LocalizedSuccessResponse response = Epp::contact_delete(
-            Corba::unwrap_string(_handle),
-            session_data.registrar_id,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_
-        );
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Contact::delete_contact_localized(
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_contact_handle),
+                        delete_contact_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::ContactUpdate(
-    const char* const _handle,
-    const ccReg::ContactChange& _data_change,
-    const ccReg::EppParams& _epp_params
-) {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+        const char* const _contact_handle,
+        const ccReg::ContactChange& _contact_change_data,
+        const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        Epp::Contact::ContactChange contact_update_data;
+        Fred::Corba::unwrap_ContactChange(_contact_change_data, contact_update_data);
 
-        Epp::ContactChange contact_update_data;
-        Corba::unwrap_ContactChange(_data_change, contact_update_data);
-        const Epp::LocalizedSuccessResponse response = Epp::contact_update(
-            Corba::unwrap_string(_handle),
-            contact_update_data,
-            session_data.registrar_id,
-            request_params.log_request_id.get_value_or(0),
-            epp_update_contact_enqueue_check_,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_);
+        const Epp::Contact::UpdateContactConfigData update_contact_config_data(
+                rifd_epp_operations_charging_,
+                epp_update_contact_enqueue_check_);
 
-        return new ccReg::Response(Corba::wrap_response(response, server_transaction_handle));
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Contact::update_contact_localized(
+                        Fred::Corba::unwrap_string(_contact_handle),
+                        contact_update_data,
+                        update_contact_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-ccReg::Response * ccReg_EPP_i::ContactCreate(
-    const char* const _handle,
-    const ccReg::ContactChange& _contact_data,
-    ccReg::timestamp_out _create_time,
-    const ccReg::EppParams& _epp_params
-) {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+ccReg::Response* ccReg_EPP_i::ContactCreate(
+        const char* const _contact_handle,
+        const ccReg::ContactChange& _contact_data,
+        ccReg::timestamp_out _create_time,
+        const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        Epp::Contact::ContactChange contact_create_data;
+        Fred::Corba::unwrap_ContactChange(_contact_data, contact_create_data);
 
-        Epp::ContactChange contact_create_data;
-        Corba::unwrap_ContactChange(_contact_data, contact_create_data);
-        const Epp::LocalizedCreateContactResponse response = contact_create(
-            Corba::unwrap_string(_handle),
-            contact_create_data,
-            session_data.registrar_id,
-            request_params.log_request_id.get_value_or(0),
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_
-        );
+        const Epp::Contact::CreateContactInputData create_contact_input_data(contact_create_data);
 
-        ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string( formatTime( response.crdate ) );
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        const Epp::Contact::CreateContactConfigData create_contact_config_data(
+                rifd_epp_operations_charging_);
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::Contact::CreateContactLocalizedResponse create_contact_localized_response =
+                Epp::Contact::create_contact_localized(
+                        Fred::Corba::unwrap_string(_contact_handle),
+                        create_contact_input_data,
+                        create_contact_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::timestamp_var create_time =
+                Fred::Corba::wrap_string_to_corba_string(
+                        Fred::Corba::convert_time_to_local_rfc3339(create_contact_localized_response.crdate));
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                create_contact_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
 
         _create_time = create_time._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::ContactTransfer(
-    const char* const _handle,
-    const char* const _auth_info,
-    const ccReg::EppParams& _epp_params
-) {
+        const char* const _contact_handle,
+        const char* const _authinfopw,
+        const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
     try {
+        const Epp::Contact::TransferContactConfigData transfer_contact_config_data(
+                rifd_epp_operations_charging_);
 
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        return new ccReg::Response(
-            Corba::wrap_response(
-                contact_transfer(
-                    Corba::unwrap_string(_handle),
-                    Corba::unwrap_string(_auth_info),
-                    session_data.registrar_id,
-                    request_params.log_request_id.get_value_or(0),
-                    session_data.language,
-                    server_transaction_handle,
-                    request_params.client_transaction_id,
-                    disable_epp_notifier_,
-                    disable_epp_notifier_cltrid_prefix_
-                ),
-                server_transaction_handle
-            )
-        );
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Contact::transfer_contact_localized(
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_contact_handle),
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw),
+                        transfer_contact_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::NSSetTransfer(
-  const char* _handle, const char* _auth_info, const ccReg::EppParams &_epp_params)
+        const char* _nsset_handle,
+        const char* _authinfopw,
+        const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
+        const Epp::Nsset::TransferNssetConfigData transfer_nsset_config_data(
+                rifd_epp_operations_charging_);
 
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        return new ccReg::Response(
-            Corba::wrap_response(
-                nsset_transfer(
-                    Corba::unwrap_string(_handle),
-                    Corba::unwrap_string(_auth_info),
-                    session_data.registrar_id,
-                    request_params.log_request_id,
-                    session_data.language,
-                    server_transaction_handle,
-                    request_params.client_transaction_id,
-                    disable_epp_notifier_,
-                    disable_epp_notifier_cltrid_prefix_
-                ),
-                server_transaction_handle
-            )
-        );
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Nsset::transfer_nsset_localized(
+                        Fred::Corba::unwrap_string(_nsset_handle),
+                        Fred::Corba::unwrap_string(_authinfopw),
+                        transfer_nsset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value = new ccReg::Response(
+                Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                        epp_response_success_localized,
+                        server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainTransfer(
-    const char* _domain_fqdn,
-    const char* _auth_info_pw,
-    const ccReg::EppParams& _epp_params)
+        const char* _fqdn,
+        const char* _authinfopw,
+        const ccReg::EppParams& _epp_params)
 {
-
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
+        const Epp::Domain::TransferDomainConfigData transfer_domain_config_data(
+                rifd_epp_operations_charging_);
 
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        return new ccReg::Response(
-            Corba::wrap_response(
-                Epp::Domain::domain_transfer(
-                    Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
-                    Corba::unwrap_string_from_const_char_ptr(_auth_info_pw),
-                    session_data.registrar_id,
-                    epp_request_params.log_request_id,
-                    session_data.language,
-                    server_transaction_handle,
-                    epp_request_params.client_transaction_id,
-                    disable_epp_notifier_,
-                    disable_epp_notifier_cltrid_prefix_
-                ),
-                server_transaction_handle
-            )
-        );
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
-    }
-}
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
 
-ccReg::Response*
-ccReg_EPP_i::KeySetTransfer(
-        const char *_keyset_handle,
-        const char *_auth_info,
-        const ccReg::EppParams &_epp_params)
-{
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
-    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
-    try {
-        const Epp::RegistrarSessionData session_data =
-            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Domain::transfer_domain_localized(
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw),
+                        transfer_domain_config_data,
+                        session_data,
+                        notification_data);
 
-        const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const std::string auth_info = Corba::unwrap_string_from_const_char_ptr(_auth_info);
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::Localized::transfer(
-            keyset_handle,
-            auth_info,
-            session_data.registrar_id,
-            epp_request_params.log_request_id,
-            session_data.language,
-            server_transaction_handle,
-            epp_request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_);
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
 
-        ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(response,
-                                                 server_transaction_handle,
-                                                 return_value);
+        // no exception shall be thrown from here onwards
 
-        /* No exception shall be thrown from here onwards. */
         return return_value._retn();
+
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    NSSetInfo
- *
- * DESCRIPTION: returns detailed information about nsset and
- *              subservient DNS hosts
- *              empty value if contact doesn't exist
- *
- * PARAMETERS:  handle - identifier of contact
- *        OUT:  n - structure of NSSet detailed description
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
+ccReg::Response* ccReg_EPP_i::KeySetTransfer(
+        const char* _keyset_handle,
+        const char* _authinfopw,
+        const ccReg::EppParams& _epp_params)
+{
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
+    try {
+        const Epp::Keyset::TransferKeysetConfigData transfer_keyset_config_data(
+                rifd_epp_operations_charging_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Keyset::transfer_keyset_localized(
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw),
+                        transfer_keyset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
+}
 
 ccReg::Response* ccReg_EPP_i::NSSetInfo(
-  const char* _handle, ccReg::NSSet_out _info_result,
-  const ccReg::EppParams &_epp_params)
+        const char* _nsset_handle,
+        ccReg::NSSet_out _nsset_info,
+        const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
+        const Epp::Nsset::InfoNssetConfigData info_nsset_config_data(
+                rifd_epp_operations_charging_);
 
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(
-            epp_sessions,
-            Corba::unwrap_EppParams(_epp_params).session_id
-        );
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        const Epp::LocalizedInfoNssetResponse response = Epp::nsset_info(
-            Corba::unwrap_string(_handle),
-            session_data.registrar_id,
-            session_data.language,
-            server_transaction_handle
-        );
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-        ccReg::NSSet_var info_result = new ccReg::NSSet( Corba::wrap_localized_info_nsset(response.payload) );
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        const Epp::Nsset::InfoNssetLocalizedResponse info_nsset_localized_response =
+                Epp::Nsset::info_nsset_localized(
+                        Fred::Corba::unwrap_string(_nsset_handle),
+                        info_nsset_config_data,
+                        session_data);
 
-        /* No exception shall be thrown from here onwards. */
+        ccReg::NSSet_var nsset_info = new ccReg::NSSet(Fred::Corba::wrap_localized_info_nsset(info_nsset_localized_response.data));
 
-        _info_result = info_result._retn();
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                    Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                info_nsset_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        _nsset_info = nsset_info._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
-
-/***********************************************************************
- *
- * FUNCTION:    NSSetDelete
- *
- * DESCRIPTION: deleting NSSet and saving it into history
- *              NSSet can be only deleted by registrar who created it
- *              or those who administers it
- *              nsset cannot be deleted if there is link into domain table
- * PARAMETERS:  handle - nsset identifier
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
 
 ccReg::Response* ccReg_EPP_i::NSSetDelete(
-  const char* _handle, const ccReg::EppParams &_epp_params)
+        const char* _nsset_handle,
+        const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::Nsset::DeleteNssetConfigData delete_nsset_config_data(
+                rifd_epp_operations_charging_);
 
-        const Epp::LocalizedSuccessResponse response = Epp::nsset_delete(
-            Corba::unwrap_string(_handle),
-            session_data.registrar_id,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_
-        );
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Nsset::delete_nsset_localized(
+                        Fred::Corba::unwrap_string(_nsset_handle),
+                        delete_nsset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    NSSetCreate
- *
- * DESCRIPTION: creation NSSet and subservient DNS hosts
- *
- * PARAMETERS:  handle - nsset identifier
- *              authInfoPw - authentication
- *              tech - sequence of technical contact
- *              dns - sequence of DNS records
- *              level - tech check  level
- *        OUT:  crDate - object creation date
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
-ccReg::Response * ccReg_EPP_i::NSSetCreate(
-  const char *_handle, const char *authInfoPw, const ccReg::TechContact & tech,
-  const ccReg::DNSHost & dns, CORBA::Short level, ccReg::timestamp_out _create_time,
-  const ccReg::EppParams &_epp_params)
+ccReg::Response* ccReg_EPP_i::NSSetCreate(
+        const char* _nsset_handle,
+        const char* _authinfopw,
+        const ccReg::TechContact& _tech_contacts,
+        const ccReg::DNSHost& _dns_hosts,
+        CORBA::Short _tech_check_level,
+        ccReg::timestamp_out _create_time,
+        const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::Nsset::CreateNssetInputData create_nsset_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_nsset_handle),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw),
+                Fred::Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts),
+                Fred::Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_hosts),
+                Fred::Corba::unwrap_tech_check_level(_tech_check_level));
 
-        const Epp::LocalizedCreateNssetResponse response = nsset_create(
-            Epp::NssetCreateInputData(
-                Corba::unwrap_string_from_const_char_ptr(_handle),
-                Corba::unwrap_string_from_const_char_ptr(authInfoPw),
-                Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns),
-                Corba::unwrap_ccreg_techcontacts_to_vector_string(tech),
-                Corba::unwrap_tech_check_level(level),
-                this->nsset_level_,
-                this->nsset_min_hosts_,
-                this->nsset_max_hosts_
-            ),
-            session_data.registrar_id,
-            request_params.log_request_id,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_
-        );
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
-        ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string( formatTime( response.crdate ) );
-        ccReg::Response_var return_value = new ccReg::Response( Corba::wrap_response(response.ok_response, server_transaction_handle) );
+        const Epp::Nsset::CreateNssetConfigData create_nsset_config_data(
+                rifd_epp_operations_charging_,
+                nsset_level_,
+                nsset_min_hosts_,
+                nsset_max_hosts_);
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::Nsset::CreateNssetLocalizedResponse create_nsset_localized_response =
+                Epp::Nsset::create_nsset_localized(
+                        create_nsset_input_data,
+                        create_nsset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::timestamp_var create_time =
+                Fred::Corba::wrap_string_to_corba_string(
+                        Fred::Corba::convert_time_to_local_rfc3339(create_nsset_localized_response.crdate));
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                create_nsset_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
 
         _create_time = create_time._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    NSSetUpdate
- *
- * DESCRIPTION: change of NSSet and subservient DNS hosts and technical contacts
- *              and saving changes into history
- * PARAMETERS:  handle - nsset identifier
- *              authInfo_chg - authentication change
- *              dns_add - sequence of added DNS records
- *              dns_rem - sequence of DNS records for deleting
- *              tech_add - sequence of added technical contacts
- *              tech_rem - sequence of technical contact for deleting
- *              level - tech check level
- *              params - common EPP parametres
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
-ccReg::Response *
-ccReg_EPP_i::NSSetUpdate(const char* _handle, const char* authInfo_chg,
-        const ccReg::DNSHost& dns_add, const ccReg::DNSHost& dns_rem,
-        const ccReg::TechContact& tech_add, const ccReg::TechContact& tech_rem,
-        CORBA::Short level, const ccReg::EppParams &_epp_params)
+ccReg::Response* ccReg_EPP_i::NSSetUpdate(
+        const char* _nsset_handle,
+        const char* _authinfopw_chg,
+        const ccReg::DNSHost& _dns_hosts_add,
+        const ccReg::DNSHost& _dns_hosts_rem,
+        const ccReg::TechContact& _tech_contacts_add,
+        const ccReg::TechContact& _tech_contacts_rem,
+        CORBA::Short _tech_check_level,
+        const ccReg::EppParams& _epp_params)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
-        const Epp::LocalizedSuccessResponse response = Epp::nsset_update(
-                Epp::NssetUpdateInputData(
-                    Corba::unwrap_string_from_const_char_ptr(_handle),
-                    Corba::unwrap_string_for_change_or_remove_to_Optional_string(authInfo_chg),
-                    Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_add),
-                    Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(dns_rem),
-                    Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_add),
-                    Corba::unwrap_ccreg_techcontacts_to_vector_string(tech_rem),
-                    Corba::unwrap_tech_check_level(level),
-                    this->nsset_min_hosts_,
-                    this->nsset_max_hosts_
-                ),
-            session_data.registrar_id,
-            request_params.log_request_id,
-            epp_update_contact_enqueue_check_,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_
-        );
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        return new ccReg::Response( Corba::wrap_response(response, server_transaction_handle) );
+        const Epp::Nsset::UpdateNssetInputData update_nsset_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_nsset_handle),
+                Fred::Corba::unwrap_string_for_change_or_remove_to_Optional_string(_authinfopw_chg),
+                Fred::Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_hosts_add),
+                Fred::Corba::unwrap_ccreg_dnshosts_to_vector_dnshosts(_dns_hosts_rem),
+                Fred::Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts_add),
+                Fred::Corba::unwrap_ccreg_techcontacts_to_vector_string(_tech_contacts_rem),
+                Fred::Corba::unwrap_tech_check_level(_tech_check_level));
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::Nsset::UpdateNssetConfigData update_nsset_config_data(
+                rifd_epp_operations_charging_,
+                nsset_min_hosts_,
+                nsset_max_hosts_);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Nsset::update_nsset_localized(
+                        update_nsset_input_data,
+                        update_nsset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainInfo(
-    const char* _domain_fqdn,
-    ccReg::Domain_out _domain_info,
-    const ccReg::EppParams& _epp_params)
+        const char* _fqdn,
+        ccReg::Domain_out _domain_info,
+        const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        const Epp::Domain::DomainInfoResponse domain_info_response = Epp::Domain::domain_info(
-            Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
-            epp_registrar_session_data.registrar_id,
-            epp_registrar_session_data.language,
-            server_transaction_handle
-        );
+        const Epp::Domain::InfoDomainConfigData info_domain_config_data(
+                rifd_epp_operations_charging_);
 
-        ccReg::Domain_var domain_info_result = new ccReg::Domain;
-        Corba::wrap_Epp_Domain_DomainInfoLocalizedOutputData(domain_info_response.localized_domain_info_output_data, domain_info_result.inout());
-        ccReg::Response_var return_value = new ccReg::Response(Corba::wrap_response(domain_info_response.localized_success_response, server_transaction_handle));
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::Domain::InfoDomainLocalizedResponse info_domain_response =
+                Epp::Domain::info_domain_localized(
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                        info_domain_config_data,
+                        session_data);
 
-        _domain_info = domain_info_result._retn();
+        ccReg::Domain_var domain_info = new ccReg::Domain;
+        Fred::Corba::Epp::Domain::wrap_Epp_Domain_InfoDomainLocalizedOutputData(
+                info_domain_response.info_domain_localized_output_data,
+                domain_info.inout());
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                info_domain_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        _domain_info = domain_info._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainDelete(
-    const char* _domain_fqdn,
-    const ccReg::EppParams& _epp_params)
+        const char* _fqdn,
+        const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RegistrarSessionData epp_registrar_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        const Epp::LocalizedSuccessResponse response = Epp::Domain::domain_delete(
-            Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
-            epp_registrar_session_data.registrar_id,
-            epp_registrar_session_data.language,
-            server_transaction_handle,
-            epp_request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_
-        );
+        const Epp::Domain::DeleteDomainConfigData delete_domain_config_data(
+                rifd_epp_operations_charging_);
 
-        return new ccReg::Response(Corba::wrap_response(response, server_transaction_handle));
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Domain::delete_domain_localized(
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                        delete_domain_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return return_value._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::DomainUpdate(
-    const char* _domain_fqdn,
-    const char* _registrant_chg,
-    const char* _auth_info_pw_chg,
-    const char* _nsset_chg,
-    const char* _keyset_chg,
-    const ccReg::AdminContact& _admin_contacts_add,
-    const ccReg::AdminContact& _admin_contacts_rem,
-    const ccReg::AdminContact& _tmpcontacts_rem,
-    const ccReg::EppParams& _epp_params,
-    const ccReg::ExtensionList& _ext)
+        const char* _fqdn,
+        const char* _registrant_chg,
+        const char* _authinfopw_chg,
+        const char* _nsset_chg,
+        const char* _keyset_chg,
+        const ccReg::AdminContact& _admin_contacts_add,
+        const ccReg::AdminContact& _admin_contacts_rem,
+        const ccReg::AdminContact& _tmpcontacts_rem,
+        const ccReg::EppParams& _epp_params,
+        const ccReg::ExtensionList& _enum_validation_extension_list)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RegistrarSessionData epp_session_data = Epp::get_registrar_session_data(epp_sessions, epp_request_params.session_id);
+        const Epp::Domain::UpdateDomainInputData update_domain_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                Fred::Corba::unwrap_string_for_change_to_Optional_string(_registrant_chg),
+                Fred::Corba::unwrap_string_for_change_or_remove_to_Optional_string(_authinfopw_chg),
+                Fred::Corba::Epp::Domain::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_nsset_chg),
+                Fred::Corba::Epp::Domain::unwrap_string_for_change_or_remove_to_Optional_Nullable_string(_keyset_chg),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_add),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_rem),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_tmpcontacts_rem),
+                Fred::Corba::Epp::Domain::unwrap_enum_validation_extension_list(_enum_validation_extension_list));
 
-        return new ccReg::Response(
-            Corba::wrap_response(
-                Epp::Domain::domain_update(
-                    Corba::unwrap_string_from_const_char_ptr(_domain_fqdn),
-                    Corba::unwrap_string_for_change_to_Optional_string_no_trim(_registrant_chg),
-                    Corba::unwrap_string_for_change_or_remove_to_Optional_string_no_trim(_auth_info_pw_chg),
-                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(_nsset_chg),
-                    Corba::unwrap_string_for_change_or_remove_to_Optional_Nullable_string_no_trim(_keyset_chg),
-                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_add),
-                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_admin_contacts_rem),
-                    Corba::unwrap_ccreg_admincontacts_to_vector_string(_tmpcontacts_rem),
-                    Corba::unwrap_enum_validation_extension(_ext),
-                    epp_session_data.registrar_id,
-                    epp_request_params.log_request_id.get_value_or(0),
-                    epp_update_contact_enqueue_check_,
-                    epp_session_data.language,
-                    server_transaction_handle,
-                    epp_request_params.client_transaction_id,
-                    disable_epp_notifier_,
-                    disable_epp_notifier_cltrid_prefix_,
-                    rifd_epp_update_domain_keyset_clear_
-                ),
-                server_transaction_handle
-            )
-        );
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+        const Epp::Domain::UpdateDomainConfigData update_domain_config_data(
+                rifd_epp_operations_charging_,
+                rifd_epp_update_domain_keyset_clear_);
+
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
+
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Domain::update_domain_localized(
+                        update_domain_input_data,
+                        update_domain_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var update_domain_response =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        return update_domain_response._retn();
+
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    DomainCreate
- *
- * DESCRIPTION: creation of domain record
- *
- * PARAMETERS:  fqdn - domain identifier, its name
- *              registrant -  domain holder
- *              nsset -  nsset identifier
- *              keyset - keyset identifier
- *              period - period of domain validity in mounths
- *              AuthInfoPw  -  password
- *              admin - sequence of administration contacts
- *        OUT:  crDate - date of object creation
- *        OUT:  exDate - date of object expiration
- *              params - common EPP parametres
- *              ext - ExtensionList
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
-ccReg::Response * ccReg_EPP_i::DomainCreate(
-        const char *fqdn,
-        const char *Registrant,
-        const char *nsset,
-        const char *keyset,
-        const char *AuthInfoPw,
-        const ccReg::Period_str& period,
-        const ccReg::AdminContact & admin,
+ccReg::Response* ccReg_EPP_i::DomainCreate(
+        const char* _fqdn,
+        const char* _registrant,
+        const char* _nsset,
+        const char* _keyset,
+        const char* _authinfopw,
+        const ccReg::Period_str& _period,
+        const ccReg::AdminContact& _admin_contact,
         ccReg::timestamp_out _create_time,
-        ccReg::timestamp_out exDate,
-        const ccReg::EppParams &_epp_params,
-        const ccReg::ExtensionList & ext
-        )
+        ccReg::timestamp_out _exdate,
+        const ccReg::EppParams& _epp_params,
+        const ccReg::ExtensionList& _enum_validation_extension_list)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const std::string authinfopw_value = Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw);
 
-        const std::string authinfo = Corba::unwrap_string_from_const_char_ptr(AuthInfoPw);
+        const Epp::Domain::CreateDomainInputData create_domain_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_registrant),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_nsset),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_keyset),
+                authinfopw_value.empty()
+                        ? boost::optional<std::string>()
+                        : boost::optional<std::string>(authinfopw_value),
+                Fred::Corba::Epp::Domain::unwrap_domain_registration_period(_period),
+                Fred::Corba::Epp::Domain::unwrap_ccreg_admincontacts_to_vector_string(_admin_contact),
+                Fred::Corba::Epp::Domain::unwrap_enum_validation_extension_list(_enum_validation_extension_list));
 
-        const Epp::LocalizedCreateDomainResponse response = domain_create(
-            Epp::DomainCreateInputData(
-                Corba::unwrap_string_from_const_char_ptr(fqdn),
-                Corba::unwrap_string_from_const_char_ptr(Registrant),
-                Corba::unwrap_string_from_const_char_ptr(nsset),
-                Corba::unwrap_string_from_const_char_ptr(keyset),
-                authinfo.empty()
-                    ? boost::optional<std::string>()
-                    : boost::optional<std::string>(authinfo),
-                Corba::unwrap_domain_registration_period(period),
-                Corba::unwrap_ccreg_admincontacts_to_vector_string(admin),
-                Corba::unwrap_enum_validation_extension(ext)
-            ),
-            session_data.registrar_id,
-            request_params.log_request_id,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_,
-            rifd_epp_operations_charging_
-        );
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
+        const Epp::Domain::CreateDomainConfigData create_domain_config_data(
+                rifd_epp_operations_charging_);
 
-        ccReg::timestamp_var create_time = Corba::wrap_string_to_corba_string(
-                formatTime(response.crtime));
-        ccReg::timestamp_var exdate = Corba::wrap_string_to_corba_string(
-                boost::gregorian::to_iso_extended_string(response.expiration_date));
-        ccReg::Response_var return_value = new ccReg::Response(
-                Corba::wrap_response(response.ok_response, server_transaction_handle));
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::Domain::CreateDomainLocalizedResponse create_domain_localized_response =
+                Epp::Domain::create_domain_localized(
+                        create_domain_input_data,
+                        create_domain_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::timestamp_var create_time =
+                Fred::Corba::wrap_string_to_corba_string(
+                        Fred::Corba::convert_time_to_local_rfc3339(create_domain_localized_response.crtime));
+
+        ccReg::timestamp_var exdate =
+                Fred::Corba::wrap_string_to_corba_string(
+                        boost::gregorian::to_iso_extended_string(create_domain_localized_response.expiration_date));
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                create_domain_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
 
         _create_time = create_time._retn();
-        exDate = exdate._retn();
+        _exdate = exdate._retn();
         return return_value._retn();
 
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    }
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-/***********************************************************************
- *
- * FUNCTION:    DomainRenew
- *
- * DESCRIPTION: domain validity renewal of aperiod and
- *		save changes into history
- * PARAMETERS:  fqdn - domain name of nssetu
- *              curExpDate - date of domain expiration !!! time in a GMT format 00:00:00
- *              period - period of renewal in mounths
- *        OUT:  exDate - date and time of new domain expiration
- *              params - common EPP parametres
- *              ext - ExtensionList
- *
- * RETURNED:    svTRID and errCode
- *
- ***********************************************************************/
-
-ccReg::Response *
-ccReg_EPP_i::DomainRenew(const char *fqdn, const char* curExpDate,
-        const ccReg::Period_str& period, ccReg::timestamp_out exDate,
-        const ccReg::EppParams &_epp_params, const ccReg::ExtensionList & ext)
+ccReg::Response* ccReg_EPP_i::DomainRenew(
+        const char* _fqdn,
+        const char* _current_exdate,
+        const ccReg::Period_str& _period,
+        ccReg::timestamp_out _exdate,
+        const ccReg::EppParams& _epp_params,
+        const ccReg::ExtensionList& _enum_validation_extension_list)
 {
-    const std::string server_transaction_handle = Util::make_svtrid( _epp_params.requestID );
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RequestParams request_params = Corba::unwrap_EppParams(_epp_params);
-        const Epp::RegistrarSessionData session_data = Epp::get_registrar_session_data(epp_sessions, request_params.session_id);
+        const Epp::Domain::RenewDomainInputData renew_domain_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_fqdn),
+                Fred::Corba::unwrap_string_from_const_char_ptr(_current_exdate),
+                Fred::Corba::Epp::Domain::unwrap_domain_registration_period(_period),
+                Fred::Corba::Epp::Domain::unwrap_enum_validation_extension_list(_enum_validation_extension_list));
 
-        const Epp::LocalizedRenewDomainResponse response = domain_renew(
-            Epp::DomainRenewInputData(
-                Corba::unwrap_string_from_const_char_ptr(fqdn),
-                Corba::unwrap_string_from_const_char_ptr(curExpDate),
-                Corba::unwrap_domain_registration_period(period),
-                Corba::unwrap_enum_validation_extension(ext)
-            ),
-            session_data.registrar_id,
-            request_params.log_request_id,
-            session_data.language,
-            server_transaction_handle,
-            request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_,
-            rifd_epp_operations_charging_
-        );
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
-        ccReg::timestamp_var exdate = Corba::wrap_string_to_corba_string(
-                boost::gregorian::to_iso_extended_string(response.expiration_date));
-        ccReg::Response_var return_value = new ccReg::Response(
-                Corba::wrap_response(response.ok_response, server_transaction_handle));
+        const Epp::Domain::RenewDomainConfigData renew_domain_config_data(
+                rifd_epp_operations_charging_);
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        exDate = exdate._retn();
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::Domain::RenewDomainLocalizedResponse renew_domain_localized_response =
+                renew_domain_localized(
+                        renew_domain_input_data,
+                        renew_domain_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::timestamp_var exdate =
+                Fred::Corba::wrap_string_to_corba_string(
+                        boost::gregorian::to_iso_extended_string(renew_domain_localized_response.expiration_date));
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                renew_domain_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        _exdate = exdate._retn();
         return return_value._retn();
-
-    } catch(const Epp::LocalizedFailResponse& e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
     }
-
-
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
 }
 
-/*************************************************************
- *
- * Function:    KeySetInfo
- *
- *************************************************************/
-ccReg::Response*
-ccReg_EPP_i::KeySetInfo(
+ccReg::Response* ccReg_EPP_i::KeySetInfo(
         const char* const _keyset_handle,
         ccReg::KeySet_out _keyset_info,
-        const ccReg::EppParams &_epp_params)
+        const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RegistrarSessionData session_data =
-            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
+        const std::string keyset_handle = Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
 
-        const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::KeySet::Localized::InfoResult info_result =
-            Epp::KeySet::Localized::info(keyset_handle,
-                                         session_data.registrar_id,
-                                         session_data.language,
-                                         server_transaction_handle);
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
-        ccReg::KeySet_var keyset = new ccReg::KeySet;
-        Corba::wrap_Epp_KeySet_Localized_InfoData(info_result.data, keyset);
+        const Epp::Keyset::InfoKeysetConfigData info_keyset_config_data(
+                rifd_epp_operations_charging_);
 
-        ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(info_result.response,
-                                                 server_transaction_handle,
-                                                 return_value);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        /* No exception shall be thrown from here onwards. */
-        _keyset_info = keyset._retn();
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::Keyset::InfoKeysetLocalizedResponse info_keyset_localized_response =
+                Epp::Keyset::info_keyset_localized(
+                        keyset_handle,
+                        info_keyset_config_data,
+                        session_data);
+
+        ccReg::KeySet_var keyset_info = new ccReg::KeySet;
+        Fred::Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
+                info_keyset_localized_response.data,
+                keyset_info.inout());
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                info_keyset_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        _keyset_info = keyset_info._retn();
         return return_value._retn();
+
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-/*************************************************************
- *
- * Function:    KeySetDelete
- *
- *************************************************************/
-
-ccReg::Response*
-ccReg_EPP_i::KeySetDelete(
-        const char *_keyset_handle,
-        const ccReg::EppParams &_epp_params)
+ccReg::Response* ccReg_EPP_i::KeySetDelete(
+        const char* _keyset_handle,
+        const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RegistrarSessionData session_data =
-            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
+        const Epp::Keyset::DeleteKeysetConfigData delete_keyset_config_data(
+                rifd_epp_operations_charging_);
 
-        const std::string keyset_handle = Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::localized_delete(
-            keyset_handle,
-            session_data.registrar_id,
-            session_data.language,
-            server_transaction_handle,
-            epp_request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(response,
-                                                 server_transaction_handle,
-                                                 return_value);
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Keyset::delete_keyset_localized(
+                        Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
+                        delete_keyset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
         return return_value._retn();
+
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
@@ -3206,136 +3441,142 @@ testDNSKeyDuplicity(ccReg::DNSKey_str first, ccReg::DNSKey_str second)
     return false;
 }
 
-/*************************************************************
- *
- * Function:    KeySetCreate
- *
- *************************************************************/
-ccReg::Response *
-ccReg_EPP_i::KeySetCreate(
-        const char *_keyset_handle,
-        const char *_auth_info_pw,
-        const ccReg::TechContact &_tech_contacts,
-        const ccReg::DSRecord &_ds_records,
-        const ccReg::DNSKey &_dns_keys,
-        ccReg::timestamp_out _crdate,
-        const ccReg::EppParams &_epp_params)
+ccReg::Response* ccReg_EPP_i::KeySetCreate(
+        const char* _keyset_handle,
+        const char* _authinfopw,
+        const ccReg::TechContact& _tech_contacts,
+        const ccReg::DSRecord& _ds_records,
+        const ccReg::DNSKey& _dns_keys,
+        ccReg::timestamp_out _create_time,
+        const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RegistrarSessionData session_data =
-            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
+        const std::string authinfopw_value = Fred::Corba::unwrap_string_from_const_char_ptr(_authinfopw);
+        const Epp::Keyset::CreateKeysetInputData create_keyset_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
+                authinfopw_value.empty() ? Optional<std::string>() : Optional<std::string>(authinfopw_value),
+                Fred::Corba::unwrap_TechContact_to_vector_string(_tech_contacts),
+                Fred::Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records),
+                Fred::Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys));
 
-        const std::string keyset_handle =
-            Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const std::string auth_info_pw_value =
-            Corba::unwrap_string_from_const_char_ptr(_auth_info_pw);
-        const Optional< std::string > auth_info_pw = auth_info_pw_value.empty() ? Optional< std::string >()
-                                                                                : auth_info_pw_value;
-        const std::vector< std::string > tech_contacts =
-            Corba::unwrap_TechContact_to_vector_string(_tech_contacts);
-        const std::vector< Epp::KeySet::DsRecord > ds_records =
-            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(_ds_records);
-        const std::vector< Epp::KeySet::DnsKey > dns_keys =
-            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(_dns_keys);
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
-        const Epp::KeySet::Localized::ResponseOfCreate response = Epp::KeySet::Localized::create(
-            keyset_handle,
-            auth_info_pw,
-            tech_contacts,
-            ds_records,
-            dns_keys,
-            session_data.registrar_id,
-            epp_request_params.log_request_id,
-            session_data.language,
-            server_transaction_handle,
-            epp_request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_);
+        const Epp::Keyset::CreateKeysetConfigData create_nsset_config_data(
+                rifd_epp_operations_charging_);
 
-        ccReg::timestamp_var create_time = formatTime(response.crdate).c_str();
-        ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(response.ok_response,
-                                                 server_transaction_handle,
-                                                 return_value);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        /* No exception shall be thrown from here onwards. */
-        _crdate = create_time._retn();
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::Keyset::CreateKeysetLocalizedResponse create_keyset_localized_response =
+                Epp::Keyset::create_keyset_localized(
+                        create_keyset_input_data,
+                        create_nsset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::timestamp_var create_time =
+                Fred::Corba::wrap_string_to_corba_string(
+                        Fred::Corba::convert_time_to_local_rfc3339(create_keyset_localized_response.crdate));
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                create_keyset_localized_response.epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
+        _create_time = create_time._retn();
         return return_value._retn();
+
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
-/*************************************************************
- *
- * Function:    KeySetUpdate
- *
- *************************************************************/
-ccReg::Response *
-ccReg_EPP_i::KeySetUpdate(
-        const char *_keyset_handle,
-        const char *_auth_info_pw,
-        const ccReg::TechContact &_tech_contacts_add,
-        const ccReg::TechContact &_tech_contacts_rem,
-        const ccReg::DSRecord &_ds_records_add,
-        const ccReg::DSRecord &_ds_records_rem,
-        const ccReg::DNSKey &_dns_keys_add,
-        const ccReg::DNSKey &_dns_keys_rem,
-        const ccReg::EppParams &_epp_params)
+ccReg::Response* ccReg_EPP_i::KeySetUpdate(
+        const char* _keyset_handle,
+        const char* _authinfopw,
+        const ccReg::TechContact& _tech_contacts_add,
+        const ccReg::TechContact& _tech_contacts_rem,
+        const ccReg::DSRecord& _ds_records_add,
+        const ccReg::DSRecord& _ds_records_rem,
+        const ccReg::DNSKey& _dns_keys_add,
+        const ccReg::DNSKey& _dns_keys_rem,
+        const ccReg::EppParams& _epp_params)
 {
-    const Epp::RequestParams epp_request_params = Corba::unwrap_EppParams(_epp_params);
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        const Epp::RegistrarSessionData session_data =
-            Epp::get_registrar_session_data(this->epp_sessions, epp_request_params.session_id);
+        const Epp::Keyset::UpdateKeysetInputData update_keyset_input_data(
+                Fred::Corba::unwrap_string_from_const_char_ptr(_keyset_handle),
+                Fred::Corba::unwrap_string_for_change_or_remove_to_Optional_string(_authinfopw),
+                Fred::Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add),
+                Fred::Corba::unwrap_TechContact_to_vector_string(_tech_contacts_rem),
+                Fred::Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records_add),
+                Fred::Corba::unwrap_ccReg_DSRecord_to_vector_Epp_Keyset_DsRecord(_ds_records_rem),
+                Fred::Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_add),
+                Fred::Corba::unwrap_ccReg_DNSKey_to_vector_Epp_Keyset_DnsKey(_dns_keys_rem));
 
-        const std::string keyset_handle =
-            Corba::unwrap_string_from_const_char_ptr(_keyset_handle);
-        const Optional< std::string > auth_info_pw =
-            Corba::unwrap_string_for_change_or_remove_to_Optional_string(_auth_info_pw);
-        const std::vector< std::string > tech_contacts_add =
-            Corba::unwrap_TechContact_to_vector_string(_tech_contacts_add);
-        const std::vector< std::string > tech_contacts_rem =
-            Corba::unwrap_TechContact_to_vector_string(_tech_contacts_rem);
-        const std::vector< Epp::KeySet::DsRecord > ds_records_add =
-            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(_ds_records_add);
-        const std::vector< Epp::KeySet::DsRecord > ds_records_rem =
-            Corba::unwrap_ccReg_DSRecord_to_vector_Epp_KeySet_DsRecord(_ds_records_rem);
-        const std::vector< Epp::KeySet::DnsKey > dns_keys_add =
-            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(_dns_keys_add);
-        const std::vector< Epp::KeySet::DnsKey > dns_keys_rem =
-            Corba::unwrap_ccReg_DNSKey_to_vector_Epp_KeySet_DnsKey(_dns_keys_rem);
+        // underscore-prefixed (not unwrapped) input arguments shall not be used from here onwards
 
-        const Epp::LocalizedSuccessResponse response = Epp::KeySet::Localized::update(
-            keyset_handle,
-            auth_info_pw,
-            tech_contacts_add,
-            tech_contacts_rem,
-            ds_records_add,
-            ds_records_rem,
-            dns_keys_add,
-            dns_keys_rem,
-            session_data.registrar_id,
-            epp_request_params.log_request_id,
-            session_data.language,
-            server_transaction_handle,
-            epp_request_params.client_transaction_id,
-            disable_epp_notifier_,
-            disable_epp_notifier_cltrid_prefix_);
+        const Epp::Keyset::UpdateKeysetConfigData update_keyset_config_data(
+                rifd_epp_operations_charging_);
 
-        ccReg::Response_var return_value = new ccReg::Response;
-        Corba::wrap_Epp_LocalizedSuccessResponse(response,
-                                                 server_transaction_handle,
-                                                 return_value);
+        const Epp::RegistrarSessionData registrar_session_data =
+                Epp::get_registrar_session_data(
+                        epp_sessions_,
+                        epp_request_params.session_id);
 
-        /* No exception shall be thrown from here onwards. */
+        const Epp::SessionData session_data(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle,
+                epp_request_params.log_request_id.get_value_or(0));
+
+        const Epp::NotificationData notification_data(
+                epp_request_params.client_transaction_id,
+                disable_epp_notifier_,
+                disable_epp_notifier_cltrid_prefix_);
+
+        const Epp::EppResponseSuccessLocalized epp_response_success_localized =
+                Epp::Keyset::update_keyset_localized(
+                        update_keyset_input_data,
+                        update_keyset_config_data,
+                        session_data,
+                        notification_data);
+
+        ccReg::Response_var return_value =
+                new ccReg::Response(
+                        Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                                epp_response_success_localized,
+                                server_transaction_handle));
+
+        // no exception shall be thrown from here onwards
+
         return return_value._retn();
+
     }
-    catch (const Epp::LocalizedFailResponse &e) {
-        throw Corba::wrap_error(e, server_transaction_handle);
+    catch(const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
@@ -3360,13 +3601,13 @@ ccReg_EPP_i::FullList(short act, const char *table, const char *fname,
         case EPP_ListContact:
             type=1;
             break;
-        case EPP_ListNSset:
+        case EPP_ListNsset:
             type=2;
             break;
         case EPP_ListDomain:
             type=3;
             break;
-        case EPP_ListKeySet:
+        case EPP_ListKeyset:
             type=4;
             break;
         default:
@@ -3419,7 +3660,7 @@ ccReg::Response* ccReg_EPP_i::NSSetList(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return FullList( EPP_ListNSset , "NSSET" , "HANDLE" , nssets , params);
+  return FullList( EPP_ListNsset , "NSSET" , "HANDLE" , nssets , params);
 }
 
 ccReg::Response* ccReg_EPP_i::DomainList(
@@ -3443,7 +3684,7 @@ ccReg_EPP_i::KeySetList(
   ConnectionReleaser releaser;
 
     return FullList(
-            EPP_ListKeySet, "KEYSET", "HANDLE", keysets, params);
+            EPP_ListKeyset, "KEYSET", "HANDLE", keysets, params);
 }
 
 // function for run nsset tests
@@ -3470,9 +3711,9 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
   if ( (regID = GetRegistrarID(params.loginID) ))
     {
 
-      if ( (DBsql->BeginAction(params.loginID, EPP_NSsetTest, static_cast<const char*>(params.clTRID), params.XML, params.requestID) )) {
+      if ( (DBsql->BeginAction(params.loginID, EPP_NssetTest, static_cast<const char*>(params.clTRID), params.XML, params.requestID) )) {
 
-        if ( (nssetid = getIdOfNSSet(DBsql, handle
+        if ( (nssetid = getIdOfNsset(DBsql, handle
                 , restricted_handles_, lock_epp_commands_) > 0 ))// TODO   ret->code =  SetReasonNSSetHandle( errors  , nssetid , GetRegistrarLang( clientID ) );
         {
           std::stringstream strid;
@@ -3511,7 +3752,7 @@ ccReg::Response* ccReg_EPP_i::nssetTest(
           GetRegistrarLang(params.loginID) ) );
 
       if (internalError)
-        ServerInternalError("NSSetTest");
+        ServerInternalError("NssetTest");
     }
 
   return ret._retn();
@@ -3550,8 +3791,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
             } else if (id == 0)
                 code=COMMAND_OBJECT_NOT_EXIST;
             break;
-        case EPP_NSSetSendAuthInfo:
-            if ( (id = getIdOfNSSet(action.getDB(), name, restricted_handles_
+        case EPP_NssetSendAuthInfo:
+            if ( (id = getIdOfNsset(action.getDB(), name, restricted_handles_
                     , lock_epp_commands_) ) < 0) {
                 LOG(WARNING_LOG, "bad format of nsset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -3588,8 +3829,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
             }
 
             break;
-        case EPP_KeySetSendAuthInfo:
-            if ((id = getIdOfKeySet(action.getDB(), name, restricted_handles_
+        case EPP_KeysetSendAuthInfo:
+            if ((id = getIdOfKeyset(action.getDB(), name, restricted_handles_
                         , lock_epp_commands_)) < 0) {
                 LOG(WARNING_LOG, "bad format of keyset [%s]", name);
                 code = action.setErrorReason(COMMAND_PARAMETR_ERROR,
@@ -3612,8 +3853,8 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                 Fred::PublicRequest::Manager::create(
                     regMan->getDomainManager(),
                     regMan->getContactManager(),
-                    regMan->getNSSetManager(),
-                    regMan->getKeySetManager(),
+                    regMan->getNssetManager(),
+                    regMan->getKeysetManager(),
                     mm,
                     doc_manager.get(),
                     regMan->getMessageManager()
@@ -3683,7 +3924,7 @@ ccReg::Response* ccReg_EPP_i::nssetSendAuthInfo(
   Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
   ConnectionReleaser releaser;
 
-  return ObjectSendAuthInfo( EPP_NSSetSendAuthInfo , "NSSET" , "handle" , handle , params);
+  return ObjectSendAuthInfo( EPP_NssetSendAuthInfo , "NSSET" , "handle" , handle , params);
 }
 
 ccReg::Response *
@@ -3697,7 +3938,7 @@ ccReg_EPP_i::keysetSendAuthInfo(
   ConnectionReleaser releaser;
 
     return ObjectSendAuthInfo(
-            EPP_KeySetSendAuthInfo, "KEYSET",
+            EPP_KeysetSendAuthInfo, "KEYSET",
             "handle", handle, params);
 }
 
@@ -3726,13 +3967,13 @@ ccReg::Response* ccReg_EPP_i::info(
     std::auto_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
-    std::auto_ptr<Fred::NSSet::Manager> nssMan(
-        Fred::NSSet::Manager::create(
+    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+        Fred::Nsset::Manager::create(
             a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
+    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+            Fred::Keyset::Manager::create(
                 a.getDB(), restricted_handles_
                 )
             );
@@ -3797,13 +4038,13 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
     std::auto_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
-    std::auto_ptr<Fred::NSSet::Manager> nssMan(
-        Fred::NSSet::Manager::create(
+    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+        Fred::Nsset::Manager::create(
             a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
+    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+            Fred::Keyset::Manager::create(
                 a.getDB(), restricted_handles_
                 )
             );

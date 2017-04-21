@@ -30,7 +30,7 @@ namespace Test {
                     (HandleArgsPtr(new HandleServerArgs))
                     (HandleArgsPtr(new HandleLoggingArgs))
                     (HandleArgsPtr(new HandleDatabaseArgs))
-                    (HandleArgsPtr(new Fixture::HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>();
+                    (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>();
 
             namespace boost_args_ns = boost::unit_test::framework;
 
@@ -66,7 +66,7 @@ namespace Test {
 
 struct global_fixture {
     Test::handle_command_line_args handle_admin_db_cmd_line_args;
-    Test::Fixture::create_db_template crete_db_template;
+    Test::create_db_template crete_db_template;
 
     global_fixture() {
         Test::setup_logging(CfgArgs::instance());

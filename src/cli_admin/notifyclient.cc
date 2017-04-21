@@ -103,15 +103,15 @@ NotifyClient::state_changes()
                 restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
                 )
             );
-    std::auto_ptr<Fred::NSSet::Manager> nssMan(
-            Fred::NSSet::Manager::create(
+    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+            Fred::Nsset::Manager::create(
                 m_db,
                 zoneMan.get(),
                 restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
                 )
             );
-    std::auto_ptr<Fred::KeySet::Manager> keyMan(
-            Fred::KeySet::Manager::create(
+    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+            Fred::Keyset::Manager::create(
                 m_db,
                 restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
                 )
@@ -484,7 +484,7 @@ void NotifyClient::sms_send()
       infile.seekg(0, std::ios::end);
       std::streampos infile_size = infile.tellg();
       infile.seekg(0, std::ios::beg);
-       
+
       MailFile file(infile_size);
       infile.read(&file[0], infile_size);
 

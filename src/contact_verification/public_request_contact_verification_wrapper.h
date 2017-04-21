@@ -1,5 +1,23 @@
-#ifndef CONTACT_IDENTIFICATION_H_
-#define CONTACT_IDENTIFICATION_H_
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef PUBLIC_REQUEST_CONTACT_VERIFICATION_WRAPPER_H_D15FD91D5AA44D7685F6EBC7E5655607
+#define PUBLIC_REQUEST_CONTACT_VERIFICATION_WRAPPER_H_D15FD91D5AA44D7685F6EBC7E5655607
 
 #include "cfg/config_handler_decl.h"
 #include "cfg/handle_registry_args.h"
@@ -51,8 +69,8 @@ public:
         request_manager_.reset(Fred::PublicRequest::Manager::create(
                     registry_manager_->getDomainManager(),
                     registry_manager_->getContactManager(),
-                    registry_manager_->getNSSetManager(),
-                    registry_manager_->getKeySetManager(),
+                    registry_manager_->getNssetManager(),
+                    registry_manager_->getKeysetManager(),
                     mailer_manager_.get(),
                     doc_manager_.get(),
                     registry_manager_->getMessageManager()));

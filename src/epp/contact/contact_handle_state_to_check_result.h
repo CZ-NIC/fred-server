@@ -16,12 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  @file
- */
-
-#ifndef EPP_CONTACT_HANDLE_STATE_TO_CHECK_RESULT_33847O798
-#define EPP_CONTACT_HANDLE_STATE_TO_CHECK_RESULT_33847O798
+#ifndef CONTACT_HANDLE_STATE_TO_CHECK_RESULT_H_9EDF3E299EF54813876262214DFAA275
+#define CONTACT_HANDLE_STATE_TO_CHECK_RESULT_H_9EDF3E299EF54813876262214DFAA275
 
 #include <stdexcept>
 
@@ -31,30 +27,34 @@
 #include "util/db/nullable.h"
 
 namespace Epp {
+namespace Contact {
 
-inline Nullable< ContactHandleRegistrationObstruction::Enum > contact_handle_state_to_check_result(
-    Fred::ContactHandleState::SyntaxValidity::Enum _handle_validity,
-    Fred::ContactHandleState::Registrability::Enum _handle_registrability)
+inline Nullable<ContactHandleRegistrationObstruction::Enum> contact_handle_state_to_check_result(
+        Fred::ContactHandleState::SyntaxValidity::Enum _handle_validity,
+        Fred::ContactHandleState::Registrability::Enum _handle_registrability)
 {
     switch (_handle_registrability)
     {
         case Fred::ContactHandleState::Registrability::registered:
             return ContactHandleRegistrationObstruction::registered_handle;
+
         case Fred::ContactHandleState::Registrability::in_protection_period:
             return ContactHandleRegistrationObstruction::protected_handle;
+
         case Fred::ContactHandleState::Registrability::available:
             switch (_handle_validity)
             {
                 case Fred::ContactHandleState::SyntaxValidity::invalid:
                     return ContactHandleRegistrationObstruction::invalid_handle;
+
                 case Fred::ContactHandleState::SyntaxValidity::valid:
-                    return Nullable< ContactHandleRegistrationObstruction::Enum >();
+                    return Nullable<ContactHandleRegistrationObstruction::Enum>();
             }
             throw std::runtime_error("Invalid Fred::ContactHandleState::SyntaxValidity::Enum value.");
     }
     throw std::runtime_error("Invalid Fred::ContactHandleState::Registrability::Enum value.");
 }
 
-}
-
+} // namespace Epp::Contact
+} // namespace Epp
 #endif

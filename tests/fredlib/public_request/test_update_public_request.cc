@@ -63,7 +63,7 @@ private:
 
 }
 
-struct update_public_request_fixture : virtual Test::Fixture::instantiate_db_template,
+struct update_public_request_fixture : virtual Test::instantiate_db_template,
                                        PublicRequestAuthTypeFake
 {
     update_public_request_fixture()

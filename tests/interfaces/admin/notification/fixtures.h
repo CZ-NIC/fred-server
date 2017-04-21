@@ -36,7 +36,11 @@
 #include <set>
 #include <boost/test/unit_test.hpp>
 
-struct HasExpiredDomain : virtual Test::Fixture::instantiate_db_template {
+namespace Test {
+namespace Admin {
+namespace Notification {
+
+struct HasExpiredDomain : virtual instantiate_db_template {
     Fred::InfoDomainData domain;
     HasExpiredDomain() {
         Fred::OperationContextCreator ctx;
@@ -114,5 +118,9 @@ struct HasNoEmails : HasValidEmails {
         none_domain_emails_map[domain.id] = no_emails;
     }
 };
+
+} // namespace Test::Admin::Notification
+} // namespace Test::Admin
+} // namespace Test
 
 #endif

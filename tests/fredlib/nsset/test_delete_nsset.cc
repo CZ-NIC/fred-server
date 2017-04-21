@@ -48,7 +48,7 @@
 const std::string server_name = "test-delete-nsset";
 
 
-struct delete_nsset_fixture : public Test::Fixture::instantiate_db_template
+struct delete_nsset_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

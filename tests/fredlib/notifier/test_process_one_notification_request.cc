@@ -594,7 +594,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_empty_queue, has_autocomitting_ctx)
     BOOST_CHECK_EQUAL(mocked_mailer_data_access.accumulated_data.size(), 0);
 }
 
-struct has_domain_uncomitted : Test::Fixture::instantiate_db_template {
+struct has_domain_uncomitted : Test::instantiate_db_template {
 
     Fred::OperationContextCreator ctx;
 

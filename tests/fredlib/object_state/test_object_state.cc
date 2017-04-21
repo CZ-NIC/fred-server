@@ -36,12 +36,12 @@
 #include <string>
 #include <algorithm>
 
-BOOST_FIXTURE_TEST_SUITE(TestObjectState, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestObjectState, Test::instantiate_db_template)
 
 const std::string server_name = "test-object-state";
 
 
-struct test_contact_fixture_8470af40b863415588b78b1fb1782e7e : public Test::Fixture::instantiate_db_template
+struct test_contact_fixture_8470af40b863415588b78b1fb1782e7e : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -119,7 +119,7 @@ bool state_desc_equal(const Fred::ObjectStateDescription& lhs, const Fred::Objec
     && lhs.description == rhs.description;
 }
 
-struct object_state_description_fixture : public Test::Fixture::instantiate_db_template
+struct object_state_description_fixture : public Test::instantiate_db_template
 {
     std::vector<Fred::ObjectStateDescription> state_desc_en_all_vect;
     std::vector<Fred::ObjectStateDescription> state_desc_en_contact_vect;

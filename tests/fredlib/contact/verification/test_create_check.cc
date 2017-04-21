@@ -43,7 +43,7 @@
 #include "boost/date_time/local_time_adjustor.hpp"
 
 BOOST_AUTO_TEST_SUITE(TestContactVerification)
-BOOST_FIXTURE_TEST_SUITE(TestCreateContactCheck_integ, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestCreateContactCheck_integ, Test::instantiate_db_template)
 
 const std::string server_name = "test-contact_verification-create_check_integ";
 

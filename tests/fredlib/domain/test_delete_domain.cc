@@ -26,11 +26,11 @@
 #include "util/random_data_generator.h"
 #include "tests/setup/fixtures.h"
 
-BOOST_FIXTURE_TEST_SUITE(TestDeleteDomain, Test::Fixture::instantiate_db_template)
+BOOST_FIXTURE_TEST_SUITE(TestDeleteDomain, Test::instantiate_db_template)
 
 const std::string server_name = "test-delete-domain";
 
-struct delete_enum_domain_fixture : public Test::Fixture::instantiate_db_template
+struct delete_enum_domain_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;
@@ -85,7 +85,7 @@ struct delete_enum_domain_fixture : public Test::Fixture::instantiate_db_templat
     {}
 };
 
-struct delete_domain_fixture : public Test::Fixture::instantiate_db_template
+struct delete_domain_fixture : public Test::instantiate_db_template
 {
     std::string registrar_handle;
     std::string xmark;

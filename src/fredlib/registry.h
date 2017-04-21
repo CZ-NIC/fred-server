@@ -1,5 +1,23 @@
-#ifndef REGISTER_H_
-#define REGISTER_H_
+/*
+ *  Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ *  This file is part of FRED.
+ *
+ *  FRED is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, version 2 of the License.
+ *
+ *  FRED is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef REGISTRY_H_3717B6E8AF6D4EF79122BD54E8C058ED
+#define REGISTRY_H_3717B6E8AF6D4EF79122BD54E8C058ED
 
 #include <string>
 #include "src/fredlib/domain.h"
@@ -29,7 +47,7 @@ enum HandleType
   HT_NSSET, ///< Handle is nsset
   HT_KEYSET, ///< Handle is keyset
   HT_REGISTRAR, ///< Handle is registrar
-  HT_OTHER ///< Invalid handle    
+  HT_OTHER ///< Invalid handle
 };
 /// classification for registry object handle
 enum CheckHandleClass
@@ -42,7 +60,7 @@ enum CheckHandleClass
   CH_PROTECTED, //< Handle is in protected period or on blacklist
   CH_FREE ///< Handle is free for registration or has unknown stattus
 };
-/// one classification record 
+/// one classification record
 struct CheckHandle {
   std::string newHandle; ///< transformed handle if appropriate
   std::string conflictHandle; ///< handle that is in conflict
@@ -63,9 +81,9 @@ public:
   virtual ~Manager() {
   }
   /// classify input handle according registry rules
-  virtual void checkHandle(const std::string& handle, 
-  											   CheckHandleList& ch, 
-  											   bool allowIDN) const = 0;
+  virtual void checkHandle(const std::string& handle,
+    CheckHandleList& ch,
+    bool allowIDN) const = 0;
   /// return message manager
   virtual Messages::ManagerPtr getMessageManager() const = 0;
   /// return zone manager
@@ -77,9 +95,9 @@ public:
   /// return contact manager
   virtual Contact::Manager *getContactManager() const = 0;
   /// return nsset manager
-  virtual NSSet::Manager *getNSSetManager() const = 0;
-  /// return KeySet manager
-  virtual KeySet::Manager *getKeySetManager() const = 0;
+  virtual Nsset::Manager *getNssetManager() const = 0;
+  /// return Keyset manager
+  virtual Keyset::Manager *getKeysetManager() const = 0;
   /// return filter manager
   virtual Filter::Manager* getFilterManager() const = 0;
   /// loads country codes description from database
@@ -94,7 +112,7 @@ public:
   /// return status description
   virtual const StatusDesc* getStatusDesc(TID status) const = 0;
   virtual const StatusDesc* getStatusDesc(const std::string &_name) const = 0;
-  /// return status list count 
+  /// return status list count
   virtual unsigned getStatusDescCount() const = 0;
   /// return status desctription by index
   virtual const StatusDesc* getStatusDescByIdx(unsigned idx) const = 0;

@@ -26,7 +26,7 @@
 
 #include "src/mojeid/checkers.h"
 #include "src/fredlib/contact/info_contact_data.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 
 namespace Fred {
 namespace MojeID {

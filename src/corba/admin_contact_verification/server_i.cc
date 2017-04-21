@@ -62,12 +62,12 @@ namespace Corba {
                     .at(0);
         }
 
-        out->check_handle =         Corba::wrap_string(in.handle);
-        out->test_suite_handle =    Corba::wrap_string(in.testsuite_handle);
-        out->contact_handle =       Corba::wrap_string(contact_info_historical.info_contact_data.handle);
+        out->check_handle =         Fred::Corba::wrap_string(in.handle);
+        out->test_suite_handle =    Fred::Corba::wrap_string(in.testsuite_handle);
+        out->contact_handle =       Fred::Corba::wrap_string(contact_info_historical.info_contact_data.handle);
         out->contact_id =           contact_info_historical.info_contact_data.id;
         out->checked_contact_hid =  in.contact_history_id;
-        out->created =              Corba::wrap_time(in.local_create_time);
+        out->created =              Fred::Corba::wrap_time(in.local_create_time);
 
         out->status_history.length(in.check_state_history.size());
         unsigned long check_seq_i(0);
@@ -76,9 +76,9 @@ namespace Corba {
             check_it != in.check_state_history.end();
             ++check_it, ++check_seq_i
         ) {
-            out->status_history[check_seq_i].status =           Corba::wrap_string(check_it->status_handle);
-            out->status_history[check_seq_i].update =           Corba::wrap_time(check_it->local_update_time);
-            out->status_history[check_seq_i].logd_request_id =  Corba::wrap_nullable_ulonglong(check_it->logd_request_id);
+            out->status_history[check_seq_i].status =           Fred::Corba::wrap_string(check_it->status_handle);
+            out->status_history[check_seq_i].update =           Fred::Corba::wrap_time(check_it->local_update_time);
+            out->status_history[check_seq_i].logd_request_id =  Fred::Corba::wrap_nullable_ulonglong(check_it->logd_request_id);
         }
 
         out->test_list.length(in.tests.size());
@@ -108,7 +108,7 @@ namespace Corba {
                 ++it, ++out_tested_index
             ) {
                 out->test_list[test_seq_i].tested_contact_data[out_tested_index]
-                    = Corba::wrap_string(*it);
+                    = Fred::Corba::wrap_string(*it);
             }
 
             unsigned out_current_index = 0;
@@ -118,11 +118,11 @@ namespace Corba {
                 ++it, ++out_current_index
             ) {
                 out->test_list[test_seq_i].current_contact_data[out_current_index]
-                    = Corba::wrap_string(*it);
+                    = Fred::Corba::wrap_string(*it);
             }
 
-            out->test_list[test_seq_i].test_handle = Corba::wrap_string(test_it->test_handle);
-            out->test_list[test_seq_i].created = Corba::wrap_time(test_it->local_create_time);
+            out->test_list[test_seq_i].test_handle = Fred::Corba::wrap_string(test_it->test_handle);
+            out->test_list[test_seq_i].created = Fred::Corba::wrap_time(test_it->local_create_time);
 
             out->test_list[test_seq_i].status_history.length(test_it->state_history.size());
             testhistory_seq_i= 0;
@@ -132,18 +132,18 @@ namespace Corba {
                 ++testhistory_it, ++testhistory_seq_i
             ) {
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].status
-                    = Corba::wrap_string(testhistory_it->status_handle);
+                    = Fred::Corba::wrap_string(testhistory_it->status_handle);
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].err_msg
                     = (testhistory_it->error_msg.isnull())
-                        ? Corba::wrap_string(std::string())
-                        : Corba::wrap_string(testhistory_it->error_msg.get_value_or_default());
+                        ? Fred::Corba::wrap_string(std::string())
+                        : Fred::Corba::wrap_string(testhistory_it->error_msg.get_value_or_default());
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].update
-                    = Corba::wrap_time(testhistory_it->local_update_time);
+                    = Fred::Corba::wrap_time(testhistory_it->local_update_time);
 
                 out->test_list[test_seq_i].status_history[testhistory_seq_i].logd_request_id
-                    = Corba::wrap_nullable_ulonglong(testhistory_it->logd_request_id);
+                    = Fred::Corba::wrap_nullable_ulonglong(testhistory_it->logd_request_id);
             }
         }
     }
@@ -154,16 +154,16 @@ namespace Corba {
 
         long list_index = 0;
         for(std::vector<Fred::ListChecksItem>::const_iterator it = in.begin(); it != in.end(); ++it, ++list_index) {
-            out[list_index].check_handle =          Corba::wrap_string(it->check_handle);
-            out[list_index].test_suite_handle =     Corba::wrap_string(it->testsuite_handle);
-            out[list_index].contact_handle =        Corba::wrap_string(it->contact_handle);
+            out[list_index].check_handle =          Fred::Corba::wrap_string(it->check_handle);
+            out[list_index].test_suite_handle =     Fred::Corba::wrap_string(it->testsuite_handle);
+            out[list_index].contact_handle =        Fred::Corba::wrap_string(it->contact_handle);
             out[list_index].contact_id =            it->contact_id;
             out[list_index].checked_contact_hid =   it->contact_history_id;
-            out[list_index].created =               Corba::wrap_time(it->local_create_time);
-            out[list_index].updated =               Corba::wrap_time(it->local_update_time);
-            out[list_index].last_contact_update =   Corba::wrap_time(it->local_last_contact_update);
-            out[list_index].last_test_finished =    Corba::wrap_nullable_datetime(it->last_test_finished_local_time);
-            out[list_index].current_status =        Corba::wrap_string(it->status_handle);
+            out[list_index].created =               Fred::Corba::wrap_time(it->local_create_time);
+            out[list_index].updated =               Fred::Corba::wrap_time(it->local_update_time);
+            out[list_index].last_contact_update =   Fred::Corba::wrap_time(it->local_last_contact_update);
+            out[list_index].last_test_finished =    Fred::Corba::wrap_nullable_datetime(it->last_test_finished_local_time);
+            out[list_index].current_status =        Fred::Corba::wrap_string(it->status_handle);
         }
     }
 
@@ -176,9 +176,9 @@ namespace Corba {
                 in_it != in.end();
                 ++in_it, ++out_index
             ) {
-                out[out_index].handle =        Corba::wrap_string(in_it->handle);
-                out[out_index].name =          Corba::wrap_string(in_it->name);
-                out[out_index].description =   Corba::wrap_string(in_it->description);
+                out[out_index].handle =        Fred::Corba::wrap_string(in_it->handle);
+                out[out_index].name =          Fred::Corba::wrap_string(in_it->name);
+                out[out_index].description =   Fred::Corba::wrap_string(in_it->description);
             }
         }
 
@@ -215,7 +215,7 @@ namespace Corba {
             ++in_it, ++out_index
         ) {
             Registry::AdminContactVerification::ContactTestDefSeq_var temp_tests(new Registry::AdminContactVerification::ContactTestDefSeq);
-            Corba::wrap_test_definitions(in_it->tests, temp_tests );
+            wrap_test_definitions(in_it->tests, temp_tests );
             out[out_index].tests = temp_tests;
         }
     }
@@ -228,8 +228,8 @@ namespace Corba {
         for(unsigned long long i=0; i<in.length(); ++i) {
             result.push_back(
                 std::make_pair(
-                    Corba::unwrap_string(in[i].test_handle),
-                    Corba::unwrap_string(in[i].status)
+                    Fred::Corba::unwrap_string(in[i].test_handle),
+                    Fred::Corba::unwrap_string(in[i].status)
                 )
             );
         }
@@ -249,11 +249,11 @@ namespace Corba {
             ++it, ++list_index
         ) {
             out[list_index].id              = it->id;
-            out[list_index].type_handle     = Corba::wrap_string(it->comm_type);
-            out[list_index].content_handle  = Corba::wrap_string(it->content_type);
-            out[list_index].created         = Corba::wrap_time(it->created);
-            out[list_index].updated         = Corba::wrap_nullable_datetime(it->update);
-            out[list_index].status          = Corba::wrap_string(it->status_name);
+            out[list_index].type_handle     = Fred::Corba::wrap_string(it->comm_type);
+            out[list_index].content_handle  = Fred::Corba::wrap_string(it->content_type);
+            out[list_index].created         = Fred::Corba::wrap_time(it->created);
+            out[list_index].updated         = Fred::Corba::wrap_nullable_datetime(it->update);
+            out[list_index].status          = Fred::Corba::wrap_string(it->status_name);
         }
     }
 }
@@ -272,7 +272,7 @@ namespace Registry
 
                 Corba::wrap_check_detail(
                     Fred::InfoContactCheck(
-                        uuid::from_string( Corba::unwrap_string(check_handle) )
+                        uuid::from_string( Fred::Corba::unwrap_string(check_handle) )
                     ).exec(ctx),
                     result
                 );
@@ -300,7 +300,7 @@ namespace Registry
                     .set_max_item_count(static_cast<unsigned long>(max_item_count))
                     .set_contact_id( static_cast<unsigned long long>(contact_id) );
 
-                Optional<std::string> testsuite_unwrapped = Corba::unwrap_nullable_string_to_optional(testsuite);
+                Optional<std::string> testsuite_unwrapped = Fred::Corba::unwrap_nullable_string_to_optional(testsuite);
                 if(testsuite_unwrapped.isset()) {
                     list_checks.set_testsuite_handle(testsuite_unwrapped.get_value());
                 }
@@ -324,7 +324,7 @@ namespace Registry
                 ContactCheckList_var result(new ContactCheckList);
 
                 Corba::wrap_check_list(
-                    Admin::list_active_checks( Corba::unwrap_nullable_string_to_optional(testsuite) ),
+                    Admin::list_active_checks( Fred::Corba::unwrap_nullable_string_to_optional(testsuite) ),
                     result
                 );
 
@@ -343,7 +343,7 @@ namespace Registry
 
                 Admin::update_tests(
                     ctx,
-                    uuid::from_string( Corba::unwrap_string(check_handle) ),
+                    uuid::from_string( Fred::Corba::unwrap_string(check_handle) ),
                     Corba::unwrap_test_change_sequence(changes),
                     logd_request_id
                 );
@@ -374,8 +374,8 @@ namespace Registry
                 Fred::OperationContextCreator ctx;
 
                 Admin::resolve_check(
-                    uuid::from_string( Corba::unwrap_string(check_handle) ),
-                    Corba::unwrap_string(status),
+                    uuid::from_string( Fred::Corba::unwrap_string(check_handle) ),
+                    Fred::Corba::unwrap_string(status),
                     logd_request_id
                 ).exec(ctx);
 
@@ -402,7 +402,7 @@ namespace Registry
 
                 Admin::delete_domains_of_invalid_contact(
                     ctx,
-                    uuid::from_string( Corba::unwrap_string(check_handle) )
+                    uuid::from_string( Fred::Corba::unwrap_string(check_handle) )
                 );
 
                 ctx.commit_transaction();
@@ -435,7 +435,7 @@ namespace Registry
                 created_handle = Admin::request_check_enqueueing(
                     ctx,
                     contact_id,
-                    Corba::unwrap_string(testsuite_handle),
+                    Fred::Corba::unwrap_string(testsuite_handle),
                     logd_request_id
                 );
 
@@ -460,7 +460,7 @@ namespace Registry
 
                 Admin::confirm_check_enqueueing(
                     ctx,
-                    uuid::from_string( Corba::unwrap_string(check_handle) ),
+                    uuid::from_string( Fred::Corba::unwrap_string(check_handle) ),
                     logd_request_id
                 );
 
@@ -489,7 +489,7 @@ namespace Registry
                 created_handle = Admin::enqueue_check(
                     ctx,
                     contact_id,
-                    Corba::unwrap_string(testsuite_handle),
+                    Fred::Corba::unwrap_string(testsuite_handle),
                     logd_request_id
                 );
 
@@ -540,7 +540,7 @@ namespace Registry
 
                 Corba::wrap_test_statuses(
                     Fred::list_test_result_statuses(
-                        Corba::unwrap_string(lang)),
+                        Fred::Corba::unwrap_string(lang)),
                     result
                 );
 
@@ -559,7 +559,7 @@ namespace Registry
 
                 Corba::wrap_check_statuses(
                     Fred::list_check_statuses(
-                        Corba::unwrap_string(lang)),
+                        Fred::Corba::unwrap_string(lang)),
                     result
                 );
 
@@ -581,8 +581,8 @@ namespace Registry
 
                 Corba::wrap_test_definitions(
                     Fred::list_test_definitions(
-                        Corba::unwrap_string(lang),
-                        Corba::unwrap_nullable_string(testsuite_handle).get_value_or_default()
+                        Fred::Corba::unwrap_string(lang),
+                        Fred::Corba::unwrap_nullable_string(testsuite_handle).get_value_or_default()
                     ),
                     result
                 );
@@ -602,7 +602,7 @@ namespace Registry
 
                 Corba::wrap_testsuite_definitions(
                     Fred::list_testsuite_definitions(
-                        Corba::unwrap_string(lang)),
+                        Fred::Corba::unwrap_string(lang)),
                     result
                 );
 
