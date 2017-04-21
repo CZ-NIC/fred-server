@@ -37,6 +37,7 @@ struct HasPollInfoMessage : virtual Test::Backend::Epp::autorollbacking_context
 {
     HasPollInfoMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain.info_data.historyid);
     }
@@ -46,6 +47,7 @@ struct HasTwoPollInfoMessages : virtual Test::Backend::Epp::autorollbacking_cont
 {
     HasTwoPollInfoMessages()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain.info_data.historyid);
 

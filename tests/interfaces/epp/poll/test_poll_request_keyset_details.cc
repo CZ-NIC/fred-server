@@ -80,6 +80,7 @@ struct HasKeysetUpdate : virtual Test::Backend::Epp::autorollbacking_context
 
     HasKeysetUpdate()
     {
+        Test::mark_all_messages_as_seen(ctx);
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
 
         const Test::keyset keyset(ctx);

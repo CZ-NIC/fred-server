@@ -75,6 +75,7 @@ struct HasNssetUpdate : virtual Test::Backend::Epp::autorollbacking_context
 
     HasNssetUpdate()
     {
+        Test::mark_all_messages_as_seen(ctx);
         static const char new_passwd[] = "doesntmatter_38E166961BEE";
 
         const Test::nsset nsset(ctx);

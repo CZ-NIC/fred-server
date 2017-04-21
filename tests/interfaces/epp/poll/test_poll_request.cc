@@ -299,6 +299,7 @@ struct HasPollUpdateDomainMessage : virtual Test::Backend::Epp::autorollbacking_
 
     HasPollUpdateDomainMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         history_id = Fred::UpdateDomain(domain.info_data.fqdn,
                                         domain.info_data.sponsoring_registrar_handle
@@ -315,6 +316,7 @@ struct HasPollUpdateNssetMessage : virtual Test::Backend::Epp::autorollbacking_c
 
     HasPollUpdateNssetMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::nsset nsset(ctx);
         history_id = Fred::UpdateNsset(nsset.info_data.handle,
                                        nsset.info_data.sponsoring_registrar_handle
@@ -331,6 +333,7 @@ struct HasPollUpdateKeysetMessage : virtual Test::Backend::Epp::autorollbacking_
 
     HasPollUpdateKeysetMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::keyset keyset(ctx);
         history_id = Fred::UpdateKeyset(keyset.info_data.handle,
                                         keyset.info_data.sponsoring_registrar_handle
@@ -377,6 +380,7 @@ struct HasPollTransferDomainMessage : virtual Test::Backend::Epp::autorollbackin
 
     HasPollTransferDomainMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         const Test::registrar registrar(ctx);
 
@@ -401,6 +405,7 @@ struct HasPollTransferContactMessage : virtual Test::Backend::Epp::autorollbacki
 
     HasPollTransferContactMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx);
         const Test::registrar registrar(ctx);
 
@@ -425,6 +430,7 @@ struct HasPollTransferNssetMessage : virtual Test::Backend::Epp::autorollbacking
 
     HasPollTransferNssetMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::nsset nsset(ctx);
         const Test::registrar registrar(ctx);
 
@@ -449,6 +455,7 @@ struct HasPollTransferKeysetMessage : virtual Test::Backend::Epp::autorollbackin
 
     HasPollTransferKeysetMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::keyset keyset(ctx);
         const Test::registrar registrar(ctx);
 
@@ -506,6 +513,7 @@ struct HasPollRequestFeeInfoMessage : virtual Test::Backend::Epp::autorollbackin
 
     HasPollRequestFeeInfoMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         registrar_id = registrar.info_data.id;
         golden_request_fee_info_event.from = boost::posix_time::time_from_string("2017-03-30 14:16:02.713506");
@@ -556,6 +564,7 @@ struct HasPollRequestLowCreditMessage : virtual Test::Backend::Epp::autorollback
 
     HasPollRequestLowCreditMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         registrar_id = registrar.info_data.id;
         golden_low_credit_event.zone = "cz";
@@ -598,6 +607,7 @@ struct HasPollDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_
 
     HasPollDeleteDomainMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::domain domain(ctx);
         handle = domain.info_data.fqdn;
         unsigned long long history_id =
@@ -619,6 +629,7 @@ struct HasPollDeleteContactMessage : virtual Test::Backend::Epp::autorollbacking
 
     HasPollDeleteContactMessage()
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx);
         handle = contact.info_data.handle;
         unsigned long long history_id =
@@ -642,6 +653,7 @@ struct HasPollValidationMessage : virtual Test::Backend::Epp::autorollbacking_co
         handle("1.2.3.4.5.6.7.8.9.0.2.4.e164.arpa"),
         date(boost::posix_time::second_clock::local_time().date())
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const Fred::CreateDomain::Result result =
@@ -666,6 +678,7 @@ struct HasPollImpValidationMessage : virtual Test::Backend::Epp::autorollbacking
         handle("1.2.3.4.5.6.7.8.9.0.2.4.e164.arpa"),
         date(boost::posix_time::second_clock::local_time().date() + boost::gregorian::days(7))
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const Fred::CreateDomain::Result result =
@@ -690,6 +703,7 @@ struct HasPollExpirationMessage : virtual Test::Backend::Epp::autorollbacking_co
         handle("expirationxxxxxxaxxdxefxfxxxxeca.cz"),
         date(boost::posix_time::second_clock::local_time().date())
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const Fred::CreateDomain::Result result =
@@ -714,6 +728,7 @@ struct HasPollImpExpirationMessage : virtual Test::Backend::Epp::autorollbacking
         handle("impendingexpirationdxefxfxxxxecb.cz"),
         date(boost::posix_time::second_clock::local_time().date() + boost::gregorian::days(7))
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const Fred::CreateDomain::Result result =
@@ -738,6 +753,7 @@ struct HasPollIdleDeleteDomainMessage : virtual Test::Backend::Epp::autorollback
         handle("idledeletexxxxxxaxxdxefxfxxxxecc.cz"),
         date(boost::posix_time::second_clock::local_time().date() - boost::gregorian::days(25))
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const Fred::CreateDomain::Result result =
@@ -761,6 +777,7 @@ struct HasPollIdleDeleteContactMessage : virtual Test::Backend::Epp::autorollbac
     HasPollIdleDeleteContactMessage() :
         handle("IDLEDELETECONTACTCONTACTPGKGCNEBOCO")
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::contact contact(ctx, handle);
         const unsigned long long registrar_id =
             Fred::InfoRegistrarByHandle(contact.info_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id;
@@ -783,6 +800,7 @@ struct HasPollIdleDeleteNssetMessage : virtual Test::Backend::Epp::autorollbacki
     HasPollIdleDeleteNssetMessage() :
         handle("IDLEDELETENSSETNSSETPGKGCNEBOCO")
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::nsset nsset(ctx, handle);
         const unsigned long long registrar_id =
             Fred::InfoRegistrarByHandle(nsset.info_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id;
@@ -805,6 +823,7 @@ struct HasPollIdleDeleteKeysetMessage : virtual Test::Backend::Epp::autorollback
     HasPollIdleDeleteKeysetMessage() :
         handle("IDLEDELETEKEYSETKEYSETPGKGCNEBOCO")
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::keyset keyset(ctx, handle);
         const unsigned long long registrar_id =
             Fred::InfoRegistrarByHandle(keyset.info_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data.id;
@@ -828,6 +847,7 @@ struct HasPollOutzoneUnguardedMessage : virtual Test::Backend::Epp::autorollback
         handle("outzoneoutguardedxxdxefxfxxxxecc.cz"),
         date(boost::posix_time::second_clock::local_time().date() - boost::gregorian::days(90))
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const Fred::CreateDomain::Result result =
@@ -879,6 +899,7 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
 
     HasPollTechCheckMessage() : name("MYOWNNSSETILSHIBAMF")
     {
+        Test::mark_all_messages_as_seen(ctx);
         const Test::registrar registrar(ctx);
         const Fred::CreateNsset::Result result =
             Fred::CreateNsset(name, registrar.info_data.handle)

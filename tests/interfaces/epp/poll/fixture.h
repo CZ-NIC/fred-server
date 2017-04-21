@@ -23,6 +23,8 @@
 
 namespace Test {
 
+void mark_all_messages_as_seen(Fred::OperationContext& _ctx);
+
 unsigned long long get_number_of_unseen_poll_messages(Fred::OperationContext& _ctx);
 
 struct MessageDetail

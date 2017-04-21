@@ -22,6 +22,11 @@
 
 namespace Test {
 
+void mark_all_messages_as_seen(Fred::OperationContext& _ctx)
+{
+    _ctx.get_conn().exec("UPDATE message SET seen=true");
+}
+
 unsigned long long get_number_of_unseen_poll_messages(Fred::OperationContext& _ctx)
 {
     const Database::Result sql_query_result = _ctx.get_conn().exec("SELECT COUNT(id) FROM message WHERE NOT seen");
