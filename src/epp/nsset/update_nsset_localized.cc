@@ -84,7 +84,7 @@ EppResponseSuccessLocalized update_nsset_localized(
     catch (const EppResponseFailure& e)
     {
         Fred::OperationContextCreator ctx;
-        ctx.get_log().info(std::string("updatensset_localized: ") + e.what());
+        ctx.get_log().info(std::string("update_nsset_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
@@ -93,9 +93,7 @@ EppResponseSuccessLocalized update_nsset_localized(
     catch (const std::exception& e)
     {
         Fred::OperationContextCreator ctx;
-        ctx.get_log().info(
-                std::string("update_contact_localized failure: ") +
-                e.what());
+        ctx.get_log().info(std::string("update_nsset_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
@@ -104,7 +102,7 @@ EppResponseSuccessLocalized update_nsset_localized(
     catch (...)
     {
         Fred::OperationContextCreator ctx;
-        ctx.get_log().info("unexpected exception in update_contact_localized function");
+        ctx.get_log().info("unexpected exception in update_nsset_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),

@@ -58,7 +58,7 @@ public:
 
 private:
 
-    const EppExtendedError& epp_extended_error_;
+    EppExtendedError epp_extended_error_;
 
     std::string reason_description_;
 
