@@ -213,7 +213,7 @@ unsigned long long update_domain(
 
     if (!parameter_value_range_errors.empty())
     {
-        throw parameter_value_range_errors;
+        throw EppResponseFailure(parameter_value_range_errors);
     }
 
     const Fred::InfoRegistrarData session_registrar =

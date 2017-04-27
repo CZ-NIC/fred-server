@@ -333,7 +333,7 @@ wrap_Epp_EppResponseFailureLocalized(
         const std::set<Epp::EppExtendedErrorLocalized>::size_type size = epp_extended_errors->size();
         result.errorList.length(size);
 
-        int i = 0;
+        CORBA::ULong i = 0;
         for (std::set<Epp::EppExtendedErrorLocalized>::const_iterator epp_extended_error =
                  epp_extended_errors->begin();
              epp_extended_error != epp_extended_errors->end();
