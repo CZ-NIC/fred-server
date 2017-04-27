@@ -401,7 +401,7 @@ ObjectClient::regular_procedure()
                 ) {
             notifyExcept = object_regular_procedure_params.notify_except_types.get_value();//m_conf.get<std::string>(OBJECT_NOTIFY_EXCEPT_TYPES_NAME);
         }
-        notifyMan->notifyStateChanges(notifyExcept, 0, NULL, true);
+        notifyMan->notifyStateChanges(notifyExcept, 0, NULL);
 
         pollMan->createLowCreditMessages();
         notifyMan->generateLetters(docgen_domain_count_limit//m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT)

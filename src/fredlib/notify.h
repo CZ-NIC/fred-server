@@ -20,14 +20,13 @@ namespace Fred
   {
     class Manager
     {
-     public:
+    public:
       virtual ~Manager() {}
       /// notify contacts about state changes  
       virtual void notifyStateChanges(
-    	const std::string& exceptList,
-    	unsigned limit,
-    	std::ostream *debugOutput,
-        bool useHistory
+        const std::string& exceptList,
+        unsigned limit,
+        std::ostream* debugOutput
       ) throw (SQL_ERROR) = 0;
       virtual void generateLetters(unsigned item_count_limit) = 0;
       /// factory method

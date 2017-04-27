@@ -54,29 +54,24 @@ struct notify_state_changes_impl
   {
       Logging::Context ctx("notify_state_changes_impl");
       Admin::NotifyClient notify_client(
-              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port()
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context()
-              , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path())
-              , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path())
-              , optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path())
-              , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_restricted_handles()
-              , true //bool _notify_state_changes
-              , NotifyStateChangesArgs(
-                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyStateChangesArgsGrp>()->params.notify_except_types
-                      , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyStateChangesArgsGrp>()->params.notify_limit
-                      , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyStateChangesArgsGrp>()->params.notify_debug
-                      , CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyStateChangesArgsGrp>()->params.notify_use_history_tables
-                  )
-              , false //bool _notify_letters_postservis_send
-              , optional_string()//const optional_string& _hpmail_config
-              , false//bool _notify_sms_send
-              , optional_string()// cmdline_sms_command
-              , optional_string()// configfile_sms_command
-
-              );
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleDatabaseArgsGrp>()->get_conn_info(),
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_host_port(),
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgsGrp>()->get_nameservice_context(),
+              optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path()),
+              optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path()),
+              optional_string(CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_fileclient_path()),
+              CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_restricted_handles(),
+              true, //bool _notify_state_changes
+              NotifyStateChangesArgs(
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyStateChangesArgsGrp>()->params.notify_except_types,
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyStateChangesArgsGrp>()->params.notify_limit,
+                      CfgArgGroups::instance()->get_handler_ptr_by_type<HandleAdminClientNotifyStateChangesArgsGrp>()->params.notify_debug),
+              false, //bool _notify_letters_postservis_send
+              optional_string(),//const optional_string& _hpmail_config
+              false,//bool _notify_sms_send
+              optional_string(),// cmdline_sms_command
+              optional_string());// configfile_sms_command
       notify_client.runMethod();
-      return ;
   }
 };
 
