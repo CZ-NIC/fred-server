@@ -403,6 +403,14 @@ unsigned long long get_id_of_registered_object(
     throw std::logic_error("unexpected PublicRequestImpl::ObjectType::Enum value");
 }
 
+void check_authinfo_request_permission(const Fred::ObjectStatesInfo& states)
+{
+    if (states.presents(Fred::Object_State::server_transfer_prohibited))
+    {
+        throw PublicRequestImpl::ObjectTransferProhibited();
+    }
+}
+
 }//namespace Registry::{anonymous}
 
 PublicRequestImpl::PublicRequestImpl(const std::string &_server_name)
@@ -435,6 +443,8 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
         {
             Fred::OperationContextCreator ctx;
             object_id = get_id_of_registered_object(ctx, object_type, object_handle);
+            const Fred::ObjectStatesInfo states(Fred::GetObjectStates(object_id).exec(ctx));
+            check_authinfo_request_permission(states);
             Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
             public_request_id = Fred::CreatePublicRequest(
                     "create_authinfo_request_registry_email call",
@@ -486,6 +496,11 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
     }
+    catch (const ObjectTransferProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectTransferProhibited();
+    }
     catch (const Fred::UnknownObject& e)
     {
         LOGGER(PACKAGE).info(e.what());
@@ -514,9 +529,10 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     try
     {
         Fred::OperationContextCreator ctx;
-        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(
-                ctx,
-                get_id_of_registered_object(ctx, object_type, object_handle));
+        const unsigned long long object_id = get_id_of_registered_object(ctx, object_type, object_handle);
+        const Fred::ObjectStatesInfo states(Fred::GetObjectStates(object_id).exec(ctx));
+        check_authinfo_request_permission(states);
+        Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
         const Fred::CreatePublicRequest create_public_request_op(
                 "create_authinfo_request_non_registry_email call",
                 specified_email,
@@ -544,6 +560,11 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     {
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
+    }
+    catch (const ObjectTransferProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectTransferProhibited();
     }
     catch (const Fred::CreatePublicRequest::Exception& e)
     {

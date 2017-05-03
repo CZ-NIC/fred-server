@@ -102,6 +102,14 @@ public:
         }
     };
 
+    struct ObjectTransferProhibited : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "object transfer is prohibited";
+        }
+    };
+
     struct ObjectNotBlocked : std::exception
     {
         virtual const char* what() const throw()
