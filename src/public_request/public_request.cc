@@ -625,6 +625,11 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
         const unsigned long long object_id = get_id_of_registered_object(ctx, object_type, object_handle);
         Fred::PublicRequestsOfObjectLockGuardByObjectId locked_object(ctx, object_id);
         const Fred::ObjectStatesInfo states(Fred::GetObjectStates(object_id).exec(ctx));
+        if (states.presents(Fred::Object_State::mojeid_contact) ||
+            states.presents(Fred::Object_State::server_blocked))
+        {
+            throw OperationProhibited();
+        }
         switch (lock_request_type)
         {
             case LockRequestType::block_transfer:
@@ -699,6 +704,11 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
     {
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
+    }
+    catch (const OperationProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw OperationProhibited();
     }
     catch (const Fred::CreatePublicRequest::Exception& e)
     {

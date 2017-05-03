@@ -213,6 +213,11 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
         LOGGER(PACKAGE).error(e.what());
         throw OBJECT_NOT_BLOCKED();
     }
+    catch (const PublicRequestImpl::OperationProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw OPERATION_PROHIBITED();
+    }
     catch (const std::exception& e)
     {
         LOGGER(PACKAGE).error(e.what());
