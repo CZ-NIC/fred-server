@@ -176,6 +176,7 @@ void create_poll_statechange_record(
     BOOST_REQUIRE_EQUAL(sql_query_result.rows_affected(), 1);
 }
 
+// TO DELETE AS PART OF #18734 POLL REWRITE
 unsigned long long create_poll_request_fee_message(
     Fred::OperationContext& _ctx,
     unsigned long long _registrar_id,

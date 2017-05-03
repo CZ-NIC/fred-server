@@ -916,6 +916,12 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/poll/create_poll_message.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
 		src/fredlib/poll/create_update_object_poll_message.cc \
+		src/fredlib/poll/get_request_fee_message.h \
+		src/fredlib/poll/get_request_fee_message.cc \
+		src/fredlib/poll/create_request_fee_message.h \
+		src/fredlib/poll/create_request_fee_message.cc \
+		src/fredlib/poll/create_low_credit_messages.h \
+		src/fredlib/poll/create_low_credit_messages.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/copy_history_impl.h \
 		src/fredlib/contact/copy_history_impl.cc \

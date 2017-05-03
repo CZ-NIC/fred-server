@@ -3538,6 +3538,7 @@ public:
      return new ManagerImpl();
  }
 
+// TO DELETE AS PART OF #18734 POLL REWRITE
  std::string getRequestUnitPrice(unsigned zone_id)
  {
      Database::Connection conn = Database::Manager::acquire();
@@ -3564,6 +3565,7 @@ public:
      return std::string(res_price[0][0]);
  }
 
+// TO DELETE AS PART OF #18734 POLL REWRITE
  void getRequestFeeParams(unsigned *zone_id, unsigned *base_free_count, unsigned *per_domain_free_count)
  {
      Database::Connection conn = Database::Manager::acquire();
