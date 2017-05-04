@@ -39,8 +39,8 @@ Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_
 
 }//namespace Registry::PublicRequest::{anonymous}
 
-Server_i::Server_i()
-    : pimpl_(new PublicRequestImpl)
+Server_i::Server_i(const std::string& _server_name)
+    : pimpl_(new PublicRequestImpl(_server_name))
 {
 }
 
@@ -69,6 +69,11 @@ Server_i::Server_i()
     {
         LOGGER(PACKAGE).info(e.what());
         throw OBJECT_NOT_FOUND();
+    }
+    catch (const PublicRequestImpl::ObjectTransferProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw OBJECT_TRANSFER_PROHIBITED();
     }
     catch (const std::exception& e)
     {
@@ -121,6 +126,11 @@ CORBA::ULongLong Server_i::create_authinfo_request_non_registry_email(
     {
         LOGGER(PACKAGE).info(e.what());
         throw OBJECT_NOT_FOUND();
+    }
+    catch (const PublicRequestImpl::ObjectTransferProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw OBJECT_TRANSFER_PROHIBITED();
     }
     catch (const PublicRequestImpl::InvalidContactEmail& e)
     {
@@ -202,6 +212,11 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
     {
         LOGGER(PACKAGE).error(e.what());
         throw OBJECT_NOT_BLOCKED();
+    }
+    catch (const PublicRequestImpl::OperationProhibited& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw OPERATION_PROHIBITED();
     }
     catch (const std::exception& e)
     {

@@ -143,9 +143,7 @@ NotifyClient::state_changes()
     notifyMan->notifyStateChanges(
             exceptTypes, limit,
             //m_conf.hasOpt(NOTIFY_DEBUG_NAME)
-            notify_state_changes_params.notify_debug ? &std::cout : NULL,
-                    notify_state_changes_params.notify_use_history_tables//m_conf.hasOpt(NOTIFY_USE_HISTORY_TABLES_NAME)
-                    );
+            notify_state_changes_params.notify_debug ? &std::cout : NULL);
 }
 
 void NotifyClient::letters_send()

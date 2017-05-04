@@ -43,6 +43,11 @@ namespace Registry {
 class PublicRequestImpl
 {
 public:
+    PublicRequestImpl(const std::string &_server_name);
+    ~PublicRequestImpl();
+
+    const std::string& get_server_name()const;
+
     struct ConfirmedBy
     {
         enum Enum
@@ -97,6 +102,14 @@ public:
         }
     };
 
+    struct ObjectTransferProhibited : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "object transfer is prohibited";
+        }
+    };
+
     struct ObjectNotBlocked : std::exception
     {
         virtual const char* what() const throw()
@@ -145,6 +158,14 @@ public:
         }
     };
 
+    struct OperationProhibited : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "operation is prohibited";
+        }
+    };
+
     unsigned long long create_authinfo_request_registry_email(
         ObjectType::Enum object_type,
         const std::string& object_handle,
@@ -172,6 +193,8 @@ public:
 
     static boost::shared_ptr<Fred::Mailer::Manager> get_default_mailer_manager();
     static boost::shared_ptr<Fred::Document::Manager> get_default_document_manager();
+private:
+    const std::string server_name_;
 };
 
 } // namespace Registry

@@ -27,6 +27,7 @@
 #include "src/corba/PublicRequest.hh"
 
 #include <memory>
+#include <string>
 
 namespace Registry {
 
@@ -37,7 +38,7 @@ namespace PublicRequest {
 class Server_i : public POA_Registry::PublicRequest::PublicRequestIntf
 {
 public:
-    Server_i();
+    Server_i(const std::string& _server_name);
 
     virtual ~Server_i() {}
 

@@ -47,7 +47,7 @@ public:
           email("some@email.com")
     {
         ctx.commit_transaction();
-        Registry::PublicRequestImpl pr;
+        Registry::PublicRequestImpl pr("public-request-test");
         email_contact_id = pr.create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
@@ -140,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE(authinfo_request_to_non_registry_email, non_registry_ema
 BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
     BOOST_CHECK_THROW(
-            Registry::PublicRequestImpl().create_authinfo_request_non_registry_email(
+            Registry::PublicRequestImpl("public-request-test").create_authinfo_request_non_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 "test handle",
                 Optional<unsigned long long>(),
@@ -152,7 +152,7 @@ BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 BOOST_FIXTURE_TEST_CASE(invalid_email, non_registry_email_fixture)
 {
     BOOST_CHECK_THROW(
-            Registry::PublicRequestImpl().create_authinfo_request_non_registry_email(
+            Registry::PublicRequestImpl("public-request-test").create_authinfo_request_non_registry_email(
                     Registry::PublicRequestImpl::ObjectType::contact,
                     contact.handle,
                     Optional<unsigned long long>(),

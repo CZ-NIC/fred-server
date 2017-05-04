@@ -39,7 +39,8 @@ class create_pdf_fixture : public Test::instantiate_db_template
 {
 public:
     create_pdf_fixture()
-    : contact(Test::contact::make(ctx))
+        : contact(Test::contact::make(ctx)),
+          pr("public-request-test")
     {
         ctx.commit_transaction();
     }

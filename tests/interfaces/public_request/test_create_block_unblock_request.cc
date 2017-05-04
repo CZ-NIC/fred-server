@@ -38,7 +38,8 @@ class lock_request_fixture : public Test::instantiate_db_template
 {
 public:
     lock_request_fixture()
-    : contact(Test::contact::make(ctx))
+        : contact(Test::contact::make(ctx)),
+          pr("public-request-test")
     {
         ctx.commit_transaction();
     }
@@ -51,7 +52,7 @@ public:
 
 void boost_check_fail_blocks(const std::string& handle)
 {
-    Registry::PublicRequestImpl pr;
+    Registry::PublicRequestImpl pr("public-request-test");
     BOOST_CHECK_THROW(
             pr.create_block_unblock_request(
                 Registry::PublicRequestImpl::ObjectType::contact,

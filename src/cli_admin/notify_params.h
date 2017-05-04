@@ -35,22 +35,17 @@ struct NotifyStateChangesArgs
     optional_string notify_except_types;
     optional_ulonglong notify_limit;
     bool notify_debug;
-    bool notify_use_history_tables;
 
     NotifyStateChangesArgs()
     : notify_debug(false)
-    , notify_use_history_tables(false)
     {}//ctor
     NotifyStateChangesArgs(
-            const optional_string& _notify_except_types
-            , const optional_ulonglong _notify_limit
-            , bool _notify_debug
-            , bool _notify_use_history_tables
-            )
-    : notify_except_types(_notify_except_types)
-    , notify_limit(_notify_limit)
-    , notify_debug(_notify_debug)
-    , notify_use_history_tables(_notify_use_history_tables)
+            const optional_string& _notify_except_types,
+            const optional_ulonglong& _notify_limit,
+            bool _notify_debug)
+    : notify_except_types(_notify_except_types),
+      notify_limit(_notify_limit),
+      notify_debug(_notify_debug)
     {}//init ctor
 };//struct NotifyStateChangesArgs
 
@@ -66,11 +61,10 @@ struct SmsSendArgs
     SmsSendArgs()
     {}//ctor
     SmsSendArgs(
-            const optional_string& _sms_command
-            , const optional_string& _command
-            )
-    : sms_command(_sms_command)
-    , command(_command)
+            const optional_string& _sms_command,
+            const optional_string& _command)
+    : sms_command(_sms_command),
+      command(_command)
     {}//init ctor
 };//struct SmsSendArgs
 
@@ -89,13 +83,12 @@ struct RegisteredLettersManualSendArgs
     RegisteredLettersManualSendArgs() : shell_cmd_timeout(0)
     {}//ctor
     RegisteredLettersManualSendArgs(
-            const optional_string& _working_directory
-            , const std::string & _email
-            , const long _shell_cmd_timeout
-            )
-    : working_directory(_working_directory)
-    , email(_email)
-    , shell_cmd_timeout(_shell_cmd_timeout)
+            const optional_string& _working_directory,
+            const std::string& _email,
+            long _shell_cmd_timeout)
+    : working_directory(_working_directory),
+      email(_email),
+      shell_cmd_timeout(_shell_cmd_timeout)
     {}//init ctor
 };//struct RegisteredLettersManualSendArgs
 
