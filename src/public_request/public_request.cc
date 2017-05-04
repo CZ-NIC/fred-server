@@ -14,6 +14,8 @@
 #include "util/corba_wrapper_decl.h"
 #include "util/types/stringify.h"
 #include "util/db/query_param.h"
+#include "util/log/context.h"
+#include "util/random.h"
 
 #include <boost/format.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -26,8 +28,8 @@
 #include <sstream>
 
 namespace Registry {
-
 namespace PublicRequestType {
+
 namespace {
 
 template <class T>
@@ -168,6 +170,35 @@ Fred::PublicRequestTypeIface::PublicRequestTypes get_block_unblock_public_reques
 }//namespace Registry::PublicRequestType
 
 namespace {
+
+std::string create_ctx_name(const std::string &_name)
+{
+    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+}
+
+std::string create_ctx_function_name(const char *fnc)
+{
+    std::string name(fnc);
+    std::replace(name.begin(), name.end(), '_', '-');
+    return name;
+}
+
+class LogContext
+{
+public:
+    LogContext(const PublicRequestImpl &_impl, const std::string &_op_name)
+    :   ctx_server_(create_ctx_name(_impl.get_server_name())),
+        ctx_interface_("PublicRequest"),
+        ctx_operation_(_op_name)
+    {
+    }
+private:
+    Logging::Context ctx_server_;
+    Logging::Context ctx_interface_;
+    Logging::Context ctx_operation_;
+};
+
+#define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
 
 struct NoPublicRequest : std::exception
 {
@@ -374,12 +405,28 @@ unsigned long long get_id_of_registered_object(
 
 }//namespace Registry::{anonymous}
 
+PublicRequestImpl::PublicRequestImpl(const std::string &_server_name)
+    : server_name_(_server_name)
+{
+    LogContext log_ctx(*this, "init");
+}
+
+PublicRequestImpl::~PublicRequestImpl()
+{
+}
+
+const std::string& PublicRequestImpl::get_server_name()const
+{
+    return server_name_;
+}
+
 unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     ObjectType::Enum object_type,
     const std::string& object_handle,
     const Optional<unsigned long long>& log_request_id,
     boost::shared_ptr<Fred::Mailer::Manager> manager) // potentially put as member
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     try
     {
         unsigned long long object_id;
@@ -463,6 +510,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_non_registry_email
     ConfirmedBy::Enum confirmation_method,
     const std::string& specified_email)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -549,6 +597,7 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
     ConfirmedBy::Enum confirmation_method,
     LockRequestType::Enum lock_request_type)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     try
     {
         Fred::OperationContextCreator ctx;
@@ -698,6 +747,7 @@ PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
     Language::Enum lang,
     boost::shared_ptr<Fred::Document::Manager> manager)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     const std::string lang_code = language_to_lang_code(lang);
 
     Fred::OperationContextCreator ctx;

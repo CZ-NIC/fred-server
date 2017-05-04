@@ -102,7 +102,7 @@ struct registry_email_fixture : Test::Fixture::instantiate_db_template
         boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(
                 new FakeMailer());
 
-        Registry::PublicRequestImpl pr;
+        Registry::PublicRequestImpl pr("public-request-test");
         contact_id = pr.create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
@@ -153,7 +153,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
     boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     try
     {
-        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+        Registry::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 contact.handle,
                 Optional<unsigned long long>(),
@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
 
     try
     {
-        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+        Registry::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::nsset,
                 nsset.handle,
                 Optional<unsigned long long>(),
@@ -175,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
 
     try
     {
-        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+        Registry::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::domain,
                 domain.fqdn,
                 Optional<unsigned long long>(),
@@ -186,7 +186,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::Fixture::instantiate_db_template)
 
     try
     {
-        Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+        Registry::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::keyset,
                 keyset.handle,
                 Optional<unsigned long long>(),
@@ -200,7 +200,7 @@ BOOST_FIXTURE_TEST_CASE(no_object, Test::Fixture::instantiate_db_template)
 {
     boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     BOOST_CHECK_THROW(
-            Registry::PublicRequestImpl().create_authinfo_request_registry_email(
+            Registry::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,
                 "test handle",
                 Optional<unsigned long long>(),

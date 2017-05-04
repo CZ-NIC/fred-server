@@ -39,8 +39,8 @@ Optional<unsigned long long> unwrap_nullableulonglong_to_optional_unsigned_long_
 
 }//namespace Registry::PublicRequest::{anonymous}
 
-Server_i::Server_i()
-    : pimpl_(new PublicRequestImpl)
+Server_i::Server_i(const std::string& _server_name)
+    : pimpl_(new PublicRequestImpl(_server_name))
 {
 }
 

@@ -43,6 +43,11 @@ namespace Registry {
 class PublicRequestImpl
 {
 public:
+    PublicRequestImpl(const std::string &_server_name);
+    ~PublicRequestImpl();
+
+    const std::string& get_server_name()const;
+
     struct ConfirmedBy
     {
         enum Enum
@@ -172,6 +177,8 @@ public:
 
     static boost::shared_ptr<Fred::Mailer::Manager> get_default_mailer_manager();
     static boost::shared_ptr<Fred::Document::Manager> get_default_document_manager();
+private:
+    const std::string server_name_;
 };
 
 } // namespace Registry
