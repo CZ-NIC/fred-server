@@ -102,6 +102,14 @@ public:
         }
     };
 
+    struct ObjectTransferProhibited : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "object transfer is prohibited";
+        }
+    };
+
     struct ObjectNotBlocked : std::exception
     {
         virtual const char* what() const throw()
@@ -147,6 +155,14 @@ public:
         virtual const char* what() const throw()
         {
             return "invalid contact email associated with this object";
+        }
+    };
+
+    struct OperationProhibited : std::exception
+    {
+        virtual const char* what() const throw()
+        {
+            return "operation is prohibited";
         }
     };
 
