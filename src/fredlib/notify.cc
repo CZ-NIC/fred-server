@@ -173,14 +173,6 @@ namespace Fred
             << "WHERE nobr.id = " << nsset;
         return getEmailList(sql);
       }
-      std::string getNSSetTechEmails(TID nsset)
-      {
-        std::stringstream sql;
-        sql << "SELECT c.email "
-            << "FROM nsset_contact_map ncm, contact c "
-            << "WHERE ncm.contactid=c.id AND ncm.nssetid=" << nsset;
-        return getEmailList(sql);
-      }
       std::string getKeySetTechEmailsHistory(TID keyset)
       {
         std::stringstream sql;
@@ -193,15 +185,6 @@ namespace Fred
             << "WHERE kobr.id = " << keyset;
         return getEmailList(sql);
       }
-      std::string getKeySetTechEmails(TID keyset)
-      {
-          std::stringstream sql;
-          sql << "SELECT c.email "
-              << "FROM keyset_contact_map kcm, contact c "
-              << "WHERE kcm.contactid=c.id AND kcm.keysetid="
-              << keyset;
-          return getEmailList(sql);
-      }
       std::string getContactEmailsHistory(TID contact)
       {
         std::stringstream sql;
@@ -209,12 +192,6 @@ namespace Fred
             << "FROM contact_history ch "
             << "JOIN object_registry cobr ON (ch.historyid = cobr.historyid) "
             << "WHERE cobr.id = " << contact;
-        return getEmailList(sql);
-      }
-      std::string getContactEmails(TID contact)
-      {
-        std::stringstream sql;
-        sql << "SELECT c.email FROM contact c WHERE c.id=" << contact;
         return getEmailList(sql);
       }
 
@@ -351,57 +328,6 @@ namespace Fred
           }//catch(...)
       }//fillDomainParamsHistory
 
-      void fillDomainParams(
-        TID domain_id,
-        ptime stamp,
-        Fred::Mailer::Parameters& params
-      ) throw (SQL_ERROR)
-      {
-        const std::auto_ptr<Fred::Domain::List> dlist(dm->createList());
-        dlist->setIdFilter(domain_id);
-        dlist->reload();
-        if (dlist->getCount() != 1)
-        {
-            throw SQL_ERROR();
-        }
-        const Fred::Domain::Domain *const d = dlist->getDomain(0);
-        // fill params
-        params["checkdate"] = to_iso_extended_string(date(day_clock::local_day()));
-        params["domain"] = d->getFQDN();
-        params["owner"] = d->getRegistrantHandle();
-        params["nsset"] = d->getNSSetHandle();
-        if (!d->getValExDate().is_special())
-        {
-          params["valdate"] = to_iso_extended_string(d->getValExDate());
-        }
-        params["exdate"] = to_iso_extended_string(d->getExpirationDate());
-        params["dnsdate"] = to_iso_extended_string(d->getOutZoneDate());
-        params["exregdate"] = to_iso_extended_string(d->getCancelDate());
-        params["day_before_exregdate"] = to_iso_extended_string(d->getCancelDate() - boost::gregorian::date_duration(1));
-        params["statechangedate"] = to_iso_extended_string(stamp.date());
-        // fill information about registrar
-        const Registrar::Registrar::AutoPtr regbyhandle(rm->getRegistrarByHandle(d->getRegistrarHandle()));
-
-        std::ostringstream reg;
-        if (regbyhandle.get() == 0)
-        {
-          // fallback to handle instead of error
-          reg << db->GetFieldValue(0, 3);
-        }
-        else
-        {
-          reg << regbyhandle->getName();
-          if (!regbyhandle->getURL().empty())
-          {
-            reg << " (" << regbyhandle->getURL() << ")";
-          }
-        }
-        params["registrar"] = reg.str();
-        params["zone"] = this->getParamZone(d->getZoneId());
-        db->FreeSelect();
-        this->fillDomainParamsAdministrators(domain_id, params);
-      }
-
       void fillSimpleObjectParams(
         TID id,
         Fred::Mailer::Parameters& params
@@ -457,34 +383,33 @@ namespace Fred
       void notifyStateChanges(
         const std::string& exceptList,
         unsigned limit,
-        std::ostream *debugOutput,
-        bool useHistory
+        std::ostream *debugOutput
       ) throw (SQL_ERROR)
       {
         TRACE("[CALL] Fred::Notify::notifyStateChanges()");
-        std::stringstream sql;
-        sql << "SELECT nt.state_id, nt.type, "
-            << "nt.mtype, nt.emails, nt.obj_id, nt.obj_type, nt.valid_from "
-            << "FROM "
-            << "(SELECT s.id AS state_id, nm.id AS type, "
-            << " mt.name AS mtype, nm.emails, "
-            << " obr.id AS obj_id, obr.type AS obj_type, s.valid_from "
-            << " FROM object_state s, object_registry obr, "
-            << " notify_statechange_map nm, mail_type mt "
-            << " WHERE s.object_id=obr.id AND obr.type=nm.obj_type "
-            << " AND s.state_id=nm.state_id AND s.valid_to ISNULL "
-            << " AND mt.id=nm.mail_type_id) AS nt "
-            << "LEFT JOIN notify_statechange ns ON ("
-            << "nt.state_id=ns.state_id AND nt.type=ns.type) "
-            << "WHERE ns.state_id ISNULL ";
-        if (!exceptList.empty())
-            sql << "AND nt.type NOT IN (" << exceptList << ") ";
-        sql << "ORDER BY nt.state_id ASC ";
-        if (limit)
-            sql << "LIMIT " << limit;
-        if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
+        std::ostringstream sql;
+        sql << "SELECT s.id AS state_id, nm.id AS type, "
+                      "mt.name AS mtype, nm.emails, "
+                      "obr.id AS obj_id, obr.type AS obj_type, s.valid_from "
+               "FROM object_state s "
+               "JOIN object_registry obr ON obr.id=s.object_id "
+               "JOIN notify_statechange_map nm ON nm.obj_type=obr.type AND nm.state_id=s.state_id "
+               "JOIN mail_type mt ON mt.id=nm.mail_type_id "
+               "LEFT JOIN notify_statechange ns ON ns.state_id=s.id AND ns.type=nm.id "
+               "WHERE s.valid_to IS NULL AND "
+                     "ns.state_id IS NULL";
+        if (!exceptList.empty()) {
+            sql << " AND nm.id NOT IN (" << exceptList << ")";
+        }
+        sql << " ORDER BY s.id ASC";
+        if (0 < limit) {
+            sql << " LIMIT " << limit;
+        }
+        if (!db->ExecSelect(sql.str().c_str())) {
+            throw SQL_ERROR();
+        }
         std::vector<NotifyRequest> nlist;
-        for (unsigned i=0; i < (unsigned)db->GetSelectRows(); i++)
+        for (unsigned i = 0; i < (unsigned)db->GetSelectRows(); ++i) {
           nlist.push_back(NotifyRequest(
             STR_TO_ID(db->GetFieldValue(i,0)),
             atoi(db->GetFieldValue(i,1)),
@@ -494,10 +419,12 @@ namespace Fred
             atoi(db->GetFieldValue(i,5)),
             MAKE_TIME(i,6) /// Once should handle timestamp conversion
           ));
+        }
         db->FreeSelect();
-        if (debugOutput) *debugOutput << "<notifications>" << std::endl;
-        std::vector<NotifyRequest>::const_iterator i = nlist.begin();
-        for (;i!=nlist.end();i++) {
+        if (debugOutput) {
+            *debugOutput << "<notifications>" << std::endl;
+        }
+        for (std::vector<NotifyRequest>::const_iterator i = nlist.begin(); i != nlist.end(); ++i) {
           Fred::Mailer::Parameters params;
           // handles are obsolete
           Fred::Mailer::Handles handles;
@@ -506,81 +433,47 @@ namespace Fred
           std::string emails;
           try {
             switch (i->obj_type) {
-             case 1: // contact
-              fillSimpleObjectParams(i->obj_id,params);
-              if (useHistory) {
+              case 1: // contact
+                fillSimpleObjectParams(i->obj_id, params);
                 emails = getContactEmailsHistory(i->obj_id);
-              }
-              else {
-                emails = getContactEmails(i->obj_id);
-              }
-              break;
-             case 2: // nsset
-              fillSimpleObjectParams(i->obj_id,params);
-              if (useHistory) {
+                break;
+              case 2: // nsset
+                fillSimpleObjectParams(i->obj_id, params);
                 emails = getNSSetTechEmailsHistory(i->obj_id);
-              }
-              else {
-                emails = getNSSetTechEmails(i->obj_id);
-              }
-              break;
-             case 3: // domain
-               if (useHistory) {
-                 fillDomainParamsHistory(i->obj_id,i->stamp,params);
-                 switch (i->emails) {
-                   case 1:
-                     emails = getDomainAdminEmailsHistory(i->obj_id);
-                     break;
-                   case 2:
-                     emails = getDomainTechEmailsHistory(i->obj_id);
-                     break;
-                   case 3:
-                     emails = getDomainGenericEmails(params["domain"]);
-                     break;
-                   case 4:
-                     emails = getDomainAdditionalEmails(i->state_id, i->obj_id);
-                     break;
-                 }
-
-               }
-               else {
-                 fillDomainParams(i->obj_id,i->stamp,params);
-                 switch (i->emails) {
-                   case 1:
-                     emails = getDomainAdminEmails(i->obj_id);
-                     break;
-                   case 2:
-                     emails = getDomainTechEmails(i->obj_id);
-                     break;
-                   case 3:
-                     emails = getDomainGenericEmails(params["domain"]);
-                     break;
-                   case 4:
-                     emails = getDomainAdditionalEmails(i->state_id, i->obj_id);
-                     break;
-                 }
-               }
-               break;
-             case 4: // keyset
-              fillSimpleObjectParams(i->obj_id,params);
-              if (useHistory) {
+                break;
+              case 3: // domain
+                fillDomainParamsHistory(i->obj_id, i->stamp, params);
+                switch (i->emails) {
+                  case 1:
+                    emails = getDomainAdminEmailsHistory(i->obj_id);
+                    break;
+                  case 2:
+                    emails = getDomainTechEmailsHistory(i->obj_id);
+                    break;
+                  case 3:
+                    emails = getDomainGenericEmails(params["domain"]);
+                    break;
+                  case 4:
+                    emails = getDomainAdditionalEmails(i->state_id, i->obj_id);
+                    break;
+                }
+                break;
+              case 4: // keyset
+                fillSimpleObjectParams(i->obj_id, params);
                 emails = getKeySetTechEmailsHistory(i->obj_id);
-              }
-              else {
-                emails = getKeySetTechEmails(i->obj_id);
-              }
-              break;
+                break;
             }
             if (debugOutput) {
               *debugOutput << "<notify>"
-                           << "<emails>" << emails << "</emails>"
-                           << "<template>" << i->mtype << "</template>";
-              Fred::Mailer::Parameters::const_iterator ci = params.begin();
-              for (;ci!=params.end();ci++)
+                              "<emails>" << emails << "</emails>"
+                              "<template>" << i->mtype << "</template>";
+              for (Fred::Mailer::Parameters::const_iterator ci = params.begin(); ci != params.end(); ++ci) {
                 *debugOutput << "<param><name>" << ci->first << "</name>"
-                             << "<value>" << ci->second << "</value></param>";
+                                "<value>" << ci->second << "</value></param>";
+              }
               *debugOutput << "</notify>" << std::endl;
-            } else {
+            }
+            else {
               TID mail = 0;
               const bool some_emails_are_valid = mm->checkEmailList(emails); // remove "emails" without @, remove duplicates, sort them, set separator to " "
               const std::string space_separated_emails = emails; // emails were modified above
@@ -588,7 +481,7 @@ namespace Fred
                 mail = mm->sendEmail("", space_separated_emails, "", i->mtype, params, handles, attach);
               }
               saveNotification(i->state_id, i->type, mail);
-              if((i->obj_type == 3) && (i->emails == 4)) { // 3: domain, 4: additional email
+              if ((i->obj_type == 3) && (i->emails == 4)) { // 3: domain, 4: additional email
                 std::vector<std::string> set_of_emails;
                 boost::split(set_of_emails, space_separated_emails, boost::is_any_of(" "), boost::token_compress_on);
                 saveDomainAdditionalEmailsState(i->state_id, i->obj_id, set_of_emails);
@@ -603,7 +496,9 @@ namespace Fred
             );
           }
         }
-        if (debugOutput) *debugOutput << "</notifications>" << std::endl;
+        if (debugOutput) {
+            *debugOutput << "</notifications>" << std::endl;
+        }
       }
 
       /** Controls output of notification letters into multiple files

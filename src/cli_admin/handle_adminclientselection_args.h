@@ -1901,26 +1901,21 @@ public:
         cfg_opts->add_options()
             ("notify_state_changes", "send emails to contacts about object state changes")
             ("notify_except_types", boost::program_options
-                ::value<Checked::string>()->notifier(save_optional_string(params.notify_except_types))
-                , "list of notification types ignored in notification")
+                ::value<Checked::string>()->notifier(save_optional_string(params.notify_except_types)),
+                "list of notification types ignored in notification")
             ("notify_limit", boost::program_options
-                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.notify_limit))
-                , "limit for nubmer of emails generated in one pass (0=no limit)")
+                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(params.notify_limit)),
+                "limit for nubmer of emails generated in one pass (0=no limit)")
             ("notify_debug", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.notify_debug))
-                , "debug")
-            ("notify_use_history_tables", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.notify_use_history_tables))
-                , "slower queries into historic tables, but can handle deleted objects")
-                ;
+                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(params.notify_debug)),
+                "debug");
         return cfg_opts;
     }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
+    std::size_t handle(int _argc, char* _argv[], FakedArgs& _fa, std::size_t _option_group_index)
     {
         boost::program_options::variables_map vm;
-        handler_parse_args()(get_options_description(), vm, argc, argv, fa);
-        return option_group_index;
+        handler_parse_args()(get_options_description(), vm, _argc, _argv, _fa);
+        return _option_group_index;
     }//handle
 };//class HandleAdminClientNotifyStateChangesArgsGrp
 
