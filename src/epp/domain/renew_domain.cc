@@ -169,8 +169,14 @@ RenewDomainResult renew_domain(
         // get min domain registration period by zone
         domain_registration_in_months = zone_data.ex_period_min;
     }
-    if ((domain_registration_in_months < zone_data.ex_period_min)
-        || (domain_registration_in_months > zone_data.ex_period_max))
+    if (domain_registration_in_months < zone_data.ex_period_min)
+    {
+        parameter_value_range_errors.add_extended_error(
+                EppExtendedError::of_scalar_parameter(
+                        Param::domain_period,
+                        Reason::period_too_short));
+    }
+    else if (domain_registration_in_months > zone_data.ex_period_max)
     {
         parameter_value_range_errors.add_extended_error(
                 EppExtendedError::of_scalar_parameter(
