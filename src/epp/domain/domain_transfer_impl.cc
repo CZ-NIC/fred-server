@@ -11,10 +11,6 @@
 #include "src/fredlib/domain/transfer_domain.h"
 #include "src/fredlib/exception.h"
 #include "src/fredlib/object/object_state.h"
-#include "src/fredlib/object_state/lock_object_state_request_lock.h"
-#include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/transfer_object_exception.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -84,10 +80,6 @@ unsigned long long domain_transfer_impl(
     if(is_sponsoring_registrar) {
         throw ObjectNotEligibleForTransfer();
     }
-
-    // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(domain_data_before_transfer.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(domain_data_before_transfer.id).exec(_ctx);
 
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
     if (!is_system_registrar) {

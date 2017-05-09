@@ -13,10 +13,6 @@
 #include "src/fredlib/registrar/registrar_zone_access.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/object/states_info.h"
-#include "src/fredlib/object_state/lock_object_state_request_lock.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
-#include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/object_state_name.h"
 #include "util/db/param_query_composition.h"
 #include "util/optional_value.h"
 #include "util/map_at.h"
@@ -204,16 +200,15 @@ DomainRenewResult domain_renew_impl(
         throw AuthorizationError();
     }
 
-    // do it before any object state related checks
-    Fred::LockObjectStateRequestLock(domain_info_data.id).exec(_ctx);
-    Fred::PerformObjectStateRequest(domain_info_data.id).exec(_ctx);
-
-    if( !logged_in_registrar.system.get_value_or_default()
-            && (Fred::ObjectHasState(domain_info_data.id, Fred::ObjectState::SERVER_RENEW_PROHIBITED).exec(_ctx)
-                ||
-                Fred::ObjectHasState(domain_info_data.id, Fred::ObjectState::DELETE_CANDIDATE).exec(_ctx))
-    ) {
-        throw ObjectStatusProhibitsOperation();
+    const bool is_system_registrar = logged_in_registrar.system.get_value_or(false);
+    if (!is_system_registrar)
+    {
+        const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_info_data.id).exec(_ctx));
+        if (domain_states.presents(Fred::Object_State::server_renew_prohibited) ||
+            domain_states.presents(Fred::Object_State::delete_candidate))
+        {
+            throw ObjectStatusProhibitsOperation();
+        }
     }
 
     //throw accumulated errors

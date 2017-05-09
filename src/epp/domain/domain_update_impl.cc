@@ -17,8 +17,6 @@
 #include "src/fredlib/keyset/check_keyset.h"
 #include "src/fredlib/nsset/handle_state.h"
 #include "src/fredlib/nsset/check_nsset.h"
-#include "src/fredlib/object_state/lock_object_state_request_lock.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
@@ -185,9 +183,6 @@ unsigned long long domain_update_impl(
         throw AuthorizationError();
     }
 
-    Fred::LockObjectStateRequestLock(domain_data_before_update.id).exec(_ctx);
-    // process object state requests
-    Fred::PerformObjectStateRequest(domain_data_before_update.id).exec(_ctx);
     const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_update.id).exec(_ctx));
 
     if (!is_system_registrar) {
