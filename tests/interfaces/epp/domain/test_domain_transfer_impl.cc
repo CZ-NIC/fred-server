@@ -137,6 +137,7 @@ struct HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistr
 
 BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, HasInfoDomainDataWithServerUpdateProhibitedRequestAndDifferentInfoRegistrarData)
 {
+    Fred::PerformObjectStateRequest(info_domain_data_.id).exec(ctx);
     Epp::Domain::domain_transfer_impl(
         ctx,
         info_domain_data_.fqdn,
