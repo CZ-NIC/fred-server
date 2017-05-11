@@ -190,7 +190,7 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
     }
     catch (const PublicRequestImpl::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER(PACKAGE).info(e.what());
         throw OBJECT_NOT_FOUND();
     }
     catch (const PublicRequestImpl::InvalidContactEmail& e)
@@ -200,17 +200,17 @@ CORBA::ULongLong Server_i::create_block_unblock_request(
     }
     catch (const PublicRequestImpl::HasDifferentBlock& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER(PACKAGE).info(e.what());
         throw HAS_DIFFERENT_BLOCK();
     }
     catch (const PublicRequestImpl::ObjectAlreadyBlocked& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER(PACKAGE).info(e.what());
         throw OBJECT_ALREADY_BLOCKED();
     }
     catch (const PublicRequestImpl::ObjectNotBlocked& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER(PACKAGE).info(e.what());
         throw OBJECT_NOT_BLOCKED();
     }
     catch (const PublicRequestImpl::OperationProhibited& e)
@@ -269,12 +269,12 @@ Buffer* Server_i::create_public_request_pdf(CORBA::ULongLong public_request_id, 
     }
     catch (const PublicRequestImpl::ObjectNotFound& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER(PACKAGE).info(e.what());
         throw OBJECT_NOT_FOUND();
     }
     catch (const PublicRequestImpl::InvalidPublicRequestType& e)
     {
-        LOGGER(PACKAGE).error(e.what());
+        LOGGER(PACKAGE).info(e.what());
         throw INVALID_PUBLIC_REQUEST_TYPE();
     }
     catch (const std::exception& e)
