@@ -467,7 +467,14 @@ namespace Fred
             BOOST_THROW_EXCEPTION(MergeContact::Exception().set_identical_contacts_handle(dst_contact_handle));
         }
 
-        Database::Result diff_result = ctx.get_conn().exec_params(
+        std::vector<std::string> contact_address_types = Util::vector_of<std::string>
+                ("MAILING")
+                ("BILLING")
+                ("SHIPPING")
+                ("SHIPPING_2")
+                ("SHIPPING_3");
+        std::stringstream dup_sql;
+        dup_sql << \
         "SELECT "//c1.name, oreg1.name, o1.clid, c2.name, oreg2.name , o2.clid,
         " (trim(both ' ' from COALESCE(c1.name,'')) != trim(both ' ' from COALESCE(c2.name,''))) OR "
         " (trim(both ' ' from COALESCE(c1.organization,'')) != trim(both ' ' from COALESCE(c2.organization,''))) OR "
@@ -494,6 +501,42 @@ namespace Fred
         " (c1.disclosevat != c2.disclosevat) OR "
         " (c1.discloseident != c2.discloseident) OR "
         " (c1.disclosenotifyemail != c2.disclosenotifyemail) OR "
+        " (c1.warning_letter != c2.warning_letter) OR ";
+        for (std::vector<std::string>::const_iterator contact_address_type = contact_address_types.begin();
+            contact_address_type != contact_address_types.end();
+            ++contact_address_type)
+        {
+            dup_sql << \
+            " (SELECT row("
+               " trim(both ' ' from c1a.company_name),"
+               " trim(both ' ' from c1a.street1),"
+               " trim(both ' ' from c1a.street2),"
+               " trim(both ' ' from c1a.street3),"
+               " trim(both ' ' from c1a.city),"
+               " trim(both ' ' from c1a.stateorprovince),"
+               " trim(both ' ' from c1a.postalcode),"
+               " trim(both ' ' from c1a.country)"
+               " )"
+              " FROM contact_address c1a"
+             " WHERE c1a.type = '" << *contact_address_type << "'"
+               " AND c1a.contactid = c1.id"
+            " ) != "
+            " (SELECT row("
+               " trim(both ' ' from c2a.company_name),"
+               " trim(both ' ' from c2a.street1),"
+               " trim(both ' ' from c2a.street2),"
+               " trim(both ' ' from c2a.street3),"
+               " trim(both ' ' from c2a.city),"
+               " trim(both ' ' from c2a.stateorprovince),"
+               " trim(both ' ' from c2a.postalcode),"
+               " trim(both ' ' from c2a.country)"
+               " )"
+              " FROM contact_address c2a"
+             " WHERE c2a.type = '" << *contact_address_type << "'"
+               " AND c2a.contactid = c2.id"
+            " ) OR ";
+        }
+        dup_sql << \
         " o1.clid != o2.clid "// current registrar
         "  as differ, c1.id AS src_contact_id, c2.id AS dst_contact_id"
         " FROM (object_registry oreg1 "
@@ -502,8 +545,10 @@ namespace Fred
         " JOIN (object_registry oreg2 "
         " JOIN object o2 ON oreg2.id=o2.id "
         " JOIN contact c2 ON c2.id = oreg2.id AND oreg2.name = UPPER($2::text) AND oreg2.erdate IS NULL"
-        ") ON TRUE "
-          , Database::query_param_list(src_contact_handle)(dst_contact_handle));
+        ") ON TRUE ";
+        Database::Result diff_result = ctx.get_conn().exec_params(
+                dup_sql.str(),
+                Database::query_param_list(src_contact_handle)(dst_contact_handle));
         if (diff_result.size() != 1)
         {
             BOOST_THROW_EXCEPTION(MergeContact::Exception().set_unable_to_get_difference_of_contacts(
