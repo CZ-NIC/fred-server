@@ -16,26 +16,23 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_STATE_MESSAGES_H_1B7FEABF62D24E6EB8C4FF50F8CF4F5B
-#define CREATE_STATE_MESSAGES_H_1B7FEABF62D24E6EB8C4FF50F8CF4F5B
+#ifndef CREATE_REQUEST_FEE_INFO_MESSAGES_H_D5F1A331247F45C694D57DDA33B7EA23
+#define CREATE_REQUEST_FEE_INFO_MESSAGES_H_D5F1A331247F45C694D57DDA33B7EA23
 
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/logger_client.h"
 
-#include <vector>
-#include <string>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace Fred {
 namespace Poll {
 
-class CreateStateMessages
-{
-    std::vector<std::string> except_list;
-    int limit;
-
-public:
-    CreateStateMessages(const std::string& _except_list, int _limit);
-    void exec(OperationContext& _ctx) const;
-};
+void create_request_fee_info_messages(
+    Fred::OperationContext& _ctx,
+    Logger::LoggerClient& _logger_client,
+    unsigned long long _zone_id,
+    boost::gregorian::date _period_to,
+    const std::string& _time_zone = "Europe/Prague");
 
 } // namespace Fred::Poll
 } // namespace Fred

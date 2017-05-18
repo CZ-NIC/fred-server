@@ -28,6 +28,7 @@
 #include "src/fredlib/domain/delete_domain.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/poll/create_request_fee_info_message.h"
 #include "src/epp/poll/poll_request.h"
 #include "src/epp/poll/message_type.h"
 #include "src/epp/epp_response_failure.h"
@@ -36,6 +37,8 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/variant.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/local_time_adjustor.hpp>
 
 BOOST_AUTO_TEST_SUITE(Poll)
 BOOST_AUTO_TEST_SUITE(PollRequest)
@@ -174,38 +177,6 @@ void create_poll_statechange_record(
         (_state_change_id));
 
     BOOST_REQUIRE_EQUAL(sql_query_result.rows_affected(), 1);
-}
-
-// TO DELETE AS PART OF #18734 POLL REWRITE
-unsigned long long create_poll_request_fee_message(
-    Fred::OperationContext& _ctx,
-    unsigned long long _registrar_id,
-    const boost::posix_time::ptime &_period_from,
-    const boost::posix_time::ptime &_period_to,
-    unsigned long long _total_free_count,
-    unsigned long long _request_count,
-    const Decimal &_price)
-{
-    const unsigned long long poll_msg_id =
-        create_message_and_get_message_id(_ctx, _registrar_id, ::Epp::Poll::MessageType::request_fee_info);
-
-    const Database::Result sql_query_result = _ctx.get_conn().exec_params(
-        "INSERT INTO poll_request_fee "
-        "(msgid, period_from, period_to, total_free_count, used_count, price) "
-        "VALUES ($1::integer, $2::timestamp, "
-        "$3::timestamp, $4::bigint, "
-        "$5::bigint, $6::numeric(10,2))",
-        Database::query_param_list
-        (poll_msg_id)
-        (_period_from)
-        (_period_to)
-        (_total_free_count)
-        (_request_count)
-        (_price.get_string()));
-
-    BOOST_REQUIRE_EQUAL(sql_query_result.rows_affected(), 1);
-
-    return poll_msg_id;
 }
 
 unsigned long long create_poll_low_credit_message(
@@ -523,13 +494,17 @@ struct HasPollRequestFeeInfoMessage : virtual Test::Backend::Epp::autorollbackin
         golden_request_fee_info_event.used_count = 10;
         golden_request_fee_info_event.price = "1024.42";
 
-        message_id = create_poll_request_fee_message(ctx,
-                                                     registrar_id,
-                                                     golden_request_fee_info_event.from,
-                                                     golden_request_fee_info_event.to,
-                                                     golden_request_fee_info_event.free_count,
-                                                     golden_request_fee_info_event.used_count,
-                                                     golden_request_fee_info_event.price);
+        // sadly the timestamp is converted from local time to utc when stored, but not converted back when fetched
+        typedef boost::date_time::local_adjustor<boost::posix_time::ptime, +2, boost::posix_time::no_dst> cest;
+
+        message_id = Fred::Poll::CreateRequestFeeInfoMessage(
+            registrar_id,
+            cest::utc_to_local(golden_request_fee_info_event.from),
+            cest::utc_to_local(golden_request_fee_info_event.to),
+            golden_request_fee_info_event.free_count,
+            golden_request_fee_info_event.used_count,
+            golden_request_fee_info_event.price,
+            2).exec(ctx);
     }
 
     void test()

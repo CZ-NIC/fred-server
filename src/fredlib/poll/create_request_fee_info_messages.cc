@@ -16,18 +16,15 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/fredlib/poll/create_request_fee_message.h"
+#include "src/fredlib/poll/create_request_fee_info_messages.h"
+#include "src/fredlib/poll/create_request_fee_info_message.h"
 #include "util/db/param_query_composition.h"
-#include "util/db/query_param.h"
 #include "src/fredlib/opexception.h"
 #include "src/fredlib/invoicing/invoice.h"
 #include "src/fredlib/requests/request_manager.h"
 #include "src/fredlib/domain.h"
-#include "src/fredlib/poll/message_type.h"
 
 #include <boost/lexical_cast.hpp>
-
-#include <map>
 
 namespace Fred {
 namespace Poll {
@@ -43,7 +40,7 @@ struct DomainCounts
 DomainCounts get_domain_counts(Fred::OperationContext& _ctx, unsigned long long _zone_id)
 {
     Database::ParamQuery sql_query;
-    sql_query("SELECT count_free_base, count_free_per_domain"
+    sql_query("SELECT count_free_base, count_free_per_domain "
               "FROM request_fee_parameter "
               "WHERE zone_id=").param_bigint(_zone_id)
              (" AND valid_from < now() ORDER BY valid_from DESC LIMIT 1");
@@ -131,15 +128,19 @@ bool is_poll_request_fee_present(
     Fred::OperationContext& _ctx,
     const unsigned long long _registrar_id,
     const boost::gregorian::date& _period_from,
-    const boost::gregorian::date& _period_to)
+    const boost::gregorian::date& _period_to,
+    unsigned long long _zone_id,
+    const std::string& _time_zone)
 {
     Database::ParamQuery sql_query;
     sql_query("SELECT EXISTS (SELECT id "
               "FROM poll_request_fee prf "
               "JOIN message msg ON msg.id=prf.msgid "
-              "WHERE clid=").param_bigint(_registrar_id)
-             (" AND period_from = (").param_timestamp(_period_from)(" AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC'"
-              " AND period_to   = (").param_timestamp(_period_to)("   AT TIME ZONE 'Europe/Prague') AT TIME ZONE 'UTC')");
+              "WHERE prf.zone_id = ").param_bigint(_zone_id)(" AND clid=").param_bigint(_registrar_id)
+             (" AND period_from = (").param_timestamp(_period_from)
+             (" AT TIME ZONE ").param_text(_time_zone)(") AT TIME ZONE 'UTC'"
+              " AND period_to   = (").param_timestamp(_period_to)
+             (" AT TIME ZONE ").param_text(_time_zone)(") AT TIME ZONE 'UTC')");
 
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
     switch (sql_query_result.size())
@@ -172,47 +173,12 @@ bool is_poll_request_fee_present(
 
 } // namespace Fred::Poll::{anonymous}
 
-unsigned long long CreateRequestFeeInfoMessage::exec(OperationContext& _ctx)
-{
-    const Database::Result sql_query_result = _ctx.get_conn().exec_params(
-        "WITH create_new_message AS ("
-            "INSERT INTO message (id, clid, crdate, exdate, msgtype) "
-            "VALUES (nextval('message_id_seq'::regclass), $1::bigint, "
-            "current_timestamp, current_timestamp + interval '7 days', "
-            "(SELECT id FROM messagetype WHERE name=$2::text)) "
-            "RETURNING id AS msgid) "
-        "INSERT INTO poll_request_fee "
-        "(msgid, period_from, period_to, total_free_count, used_count, price) "
-        "VALUES ((SELECT msgid FROM create_new_message), $3::timestamp, "
-        "$4::timestamp, $5::bigint, $6::bigint, $7::numeric(10,2)) "
-        "RETURNING msgid",
-        Database::query_param_list
-        (registrar_id)
-        (Conversion::Enums::to_db_handle(MessageType::request_fee_info))
-        (period_from)
-        (period_to)
-        (total_free_count)
-        (request_count)
-        (price.get_string()));
-
-    if (sql_query_result.size() == 1)
-    {
-        return static_cast<unsigned long long>(sql_query_result[0][0]);
-    }
-
-    struct UnexpectedNumberOfRows : InternalError
-    {
-        UnexpectedNumberOfRows() : InternalError(std::string()) { }
-        const char* what() const throw() { return "unexpected number of rows"; }
-    };
-    throw UnexpectedNumberOfRows();
-}
-
 void create_request_fee_info_messages(
     Fred::OperationContext& _ctx,
     Logger::LoggerClient& _logger_client, // sigh
+    unsigned long long _zone_id,
     boost::gregorian::date _period_to,
-    unsigned long long _zone_id)
+    const std::string& _time_zone)
 {
     if (_period_to.is_special())
     {
@@ -275,9 +241,10 @@ void create_request_fee_info_messages(
             ? Decimal(boost::lexical_cast<std::string>(request_count - total_free_count)) * request_unit_price
             : Decimal("0");
 
-        if (!is_poll_request_fee_present(_ctx, id, period_from, _period_to))
+        if (!is_poll_request_fee_present(_ctx, id, period_from, _period_to, _zone_id, _time_zone))
         {
-            CreateRequestFeeInfoMessage(id, ts_period_from, ts_period_to, total_free_count, request_count, price).exec(_ctx);
+            CreateRequestFeeInfoMessage(id, ts_period_from, ts_period_to, total_free_count, request_count, price, _zone_id)
+                .exec(_ctx, _time_zone);
         }
     }
 }

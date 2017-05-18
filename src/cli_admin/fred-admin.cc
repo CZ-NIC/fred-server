@@ -105,7 +105,6 @@ CommandHandlerPtrVector chpv = boost::assign::list_of
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBankPaymentListArgsGrp),payment_list_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBankImportXMLArgsGrp),bank_import_xml_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBankAddAccountArgsGrp),bank_add_account_impl()))
-    (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPollListAllArgsGrp),poll_list_all_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPollCreateStatechangesArgsGrp),poll_create_statechanges_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientPollCreateRequestFeeMessagesArgsGrp), poll_create_request_fee_messages_impl()))
     (CommandHandlerParam(HandleCommandArgsPtr(new HandleAdminClientBlockRegistrarIdArgsGrp), block_registrar_id_impl()))

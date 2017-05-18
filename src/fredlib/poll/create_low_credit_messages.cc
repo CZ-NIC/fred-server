@@ -23,7 +23,7 @@
 namespace Fred {
 namespace Poll {
 
-void CreateLowCreditMessages::exec(OperationContext& _ctx)
+void CreateLowCreditMessages::exec(OperationContext& _ctx) const
 {
     const Database::Result sql_query_result = _ctx.get_conn().exec(
         "WITH "
@@ -56,13 +56,16 @@ void CreateLowCreditMessages::exec(OperationContext& _ctx)
             "we_dont_care_because_we_dont_actually_use_the_name AS "
             "("
                 "INSERT INTO message "
-                "SELECT msgid, reg, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '7days', 'f', 1 "
+                "SELECT msgid, reg, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '7days', false, 1 "
                 "FROM tmp_poll_credit "
-            ") "
-        "INSERT INTO poll_credit "
-        "SELECT msgid, zoneid, creditlimit, credititself "
-        "FROM tmp_poll_credit "
-        "RETURNING true");
+            "), "
+            "neither_for_this AS "
+            "("
+                "INSERT INTO poll_credit "
+                "SELECT msgid, zoneid, creditlimit, credititself "
+                "FROM tmp_poll_credit "
+            ")"
+        "SELECT true");
 
     if (sql_query_result.size() != 1)
     {

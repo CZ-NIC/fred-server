@@ -39,12 +39,12 @@
 #include <boost/algorithm/string.hpp>
 
 
-#include "src/fredlib/poll.h"
 #include "time_clock.h"
 #include "src/fredlib/credit.h"
 #include "src/corba/file_manager_client.h"
 #include "src/fredlib/banking/bank_common.h"
 #include "src/fredlib/exceptions.h"
+#include "src/fredlib/poll/create_request_fee_info_message.h"
 
 
 
@@ -296,13 +296,6 @@ void insert_poll_request_fee(Database::ID reg_id,
 {
     Database::ID zone_cz_id = get_zone_cz_id();
 
-    Database::Connection conn = Database::Manager::acquire();
-    DBSharedPtr ldb_dc_guard (new DB(conn));
-
-    std::unique_ptr<Fred::Poll::Manager> pollMan(
-        Fred::Poll::Manager::create(ldb_dc_guard)
-    );
-
     Decimal req_unit_price = getOperationPrice(Fred::Invoicing::INVOICING_GeneralOperation, zone_cz_id, 1);
     Decimal req_count = price / req_unit_price;
 
@@ -314,17 +307,16 @@ void insert_poll_request_fee(Database::ID reg_id,
         poll_to = poll_from + months(1);
     }
 
-    // TODO remove difficult conversion from Decimal to unsigned long long
-    pollMan->save_poll_request_fee(
-        reg_id,
-        poll_from,
-        poll_to,
-        0,
-        boost::lexical_cast<unsigned long long>(
-            boost::lexical_cast<float>(req_count.get_string())
-        ),
-        price
-    );
+    Fred::OperationContextCreator ctx;
+    Fred::Poll::CreateRequestFeeInfoMessage(reg_id,
+                                            ptime(poll_from),
+                                            ptime(poll_to),
+                                            0,
+                                            boost::lexical_cast<unsigned long long>(
+                                                boost::lexical_cast<double>(req_count.get_string())),
+                                            price,
+                                            zone_cz_id).exec(ctx);
+    ctx.commit_transaction();
 }
 
 

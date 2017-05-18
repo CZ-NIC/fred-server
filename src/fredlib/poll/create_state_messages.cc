@@ -34,11 +34,15 @@ CreateStateMessages::CreateStateMessages(const std::string& _except_list, int _l
         itr != except_list.end();
         ++itr)
     {
+        if (itr->size() == 0)
+        {
+            continue;
+        }
         (void) Conversion::Enums::from_db_handle<Fred::Poll::MessageType>(*itr);
     }
 }
 
-void CreateStateMessages::exec(OperationContext& _ctx)
+void CreateStateMessages::exec(OperationContext& _ctx) const
 {
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(
              "WITH "
@@ -69,7 +73,7 @@ void CreateStateMessages::exec(OperationContext& _ctx)
                       "LEFT JOIN enum_object_type eot ON eot.name=f.registrytypename "
                       "JOIN messagetype mt ON mt.name=f.msgtypename "
                   "), "
-                  "tmp_table (id, reg, msgtype, stateid) AS "
+                  "tmp_table(id, reg, msgtype, stateid) AS "
                   "( "
                       "SELECT nextval('message_id_seq'), oh.clid, f.msgtype, os.id "
                       "FROM object_registry ob "
@@ -81,12 +85,14 @@ void CreateStateMessages::exec(OperationContext& _ctx)
                       "ORDER BY os.id "
                       "LIMIT $2::int"
                   "), "
+                  "we_dont_care AS "
                   "( "
                       "INSERT INTO message "
                       "SELECT id, reg, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '7days', false, msgtype "
                       "FROM tmp_table "
                       "ORDER BY stateid "
                   "), "
+                  "neither_for_this AS "
                   "( "
                       "INSERT INTO poll_statechange "
                       "SELECT id, stateid "

@@ -40,7 +40,7 @@
 #include "types/sqlize.h"
 
 #include "src/fredlib/documents.h"
-#include "src/fredlib/poll.h"
+#include "src/fredlib/poll/get_request_fee_message.h"
 
 #include "log/logger.h"
 
@@ -297,8 +297,6 @@ public:
       Database::Connection conn = Database::Manager::acquire();
       DBSharedPtr ldb_dc_guard (new DB(conn));
 
-      std::unique_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
-
       date poll_msg_period_from;
 
       if(poll_msg_period_to.day() == 1) {
@@ -312,10 +310,10 @@ public:
       LOGGER(PACKAGE).info(msg);
 
       // TODO handle NULL fields in this method
-      std::unique_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
-          = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_msg_period_to));
+      Fred::OperationContextCreator ctx;
+      Fred::Poll::RequestFeeInfoEvent rfi = Fred::Poll::get_request_fee_info_message(ctx, registrar_id, ptime(poll_msg_period_to));
 
-      if(boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodFrom())
+      if(boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.from)
               != ptime(poll_msg_period_from)) {
           throw std::runtime_error("Incorrect period_from in the poll message.");
       }
@@ -342,16 +340,16 @@ public:
       }
 
       // was number of free requests exceeded
-      if(rfi->getUsedCount() <= rfi->getTotalFreeCount()) {
+      if(rfi.used_count <= rfi.free_count) {
           boost::format msg("Registrar ID %1% has not exceeded request count limit set to %2%. ");
-          msg % registrar_id % rfi->getTotalFreeCount();
+          msg % registrar_id % rfi.free_count;
 
           LOGGER(PACKAGE).info(msg);
           return true;
       } else {
-          unsigned long long paid_requests = rfi->getUsedCount() - rfi->getTotalFreeCount();
+          unsigned long long paid_requests = rfi.used_count - rfi.free_count;
           boost::format msg(" Registrar ID %1% will be charged sum %2% for %3% requests over limit");
-          msg % registrar_id % paid_requests % rfi->getPrice();
+          msg % registrar_id % paid_requests % rfi.price;
 
           LOGGER(PACKAGE).info(msg);
 
@@ -359,9 +357,9 @@ public:
                 charge_zone_id,//unsigned long long zone_id
                 registrar_id, //unsigned long long registrar_id
                 0, //unsigned long long object_id
-                (rfi->getPeriodTo()) - seconds(1), //boost::posix_time::ptime crdate
-                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodFrom()).date(), //boost::gregorian::date date_from
-                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodTo()).date(), //boost::gregorian::date date_to
+                rfi.to - seconds(1), //boost::posix_time::ptime crdate
+                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.from).date(), //boost::gregorian::date date_from
+                boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.to).date(), //boost::gregorian::date date_to
                 Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years
                 );
       }
@@ -3538,7 +3536,7 @@ public:
      return new ManagerImpl();
  }
 
-// TO DELETE AS PART OF #18734 POLL REWRITE
+// REWRITTEN AS PART OF #18734 POLL REWRITE, TO DELETE?
  std::string getRequestUnitPrice(unsigned zone_id)
  {
      Database::Connection conn = Database::Manager::acquire();
@@ -3565,7 +3563,7 @@ public:
      return std::string(res_price[0][0]);
  }
 
-// TO DELETE AS PART OF #18734 POLL REWRITE
+// PARTIALLY REWRITTEN AS PART OF #18734 POLL REWRITE
  void getRequestFeeParams(unsigned *zone_id, unsigned *base_free_count, unsigned *per_domain_free_count)
  {
      Database::Connection conn = Database::Manager::acquire();

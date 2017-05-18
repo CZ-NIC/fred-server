@@ -23,7 +23,6 @@
 #include "commonclient.h"
 #include "objectclient.h"
 #include "src/fredlib/registry.h"
-#include "src/fredlib/poll.h"
 #include "log/logger.h"
 #include "src/corba/nameservice.h"
 #include <stdexcept>
@@ -31,6 +30,8 @@
 #include <boost/algorithm/string.hpp>
 
 #include "src/fredlib/object_states.h"
+#include "src/fredlib/poll/create_state_messages.h"
+#include "src/fredlib/poll/create_low_credit_messages.h"
 
 namespace Admin {
 
@@ -353,10 +354,6 @@ ObjectClient::regular_procedure()
                     restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
                     )
                 );
-        std::unique_ptr<Fred::Poll::Manager> pollMan(
-                Fred::Poll::Manager::create(
-                    m_db)
-                );
         std::unique_ptr<Fred::Manager> registryMan(
                 Fred::Manager::create(
                     m_db,
@@ -384,7 +381,9 @@ ObjectClient::regular_procedure()
                 ) {
             pollExcept = object_regular_procedure_params.poll_except_types.get_value();//m_conf.get<std::string>(OBJECT_POLL_EXCEPT_TYPES_NAME);
         }
-        pollMan->createStateMessages(pollExcept, 0, NULL);
+        Fred::OperationContextCreator ctx;
+        Fred::Poll::CreateStateMessages(pollExcept, 0).exec(ctx);
+        ctx.commit_transaction();
 
         std::string deleteTypes("");
         if (delete_objects_params.object_delete_types.is_value_set()//m_conf.hasOpt(OBJECT_DELETE_TYPES_NAME)
@@ -403,7 +402,9 @@ ObjectClient::regular_procedure()
         }
         notifyMan->notifyStateChanges(notifyExcept, 0, NULL);
 
-        pollMan->createLowCreditMessages();
+        Fred::OperationContextCreator ctx2;
+        Fred::Poll::CreateLowCreditMessages().exec(ctx2);
+        ctx2.commit_transaction();
         notifyMan->generateLetters(docgen_domain_count_limit//m_conf.get<unsigned>(REG_DOCGEN_DOMAIN_COUNT_LIMIT)
                 );
     } catch (ccReg::Admin::SQL_ERROR) {

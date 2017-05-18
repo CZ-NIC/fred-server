@@ -36,8 +36,6 @@ private:
     ccReg::EPP_var m_epp;
 
     std::string nameservice_context;
-    bool poll_list_all;//POLL_LIST_ALL_NAME
-    PollListAllArgs poll_list_all_params;
     bool poll_create_statechanges;//POLL_CREATE_STATE_CHANGES_NAME
     PollCreateStatechangesArgs poll_create_statechanges_params;
     bool poll_create_request_fee_messages;
@@ -46,15 +44,12 @@ private:
     static const struct options m_opts[];
 public:
     PollClient()
-    : poll_list_all(false)
-    , poll_create_statechanges(false)
+    : poll_create_statechanges(false)
     { }
     PollClient(
         const std::string &connstring
         , const std::string &nsAddr
         , const std::string& _nameservice_context
-        , bool _poll_list_all
-        , const PollListAllArgs& _poll_list_all_params
         , bool _poll_create_statechanges
         , const PollCreateStatechangesArgs& _poll_create_statechanges_params
         , bool _poll_create_request_fee_messages
@@ -62,8 +57,6 @@ public:
         )
     : BaseClient(connstring, nsAddr)
     , nameservice_context(_nameservice_context)
-    , poll_list_all(_poll_list_all)
-    , poll_list_all_params(_poll_list_all_params)
     , poll_create_statechanges(_poll_create_statechanges)
     , poll_create_statechanges_params(_poll_create_statechanges_params)
     , poll_create_request_fee_messages(_poll_create_request_fee_messages)
@@ -80,7 +73,6 @@ public:
     void runMethod();
 
     void show_opts();
-    void list_all();
     void list_next();
     void set_seen();
     void create_state_changes();

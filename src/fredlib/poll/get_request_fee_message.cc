@@ -37,9 +37,9 @@ RequestFeeInfoEvent get_request_fee_info_message_impl(
     sql_query("SELECT prf.period_from, prf.period_to, prf.total_free_count, prf.used_count, prf.price "
               "FROM poll_request_fee prf "
               "JOIN message m ON m.id=prf.msgid "
-              "JOIN messagetype mt = ON mt.id=m.msgtype "
-              "WHERE m.clid= ").param_bigint(_registrar_id)
-              ("AND mt.name= ").param_text(Conversion::Enums::to_db_handle(MessageType::request_fee_info))
+              "JOIN messagetype mt ON mt.id=m.msgtype "
+              "WHERE m.clid=").param_bigint(_registrar_id)
+              (" AND mt.name=").param_text(Conversion::Enums::to_db_handle(MessageType::request_fee_info))
               (_query_part);
 
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
@@ -80,10 +80,11 @@ RequestFeeInfoEvent get_request_fee_info_message_impl(
 RequestFeeInfoEvent get_request_fee_info_message(
     Fred::OperationContext& _ctx,
     unsigned long long _registrar_id,
-    const boost::posix_time::ptime& _period_to)
+    const boost::posix_time::ptime& _period_to,
+    const std::string& _time_zone)
 {
     Database::ParamQuery by_period_to_sql_part(" AND period_to = (");
-    by_period_to_sql_part.param_timestamp(_period_to)(" AT TIME ZONE 'Europe/Prague' AT TIME ZONE 'UTC')");
+    by_period_to_sql_part.param_timestamp(_period_to)(" AT TIME ZONE ").param_text(_time_zone)(" AT TIME ZONE 'UTC')");
     return get_request_fee_info_message_impl(_ctx, _registrar_id, by_period_to_sql_part);
 }
 
@@ -91,7 +92,7 @@ RequestFeeInfoEvent get_last_request_fee_info_message(
     Fred::OperationContext& _ctx,
     unsigned long long _registrar_id)
 {
-    const Database::ParamQuery last_sql_part(" ORDER BY id DESC LIMIT 1");
+    const Database::ParamQuery last_sql_part(" ORDER BY m.id DESC LIMIT 1");
     return get_request_fee_info_message_impl(_ctx, _registrar_id, last_sql_part);
 }
 

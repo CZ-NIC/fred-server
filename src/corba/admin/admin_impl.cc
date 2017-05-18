@@ -38,7 +38,7 @@
 #include "src/corba/mailer_manager.h"
 #include "src/fredlib/messages/messages_impl.h"
 #include "src/fredlib/object_states.h"
-#include "src/fredlib/poll.h"
+#include "src/fredlib/poll/get_request_fee_message.h"
 #include "src/fredlib/banking/bank_payment.h"
 #include "src/fredlib/public_request/public_request_authinfo_impl.h"
 #include "src/fredlib/public_request/public_request_block_impl.h"
@@ -1763,17 +1763,16 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
         Logging::Context ctx(server_name_);
         ConnectionReleaser releaser;
 
-        Database::Connection conn = Database::Manager::acquire();
-        DBSharedPtr ldb_dc_guard (new DB(conn));
-        std::unique_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
-        std::unique_ptr<Fred::Poll::MessageRequestFeeInfo> rfi(poll_mgr->getLastRequestFeeInfoMessage(_registrar));
+        Fred::OperationContextCreator ctx2;
+        const unsigned long long registrar_id = boost::lexical_cast<unsigned long long>(_registrar);
+        Fred::Poll::RequestFeeInfoEvent rfi = Fred::Poll::get_last_request_fee_info_message(ctx2, registrar_id);
 
         ccReg::RegistrarRequestCountInfo_var ret = new ccReg::RegistrarRequestCountInfo;
-        ret->periodFrom = CORBA::string_dup(formatTime(rfi->getPeriodFrom(), true, true).c_str());
-        ret->periodTo = CORBA::string_dup(formatTime(rfi->getPeriodTo() - boost::posix_time::seconds(1), true, true).c_str());
-        ret->totalFreeCount = rfi->getTotalFreeCount();
-        ret->usedCount = rfi->getUsedCount();
-        ret->price = CORBA::string_dup(rfi->getPrice().c_str());
+        ret->periodFrom = CORBA::string_dup(formatTime(rfi.from, true, true).c_str());
+        ret->periodTo = CORBA::string_dup(formatTime(rfi.to - boost::posix_time::seconds(1), true, true).c_str());
+        ret->totalFreeCount = rfi.free_count;
+        ret->usedCount = rfi.used_count;
+        ret->price = CORBA::string_dup(rfi.price.get_string().c_str());
 
         return ret._retn();
     }

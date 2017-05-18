@@ -27,35 +27,6 @@
 #include "util/types/optional.h"
 
 /**
- * \class PollListAllArgs
- * \brief admin client poll_list_all params
- */
-struct PollListAllArgs
-{
-
-    optional_ulong poll_type;
-    optional_id registrar_id;
-    bool poll_nonseen;
-    bool poll_nonex;
-
-    PollListAllArgs()
-    : poll_nonseen(false)
-    , poll_nonex(false)
-    {}//ctor
-    PollListAllArgs(
-            const optional_ulong& _poll_type
-            , const optional_id& _registrar_id
-            , bool _poll_nonseen
-            , bool _poll_nonex
-            )
-    : poll_type(_poll_type)
-    , registrar_id(_registrar_id)
-    , poll_nonseen(_poll_nonseen)
-    , poll_nonex(_poll_nonex)
-    {}//init ctor
-};//struct PollListAllArgs
-
-/**
  * \class PollCreateStatechangesArgs
  * \brief admin client poll_create_statechanges params
  */

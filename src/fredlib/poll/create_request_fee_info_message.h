@@ -16,11 +16,10 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CREATE_REQUEST_FEE_MESSAGES_H_77A356ACEC01445E95360A5D704119D6
-#define CREATE_REQUEST_FEE_MESSAGES_H_77A356ACEC01445E95360A5D704119D6
+#ifndef CREATE_REQUEST_FEE_INFO_MESSAGE_H_77A356ACEC01445E95360A5D704119D6
+#define CREATE_REQUEST_FEE_INFO_MESSAGE_H_77A356ACEC01445E95360A5D704119D6
 
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/logger_client.h"
 #include "util/decimal/decimal.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -36,6 +35,7 @@ class CreateRequestFeeInfoMessage
     unsigned long long total_free_count;
     unsigned long long request_count;
     Decimal price;
+    unsigned long long zone_id;
 
 public:
     CreateRequestFeeInfoMessage(
@@ -44,24 +44,20 @@ public:
         const boost::posix_time::ptime& _period_to,
         unsigned long long _total_free_count,
         unsigned long long _request_count,
-        const Decimal& _price)
+        const Decimal& _price,
+        unsigned long long _zone_id)
     :
         registrar_id(_registrar_id),
         period_from(_period_from),
         period_to(_period_to),
         total_free_count(_total_free_count),
         request_count(_request_count),
-        price(_price)
+        price(_price),
+        zone_id(_zone_id)
     {}
 
-    unsigned long long exec(OperationContext& _ctx);
+    unsigned long long exec(OperationContext& _ctx, const std::string& _time_zone = "Europe/Prague") const;
 };
-
-void create_request_fee_info_messages(
-    Fred::OperationContext& _ctx,
-    const Logger::LoggerClient& _logger_client,
-    const boost::gregorian::date& _period_to,
-    unsigned long long _zone_id);
 
 } // namespace Fred::Poll
 } // namespace Fred
