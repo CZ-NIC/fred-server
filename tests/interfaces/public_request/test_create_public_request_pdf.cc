@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
             block_transfer_post,
             Registry::PublicRequestImpl::Language::en,
             manager).value;
-    BOOST_MESSAGE(buffer_value);
+    BOOST_TEST_MESSAGE(buffer_value);
 }
 
 BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
