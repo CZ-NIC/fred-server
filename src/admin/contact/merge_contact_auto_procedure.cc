@@ -292,9 +292,9 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
 
                 ctx.get_log().debug(boost::format("contact duplicates set: { %1% }") % boost::algorithm::join(duplicate_contacts, ", "));
 
-                ctx.get_log().debug(boost::format("winner handle: %1%") % dst_contact.value().handle);
+                ctx.get_log().debug(boost::format("winner handle: %1%") % (*dst_contact).handle);
 
-                duplicate_contacts.erase(dst_contact.value().handle);
+                duplicate_contacts.erase((*dst_contact).handle);
 
             }
 
@@ -308,11 +308,11 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
                 summary_info_.inc_merge_operation();
 
                 const Fred::MergeContactOutput merge_data =
-                    merge_contact(src_contact, dst_contact.value().handle, system_registrar.value());
+                    merge_contact(src_contact, (*dst_contact).handle, *system_registrar);
 
                 if(!is_set_dry_run()) {
                     email_notification_input_vector.push_back(
-                        Fred::MergeContactEmailNotificationInput(src_contact, dst_contact.value().handle, merge_data)
+                        Fred::MergeContactEmailNotificationInput(src_contact, (*dst_contact).handle, merge_data)
                     );
                 }
 
@@ -323,7 +323,7 @@ std::vector<Fred::MergeContactNotificationEmailWithAddr> MergeContactAutoProcedu
                 }
 
                 if (get_verbose_level() > 2) {
-                    _output_stream << format_merge_contact_output(merge_data, src_contact, dst_contact.value().handle, summary_info_, indenter);
+                    _output_stream << format_merge_contact_output(merge_data, src_contact, (*dst_contact).handle, summary_info_, indenter);
                     _output_stream << merge_operation_info.format(indenter.dive());
                 }
             }
