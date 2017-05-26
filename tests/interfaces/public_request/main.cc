@@ -44,7 +44,7 @@ struct handle_command_line_args
                 (HandleArgsPtr(new HandleRegistryArgs))
                 (HandleArgsPtr(new HandleRifdArgs))
                 (HandleArgsPtr(new HandleMojeIDArgs))
-                (HandleArgsPtr(new HandleAdminDatabaseArgs));
+                (HandleArgsPtr(new HandleAdminDatabaseArgs)).convert_to_container<HandlerPtrVector>();
 
         namespace boost_args_ns = boost::unit_test::framework;
 

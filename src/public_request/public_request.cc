@@ -223,18 +223,9 @@ struct EmailData
     const std::map<std::string, std::string> template_parameters;
 };
 
-struct FailedToSendMailToRecipient : std::exception
+struct FailedToSendMailToRecipient:std::exception
 {
-    FailedToSendMailToRecipient(
-            const std::string& _failed_recipient,
-            const std::set<std::string>& _skipped_recipients)
-        : failed_recipient(_failed_recipient),
-          skipped_recipients(_skipped_recipients)
-    {}
-    ~FailedToSendMailToRecipient() throw() {}
     const char* what()const throw() { return "failed to send mail to recipient"; }
-    const std::string failed_recipient;
-    const std::set<std::string> skipped_recipients;
 };
 
 unsigned long long send_joined_addresses_email(
@@ -266,7 +257,7 @@ unsigned long long send_joined_addresses_email(
     }
     catch (const Fred::Mailer::NOT_SEND&)
     {
-        throw FailedToSendMailToRecipient(recipients.str(), std::set<std::string>());
+        throw FailedToSendMailToRecipient();
     }
 }
 
@@ -301,19 +292,19 @@ unsigned long long send_authinfo(
     switch (object_type)
     {
         case PublicRequestImpl::ObjectType::contact:
-            sql = "SELECT o.authinfopw,c.email "
+            sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
                   "JOIN contact c ON c.id=o.id "
                   "WHERE obr.name=UPPER($1::TEXT) AND "
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
-                        "c.email IS NOT NULL";
+                        "COALESCE(TRIM(c.email),'')<>''";
             object_type_handle = Conversion::Enums::to_db_handle(Fred::Object_Type::contact);
             email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "1"));
             break;
         case PublicRequestImpl::ObjectType::nsset:
-            sql = "SELECT o.authinfopw,c.email "
+            sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
                   "JOIN nsset n ON n.id=o.id "
@@ -322,12 +313,12 @@ unsigned long long send_authinfo(
                   "WHERE obr.name=UPPER($1::TEXT) AND "
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
-                        "c.email IS NOT NULL";
+                        "COALESCE(TRIM(c.email),'')<>''";
             object_type_handle = Conversion::Enums::to_db_handle(Fred::Object_Type::nsset);
             email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "2"));
             break;
         case PublicRequestImpl::ObjectType::domain:
-            sql = "SELECT o.authinfopw,c.email "
+            sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
                   "JOIN domain d ON d.id=o.id "
@@ -335,9 +326,9 @@ unsigned long long send_authinfo(
                   "WHERE obr.name=LOWER($1::TEXT) AND "
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
-                        "c.email IS NOT NULL "
+                        "COALESCE(TRIM(c.email),'')<>'' "
               "UNION "
-                  "SELECT o.authinfopw,c.email "
+                  "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
                   "JOIN domain d ON d.id=o.id "
@@ -346,13 +337,13 @@ unsigned long long send_authinfo(
                   "WHERE obr.name=LOWER($1::TEXT) AND "
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
-                        "c.email IS NOT NULL AND "
+                        "COALESCE(TRIM(c.email),'')<>'' AND "
                         "dcm.role=1";
             object_type_handle = Conversion::Enums::to_db_handle(Fred::Object_Type::domain);
             email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "3"));
             break;
         case PublicRequestImpl::ObjectType::keyset:
-            sql = "SELECT o.authinfopw,c.email "
+            sql = "SELECT o.authinfopw,TRIM(c.email) "
                   "FROM object o "
                   "JOIN object_registry obr ON obr.id=o.id "
                   "JOIN keyset k ON k.id=o.id "
@@ -361,7 +352,7 @@ unsigned long long send_authinfo(
                   "WHERE obr.name=UPPER($1::TEXT) AND "
                         "obr.type=get_object_type_id($2::TEXT) AND "
                         "obr.erdate IS NULL AND "
-                        "c.email IS NOT NULL";
+                        "COALESCE(TRIM(c.email),'')<>''";
             object_type_handle = Conversion::Enums::to_db_handle(Fred::Object_Type::keyset);
             email_template_params.insert(Fred::Mailer::Parameters::value_type("type", "4"));
             break;
@@ -495,6 +486,11 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     {
         LOGGER(PACKAGE).info(e.what());
         throw ObjectNotFound();
+    }
+    catch (const NoContactEmail& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw NoContactEmail();
     }
     catch (const ObjectTransferProhibited& e)
     {
