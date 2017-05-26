@@ -199,6 +199,8 @@ bool fail_prohibiting_status_exception(const ::Epp::EppResponseFailure& e) {
 BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status, supply_ctx<HasRegistrarWithSession>)
 {
     const DomainWithStatusRequestServerUpdateProhibited domain_with_status_request_server_update_prohibited(ctx, registrar.data.handle);
+
+    Fred::PerformObjectStateRequest(domain_with_status_request_server_update_prohibited.data.id).exec(ctx);
     BOOST_CHECK_EXCEPTION(
             ::Epp::Domain::update_domain(
                     ctx,

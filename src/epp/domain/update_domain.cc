@@ -39,8 +39,6 @@
 #include "src/fredlib/nsset/check_nsset.h"
 #include "src/fredlib/nsset/handle_state.h"
 #include "src/fredlib/object/object_states_info.h"
-#include "src/fredlib/object_state/lock_object_state_request_lock.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
 #include "util/db/nullable.h"
@@ -233,9 +231,6 @@ unsigned long long update_domain(
                                                          Reason::unauthorized_registrar)));
     }
 
-    Fred::LockObjectStateRequestLock(info_domain_data_before_update.id).exec(_ctx);
-    // process object state requests
-    Fred::PerformObjectStateRequest(info_domain_data_before_update.id).exec(_ctx);
     const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data_before_update.id).exec(_ctx));
 
     if (!is_system_registrar)

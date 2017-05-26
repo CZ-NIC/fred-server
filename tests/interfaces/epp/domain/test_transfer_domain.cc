@@ -126,6 +126,7 @@ BOOST_FIXTURE_TEST_CASE(fail_prohibiting_status1, supply_ctx<HasRegistrarWithSes
 {
     const DomainWithServerTransferProhibited domain_with_server_transfer_prohibited(ctx, different_registrar.data.handle);
 
+    Fred::PerformObjectStateRequest(domain_with_server_transfer_prohibited.data.id).exec(ctx);
     BOOST_CHECK_EXCEPTION(
             ::Epp::Domain::transfer_domain(
                     ctx,
@@ -178,6 +179,7 @@ BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, supply_ctx<HasRegistrarWithSe
 {
     const DomainWithStatusRequestServerUpdateProhibited domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, different_registrar.data.handle);
 
+    Fred::PerformObjectStateRequest(domain_of_different_registrar_and_with_server_update_prohibited_request.data.id).exec(ctx);
     ::Epp::Domain::transfer_domain(
         ctx,
         domain_of_different_registrar_and_with_server_update_prohibited_request.data.fqdn,

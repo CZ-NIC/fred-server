@@ -32,9 +32,7 @@
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object/transfer_object_exception.h"
-#include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/poll/create_epp_action_poll_message_impl.h"
 #include "src/fredlib/poll/message_types.h"
 #include "src/fredlib/registrar/info_registrar.h"
@@ -112,11 +110,8 @@ unsigned long long transfer_domain(
     }
 
     const bool is_system_registrar = session_registrar.system.get_value_or(false);
-    if (!is_system_registrar) {
-        // do it before any object state related checks
-        Fred::LockObjectStateRequestLock(domain_data_before_transfer.id).exec(_ctx);
-        Fred::PerformObjectStateRequest(domain_data_before_transfer.id).exec(_ctx);
-
+    if (!is_system_registrar)
+    {
         const Fred::ObjectStatesInfo domain_states_before_transfer(Fred::GetObjectStates(domain_data_before_transfer.id).exec(_ctx));
 
         if (domain_states_before_transfer.presents(Fred::Object_State::server_transfer_prohibited) ||

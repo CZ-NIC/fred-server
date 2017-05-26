@@ -710,6 +710,21 @@ unsigned long long PublicRequestImpl::create_block_unblock_request(
         LOGGER(PACKAGE).info(e.what());
         throw OperationProhibited();
     }
+    catch (const ObjectAlreadyBlocked& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectAlreadyBlocked();
+    }
+    catch (const ObjectNotBlocked& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw ObjectNotBlocked();
+    }
+    catch (const HasDifferentBlock& e)
+    {
+        LOGGER(PACKAGE).info(e.what());
+        throw HasDifferentBlock();
+    }
     catch (const Fred::CreatePublicRequest::Exception& e)
     {
         if (e.is_set_wrong_email())

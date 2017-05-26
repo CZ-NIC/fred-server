@@ -28,8 +28,6 @@
 #include "src/fredlib/domain/domain_name.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/object/object_states_info.h"
-#include "src/fredlib/object_state/lock_object_state_request_lock.h"
-#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/registrar_zone_access.h"
 #include "src/fredlib/zone/zone.h"
@@ -121,10 +119,6 @@ unsigned long long delete_domain(
 
     if (!is_system_registrar)
     {
-        // do it before any object state related checks
-        Fred::LockObjectStateRequestLock(domain_data_before_delete.id).exec(_ctx);
-        Fred::PerformObjectStateRequest(domain_data_before_delete.id).exec(_ctx);
-
         const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(domain_data_before_delete.id).exec(
                         _ctx));
         if (domain_states.presents(Fred::Object_State::server_update_prohibited) ||
