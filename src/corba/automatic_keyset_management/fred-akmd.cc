@@ -21,34 +21,34 @@
  *  implementation of automatic keyset management
  */
 
-
 #include <iostream>
 #include <string>
 
-#include <boost/assign/list_of.hpp>
-#include <boost/shared_ptr.hpp>
-#include "src/fredlib/documents.h"
-#include "src/fredlib/db_settings.h"
-#include "util/corba_wrapper.h"
-#include "log/logger.h"
 #include "log/context.h"
+#include "log/logger.h"
 #include "src/corba/connection_releaser.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/documents.h"
+#include "util/corba_wrapper.h"
 
 #include "setup_server.h"
 
 #include "cfg/config_handler.h"
+#include "cfg/handle_akmd_args.h"
 #include "cfg/handle_corbanameservice_args.h"
 #include "cfg/handle_database_args.h"
 #include "cfg/handle_general_args.h"
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_registry_args.h"
-#include "cfg/handle_akmd_args.h"
 #include "cfg/handle_server_args.h"
 #include "src/corba/automatic_keyset_management/server_i.hh"
 
+#include <boost/assign/list_of.hpp>
+#include <boost/shared_ptr.hpp>
+
 const std::string server_name = "fred-akmd";
 
-//config args processing
+// config args processing
 HandlerPtrVector global_hpv =
 boost::assign::list_of
     (HandleArgsPtr(new HandleHelpArg("\nUsage: " + server_name + " <switches>\n")))
@@ -61,21 +61,18 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleAkmdArgs))
 ;
 
-
 int main(int argc, char *argv[])
 {
-    FakedArgs fa; //producing faked args with unrecognized ones
+    FakedArgs fa; // producing faked args with unrecognized ones
     try
-    {   //config
+    {
         fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
 
-        // setting up logger
         setup_logging(CfgArgs::instance());
 
-        //CORBA init
         corba_init();
 
-        //create server object with poa and nameservice registration
+        // create server object with poa and nameservice registration
         CorbaContainer::get_instance()->register_server(
                 new Registry::AutomaticKeysetManagement::Server_i(
                         server_name,
@@ -85,11 +82,10 @@ int main(int argc, char *argv[])
                 "AutomaticKeysetManagement");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 
-    }//try
+    }
     catch(const CORBA::TRANSIENT&)
     {
-        std::cerr << "Caught system exception TRANSIENT -- unable to contact the "
-             << "server." << std::endl;
+        std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;
         return EXIT_FAILURE;
     }
     catch(const CORBA::SystemException& ex)
@@ -110,7 +106,6 @@ int main(int argc, char *argv[])
         std::cerr << "  mesg: " << fe.errmsg() << std::endl;
         return EXIT_FAILURE;
     }
-
     catch(const ReturnFromMain&)
     {
         return EXIT_SUCCESS;

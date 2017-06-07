@@ -2142,6 +2142,8 @@ src_corba_domain_browser_fred_dbifd_LDADD = \
 # src/corba/automatic_keyset_management/fred-akmd
 #
 src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
+		src/epp/keyset/dns_key.cc \
+		src/epp/keyset/dns_key.h \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
 		src/corba/nameservice.cc \
@@ -2155,6 +2157,7 @@ src_corba_automatic_keyset_management_fred_akmd_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_corba_automatic_keyset_management_fred_akmd_LDADD = \
+		src/corba/epp/libepp_impl.a \
 		src/corba/libcorbaautomatickeysetmanagement.a \
 		src/fredlib/libfred.a \
 		src/corba/util/libcorbautil.a \
@@ -2406,6 +2409,7 @@ SERVER_TESTS = \
 		tests/interfaces/test-epp \
 		tests/interfaces/test-whois \
 		tests/interfaces/test-public-request \
+		tests/interfaces/test-automatic-keyset-management \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
@@ -3141,6 +3145,47 @@ tests_test_corba_conversion_LDADD = \
 #
 # tests/test_corba_conversion
 
+# tests/interfaces/test-automatic-keyset-management
+#
+
+tests_interfaces_test_automatic_keyset_management_SOURCES = \
+		src/epp/keyset/dns_key.cc \
+		src/epp/keyset/dns_key.h \
+		src/automatic_keyset_management/automatic_keyset_management.cc \
+		src/automatic_keyset_management/automatic_keyset_management.hh \
+		tests/interfaces/automatic_keyset_management/util.h \
+		tests/interfaces/automatic_keyset_management/fixture.h \
+		tests/interfaces/automatic_keyset_management/main.cc \
+		tests/interfaces/automatic_keyset_management/test_automatic_keyset_management.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_interfaces_test_automatic_keyset_management_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_automatic_keyset_management_LDADD = \
+		src/corba/epp/libepp_impl.a \
+		src/fredlib/libfred.a \
+		util/types/libtypes.a \
+		util/db/libdb.a \
+		util/log/liblog.a \
+		util/libutil.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+
+#
+# tests_interfaces_test_automatic_keyset_management
 
 
 # non-corba tests with overloaded global operator new

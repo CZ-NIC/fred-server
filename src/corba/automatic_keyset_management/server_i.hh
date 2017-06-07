@@ -28,8 +28,9 @@
 
 #include "src/corba/AutomaticKeysetManagement.hh"
 
-#include <string>
 #include <boost/shared_ptr.hpp>
+
+#include <string>
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
@@ -53,14 +54,17 @@ public:
     virtual ~Server_i();
 
     // methods corresponding to defined IDL attributes and operations
-    Registry::AutomaticKeysetManagement::NameserverDomainsSeq* get_nameservers_with_automatically_managed_domain_candidates();
+    NameserverDomainsSeq* get_nameservers_with_automatically_managed_domain_candidates();
 
-    Registry::AutomaticKeysetManagement::NameserverDomainsSeq* get_nameservers_with_automatically_managed_domains();
+    NameserverDomainsSeq* get_nameservers_with_automatically_managed_domains();
 
-    void domain_automatic_keyset_update(
+    void update_domain_automatic_keyset(
             ::CORBA::ULongLong domain_id,
             const Registry::AutomaticKeysetManagement::Nsset& current_nsset,
             const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
+
+    TechContactSeq* get_domain_nsset_tech_contacts(
+            ::CORBA::ULongLong domain_id);
 
 private:
     // Make sure all instances are built on the heap by making the

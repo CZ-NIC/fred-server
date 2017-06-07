@@ -140,6 +140,7 @@ struct Domain {
 typedef std::string Nameserver;
 typedef std::set<Domain> Domains;
 typedef std::map<Nameserver, Domains> NameserversDomains;
+typedef std::vector<std::string> TechContacts;
 
 class AutomaticKeysetManagementImpl
 {
@@ -151,10 +152,10 @@ private:
 
 public:
     AutomaticKeysetManagementImpl(
-            const std::string& server_name,
-            const std::string& automatically_managed_keyset_prefix_,
-            const std::string& automatically_managed_keyset_registrar_,
-            const std::string& automatically_managed_keyset_tech_contact_);
+            const std::string& _server_name,
+            const std::string& _automatically_managed_keyset_prefix,
+            const std::string& _automatically_managed_keyset_registrar,
+            const std::string& _automatically_managed_keyset_tech_contact);
 
     virtual ~AutomaticKeysetManagementImpl();
 
@@ -168,10 +169,14 @@ public:
 
     NameserversDomains get_nameservers_with_automatically_managed_domains();
 
-    void domain_automatic_keyset_update(
-            unsigned long long domain_id,
-            Nsset current_nsset,
-            Keyset new_keyset);
+    void update_domain_automatic_keyset(
+            unsigned long long _domain_id,
+            Nsset _current_nsset,
+            Keyset _new_keyset);
+
+    TechContacts get_domain_nsset_tech_contacts(
+            unsigned long long _domain_id);
+
 };
 
 } // namespace Fred::AutomaticKeysetManagement

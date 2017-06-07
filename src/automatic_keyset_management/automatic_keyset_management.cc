@@ -24,6 +24,7 @@
 #include "automatic_keyset_management.hh"
 
 #include "src/automatic_keyset_management/impl/limits.hh"
+#include "src/epp/keyset/dns_key.h"
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/update_domain.h"
@@ -33,9 +34,12 @@
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/object/check_handle.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/object_state/get_object_states.h"
+#include "src/fredlib/object_state/lock_object_state_request_lock.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/zone/zone.h"
@@ -89,8 +93,7 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
              "JOIN object_registry oreg ON oreg.id = d.id "
             "WHERE d.keyset IS NULL "
               "AND d.zone = 2 "
-            "ORDER BY ns.fqdn "
-            "LIMIT 10";
+            "ORDER BY ns.fqdn";
 
         const Database::Result db_result = ctx.get_conn().exec(sql);
 
@@ -132,8 +135,7 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
              "JOIN object_registry oregk ON oregk.id = k.id "
             "WHERE oregk.name LIKE '")(automatically_managed_keyset_prefix_)("%' "
               "AND d.zone = 2 "
-            "ORDER BY ns.fqdn "
-            "LIMIT 10");
+            "ORDER BY ns.fqdn");
 
         Database::Result db_result = ctx.get_conn().exec_params(sql);
 
@@ -241,34 +243,130 @@ bool is_keyset_size_within_limits(Keyset keyset) {
     return true;
 }
 
+
+bool are_keyset_keys_valid(Fred::OperationContext& ctx, Keyset keyset) {
+    Epp::Keyset::DnsKey::AlgValidator alg_validator(ctx);
+
+    typedef std::map<Epp::Keyset::DnsKey, unsigned short> DnsKeyIndex;
+
+    DnsKeyIndex unique_dns_keys;
+    for (std::vector<DnsKey>::const_iterator dns_key = keyset.dns_keys.begin();
+         dns_key != keyset.dns_keys.end(); ++dns_key)
+    {
+        Epp::Keyset::DnsKey epp_dns_key = Epp::Keyset::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key);
+
+        const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(epp_dns_key);
+        if (dns_key_index_ptr != unique_dns_keys.end())  // a duplicate dns_key
+        {
+            return false;
+        }
+
+        if (!epp_dns_key.is_flags_correct())
+        {
+            return false;
+        }
+
+        if (!epp_dns_key.is_protocol_correct())
+        {
+            return false;
+        }
+
+        if (!alg_validator.is_alg_correct(epp_dns_key))
+        {
+            return false;
+        }
+
+        switch (epp_dns_key.check_key())
+        {
+            case Epp::Keyset::DnsKey::CheckKey::ok:
+                break;
+
+            case Epp::Keyset::DnsKey::CheckKey::bad_char:
+                return false;
+                break;
+
+            case Epp::Keyset::DnsKey::CheckKey::bad_length:
+                return false;
+                break;
+        }
+    }
+
+    return true;
+}
+
 } // namespace {anonymous}
 
-void AutomaticKeysetManagementImpl::domain_automatic_keyset_update(
-        unsigned long long domain_id,
-        Nsset current_nsset,
-        Keyset new_keyset)
+void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
+        unsigned long long _domain_id,
+        Nsset _current_nsset,
+        Keyset _new_keyset)
 {
     try
     {
         Fred::OperationContextCreator ctx;
         LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% current_nsset: %2% new_keyset: %3%\n")
-                        % domain_id
-                        % current_nsset.nameservers.size()
-                        % new_keyset.dns_keys.size()));
-
+                        % _domain_id
+                        % _current_nsset.nameservers.size()
+                        % _new_keyset.dns_keys.size()));
 
         const Fred::InfoDomainData info_domain_data =
-                Fred::InfoDomainById(domain_id).exec(ctx, "UTC").info_domain_data;
+                Fred::InfoDomainById(_domain_id).exec(ctx, "UTC").info_domain_data;
+
+        // check fqdn has known zone
+        Fred::Zone::Data zone_data;
+        zone_data = Fred::Zone::find_zone_in_fqdn(
+                ctx,
+                Fred::Zone::rem_trailing_dot(info_domain_data.fqdn));
+
+        if (zone_data.is_enum)
+        {
+            throw std::runtime_error("will not update enum zone");
+        }
+
 
         if (info_domain_data.nsset.isnull()) {
-            throw Fred::AutomaticKeysetManagement::CurrentNssetDiffers();
+            throw std::runtime_error("current_nsset empty");
+        }
+
+        if (!is_keyset_size_within_limits(_new_keyset)) {
+            throw std::runtime_error("keyset policy error: incorrect number of dns_keys");
+        }
+
+        if (!are_keyset_keys_valid(ctx, _new_keyset)) {
+            throw std::runtime_error("keyset policy error: incorrect keys");
         }
 
         const Fred::InfoNssetData info_nsset_data =
                 Fred::InfoNssetById(info_domain_data.nsset.get_value().id).exec(ctx, "UTC").info_nsset_data;
 
-        if (!are_nssets_equal(current_nsset, info_nsset_data.dns_hosts)) {
+        if (!are_nssets_equal(_current_nsset, info_nsset_data.dns_hosts)) {
             throw Fred::AutomaticKeysetManagement::CurrentNssetDiffers();
+        }
+
+        const bool keyset_is_automatically_managed_keyset =
+                is_automatically_managed_keyset(
+                        ctx,
+                        info_domain_data.keyset.get_value().id,
+                        automatically_managed_keyset_registrar_,
+                        automatically_managed_keyset_tech_contact_);
+
+        if (!info_domain_data.keyset.isnull() && !keyset_is_automatically_managed_keyset)
+        {
+            throw std::runtime_error("domain has other keyset");
+        }
+
+        if (info_domain_data.keyset.isnull())
+        {
+            Fred::LockObjectStateRequestLock(info_domain_data.id).exec(ctx);
+            // process object state requests
+            Fred::PerformObjectStateRequest(info_domain_data.id).exec(ctx);
+            const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(info_domain_data.id).exec(ctx));
+
+            if (domain_states.presents(Fred::Object_State::server_update_prohibited) ||
+                domain_states.presents(Fred::Object_State::delete_candidate))
+            {
+                throw std::runtime_error("domain state prohibits update");
+            }
         }
 
         const Fred::InfoRegistrarData automatically_managed_keyset_registrar =
@@ -286,11 +384,7 @@ void AutomaticKeysetManagementImpl::domain_automatic_keyset_update(
             throw std::runtime_error("no system registrar found");
         }
 
-        if (info_domain_data.keyset.isnull() || !is_automatically_managed_keyset(
-                                                            ctx,
-                                                            info_domain_data.keyset.get_value().id,
-                                                            automatically_managed_keyset_registrar_,
-                                                            automatically_managed_keyset_tech_contact_))
+        if (info_domain_data.keyset.isnull())
         {
             std::string automatically_managed_keyset_handle =
                     generate_automatically_managed_keyset_handle(automatically_managed_keyset_prefix_);
@@ -305,8 +399,8 @@ void AutomaticKeysetManagementImpl::domain_automatic_keyset_update(
             }
 
             std::vector<Fred::DnsKey> libfred_dns_keys;
-            for (DnsKeys::const_iterator dns_key = new_keyset.dns_keys.begin();
-                 dns_key != new_keyset.dns_keys.end();
+            for (DnsKeys::const_iterator dns_key = _new_keyset.dns_keys.begin();
+                 dns_key != _new_keyset.dns_keys.end();
                  ++dns_key)
             {
                 libfred_dns_keys.push_back(Fred::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key));
@@ -345,10 +439,6 @@ void AutomaticKeysetManagementImpl::domain_automatic_keyset_update(
             const Fred::InfoKeysetData info_keyset_data =
                     Fred::InfoKeysetById(info_domain_data.keyset.get_value().id).exec(ctx, "UTC").info_keyset_data;
 
-            if (!is_keyset_size_within_limits(new_keyset)) {
-                throw std::runtime_error("keyset policy error: incorrect number of dns_keys");
-            }
-
             for (std::vector<Fred::DnsKey>::const_iterator dns_key = info_keyset_data.dns_keys.begin();
                  dns_key != info_keyset_data.dns_keys.end();
                  ++dns_key)
@@ -357,8 +447,8 @@ void AutomaticKeysetManagementImpl::domain_automatic_keyset_update(
             }
 
             std::vector<Fred::DnsKey> libfred_dns_keys;
-            for (DnsKeys::const_iterator dns_key = new_keyset.dns_keys.begin();
-                    dns_key != new_keyset.dns_keys.end();
+            for (DnsKeys::const_iterator dns_key = _new_keyset.dns_keys.begin();
+                    dns_key != _new_keyset.dns_keys.end();
                     ++dns_key)
             {
                 update_keyset.add_dns_key(Fred::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key));
@@ -381,9 +471,109 @@ void AutomaticKeysetManagementImpl::domain_automatic_keyset_update(
         {
             throw Fred::AutomaticKeysetManagement::ObjectNotFound();
         }
-
-        // in the improbable case that exception is incorrectly set
         throw;
+    }
+    catch (const Fred::Zone::Exception& e)
+    {
+        if (e.is_set_unknown_zone_in_fqdn())
+        {
+            throw std::runtime_error("domain has unknown zone");
+        }
+        throw;
+    }
+    catch (const Fred::CreateKeyset::Exception& e)
+    {
+        // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
+        if (e.is_set_unknown_registrar_handle())
+        {
+            LOGGER(PACKAGE).warning("unknown registrar handle");
+        }
+        if (e.is_set_vector_of_already_set_dns_key())
+        {
+            LOGGER(PACKAGE).warning("duplicate dns key");
+        }
+        if (e.is_set_vector_of_unknown_technical_contact_handle())
+        {
+            LOGGER(PACKAGE).warning("unknown technical contact handle");
+        }
+        if (e.is_set_vector_of_already_set_technical_contact_handle())
+        {
+            LOGGER(PACKAGE).warning("duplicate technical contact handle");
+        }
+        throw;
+    }
+    catch (const Fred::UpdateKeyset::Exception& e)
+    {
+        // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
+        if (e.is_set_unknown_keyset_handle())
+        {
+            LOGGER(PACKAGE).warning("unknown keyset handle");
+        }
+        if (e.is_set_unknown_registrar_handle())
+        {
+            LOGGER(PACKAGE).warning("unknown registrar handle");
+        }
+        if (e.is_set_vector_of_unknown_technical_contact_handle())
+        {
+            LOGGER(PACKAGE).warning("unknown technical contact handle");
+        }
+        if (e.is_set_vector_of_already_set_technical_contact_handle())
+        {
+            LOGGER(PACKAGE).warning("duplicate technical contact handle");
+        }
+        if (e.is_set_vector_of_unassigned_technical_contact_handle())
+        {
+            LOGGER(PACKAGE).warning("unassigned technical contact handle");
+        }
+        if (e.is_set_vector_of_already_set_dns_key())
+        {
+            LOGGER(PACKAGE).warning("duplicate dns key");
+        }
+        if (e.is_set_vector_of_unassigned_dns_key())
+        {
+            LOGGER(PACKAGE).warning("unassigned dns key");
+        }
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
+        throw;
+    }
+}
+
+TechContacts AutomaticKeysetManagementImpl::get_domain_nsset_tech_contacts(
+        unsigned long long _domain_id)
+{
+    try
+    {
+        TechContacts tech_contacts;
+        Fred::OperationContextCreator ctx;
+
+        std::string sql = ""
+            "SELECT c.email as tech_contact "
+            "FROM domain d "
+            "JOIN nsset n ON d.nsset = n.id "
+            "JOIN nsset_contact_map ncmap ON ncmap.nssetid = n.id "
+            "JOIN contact c on ncmap.contactid = c.id "
+            "WHERE d.id = $1::bigint";
+
+        const Database::Result db_result = ctx.get_conn().exec_params(
+                sql,
+                Database::query_param_list(_domain_id));
+
+        for (unsigned int idx = 0; idx < db_result.size(); ++idx)
+        {
+            std::string tech_contact = static_cast<std::string>(db_result[idx]["tech_contact"]);
+            tech_contacts.push_back(tech_contact);
+        }
+
+        return tech_contacts;
     }
     catch (const std::exception& e)
     {

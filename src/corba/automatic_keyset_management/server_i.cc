@@ -37,7 +37,8 @@ namespace AutomaticKeysetManagement {
 
 namespace {
 
-DomainSeq_var wrap_Domains(const Fred::AutomaticKeysetManagement::Domains& domains) {
+DomainSeq_var wrap_Domains(const Fred::AutomaticKeysetManagement::Domains& domains)
+{
     DomainSeq_var result(new DomainSeq());
     result->length(domains.size());
 
@@ -53,7 +54,8 @@ DomainSeq_var wrap_Domains(const Fred::AutomaticKeysetManagement::Domains& domai
     return result;
 }
 
-NameserverDomainsSeq_var wrap_NameserversDomains(const Fred::AutomaticKeysetManagement::NameserversDomains& nameservers_domains)
+NameserverDomainsSeq_var wrap_NameserversDomains(
+        const Fred::AutomaticKeysetManagement::NameserversDomains& nameservers_domains)
 {
     NameserverDomainsSeq_var result(new NameserverDomainsSeq());
     result->length(nameservers_domains.size());
@@ -71,6 +73,23 @@ NameserverDomainsSeq_var wrap_NameserversDomains(const Fred::AutomaticKeysetMana
     return result;
 }
 
+TechContactSeq_var wrap_TechContacts(const Fred::AutomaticKeysetManagement::TechContacts& tech_contacts)
+{
+    TechContactSeq_var result(new TechContactSeq());
+    result->length(tech_contacts.size());
+
+    CORBA::ULong i = 0;
+    for (Fred::AutomaticKeysetManagement::TechContacts::const_iterator tech_contact =
+             tech_contacts.begin();
+         tech_contact != tech_contacts.end();
+         ++tech_contact, ++i)
+    {
+        result[i] = Fred::Corba::wrap_string_to_corba_string(*tech_contact);
+    }
+
+    return result;
+}
+
 Fred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Nsset& nsset)
 {
     Fred::AutomaticKeysetManagement::Nsset result;
@@ -80,7 +99,8 @@ Fred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Nsset& nsset)
     return result;
 }
 
-Fred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const DnsKey& dns_key) {
+Fred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const DnsKey& dns_key)
+{
     unsigned short flags;
     Fred::Corba::unwrap_int(dns_key.flags, flags);
     unsigned short protocol;
@@ -96,7 +116,8 @@ Fred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const DnsKey& dns_key) {
             key);
 }
 
-Fred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const DnsKeySeq& dns_key_seq) {
+Fred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const DnsKeySeq& dns_key_seq)
+{
     Fred::AutomaticKeysetManagement::DnsKeys result;
     for (CORBA::ULong i = 0; i < dns_key_seq.length(); ++i) {
         result.push_back(unwrap_DnsKey(dns_key_seq[i]));
@@ -113,9 +134,6 @@ Fred::AutomaticKeysetManagement::Keyset unwrap_Keyset(const Keyset& keyset)
 
 } // namespace {anonymous}
 
-//
-// Example implementational code for IDL interface Registry::AutomaticKeysetManagement::AutomaticKeysetManagementIntf
-//
 Server_i::Server_i(
         const std::string& _server_name,
         const std::string& _automatically_managed_keyset_prefix,
@@ -132,11 +150,17 @@ Server_i::Server_i(
 Server_i::~Server_i() {
   delete pimpl_;
 }
+
+//
 //   Methods corresponding to IDL attributes and operations
-Registry::AutomaticKeysetManagement::NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domain_candidates() {
+//
+
+NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domain_candidates()
+{
     try
     {
-        const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains = pimpl_->get_nameservers_with_automatically_managed_domain_candidates();
+        const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
+                pimpl_->get_nameservers_with_automatically_managed_domain_candidates();
 
         return wrap_NameserversDomains(nameservers_domains)._retn();
     }
@@ -146,10 +170,12 @@ Registry::AutomaticKeysetManagement::NameserverDomainsSeq* Server_i::get_nameser
     }
 }
 
-Registry::AutomaticKeysetManagement::NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domains() {
+NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domains()
+{
     try
     {
-        const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains = pimpl_->get_nameservers_with_automatically_managed_domains();
+        const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
+                pimpl_->get_nameservers_with_automatically_managed_domains();
 
         return wrap_NameserversDomains(nameservers_domains)._retn();
     }
@@ -159,14 +185,14 @@ Registry::AutomaticKeysetManagement::NameserverDomainsSeq* Server_i::get_nameser
     }
 }
 
-void Server_i::domain_automatic_keyset_update(
+void Server_i::update_domain_automatic_keyset(
         ::CORBA::ULongLong domain_id,
         const Registry::AutomaticKeysetManagement::Nsset& current_nsset,
         const Registry::AutomaticKeysetManagement::Keyset& new_keyset)
 {
     try
     {
-        pimpl_->domain_automatic_keyset_update(
+        pimpl_->update_domain_automatic_keyset(
                 Fred::Corba::wrap_int<unsigned long long>(domain_id),
                 unwrap_Nsset(current_nsset),
                 unwrap_Keyset(new_keyset));
@@ -189,7 +215,25 @@ void Server_i::domain_automatic_keyset_update(
     }
 }
 
+TechContactSeq* Server_i::get_domain_nsset_tech_contacts(
+        ::CORBA::ULongLong domain_id)
+{
+    try
+    {
+        const Fred::AutomaticKeysetManagement::TechContacts tech_contacts =
+                pimpl_->get_domain_nsset_tech_contacts(Fred::Corba::wrap_int<unsigned long long>(domain_id));
+
+        return wrap_TechContacts(tech_contacts)._retn();
+    }
+    catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
+    {
+        throw OBJECT_NOT_EXIST();
+    }
+    catch (...)
+    {
+        throw INTERNAL_SERVER_ERROR();
+    }
+}
+
 } // namespace Registry::AutomaticKeysetManagement
 } // namespace Registry
-
-
