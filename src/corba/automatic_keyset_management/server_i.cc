@@ -199,15 +199,35 @@ void Server_i::update_domain_automatic_keyset(
     }
     catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
     {
-        throw OBJECT_NOT_EXIST();
+        throw OBJECT_NOT_FOUND();
     }
-    catch (Fred::AutomaticKeysetManagement::DomainHasOtherKeysetCannotManageAutomatically&)
+    catch (Fred::AutomaticKeysetManagement::NssetInvalid&)
     {
-        throw DOMAIN_HAS_OTHER_KEYSET_CANNOT_MANAGE_AUTOMATICALLY();
+        throw NSSET_INVALID();
     }
-    catch (Fred::AutomaticKeysetManagement::CurrentNssetDiffers&)
+    catch (Fred::AutomaticKeysetManagement::KeysetInvalid&)
     {
-        throw CURRENT_NSSET_DIFFERS();
+        throw KEYSET_INVALID();
+    }
+    catch (Fred::AutomaticKeysetManagement::NssetDiffers&)
+    {
+        throw NSSET_DIFFERS();
+    }
+    catch (Fred::AutomaticKeysetManagement::DomainHasOtherKeyset&)
+    {
+        throw DOMAIN_HAS_OTHER_KEYSET();
+    }
+    catch (Fred::AutomaticKeysetManagement::DomainStatePolicyError&)
+    {
+        throw DOMAIN_STATE_POLICY_ERROR();
+    }
+    catch (Fred::AutomaticKeysetManagement::SystemRegistratorNotFound&)
+    {
+        throw SYSTEM_REGISTRATOR_NOT_FOUND();
+    }
+    catch (Fred::AutomaticKeysetManagement::ConfigurationError&)
+    {
+        throw CONFIGURATION_ERROR();
     }
     catch (...)
     {
@@ -227,7 +247,7 @@ TechContactSeq* Server_i::get_domain_nsset_tech_contacts(
     }
     catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
     {
-        throw OBJECT_NOT_EXIST();
+        throw OBJECT_NOT_FOUND();
     }
     catch (...)
     {

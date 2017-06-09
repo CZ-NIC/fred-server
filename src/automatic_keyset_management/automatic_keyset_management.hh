@@ -36,23 +36,6 @@ namespace Fred {
 namespace AutomaticKeysetManagement {
 
 /**
- * Internal server error.
- * Unexpected failure, requires maintenance.
- */
-struct InternalServerError
-    : virtual std::exception
-{
-    /**
-     * Returns failure description.
-     * @return string with the general cause of the current error.
-     */
-    virtual const char* what() const throw ()
-    {
-        return "internal server error";
-    }
-};
-
-/**
  * Requested object was not found.
  * Requested object could have been deleted or set into inappropriate state.
  */
@@ -69,16 +52,25 @@ struct ObjectNotFound
     }
 };
 
-struct DomainHasOtherKeysetCannotManageAutomatically
+struct NssetInvalid
     : virtual std::exception
 {
     virtual const char* what() const throw ()
     {
-        return "domain has other keyset cannot manage automatically";
+        return "current_nsset invalid";
     }
 };
 
-struct CurrentNssetDiffers
+struct KeysetInvalid
+    : virtual std::exception
+{
+    virtual const char* what() const throw ()
+    {
+        return "current_keyset invalid";
+    }
+};
+
+struct NssetDiffers
     : virtual std::exception
 {
     virtual const char* what() const throw ()
@@ -87,12 +79,56 @@ struct CurrentNssetDiffers
     }
 };
 
-struct NewNssetNotAcceptedBreaksContinuity
+struct DomainHasOtherKeyset
     : virtual std::exception
 {
     virtual const char* what() const throw ()
     {
-        return "new_nsset not accepted, breaks continuity";
+        return "domain has other keyset cannot manage automatically";
+    }
+};
+
+struct DomainStatePolicyError
+    : virtual std::exception
+{
+    virtual const char* what() const throw ()
+    {
+        return "domain state prevents action";
+    }
+};
+
+struct SystemRegistratorNotFound
+    : virtual std::exception
+{
+    virtual const char* what() const throw ()
+    {
+        return "system registrator not found";
+    }
+};
+
+struct ConfigurationError
+    : virtual std::exception
+{
+    virtual const char* what() const throw ()
+    {
+        return "configuration error";
+    }
+};
+
+/**
+ * Internal server error.
+ * Unexpected failure, requires maintenance.
+ */
+struct InternalServerError
+    : virtual std::exception
+{
+    /**
+     * Returns failure description.
+     * @return string with the general cause of the current error.
+     */
+    virtual const char* what() const throw ()
+    {
+        return "internal server error";
     }
 };
 

@@ -114,7 +114,7 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -156,7 +156,7 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -208,7 +208,8 @@ std::string generate_automatically_managed_keyset_handle(const std::string& hand
     boost::random_device rng;
     boost::uniform_int<> index_dist(0, alphabet.size() - 1);
     if (handle_prefix.length() > keyset_handle_length_max) {
-        throw std::runtime_error("automatically_managed_keyset_prefix too long");
+        LOGGER(PACKAGE).error("automatically_managed_keyset_prefix too long");
+        throw Fred::AutomaticKeysetManagement::ConfigurationError();
     }
     const int handle_length = keyset_handle_length_max - handle_prefix.length();
     std::string result = handle_prefix;
@@ -325,22 +326,26 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
 
 
         if (info_domain_data.nsset.isnull()) {
-            throw std::runtime_error("current_nsset empty");
+            LOGGER(PACKAGE).debug("current_nsset empty");
+            throw Fred::AutomaticKeysetManagement::NssetInvalid();
         }
 
         if (!is_keyset_size_within_limits(_new_keyset)) {
-            throw std::runtime_error("keyset policy error: incorrect number of dns_keys");
+            LOGGER(PACKAGE).debug("keyset invalid: incorrect number of dns_keys");
+            throw Fred::AutomaticKeysetManagement::KeysetInvalid();
         }
 
         if (!are_keyset_keys_valid(ctx, _new_keyset)) {
-            throw std::runtime_error("keyset policy error: incorrect keys");
+            LOGGER(PACKAGE).debug("keyset invalid: incorrect keys");
+            throw Fred::AutomaticKeysetManagement::KeysetInvalid();
         }
 
         const Fred::InfoNssetData info_nsset_data =
                 Fred::InfoNssetById(info_domain_data.nsset.get_value().id).exec(ctx, "UTC").info_nsset_data;
 
         if (!are_nssets_equal(_current_nsset, info_nsset_data.dns_hosts)) {
-            throw Fred::AutomaticKeysetManagement::CurrentNssetDiffers();
+            LOGGER(PACKAGE).debug("nsset differs");
+            throw Fred::AutomaticKeysetManagement::NssetDiffers();
         }
 
         const bool keyset_is_automatically_managed_keyset =
@@ -352,7 +357,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
 
         if (!info_domain_data.keyset.isnull() && !keyset_is_automatically_managed_keyset)
         {
-            throw std::runtime_error("domain has other keyset");
+            LOGGER(PACKAGE).debug("domain has other keyset");
+            throw Fred::AutomaticKeysetManagement::DomainHasOtherKeyset();
         }
 
         if (info_domain_data.keyset.isnull())
@@ -365,7 +371,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
             if (domain_states.presents(Fred::Object_State::server_update_prohibited) ||
                 domain_states.presents(Fred::Object_State::delete_candidate))
             {
-                throw std::runtime_error("domain state prohibits update");
+                LOGGER(PACKAGE).debug("domain state prohibits action");
+                throw Fred::AutomaticKeysetManagement::DomainStatePolicyError();
             }
         }
 
@@ -381,7 +388,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                         : get_system_registrar_handle(ctx);
 
         if (!system_registrar) {
-            throw std::runtime_error("no system registrar found");
+            LOGGER(PACKAGE).warning("system registrar not found");
+            throw Fred::AutomaticKeysetManagement::SystemRegistratorNotFound();
         }
 
         if (info_domain_data.keyset.isnull())
@@ -395,7 +403,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
             }
 
             if (!registrar_exists(ctx, automatically_managed_keyset_registrar_)) {
-                throw std::runtime_error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
+                LOGGER(PACKAGE).warning(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
+                throw Fred::AutomaticKeysetManagement::ConfigurationError();
             }
 
             std::vector<Fred::DnsKey> libfred_dns_keys;
@@ -477,7 +486,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
     {
         if (e.is_set_unknown_zone_in_fqdn())
         {
-            throw std::runtime_error("domain has unknown zone");
+            LOGGER(PACKAGE).debug("domain has unknown zone");
+            throw Fred::AutomaticKeysetManagement::ObjectNotFound();
         }
         throw;
     }
@@ -582,7 +592,7 @@ TechContacts AutomaticKeysetManagementImpl::get_domain_nsset_tech_contacts(
     }
     catch (...)
     {
-        LOGGER(PACKAGE).error("Unknown error");
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
