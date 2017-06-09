@@ -63,7 +63,7 @@ public:
             const Registry::AutomaticKeysetManagement::Nsset& current_nsset,
             const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
 
-    TechContactSeq* get_domain_nsset_tech_contacts(
+    TechContactSeq* get_nsset_notification_emails_by_domain_id(
             ::CORBA::ULongLong domain_id);
 
 private:

@@ -210,7 +210,7 @@ public:
             Nsset _current_nsset,
             Keyset _new_keyset);
 
-    TechContacts get_domain_nsset_tech_contacts(
+    TechContacts get_nsset_notification_emails_by_domain_id(
             unsigned long long _domain_id);
 
 };

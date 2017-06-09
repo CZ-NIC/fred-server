@@ -557,7 +557,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
     }
 }
 
-TechContacts AutomaticKeysetManagementImpl::get_domain_nsset_tech_contacts(
+TechContacts AutomaticKeysetManagementImpl::get_nsset_notification_emails_by_domain_id(
         unsigned long long _domain_id)
 {
     try
@@ -565,22 +565,42 @@ TechContacts AutomaticKeysetManagementImpl::get_domain_nsset_tech_contacts(
         TechContacts tech_contacts;
         Fred::OperationContextCreator ctx;
 
+        {
+            std::string sql = ""
+                "SELECT 1 from domain where id = $1::bigint";
+            const Database::Result db_result =
+                    ctx.get_conn().exec_params(
+                            sql,
+                            Database::query_param_list(_domain_id));
+            if (db_result.size() < 1) {
+                throw Fred::AutomaticKeysetManagement::ObjectNotFound();
+            }
+            if (db_result.size() > 1) {
+                throw std::runtime_error("too many rows");
+            }
+        }
+
         std::string sql = ""
-            "SELECT c.email as tech_contact "
+            "SELECT COALESCE(NULLIF(c.notifyemail, ''), NULLIF(c.email, '')) as tech_contact "
             "FROM domain d "
             "JOIN nsset n ON d.nsset = n.id "
             "JOIN nsset_contact_map ncmap ON ncmap.nssetid = n.id "
             "JOIN contact c on ncmap.contactid = c.id "
-            "WHERE d.id = $1::bigint";
+            "WHERE d.id = $1::bigint "
+            "AND ((c.notifyemail IS NOT NULL AND c.notifyemail != '' ) OR (c.email IS NOT NULL AND c.email != ''))";
 
-        const Database::Result db_result = ctx.get_conn().exec_params(
-                sql,
-                Database::query_param_list(_domain_id));
+        const Database::Result db_result =
+                ctx.get_conn().exec_params(
+                        sql,
+                        Database::query_param_list(_domain_id));
+
+        LOGGER(PACKAGE).debug(boost::str(boost::format("found %d email(s)") % db_result.size()));
 
         for (unsigned int idx = 0; idx < db_result.size(); ++idx)
         {
             std::string tech_contact = static_cast<std::string>(db_result[idx]["tech_contact"]);
             tech_contacts.push_back(tech_contact);
+            LOGGER(PACKAGE).debug(std::string("email: ") + tech_contact);
         }
 
         return tech_contacts;
