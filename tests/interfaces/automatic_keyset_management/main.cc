@@ -53,7 +53,6 @@ public:
                                       (HandleArgsPtr(new HandleCorbaNameServiceArgs))
                                       (HandleArgsPtr(new HandleThreadGroupArgs))
                                       (HandleArgsPtr(new HandleRegistryArgs))
-                                      (HandleArgsPtr(new HandleAdminDatabaseArgs))
                                       (HandleArgsPtr(new HandleAkmdArgs))
                                       .convert_to_container<HandlerPtrVector>()))
     {
@@ -96,7 +95,7 @@ void handle_command_line_args::setup_logging(CfgArgs *cfg_instance_ptr)
 class global_fixture
 {
     Test::handle_command_line_args handle_admin_db_cmd_line_args;
-    Test::create_db_template create_db_template;
+    Test::Fixture::create_db_template create_db_template;
 };
 
 BOOST_GLOBAL_FIXTURE(global_fixture);

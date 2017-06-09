@@ -25,11 +25,13 @@
 #include <boost/test/test_tools.hpp>
 
 namespace Test {
+namespace Fixture {
 
     struct autorollbacking_context : virtual instantiate_db_template {
         Fred::OperationContextCreator ctx;
     };
 
+} // namespace Test::Fixture
 } // namespace Test
 
 #endif

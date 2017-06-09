@@ -34,7 +34,7 @@
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/object/check_handle.h"
-#include "src/fredlib/object/object_states_info.h"
+#include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/object/object_type.h"
 #include "src/fredlib/object_state/get_object_states.h"
@@ -246,15 +246,15 @@ bool is_keyset_size_within_limits(Keyset keyset) {
 
 
 bool are_keyset_keys_valid(Fred::OperationContext& ctx, Keyset keyset) {
-    Epp::Keyset::DnsKey::AlgValidator alg_validator(ctx);
+    Epp::KeySet::DnsKey::AlgValidator alg_validator(ctx);
 
-    typedef std::map<Epp::Keyset::DnsKey, unsigned short> DnsKeyIndex;
+    typedef std::map<Epp::KeySet::DnsKey, unsigned short> DnsKeyIndex;
 
     DnsKeyIndex unique_dns_keys;
     for (std::vector<DnsKey>::const_iterator dns_key = keyset.dns_keys.begin();
          dns_key != keyset.dns_keys.end(); ++dns_key)
     {
-        Epp::Keyset::DnsKey epp_dns_key = Epp::Keyset::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key);
+        Epp::KeySet::DnsKey epp_dns_key = Epp::KeySet::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key);
 
         const DnsKeyIndex::const_iterator dns_key_index_ptr = unique_dns_keys.find(epp_dns_key);
         if (dns_key_index_ptr != unique_dns_keys.end())  // a duplicate dns_key
@@ -279,14 +279,14 @@ bool are_keyset_keys_valid(Fred::OperationContext& ctx, Keyset keyset) {
 
         switch (epp_dns_key.check_key())
         {
-            case Epp::Keyset::DnsKey::CheckKey::ok:
+            case Epp::KeySet::DnsKey::CheckKey::ok:
                 break;
 
-            case Epp::Keyset::DnsKey::CheckKey::bad_char:
+            case Epp::KeySet::DnsKey::CheckKey::bad_char:
                 return false;
                 break;
 
-            case Epp::Keyset::DnsKey::CheckKey::bad_length:
+            case Epp::KeySet::DnsKey::CheckKey::bad_length:
                 return false;
                 break;
         }

@@ -48,7 +48,7 @@ DomainSeq_var wrap_Domains(const Fred::AutomaticKeysetManagement::Domains& domai
          ++domain, ++i)
     {
         Fred::Corba::wrap_int(domain->id, result[i].id);
-        result[i].fqdn = Fred::Corba::wrap_string_to_corba_string(domain->fqdn);
+        result[i].fqdn = Corba::wrap_string_to_corba_string(domain->fqdn);
     }
 
     return result;
@@ -66,7 +66,7 @@ NameserverDomainsSeq_var wrap_NameserversDomains(
          nameserver_domains != nameservers_domains.end();
          ++nameserver_domains, ++i)
     {
-        result[i].nameserver = Fred::Corba::wrap_string_to_corba_string(nameserver_domains->first);
+        result[i].nameserver = Corba::wrap_string_to_corba_string(nameserver_domains->first);
         result[i].nameserver_domains = wrap_Domains(nameserver_domains->second);
     }
 
@@ -84,7 +84,7 @@ TechContactSeq_var wrap_TechContacts(const Fred::AutomaticKeysetManagement::Tech
          tech_contact != tech_contacts.end();
          ++tech_contact, ++i)
     {
-        result[i] = Fred::Corba::wrap_string_to_corba_string(*tech_contact);
+        result[i] = Corba::wrap_string_to_corba_string(*tech_contact);
     }
 
     return result;
@@ -94,7 +94,7 @@ Fred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Nsset& nsset)
 {
     Fred::AutomaticKeysetManagement::Nsset result;
     for (CORBA::ULong i = 0; i < nsset.nameservers.length(); ++i) {
-        result.nameservers.push_back(Fred::Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
+        result.nameservers.push_back(Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
     }
     return result;
 }
@@ -107,7 +107,7 @@ Fred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const DnsKey& dns_key)
     Fred::Corba::unwrap_int(dns_key.protocol, protocol);
     unsigned short alg;
     Fred::Corba::unwrap_int(dns_key.alg, alg);
-    const std::string key = Fred::Corba::unwrap_string(dns_key.public_key);
+    const std::string key = Corba::unwrap_string(dns_key.public_key);
 
     return Fred::AutomaticKeysetManagement::DnsKey(
             flags,
