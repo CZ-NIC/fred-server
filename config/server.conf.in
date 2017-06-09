@@ -200,3 +200,10 @@ list_domains_limit=5000
 list_nssets_limit=5000
 list_keysets_limit=5000
 list_contacts_limit=5000
+
+###
+### AKMD (Automatic Keyset Management) settings
+[akmd]
+automatically_managed_keyset_prefix = AUTO-
+automatically_managed_keyset_registrar = REG-FRED_C
+automatically_managed_keyset_tech_contact = KONTAKT

@@ -1,0 +1,125 @@
+/*
+ * Copyright (C) 2017  CZ.NIC, z.s.p.o.
+ *
+ * This file is part of FRED.
+ *
+ * FRED is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * FRED is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  @file fred-akmd.cc
+ *  implementation of automatic keyset management
+ */
+
+#include <iostream>
+#include <string>
+
+#include "log/context.h"
+#include "log/logger.h"
+#include "src/corba/connection_releaser.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/documents.h"
+#include "util/corba_wrapper.h"
+
+#include "setup_server.h"
+
+#include "cfg/config_handler.h"
+#include "cfg/handle_akmd_args.h"
+#include "cfg/handle_corbanameservice_args.h"
+#include "cfg/handle_database_args.h"
+#include "cfg/handle_general_args.h"
+#include "cfg/handle_logging_args.h"
+#include "cfg/handle_registry_args.h"
+#include "cfg/handle_server_args.h"
+#include "src/corba/automatic_keyset_management/server_i.hh"
+
+#include <boost/assign/list_of.hpp>
+#include <boost/shared_ptr.hpp>
+
+const std::string server_name = "fred-akmd";
+
+// config args processing
+HandlerPtrVector global_hpv =
+boost::assign::list_of
+    (HandleArgsPtr(new HandleHelpArg("\nUsage: " + server_name + " <switches>\n")))
+    (HandleArgsPtr(new HandleConfigFileArgs(CONFIG_FILE) ))
+    (HandleArgsPtr(new HandleServerArgs))
+    (HandleArgsPtr(new HandleLoggingArgs))
+    (HandleArgsPtr(new HandleDatabaseArgs))
+    (HandleArgsPtr(new HandleCorbaNameServiceArgs))
+    (HandleArgsPtr(new HandleRegistryArgs))
+    (HandleArgsPtr(new HandleAkmdArgs))
+;
+
+int main(int argc, char *argv[])
+{
+    FakedArgs fa; // producing faked args with unrecognized ones
+    try
+    {
+        fa = CfgArgs::init<HandleHelpArg>(global_hpv)->handle(argc, argv);
+
+        setup_logging(CfgArgs::instance());
+
+        corba_init();
+
+        // create server object with poa and nameservice registration
+        CorbaContainer::get_instance()->register_server(
+                new Registry::AutomaticKeysetManagement::Server_i(
+                        server_name,
+                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_prefix,
+                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_registrar,
+                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_tech_contact),
+                "AutomaticKeysetManagement");
+        run_server(CfgArgs::instance(), CorbaContainer::get_instance());
+
+    }
+    catch(const CORBA::TRANSIENT&)
+    {
+        std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch(const CORBA::SystemException& ex)
+    {
+        std::cerr << "Caught a CORBA::" << ex._name() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch(const CORBA::Exception& ex)
+    {
+        std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch(const omniORB::fatalException& fe)
+    {
+        std::cerr << "Caught omniORB::fatalException:" << std::endl;
+        std::cerr << "  file: " << fe.file() << std::endl;
+        std::cerr << "  line: " << fe.line() << std::endl;
+        std::cerr << "  mesg: " << fe.errmsg() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch(const ReturnFromMain&)
+    {
+        return EXIT_SUCCESS;
+    }
+    catch(std::exception& ex)
+    {
+        std::cerr << "Error: " << ex.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    catch(...)
+    {
+        std::cerr << "Unknown Error" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
