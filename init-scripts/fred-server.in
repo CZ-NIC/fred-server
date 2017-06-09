@@ -142,10 +142,9 @@ fred_start() {
         NUM=$(($NUM+1))
         fi
     fi
+    FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL=9
 
-
-
-    if [ $NUM -eq 8 ]; then
+    if [ $NUM -eq $FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL ]; then
         log_success_msg "${MSG_START}"
     else
 	log_failure_msg "${MSG_START}"
