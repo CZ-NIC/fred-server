@@ -34,9 +34,9 @@ unsigned long long CreateRequestFeeInfoMessage::exec(OperationContext& _ctx, con
             "(SELECT id FROM messagetype WHERE name=$3::text)) "
             "RETURNING id AS msgid) "
         "INSERT INTO poll_request_fee "
-        "(msgid, period_from, period_to, total_free_count, used_count, price, zone_id) "
+        "(msgid, period_from, period_to, total_free_count, used_count, price) "
         "VALUES ((SELECT msgid FROM create_new_message), ($4::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC', "
-        "($5::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC', $6::bigint, $7::bigint, $8::numeric(10,2), $9::bigint) "
+        "($5::timestamp AT TIME ZONE $1::text) AT TIME ZONE 'UTC', $6::bigint, $7::bigint, $8::numeric(10,2)) "
         "RETURNING msgid",
         Database::query_param_list
         (_time_zone)
@@ -46,8 +46,7 @@ unsigned long long CreateRequestFeeInfoMessage::exec(OperationContext& _ctx, con
         (period_to)
         (total_free_count)
         (request_count)
-        (price.get_string())
-        (zone_id));
+        (price.get_string()));
 
     if (sql_query_result.size() == 1)
     {

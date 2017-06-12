@@ -129,14 +129,13 @@ bool is_poll_request_fee_present(
     const unsigned long long _registrar_id,
     const boost::gregorian::date& _period_from,
     const boost::gregorian::date& _period_to,
-    unsigned long long _zone_id,
-    const std::string& _time_zone)
+     const std::string& _time_zone)
 {
     Database::ParamQuery sql_query;
     sql_query("SELECT EXISTS (SELECT id "
               "FROM poll_request_fee prf "
               "JOIN message msg ON msg.id=prf.msgid "
-              "WHERE prf.zone_id = ").param_bigint(_zone_id)(" AND clid=").param_bigint(_registrar_id)
+              "WHERE clid=").param_bigint(_registrar_id)
              (" AND period_from = (").param_timestamp(_period_from)
              (" AT TIME ZONE ").param_text(_time_zone)(") AT TIME ZONE 'UTC'"
               " AND period_to   = (").param_timestamp(_period_to)
@@ -241,9 +240,9 @@ void create_request_fee_info_messages(
             ? Decimal(boost::lexical_cast<std::string>(request_count - total_free_count)) * request_unit_price
             : Decimal("0");
 
-        if (!is_poll_request_fee_present(_ctx, id, period_from, _period_to, _zone_id, _time_zone))
+        if (!is_poll_request_fee_present(_ctx, id, period_from, _period_to, _time_zone))
         {
-            CreateRequestFeeInfoMessage(id, ts_period_from, ts_period_to, total_free_count, request_count, price, _zone_id)
+            CreateRequestFeeInfoMessage(id, ts_period_from, ts_period_to, total_free_count, request_count, price)
                 .exec(_ctx, _time_zone);
         }
     }

@@ -314,8 +314,7 @@ void insert_poll_request_fee(Database::ID reg_id,
                                             0,
                                             boost::lexical_cast<unsigned long long>(
                                                 boost::lexical_cast<double>(req_count.get_string())),
-                                            price,
-                                            zone_cz_id).exec(ctx);
+                                            price).exec(ctx);
     ctx.commit_transaction();
 }
 

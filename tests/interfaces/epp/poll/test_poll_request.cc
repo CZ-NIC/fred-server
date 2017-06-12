@@ -503,8 +503,7 @@ struct HasPollRequestFeeInfoMessage : virtual Test::Backend::Epp::autorollbackin
             cest::utc_to_local(golden_request_fee_info_event.to),
             golden_request_fee_info_event.free_count,
             golden_request_fee_info_event.used_count,
-            golden_request_fee_info_event.price,
-            2).exec(ctx);
+            golden_request_fee_info_event.price).exec(ctx);
     }
 
     void test()

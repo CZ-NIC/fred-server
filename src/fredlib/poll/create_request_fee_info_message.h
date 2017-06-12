@@ -35,7 +35,6 @@ class CreateRequestFeeInfoMessage
     unsigned long long total_free_count;
     unsigned long long request_count;
     Decimal price;
-    unsigned long long zone_id;
 
 public:
     CreateRequestFeeInfoMessage(
@@ -44,16 +43,14 @@ public:
         const boost::posix_time::ptime& _period_to,
         unsigned long long _total_free_count,
         unsigned long long _request_count,
-        const Decimal& _price,
-        unsigned long long _zone_id)
+        const Decimal& _price)
     :
         registrar_id(_registrar_id),
         period_from(_period_from),
         period_to(_period_to),
         total_free_count(_total_free_count),
         request_count(_request_count),
-        price(_price),
-        zone_id(_zone_id)
+        price(_price)
     {}
 
     unsigned long long exec(OperationContext& _ctx, const std::string& _time_zone = "Europe/Prague") const;
