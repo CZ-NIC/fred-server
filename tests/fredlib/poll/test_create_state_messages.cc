@@ -47,6 +47,8 @@ struct PollStateMessages : Test::instantiate_db_template
         handle("expirationxazuxxaxxdxefxfxfuxeca.cz"),
         date(boost::posix_time::second_clock::local_time().date() - boost::gregorian::days(7))
     {
+        const Fred::Poll::CreateStateMessages preliminary_message_creator(std::string(), 0);
+        BOOST_CHECK_NO_THROW(preliminary_message_creator.exec(ctx));
         const Test::registrar registrar(ctx);
         const Test::contact contact(ctx);
         const Fred::CreateDomain::Result result =
