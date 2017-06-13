@@ -97,6 +97,15 @@ struct DomainStatePolicyError
     }
 };
 
+struct KeysetStatePolicyError
+    : virtual std::exception
+{
+    virtual const char* what() const throw ()
+    {
+        return "keyset state prevents action";
+    }
+};
+
 struct SystemRegistratorNotFound
     : virtual std::exception
 {
@@ -154,6 +163,30 @@ struct DnsKey {
           alg(_alg),
           key(_key)
     {
+    }
+
+    /**
+     * Comparison of instances converted to std::string
+     * @param rhs is right hand side instance of the comparison
+     */
+    bool operator==(const DnsKey& rhs) const
+    {
+        return to_string() == rhs.to_string();
+    }
+
+    /**
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
+    */
+    std::string to_string() const
+    {
+        return Util::format_data_structure("DnsKey",
+        Util::vector_of<std::pair<std::string, std::string> >
+        (std::make_pair("flags", boost::lexical_cast<std::string>(flags)))
+        (std::make_pair("protocol", boost::lexical_cast<std::string>(protocol)))
+        (std::make_pair("alg", boost::lexical_cast<std::string>(alg)))
+        (std::make_pair("key", key))
+        );
     }
 };
 

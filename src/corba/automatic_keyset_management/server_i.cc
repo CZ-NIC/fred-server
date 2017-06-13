@@ -225,6 +225,10 @@ void Server_i::update_domain_automatic_keyset(
     {
         throw DOMAIN_STATE_POLICY_ERROR();
     }
+    catch (Fred::AutomaticKeysetManagement::KeysetStatePolicyError&)
+    {
+        throw KEYSET_STATE_POLICY_ERROR();
+    }
     catch (Fred::AutomaticKeysetManagement::SystemRegistratorNotFound&)
     {
         throw SYSTEM_REGISTRATOR_NOT_FOUND();
