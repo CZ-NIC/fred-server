@@ -22,8 +22,8 @@
 *  \brief Container for fields for given model
 */
 
-#ifndef MODEL_FIELD_LIST_H_
-#define MODEL_FIELD_LIST_H
+#ifndef MODEL_FIELD_LIST_H_8216E00AA0974D79AB7F3A27B26DC6DF
+#define MODEL_FIELD_LIST_H_8216E00AA0974D79AB7F3A27B26DC6DF
 
 #include <vector>
 #include <boost/assign/list_of.hpp>
@@ -107,5 +107,5 @@ public:
 }
 
 
-#endif /*MODEL_FIELD_LIST_H_*/
+#endif /*MODEL_FIELD_LIST_H_8216E00AA0974D79AB7F3A27B26DC6DF*/
 
