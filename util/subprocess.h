@@ -131,7 +131,7 @@ public:
      * @class Seconds
      * @brief Represents time meassured in seconds.
      */
-    typedef typeof(::timeval().tv_sec) Seconds;
+    typedef decltype(::timeval().tv_sec) Seconds;
 
     /**
      * Wait as long as command runs, at most _max_lifetime_sec seconds.
