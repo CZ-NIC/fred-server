@@ -52,29 +52,29 @@ ExceptionTest& ExceptionTest::instance()
 void test_decimal_wrapper_exceptions_fun()
 {
 
-    (Decimal("1") < Decimal("2"));
-    (Decimal("1") <= Decimal("2"));
-    (Decimal("1.1") < Decimal("1.2"));
-    (Decimal("1000") > Decimal("100"));
-    (Decimal("1000") >= Decimal("100"));
-    (Decimal("1000") >= Decimal("1000"));
-    (Decimal("1.1") == Decimal("1.1"));
-    (Decimal("1.1") != Decimal("1.2"));
-    (Decimal("1.11") > Decimal("-1.11"));
-    ((Decimal("1.111") + Decimal("1.222")) == Decimal("2.333"));
-    ((Decimal("2.333") - Decimal("1.111")) == Decimal("1.222"));
-    ((Decimal("2.333") - Decimal("1.111")) != Decimal("1.223"));
-    ((Decimal("1.111") * Decimal("1.222")) == Decimal("1.357642"));
+    (void)(Decimal("1") < Decimal("2"));
+    (void)(Decimal("1") <= Decimal("2"));
+    (void)(Decimal("1.1") < Decimal("1.2"));
+    (void)(Decimal("1000") > Decimal("100"));
+    (void)(Decimal("1000") >= Decimal("100"));
+    (void)(Decimal("1000") >= Decimal("1000"));
+    (void)(Decimal("1.1") == Decimal("1.1"));
+    (void)(Decimal("1.1") != Decimal("1.2"));
+    (void)(Decimal("1.11") > Decimal("-1.11"));
+    (void)((Decimal("1.111") + Decimal("1.222")) == Decimal("2.333"));
+    (void)((Decimal("2.333") - Decimal("1.111")) == Decimal("1.222"));
+    (void)((Decimal("2.333") - Decimal("1.111")) != Decimal("1.223"));
+    (void)((Decimal("1.111") * Decimal("1.222")) == Decimal("1.357642"));
 
-    ((Decimal("1.222") / Decimal("1.111"))
+    (void)((Decimal("1.222") / Decimal("1.111"))
             .round_half_up(19)
             .round_half_up(9) == Decimal("1.099909991"));
 
-    ((Decimal("13").integral_division(Decimal("3"))) == Decimal("4"));
-    ((Decimal("13").integral_division_remainder(Decimal("3"))) == Decimal("1"));
+    (void)((Decimal("13").integral_division(Decimal("3"))) == Decimal("4"));
+    (void)((Decimal("13").integral_division_remainder(Decimal("3"))) == Decimal("1"));
 
-    (Decimal("-1").abs() == Decimal("1"));
-    (Decimal("1").abs() == Decimal("1"));
+    (void)(Decimal("-1").abs() == Decimal("1"));
+    (void)(Decimal("1").abs() == Decimal("1"));
 
     (Decimal("-1").is_negative());
 
@@ -89,23 +89,23 @@ void test_decimal_wrapper_exceptions_fun()
     (Decimal("-NaN").is_nan());//-NaN
 
     (Decimal().is_nan());//default ctor init check
-    (Decimal().get_string().compare("") == 0);//default ctor init check
+    (void)(Decimal().get_string().compare("") == 0);//default ctor init check
 
     (Decimal(std::string()).is_nan());//string ctor
-    (Decimal(std::string()).get_string().compare("") == 0);//string ctor
+    (void)(Decimal(std::string()).get_string().compare("") == 0);//string ctor
 
-    (Decimal(std::string("1.1")) == Decimal("1.1"));//string ctor
+    (void)(Decimal(std::string("1.1")) == Decimal("1.1"));//string ctor
 
     Decimal a("1234567890.123456789", 500);
 
     Decimal b = a;//copy ctor
-    (b == a);
-    (b.get_precision() == 500);
+    (void)(b == a);
+    (void)(b.get_precision() == 500);
 
     Decimal c;
     c = a;//assignment operator
-    (c == a);
-    (c.get_precision() == 500);
+    (void)(c == a);
+    (void)(c.get_precision() == 500);
 
     //stream operators
     Decimal dstream1("111.333");
@@ -113,32 +113,32 @@ void test_decimal_wrapper_exceptions_fun()
     std::stringstream sstr;
     sstr << dstream1;
     sstr >> dstream2;
-    (dstream1 == dstream2);
+    (void)(dstream1 == dstream2);
 
     Decimal dec_2;
     Decimal dec_3("111.222");
     Decimal dec_4("111.222");
     dec_2.swap(dec_3);
 
-    (dec_2 == dec_4);
+    (void)(dec_2 == dec_4);
 
     //format and round money
-    (Decimal("10").get_string(".2f").compare("10.00") == 0);//string ctor
-    (Decimal("10.1").get_string(".2f").compare("10.10") == 0);//string ctor
-    (Decimal("-10").get_string(".2f").compare("-10.00") == 0);//string ctor
-    (Decimal("-10.1").get_string(".2f").compare("-10.10") == 0);//string ctor
+    (void)(Decimal("10").get_string(".2f").compare("10.00") == 0);//string ctor
+    (void)(Decimal("10.1").get_string(".2f").compare("10.10") == 0);//string ctor
+    (void)(Decimal("-10").get_string(".2f").compare("-10.00") == 0);//string ctor
+    (void)(Decimal("-10.1").get_string(".2f").compare("-10.10") == 0);//string ctor
 
-    (Decimal("10.005").get_string(".2f").compare("10.01") == 0);//string ctor
-    (Decimal("10000000.1").get_string(".2f").compare("10000000.10") == 0);//string ctor
-    (Decimal("-10.005").get_string(".2f").compare("-10.01") == 0);//string ctor
-    (Decimal("-10000000.1").get_string(".2f").compare("-10000000.10") == 0);//string ctor
-    (Decimal("30000000.1").get_string(".2f").compare("30000000.10") == 0);//string ctor
-    (Decimal("-30000000.1").get_string(".2f").compare("-30000000.10") == 0);//string ctor
+    (void)(Decimal("10.005").get_string(".2f").compare("10.01") == 0);//string ctor
+    (void)(Decimal("10000000.1").get_string(".2f").compare("10000000.10") == 0);//string ctor
+    (void)(Decimal("-10.005").get_string(".2f").compare("-10.01") == 0);//string ctor
+    (void)(Decimal("-10000000.1").get_string(".2f").compare("-10000000.10") == 0);//string ctor
+    (void)(Decimal("30000000.1").get_string(".2f").compare("30000000.10") == 0);//string ctor
+    (void)(Decimal("-30000000.1").get_string(".2f").compare("-30000000.10") == 0);//string ctor
 
-    (Decimal("30000000.001").get_string(".2f").compare("30000000.00") == 0);//string ctor
-    (Decimal("-30000000.001").get_string(".2f").compare("-30000000.00") == 0);//string ctor
-    (Decimal("30000000.007").get_string(".2f").compare("30000000.01") == 0);//string ctor
-    (Decimal("-30000000.007").get_string(".2f").compare("-30000000.01") == 0);//string ctor
+    (void)(Decimal("30000000.001").get_string(".2f").compare("30000000.00") == 0);//string ctor
+    (void)(Decimal("-30000000.001").get_string(".2f").compare("-30000000.00") == 0);//string ctor
+    (void)(Decimal("30000000.007").get_string(".2f").compare("30000000.01") == 0);//string ctor
+    (void)(Decimal("-30000000.007").get_string(".2f").compare("-30000000.01") == 0);//string ctor
 
     //this have to be disabled by: supported_types_of_Decimal_<T>::Type()
     //Decimal d0(0);
