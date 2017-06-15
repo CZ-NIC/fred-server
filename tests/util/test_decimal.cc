@@ -167,16 +167,16 @@ BOOST_AUTO_TEST_CASE( test_decimal_wrapper )
     BOOST_CHECK(Decimal(std::string("1.1")) == Decimal("1.1"));//string ctor
 
 
-    BOOST_CHECK_EXCEPTION(Decimal("Infinity") == Decimal("Infinity")
+    BOOST_CHECK_EXCEPTION((void)(Decimal("Infinity") == Decimal("Infinity"))
             , std::exception
             , check_std_exception);
-    BOOST_CHECK_EXCEPTION(Decimal("Infinity") != Decimal("-Infinity")
+    BOOST_CHECK_EXCEPTION((void)(Decimal("Infinity") != Decimal("-Infinity"))
             , std::exception
             , check_std_exception);
-    BOOST_CHECK_EXCEPTION(Decimal("NaN") != Decimal("NaN")
+    BOOST_CHECK_EXCEPTION((void)(Decimal("NaN") != Decimal("NaN"))
             , std::exception
             , check_std_exception);
-    BOOST_CHECK_EXCEPTION(Decimal("NaN") != Decimal("-NaN")
+    BOOST_CHECK_EXCEPTION((void)(Decimal("NaN") != Decimal("-NaN"))
             , std::exception
             , check_std_exception);
 

@@ -984,8 +984,6 @@ BOOST_FIXTURE_TEST_CASE(info_nsset_history_test, update_nsset_fixture)
         history_info_data = Fred::InfoNssetHistoryByRoid(info_data_1.info_nsset_data.roid).exec(ctx);
     }
 
-    history_info_data.at(0) == info_data_2;
-
     BOOST_CHECK(history_info_data.at(0) == info_data_2);
     BOOST_CHECK(history_info_data.at(1) == info_data_1);
 
