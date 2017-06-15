@@ -49,7 +49,9 @@ public:
             const std::string& _server_name,
             const std::string& _automatically_managed_keyset_prefix,
             const std::string& _automatically_managed_keyset_registrar,
-            const std::string& _automatically_managed_keyset_tech_contact);
+            const std::string& _automatically_managed_keyset_tech_contact,
+            const std::string& _automatically_managed_keyset_zones,
+            bool _disable_notifier);
 
     virtual ~Server_i();
 

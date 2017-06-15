@@ -138,12 +138,16 @@ Server_i::Server_i(
         const std::string& _server_name,
         const std::string& _automatically_managed_keyset_prefix,
         const std::string& _automatically_managed_keyset_registrar,
-        const std::string& _automatically_managed_keyset_tech_contact)
+        const std::string& _automatically_managed_keyset_tech_contact,
+        const std::string& _automatically_managed_keyset_zones,
+        const bool _disable_notifier)
     : pimpl_(new Fred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl(
                       _server_name,
                       _automatically_managed_keyset_prefix,
                       _automatically_managed_keyset_registrar,
-                      _automatically_managed_keyset_tech_contact))
+                      _automatically_managed_keyset_tech_contact,
+                      _automatically_managed_keyset_zones,
+                      _disable_notifier))
 {
 }
 

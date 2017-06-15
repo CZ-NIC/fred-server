@@ -32,15 +32,18 @@
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/keyset_dns_key.h"
 #include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/notifier/enqueue_notification.h"
 #include "src/fredlib/nsset/info_nsset.h"
 #include "src/fredlib/object/check_handle.h"
+#include "src/fredlib/object/object_type.h"
+#include "src/fredlib/object/object_type.h"
 #include "src/fredlib/object/states_info.h"
-#include "src/fredlib/object/object_type.h"
-#include "src/fredlib/object/object_type.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/opcontext.h"
+#include "src/fredlib/poll/create_transfer_domain_poll_message.h"
+#include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/zone/zone.h"
 #include "util/log/context.h"
@@ -63,11 +66,15 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
         const std::string& _server_name,
         const std::string& _automatically_managed_keyset_prefix,
         const std::string& _automatically_managed_keyset_registrar,
-        const std::string& _automatically_managed_keyset_tech_contact)
+        const std::string& _automatically_managed_keyset_tech_contact,
+        const std::string& _automatically_managed_keyset_zones,
+        const bool _disable_notifier)
     : server_name_(_server_name),
       automatically_managed_keyset_prefix_(_automatically_managed_keyset_prefix),
       automatically_managed_keyset_registrar_(_automatically_managed_keyset_registrar),
-      automatically_managed_keyset_tech_contact_(_automatically_managed_keyset_tech_contact)
+      automatically_managed_keyset_tech_contact_(_automatically_managed_keyset_tech_contact),
+      automatically_managed_keyset_zones_(_automatically_managed_keyset_zones),
+      disable_notifier_(_disable_notifier)
 {
 }
 
@@ -345,6 +352,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                 ctx,
                 Fred::Zone::rem_trailing_dot(info_domain_data.fqdn));
 
+        // TODO check zone list
         if (zone_data.is_enum)
         {
             throw std::runtime_error("will not update enum zone");
@@ -466,25 +474,64 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             % create_keyset_result.create_object_result.object_id
                             % create_keyset_result.create_object_result.history_id));
 
+            if (!disable_notifier_)
+            {
+                Notification::enqueue_notification(
+                        ctx,
+                        Notification::created,
+                        automatically_managed_keyset_registrar.id,
+                        create_keyset_result.create_object_result.history_id,
+                        0);
+            }
+
             const unsigned long long domain_new_history_id =
-            Fred::UpdateDomain(
-                    info_domain_data.fqdn,
-                    automatically_managed_keyset_registrar.handle)
-                    .set_keyset(automatically_managed_keyset_handle) // or get handle by create_keyset_result.create_object_result.object_id
-                    .exec(ctx);
+                    Fred::UpdateDomain(
+                            info_domain_data.fqdn,
+                            automatically_managed_keyset_registrar.handle)
+                            .set_keyset(automatically_managed_keyset_handle) // or get handle by create_keyset_result.create_object_result.object_id
+                            .exec(ctx);
 
             LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
                             % domain_new_history_id));
+
+            if (!disable_notifier_)
+            {
+                Notification::enqueue_notification(
+                        ctx,
+                        Notification::updated,
+                        automatically_managed_keyset_registrar.id,
+                        domain_new_history_id,
+                        0);
+            }
+
+            Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
 
         }
         else {
             if (new_keyset_include_special_delete_key) {
 
-                Fred::UpdateDomain(
-                        info_domain_data.fqdn,
-                        automatically_managed_keyset_registrar.handle)
-                        .unset_keyset()
-                        .exec(ctx);
+                const Fred::InfoRegistrarData domain_registrar =
+                        Fred::InfoRegistrarByHandle(info_domain_data.sponsoring_registrar_handle).exec(ctx).info_registrar_data;
+
+                const unsigned long long domain_new_history_id =
+                        Fred::UpdateDomain(
+                                info_domain_data.fqdn,
+                                automatically_managed_keyset_registrar.handle)
+                                .unset_keyset()
+                                .exec(ctx);
+
+                LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
+                                % domain_new_history_id));
+
+                if (!disable_notifier_)
+                {
+                    Notification::enqueue_notification(
+                            ctx,
+                            Notification::updated,
+                            automatically_managed_keyset_registrar.id,
+                            domain_new_history_id,
+                            0);
+                }
             }
             else {
 
@@ -508,7 +555,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                     throw Fred::AutomaticKeysetManagement::KeysetStatePolicyError();
                 }
 
-                Fred::UpdateKeyset update_keyset = Fred::UpdateKeyset(
+                Fred::UpdateKeyset update_keyset =
+                        Fred::UpdateKeyset(
                                 info_domain_data.keyset.get_value().handle,
                                 automatically_managed_keyset_registrar_);
 
@@ -528,10 +576,20 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                 }
 
                 unsigned long long keyset_new_history_id =
-                update_keyset.exec(ctx);
+                        update_keyset.exec(ctx);
 
                 LOGGER(PACKAGE).debug(boost::str(boost::format("keyset_new_history_id: %1%\n")
                                 % keyset_new_history_id));
+
+                if (!disable_notifier_)
+                {
+                    Notification::enqueue_notification(
+                            ctx,
+                            Notification::updated,
+                            automatically_managed_keyset_registrar.id,
+                            keyset_new_history_id,
+                            0);
+                }
             }
         }
 
