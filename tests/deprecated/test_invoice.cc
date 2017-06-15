@@ -899,7 +899,7 @@ ResultTestCharge testCreateDomainDirectWorker(ccReg_EPP_i *epp_backend, Database
 
         if(r->code != 1000) {
             std::cerr << "ERROR: Return code: " << r->code << std::endl;
-            throw CreateDomainFailed("Error received. Code: " + r->code);
+            throw CreateDomainFailed(std::string("Error received. Code: ") + boost::lexical_cast<std::string>(r->code));
         }
 
     } else if (operation == INVOICING_DomainRenew) {

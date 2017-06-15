@@ -1459,7 +1459,8 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 }
                 break;
             default:
-                throw std::runtime_error("unexpected public request type " + pub_req_type);
+                const std::string error_message = "unexpected public request type unexpected public request type ";
+                throw std::runtime_error(error_message + pub_req_info.get_type());
             }
 
             const Database::Result dbres = ctx.get_conn().exec_params(
