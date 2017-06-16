@@ -82,7 +82,10 @@ private:
         //map init
         for(HandlerPtrVector::const_iterator i = hpv.begin()
                 ; i != hpv.end(); ++i )
-            hpm_[typeid( *((*i).get()) ).name()] = *i;
+        {
+            const HandleArgs *ha_ptr = i->get();
+            hpm_[typeid(*ha_ptr).name()] = *i;
+        }
     }
 
 public:
@@ -176,7 +179,8 @@ private:
                     ; j != i->end(); ++j )
             {
                 //overwrites instance of the same type used more than once
-                hpm_[typeid( *((*j).get()) ).name()] = *j;
+                const HandleGrpArgs *hga_ptr = j->get();
+                hpm_[typeid(*hga_ptr).name()] = *j;
             }
     }
 
