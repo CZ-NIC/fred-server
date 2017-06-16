@@ -138,12 +138,16 @@ Server_i::Server_i(
         const std::string& _server_name,
         const std::string& _automatically_managed_keyset_prefix,
         const std::string& _automatically_managed_keyset_registrar,
-        const std::string& _automatically_managed_keyset_tech_contact)
+        const std::string& _automatically_managed_keyset_tech_contact,
+        const std::string& _automatically_managed_keyset_zones,
+        const bool _disable_notifier)
     : pimpl_(new Fred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl(
                       _server_name,
                       _automatically_managed_keyset_prefix,
                       _automatically_managed_keyset_registrar,
-                      _automatically_managed_keyset_tech_contact))
+                      _automatically_managed_keyset_tech_contact,
+                      _automatically_managed_keyset_zones,
+                      _disable_notifier))
 {
 }
 
@@ -186,16 +190,20 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domai
 }
 
 void Server_i::update_domain_automatic_keyset(
-        ::CORBA::ULongLong domain_id,
-        const Registry::AutomaticKeysetManagement::Nsset& current_nsset,
-        const Registry::AutomaticKeysetManagement::Keyset& new_keyset)
+        ::CORBA::ULongLong _domain_id,
+        const Registry::AutomaticKeysetManagement::Nsset& _current_nsset,
+        const Registry::AutomaticKeysetManagement::Keyset& _new_keyset)
 {
     try
     {
+        const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
+        Fred::AutomaticKeysetManagement::Nsset current_nsset = unwrap_Nsset(_current_nsset);
+        Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
+
         pimpl_->update_domain_automatic_keyset(
-                Fred::Corba::wrap_int<unsigned long long>(domain_id),
-                unwrap_Nsset(current_nsset),
-                unwrap_Keyset(new_keyset));
+                domain_id,
+                current_nsset,
+                new_keyset);
     }
     catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
     {
@@ -221,6 +229,10 @@ void Server_i::update_domain_automatic_keyset(
     {
         throw DOMAIN_STATE_POLICY_ERROR();
     }
+    catch (Fred::AutomaticKeysetManagement::KeysetStatePolicyError&)
+    {
+        throw KEYSET_STATE_POLICY_ERROR();
+    }
     catch (Fred::AutomaticKeysetManagement::SystemRegistratorNotFound&)
     {
         throw SYSTEM_REGISTRATOR_NOT_FOUND();
@@ -235,13 +247,15 @@ void Server_i::update_domain_automatic_keyset(
     }
 }
 
-TechContactSeq* Server_i::get_domain_nsset_tech_contacts(
-        ::CORBA::ULongLong domain_id)
+TechContactSeq* Server_i::get_nsset_notification_emails_by_domain_id(
+        ::CORBA::ULongLong _domain_id)
 {
     try
     {
+        const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
+
         const Fred::AutomaticKeysetManagement::TechContacts tech_contacts =
-                pimpl_->get_domain_nsset_tech_contacts(Fred::Corba::wrap_int<unsigned long long>(domain_id));
+                pimpl_->get_nsset_notification_emails_by_domain_id(domain_id);
 
         return wrap_TechContacts(tech_contacts)._retn();
     }

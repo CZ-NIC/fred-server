@@ -97,6 +97,15 @@ struct DomainStatePolicyError
     }
 };
 
+struct KeysetStatePolicyError
+    : virtual std::exception
+{
+    virtual const char* what() const throw ()
+    {
+        return "keyset state prevents action";
+    }
+};
+
 struct SystemRegistratorNotFound
     : virtual std::exception
 {
@@ -155,6 +164,30 @@ struct DnsKey {
           key(_key)
     {
     }
+
+    /**
+     * Comparison of instances converted to std::string
+     * @param rhs is right hand side instance of the comparison
+     */
+    bool operator==(const DnsKey& rhs) const
+    {
+        return to_string() == rhs.to_string();
+    }
+
+    /**
+    * Dumps state of the instance into the string
+    * @return string with description of the instance state
+    */
+    std::string to_string() const
+    {
+        return Util::format_data_structure("DnsKey",
+        Util::vector_of<std::pair<std::string, std::string> >
+        (std::make_pair("flags", boost::lexical_cast<std::string>(flags)))
+        (std::make_pair("protocol", boost::lexical_cast<std::string>(protocol)))
+        (std::make_pair("alg", boost::lexical_cast<std::string>(alg)))
+        (std::make_pair("key", key))
+        );
+    }
 };
 
 typedef std::vector<DnsKey> DnsKeys;
@@ -185,13 +218,17 @@ private:
     std::string automatically_managed_keyset_prefix_;
     std::string automatically_managed_keyset_registrar_;
     std::string automatically_managed_keyset_tech_contact_;
+    std::string automatically_managed_keyset_zones_;
+    bool disable_notifier_;
 
 public:
     AutomaticKeysetManagementImpl(
             const std::string& _server_name,
             const std::string& _automatically_managed_keyset_prefix,
             const std::string& _automatically_managed_keyset_registrar,
-            const std::string& _automatically_managed_keyset_tech_contact);
+            const std::string& _automatically_managed_keyset_tech_contact,
+            const std::string& _automatically_managed_keyset_zones,
+            bool _disable_notifier);
 
     virtual ~AutomaticKeysetManagementImpl();
 
@@ -210,7 +247,7 @@ public:
             Nsset _current_nsset,
             Keyset _new_keyset);
 
-    TechContacts get_domain_nsset_tech_contacts(
+    TechContacts get_nsset_notification_emails_by_domain_id(
             unsigned long long _domain_id);
 
 };

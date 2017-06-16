@@ -49,7 +49,9 @@ public:
             const std::string& _server_name,
             const std::string& _automatically_managed_keyset_prefix,
             const std::string& _automatically_managed_keyset_registrar,
-            const std::string& _automatically_managed_keyset_tech_contact);
+            const std::string& _automatically_managed_keyset_tech_contact,
+            const std::string& _automatically_managed_keyset_zones,
+            bool _disable_notifier);
 
     virtual ~Server_i();
 
@@ -63,7 +65,7 @@ public:
             const Registry::AutomaticKeysetManagement::Nsset& current_nsset,
             const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
 
-    TechContactSeq* get_domain_nsset_tech_contacts(
+    TechContactSeq* get_nsset_notification_emails_by_domain_id(
             ::CORBA::ULongLong domain_id);
 
 private:
