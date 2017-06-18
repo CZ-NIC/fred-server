@@ -361,7 +361,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
         }
 
         if (_current_nsset.nameservers.empty()) {
-            throw Fred::AutomaticKeysetManagement::NssetInvalid(); 
+            throw Fred::AutomaticKeysetManagement::NssetInvalid();
         }
 
         if (!is_keyset_size_within_limits(_new_keyset)) {
