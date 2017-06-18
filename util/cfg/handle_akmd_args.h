@@ -74,7 +74,7 @@ public:
                  "AKMD domain zones permitted for automatic keyset management");
         opts_descs->add_options()
                 ("akmd.disable_notifier",
-                 po::value<std::string>()->default_value("false"),
+                 po::value<bool>()->default_value(false),
                  "disable notifications");
 
         return opts_descs;
