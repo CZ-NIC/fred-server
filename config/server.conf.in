@@ -207,6 +207,6 @@ list_contacts_limit=5000
 automatically_managed_keyset_prefix = AUTO-
 automatically_managed_keyset_registrar = REG-FRED_C
 automatically_managed_keyset_tech_contact = KONTAKT
-# comma separated list of domain zones permitted for automatic keyset management
+# use following option for each domain zone which is permitted for automatic keyset management
 automatically_managed_keyset_zones = cz
 disable_notifier = false

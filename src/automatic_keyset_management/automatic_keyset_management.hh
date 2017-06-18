@@ -218,7 +218,7 @@ private:
     std::string automatically_managed_keyset_prefix_;
     std::string automatically_managed_keyset_registrar_;
     std::string automatically_managed_keyset_tech_contact_;
-    std::string automatically_managed_keyset_zones_;
+    std::vector<std::string> automatically_managed_keyset_zones_;
     bool disable_notifier_;
 
 public:
@@ -227,7 +227,7 @@ public:
             const std::string& _automatically_managed_keyset_prefix,
             const std::string& _automatically_managed_keyset_registrar,
             const std::string& _automatically_managed_keyset_tech_contact,
-            const std::string& _automatically_managed_keyset_zones,
+            const std::vector<std::string>& _automatically_managed_keyset_zones,
             bool _disable_notifier);
 
     virtual ~AutomaticKeysetManagementImpl();
