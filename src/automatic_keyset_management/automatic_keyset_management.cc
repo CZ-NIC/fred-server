@@ -67,7 +67,7 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
         const std::string& _automatically_managed_keyset_prefix,
         const std::string& _automatically_managed_keyset_registrar,
         const std::string& _automatically_managed_keyset_tech_contact,
-        const std::string& _automatically_managed_keyset_zones,
+        const std::vector<std::string>& _automatically_managed_keyset_zones,
         const bool _disable_notifier)
     : server_name_(_server_name),
       automatically_managed_keyset_prefix_(_automatically_managed_keyset_prefix),
@@ -93,16 +93,23 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
         NameserversDomains nameservers_domains;
         Fred::OperationContextCreator ctx;
 
-        std::string sql = ""
+        Database::ParamQuery sql(
             "SELECT ns.fqdn as nameserver, oreg.name as domain_fqdn, oreg.id as domain_id "
              "FROM host ns "
              "JOIN domain d ON ns.nssetid = d.nsset "
              "JOIN object_registry oreg ON oreg.id = d.id "
+             "JOIN zone z ON z.id = d.zone "
             "WHERE d.keyset IS NULL "
-              "AND d.zone = 2 "
-            "ORDER BY ns.fqdn";
+              "AND z.fqdn IN (");
+            Util::HeadSeparator in_separator("",", ");
+            for (std::vector<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
+                    it != automatically_managed_keyset_zones_.end(); ++it)
+            {
+                 sql(in_separator.get()).param_text(*it);
+            }
+            sql(") ORDER BY ns.fqdn");
 
-        const Database::Result db_result = ctx.get_conn().exec(sql);
+        const Database::Result db_result = ctx.get_conn().exec_params(sql);
 
         for (unsigned int idx = 0; idx < db_result.size(); ++idx)
         {
@@ -133,16 +140,22 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
         Fred::OperationContextCreator ctx;
 
         Database::ParamQuery sql;
-        sql(""
-            "SELECT ns.fqdn as nameserver, oreg.name as domain_fqdn, oreg.id as domain_id "
-             "FROM host ns "
-             "JOIN domain d ON ns.nssetid = d.nsset "
-             "JOIN object_registry oreg ON oreg.id = d.id "
-             "JOIN object k ON k.id = d.keyset "
-             "JOIN object_registry oregk ON oregk.id = k.id "
-            "WHERE oregk.name LIKE '")(automatically_managed_keyset_prefix_)("%' "
-              "AND d.zone = 2 "
-            "ORDER BY ns.fqdn");
+        sql("SELECT ns.fqdn as nameserver, oreg.name as domain_fqdn, oreg.id as domain_id "
+            "FROM host ns "
+            "JOIN domain d ON ns.nssetid = d.nsset "
+            "JOIN object_registry oreg ON oreg.id = d.id "
+            "JOIN object k ON k.id = d.keyset "
+            "JOIN object_registry oregk ON oregk.id = k.id "
+            "JOIN zone z ON z.id = d.zone "
+            "WHERE oregk.name LIKE ").param_text(automatically_managed_keyset_prefix_ + "%")
+            (" AND z.fqdn IN (");
+            Util::HeadSeparator in_separator("",", ");
+            for (std::vector<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
+                    it != automatically_managed_keyset_zones_.end(); ++it)
+            {
+                 sql(in_separator.get()).param_text(*it);
+            }
+            sql(") ORDER BY ns.fqdn");
 
         Database::Result db_result = ctx.get_conn().exec_params(sql);
 
@@ -359,7 +372,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
         }
 
         if (_current_nsset.nameservers.empty()) {
-            throw Fred::AutomaticKeysetManagement::NssetInvalid(); 
+            throw Fred::AutomaticKeysetManagement::NssetInvalid();
         }
 
         if (!is_keyset_size_within_limits(_new_keyset)) {

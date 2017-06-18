@@ -48,7 +48,7 @@ public:
     std::string automatically_managed_keyset_prefix;
     std::string automatically_managed_keyset_registrar;
     std::string automatically_managed_keyset_tech_contact;
-    std::string automatically_managed_keyset_zones;
+    std::vector<std::string> automatically_managed_keyset_zones;
     bool disable_notifier;
 
     boost::shared_ptr<po::options_description>
@@ -70,7 +70,7 @@ public:
                  "AKMD technical contact of automatically managed keyset");
         opts_descs->add_options()
                 ("akmd.automatically_managed_keyset_zones",
-                 po::value<std::string>()->default_value("cz"),
+                 po::value<std::vector<std::string> >()->multitoken()->composing()->required(),
                  "AKMD domain zones permitted for automatic keyset management");
         opts_descs->add_options()
                 ("akmd.disable_notifier",
@@ -88,7 +88,7 @@ public:
         automatically_managed_keyset_prefix = vm["akmd.automatically_managed_keyset_prefix"].as<std::string>();
         automatically_managed_keyset_registrar = vm["akmd.automatically_managed_keyset_registrar"].as<std::string>();
         automatically_managed_keyset_tech_contact = vm["akmd.automatically_managed_keyset_tech_contact"].as<std::string>();
-        automatically_managed_keyset_zones = vm["akmd.automatically_managed_keyset_zones"].as<std::string>();
+        automatically_managed_keyset_zones = vm["akmd.automatically_managed_keyset_zones"].as<std::vector<std::string> >();
         disable_notifier = vm["akmd.disable_notifier"].as<bool>();
     }
 
