@@ -46,7 +46,7 @@ public:
         : epp_result_(_epp_result)
     { }
 
-    virtual ~EppResponseSuccess() throw()
+    virtual ~EppResponseSuccess()
     { }
 
     const EppResultSuccess& epp_result() const {

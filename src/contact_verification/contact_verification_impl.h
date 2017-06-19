@@ -72,7 +72,7 @@ namespace Registry
                     errors(_e)
                 {
                 }
-                ~DATA_VALIDATION_ERROR() throw () {}
+                ~DATA_VALIDATION_ERROR() {}
                 FIELD_ERROR_MAP errors;
             };
 

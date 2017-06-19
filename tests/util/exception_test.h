@@ -29,7 +29,7 @@ struct TestEx : virtual std::exception
 {
     TestEx() throw(){}//ctor
     TestEx(const TestEx&) throw() {} //copy
-    virtual ~TestEx() throw() {} //dtor
+    virtual ~TestEx() {} //dtor
     virtual const char* what() const throw()
     {
         return "test exception";

@@ -50,7 +50,7 @@ public:
     {
         return sent_zip_file_relative_names_;
     }
-    virtual ~ScpUploadException() throw() {};
+    virtual ~ScpUploadException() {};
 };
 
 /**

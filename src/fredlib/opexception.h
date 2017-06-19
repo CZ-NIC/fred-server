@@ -91,7 +91,7 @@ struct ExceptionStack
     /**
      * Public virtual nothrow empty dtor.
      */
-    virtual ~ExceptionStack() throw() {}
+    virtual ~ExceptionStack() {}
 
 private:
 
@@ -138,7 +138,7 @@ protected:
     /**
     * Protected non-virtual nothrow empty dtor.
     */
-    ~ThrowMeFlagImpl() throw () {}
+    ~ThrowMeFlagImpl() {}
 };
 
 /**
@@ -159,7 +159,7 @@ struct OperationException
     /**
      * Public virtual nothrow empty dtor.
      */
-    virtual ~OperationException() throw() {}
+    virtual ~OperationException() {}
 };
 
 /**
@@ -189,7 +189,7 @@ struct InternalError
         return "error: std::string::c_str() exception";
     }
 
-    virtual ~InternalError() throw() try{}catch(...){}
+    virtual ~InternalError() try{}catch(...){}
 private:
     std::string msg_;
 };
@@ -237,7 +237,7 @@ public:\
     }\
 protected:\
     BOOST_JOIN(ExceptionData_,ex_data_tag)(){}\
-    BOOST_JOIN(~ExceptionData_,ex_data_tag)() throw () {}\
+    BOOST_JOIN(~ExceptionData_,ex_data_tag)() {}\
 }\
 
 /**
@@ -299,7 +299,7 @@ public:\
     }\
 protected:\
     BOOST_JOIN(ExceptionData_vector_of_,ex_data_tag)(){}\
-    BOOST_JOIN(~ExceptionData_vector_of_,ex_data_tag)() throw () {}\
+    BOOST_JOIN(~ExceptionData_vector_of_,ex_data_tag)() {}\
 }\
 
 ///common exception data tags

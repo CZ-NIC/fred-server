@@ -46,7 +46,7 @@ public:
         epp_results_.push_back(_epp_result);
     }
 
-    virtual ~EppResponseFailure() throw()
+    virtual ~EppResponseFailure()
     { }
 
     EppResponseFailure& add(const EppResultFailure& _epp_result)

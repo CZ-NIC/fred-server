@@ -7,7 +7,7 @@ namespace Fred
 {
     struct Exception : std::exception {
         virtual const char* what() const throw() = 0;
-        virtual ~Exception() throw() { }
+        virtual ~Exception() { }
     };
 
     struct IncorrectAuthInfoPw : Exception {
