@@ -874,7 +874,8 @@ struct IntConversionTraits< bool, bool, false, false, false >
     static const ::size_t number_of_values_to_fit = 2;
     static const type value_to_fit[number_of_values_to_fit];
     static const ::size_t number_of_out_of_range_values = 0;
-    static const type out_of_range_value[number_of_out_of_range_values];
+    // declaring an array with zero length is illegal in C++ (8.3.4.1)
+    static const type out_of_range_value[1];
 };
 
 const bool IntConversionTraits< bool, bool, false, false, false >::
@@ -882,6 +883,9 @@ const bool IntConversionTraits< bool, bool, false, false, false >::
         false,
         true
     };
+
+const bool IntConversionTraits< bool, bool, false, false, false >::
+    out_of_range_value[1] = { false };
 
 
 // ===== bool -> any integer =====
@@ -895,7 +899,8 @@ struct IntConversionTraits< bool, DST_INT_TYPE, false, DST_IS_SIGNED, false >
     static const ::size_t number_of_values_to_fit = 2;
     static const type value_to_fit[number_of_values_to_fit];
     static const ::size_t number_of_out_of_range_values = 0;
-    static const type out_of_range_value[number_of_out_of_range_values];
+    // declaring an array with zero length is illegal in C++ (8.3.4.1)
+    static const type out_of_range_value[1];
 };
 
 template < class DST_INT_TYPE, bool DST_IS_SIGNED >
@@ -904,6 +909,10 @@ const bool IntConversionTraits< bool, DST_INT_TYPE, false, DST_IS_SIGNED, false 
         false,
         true
     };
+
+template < class DST_INT_TYPE, bool DST_IS_SIGNED >
+const bool IntConversionTraits< bool, DST_INT_TYPE, false, DST_IS_SIGNED, false >::
+    out_of_range_value[1] = { false };
 
 
 // ===== shorter unsigned -> longer integer =====
@@ -918,7 +927,8 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, fa
     static const ::size_t number_of_values_to_fit = 4;
     static const type value_to_fit[number_of_values_to_fit];
     static const ::size_t number_of_out_of_range_values = 0;
-    static const type out_of_range_value[number_of_out_of_range_values];
+    // declaring an array with zero length is illegal in C++ (8.3.4.1)
+    static const type out_of_range_value[1];
 };
 
 template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
@@ -929,6 +939,10 @@ const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_I
         type(shorter_unsigned::max() - 1),
         type(shorter_unsigned::max())
     };
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE, bool DST_IS_SIGNED >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, false, DST_IS_SIGNED, false >::
+    out_of_range_value[1] = { false };
 
 
 // ===== shorter signed -> longer unsigned =====
@@ -976,7 +990,8 @@ struct IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, false >
     static const ::size_t number_of_values_to_fit = 7;
     static const type value_to_fit[number_of_values_to_fit];
     static const ::size_t number_of_out_of_range_values = 0;
-    static const type out_of_range_value[number_of_out_of_range_values];
+    // declaring an array with zero length is illegal in C++ (8.3.4.1)
+    static const type out_of_range_value[1];
 };
 
 template < class SRC_INT_TYPE, class DST_INT_TYPE >
@@ -990,6 +1005,10 @@ const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, 
         type(shorter_signed::max() - 1),
         type(shorter_signed::max())
     };
+
+template < class SRC_INT_TYPE, class DST_INT_TYPE >
+const SRC_INT_TYPE IntConversionTraits< SRC_INT_TYPE, DST_INT_TYPE, true, true, false >::
+    out_of_range_value[1] = { false };
 
 
 // ===== longer unsigned -> bool =====
