@@ -64,7 +64,7 @@ NssetCreateResult nsset_create_impl(
     }
 
     //check new nsset handle
-    if( Fred::Nsset::get_handle_syntax_validity(_data.handle) != Fred::NssetHandleState::SyntaxValidity::valid ) {
+    if( Fred::Nsset::get_handle_syntax_validity(_ctx, _data.handle) != Fred::NssetHandleState::SyntaxValidity::valid ) {
         throw AggregatedParamErrors().add( Error::of_scalar_parameter(Param::nsset_handle, Reason::bad_format_nsset_handle));
     }
 

@@ -276,11 +276,11 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
         try
         {
+            Fred::OperationContextCreator ctx;
             const Fred::InfoContactData icd =
                     Fred::InfoContactByHandle(handle).exec(ctx, get_output_timezone()).info_contact_data;
             Contact con;
@@ -332,10 +332,11 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
         }
         catch (const Fred::InfoContactByHandle::Exception& e)
         {
+            Fred::OperationContextCreator ctx;
             if (e.is_set_unknown_contact_handle())
             {
                 if (Fred::ContactHandleState::SyntaxValidity::invalid ==
-                        Fred::Contact::get_handle_syntax_validity(handle))
+                    Fred::Contact::get_handle_syntax_validity(ctx, handle))
                 {
                     throw InvalidHandle();
                 }
@@ -346,6 +347,7 @@ Contact Server_impl::get_contact_by_handle(const std::string& handle)
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return Contact();
@@ -384,20 +386,21 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
         try
         {
+            Fred::OperationContextCreator ctx;
             return make_nsset_from_info_data(
                     Fred::InfoNssetByHandle(handle).exec(ctx, get_output_timezone()).info_nsset_data,
                     ctx);
         }
         catch (const Fred::InfoNssetByHandle::Exception& e)
         {
+            Fred::OperationContextCreator ctx;
             if (e.is_set_unknown_handle())
             {
-                if (Fred::TestHandleOf< Fred::Object_Type::nsset >(handle).is_invalid_handle())
+                if (Fred::TestHandleOf< Fred::Object_Type::nsset >(handle).is_invalid_handle(ctx))
                 {
                     throw InvalidHandle();
                 }
@@ -408,6 +411,7 @@ WhoisImpl::NSSet Server_impl::get_nsset_by_handle(const std::string& handle)
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return WhoisImpl::NSSet();
@@ -474,9 +478,9 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle, unsigned l
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::InfoNssetOutput> nss_info =
                 Fred::InfoNssetByTechContactHandle(handle)
                     .set_limit(limit + 1)
@@ -484,7 +488,7 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle, unsigned l
         if (nss_info.empty())
         {
             if (Fred::ContactHandleState::SyntaxValidity::invalid ==
-                    Fred::Contact::get_handle_syntax_validity(handle))
+                Fred::Contact::get_handle_syntax_validity(ctx, handle))
             {
                 throw InvalidHandle();
             }
@@ -494,6 +498,7 @@ NSSetSeq Server_impl::get_nssets_by_tech_c(const std::string& handle, unsigned l
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return NSSetSeq();
@@ -541,11 +546,11 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
         try
         {
+            Fred::OperationContextCreator ctx;
             const Fred::InfoKeysetData ikd =
                     Fred::InfoKeysetByHandle(handle).exec(ctx, get_output_timezone()).info_keyset_data;
             WhoisImpl::KeySet ks;
@@ -582,9 +587,10 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
         }
         catch (const Fred::InfoKeysetByHandle::Exception& e)
         {
+            Fred::OperationContextCreator ctx;
             if (e.is_set_unknown_handle())
             {
-                if (Fred::KeySet::get_handle_syntax_validity(handle) == Fred::KeySet::HandleState::invalid)
+                if (Fred::KeySet::get_handle_syntax_validity(ctx, handle) == Fred::KeySet::HandleState::invalid)
                 {
                     throw InvalidHandle();
                 }
@@ -595,6 +601,7 @@ WhoisImpl::KeySet Server_impl::get_keyset_by_handle(const std::string& handle)
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return KeySet();
@@ -604,9 +611,9 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::InfoKeysetOutput> ks_info =
                 Fred::InfoKeysetByTechContactHandle(handle)
                     .set_limit(limit + 1)
@@ -615,7 +622,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
         if (ks_info.empty())
         {
             if (Fred::ContactHandleState::SyntaxValidity::invalid ==
-                    Fred::Contact::get_handle_syntax_validity(handle))
+                Fred::Contact::get_handle_syntax_validity(ctx, handle))
             {
                 throw InvalidHandle();
             }
@@ -666,6 +673,7 @@ KeySetSeq Server_impl::get_keysets_by_tech_c(const std::string& handle, unsigned
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return KeySetSeq();
@@ -827,9 +835,9 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle, unsi
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByRegistrantHandle(handle)
                     .set_limit(limit + 1)
@@ -837,7 +845,7 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle, unsi
         if (domain_info.empty())
         {
             if (Fred::ContactHandleState::SyntaxValidity::invalid ==
-                    Fred::Contact::get_handle_syntax_validity(handle))
+                Fred::Contact::get_handle_syntax_validity(ctx, handle))
             {
                 throw InvalidHandle();
             }
@@ -847,6 +855,7 @@ DomainSeq Server_impl::get_domains_by_registrant(const std::string& handle, unsi
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();
@@ -856,16 +865,16 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle, u
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByAdminContactHandle(handle).set_limit(limit + 1)
                     .exec(ctx, get_output_timezone());
         if (domain_info.empty())
         {
             if (Fred::ContactHandleState::SyntaxValidity::invalid ==
-                    Fred::Contact::get_handle_syntax_validity(handle))
+                Fred::Contact::get_handle_syntax_validity(ctx, handle))
             {
                 throw InvalidHandle();
             }
@@ -875,6 +884,7 @@ DomainSeq Server_impl::get_domains_by_admin_contact(const std::string& handle, u
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();
@@ -884,15 +894,15 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle, unsigned 
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByNssetHandle(handle).set_limit(limit + 1)
                     .exec(ctx, get_output_timezone());
         if (domain_info.empty())
         {
-            if (Fred::TestHandleOf< Fred::Object_Type::nsset >(handle).is_invalid_handle())
+            if (Fred::TestHandleOf< Fred::Object_Type::nsset >(handle).is_invalid_handle(ctx))
             {
                 throw InvalidHandle();
             }
@@ -902,6 +912,7 @@ DomainSeq Server_impl::get_domains_by_nsset(const std::string& handle, unsigned 
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();
@@ -911,15 +922,15 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle, unsigned
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    Fred::OperationContextCreator ctx;
     try
     {
+        Fred::OperationContextCreator ctx;
         const std::vector<Fred::InfoDomainOutput> domain_info =
                 Fred::InfoDomainByKeysetHandle(handle).set_limit(limit + 1)
                     .exec(ctx, get_output_timezone());
         if (domain_info.empty())
         {
-            if (Fred::KeySet::get_handle_syntax_validity(handle) == Fred::KeySet::HandleState::invalid)
+            if (Fred::KeySet::get_handle_syntax_validity(ctx, handle) == Fred::KeySet::HandleState::invalid)
             {
                 throw InvalidHandle();
             }
@@ -929,6 +940,7 @@ DomainSeq Server_impl::get_domains_by_keyset(const std::string& handle, unsigned
     }
     catch (...)
     {
+        Fred::OperationContextCreator ctx;
         log_and_rethrow_exception_handler(ctx);
     }
     return DomainSeq();

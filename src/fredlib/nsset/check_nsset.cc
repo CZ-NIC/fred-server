@@ -25,8 +25,8 @@ namespace Fred
 
 namespace Nsset
 {
-    NssetHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _nsset_handle) {
-        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_invalid_handle() ) {
+    NssetHandleState::SyntaxValidity::Enum get_handle_syntax_validity(OperationContext& ctx, const std::string& _nsset_handle) {
+        if( TestHandleOf< Object_Type::nsset >(_nsset_handle).is_invalid_handle(ctx) ) {
             return NssetHandleState::SyntaxValidity::invalid;
         }
         return NssetHandleState::SyntaxValidity::valid;

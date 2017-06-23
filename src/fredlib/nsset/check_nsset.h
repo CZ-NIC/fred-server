@@ -33,7 +33,7 @@ namespace Fred
 {
 namespace Nsset
 {
-    NssetHandleState::SyntaxValidity::Enum get_handle_syntax_validity(const std::string& _nsset_handle);
+    NssetHandleState::SyntaxValidity::Enum get_handle_syntax_validity(OperationContext& ctx, const std::string& _nsset_handle);
     NssetHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _nsset_handle);
 }
 }
