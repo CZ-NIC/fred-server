@@ -494,7 +494,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                         Notification::created,
                         automatically_managed_keyset_registrar.id,
                         create_keyset_result.create_object_result.history_id,
-                        0);
+                        "");
             }
 
             const unsigned long long domain_new_history_id =
@@ -514,7 +514,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                         Notification::updated,
                         automatically_managed_keyset_registrar.id,
                         domain_new_history_id,
-                        0);
+                        "");
             }
 
             Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
@@ -543,7 +543,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             Notification::updated,
                             automatically_managed_keyset_registrar.id,
                             domain_new_history_id,
-                            0);
+                            "");
                 }
             }
             else {
@@ -601,7 +601,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             Notification::updated,
                             automatically_managed_keyset_registrar.id,
                             keyset_new_history_id,
-                            0);
+                            "");
                 }
             }
         }
