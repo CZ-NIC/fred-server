@@ -403,7 +403,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
 
         const bool domain_has_other_keyset =
                 !info_domain_data.keyset.isnull() &&
-                is_automatically_managed_keyset(
+                !is_automatically_managed_keyset(
                         ctx,
                         info_domain_data.keyset.get_value().id,
                         automatically_managed_keyset_registrar_,
