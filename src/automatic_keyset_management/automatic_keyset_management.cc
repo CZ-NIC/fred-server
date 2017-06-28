@@ -270,10 +270,11 @@ bool is_keyset_size_within_limits(Keyset keyset) {
 
 // RFC 8078 Section 4. "DNSSEC Delete Algorithm"
 bool is_key_special_delete_key(DnsKey dns_key) {
+    static const std::string base64_encoded_zero = "AA==";
     if ((dns_key.flags == 0) &&
         (dns_key.protocol == 3) &&
         (dns_key.alg == 0) &&
-        (dns_key.key == "0"))
+        (dns_key.key == base64_encoded_zero))
     {
         return true;
     }
@@ -403,7 +404,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
 
         const bool domain_has_other_keyset =
                 !info_domain_data.keyset.isnull() &&
-                is_automatically_managed_keyset(
+                !is_automatically_managed_keyset(
                         ctx,
                         info_domain_data.keyset.get_value().id,
                         automatically_managed_keyset_registrar_,
@@ -494,7 +495,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                         Notification::created,
                         automatically_managed_keyset_registrar.id,
                         create_keyset_result.create_object_result.history_id,
-                        0);
+                        "");
             }
 
             const unsigned long long domain_new_history_id =
@@ -514,7 +515,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                         Notification::updated,
                         automatically_managed_keyset_registrar.id,
                         domain_new_history_id,
-                        0);
+                        "");
             }
 
             Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
@@ -543,7 +544,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             Notification::updated,
                             automatically_managed_keyset_registrar.id,
                             domain_new_history_id,
-                            0);
+                            "");
                 }
             }
             else {
@@ -552,6 +553,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                         Fred::InfoKeysetById(info_domain_data.keyset.get_value().id).exec(ctx, "UTC").info_keyset_data;
 
                 if (are_keysets_equal(_new_keyset, info_keyset_data.dns_keys)) {
+                    LOGGER(PACKAGE).debug("new keyset same as current keyset, nothing to do");
                     // nothing to commit
                     return;
                 }
@@ -601,7 +603,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             Notification::updated,
                             automatically_managed_keyset_registrar.id,
                             keyset_new_history_id,
-                            0);
+                            "");
                 }
             }
         }
