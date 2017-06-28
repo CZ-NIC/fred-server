@@ -270,10 +270,11 @@ bool is_keyset_size_within_limits(Keyset keyset) {
 
 // RFC 8078 Section 4. "DNSSEC Delete Algorithm"
 bool is_key_special_delete_key(DnsKey dns_key) {
+    static const std::string base64_encoded_zero = "AA==";
     if ((dns_key.flags == 0) &&
         (dns_key.protocol == 3) &&
         (dns_key.alg == 0) &&
-        (dns_key.key == "0"))
+        (dns_key.key == base64_encoded_zero))
     {
         return true;
     }
@@ -552,6 +553,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                         Fred::InfoKeysetById(info_domain_data.keyset.get_value().id).exec(ctx, "UTC").info_keyset_data;
 
                 if (are_keysets_equal(_new_keyset, info_keyset_data.dns_keys)) {
+                    LOGGER(PACKAGE).debug("new keyset same as current keyset, nothing to do");
                     // nothing to commit
                     return;
                 }
