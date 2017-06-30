@@ -372,7 +372,15 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
             throw std::runtime_error("will not update enum zone");
         }
 
-        if (_current_nsset.nameservers.empty()) {
+        const bool domain_has_automatically_managed_keyset =
+                !info_domain_data.keyset.isnull() &&
+                is_automatically_managed_keyset(
+                        ctx,
+                        info_domain_data.keyset.get_value().id,
+                        automatically_managed_keyset_registrar_,
+                        automatically_managed_keyset_tech_contact_);
+
+        if (!domain_has_automatically_managed_keyset && _current_nsset.nameservers.empty()) {
             throw Fred::AutomaticKeysetManagement::NssetInvalid();
         }
 
@@ -392,13 +400,13 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
 
         if (info_domain_data.nsset.isnull()) {
             LOGGER(PACKAGE).debug("current_nsset empty");
-            throw Fred::AutomaticKeysetManagement::NssetInvalid();
+            throw Fred::AutomaticKeysetManagement::NssetInvalid(); // throw other exception
         }
 
         const Fred::InfoNssetData info_nsset_data =
                 Fred::InfoNssetById(info_domain_data.nsset.get_value().id).exec(ctx, "UTC").info_nsset_data;
 
-        if (!are_nssets_equal(_current_nsset, info_nsset_data.dns_hosts)) {
+        if (!domain_has_automatically_managed_keyset && !are_nssets_equal(_current_nsset, info_nsset_data.dns_hosts)) {
             throw Fred::AutomaticKeysetManagement::NssetDiffers();
         }
 
@@ -503,6 +511,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             info_domain_data.fqdn,
                             automatically_managed_keyset_registrar.handle)
                             .set_keyset(automatically_managed_keyset_handle) // or get handle by create_keyset_result.create_object_result.object_id
+                            .set_logd_request_id(0) // #19265 cannot delete poll messages fix
                             .exec(ctx);
 
             LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
@@ -532,6 +541,7 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                                 info_domain_data.fqdn,
                                 automatically_managed_keyset_registrar.handle)
                                 .unset_keyset()
+                                .set_logd_request_id(0) // #19265 cannot delete poll messages fix
                                 .exec(ctx);
 
                 LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
@@ -608,7 +618,6 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             "");
                 }
 
-                Fred::Poll::CreateUpdateObjectPollMessage(keyset_new_history_id).exec(ctx);
             }
         }
 
