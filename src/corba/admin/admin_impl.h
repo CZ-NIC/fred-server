@@ -40,7 +40,7 @@ private:
 
   ccReg_BankingInvoicing_i bankingInvoicing;
   DBSharedPtr  db_disconnect_guard_;
-  std::auto_ptr<Fred::Manager> registry_manager_;
+  std::unique_ptr<Fred::Manager> registry_manager_;
 
   typedef std::map<std::string, ccReg_Session_i*> SessionListType;
   SessionListType m_session_list;

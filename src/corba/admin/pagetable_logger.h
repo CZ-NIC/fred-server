@@ -6,7 +6,7 @@
 class ccReg_Logger_i : public ccReg_PageTable_i,
 	public PortableServer::RefCountServantBase {
 private: 
-	std::auto_ptr<Fred::Logger::List> m_lel;
+	std::unique_ptr<Fred::Logger::List> m_lel;
 
 public:
 	//ccReg_Logger_i(Fred::Request::List *list, const Settings *_ptr);

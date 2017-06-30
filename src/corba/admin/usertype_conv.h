@@ -5,9 +5,9 @@
 #include "src/corba/Admin.hh"
 #include "src/fredlib/requests/request.h"
 
-inline std::auto_ptr<Fred::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r)
+inline std::unique_ptr<Fred::Logger::ObjectReferences> convert_obj_references(const ccReg::ObjectReferences &r)
 {
-    std::auto_ptr<Fred::Logger::ObjectReferences> ret_ptr(new Fred::Logger::ObjectReferences(r.length()));
+    std::unique_ptr<Fred::Logger::ObjectReferences> ret_ptr(new Fred::Logger::ObjectReferences(r.length()));
     Fred::Logger::ObjectReferences &ret = *(ret_ptr.get());
 
     for(unsigned i=0;i<r.length();i++) {
@@ -19,9 +19,9 @@ inline std::auto_ptr<Fred::Logger::ObjectReferences> convert_obj_references(cons
     return ret_ptr;
 }
 
-inline std::auto_ptr<Fred::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p)
+inline std::unique_ptr<Fred::Logger::RequestProperties> convert_properties(const ccReg::RequestProperties &p)
 {
-	std::auto_ptr<Fred::Logger::RequestProperties> ret_ptr(new Fred::Logger::RequestProperties(p.length()));
+	std::unique_ptr<Fred::Logger::RequestProperties> ret_ptr(new Fred::Logger::RequestProperties(p.length()));
 	Fred::Logger::RequestProperties &ret = *(ret_ptr.get());
 
 	for(unsigned i=0;i<p.length();i++) {

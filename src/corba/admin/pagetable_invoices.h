@@ -7,7 +7,7 @@
 class ccReg_Invoices_i : public ccReg_PageTable_i,
                          public PortableServer::RefCountServantBase {
 private:
-  std::auto_ptr<Fred::Invoicing::List> invoice_list_;
+  std::unique_ptr<Fred::Invoicing::List> invoice_list_;
 
 public:
   ccReg_Invoices_i(Fred::Invoicing::List* _invoice_list);

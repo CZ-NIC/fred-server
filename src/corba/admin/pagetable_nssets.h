@@ -24,7 +24,7 @@
 class ccReg_NSSets_i : public ccReg_PageTable_i,
                        public PortableServer::RefCountServantBase {
 private:
-  std::auto_ptr<Fred::Nsset::List> nl;
+  std::unique_ptr<Fred::Nsset::List> nl;
   
 public:
   ccReg_NSSets_i(Fred::Nsset::List *nl, const Settings *_ptr);

@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <utility>
 #include <vector>
 #include <map>
 #include <exception>
@@ -142,7 +143,7 @@ public:
 
 struct db_conn_acquire_fixture
 {
-    std::auto_ptr<Database::Connection> connp;
+    std::unique_ptr<Database::Connection> connp;
     db_conn_acquire_fixture()
     try
         : connp( new Database::Connection((Database::Manager::acquire())) )
@@ -225,7 +226,7 @@ protected:
 
 struct invoice_manager_fixture
 {
-    std::auto_ptr<Fred::Invoicing::Manager> invMan;
+    std::unique_ptr<Fred::Invoicing::Manager> invMan;
 
     invoice_manager_fixture()
     try

@@ -31,6 +31,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sstream>
+#include <utility>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(CreatePdf)
@@ -82,7 +83,7 @@ private:
 public:
     virtual ~FakeManager() {}
 
-    virtual std::auto_ptr<Fred::Document::Generator> createOutputGenerator(
+    virtual std::unique_ptr<Fred::Document::Generator> createOutputGenerator(
         Fred::Document::GenerationType type,
         std::ostream& output,
         const std::string& lang) const
@@ -95,11 +96,11 @@ public:
         {
             throw std::invalid_argument("language code not recognized");
         }
-        std::auto_ptr<Fred::Document::Generator> generator(new FakeGenerator);
+        std::unique_ptr<Fred::Document::Generator> generator(new FakeGenerator);
         return generator;
     }
 
-    virtual std::auto_ptr<Fred::Document::Generator> createSavingGenerator(
+    virtual std::unique_ptr<Fred::Document::Generator> createSavingGenerator(
         Fred::Document::GenerationType, const std::string&, unsigned, const std::string&)const
     {
         throw UnexpectedCall();

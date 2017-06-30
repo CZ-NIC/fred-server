@@ -66,6 +66,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+#include <utility>
 
 #include "src/corba/mailer_manager.h"
 #include "src/fredlib/contact_verification/contact.h"
@@ -533,10 +534,10 @@ struct Locking_public_request_fixture
     unsigned long long contact_id;
     Fred::InfoContactOutput info_contact;
     std::vector<Fred::InfoContactOutput> info_contact_history;
-    std::auto_ptr<Fred::Manager> registry_manager;
-    std::auto_ptr<Fred::Document::Manager> doc_manager;
+    std::unique_ptr<Fred::Manager> registry_manager;
+    std::unique_ptr<Fred::Document::Manager> doc_manager;
     boost::shared_ptr<Fred::Mailer::Manager> mailer_manager;
-    std::auto_ptr<Fred::PublicRequest::Manager> request_manager;
+    std::unique_ptr<Fred::PublicRequest::Manager> request_manager;
     unsigned long long preq_id;
 
     //init
@@ -622,7 +623,7 @@ struct Locking_public_request_fixture
 
         Fred::PublicRequest::Type type = Fred::PublicRequest::PRT_AUTHINFO_EMAIL_PIF;
 
-        std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(
+        std::unique_ptr<Fred::PublicRequest::PublicRequest> new_request(
                 request_manager->createRequest(type));
         new_request->setType(type);
         new_request->setRegistrarId(0);

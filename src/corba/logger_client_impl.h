@@ -23,7 +23,7 @@ public:
             const std::string &service,
             const std::string &user);
 
-    std::auto_ptr<RequestCountInfo> getRequestCountUsers(
+    std::unique_ptr<RequestCountInfo> getRequestCountUsers(
                const boost::posix_time::ptime &from,
                const boost::posix_time::ptime &to,
                const std::string &service);

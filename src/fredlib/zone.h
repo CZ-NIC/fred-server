@@ -327,10 +327,10 @@ namespace Fred
       /// Return list of zones
         //virtual ZoneList *getList() = 0;
         ///list factory
-        typedef std::auto_ptr<ZoneList> ZoneListPtr;
+        typedef std::unique_ptr<ZoneList> ZoneListPtr;
         virtual ZoneListPtr createList() =0;
 
-        typedef std::auto_ptr<Fred::Zone::Manager> ZoneManagerPtr;
+        typedef std::unique_ptr<Fred::Zone::Manager> ZoneManagerPtr;
       /// create manager object
       static ZoneManagerPtr create();
     };//class Manager

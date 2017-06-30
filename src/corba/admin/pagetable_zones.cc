@@ -2,10 +2,11 @@
 
 #include <iostream>
 #include <sstream>
+#include <utility>
 
 ccReg_Zones_i::ccReg_Zones_i(
         Fred::Zone::Manager::ZoneListPtr zoneList)
-	: m_zoneList(zoneList)
+	: m_zoneList(std::move(zoneList))
 {
 }
 
@@ -232,7 +233,7 @@ ccReg_Zones_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_Zones_i::saveFilter(%1%)")
             % name);
 
-    std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
+    std::unique_ptr<Fred::Filter::Manager> tmp_filter_manager(
             Fred::Filter::Manager::create());
     tmp_filter_manager->save(Fred::Filter::FT_ZONE, name, uf);
 }

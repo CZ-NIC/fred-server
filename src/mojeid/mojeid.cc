@@ -66,6 +66,7 @@
 #include <boost/mpl/copy_if.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/set.hpp>
+#include <utility>
 
 namespace Registry {
 namespace MojeID {
@@ -1837,7 +1838,7 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
             CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
         HandleCorbaNameServiceArgs *const cn_conf =
             CfgArgs::instance()->get_handler_ptr_by_type< HandleCorbaNameServiceArgs >();
-        std::auto_ptr< Fred::Document::Manager > doc_manager(
+        std::unique_ptr< Fred::Document::Manager > doc_manager(
             Fred::Document::Manager::create(
                 reg_conf->docgen_path,
                 reg_conf->docgen_template_path,
@@ -1846,7 +1847,7 @@ MojeIDImplData::Buffer MojeIDImpl::get_validation_pdf(ContactId _contact_id)cons
                 cn_conf->get_nameservice_host_port()));
         const std::string czech_language = "cs";
         std::ostringstream pdf_document;
-        std::auto_ptr< Fred::Document::Generator > doc_gen(
+        std::unique_ptr< Fred::Document::Generator > doc_gen(
             doc_manager->createOutputGenerator(Fred::Document::GT_CONTACT_VALIDATION_REQUEST_PIN3,
                                                pdf_document,
                                                czech_language));
@@ -2714,7 +2715,7 @@ MojeIDImpl::MessageId MojeIDImpl::send_mojeid_card(
 
     const HandleRegistryArgs *const rconf =
         CfgArgs::instance()->get_handler_ptr_by_type< HandleRegistryArgs >();
-    std::auto_ptr< Fred::Document::Manager > doc_manager_ptr =
+    std::unique_ptr< Fred::Document::Manager > doc_manager_ptr =
         Fred::Document::Manager::create(
             rconf->docgen_path,
             rconf->docgen_template_path,

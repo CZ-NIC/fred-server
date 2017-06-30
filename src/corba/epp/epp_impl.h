@@ -81,7 +81,7 @@ private:
   const bool epp_update_contact_enqueue_check_;
 
   DBSharedPtr  db_disconnect_guard_;
-  std::auto_ptr<Fred::Manager> regMan;
+  std::unique_ptr<Fred::Manager> regMan;
 
 
   // is IDN allowed? implements logic: system registrator has always IDN allowed

@@ -150,7 +150,7 @@ void ccReg_LogSession_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_LogSession_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
       tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->save(Fred::Filter::FT_SESSION, _name, uf);
 }

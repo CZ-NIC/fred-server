@@ -36,7 +36,7 @@ public:
     Logging::Context ctx(str(boost::format("threadid-%1%") % id_));
 
     try {
-    std::auto_ptr<Database::Connection> c(pool_->acquire());
+    std::unique_ptr<Database::Connection> c(pool_->acquire());
     c->exec("SELECT * FROM object_registry");
     }
     catch(...) {

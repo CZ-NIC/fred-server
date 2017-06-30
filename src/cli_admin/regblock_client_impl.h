@@ -47,7 +47,7 @@ public:
             throw std::runtime_error("Not implemented yet ");
         } else if (params.block_id.get_value() != 0) {
             init_corba_container();
-            std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
+            std::unique_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
 
             if(!regMan->blockRegistrar(params.block_id, epp_cli.get())) {
                 std::cout << "Registrar not blocked: see log for details" << std::endl;
@@ -132,8 +132,8 @@ private:
     void block_clients_over_limit()
     {
        init_corba_container();
-       std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
-       std::auto_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
+       std::unique_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
+       std::unique_ptr<Fred::Logger::LoggerClient> log_cli(new Fred::Logger::LoggerCorbaClientImpl());
 
        regMan->blockRegistrarsOverLimit(
                    epp_cli.get(),

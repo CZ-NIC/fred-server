@@ -86,7 +86,7 @@ public:
 };//class Payment
 
 // smart pointer
-typedef std::auto_ptr<Payment> PaymentPtr;
+typedef std::unique_ptr<Payment> PaymentPtr;
 
 struct EnumListItem
 {

@@ -265,7 +265,7 @@ ccReg_Payments_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_Payments_i::saveFilter(%1%)")
             % name);
 
-    std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
+    std::unique_ptr<Fred::Filter::Manager> tmp_filter_manager(
             Fred::Filter::Manager::create());
     tmp_filter_manager->save(Fred::Filter::FT_STATEMENTITEM, name, uf);
 }

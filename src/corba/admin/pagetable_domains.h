@@ -6,7 +6,7 @@
 class ccReg_Domains_i : public ccReg_PageTable_i,
                         public PortableServer::RefCountServantBase {
 private:
-  std::auto_ptr<Fred::Domain::List> dl;
+  std::unique_ptr<Fred::Domain::List> dl;
 
 public:
   ccReg_Domains_i(Fred::Domain::List *dl, const Settings *_ptr);

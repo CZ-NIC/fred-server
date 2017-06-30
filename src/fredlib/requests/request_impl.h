@@ -34,8 +34,8 @@ public:
           std::string &_user_name, ID &_user_id,
           bool &_is_monitoring,
           std::string & _raw_request, std::string & _raw_response,
-          std::auto_ptr<RequestPropertiesDetail>  _props,
-          std::auto_ptr<ObjectReferences>   _refs,
+          boost::shared_ptr<RequestPropertiesDetail>  _props,
+          boost::shared_ptr<ObjectReferences>   _refs,
           const int _rc_code = 0, const std::string &_rc_name = std::string()) :
     CommonObjectImpl(_id),
     time_begin(_time_begin),

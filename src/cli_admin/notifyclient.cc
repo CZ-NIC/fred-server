@@ -23,6 +23,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -78,7 +79,7 @@ NotifyClient::runMethod()
 void
 NotifyClient::state_changes()
 {
-    std::auto_ptr<Fred::Document::Manager> docMan(
+    std::unique_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_PATH_NAME)
                 ,docgen_template_path.get_value()//m_conf.get<std::string>(REG_DOCGEN_TEMPLATE_PATH_NAME)
@@ -88,37 +89,37 @@ NotifyClient::state_changes()
     CorbaClient cc(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
             );
     MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+    std::unique_ptr<Fred::Zone::Manager> zoneMan(
             Fred::Zone::Manager::create());
 
     Fred::Messages::ManagerPtr msgMan
         = Fred::Messages::create_manager();
 
 
-    std::auto_ptr<Fred::Domain::Manager> domMan(
+    std::unique_ptr<Fred::Domain::Manager> domMan(
             Fred::Domain::Manager::create(m_db, zoneMan.get()));
-    std::auto_ptr<Fred::Contact::Manager> conMan(
+    std::unique_ptr<Fred::Contact::Manager> conMan(
             Fred::Contact::Manager::create(
                 m_db,
                 restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
                 )
             );
-    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+    std::unique_ptr<Fred::Nsset::Manager> nssMan(
             Fred::Nsset::Manager::create(
                 m_db,
                 zoneMan.get(),
                 restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
                 )
             );
-    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+    std::unique_ptr<Fred::Keyset::Manager> keyMan(
             Fred::Keyset::Manager::create(
                 m_db,
                 restricted_handles//m_conf.get<bool>(REG_RESTRICTED_HANDLES_NAME)
                 )
             );
-    std::auto_ptr<Fred::Registrar::Manager> regMan(
+    std::unique_ptr<Fred::Registrar::Manager> regMan(
             Fred::Registrar::Manager::create(m_db));
-    std::auto_ptr<Fred::Notify::Manager> notifyMan(
+    std::unique_ptr<Fred::Notify::Manager> notifyMan(
             Fred::Notify::Manager::create(
                 m_db,
                 &mailMan,
@@ -157,10 +158,10 @@ void NotifyClient::letters_send()
 
     CorbaClient cc(0, NULL, m_nsAddr, nameservice_context//m_conf.get<std::string>(NS_CONTEXT_NAME)
             );
-    std::auto_ptr<Fred::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
+    std::unique_ptr<Fred::File::Transferer> fileclient(new FileManagerClient(cc.getNS()));
 
     sendLetters(
-           fileclient,
+           std::move(fileclient),
            hpmail_config.is_value_set()//m_conf.hasOpt(NOTIFY_HPMAIL_CONFIG_NAME)
            ? hpmail_config.get_value()//m_conf.get<std::string> (NOTIFY_HPMAIL_CONFIG_NAME)
             : HPMAIL_CONFIG
@@ -314,7 +315,7 @@ void NotifyClient::sms_send()
    * and cancels execution at the beginning if any row in this table
    * is already being processed.
    */
-  void NotifyClient::sendLetters(std::auto_ptr<Fred::File::Transferer> fileman, const std::string &conf_file)
+  void NotifyClient::sendLetters(std::unique_ptr<Fred::File::Transferer> fileman, const std::string &conf_file)
   {
      Logging::Context ctx("send letters");
      TRACE("[CALL] Fred::Notify::sendLetters()");

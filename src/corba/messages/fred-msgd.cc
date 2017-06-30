@@ -21,6 +21,8 @@
  *  implementation of registry messages server
  */
 
+#include <utility>
+
 #include "messages.h"
 #include "messages_filemanager.h"
 

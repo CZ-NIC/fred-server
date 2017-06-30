@@ -63,7 +63,7 @@ public:
     static Manager* create(Transferer *_transferer);
 };
 
-typedef std::auto_ptr<Manager> ManagerPtr;
+typedef std::unique_ptr<Manager> ManagerPtr;
 
 }
 }

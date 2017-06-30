@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <utility>
 #include <vector>
 #include <map>
 #include <exception>
@@ -139,7 +140,7 @@ BOOST_AUTO_TEST_CASE( getCreditByZone_noregistrar_nozone)
     std::string registrar_handle(std::string("REG-FRED_NOINV")+time_string);//not created registrar
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     BOOST_CHECK((invMan->getCreditByZone(registrar_handle,zone_cz_id).compare("0.00") == 0));//noregistrar
     BOOST_CHECK((invMan->getCreditByZone(registrar_handle,0).compare("0.00") == 0));//no registrar no zone
@@ -151,7 +152,7 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix_nozone )
     Database::Connection conn = Database::Manager::acquire();
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     int year = boost::gregorian::day_clock::universal_day().year()+20;
 
@@ -186,7 +187,7 @@ BOOST_AUTO_TEST_CASE( insertInvoicePrefix )
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     int year = boost::gregorian::day_clock::universal_day().year()+20;
     
@@ -228,7 +229,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_nozone )
     unsigned long long registrar_inv_id = createTestRegistrar();
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     {
         int year = boost::gregorian::day_clock::universal_day().year();
@@ -263,7 +264,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat_noprefix )
                 , Database::query_param_list(registrar_novat_inv_id));
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     for (int year = 1500; year < 1505 ; ++year)
     {
@@ -324,7 +325,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice )
     }
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     try_insert_invoice_prefix();
 
@@ -522,7 +523,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_credit_note )
     }
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     try_insert_invoice_prefix();
 
@@ -706,7 +707,7 @@ BOOST_AUTO_TEST_CASE( createDepositInvoice_novat )
     }
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     try_insert_invoice_prefix();
 
@@ -985,7 +986,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainNoCredit )
 
     Fred::Registrar::Registrar::AutoPtr reg = createTestRegistrarClass(); 
 
-    std::auto_ptr<ccReg_EPP_i> b = create_epp_backend_object();
+    std::unique_ptr<ccReg_EPP_i> b = create_epp_backend_object();
     unsigned clid = epp_backend_login(b.get(), reg->getHandle());
 
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
@@ -1025,7 +1026,7 @@ void testChargeInsuffCredit(Fred::Invoicing::Manager *invMan, unsigned reg_units
     BOOST_CHECK_EQUAL(invoiceid != 0,true);
 
 
-    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
+    std::unique_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
     CORBA::Long clientId = epp_backend_login(myccReg_EPP_i.get(), reg->getHandle());
 
     Money before = get_credit(reg->getId(), zone_id);
@@ -1057,7 +1058,7 @@ BOOST_AUTO_TEST_CASE( chargeDomainInsuffCredit )
     Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
 
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     testChargeInsuffCredit(invMan.get(),  2, INVOICING_DomainCreate, zone_cz_id);
     testChargeInsuffCredit(invMan.get(),  2, INVOICING_DomainCreate, zone_enum_id);
@@ -1096,7 +1097,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
     Money amount = std::string("20000.00");
     unsigned act_year = boost::gregorian::day_clock::universal_day().year();
     //manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     Database::Date taxdate (act_year,1,1);
     Money out_credit;
@@ -1122,7 +1123,7 @@ BOOST_AUTO_TEST_CASE( chargeDomain )
     Database::Date exdate(act_year + 1, 1, 1);
     Database::Date exdate2(act_year + 5, 4, 30);
 
-    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
+    std::unique_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
     CORBA::Long clientId = epp_backend_login(myccReg_EPP_i.get(), registrar->getHandle());
 
     testCreateDomainWrap(myccReg_EPP_i.get(), exdate, 2, INVOICING_DomainCreate, registrar->getId(), 1, clientId, zone_cz_id);
@@ -1162,13 +1163,13 @@ void testCharge2InvoicesWorker(Database::ID zone_id, unsigned op, unsigned perio
     Fred::Registrar::Registrar::AutoPtr reg = createTestRegistrarClass();
 
     // invoice manager
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
     // add credit - 2 invoices for the same zone:
     if(amount > Money("0")) {
         create2Invoices(invMan.get(), taxdate, zone_id, reg->getId(), amount);
     }
 
-    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
+    std::unique_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
     CORBA::Long clientId = epp_backend_login(myccReg_EPP_i.get(), reg->getHandle());
     if(should_succ) {
         testCreateDomainWrap(myccReg_EPP_i.get(), exdate, period, INVOICING_DomainCreate, reg->getId(), 1, clientId, zone_id);
@@ -1338,7 +1339,7 @@ public:
 BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 {
     
-     std::auto_ptr<ccReg_EPP_i> epp = create_epp_backend_object();
+     std::unique_ptr<ccReg_EPP_i> epp = create_epp_backend_object();
 
      std::string time_string(TimeStamp::microsec());
      std::string noregistrar_handle(std::string("REG-NOTEXISTS")+time_string);
@@ -1363,7 +1364,7 @@ BOOST_AUTO_TEST_CASE(createDomainDirectThreaded)
 
 
      // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
-     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+     std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
      Database::Date taxdate (act_year,1,1);
      Money out_credit;
@@ -1430,7 +1431,7 @@ void createCzDomain(Database::ID regid, const std::string &reg_handle)
 {
     Database::ID zone_cz_id = get_zone_cz_id();
 
-    std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
+    std::unique_ptr<ccReg_EPP_i> myccReg_EPP_i = create_epp_backend_object();
 
    // ------------------ login
 
@@ -1455,7 +1456,7 @@ BOOST_AUTO_TEST_CASE(testCreateDomainEPPNoCORBA)
      Database::ID zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
      // Database::ID zone_enum_id = conn.exec("select id from zone where fqdn='0.2.4.e164.arpa'")[0][0];
-     std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+     std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
      Database::Date taxdate (act_year,1,1);
      Money out_credit;
@@ -1489,7 +1490,7 @@ BOOST_AUTO_TEST_CASE(make_debt)
     Money price = std::string("5000.00");//money
     Money out_credit;
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     unsigned long long  invoiceid = invMan->createDepositInvoice(taxdate//taxdate
         , zone_id//zone
@@ -1541,7 +1542,7 @@ BOOST_AUTO_TEST_CASE(lower_debt)
     Money price = std::string("5000.00");//money
     Money out_credit;
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(Fred::Invoicing::Manager::create());
 
     unsigned long long  invoiceid = invMan->createDepositInvoice(taxdate//taxdate
         , zone_id//zone
@@ -1638,7 +1639,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request)
     Database::ID zone_cz_id = get_zone_cz_id();
 
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
     insert_poll_request_fee(registrar->getId(), price);
@@ -1657,7 +1658,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request_double)
     Database::ID zone_cz_id = get_zone_cz_id();
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
        Fred::Invoicing::Manager::create());
 
     insert_poll_request_fee(registrar->getId(), price);
@@ -1679,7 +1680,7 @@ BOOST_AUTO_TEST_CASE(test_charge_request_missing_poll)
     Fred::Registrar::Registrar::AutoPtr registrar = createTestRegistrarClass();
     Database::ID reg_id = registrar->getId();
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
        Fred::Invoicing::Manager::create());
 
     date local_today = day_clock::local_day();
@@ -1772,7 +1773,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_exactly)
 
     date today = day_clock::local_day();
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
            Fred::Invoicing::Manager::create());
 
     Fred::Credit::init_new_registrar_credit(registrar->getId(), zone_id);
@@ -1843,7 +1844,7 @@ BOOST_AUTO_TEST_CASE(registrar_outzone_too_much)
 
     unsigned long long pay_id = payment.getId();
     date today = day_clock::local_day();
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
            Fred::Invoicing::Manager::create());
 
     Fred::Credit::init_new_registrar_credit(registrar->getId(), zone_id);

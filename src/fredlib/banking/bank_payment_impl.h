@@ -302,7 +302,7 @@ public:
 
 };
 
-typedef std::auto_ptr<PaymentImpl> PaymentImplPtr;
+typedef std::unique_ptr<PaymentImpl> PaymentImplPtr;
 
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, Id);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, StatementId);

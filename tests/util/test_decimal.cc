@@ -57,6 +57,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+#include <utility>
 
 #include "decimal/decimal.h"
 

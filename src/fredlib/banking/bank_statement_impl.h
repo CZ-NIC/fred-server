@@ -203,7 +203,7 @@ public:
     }
 };
 
-typedef std::auto_ptr<StatementImpl> StatementImplPtr;
+typedef std::unique_ptr<StatementImpl> StatementImplPtr;
 
 
 COMPARE_CLASS_IMPL_NEW(StatementImpl, AccountId);

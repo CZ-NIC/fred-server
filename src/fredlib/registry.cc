@@ -95,12 +95,12 @@ class ManagerImpl : virtual public Manager {
 
   Messages::ManagerPtr m_message_manager;
   Zone::Manager::ZoneManagerPtr m_zone_manager;
-  std::auto_ptr<Domain::Manager> m_domain_manager;
+  std::unique_ptr<Domain::Manager> m_domain_manager;
   Registrar::Manager::AutoPtr m_registrar_manager;
-  std::auto_ptr<Contact::Manager> m_contact_manager;
-  std::auto_ptr<Nsset::Manager> m_nsset_manager;
-  std::auto_ptr<Keyset::Manager> m_keyset_manager;
-  std::auto_ptr<Filter::Manager> m_filter_manager;
+  std::unique_ptr<Contact::Manager> m_contact_manager;
+  std::unique_ptr<Nsset::Manager> m_nsset_manager;
+  std::unique_ptr<Keyset::Manager> m_keyset_manager;
+  std::unique_ptr<Filter::Manager> m_filter_manager;
 
   std::vector<CountryDesc> m_countries;
   std::vector<StatusDescImpl> statusList;

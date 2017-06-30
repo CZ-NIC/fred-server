@@ -51,6 +51,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+#include <utility>
 
 BOOST_AUTO_TEST_SUITE(DbParamQuery)
 BOOST_AUTO_TEST_CASE( init_params_test )

@@ -19,12 +19,12 @@ unsigned long long DummyLoggerImpl::getRequestCount(
 }
 
 
-std::auto_ptr<RequestCountInfo> DummyLoggerImpl::getRequestCountUsers(
+std::unique_ptr<RequestCountInfo> DummyLoggerImpl::getRequestCountUsers(
     const boost::posix_time::ptime &from,
     const boost::posix_time::ptime &to,
     const std::string &service)
 {
-    return std::auto_ptr<RequestCountInfo>();
+    return std::unique_ptr<RequestCountInfo>();
 }
 
 

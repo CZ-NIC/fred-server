@@ -117,7 +117,7 @@ public:
     void sms_send();
     void file_send();
     void sendFile(const std::string &filename, const std::string &conf_file); 
-    void sendLetters(std::auto_ptr<Fred::File::Transferer> fileman
+    void sendLetters(std::unique_ptr<Fred::File::Transferer> fileman
             , const std::string &conf_file);
     void sendSMS(const std::string& command , const std::string& param_quote_by);
     void send_letters_impl(

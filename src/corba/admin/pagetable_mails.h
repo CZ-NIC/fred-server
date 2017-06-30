@@ -7,7 +7,7 @@ class ccReg_Mails_i : public ccReg_PageTable_i,
                       public PortableServer::RefCountServantBase 
 {
 private:
-  std::auto_ptr<Fred::Mail::List> mail_list_;
+  std::unique_ptr<Fred::Mail::List> mail_list_;
   MailerManager mm;
 
 public:

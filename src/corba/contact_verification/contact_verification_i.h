@@ -41,7 +41,7 @@ namespace Registry
             {
             private:
                 // do not copy
-                const std::auto_ptr<ContactVerificationImpl> pimpl_;
+                const std::unique_ptr<ContactVerificationImpl> pimpl_;
                 ContactVerification_i(const ContactVerification_i&);//no body
                 ContactVerification_i& operator= (const ContactVerification_i&);//no body
 

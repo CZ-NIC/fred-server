@@ -40,7 +40,7 @@ class Server_i : public POA_Registry::PublicRequest::PublicRequestIntf
 public:
     Server_i(const std::string& _server_name);
 
-    virtual ~Server_i() {}
+    virtual ~Server_i();
 
     ::CORBA::ULongLong create_authinfo_request_registry_email(
         ObjectType_PR::Type object_type,
@@ -64,7 +64,7 @@ public:
     Buffer* create_public_request_pdf(CORBA::ULongLong public_request_id, Language::Type lang);
 
 private:
-    const std::auto_ptr<PublicRequestImpl> pimpl_;
+    const std::unique_ptr<PublicRequestImpl> pimpl_;
 
     Server_i(const Server_i&); // no body
     Server_i& operator= (const Server_i&); // no body

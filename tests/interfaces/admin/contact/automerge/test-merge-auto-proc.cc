@@ -40,6 +40,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+#include <utility>
 #include "util/log/logger.h"
 #include "util/corba_wrapper_decl.h"
 #include "src/corba/mailer_manager.h"
@@ -103,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(test_auto_proc_dry_run, auto_proc_fixture)
             , ns_args_ptr->nameservice_context);
 
     boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-    std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+    std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
@@ -155,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE(test_auto_proc, auto_proc_fixture)
             , ns_args_ptr->nameservice_context);
 
     boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-    std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+    std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
@@ -356,7 +357,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
             , ns_args_ptr->nameservice_context);
 
     boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-    std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+    std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
     //non verbose test data
@@ -578,7 +579,7 @@ BOOST_FIXTURE_TEST_CASE(test_keep_contact_states, Test::LibFred::Contact::supply
             ns_args_ptr->nameservice_context);
 
     const boost::shared_ptr<Fred::Mailer::Manager> mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
-    const std::auto_ptr<Fred::Logger::LoggerClient> logger_client(new Fred::Logger::DummyLoggerCorbaClientImpl());
+    const std::unique_ptr<Fred::Logger::LoggerClient> logger_client(new Fred::Logger::DummyLoggerCorbaClientImpl());
 
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
 

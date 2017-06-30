@@ -35,7 +35,7 @@ private:
   const std::string server_name_;
   bool registry_restricted_handles_;
   DBSharedPtr  db_disconnect_guard_;
-  std::auto_ptr<Fred::Manager> registry_manager_;
+  std::unique_ptr<Fred::Manager> registry_manager_;
 
   void fillRegistrar(ccReg::WhoisRegistrar& creg,
                      Fred::Registrar::Registrar *reg);

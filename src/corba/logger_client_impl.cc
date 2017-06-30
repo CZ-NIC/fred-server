@@ -1,5 +1,6 @@
 #include "logger_client_impl.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <utility>
 
 namespace Fred {
 namespace Logger {
@@ -79,7 +80,7 @@ unsigned long long LoggerCorbaClientImpl::getRequestCount(
 }
 
 
-std::auto_ptr<RequestCountInfo> LoggerCorbaClientImpl::getRequestCountUsers(
+std::unique_ptr<RequestCountInfo> LoggerCorbaClientImpl::getRequestCountUsers(
            const boost::posix_time::ptime &from,
            const boost::posix_time::ptime &to,
            const std::string &service)
@@ -89,7 +90,7 @@ std::auto_ptr<RequestCountInfo> LoggerCorbaClientImpl::getRequestCountUsers(
 
     ccReg::RequestCountInfo_var info = logger_ref->getRequestCountUsers(c_from.c_str(), c_to.c_str(), service.c_str());
 
-    std::auto_ptr<RequestCountInfo> ret(new RequestCountInfo);
+    std::unique_ptr<RequestCountInfo> ret(new RequestCountInfo);
 
     // conversion
     for (unsigned i=0; i<info->length(); ++i) {

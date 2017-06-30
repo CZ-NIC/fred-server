@@ -6,7 +6,7 @@
 class ccReg_Files_i : public ccReg_PageTable_i,
                       public PortableServer::RefCountServantBase {
 private:
-  std::auto_ptr<Fred::File::List> file_list_;
+  std::unique_ptr<Fred::File::List> file_list_;
 
 public:
   ccReg_Files_i(Fred::File::List *_list);

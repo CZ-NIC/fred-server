@@ -26,6 +26,7 @@
 #include <map>
 #include <stdexcept>
 #include <sstream>
+#include <utility>
 
 namespace Registry {
 namespace PublicRequestType {
@@ -827,7 +828,7 @@ PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
     const unsigned type_id = static_cast<unsigned>(dbres[0][0]);
     const std::string handle = static_cast<std::string>(dbres[0][1]);
     std::ostringstream pdf_content;
-    const std::auto_ptr<Fred::Document::Generator> docgen_ptr(
+    const std::unique_ptr<Fred::Document::Generator> docgen_ptr(
             manager.get()->createOutputGenerator(
                 Fred::Document::GT_PUBLIC_REQUEST_PDF,
                 pdf_content,

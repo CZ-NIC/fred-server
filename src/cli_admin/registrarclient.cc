@@ -66,7 +66,7 @@ RegistrarClient::list()
     Fred::Registrar
         ::RegistrarList::AutoPtr reg_list(regMan->createList());
 
-    std::auto_ptr<Database::Filters::Registrar>
+    std::unique_ptr<Database::Filters::Registrar>
         regFilter ( new Database::Filters::RegistrarImpl(true));
 
     if (registrar_list_params_.id.is_value_set())//ID_NAME

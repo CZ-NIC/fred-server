@@ -36,7 +36,6 @@ static const std::string CONNECTION_STRING = "host=localhost port=22345 dbname=f
 /** length of date at the begining of an input line, input format is: date|xml */
 static const int INPUT_DATE_LENGTH = 26;
 static const int INPUT_ID_LENGTH   = 22;
-static const int INPUT_SERVICE_LENGTH = 2;
 static const int INPUT_MON_LENGTH = 1;
 static const std::string LOG_FILENAME = "log_migration_log.txt";
 
@@ -180,7 +179,7 @@ int main()
 
             // we don't care about the request_type_id - it's already in the request table
             epp_action_type request_type_id = UnknownAction;
-            std::auto_ptr<Fred::Logger::RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &request_type_id);
+            std::unique_ptr<Fred::Logger::RequestProperties> props = log_epp_command(cdata, cmd_type, -1, &request_type_id);
 
             time3 = clock();
             t_logcomm += time3 - time2;

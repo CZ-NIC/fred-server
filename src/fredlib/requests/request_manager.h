@@ -93,7 +93,7 @@ virtual  bool i_closeSession(Database::ID id) = 0;
   virtual Database::Result i_getResultCodesByService(ServiceType service) = 0;
   virtual Database::Result i_getObjectTypes() = 0;
   virtual unsigned long long i_getRequestCount(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service, const std::string &user) = 0;
-  virtual std::auto_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service) = 0;
+  virtual std::unique_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service) = 0;
 
   virtual List* createList() const = 0;
 
@@ -108,7 +108,7 @@ private:
   std::list<std::string> monitoring_ips;
   RequestCache rcache;
   SessionCache scache;
-  std::auto_ptr<RequestPropertyNameCache> pcache;
+  std::unique_ptr<RequestPropertyNameCache> pcache;
 
 public:
 
@@ -134,7 +134,7 @@ public:
   Database::Result i_getObjectTypes();
   // timestamps in local time
   unsigned long long i_getRequestCount(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service, const std::string &user);
-  std::auto_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service);
+  std::unique_ptr<RequestCountInfo> i_getRequestCountUsers(const boost::posix_time::ptime &datetime_from, const boost::posix_time::ptime &datetime_to, const std::string &service);
 
   // for migration tool (util/logd_migration)
   void insert_props_pub(Database::DateTime entry_time, ServiceType request_service_id, bool monitoring, Database::ID request_id, const Fred::Logger::RequestProperties& props);

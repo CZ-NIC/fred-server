@@ -19,6 +19,8 @@
  // test-file-manager-client.cc
 
 
+#include <utility>
+
 #include "test_file_manager_client.h"
 
 BOOST_AUTO_TEST_SUITE(Files)

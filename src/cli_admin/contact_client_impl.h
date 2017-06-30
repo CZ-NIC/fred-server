@@ -125,10 +125,10 @@ struct contact_merge_duplicate_auto_impl
                , ns_args_ptr->get_nameservice_port()
                , ns_args_ptr->get_nameservice_context());
 
-        std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+        std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
                 new Fred::Logger::LoggerCorbaClientImpl());
 
-        std::auto_ptr<Fred::Mailer::Manager> mm(
+        std::unique_ptr<Fred::Mailer::Manager> mm(
                 new MailerManager(CorbaContainer::get_instance()->getNS()));
 
         if (!logger_client.get()) {
@@ -192,7 +192,7 @@ struct contact_merge_impl
                , ns_args_ptr->get_nameservice_port()
                , ns_args_ptr->get_nameservice_context());
 
-        std::auto_ptr<Fred::Logger::LoggerClient> logger_client(
+        std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
                 new Fred::Logger::LoggerCorbaClientImpl());
 
         ContactMergeArgs params = CfgArgGroups::instance()

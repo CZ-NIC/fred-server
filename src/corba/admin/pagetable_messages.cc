@@ -4,10 +4,11 @@
 #include <sstream>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <utility>
 
 ccReg_Messages_i::ccReg_Messages_i(
         Fred::Messages::Manager::MessageListPtr message_list)
-	: ml(message_list)
+	: ml(std::move(message_list))
 {
 }
 
@@ -403,7 +404,7 @@ ccReg_Messages_i::saveFilter(const char *name)
     TRACE(boost::format("[CALL] ccReg_Messages_i::saveFilter(%1%)")
             % name);
 
-    std::auto_ptr<Fred::Filter::Manager> tmp_filter_manager(
+    std::unique_ptr<Fred::Filter::Manager> tmp_filter_manager(
             Fred::Filter::Manager::create());
     tmp_filter_manager->save(Fred::Filter::FT_MESSAGE, name, uf);
     }//try

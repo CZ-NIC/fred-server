@@ -599,7 +599,7 @@ namespace Fred
 
 		          bool at_least_one = false;
 		          Database::SelectQuery info_query;
-		          std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+		          std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
 		          for (fit->first(); !fit->isDone(); fit->next())
 		          {
 		            Database::Filters::Zone *zf =

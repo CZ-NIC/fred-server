@@ -44,7 +44,7 @@ public:
 };
 
 // smart pointer
-typedef std::auto_ptr<PaymentList> PaymentListPtr;
+typedef std::unique_ptr<PaymentList> PaymentListPtr;
 
 }
 }

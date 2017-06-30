@@ -117,7 +117,7 @@ void InvoiceClient::filter_reload_invoices(Fred::Invoicing::Manager *invMan, Fre
 void
 InvoiceClient::list()
 {
-    std::auto_ptr<Fred::Document::Manager> docMan(
+    std::unique_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value(),
                 docgen_template_path.get_value(),
@@ -128,12 +128,12 @@ InvoiceClient::list()
     CorbaClient cc(0, NULL, m_nsAddr, nameservice_context);
     MailerManager mailMan(cc.getNS());
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
             Fred::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan));
 
-    std::auto_ptr<Fred::Invoicing::List> invList(
+    std::unique_ptr<Fred::Invoicing::List> invList(
             invMan->createList());
 
     filter_reload_invoices(invMan.get(), invList.get());
@@ -144,7 +144,7 @@ InvoiceClient::list()
 void
 InvoiceClient::list_filters()
 {
-    std::auto_ptr<Fred::Document::Manager> docMan(
+    std::unique_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value(),
                 docgen_template_path.get_value(),
@@ -155,12 +155,12 @@ InvoiceClient::list_filters()
     CorbaClient cc(0, NULL, m_nsAddr, nameservice_context);
     MailerManager mailMan(cc.getNS());
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
             Fred::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan));
 
-    std::auto_ptr<Fred::Invoicing::List> invList(
+    std::unique_ptr<Fred::Invoicing::List> invList(
             invMan->createList());
 
     filter_reload_invoices(invMan.get(), invList.get());
@@ -283,7 +283,7 @@ InvoiceClient::list_filters()
 void
 InvoiceClient::archive()
 {
-    std::auto_ptr<Fred::Document::Manager> docMan(
+    std::unique_ptr<Fred::Document::Manager> docMan(
             Fred::Document::Manager::create(
                 docgen_path.get_value(),
                 docgen_template_path.get_value(),
@@ -292,7 +292,7 @@ InvoiceClient::archive()
             );
     CorbaClient cc(0, NULL, m_nsAddr, nameservice_context);
     MailerManager mailMan(cc.getNS());
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
             Fred::Invoicing::Manager::create(
                 docMan.get(),
                 &mailMan)
@@ -309,7 +309,7 @@ long round_price(double x)
 void
 InvoiceClient::credit()
 {
-    std::auto_ptr<Fred::Invoicing::Manager>
+    std::unique_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
     boost::posix_time::ptime local_current_timestamp
@@ -462,7 +462,7 @@ InvoiceClient::billing()
     //conversion from command line params into implementation params
     todate -= boost::gregorian::days(1); //today from date after range into last day of range
 
-    std::auto_ptr<Fred::Invoicing::Manager>
+    std::unique_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
     if (!billing_params.registrar_handle.is_value_set()) {
@@ -479,7 +479,7 @@ InvoiceClient::billing()
 void
 InvoiceClient::add_invoice_prefix()
 {
-    std::auto_ptr<Fred::Invoicing::Manager>
+    std::unique_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
 
     unsigned int type = prefix_params.type.get_value();
@@ -526,14 +526,14 @@ InvoiceClient::create_invoice()
 
 void create_invoice_prefixes(CreateInvoicePrefixesArgs params)
 {
-    std::auto_ptr<Fred::Invoicing::Manager>
+    std::unique_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
     invMan->createInvoicePrefixes(params.for_current_year);
 }
 
 void add_invoice_number_prefix(AddInvoiceNumberPrefixArgs params)
 {
-    std::auto_ptr<Fred::Invoicing::Manager>
+    std::unique_ptr<Fred::Invoicing::Manager>
         invMan(Fred::Invoicing::Manager::create());
     invMan->addInvoiceNumberPrefix(
             params.prefix

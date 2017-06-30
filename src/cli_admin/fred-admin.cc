@@ -35,6 +35,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <utility>
 
 #include "src/fredlib/db_settings.h"
 #include "util/corba_wrapper.h"

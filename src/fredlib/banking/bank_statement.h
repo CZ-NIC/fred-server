@@ -69,7 +69,7 @@ public:
 };
 
 // smart pointer
-typedef std::auto_ptr<Statement> StatementPtr;
+typedef std::unique_ptr<Statement> StatementPtr;
 
 }
 }

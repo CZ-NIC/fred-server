@@ -74,7 +74,7 @@ namespace Admin {
     {
         Database::ID reg_id = getRegistrarID(handle);
 
-        std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        std::unique_ptr<Fred::Invoicing::Manager> invMan(
           Fred::Invoicing::Manager::create());
 
         invMan->chargeRequestFee(reg_id, poll_msg_period_to);
@@ -82,7 +82,7 @@ namespace Admin {
 
     void ChargeClient::chargeRequestFeeAllRegs(const std::string &except_handles, const date &poll_msg_period_to)
     {
-        std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
         Database::Connection conn = Database::Manager::acquire();

@@ -17,7 +17,7 @@ typedef std::map<std::string, std::pair<std::string, std::string> > ChangesMap;
 
 /* test */
 template<class T, class MT, class LT, class FT>
-std::auto_ptr<const T> get_object_by_hid(MT *_m,
+std::unique_ptr<const T> get_object_by_hid(MT *_m,
                            const unsigned long long &_hid)
 {
     Settings settings;
@@ -28,7 +28,7 @@ std::auto_ptr<const T> get_object_by_hid(MT *_m,
     filter->addHistoryId().setValue(Database::ID(_hid));
     uf.addFilter(filter);
 
-    std::auto_ptr<LT> data(_m->createList());
+    std::unique_ptr<LT> data(_m->createList());
     data->reload(uf);
 
     if (data->size() != 1) {
@@ -42,7 +42,7 @@ std::auto_ptr<const T> get_object_by_hid(MT *_m,
     }
 
     data->release(0);
-    return std::auto_ptr<const T> (object_data_ptr);
+    return std::unique_ptr<const T> (object_data_ptr);
 }
 
 

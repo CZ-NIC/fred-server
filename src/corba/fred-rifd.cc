@@ -38,6 +38,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <utility>
 
 #include "src/fredlib/db_settings.h"
 #include "util/corba_wrapper.h"
@@ -108,7 +109,7 @@ int main(int argc, char *argv[])
         HandleRifdArgs* rifd_args_ptr = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleRifdArgs>();
 
-        std::auto_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
+        std::unique_ptr<ccReg_EPP_i> myccReg_EPP_i ( new ccReg_EPP_i(
                     db_args_ptr->get_conn_info()
                     , &mm, CorbaContainer::get_instance()->getNS()
                     , registry_args_ptr->restricted_handles

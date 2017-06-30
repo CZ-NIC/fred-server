@@ -527,7 +527,7 @@ ListImpl::reload(Database::Filters::Union &uf)
 
     bool at_least_one = false;
     Database::SelectQuery id_query;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     Database::SelectQuery *tmp;
 
     for (fit->first(); !fit->isDone(); fit->next()) {

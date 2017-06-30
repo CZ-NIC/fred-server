@@ -258,9 +258,9 @@ public:
                                                     {
     TRACE(boost::format("[CALL] Fred::Request::Manager::getPdf(%1%, '%2%')") %
           _id % _lang);
-    std::auto_ptr<List> l(loadRequest(_id));
+    std::unique_ptr<List> l(loadRequest(_id));
     PublicRequest* p = l->get(0);
-    std::auto_ptr<Document::Generator> g(
+    std::unique_ptr<Document::Generator> g(
       doc_manager_->createOutputGenerator(
         Document::GT_PUBLIC_REQUEST_PDF,
         _output,
@@ -328,7 +328,7 @@ public:
         Database::Transaction tx(conn);
 
         lock_public_request_id(_id);
-      std::auto_ptr<List> l(loadRequest(_id));
+      std::unique_ptr<List> l(loadRequest(_id));
       l->get(0)->process(_invalidate, check, _request_id);
       tx.commit();
     }
@@ -352,7 +352,7 @@ public:
           throw NOT_FOUND();
 
       unsigned long long id = rid[0][0];
-      std::auto_ptr<List> list(loadRequest(id));
+      std::unique_ptr<List> list(loadRequest(id));
       PublicRequestAuth *request = dynamic_cast<PublicRequestAuth*>(list->get(0));
       if (!request) {
           throw NOT_FOUND();

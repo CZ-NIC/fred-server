@@ -166,7 +166,7 @@ namespace Fred
         if (!registrar) throw INVALID_REGISTRAR();
         // init list of object specific temporary tables using their
         // managers
-        std::auto_ptr<Fred::ObjectList> list;
+        std::unique_ptr<Fred::ObjectList> list;
         switch (infotype) {
           case T_LIST_DOMAINS :
             {

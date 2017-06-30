@@ -42,6 +42,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/test/unit_test.hpp>
+#include <utility>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(RegistryEmail)

@@ -37,6 +37,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <utility>
 
 #include "src/fredlib/db_settings.h"
 #include "util/corba_wrapper.h"
@@ -100,7 +101,7 @@ int main(int argc, char *argv[])
         HandleLogdArgs* logd_args_ptr = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleLogdArgs>();
 
-        std::auto_ptr<ccReg_Log_i> myccReg_Log_i (
+        std::unique_ptr<ccReg_Log_i> myccReg_Log_i (
             new ccReg_Log_i(db_args_ptr->get_conn_info()
                             , logd_args_ptr->logd_monitoring_hosts_file));
 

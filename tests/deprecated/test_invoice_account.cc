@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <utility>
 #include <vector>
 #include <map>
 #include <exception>
@@ -59,7 +60,7 @@ BOOST_AUTO_TEST_SUITE(TestInvoiceAccount)
 BOOST_AUTO_TEST_CASE( createAccountInvoices_defaultValues )
 {
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
     boost::gregorian::date local = day_clock::local_day();		
@@ -86,7 +87,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
     unsigned long long registrar_inv_id = registrar->getId();
     std::string time_string(TimeStamp::microsec());
     try_insert_invoice_prefix();
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
     //add credit
     unsigned long long invoiceid = 0;
@@ -253,7 +254,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
 
 
-        std::auto_ptr<Fred::Document::Manager> docMan(
+        std::unique_ptr<Fred::Document::Manager> docMan(
                   Fred::Document::Manager::create(
                       registry_args_ptr->docgen_path
                       , registry_args_ptr->docgen_template_path
@@ -263,7 +264,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request1 )
 
         //manager init
         MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-        std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        std::unique_ptr<Fred::Invoicing::Manager> invMan(
             Fred::Invoicing::Manager::create(
             docMan.get(),&mailMan));
 
@@ -288,7 +289,7 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
     std::string corbaNS =ns_args_ptr->nameservice_host
             + ":"
             + boost::lexical_cast<std::string>(ns_args_ptr->nameservice_port);
-    std::auto_ptr<Fred::Document::Manager> docMan(
+    std::unique_ptr<Fred::Document::Manager> docMan(
               Fred::Document::Manager::create(
                   registry_args_ptr->docgen_path
                   , registry_args_ptr->docgen_template_path
@@ -297,7 +298,7 @@ BOOST_AUTO_TEST_CASE(archiveAccountInvoice)
               );
     //manager init
     MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create(
         docMan.get(),&mailMan));
     FileManagerClient fm_client(
@@ -460,7 +461,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
     unsigned long long registrar_inv_id = registrar->getId();
     std::string time_string(TimeStamp::microsec());
     try_insert_invoice_prefix();
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
     //add credit
     unsigned long long invoiceid = 0;
@@ -626,7 +627,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 
 
 
-        std::auto_ptr<Fred::Document::Manager> docMan(
+        std::unique_ptr<Fred::Document::Manager> docMan(
                   Fred::Document::Manager::create(
                       registry_args_ptr->docgen_path
                       , registry_args_ptr->docgen_template_path
@@ -636,7 +637,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoice_request2 )
 
         //manager init
         MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-        std::auto_ptr<Fred::Invoicing::Manager> invMan(
+        std::unique_ptr<Fred::Invoicing::Manager> invMan(
             Fred::Invoicing::Manager::create(
             docMan.get(),&mailMan));
 
@@ -687,7 +688,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 
     try_insert_invoice_prefix();
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
 
@@ -930,7 +931,7 @@ BOOST_AUTO_TEST_CASE( createAccountInvoices_registrar )
 BOOST_AUTO_TEST_CASE( archiveInvoices_no_init )
 {
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create());
 
     BOOST_CHECK_EXCEPTION(
@@ -957,7 +958,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
 
 
-    std::auto_ptr<Fred::Document::Manager> docMan(
+    std::unique_ptr<Fred::Document::Manager> docMan(
               Fred::Document::Manager::create(
                   registry_args_ptr->docgen_path
                   , registry_args_ptr->docgen_template_path
@@ -967,7 +968,7 @@ BOOST_AUTO_TEST_CASE( archiveInvoices )
 
     //manager init
     MailerManager mailMan(CorbaContainer::get_instance()->getNS());
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
         Fred::Invoicing::Manager::create(
         docMan.get(),&mailMan));
 

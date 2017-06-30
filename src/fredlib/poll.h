@@ -174,9 +174,9 @@ namespace Fred
       /// create messages about request count and request fee
       virtual void createRequestFeeMessages(Logger::LoggerClient *logger_client, boost::gregorian::date period_to) = 0;
       /// get last request fee message data
-      virtual std::auto_ptr<MessageRequestFeeInfo> getLastRequestFeeInfoMessage(const std::string &_registrar) const = 0;
+      virtual std::unique_ptr<MessageRequestFeeInfo> getLastRequestFeeInfoMessage(const std::string &_registrar) const = 0;
       /// get request fee message data with specified PeriodTo
-      virtual std::auto_ptr<MessageRequestFeeInfo> getRequestFeeInfoMessage(const Database::ID &registrar_id, const ptime &period_to) const = 0;
+      virtual std::unique_ptr<MessageRequestFeeInfo> getRequestFeeInfoMessage(const Database::ID &registrar_id, const ptime &period_to) const = 0;
       // create list of messages
       virtual List* createList() = 0;
       /// create poll message about request fees - meant mostly for use in tests

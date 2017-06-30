@@ -60,7 +60,7 @@ namespace Test {
 
             void handle( int argc, char* argv[],  FakedArgs &fa);
 
-            std::auto_ptr<Database::StandaloneConnection> get_admin_connection();
+            std::unique_ptr<Database::StandaloneConnection> get_admin_connection();
     };
 
 

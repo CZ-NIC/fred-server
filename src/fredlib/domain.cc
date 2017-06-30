@@ -676,7 +676,7 @@ public:
 
     bool at_least_one = false;
     Database::SelectQuery id_query;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       Database::Filters::Domain *df =
           dynamic_cast<Database::Filters::DomainHistoryImpl*>(fit->get());
@@ -1246,7 +1246,7 @@ public:
 class ManagerImpl : virtual public Manager {
   DBSharedPtr db; ///< connection do db
   Zone::Manager *zm; ///< zone management api
-  std::auto_ptr<Blacklist> blacklist; ///< black list manager
+  std::unique_ptr<Blacklist> blacklist; ///< black list manager
 public:
   ManagerImpl(DBSharedPtr _db, Zone::Manager *_zm) :
       db(_db), zm(_zm), blacklist(Blacklist::create(_db)) { }

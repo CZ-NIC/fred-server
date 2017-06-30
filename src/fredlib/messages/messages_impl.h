@@ -253,7 +253,7 @@ public:
     LetterInfo get_letter_info_by_id(unsigned long long id);
 
     ///list factory
-    typedef std::auto_ptr<MessageList> MessageListPtr;
+    typedef std::unique_ptr<MessageList> MessageListPtr;
     MessageListPtr createList();
 
     ///status names

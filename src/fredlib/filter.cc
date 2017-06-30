@@ -132,7 +132,7 @@ public:
     uf.clearQueries();
 
     Database::SelectQuery object_info_query;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       Database::Filters::FilterFilter *ff =
           dynamic_cast<Database::Filters::FilterFilter* >(fit->get());
@@ -224,7 +224,7 @@ public:
   }
   virtual void load(Database::ID _id, Database::Filters::Union& _uf) const {
     TRACE(boost::format("[CALL] Fred::Filter::ManagerImpl::load(%1%)") % _id);
-    std::auto_ptr<Database::Filters::FilterFilter> data_filter(new Database::Filters::FilterFilterImpl());
+    std::unique_ptr<Database::Filters::FilterFilter> data_filter(new Database::Filters::FilterFilterImpl());
     data_filter->addId().setValue(_id);
     
     Database::SelectQuery data_query;

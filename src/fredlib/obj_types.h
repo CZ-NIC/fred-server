@@ -250,14 +250,14 @@ class ObjList //type for object list
     std::size_t limit_;
     bool realSizeInitialized_;
     std::size_t realSize_;
-    std::auto_ptr<RELOAD_FUNCTOR> reload_impl_;
+    std::unique_ptr<RELOAD_FUNCTOR> reload_impl_;
 public:
-    ObjList(std::auto_ptr<RELOAD_FUNCTOR> reload_impl)
+    ObjList(std::unique_ptr<RELOAD_FUNCTOR> reload_impl)
     : loadLimitActive_(false)
     , limit_(1000)
     , realSizeInitialized_(false)
     , realSize_(0)
-    , reload_impl_(reload_impl)
+    , reload_impl_(std::move(reload_impl))
     {}
 
     bool isLimited() const

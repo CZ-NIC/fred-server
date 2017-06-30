@@ -50,7 +50,7 @@ public:
 
 };
 
-typedef std::auto_ptr<Transferer> TransfererPtr;
+typedef std::unique_ptr<Transferer> TransfererPtr;
 
 }
 }

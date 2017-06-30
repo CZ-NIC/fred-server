@@ -44,6 +44,10 @@ Server_i::Server_i(const std::string& _server_name)
 {
 }
 
+Server_i::~Server_i()
+{
+}
+
 ::CORBA::ULongLong Server_i::create_authinfo_request_registry_email(
     ObjectType_PR::Type object_type,
     const char* object_handle,

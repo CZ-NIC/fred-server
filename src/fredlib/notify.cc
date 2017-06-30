@@ -505,7 +505,7 @@ namespace Fred
 #define WARNING_LETTER_FILE_TYPE 5 // from enum_filetype table
       class GenMultipleFiles {
 private:
-              std::auto_ptr<Document::Generator> gPDF;
+              std::unique_ptr<Document::Generator> gPDF;
               // TODO this might as well been a pointer
               std::string exDate;
               Transaction *trans;
@@ -516,7 +516,7 @@ public:
                * to identify which contact id's are contained in the
                * individual file, call addStateId
                */
-            GenMultipleFiles() : gPDF(NULL), trans(NULL) {
+            GenMultipleFiles() : gPDF(nullptr), trans(NULL) {
             }
 
             void addStateId(TID id) {
@@ -753,7 +753,7 @@ public:
 "ORDER BY ed.country='CZ' DESC,distinction,ed.domain_name";
           res = conn.exec(sql.str());
 
-          std::auto_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
+          std::unique_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
           std::string prev_distinction;
           unsigned item_count = 0;
 

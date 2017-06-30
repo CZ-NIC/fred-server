@@ -123,7 +123,7 @@ Nullable< boost::gregorian::date > corba_unwrap_nullable_date(const Registry::Ad
 
 Registry::Administrative::StatusDescList* corba_wrap_status_desc_list(const Fred::GetBlockingStatusDescList::StatusDescList &_desc_list)
 {
-    std::auto_ptr< Registry::Administrative::StatusDescList > result(new Registry::Administrative::StatusDescList);
+    std::unique_ptr< Registry::Administrative::StatusDescList > result(new Registry::Administrative::StatusDescList);
     result->length(_desc_list.size());
     int n = 0;
     for (Fred::GetBlockingStatusDescList::StatusDescList::const_iterator pItem = _desc_list.begin();
@@ -138,7 +138,7 @@ Registry::Administrative::StatusDescList* corba_wrap_status_desc_list(const Fred
 
 Registry::Administrative::DomainIdHandleOwnerChangeList* corba_wrap_owner_change_list(const Registry::Administrative::IdlOwnerChangeList &_owner_change_list)
 {
-    std::auto_ptr< Registry::Administrative::DomainIdHandleOwnerChangeList > result(new Registry::Administrative::DomainIdHandleOwnerChangeList);
+    std::unique_ptr< Registry::Administrative::DomainIdHandleOwnerChangeList > result(new Registry::Administrative::DomainIdHandleOwnerChangeList);
     result->length(_owner_change_list.size());
     int n = 0;
     for (Registry::Administrative::IdlOwnerChangeList::const_iterator pItem = _owner_change_list.begin();

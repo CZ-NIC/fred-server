@@ -246,7 +246,7 @@ public:
   //virtual unsigned long getZonesNumber() = 0;
 
   ///Registrar smart pointer
-  typedef std::auto_ptr<Registrar> AutoPtr;
+  typedef std::unique_ptr<Registrar> AutoPtr;
 
 };
 
@@ -261,7 +261,7 @@ public:
   virtual ~RegistrarList()
   {}
   ///RegistrarList smart pointer
-  typedef std::auto_ptr<RegistrarList> AutoPtr;
+  typedef std::unique_ptr<RegistrarList> AutoPtr;
   /// testing new reload function
   virtual void reload(Database::Filters::Union &uf) = 0;
   /// Get registrar detail object by list index for update
@@ -358,7 +358,7 @@ struct BlockedReg {
     std::string telephone;
 };
 
-typedef std::auto_ptr< std::vector<BlockedReg> > BlockedRegistrars;
+typedef std::unique_ptr< std::vector<BlockedReg> > BlockedRegistrars;
 
 /// Main entry point for Registrar namespace
 class Manager {
@@ -460,13 +460,13 @@ public:
 
   virtual bool isRegistrarBlocked(Database::ID regId) = 0;
 
-  virtual std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
+  virtual std::unique_ptr<RequestFeeDataMap> getRequestFeeDataMap(
           Logger::LoggerClient *logger_client,
           boost::posix_time::ptime p_from,
           boost::posix_time::ptime p_to,
           boost::gregorian::date zone_access_date) = 0;
 
-  typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
+  typedef std::unique_ptr<Fred::Registrar::Manager> AutoPtr;
 
   /// Factory method
   static AutoPtr create(DBSharedPtr db);

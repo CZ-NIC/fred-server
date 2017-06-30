@@ -301,14 +301,14 @@ ccReg::WhoisRegistrar* ccReg_Whois_i::getRegistrarByHandle(const char* handle)
         ldb_disconnect_guard.reset(new DB(conn));
 
         try {
-        std::auto_ptr<Fred::Manager> regm(
+        std::unique_ptr<Fred::Manager> regm(
             Fred::Manager::create(ldb_disconnect_guard, registry_restricted_handles_)
         );
         Fred::Registrar::Manager *rm = regm->getRegistrarManager();
         Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
         Database::Filters::UnionPtr unionFilter
             = Database::Filters::CreateClearedUnionPtr();
-        std::auto_ptr<Database::Filters::Registrar>
+        std::unique_ptr<Database::Filters::Registrar>
             r ( new Database::Filters::RegistrarImpl(true));
         r->addHandle().setValue(handle);
         unionFilter->addFilter( r.release() );
@@ -373,14 +373,14 @@ ccReg::WhoisRegistrarList* ccReg_Whois_i::getRegistrarsByZone(const char *zone)
     Database::Connection conn = Database::Manager::acquire();
     ldb_disconnect_guard.reset(new DB(conn));
 
-    std::auto_ptr<Fred::Manager> regm(
+    std::unique_ptr<Fred::Manager> regm(
         Fred::Manager::create(ldb_disconnect_guard,registry_restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
 
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
-    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+    std::unique_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
     r->addZoneFqdn().setValue(zone);
     unionFilter->addFilter( r.release() );
     rl->reload(*unionFilter.get());
@@ -450,10 +450,10 @@ ccReg::ContactDetail* ccReg_Whois_i::getContactByHandle(const char* handle)
         if (!handle || !*handle)
             throw ccReg::Whois::ObjectNotFound();
 
-        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+        std::unique_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
                 , registry_restricted_handles_));
         Fred::Contact::Manager *cr = r->getContactManager();
-        std::auto_ptr<Fred::Contact::List> cl(cr->createList());
+        std::unique_ptr<Fred::Contact::List> cl(cr->createList());
         cl->setWildcardExpansion(false);
         cl->setHandleFilter(handle);
         cl->reload();
@@ -518,10 +518,10 @@ ccReg::NSSetDetail* ccReg_Whois_i::getNSSetByHandle(const char* handle)
         Database::Connection conn = Database::Manager::acquire();
         ldb_disconnect_guard.reset(new DB(conn));
 
-        std::auto_ptr<Fred::Manager>
+        std::unique_ptr<Fred::Manager>
             r(Fred::Manager::create(ldb_disconnect_guard, registry_restricted_handles_));
         Fred::Nsset::Manager *nr = r->getNssetManager();
-        std::auto_ptr<Fred::Nsset::List> nl(nr->createList());
+        std::unique_ptr<Fred::Nsset::List> nl(nr->createList());
         nl->setWildcardExpansion(false);
         nl->setHandleFilter(handle);
         nl->reload();
@@ -585,10 +585,10 @@ ccReg::KeySetDetail * ccReg_Whois_i::getKeySetByHandle(const char *handle)
         Database::Connection conn = Database::Manager::acquire();
         ldb_disconnect_guard.reset(new DB(conn));
 
-        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+        std::unique_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
             ,registry_restricted_handles_));
         Fred::Keyset::Manager *kr = r->getKeysetManager();
-        std::auto_ptr<Fred::Keyset::List> kl(kr->createList());
+        std::unique_ptr<Fred::Keyset::List> kl(kr->createList());
         kl->setWildcardExpansion(false);
         kl->setHandleFilter(handle);
         kl->reload();
@@ -657,10 +657,10 @@ ccReg::DomainDetails* ccReg_Whois_i::getDomainsByInverseKey(const char* key,
         ldb_disconnect_guard.reset(new DB(conn));
 
 
-        std::auto_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
+        std::unique_ptr<Fred::Manager> r(Fred::Manager::create(ldb_disconnect_guard
                 , registry_restricted_handles_));
         Fred::Domain::Manager *dm = r->getDomainManager();
-        std::auto_ptr<Fred::Domain::List> dl(dm->createList());
+        std::unique_ptr<Fred::Domain::List> dl(dm->createList());
         switch (type) {
         case ccReg::DIKT_REGISTRANT:
           dl->setRegistrantHandleFilter(key);
@@ -749,12 +749,12 @@ ccReg::NSSetDetails* ccReg_Whois_i::getNSSetsByInverseKey(const char* key,
         Database::Connection conn = Database::Manager::acquire();
         ldb_disconnect_guard.reset(new DB(conn));
 
-        std::auto_ptr<Fred::Manager> r(
+        std::unique_ptr<Fred::Manager> r(
                 Fred::Manager::create(ldb_disconnect_guard
                         , registry_restricted_handles_));
         Fred::Zone::Manager *zm = r->getZoneManager();
         Fred::Nsset::Manager *nm = r->getNssetManager();
-        std::auto_ptr<Fred::Nsset::List> nl(nm->createList());
+        std::unique_ptr<Fred::Nsset::List> nl(nm->createList());
         switch (type) {
         case ccReg::NIKT_NS : nl->setHostNameFilter(zm->utf8_to_punycode(key)); break;
         case ccReg::NIKT_TECH : nl->setAdminFilter(key); break;
@@ -812,11 +812,11 @@ ccReg::KeySetDetails* ccReg_Whois_i::getKeySetsByInverseKey(
         Database::Connection conn = Database::Manager::acquire();
         ldb_disconnect_guard.reset(new DB(conn));
 
-        std::auto_ptr<Fred::Manager> r(
+        std::unique_ptr<Fred::Manager> r(
                 Fred::Manager::create(ldb_disconnect_guard
                         , registry_restricted_handles_));
         Fred::Keyset::Manager *km = r->getKeysetManager();
-        std::auto_ptr<Fred::Keyset::List> kl(km->createList());
+        std::unique_ptr<Fred::Keyset::List> kl(km->createList());
         switch (type) {
             case ccReg::KIKT_TECH:
                 kl->setAdminFilter(key);
@@ -875,7 +875,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
         Database::Connection conn = Database::Manager::acquire();
         ldb_disconnect_guard.reset(new DB(conn));
 
-        std::auto_ptr<Fred::Manager>
+        std::unique_ptr<Fred::Manager>
             r(Fred::Manager::create(ldb_disconnect_guard
                     , registry_restricted_handles_));
         Fred::Domain::Manager *dm = r->getDomainManager();
@@ -896,7 +896,7 @@ ccReg::DomainDetail* ccReg_Whois_i::getDomainByFQDN(const char* fqdn)
         }
         else
         {
-            std::auto_ptr<Fred::Domain::List> dl(dm->createList());
+            std::unique_ptr<Fred::Domain::List> dl(dm->createList());
             dl->setWildcardExpansion(false);
             dl->setFQDNFilter(r->getZoneManager()->utf8_to_punycode(fqdn));
             dl->reload();

@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "test_invoice_common.h"
 
 #include "cfg/handle_corbanameservice_args.h"
@@ -43,7 +45,7 @@ void EPP_backend_init(ccReg_EPP_i *epp_i, HandleRifdArgs *rifd_args_ptr)
     }
 }
 
-std::auto_ptr<ccReg_EPP_i> create_epp_backend_object()
+std::unique_ptr<ccReg_EPP_i> create_epp_backend_object()
 {
     init_corba_container();
 
@@ -58,7 +60,7 @@ std::auto_ptr<ccReg_EPP_i> create_epp_backend_object()
     // TODO this will be leaked
     MailerManager * mailMan(new MailerManager(CorbaContainer::get_instance()->getNS()));
 
-    std::auto_ptr<ccReg_EPP_i> ret_epp ( new ccReg_EPP_i(
+    std::unique_ptr<ccReg_EPP_i> ret_epp ( new ccReg_EPP_i(
                 db_args_ptr->get_conn_info()
                 , mailMan, CorbaContainer::get_instance()->getNS()
                 , registry_args_ptr->restricted_handles

@@ -39,9 +39,9 @@ class ContactIdentificationRequestManagerPtr
 private:
     DBSharedPtr nodb;
     mutable boost::shared_ptr<Fred::Mailer::Manager> mailer_manager_;
-    mutable std::auto_ptr<Fred::Manager> registry_manager_;
-    mutable std::auto_ptr<Fred::Document::Manager> doc_manager_;
-    mutable std::auto_ptr<Fred::PublicRequest::Manager> request_manager_;
+    mutable std::unique_ptr<Fred::Manager> registry_manager_;
+    mutable std::unique_ptr<Fred::Document::Manager> doc_manager_;
+    mutable std::unique_ptr<Fred::PublicRequest::Manager> request_manager_;
 
 
 public:
@@ -81,9 +81,9 @@ public:
 
     ContactIdentificationRequestManagerPtr(const ContactIdentificationRequestManagerPtr &src) :
             mailer_manager_(src.mailer_manager_),
-            registry_manager_(src.registry_manager_),
-            doc_manager_(src.doc_manager_),
-            request_manager_(src.request_manager_)
+            registry_manager_(std::move(src.registry_manager_)),
+            doc_manager_(std::move(src.doc_manager_)),
+            request_manager_(std::move(src.request_manager_))
     {  }
 
 
@@ -109,7 +109,7 @@ class ContactIdentificationRequestPtr
 private:
     ContactIdentificationRequestManagerPtr request_manager_;
     Fred::PublicRequest::Type type_;
-    mutable std::auto_ptr<Fred::PublicRequest::PublicRequestAuth> request_;
+    mutable std::unique_ptr<Fred::PublicRequest::PublicRequestAuth> request_;
 
 
 public:
@@ -126,7 +126,7 @@ public:
 
 
         /* create request and cast it to authenticated */
-        std::auto_ptr<Fred::PublicRequest::PublicRequest> tmp(request_manager_->createRequest(type_));
+        std::unique_ptr<Fred::PublicRequest::PublicRequest> tmp(request_manager_->createRequest(type_));
         request_.reset(dynamic_cast<Fred::PublicRequest::PublicRequestAuth*>(tmp.release()));
         if (!request_.get()) {
             throw std::runtime_error("unable to create identfication request");
@@ -137,7 +137,7 @@ public:
     ContactIdentificationRequestPtr(const ContactIdentificationRequestPtr &src) :
         request_manager_(src.request_manager_),
         type_(src.type_),
-        request_(src.request_)
+        request_(std::move(src.request_))
     { }
 
     Fred::PublicRequest::PublicRequestAuth* operator->()

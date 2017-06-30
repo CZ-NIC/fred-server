@@ -251,7 +251,7 @@ void ccReg_Domains_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Domains_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
       tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->save(Fred::Filter::FT_DOMAIN, _name, uf);
 }

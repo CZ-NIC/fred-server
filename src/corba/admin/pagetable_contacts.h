@@ -6,7 +6,7 @@
 class ccReg_Contacts_i: public ccReg_PageTable_i,
                         public PortableServer::RefCountServantBase {
 private:
-  std::auto_ptr<Fred::Contact::List> cl;
+  std::unique_ptr<Fred::Contact::List> cl;
 
 public:
   ccReg_Contacts_i(Fred::Contact::List *cl, const Settings *_ptr);
