@@ -546,6 +546,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             domain_new_history_id,
                             "");
                 }
+
+                Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
             }
             else {
 
@@ -605,6 +607,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
                             keyset_new_history_id,
                             "");
                 }
+
+                Fred::Poll::CreateUpdateObjectPollMessage(keyset_new_history_id).exec(ctx);
             }
         }
 
