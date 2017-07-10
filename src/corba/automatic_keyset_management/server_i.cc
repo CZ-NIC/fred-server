@@ -93,7 +93,8 @@ EmailAddressSeq_var wrap_EmailAddresses(const Fred::AutomaticKeysetManagement::E
 Fred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Nsset& nsset)
 {
     Fred::AutomaticKeysetManagement::Nsset result;
-    for (CORBA::ULong i = 0; i < nsset.nameservers.length(); ++i) {
+    for (CORBA::ULong i = 0; i < nsset.nameservers.length(); ++i)
+    {
         result.nameservers.insert(Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
     }
     return result;
@@ -119,7 +120,8 @@ Fred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const DnsKey& dns_key)
 Fred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const DnsKeySeq& dns_key_seq)
 {
     Fred::AutomaticKeysetManagement::DnsKeys result;
-    for (CORBA::ULong i = 0; i < dns_key_seq.length(); ++i) {
+    for (CORBA::ULong i = 0; i < dns_key_seq.length(); ++i)
+    {
         result.insert(unwrap_DnsKey(dns_key_seq[i]));
     }
     return result;
@@ -139,32 +141,49 @@ Server_i::Server_i(
         const std::string& _automatically_managed_keyset_prefix,
         const std::string& _automatically_managed_keyset_registrar,
         const std::string& _automatically_managed_keyset_tech_contact,
-        const std::vector<std::string>& _automatically_managed_keyset_zones,
-        const bool _disable_notifier)
-    : pimpl_(new Fred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl(
+        const std::set<std::string>& _automatically_managed_keyset_zones,
+        const bool _disable_notifier,
+        Fred::Logger::LoggerClient& _logger_client)
+    : impl_(new Fred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl(
                       _server_name,
                       _automatically_managed_keyset_prefix,
                       _automatically_managed_keyset_registrar,
                       _automatically_managed_keyset_tech_contact,
                       _automatically_managed_keyset_zones,
-                      _disable_notifier))
+                      _disable_notifier,
+                      _logger_client))
 {
 }
 
-Server_i::~Server_i() {
-  delete pimpl_;
+Server_i::~Server_i()
+{
 }
 
 //
 //   Methods corresponding to IDL attributes and operations
 //
 
-NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domain_candidates()
+NameserverDomainsSeq* Server_i::get_nameservers_with_insecure_automatically_managed_domain_candidates()
 {
     try
     {
         const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
-                pimpl_->get_nameservers_with_automatically_managed_domain_candidates();
+                impl_->get_nameservers_with_insecure_automatically_managed_domain_candidates();
+
+        return wrap_NameserversDomains(nameservers_domains)._retn();
+    }
+    catch (...)
+    {
+        throw INTERNAL_SERVER_ERROR();
+    }
+}
+
+NameserverDomainsSeq* Server_i::get_nameservers_with_secure_automatically_managed_domain_candidates()
+{
+    try
+    {
+        const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
+                impl_->get_nameservers_with_secure_automatically_managed_domain_candidates();
 
         return wrap_NameserversDomains(nameservers_domains)._retn();
     }
@@ -179,7 +198,7 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domai
     try
     {
         const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
-                pimpl_->get_nameservers_with_automatically_managed_domains();
+                impl_->get_nameservers_with_automatically_managed_domains();
 
         return wrap_NameserversDomains(nameservers_domains)._retn();
     }
@@ -200,7 +219,7 @@ void Server_i::turn_on_automatic_keyset_management_on_insecure_domain(
         Fred::AutomaticKeysetManagement::Nsset current_nsset = unwrap_Nsset(_current_nsset);
         Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
 
-        pimpl_->turn_on_automatic_keyset_management_on_insecure_domain(
+        impl_->turn_on_automatic_keyset_management_on_insecure_domain(
                 domain_id,
                 current_nsset,
                 new_keyset);
@@ -252,7 +271,7 @@ void Server_i::turn_on_automatic_keyset_management_on_secure_domain(
         const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
         Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
 
-        pimpl_->turn_on_automatic_keyset_management_on_secure_domain(
+        impl_->turn_on_automatic_keyset_management_on_secure_domain(
                 domain_id,
                 new_keyset);
     }
@@ -295,7 +314,7 @@ void Server_i::update_automatically_managed_keyset_of_domain(
         const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
         Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
 
-        pimpl_->update_automatically_managed_keyset_of_domain(
+        impl_->update_automatically_managed_keyset_of_domain(
                 domain_id,
                 new_keyset);
     }
@@ -337,7 +356,7 @@ EmailAddressSeq* Server_i::get_email_addresses_by_domain_id(
         const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
 
         const Fred::AutomaticKeysetManagement::EmailAddresses email_addresses =
-                pimpl_->get_email_addresses_by_domain_id(domain_id);
+                impl_->get_email_addresses_by_domain_id(domain_id);
 
         return wrap_EmailAddresses(email_addresses)._retn();
     }

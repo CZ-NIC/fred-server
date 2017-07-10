@@ -24,9 +24,9 @@
 #ifndef AUTOMATIC_KEYSET_MANAGEMENT_HH_E7D0CA5C7FDA4FF6A7217BE8252D99A1
 #define AUTOMATIC_KEYSET_MANAGEMENT_HH_E7D0CA5C7FDA4FF6A7217BE8252D99A1
 
-#include "util/db/nullable.h"
-#include "util/optional_value.h"
+#include "src/fredlib/logger_client.h"
 
+#include <exception>
 #include <map>
 #include <set>
 #include <string>
@@ -170,7 +170,8 @@ struct InternalServerError
 
 typedef std::set<std::string> Nameservers;
 
-struct Nsset {
+struct Nsset
+{
     Nameservers nameservers;
 };
 
@@ -192,22 +193,9 @@ struct DnsKey {
     {
     }
 
-    /**
-     * Comparison of instances converted to std::string
-     * @param rhs is right hand side instance of the comparison
-     */
-    bool operator<(const DnsKey& rhs) const
-    {
-        return key < rhs.key;
-    }
+    bool operator<(const DnsKey& rhs) const;
 
-    bool operator==(const DnsKey& rhs) const
-    {
-        return flags == rhs.flags &&
-               protocol == rhs.protocol &&
-               alg == rhs.alg &&
-               key == rhs.key;
-    }
+    bool operator==(const DnsKey& rhs) const;
 };
 
 typedef std::set<DnsKey> DnsKeys;
@@ -223,7 +211,7 @@ struct Domain {
     }
     unsigned long long id;
     std::string fqdn;
-    friend bool operator < (const Domain& _lhs, const Domain& _rhs);
+    friend bool operator<(const Domain& _lhs, const Domain& _rhs);
 };
 
 typedef std::string Nameserver;
@@ -239,8 +227,9 @@ public:
             const std::string& _automatically_managed_keyset_prefix,
             const std::string& _automatically_managed_keyset_registrar,
             const std::string& _automatically_managed_keyset_tech_contact,
-            const std::vector<std::string>& _automatically_managed_keyset_zones,
-            bool _disable_notifier);
+            const std::set<std::string>& _automatically_managed_keyset_zones,
+            bool _disable_notifier,
+            Fred::Logger::LoggerClient& _logger_client);
 
     virtual ~AutomaticKeysetManagementImpl();
 
@@ -250,7 +239,9 @@ public:
      */
     std::string get_server_name() const;
 
-    NameserversDomains get_nameservers_with_automatically_managed_domain_candidates();
+    NameserversDomains get_nameservers_with_insecure_automatically_managed_domain_candidates();
+
+    NameserversDomains get_nameservers_with_secure_automatically_managed_domain_candidates();
 
     NameserversDomains get_nameservers_with_automatically_managed_domains();
 
@@ -280,8 +271,10 @@ private:
     std::string automatically_managed_keyset_prefix_;
     std::string automatically_managed_keyset_registrar_;
     std::string automatically_managed_keyset_tech_contact_;
-    std::vector<std::string> automatically_managed_keyset_zones_;
-    bool disable_notifier_;
+    std::set<std::string> automatically_managed_keyset_zones_;
+    bool notifier_disabled_;
+    Fred::Logger::LoggerClient& logger_client_;
+
 };
 
 } // namespace Fred::AutomaticKeysetManagement

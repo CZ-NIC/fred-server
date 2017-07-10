@@ -27,16 +27,17 @@
 #define AUTOMATIC_KEYSET_MANAGEMENT_I_HH_E1AE9A8DDC2B4A6F863A562B01D09774
 
 #include "src/corba/AutomaticKeysetManagement.hh"
+#include "src/fredlib/logger_client.h"
 
 #include <boost/shared_ptr.hpp>
 
 #include <string>
-#include <vector>
+#include <set>
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
-class AutomaticKeysetManagementImpl; // pimpl class
+class AutomaticKeysetManagementImpl; // PIMPL class
 
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
@@ -51,13 +52,14 @@ public:
             const std::string& _automatically_managed_keyset_prefix,
             const std::string& _automatically_managed_keyset_registrar,
             const std::string& _automatically_managed_keyset_tech_contact,
-            const std::vector<std::string>& _automatically_managed_keyset_zones,
-            bool _disable_notifier);
-
-    virtual ~Server_i();
+            const std::set<std::string>& _automatically_managed_keyset_zones,
+            bool _disable_notifier,
+            Fred::Logger::LoggerClient& _logger_client);
 
     // methods corresponding to defined IDL attributes and operations
-    NameserverDomainsSeq* get_nameservers_with_automatically_managed_domain_candidates();
+    NameserverDomainsSeq* get_nameservers_with_insecure_automatically_managed_domain_candidates();
+
+    NameserverDomainsSeq* get_nameservers_with_secure_automatically_managed_domain_candidates();
 
     NameserverDomainsSeq* get_nameservers_with_automatically_managed_domains();
 
@@ -80,9 +82,9 @@ public:
 private:
     // Make sure all instances are built on the heap by making the
     // destructor non-public
-    //virtual ~Registry_AutomaticKeysetManagement_AutomaticKeysetManagementIntf_i();
+    virtual ~Server_i();
     // do not copy
-    Fred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl* const pimpl_;
+    const boost::shared_ptr<Fred::AutomaticKeysetManagement::AutomaticKeysetManagementImpl> impl_;
     Server_i(const Server_i&);//no body
     Server_i& operator= (const Server_i&);//no body
 };

@@ -33,6 +33,7 @@
 #include "log/logger.h"
 #include "src/corba/automatic_keyset_management/server_i.hh"
 #include "src/corba/connection_releaser.h"
+#include "src/corba/logger_client_impl.h"
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/documents.h"
 #include "util/corba_wrapper.h"
@@ -70,6 +71,8 @@ int main(int argc, char *argv[])
 
         corba_init();
 
+        Fred::Logger::LoggerCorbaClientImpl logger_client;
+
         // create server object with poa and nameservice registration
         CorbaContainer::get_instance()->register_server(
                 new Registry::AutomaticKeysetManagement::Server_i(
@@ -78,7 +81,8 @@ int main(int argc, char *argv[])
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_registrar,
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_tech_contact,
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_zones,
-                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->disable_notifier),
+                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->disable_notifier,
+                        logger_client),
                 "AutomaticKeysetManagement");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
 

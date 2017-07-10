@@ -19,12 +19,15 @@
 #ifndef LIMITS_H_7770C55BBBB94FAC8325481636FB0020
 #define LIMITS_H_7770C55BBBB94FAC8325481636FB0020
 
+#include <cstddef>
+
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
 // allowed values from interval <min, max>
 const unsigned min_number_of_dns_keys =  1;
 const unsigned max_number_of_dns_keys = 10;
+const std::size_t keyset_handle_length_max = 30;
 
 } // namespace Epp::AutomaticKeysetManagement
 } // namespace Epp
