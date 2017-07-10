@@ -146,8 +146,15 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatic
             "JOIN object_registry oreg ON oreg.id = d.id "
             "JOIN object k ON k.id = d.keyset "
             "JOIN object_registry oregk ON oregk.id = k.id "
+            "JOIN object o ON o.id = k.id "
+            "JOIN registrar r ON r.id = o.clid "
+            "JOIN keyset_contact_map kcmap ON kcmap.keysetid = k.id "
+            "JOIN contact c on kcmap.contactid = c.id "
+            "JOIN object_registry oregc ON oregc.id = c.id "
             "JOIN zone z ON z.id = d.zone "
-            "WHERE oregk.name LIKE ").param_text(automatically_managed_keyset_prefix_ + "%")
+            "WHERE r.handle = ").param_text(automatically_managed_keyset_registrar_)
+            (" AND oregc.name = ").param_text(automatically_managed_keyset_tech_contact_)
+            (" AND oregk.name LIKE ").param_text(automatically_managed_keyset_prefix_ + "%")
             (" AND z.fqdn IN (");
             Util::HeadSeparator in_separator("",", ");
             for (std::vector<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
