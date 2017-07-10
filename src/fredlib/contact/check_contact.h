@@ -33,9 +33,9 @@ namespace Fred
 {
 namespace Contact
 {
-    ContactHandleState::SyntaxValidity::Enum get_handle_syntax_validity(OperationContext& ctx, const std::string& _contact_handle);
+    ContactHandleState::SyntaxValidity::Enum get_handle_syntax_validity(OperationContext& _ctx, const std::string& _contact_handle);
 
-    ContactHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _contact_handle);
+    ContactHandleState::Registrability::Enum get_handle_registrability(OperationContext& _ctx, const std::string& _contact_handle);
 }
 }
 

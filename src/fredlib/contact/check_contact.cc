@@ -25,20 +25,20 @@ namespace Fred
 
 namespace Contact
 {
-    ContactHandleState::SyntaxValidity::Enum get_handle_syntax_validity(OperationContext& ctx, const std::string& _contact_handle) {
+    ContactHandleState::SyntaxValidity::Enum get_handle_syntax_validity(OperationContext& _ctx, const std::string& _contact_handle) {
 
-        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_invalid_handle(ctx)) {
+        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_invalid_handle(_ctx)) {
             return ContactHandleState::SyntaxValidity::invalid;
         }
         return ContactHandleState::SyntaxValidity::valid;
     }
 
-    ContactHandleState::Registrability::Enum get_handle_registrability(OperationContext& ctx, const std::string& _contact_handle) {
-        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_registered(ctx)) {
+    ContactHandleState::Registrability::Enum get_handle_registrability(OperationContext& _ctx, const std::string& _contact_handle) {
+        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_registered(_ctx)) {
             return ContactHandleState::Registrability::registered;
         }
 
-        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_protected(ctx)) {
+        if (TestHandleOf< Object_Type::contact >(_contact_handle).is_protected(_ctx)) {
             return ContactHandleState::Registrability::in_protection_period;
         }
 
