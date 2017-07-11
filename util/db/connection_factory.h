@@ -53,7 +53,7 @@ static const boost::regex re_find_password("password=[^\\ ]+");
 /**
  * filter out password from database connection string
  */
-static std::string make_nopass_conn_info(const std::string& _conn_info)
+static inline std::string make_nopass_conn_info(const std::string& _conn_info)
 {
     return boost::regex_replace(_conn_info, re_find_password, "password=******** ");
 }

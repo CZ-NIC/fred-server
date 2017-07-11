@@ -73,7 +73,7 @@ std::string get_epp_result_description_localized(
 
 namespace {
 
-std::string get_success_state_localized_description(SessionLang::Enum _lang)
+inline std::string get_success_state_localized_description(SessionLang::Enum _lang)
 {
     switch (_lang)
     {
