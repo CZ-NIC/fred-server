@@ -6,36 +6,36 @@
 namespace Fred
 {
     struct Exception : std::exception {
-        virtual const char* what() const throw() = 0;
+        virtual const char* what() const noexcept = 0;
         virtual ~Exception() { }
     };
 
     struct IncorrectAuthInfoPw : Exception {
-        const char* what() const throw() { return "incorrect AuthInfoPw"; }
+        const char* what() const noexcept { return "incorrect AuthInfoPw"; }
     };
 
     struct UnknownRegistrar : Exception {
-        const char* what() const throw() { return "unknown registrar"; }
+        const char* what() const noexcept { return "unknown registrar"; }
     };
 
     struct UnknownObjectId : Exception {
-        const char* what() const throw() { return "unknown object id"; }
+        const char* what() const noexcept { return "unknown object id"; }
     };
 
     struct UnknownContactId : UnknownObjectId {
-        const char* what() const throw() { return "unknown contact id"; }
+        const char* what() const noexcept { return "unknown contact id"; }
     };
 
     struct UnknownDomainId : UnknownObjectId {
-        const char* what() const throw() { return "unknown domain id"; }
+        const char* what() const noexcept { return "unknown domain id"; }
     };
 
     struct UnknownKeysetId : UnknownObjectId {
-        const char* what() const throw() { return "unknown keyset id"; }
+        const char* what() const noexcept { return "unknown keyset id"; }
     };
 
     struct UnknownNssetId : UnknownObjectId {
-        const char* what() const throw() { return "unknown nsset id"; }
+        const char* what() const noexcept { return "unknown nsset id"; }
     };
 }
 

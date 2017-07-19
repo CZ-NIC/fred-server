@@ -440,7 +440,7 @@ namespace Registry
              * Returns failure description.
              * @return string with the general cause of the current error.
              */
-            const char* what() const throw() {return "internal server error";}
+            const char* what() const noexcept {return "internal server error";}
         };
 
         /**
@@ -454,7 +454,7 @@ namespace Registry
              * Returns failure description.
              * @return string with the general cause of the current error.
              */
-            const char* what() const throw() {return "given contact (representing user who is calling the method) does not exist";}
+            const char* what() const noexcept {return "given contact (representing user who is calling the method) does not exist";}
         };
 
         /**
@@ -468,7 +468,7 @@ namespace Registry
              * Returns failure description.
              * @return string with the general cause of the current error.
              */
-            const char* what() const throw() {return "registry object with specified ID does not exist";}
+            const char* what() const noexcept {return "registry object with specified ID does not exist";}
         };
 
         /**
@@ -482,7 +482,7 @@ namespace Registry
              * Returns failure description.
              * @return string with the general cause of the current error.
              */
-            const char* what() const throw() {return "given parameter value (like SortSpec.field or handle) is not valid";}
+            const char* what() const noexcept {return "given parameter value (like SortSpec.field or handle) is not valid";}
         };
 
         /**
@@ -495,7 +495,7 @@ namespace Registry
              * Returns failure description.
              * @return string with the general cause of the current error.
              */
-            const char* what() const throw() {return "given contact (user) does not have access to requested object";}
+            const char* what() const noexcept {return "given contact (user) does not have access to requested object";}
         };
 
         /**
@@ -509,7 +509,7 @@ namespace Registry
              * Returns failure description.
              * @return string with the general cause of the current error.
              */
-            const char* what() const throw() {return "object has a status that does not allow update";}
+            const char* what() const noexcept {return "object has a status that does not allow update";}
         };
 
         /**
@@ -523,7 +523,7 @@ namespace Registry
              * Returns failure description.
              * @return string with the general cause of the current error.
              */
-            const char* what() const throw() {return "unable to merge given contacts";}
+            const char* what() const noexcept {return "unable to merge given contacts";}
         };
 
 

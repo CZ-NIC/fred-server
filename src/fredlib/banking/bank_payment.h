@@ -81,8 +81,8 @@ public:
     virtual void setInvoicePrefix(const unsigned long long &_iprefix) = 0;
 
     virtual std::string toString() const = 0;
-    virtual void save() throw (SQL_ERROR) = 0;
-    virtual void reload() throw (SQL_ERROR, NOT_FOUND) = 0;
+    virtual void save() = 0;
+    virtual void reload() = 0;
 };//class Payment
 
 // smart pointer

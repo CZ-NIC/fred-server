@@ -228,7 +228,7 @@ public:
         return m_DNSKeys.size();
     }
 
-    const DSRecord *getDSRecordByIdx(unsigned int idx) const throw (NOT_FOUND)
+    const DSRecord *getDSRecordByIdx(unsigned int idx) const
     {
         if (idx >= m_DSRecords.size())
             throw NOT_FOUND();
@@ -237,7 +237,7 @@ public:
             return &m_DSRecords[idx];
     }
 
-    const DNSKey *getDNSKeyByIdx(unsigned int idx) const throw (NOT_FOUND)
+    const DNSKey *getDNSKeyByIdx(unsigned int idx) const
     {
         if (idx >= m_DNSKeys.size())
             throw NOT_FOUND();
@@ -304,7 +304,7 @@ public:
         m_admin = handle;
     }
     void makeQuery(bool, bool, std::stringstream &) const;
-    void reload() throw (SQL_ERROR);
+    void reload();
     virtual void reload(Database::Filters::Union &uf);
     void clearFilter();
     virtual const char *getTempTableName() const;
@@ -382,7 +382,7 @@ ListImpl::makeQuery(
 }
 
 void
-ListImpl::reload() throw (SQL_ERROR)
+ListImpl::reload()
 {
     std::map<TID, std::string> registrars;
     std::ostringstream sql;
@@ -802,9 +802,9 @@ class ManagerImpl: public virtual Manager {
     bool    m_restrictedHandle;
     bool checkHandleFormat(const std::string &handle) const;
     bool checkHandleRegistration(const std::string &, NameIdPair &,
-            bool) const throw (SQL_ERROR);
+            bool) const;
     bool checkProtection(const std::string &, unsigned int,
-            const std::string &) const throw (SQL_ERROR);
+            const std::string &) const;
 public:
     ManagerImpl(DBSharedPtr db, bool restrictedHandle):
         m_db(db), m_restrictedHandle(restrictedHandle)
@@ -817,7 +817,7 @@ public:
     virtual CheckAvailType checkAvail(
             const std::string &handle,
             NameIdPair &conflict,
-            bool lock) const throw (SQL_ERROR)
+            bool lock) const
     {
         conflict.id = 0;
         conflict.name = "";
@@ -848,7 +848,7 @@ bool
 ManagerImpl::checkHandleRegistration(
         const std::string &handle,
         NameIdPair &conflict,
-        bool lock) const throw (SQL_ERROR)
+        bool lock) const
 {
     std::ostringstream sql;
     sql << "SELECT id, name FROM object_registry "
@@ -871,7 +871,7 @@ bool
 ManagerImpl::checkProtection(
         const std::string &name,
         unsigned int type,
-        const std::string &monthPeriodSQL) const throw (SQL_ERROR)
+        const std::string &monthPeriodSQL) const
 {
     std::stringstream sql;
     sql << "SELECT COALESCE(MAX(erdate) + ("

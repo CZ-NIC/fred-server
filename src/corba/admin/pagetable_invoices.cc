@@ -36,7 +36,7 @@ Registry::Table::ColumnHeaders* ccReg_Invoices_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_Invoices_i::getRow(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   const Fred::Invoicing::Invoice *inv = invoice_list_->get(row);
@@ -105,7 +105,7 @@ void ccReg_Invoices_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _dir) {
 }
 
 ccReg::TID ccReg_Invoices_i::getRowId(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   const Fred::Invoicing::Invoice *inv = invoice_list_->get(row);

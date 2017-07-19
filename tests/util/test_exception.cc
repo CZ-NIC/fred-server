@@ -220,7 +220,7 @@ bool check_test_std_exception(std::exception const & ex)
 }
 
 //global operator new and delete overload
-void* operator new(std::size_t size) throw(std::bad_alloc)
+void* operator new(std::size_t size)
 {
     ExceptionTest::instance().exception_test(std::bad_alloc());
     void* ptr = std::malloc(size);
@@ -228,38 +228,38 @@ void* operator new(std::size_t size) throw(std::bad_alloc)
     return ptr;
 }
 
-void* operator new(std::size_t size, const std::nothrow_t&) throw()
+void* operator new(std::size_t size, const std::nothrow_t&) noexcept
 {
     return std::malloc(size);
 }
 
-void* operator new[](std::size_t size) throw(std::bad_alloc)
+void* operator new[](std::size_t size)
 {
     ExceptionTest::instance().exception_test(std::bad_alloc());
     return operator new(size);
 }
 
-void* operator new[](std::size_t size, const std::nothrow_t&) throw()
+void* operator new[](std::size_t size, const std::nothrow_t&) noexcept
 {
     return operator new(size, std::nothrow);
 }
 
-void operator delete(void* ptr) throw()
+void operator delete(void* ptr) noexcept
 {
     std::free(ptr);
 }
 
-void operator delete(void* ptr, const std::nothrow_t&) throw()
+void operator delete(void* ptr, const std::nothrow_t&) noexcept
 {
     std::free(ptr);
 }
 
-void operator delete[](void* ptr) throw()
+void operator delete[](void* ptr) noexcept
 {
     operator delete(ptr);
 }
 
-void operator delete[](void* ptr, const std::nothrow_t&) throw()
+void operator delete[](void* ptr, const std::nothrow_t&) noexcept
 {
     operator delete(ptr);
 }

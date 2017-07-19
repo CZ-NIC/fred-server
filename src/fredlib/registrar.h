@@ -240,7 +240,7 @@ public:
   virtual bool isInZone(std::string zone_fqdn) const = 0;
 
   /// Save changes to database
-  virtual void save() throw (SQL_ERROR) = 0;
+  virtual void save() = 0;
 
   /// Zones number for credit by zone
   //virtual unsigned long getZonesNumber() = 0;
@@ -365,20 +365,19 @@ class Manager {
 public:
   /// Public destructor, user is responsible for delete
   virtual ~Manager() {}
-  virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
+  virtual bool checkHandle(const std::string) const = 0;
 
   virtual Registrar::AutoPtr createRegistrar() = 0;
   ///add Registrar acl record  used by fred-admin option registrar_acl_add
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
-          const std::string &pass)
-      throw (SQL_ERROR) = 0;
+          const std::string &pass) = 0;
 
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR) = 0;
+          const Database::Date &toDate) = 0;
 
   ///list factory
   virtual RegistrarList::AutoPtr createList() =0;

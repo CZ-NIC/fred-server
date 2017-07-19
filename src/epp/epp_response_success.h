@@ -53,7 +53,7 @@ public:
         return epp_result_;
     }
 
-    const char* what() const throw() {
+    const char* what() const noexcept {
         return epp_result().c_str();
     }
 

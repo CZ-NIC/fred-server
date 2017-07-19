@@ -26,7 +26,7 @@ namespace Fred
     class TempSequence {
         DBSharedPtr db;
      public:
-      TempSequence(DBSharedPtr _db) throw (SQL_ERROR): db(_db)
+      TempSequence(DBSharedPtr _db): db(_db)
       {
         std::stringstream sql;
         sql << "CREATE TEMPORARY SEQUENCE tmp_seq_epp_info_buffer_content";
@@ -61,7 +61,7 @@ namespace Fred
       std::string buffer; ///< actual record (because it could be empty string)
       unsigned long chunkSize; ///< result size (same as bufferList.size()
      public:
-      ChunkImpl(DBSharedPtr db, TID registrar, unsigned size) throw (SQL_ERROR)
+      ChunkImpl(DBSharedPtr db, TID registrar, unsigned size)
       {
         // select total number of records (count) in result and actual pointer
         // to result (current)
@@ -142,7 +142,7 @@ namespace Fred
       virtual unsigned long info(
               const std::string &registrar, Type infotype,
               const std::string &request)
-          throw (SQL_ERROR, INVALID_REGISTRAR)
+         
       {
           std::stringstream query;
           query
@@ -161,7 +161,7 @@ namespace Fred
 
       virtual unsigned long info(
         TID registrar, Type infotype, const std::string& request
-      ) throw (SQL_ERROR, INVALID_REGISTRAR)
+      )
       {
         if (!registrar) throw INVALID_REGISTRAR();
         // init list of object specific temporary tables using their
@@ -307,7 +307,7 @@ namespace Fred
         return result;
       }
       virtual Chunk *getChunk(const std::string &registrar, unsigned int size)
-          throw (SQL_ERROR, INVALID_REGISTRAR)
+         
       {
           std::stringstream query;
           query
@@ -325,7 +325,7 @@ namespace Fred
       }
 
       virtual Chunk *getChunk(TID registrar, unsigned size)
-        throw (SQL_ERROR, INVALID_REGISTRAR)
+       
       {
         if (!registrar) throw INVALID_REGISTRAR();
         return new ChunkImpl(db,registrar,size);

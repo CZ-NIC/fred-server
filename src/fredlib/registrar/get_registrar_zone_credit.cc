@@ -36,7 +36,7 @@ unsigned long long get_registrar_id_by_handle(OperationContext& ctx, const std::
         {
             struct RegistrarNotFound:Fred::OperationException
             {
-                const char* what()const throw() { return "no registrar identified by given handle"; }
+                const char* what()const noexcept { return "no registrar identified by given handle"; }
             };
             throw RegistrarNotFound();
         }
@@ -45,7 +45,7 @@ unsigned long long get_registrar_id_by_handle(OperationContext& ctx, const std::
     struct UnexpectedExceptionOccurred:Fred::InternalError
     {
         UnexpectedExceptionOccurred():Fred::InternalError(std::string()) { }
-        const char* what()const throw() { return "InfoRegistrarByHandle failure"; }
+        const char* what()const noexcept { return "InfoRegistrarByHandle failure"; }
     };
     throw UnexpectedExceptionOccurred();
 }
@@ -86,7 +86,7 @@ RegistrarZoneCredit GetRegistrarZoneCredit::exec(OperationContext& _ctx, const s
             struct ZoneCreditNotUnique:Fred::InternalError
             {
                 ZoneCreditNotUnique():Fred::InternalError(std::string()) { }
-                const char* what()const throw() { return "second credit assigned to one zone"; }
+                const char* what()const noexcept { return "second credit assigned to one zone"; }
             };
             throw ZoneCreditNotUnique();
         }

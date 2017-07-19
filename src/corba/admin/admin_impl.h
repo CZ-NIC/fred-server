@@ -80,19 +80,16 @@ public:
           , unsigned adifd_session_garbage
           , bool _session_garbage = true);
   virtual ~ccReg_Admin_i();
-  virtual void authenticateUser(const char* _username, const char* _password)
-      throw (ccReg::Admin::AuthFailed);
+  virtual void authenticateUser(const char* _username, const char* _password);
   
   // session management
   virtual char* createSession(const char* username);
   virtual void destroySession(const char* _session_id);
-  virtual ccReg::Session_ptr getSession(const char* sessionID)
-      throw (ccReg::Admin::ObjectNotFound);
+  virtual ccReg::Session_ptr getSession(const char* sessionID);
   
   // registrar management
-  ccReg::RegistrarList* getRegistrars() throw (ccReg::Admin::SQL_ERROR);
-  ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id)
-      throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR);
+  ccReg::RegistrarList* getRegistrars();
+  ccReg::AdminRegistrar* getRegistrarById(ccReg::TID id);
 
   // statistics
   CORBA::Long getDomainCount(const char *zone);
@@ -123,15 +120,9 @@ public:
                                  const char *_reason,
                                  const char *_email_to_answer,
                                  const ccReg::Admin::ObjectIdList& _object_ids,
-                                 const ccReg::TID requestId)
-    throw (ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND,
-    ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
-    ccReg::Admin::INVALID_INPUT, ccReg::Admin::REQUEST_BLOCKED);
-  
-  void processPublicRequest(ccReg::TID id, CORBA::Boolean invalid) throw (
-    ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND,
-    ccReg::Admin::MAILER_ERROR, ccReg::Admin::REQUEST_BLOCKED
-  );
+                                 const ccReg::TID requestId);
+
+  void processPublicRequest(ccReg::TID id, CORBA::Boolean invalid);
   ccReg::Admin::Buffer* getPublicRequestPDF(ccReg::TID id, const char *lang);
 
   ccReg::TID resendPin3Letter(ccReg::TID publicRequestId);
@@ -151,14 +142,11 @@ public:
    * for now it returns data of last poll request fee message */
   ccReg::RegistrarRequestCountInfo* getRegistrarRequestCount(const char* _registrar);
 
-  bool isRegistrarBlocked(ccReg::TID reg_id) throw (
-          ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound);
+  bool isRegistrarBlocked(ccReg::TID reg_id);
 
-  bool blockRegistrar(ccReg::TID reg_id) throw (
-          ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound);
+  bool blockRegistrar(ccReg::TID reg_id);
 
-  void unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) throw (
-          ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound, ccReg::Admin::ObjectNotBlocked);
+  void unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id);
 
   ccReg::ULLSeq* getSummaryOfExpiredDomains(const char *registrar_handle, const ccReg::DatePeriodList &date_intervals);
 

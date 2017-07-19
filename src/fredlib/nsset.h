@@ -78,13 +78,13 @@ public:
   /// return handle of admin contact by index
   virtual std::string getAdminByIdx(unsigned idx) const = 0;
   /// return handle of admin contact by index
-  virtual const std::string& getAdminHandleByIdx(unsigned idx) const throw (NOT_FOUND) = 0;
+  virtual const std::string& getAdminHandleByIdx(unsigned idx) const = 0;
   /// return id of admin contact by index
-  virtual TID getAdminIdByIdx(unsigned idx) const throw (NOT_FOUND) = 0;
+  virtual TID getAdminIdByIdx(unsigned idx) const = 0;
   /// return count of managed hosts
   virtual unsigned getHostCount() const = 0;
   /// return host by index
-  virtual const Host *getHostByIdx(unsigned idx) const throw (NOT_FOUND) = 0;
+  virtual const Host *getHostByIdx(unsigned idx) const = 0;
 };
 
 
@@ -104,7 +104,7 @@ public:
   /// set filter for tech admin
   virtual void setAdminFilter(const std::string& handle) = 0;
   /// reload list with current filter
-  virtual void reload() throw (SQL_ERROR) = 0;
+  virtual void reload() = 0;
   /// testing new reload function
   virtual void reload(Database::Filters::Union &uf) = 0;
   /// clear filter data
@@ -139,7 +139,7 @@ public:
   virtual CheckAvailType
       checkAvail(const std::string& handle,
                  NameIdPair& conflict,
-                 bool lock = false) const throw (SQL_ERROR) = 0;
+                 bool lock = false) const = 0;
   /// check FQDN of host, should be hidden and not exported in manager API
   /** \return 0=OK, 1=invalid name, 2=glue and invalid zone */
       virtual unsigned checkHostname(const std::string& hostname,

@@ -460,11 +460,11 @@ struct ExceptionBase
 {
     int base_test;
 
-    ExceptionBase(ExceptionBase const& i) throw()
+    ExceptionBase(ExceptionBase const& i) noexcept
     : base_test(i.base_test)
     {}
 
-    ExceptionBase() throw()
+    ExceptionBase() noexcept
     : base_test(0)
     {}
 
@@ -478,12 +478,12 @@ struct TestExceptionFlag
 {
     int test;
 
-    TestExceptionFlag(TestExceptionFlag const& i) throw()
+    TestExceptionFlag(TestExceptionFlag const& i) noexcept
     : ExceptionBase(i)
     , test(i.test)
     {}
 
-    TestExceptionFlag() throw()
+    TestExceptionFlag() noexcept
     : test(0)
     {}
 

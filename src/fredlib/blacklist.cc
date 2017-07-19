@@ -30,7 +30,7 @@ namespace Fred
       BlacklistImpl(DBSharedPtr _db) : db(_db)
       {}
       bool checkDomain(const std::string& fqdn) const 
-        throw (SQL_ERROR)
+       
       {
         bool ret = false;
         std::ostringstream sql;

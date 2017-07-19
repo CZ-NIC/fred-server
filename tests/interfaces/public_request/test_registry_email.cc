@@ -59,7 +59,7 @@ public:
             const std::map<std::string,std::string>&,
             const std::vector<std::string>&,
             const std::vector<unsigned long long>&,
-            const std::string&) throw (Fred::Mailer::NOT_SEND)
+            const std::string&)
     {
         return 0;
     }

@@ -84,7 +84,6 @@ ccReg_Registrars_i::getColumnHeaders()
 
 Registry::TableRow* 
 ccReg_Registrars_i::getRow(CORBA::UShort row)
-  throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
   try
@@ -182,7 +181,6 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 ccReg::TID 
 ccReg_Registrars_i::getRowId(CORBA::UShort row) 
-  throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
     try

@@ -240,7 +240,7 @@ void ccReg_Admin_i::garbageSession() {
 
 void ccReg_Admin_i::authenticateUser(const char* _username,
                                      const char* _password)
-    throw (ccReg::Admin::AuthFailed) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -321,7 +321,7 @@ void ccReg_Admin_i::destroySession(const char* _session_id) {
 }
 
 ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
-    throw (ccReg::Admin::ObjectNotFound) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -370,7 +370,6 @@ void ccReg_Admin_i::fillRegistrar(ccReg::AdminRegistrar& creg,
 }
 
 ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
-    throw (ccReg::Admin::SQL_ERROR)
 {
     Logging::Context ctx(server_name_);
     ConnectionReleaser releaser;
@@ -404,7 +403,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
 }
 
 ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
-    throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -686,11 +685,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
                                               const char *_email_to_answer,
                                               const ccReg::Admin::ObjectIdList& _object_ids,
                                               const ccReg::TID requestId)
-  throw (
-    ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND,
-    ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
-    ccReg::Admin::INVALID_INPUT, ccReg::Admin::REQUEST_BLOCKED
-  ) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -770,10 +765,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
 }
 
 void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
-    throw (
-    ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND,
-    ccReg::Admin::MAILER_ERROR, ccReg::Admin::REQUEST_BLOCKED
-  ) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -1798,8 +1790,7 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
     }
 }
 
-bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
-         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound)
+bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id)
 {
     try {
         Logging::Context(server_name_);
@@ -1824,8 +1815,7 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
 
 }
 
-bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id) throw (
-         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound)
+bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id)
 {
     try {
         Logging::Context(server_name_);
@@ -1852,8 +1842,7 @@ bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id) throw (
 
 }
 
-void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) throw (
-         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound, ccReg::Admin::ObjectNotBlocked)
+void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id)
 {
     try {
         Logging::Context(server_name_);

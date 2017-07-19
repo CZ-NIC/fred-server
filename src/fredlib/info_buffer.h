@@ -78,16 +78,16 @@ namespace Fred
       );
       virtual unsigned long info(
         const std::string &registrar, Type infotype, const std::string& request
-      ) throw (SQL_ERROR, INVALID_REGISTRAR) = 0;
+      ) = 0;
       /// fill buffer with result of info command and reset pointer to start
       virtual unsigned long info(
         TID registrar, Type infotype, const std::string& request
-      ) throw (SQL_ERROR, INVALID_REGISTRAR) = 0;
+      ) = 0;
       /// get chunk of result of specified size and update pointer
       virtual Chunk* getChunk(TID registrar, unsigned size)
-        throw (SQL_ERROR, INVALID_REGISTRAR) = 0;
+        = 0;
       virtual Chunk* getChunk(const std::string &registrar, unsigned size)
-        throw (SQL_ERROR, INVALID_REGISTRAR) = 0;
+        = 0;
     };
   };
 };

@@ -166,7 +166,7 @@ namespace Fred
       /// Clear ZoneNs list
       virtual void clearZoneNsList() = 0;
       /// Save changes to database
-      virtual void save() throw (SQL_ERROR) = 0;
+      virtual void save() = 0;
       /// Check if zone is applicable for given domain
       virtual bool isDomainApplicable(const std::string& domain) const =0;
 
@@ -185,7 +185,7 @@ namespace Fred
       /// Filter in registrar handle
       virtual void setRegistrarHandleFilter(const std::string& registrar_handle) = 0;
       /// reload actual list of zones
-      virtual void reload()  throw (SQL_ERROR)  = 0;
+      virtual void reload()   = 0;
       /// reload with filter
       virtual void reload(Database::Filters::Union &uf) = 0;
       /// Get zone detail object by list index for update
@@ -219,14 +219,14 @@ namespace Fred
       /// tokenize domain name into sequence
       virtual void parseDomainName(
         const std::string& fqdn, DomainName& domain, bool allowIDN
-      ) const throw (INVALID_DOMAIN_NAME) = 0;
+      ) const = 0;
       /// check validity of enum domain name (every part is one digit)
       virtual bool checkEnumDomainName(const DomainName& domain) const = 0;
       /// check if domain is under global zone e164.arpa
       virtual bool checkEnumDomainSuffix(const std::string& fqdn) const = 0;
       /// translate phone number into domain name
       virtual std::string makeEnumDomain(const std::string& number)
-        const throw (NOT_A_NUMBER) = 0;
+        const = 0;
       /// return default enum country prefix e.g '0.2.4'
       virtual const std::string& getDefaultEnumSuffix() const = 0;
       /// return default domain suffix e.g. 'cz'
@@ -249,13 +249,13 @@ namespace Fred
               int expiry=1209600,
               int minimum=7200,
               const std::string &ns_fqdn="localhost")
-        throw (SQL_ERROR, ALREADY_EXISTS) = 0;
+        = 0;
       /// add only zone record
       virtual void addOnlyZoneRecord(
               const std::string& fqdn,
               int ex_period_min=12,
               int ex_period_max=120)
-        throw (SQL_ERROR, ALREADY_EXISTS) = 0;
+        = 0;
       /// add only zone_soa record identified by fqdn
       virtual void addOnlyZoneSoaRecordByFqdn(
               const std::string& fqdn,
@@ -266,7 +266,7 @@ namespace Fred
               int expiry=1209600,
               int minimum=7200,
               const std::string &ns_fqdn="localhost")
-      throw (SQL_ERROR, ALREADY_EXISTS, NOT_FOUND) = 0;
+      = 0;
       /// update zone and zone_soa record identified by fqdn
       virtual void updateZoneByFqdn(
               const std::string& fqdn,
@@ -279,7 +279,7 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-        throw (SQL_ERROR, NOT_FOUND) = 0;
+        = 0;
       /// update zone and zone_soa record identified by fqdn
       virtual void updateZoneById(
     		  const unsigned long long id,
@@ -293,20 +293,20 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-        throw (SQL_ERROR) = 0;
+        = 0;
 
       virtual void addZoneNs(
               const std::string &zone,
               const std::string &fqdn="localhost",
               const std::string &addr="")
-          throw (SQL_ERROR,NOT_FOUND) = 0;
+          = 0;
 
       virtual void updateZoneNsById(
     		  const unsigned long long id,
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
-          throw (SQL_ERROR,NOT_FOUND) = 0;
+          = 0;
 
       virtual void addPrice(
               int zone,

@@ -28,7 +28,6 @@ ccReg_Log_i::~ccReg_Log_i()
 
 // use ONLY in exception handlers
 void Logger_common_exception_handler(const std::string &method_name)
-  throw(ccReg::Logger::INCORRECT_USAGE, ccReg::Logger::INTERNAL_SERVER_ERROR)
 {
     try {
         throw;

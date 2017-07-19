@@ -272,7 +272,7 @@ void Fred::ObjectListImpl::clearFilter() {
 }
 
 void Fred::ObjectListImpl::reload(const char *handle, int type)
-  throw (SQL_ERROR) {
+  {
   std::ostringstream sql;
   sql << "SELECT tmp.id, state_id, valid_from " << "FROM "
       << (!handle ? getTempTableName() : "object_registry ") << " tmp, "

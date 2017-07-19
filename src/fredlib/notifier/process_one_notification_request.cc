@@ -55,7 +55,7 @@ struct FailedToSendMailToRecipient : std::exception
           skipped_recipients(_skipped_recipients)
     {}
     ~FailedToSendMailToRecipient() { }
-    const char* what()const throw() { return "failed to send mail to recipient"; }
+    const char* what()const noexcept { return "failed to send mail to recipient"; }
     const std::string failed_recipient;
     const std::set<std::string> skipped_recipients;
 };

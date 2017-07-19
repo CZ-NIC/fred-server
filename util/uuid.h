@@ -33,7 +33,7 @@
 class uuid {
     public:
         struct ExceptionInvalidUuid {
-            const char* what() const throw() {return "invalid input UUID";}
+            const char* what() const noexcept {return "invalid input UUID";}
         };
 
         enum { CANNONICAL_FORM_LENGTH = 36 };

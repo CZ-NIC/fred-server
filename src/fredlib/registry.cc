@@ -73,7 +73,7 @@ public:
   }
 
   virtual const std::string& getDesc(const std::string& lang) const
-      throw (BAD_LANG) {
+  {
     std::string lang_upper = lang;
     boost::algorithm::to_upper(lang_upper);
     std::map<std::string,std::string>::const_iterator i = desc.find(lang_upper);
@@ -300,13 +300,13 @@ public:
   }
 
   virtual const CountryDesc& getCountryDescByIdx(unsigned idx) const
-      throw (NOT_FOUND) {
+  {
     if (idx >= m_countries.size())
       throw NOT_FOUND();
     return m_countries[idx];
   }
 
-  virtual void initStates() throw (SQL_ERROR) {
+  virtual void initStates() {
     TRACE("[CALL] Fred::Manager::initStates()");
 
     statusList.clear();

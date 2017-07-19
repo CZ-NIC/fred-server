@@ -71,7 +71,7 @@ public:
         return !extended_errors_ || extended_errors_->empty();
     }
 
-    virtual const char* c_str() const throw() {
+    virtual const char* c_str() const noexcept {
         return EppResultCode::c_str(epp_result_code_);
     }
 

@@ -37,12 +37,12 @@ public:
   /**
    * Constructors and destructor
    */
-	Exception(const Exception& _ex) throw() : std::exception(_ex), 
+	Exception(const Exception& _ex) noexcept : std::exception(_ex),
                                             what_(_ex.what_) {
 	}
 
 
-	Exception& operator=(const Exception& _ex) throw() {
+	Exception& operator=(const Exception& _ex) noexcept {
 		what_ = _ex.what_;
 		return *this;
 	}
@@ -52,7 +52,7 @@ public:
 	}
 	
   
-  Exception(const std::string& _what) throw() :
+  Exception(const std::string& _what) noexcept :
 		what_(_what) {
 	}
 
@@ -60,7 +60,7 @@ public:
   /**
    * @return  textual representation of exception
    */
-	virtual const char* what() const throw() {
+	virtual const char* what() const noexcept {
 		return what_.c_str();
 	}
 

@@ -29,55 +29,55 @@
 namespace Admin
 {
     struct ExceptionUnknownContactId : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown contact id";}
+        const char* what() const noexcept {return "unknown contact id";}
     };
 
     struct ExceptionUnknownTestsuiteHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown testsuite handle";}
+        const char* what() const noexcept {return "unknown testsuite handle";}
     };
 
     struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown check handle";}
+        const char* what() const noexcept {return "unknown check handle";}
     };
 
     struct ExceptionUnknownCheckStatusHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown check status handle";}
+        const char* what() const noexcept {return "unknown check status handle";}
     };
 
     struct ExceptionCheckNotUpdateable : virtual Fred::OperationException {
-        const char* what() const throw() {return "check is not updateable - either already resolved or tests not yet finished";}
+        const char* what() const noexcept {return "check is not updateable - either already resolved or tests not yet finished";}
     };
 
     struct ExceptionUnknownTestHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown test handle";}
+        const char* what() const noexcept {return "unknown test handle";}
     };
 
     struct ExceptionUnknownCheckTestPair : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown check_handle, test_handle pair";}
+        const char* what() const noexcept {return "unknown check_handle, test_handle pair";}
     };
 
     struct ExceptionUnknownTestStatusHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown test status handle";}
+        const char* what() const noexcept {return "unknown test status handle";}
     };
 
     struct ExceptionIncorrectTestsuite : virtual Fred::OperationException {
-        const char* what() const throw() {return "incorrect testsuite";}
+        const char* what() const noexcept {return "incorrect testsuite";}
     };
 
     struct ExceptionIncorrectCheckStatus : virtual Fred::OperationException {
-        const char* what() const throw() {return "incorrect check status";}
+        const char* what() const noexcept {return "incorrect check status";}
     };
 
     struct ExceptionIncorrectContactStatus : virtual Fred::OperationException {
-        const char* what() const throw() {return "incorrect contact status";}
+        const char* what() const noexcept {return "incorrect contact status";}
     };
 
     struct ExceptionDomainsAlreadyDeleted : virtual Fred::OperationException {
-        const char* what() const throw() {return "domains already deleted";}
+        const char* what() const noexcept {return "domains already deleted";}
     };
 
     struct ExceptionTestImplementationError : virtual Fred::OperationException {
-        const char* what() const throw() {return "error in tests implementation";}
+        const char* what() const noexcept {return "error in tests implementation";}
     };
 }
 

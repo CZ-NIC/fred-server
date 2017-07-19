@@ -36,7 +36,7 @@ class List:
     virtual public Fred::CommonListImplNew {
 public:
     void reload(Database::Filters::Union &filter);
-    File *get(unsigned int index) const throw (std::exception);
+    File *get(unsigned int index) const;
     const char* getTempTableName() const;
     void sort(MemberType member, bool asc);
     Fred::File::File* findId(Database::ID _id);

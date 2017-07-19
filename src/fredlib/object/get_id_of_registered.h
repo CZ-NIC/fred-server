@@ -34,7 +34,7 @@ namespace Fred {
 
 struct UnknownObject : std::exception
 {
-    const char* what() const throw();
+    const char* what() const noexcept;
 };
 
 template <Object_Type::Enum object_type>

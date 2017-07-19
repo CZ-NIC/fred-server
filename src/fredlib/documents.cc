@@ -128,7 +128,7 @@ namespace Fred
         const GenProcType& _genProc,
         std::ostream* _out, const std::string& _filename, unsigned _filetype,
         const std::string& _lang
-      ) throw (TmpFile::NAME_ERROR,TmpFile::OPEN_ERROR)
+      )
         : path(_path), pathTemplates(_pathTemplates), 
           pathFM(_pathFM), corbaNS(_corbaNS),
           genProc(_genProc), out(NULL),

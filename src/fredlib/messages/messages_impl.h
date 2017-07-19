@@ -49,7 +49,7 @@ namespace Messages
 
 struct MessageCopyProhibited : virtual std::exception
 {
-    const char* what() const throw()
+    const char* what() const noexcept
     {
         return "message copy is prohibited by status";
     }

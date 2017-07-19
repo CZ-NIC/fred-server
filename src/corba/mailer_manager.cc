@@ -45,7 +45,7 @@ MailerManager::sendEmail(
   const Fred::Mailer::Handles &handles,
   const Fred::Mailer::Attachments &attach,
   const std::string& reply_to
-) throw (Fred::Mailer::NOT_SEND)
+)
 {
   LOGGER("mailer").debug(boost::format("recipients = '%1%'") % to);
   if (to.empty() || to == "NULL ") {
@@ -127,7 +127,7 @@ MailerManager::getMailList()
   y.second = x.time_of_day().seconds(); \
 }  
 void 
-MailerManager::reload(MailerManager::Filter& f) throw (LOAD_ERROR)
+MailerManager::reload(MailerManager::Filter& f)
 {
   ccReg::MailFilter mf;
   if (!f.id) mf.mailid = -1;
@@ -196,7 +196,7 @@ MailerManager::Filter::clear()
 } 
 
 void 
-MailerManager::_resolveInit() throw (RESOLVE_FAILED)
+MailerManager::_resolveInit()
 {
   try {
     boost::mutex::scoped_lock scoped_lock(mutex);

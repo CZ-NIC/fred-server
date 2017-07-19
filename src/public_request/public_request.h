@@ -96,7 +96,7 @@ public:
 
     struct ObjectAlreadyBlocked : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "object is already blocked";
         }
@@ -104,7 +104,7 @@ public:
 
     struct ObjectTransferProhibited : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "object transfer is prohibited";
         }
@@ -112,7 +112,7 @@ public:
 
     struct ObjectNotBlocked : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "object is not blocked";
         }
@@ -120,7 +120,7 @@ public:
 
     struct HasDifferentBlock : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "a different unblock request has to be issued";
         }
@@ -128,7 +128,7 @@ public:
 
     struct ObjectNotFound : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "registry object with specified ID does not exist";
         }
@@ -136,7 +136,7 @@ public:
 
     struct InvalidPublicRequestType : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "public request is not of post type";
         }
@@ -144,7 +144,7 @@ public:
 
     struct NoContactEmail : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "no contact email associated with this object";
         }
@@ -152,7 +152,7 @@ public:
 
     struct InvalidContactEmail : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "invalid contact email associated with this object";
         }
@@ -160,7 +160,7 @@ public:
 
     struct OperationProhibited : std::exception
     {
-        virtual const char* what() const throw()
+        virtual const char* what() const noexcept
         {
             return "operation is prohibited";
         }

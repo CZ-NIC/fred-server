@@ -69,7 +69,7 @@ namespace Fred
       ): db(_db), mm(_mm), cm(_cm), nm(_nm), km(_km), dm(_dm), docm(_docm), rm(_rm)
           , msgm(_msgm)
       {}
-      std::string getEmailList(const std::stringstream& sql) throw (SQL_ERROR)
+      std::string getEmailList(const std::stringstream& sql)
       {
         std::string mailList;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
@@ -248,7 +248,7 @@ namespace Fred
         TID domain_id,
         ptime stamp,
         Fred::Mailer::Parameters& params
-      ) throw (SQL_ERROR)
+      )
       {
           try
           {
@@ -331,7 +331,7 @@ namespace Fred
       void fillSimpleObjectParams(
         TID id,
         Fred::Mailer::Parameters& params
-      ) throw (SQL_ERROR)
+      )
       {
         std::stringstream sql;
         sql << "SELECT c.name, c.type FROM object_registry c WHERE c.id=" << id;
@@ -343,7 +343,6 @@ namespace Fred
         );
       }
       void saveNotification(TID state, unsigned notifyType, TID mail)
-        throw (SQL_ERROR)
       {
         std::stringstream sql;
         sql << "INSERT INTO notify_statechange (state_id,type,mail_id) "
@@ -384,7 +383,7 @@ namespace Fred
         const std::string& exceptList,
         unsigned limit,
         std::ostream *debugOutput
-      ) throw (SQL_ERROR)
+      )
       {
         TRACE("[CALL] Fred::Notify::notifyStateChanges()");
         std::ostringstream sql;

@@ -76,7 +76,7 @@ struct MockMailerManager : public Fred::Mailer::Manager {
       const Fred::Mailer::Attachments& _attach,
       const std::string& _reply_to = std::string("")
 
-    ) throw (Fred::Mailer::NOT_SEND) {
+    ) {
         accumulated_data.push_back(
             MailData(
                 _from,

@@ -344,57 +344,57 @@ struct Exception:std::exception { };
 
 struct IdentificationFailed:Exception
 {
-    const char* what()const throw() { return "IdentificationFailed"; }
+    const char* what()const noexcept { return "IdentificationFailed"; }
 };
 
 struct IdentificationAlreadyProcessed:Exception
 {
-    const char* what()const throw() { return "IdentificationAlreadyProcessed"; }
+    const char* what()const noexcept { return "IdentificationAlreadyProcessed"; }
 };
 
 struct IdentificationAlreadyInvalidated:Exception
 {
-    const char* what()const throw() { return "IdentificationAlreadyInvalidated"; }
+    const char* what()const noexcept { return "IdentificationAlreadyInvalidated"; }
 };
 
 struct ContactChanged:Exception
 {
-    const char* what()const throw() { return "ContactChanged"; }
+    const char* what()const noexcept { return "ContactChanged"; }
 };
 
 struct ObjectAdminBlocked:Exception
 {
-    const char* what()const throw() { return "ObjectAdminBlocked"; }
+    const char* what()const noexcept { return "ObjectAdminBlocked"; }
 };
 
 struct ObjectUserBlocked:Exception
 {
-    const char* what()const throw() { return "ObjectUserBlocked"; }
+    const char* what()const noexcept { return "ObjectUserBlocked"; }
 };
 
 struct AlreadyMojeidContact:Exception
 {
-    const char* what()const throw() { return "AlreadyMojeidContact"; }
+    const char* what()const noexcept { return "AlreadyMojeidContact"; }
 };
 
 struct ObjectDoesntExist:Exception
 {
-    const char* what()const throw() { return "ObjectDoesntExist"; }
+    const char* what()const noexcept { return "ObjectDoesntExist"; }
 };
 
 struct IdentificationRequestDoesntExist:Exception
 {
-    const char* what()const throw() { return "IdentificationRequestDoesntExist"; }
+    const char* what()const noexcept { return "IdentificationRequestDoesntExist"; }
 };
 
 struct ValidationRequestExists:Exception
 {
-    const char* what()const throw() { return "ValidationRequestExists"; }
+    const char* what()const noexcept { return "ValidationRequestExists"; }
 };
 
 struct ValidationAlreadyProcessed:Exception
 {
-    const char* what()const throw() { return "ValidationAlreadyProcessed"; }
+    const char* what()const noexcept { return "ValidationAlreadyProcessed"; }
 };
 
 }//namespace Registry::MojeIDImplData

@@ -199,7 +199,6 @@ public:
     return role == 1 ? adminList.size() : tempList.size();
   }//getAdminCount
   virtual TID getAdminIdByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND)
   {
     TRACE(boost::format
         ("[CALL] DomainImpl::getAdminIdByIdx idx: %1% role: %2% ")
@@ -219,7 +218,6 @@ public:
       }//catch(...)
   }//getAdminIdByIdx
   virtual const std::string& getAdminHandleByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND)
   {
       TRACE(boost::format
           ("[CALL] DomainImpl::getAdminHandleByIdx idx: %1% role: %2% ")
@@ -1271,7 +1269,7 @@ public:
   CheckAvailType checkAvail(const std::string& _fqdn,
                             NameIdPair& conflictFqdn,
                             bool allowIDN,
-                            bool lock) const throw (SQL_ERROR) {
+                            bool lock) const {
     std::string fqdn = _fqdn;
     boost::algorithm::to_lower(fqdn);
     // clear output

@@ -202,7 +202,7 @@ private:
 
 struct NoPublicRequest : std::exception
 {
-    virtual const char* what() const throw()
+    virtual const char* what() const noexcept
     {
         return "no public request found";
     }
@@ -225,7 +225,7 @@ struct EmailData
 
 struct FailedToSendMailToRecipient:std::exception
 {
-    const char* what()const throw() { return "failed to send mail to recipient"; }
+    const char* what()const noexcept { return "failed to send mail to recipient"; }
 };
 
 unsigned long long send_joined_addresses_email(

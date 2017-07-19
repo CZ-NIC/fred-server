@@ -77,7 +77,7 @@ class FakeManager : public Fred::Document::Manager
 private:
     struct UnexpectedCall : std::exception
     {
-        const char* what() const throw() { return "method must not be called"; }
+        const char* what() const noexcept { return "method must not be called"; }
     };
 public:
     virtual ~FakeManager() {}

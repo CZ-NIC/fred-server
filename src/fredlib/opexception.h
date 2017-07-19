@@ -152,7 +152,7 @@ struct OperationException
     /**
      * std::exception content override
      */
-    const char* what() const throw()
+    const char* what() const noexcept
     {
         return "OperationException";
     }
@@ -178,7 +178,7 @@ struct InternalError
     /**
      * std::exception content override
      */
-    virtual const char* what() const throw ()
+    virtual const char* what() const noexcept
     {
         try
         {

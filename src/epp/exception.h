@@ -25,17 +25,17 @@ namespace Epp {
 
     struct Exception : std::exception { };
 
-    struct InvalidSessionLang            : Exception { const char* what() const throw() { return "invalid session language"; } };
-    struct InvalidEppResultCodeValue     : Exception { const char* what() const throw() { return "invalid EppResultCode::(Success|Failure) value"; } };
-    struct InvalidReasonValue            : Exception { const char* what() const throw() { return "invalid Reason::Enum value"; } };
+    struct InvalidSessionLang            : Exception { const char* what() const noexcept { return "invalid session language"; } };
+    struct InvalidEppResultCodeValue     : Exception { const char* what() const noexcept { return "invalid EppResultCode::(Success|Failure) value"; } };
+    struct InvalidReasonValue            : Exception { const char* what() const noexcept { return "invalid Reason::Enum value"; } };
 
-    struct BillingFailure                : Exception { const char* what() const throw() { return "Billing failure"; } };
+    struct BillingFailure                : Exception { const char* what() const noexcept { return "Billing failure"; } };
 
     // localized descriptions
     struct LocalizedDescriptionException : Exception { };
-    struct UnknownLocalizationLanguage   : LocalizedDescriptionException { const char* what() const throw() { return "unknown localization language"; } };
-    struct MissingLocalizedDescription   : LocalizedDescriptionException { const char* what() const throw() { return "missing localized description"; } };
-    struct UnknownLocalizedDescriptionId : LocalizedDescriptionException { const char* what() const throw() { return "unknown localized description id"; } };
+    struct UnknownLocalizationLanguage   : LocalizedDescriptionException { const char* what() const noexcept { return "unknown localization language"; } };
+    struct MissingLocalizedDescription   : LocalizedDescriptionException { const char* what() const noexcept { return "missing localized description"; } };
+    struct UnknownLocalizedDescriptionId : LocalizedDescriptionException { const char* what() const noexcept { return "unknown localized description id"; } };
 
 }
 

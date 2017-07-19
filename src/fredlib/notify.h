@@ -45,7 +45,7 @@ namespace Fred
         const std::string& exceptList,
         unsigned limit,
         std::ostream* debugOutput
-      ) throw (SQL_ERROR) = 0;
+      ) = 0;
       virtual void generateLetters(unsigned item_count_limit) = 0;
       /// factory method
       static Manager *create(

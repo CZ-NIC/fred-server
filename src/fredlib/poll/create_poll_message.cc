@@ -33,7 +33,7 @@ unsigned long long create_poll_eppaction_message(
     struct UnexpectedNumberOfRows:InternalError
     {
         UnexpectedNumberOfRows():InternalError(std::string()) { }
-        const char* what()const throw() { return "unexpected number of rows"; }
+        const char* what()const noexcept { return "unexpected number of rows"; }
     };
     throw UnexpectedNumberOfRows();
 }
@@ -213,7 +213,7 @@ unsigned long long CreatePollMessage<message_type>::exec(
         {
             struct NotFound:OperationException
             {
-                const char* what()const throw() { return "object history not found"; }
+                const char* what()const noexcept { return "object history not found"; }
             };
             throw NotFound();
         }
@@ -224,7 +224,7 @@ unsigned long long CreatePollMessage<message_type>::exec(
             struct TooManyRows:InternalError
             {
                 TooManyRows():InternalError(std::string()) { }
-                const char* what()const throw() { return "too many rows"; }
+                const char* what()const noexcept { return "too many rows"; }
             };
             throw TooManyRows();
         }
@@ -235,7 +235,7 @@ unsigned long long CreatePollMessage<message_type>::exec(
     {
         struct NotCorrespondingObjectType:OperationException
         {
-            const char* what()const throw()
+            const char* what()const noexcept
             {
                 return "associated object is not of the type corresponding to the given message type";
             }

@@ -84,7 +84,7 @@ public:
   }
 
 
-  virtual void rollback() throw() {
+  virtual void rollback() noexcept {
     if (!exited_) {
       try {
           if (!ptransaction_) {

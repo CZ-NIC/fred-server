@@ -111,7 +111,7 @@ public:
   {
     return getId() == _id;
   }
-  virtual void save() throw (SQL_ERROR)
+  virtual void save()
   {
       TRACE("[CALL] ACLImpl::save()");
 	try
@@ -542,7 +542,7 @@ public:
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR)
+          const Database::Date &toDate)
   {///expecting external transaction, no transaction inside
       try
       {
@@ -672,7 +672,7 @@ public:
   }//isInZone by fqdn
 
 
-  virtual void save() throw (SQL_ERROR)
+  virtual void save()
   {
     TRACE("[CALL] RegistrarImpl::save()");
       // save registrar data
@@ -1199,7 +1199,6 @@ public:
   }
 
   virtual bool checkHandle(const std::string handle) const
-	  throw (SQL_ERROR)
   {
       try
       {
@@ -1232,7 +1231,6 @@ public:
           const std::string &registrarHandle,
           const std::string &cert,
           const std::string &pass)
-      throw (SQL_ERROR)
   {
       try
       {
@@ -1263,7 +1261,7 @@ public:
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR)
+          const Database::Date &toDate)
   {
       try
       {

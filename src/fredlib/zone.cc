@@ -108,7 +108,7 @@ namespace Fred
              return getId() == _id;
            }
 
-           virtual void save() throw (SQL_ERROR)
+           virtual void save()
            {
              try
              {
@@ -257,7 +257,7 @@ namespace Fred
           zone_ns_list.clear();
       }
       /// Save changes to database
-      virtual void save() throw (SQL_ERROR)
+      virtual void save()
       {
           // save zone data
         try
@@ -513,7 +513,7 @@ namespace Fred
 			    return ret_ptr;
 			  }//findIDSequence
 
-			  virtual void reload() throw (SQL_ERROR)
+			  virtual void reload()
 			  {
 			      TRACE("[CALL] ZoneListImpl::reload()");
 			      try
@@ -834,7 +834,7 @@ namespace Fred
       /// interface method implementation
       void parseDomainName(
         const std::string& fqdn, DomainName& domain, bool allowIDN
-      ) const throw (INVALID_DOMAIN_NAME)
+      ) const
       {
           // ! the last asterisk means only that last label has {0,n} chars with 0 enabling fqdn to end with dot
           //                                    (somelabel.)*(label )
@@ -923,7 +923,7 @@ namespace Fred
       }
       /// interface method implementation
       std::string makeEnumDomain(const std::string& number)
-        const throw (NOT_A_NUMBER)
+        const
       {
         std::string result;
         unsigned l = number.size();
@@ -1011,7 +1011,6 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-		throw (SQL_ERROR, ALREADY_EXISTS)
       {
         try
         {
@@ -1069,7 +1068,6 @@ namespace Fred
               const std::string& fqdn,
               int ex_period_min=12,
               int ex_period_max=120)
-        throw (SQL_ERROR, ALREADY_EXISTS)
 		{
 		try
 		{
@@ -1123,7 +1121,6 @@ namespace Fred
               int expiry=1209600,
               int minimum=7200,
               const std::string &ns_fqdn="localhost")
-		throw (SQL_ERROR, ALREADY_EXISTS, NOT_FOUND)
 		{
 			try
 			{
@@ -1193,7 +1190,6 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-		throw (SQL_ERROR, NOT_FOUND)
       {
         try
         {
@@ -1248,7 +1244,6 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-		throw (SQL_ERROR)
       {
         try
         {
@@ -1293,7 +1288,6 @@ namespace Fred
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
-          throw (SQL_ERROR,NOT_FOUND)
       {
           try
           {
@@ -1326,7 +1320,6 @@ namespace Fred
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
-          throw (SQL_ERROR,NOT_FOUND)
 	{
 		try
 		{
