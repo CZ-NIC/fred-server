@@ -73,18 +73,18 @@ NameserverDomainsSeq_var wrap_NameserversDomains(
     return result;
 }
 
-TechContactSeq_var wrap_TechContacts(const Fred::AutomaticKeysetManagement::TechContacts& tech_contacts)
+EmailAddressSeq_var wrap_EmailAddresses(const Fred::AutomaticKeysetManagement::EmailAddresses& email_addresses)
 {
-    TechContactSeq_var result(new TechContactSeq());
-    result->length(tech_contacts.size());
+    EmailAddressSeq_var result(new EmailAddressSeq());
+    result->length(email_addresses.size());
 
     CORBA::ULong i = 0;
-    for (Fred::AutomaticKeysetManagement::TechContacts::const_iterator tech_contact =
-             tech_contacts.begin();
-         tech_contact != tech_contacts.end();
-         ++tech_contact, ++i)
+    for (Fred::AutomaticKeysetManagement::EmailAddresses::const_iterator email_address =
+             email_addresses.begin();
+         email_address != email_addresses.end();
+         ++email_address, ++i)
     {
-        result[i] = Corba::wrap_string_to_corba_string(*tech_contact);
+        result[i] = Corba::wrap_string_to_corba_string(*email_address);
     }
 
     return result;
@@ -94,7 +94,7 @@ Fred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Nsset& nsset)
 {
     Fred::AutomaticKeysetManagement::Nsset result;
     for (CORBA::ULong i = 0; i < nsset.nameservers.length(); ++i) {
-        result.nameservers.push_back(Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
+        result.nameservers.insert(Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
     }
     return result;
 }
@@ -120,7 +120,7 @@ Fred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const DnsKeySeq& dns_key
 {
     Fred::AutomaticKeysetManagement::DnsKeys result;
     for (CORBA::ULong i = 0; i < dns_key_seq.length(); ++i) {
-        result.push_back(unwrap_DnsKey(dns_key_seq[i]));
+        result.insert(unwrap_DnsKey(dns_key_seq[i]));
     }
     return result;
 }
@@ -209,17 +209,17 @@ void Server_i::update_domain_automatic_keyset(
     {
         throw OBJECT_NOT_FOUND();
     }
-    catch (Fred::AutomaticKeysetManagement::NssetInvalid&)
+    catch (Fred::AutomaticKeysetManagement::NssetIsEmpty&)
     {
-        throw NSSET_INVALID();
+        throw NSSET_IS_EMPTY();
     }
-    catch (Fred::AutomaticKeysetManagement::KeysetInvalid&)
+    catch (Fred::AutomaticKeysetManagement::KeysetIsInvalid&)
     {
-        throw KEYSET_INVALID();
+        throw KEYSET_IS_INVALID();
     }
-    catch (Fred::AutomaticKeysetManagement::NssetDiffers&)
+    catch (Fred::AutomaticKeysetManagement::NssetIsDifferent&)
     {
-        throw NSSET_DIFFERS();
+        throw NSSET_IS_DIFFERENT();
     }
     catch (Fred::AutomaticKeysetManagement::DomainHasOtherKeyset&)
     {
@@ -233,10 +233,6 @@ void Server_i::update_domain_automatic_keyset(
     {
         throw KEYSET_STATE_POLICY_ERROR();
     }
-    catch (Fred::AutomaticKeysetManagement::SystemRegistratorNotFound&)
-    {
-        throw SYSTEM_REGISTRATOR_NOT_FOUND();
-    }
     catch (Fred::AutomaticKeysetManagement::ConfigurationError&)
     {
         throw CONFIGURATION_ERROR();
@@ -247,17 +243,17 @@ void Server_i::update_domain_automatic_keyset(
     }
 }
 
-TechContactSeq* Server_i::get_nsset_notification_emails_by_domain_id(
+EmailAddressSeq* Server_i::get_email_addresses_by_domain_id(
         ::CORBA::ULongLong _domain_id)
 {
     try
     {
         const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
 
-        const Fred::AutomaticKeysetManagement::TechContacts tech_contacts =
-                pimpl_->get_nsset_notification_emails_by_domain_id(domain_id);
+        const Fred::AutomaticKeysetManagement::EmailAddresses email_addresses =
+                pimpl_->get_email_addresses_by_domain_id(domain_id);
 
-        return wrap_TechContacts(tech_contacts)._retn();
+        return wrap_EmailAddresses(email_addresses)._retn();
     }
     catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
     {

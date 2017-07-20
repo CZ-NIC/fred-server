@@ -21,18 +21,6 @@
  *  implementation of automatic keyset management
  */
 
-#include <iostream>
-#include <string>
-
-#include "log/context.h"
-#include "log/logger.h"
-#include "src/corba/connection_releaser.h"
-#include "src/fredlib/db_settings.h"
-#include "src/fredlib/documents.h"
-#include "util/corba_wrapper.h"
-
-#include "setup_server.h"
-
 #include "cfg/config_handler.h"
 #include "cfg/handle_akmd_args.h"
 #include "cfg/handle_corbanameservice_args.h"
@@ -41,10 +29,20 @@
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_server_args.h"
+#include "log/context.h"
+#include "log/logger.h"
 #include "src/corba/automatic_keyset_management/server_i.hh"
+#include "src/corba/connection_releaser.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/documents.h"
+#include "util/corba_wrapper.h"
+#include "util/setup_server.h"
 
 #include <boost/assign/list_of.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <iostream>
+#include <string>
 
 const std::string server_name = "fred-akmd";
 

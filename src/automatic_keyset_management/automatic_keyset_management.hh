@@ -40,85 +40,85 @@ namespace AutomaticKeysetManagement {
  * Requested object could have been deleted or set into inappropriate state.
  */
 struct ObjectNotFound
-    : virtual std::exception
+    : std::exception
 {
     /**
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
         return "registry object with specified ID does not exist";
     }
 };
 
-struct NssetInvalid
-    : virtual std::exception
+struct NssetIsEmpty
+    : std::exception
 {
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
-        return "current_nsset invalid";
+        return "current_nsset is empty";
     }
 };
 
-struct KeysetInvalid
-    : virtual std::exception
+struct DomainNssetIsEmpty
+    : std::exception
 {
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
-        return "current_keyset invalid";
+        return "domain nsset is empty";
     }
 };
 
-struct NssetDiffers
-    : virtual std::exception
+struct KeysetIsInvalid
+    : std::exception
 {
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
+    {
+        return "current_keyset is invalid";
+    }
+};
+
+struct NssetIsDifferent
+    : std::exception
+{
+    const char* what() const throw ()
     {
         return "current_nsset differs";
     }
 };
 
 struct DomainHasOtherKeyset
-    : virtual std::exception
+    : std::exception
 {
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
         return "domain has other keyset cannot manage automatically";
     }
 };
 
 struct DomainStatePolicyError
-    : virtual std::exception
+    : std::exception
 {
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
         return "domain state prevents action";
     }
 };
 
 struct KeysetStatePolicyError
-    : virtual std::exception
+    : std::exception
 {
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
         return "keyset state prevents action";
     }
 };
 
-struct SystemRegistratorNotFound
-    : virtual std::exception
-{
-    virtual const char* what() const throw ()
-    {
-        return "system registrator not found";
-    }
-};
-
 struct ConfigurationError
-    : virtual std::exception
+    : std::exception
 {
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
         return "configuration error";
     }
@@ -129,19 +129,19 @@ struct ConfigurationError
  * Unexpected failure, requires maintenance.
  */
 struct InternalServerError
-    : virtual std::exception
+    : std::exception
 {
     /**
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    virtual const char* what() const throw ()
+    const char* what() const throw ()
     {
         return "internal server error";
     }
 };
 
-typedef std::vector<std::string> Nameservers;
+typedef std::set<std::string> Nameservers;
 
 struct Nsset {
     Nameservers nameservers;
@@ -169,35 +169,28 @@ struct DnsKey {
      * Comparison of instances converted to std::string
      * @param rhs is right hand side instance of the comparison
      */
-    bool operator==(const DnsKey& rhs) const
+    bool operator<(const DnsKey& rhs) const
     {
-        return to_string() == rhs.to_string();
+        return key < rhs.key;
     }
 
-    /**
-    * Dumps state of the instance into the string
-    * @return string with description of the instance state
-    */
-    std::string to_string() const
+    bool operator==(const DnsKey& rhs) const
     {
-        return Util::format_data_structure("DnsKey",
-        Util::vector_of<std::pair<std::string, std::string> >
-        (std::make_pair("flags", boost::lexical_cast<std::string>(flags)))
-        (std::make_pair("protocol", boost::lexical_cast<std::string>(protocol)))
-        (std::make_pair("alg", boost::lexical_cast<std::string>(alg)))
-        (std::make_pair("key", key))
-        );
+        return flags == rhs.flags &&
+               protocol == rhs.protocol &&
+               alg == rhs.alg &&
+               key == rhs.key;
     }
 };
 
-typedef std::vector<DnsKey> DnsKeys;
+typedef std::set<DnsKey> DnsKeys;
 
 struct Keyset {
     DnsKeys dns_keys;
 };
 
 struct Domain {
-    Domain(unsigned long long _id, std::string& _fqdn)
+    Domain(const unsigned long long _id, const std::string& _fqdn)
         : id(_id), fqdn(_fqdn)
     {
     }
@@ -209,18 +202,10 @@ struct Domain {
 typedef std::string Nameserver;
 typedef std::set<Domain> Domains;
 typedef std::map<Nameserver, Domains> NameserversDomains;
-typedef std::vector<std::string> TechContacts;
+typedef std::vector<std::string> EmailAddresses;
 
 class AutomaticKeysetManagementImpl
 {
-private:
-    std::string server_name_;
-    std::string automatically_managed_keyset_prefix_;
-    std::string automatically_managed_keyset_registrar_;
-    std::string automatically_managed_keyset_tech_contact_;
-    std::vector<std::string> automatically_managed_keyset_zones_;
-    bool disable_notifier_;
-
 public:
     AutomaticKeysetManagementImpl(
             const std::string& _server_name,
@@ -244,12 +229,19 @@ public:
 
     void update_domain_automatic_keyset(
             unsigned long long _domain_id,
-            Nsset _current_nsset,
-            Keyset _new_keyset);
+            const Nsset& _current_nsset,
+            const Keyset& _new_keyset);
 
-    TechContacts get_nsset_notification_emails_by_domain_id(
+    EmailAddresses get_email_addresses_by_domain_id(
             unsigned long long _domain_id);
 
+private:
+    std::string server_name_;
+    std::string automatically_managed_keyset_prefix_;
+    std::string automatically_managed_keyset_registrar_;
+    std::string automatically_managed_keyset_tech_contact_;
+    std::vector<std::string> automatically_managed_keyset_zones_;
+    bool disable_notifier_;
 };
 
 } // namespace Fred::AutomaticKeysetManagement
