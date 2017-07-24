@@ -328,7 +328,7 @@ bool is_valid(Fred::OperationContext& ctx, Keyset keyset) {
 
 } // namespace {anonymous}
 
-void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
+void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domain_impl(
         unsigned long long _domain_id,
         const Nsset& _current_nsset,
         const Keyset& _new_keyset)
@@ -400,8 +400,8 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
 
         if (domain_has_other_keyset)
         {
-            LOGGER(PACKAGE).debug("domain has other keyset");
-            throw Fred::AutomaticKeysetManagement::DomainHasOtherKeyset();
+            LOGGER(PACKAGE).debug("domain does not have automatically managed keyset");
+            throw Fred::AutomaticKeysetManagement::DomainDoesNotHaveAutomaticallyManagedKeyset();
         }
 
         const bool new_keyset_includes_only_special_delete_key = does_keyset_include_only_special_delete_key(_new_keyset);
@@ -688,6 +688,28 @@ void AutomaticKeysetManagementImpl::update_domain_automatic_keyset(
         LOGGER(PACKAGE).error("unknown error");
         throw;
     }
+}
+
+void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insecure_domain(
+        unsigned long long _domain_id,
+        const Nsset& _current_nsset,
+        const Keyset& _new_keyset)
+{
+    update_automatically_managed_keyset_of_domain_impl(_domain_id, _current_nsset, _new_keyset);
+}
+
+void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secure_domain(
+        unsigned long long _domain_id,
+        const Keyset& _new_keyset)
+{
+    update_automatically_managed_keyset_of_domain_impl(_domain_id, Nsset(), _new_keyset);
+}
+
+void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domain(
+        unsigned long long _domain_id,
+        const Keyset& _new_keyset)
+{
+    update_automatically_managed_keyset_of_domain_impl(_domain_id, Nsset(), _new_keyset);
 }
 
 EmailAddresses AutomaticKeysetManagementImpl::get_email_addresses_by_domain_id(

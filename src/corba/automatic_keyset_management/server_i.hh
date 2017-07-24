@@ -61,9 +61,17 @@ public:
 
     NameserverDomainsSeq* get_nameservers_with_automatically_managed_domains();
 
-    void update_domain_automatic_keyset(
+    void turn_on_automatic_keyset_management_on_insecure_domain(
             ::CORBA::ULongLong domain_id,
             const Registry::AutomaticKeysetManagement::Nsset& current_nsset,
+            const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
+
+    void turn_on_automatic_keyset_management_on_secure_domain(
+            ::CORBA::ULongLong domain_id,
+            const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
+
+    void update_automatically_managed_keyset_of_domain(
+            ::CORBA::ULongLong domain_id,
             const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
 
     EmailAddressSeq* get_email_addresses_by_domain_id(

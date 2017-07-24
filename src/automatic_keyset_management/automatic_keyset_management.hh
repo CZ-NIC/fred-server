@@ -88,12 +88,39 @@ struct NssetIsDifferent
     }
 };
 
-struct DomainHasOtherKeyset
+struct DomainHasKeyset
     : std::exception
 {
     const char* what() const throw ()
     {
-        return "domain has other keyset cannot manage automatically";
+        return "domain has keyset (domain is not insecure)";
+    }
+};
+
+struct DomainDoesNotHaveKeyset
+    : std::exception
+{
+    const char* what() const throw ()
+    {
+        return "domain does not have a keyset (domain is not secure)";
+    }
+};
+
+struct DomainAlreadyHasAutomaticallyManagedKeyset
+    : std::exception
+{
+    const char* what() const throw ()
+    {
+        return "domain already has an automatically managed keyset";
+    }
+};
+
+struct DomainDoesNotHaveAutomaticallyManagedKeyset
+    : std::exception
+{
+    const char* what() const throw ()
+    {
+        return "domain does not have an automatically managed keyset";
     }
 };
 
@@ -227,9 +254,22 @@ public:
 
     NameserversDomains get_nameservers_with_automatically_managed_domains();
 
-    void update_domain_automatic_keyset(
+    void update_automatically_managed_keyset_of_domain_impl(
             unsigned long long _domain_id,
             const Nsset& _current_nsset,
+            const Keyset& _new_keyset);
+
+    void turn_on_automatic_keyset_management_on_insecure_domain(
+            unsigned long long _domain_id,
+            const Nsset& _current_nsset,
+            const Keyset& _new_keyset);
+
+    void turn_on_automatic_keyset_management_on_secure_domain(
+            unsigned long long _domain_id,
+            const Keyset& _new_keyset);
+
+    void update_automatically_managed_keyset_of_domain(
+            unsigned long long _domain_id,
             const Keyset& _new_keyset);
 
     EmailAddresses get_email_addresses_by_domain_id(

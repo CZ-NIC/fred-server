@@ -189,7 +189,7 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domai
     }
 }
 
-void Server_i::update_domain_automatic_keyset(
+void Server_i::turn_on_automatic_keyset_management_on_insecure_domain(
         ::CORBA::ULongLong _domain_id,
         const Registry::AutomaticKeysetManagement::Nsset& _current_nsset,
         const Registry::AutomaticKeysetManagement::Keyset& _new_keyset)
@@ -200,7 +200,7 @@ void Server_i::update_domain_automatic_keyset(
         Fred::AutomaticKeysetManagement::Nsset current_nsset = unwrap_Nsset(_current_nsset);
         Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
 
-        pimpl_->update_domain_automatic_keyset(
+        pimpl_->turn_on_automatic_keyset_management_on_insecure_domain(
                 domain_id,
                 current_nsset,
                 new_keyset);
@@ -221,9 +221,95 @@ void Server_i::update_domain_automatic_keyset(
     {
         throw NSSET_IS_DIFFERENT();
     }
-    catch (Fred::AutomaticKeysetManagement::DomainHasOtherKeyset&)
+    catch (Fred::AutomaticKeysetManagement::DomainHasKeyset&)
     {
-        throw DOMAIN_HAS_OTHER_KEYSET();
+        throw DOMAIN_HAS_KEYSET();
+    }
+    catch (Fred::AutomaticKeysetManagement::DomainStatePolicyError&)
+    {
+        throw DOMAIN_STATE_POLICY_ERROR();
+    }
+    catch (Fred::AutomaticKeysetManagement::KeysetStatePolicyError&)
+    {
+        throw KEYSET_STATE_POLICY_ERROR();
+    }
+    catch (Fred::AutomaticKeysetManagement::ConfigurationError&)
+    {
+        throw CONFIGURATION_ERROR();
+    }
+    catch (...)
+    {
+        throw INTERNAL_SERVER_ERROR();
+    }
+}
+
+void Server_i::turn_on_automatic_keyset_management_on_secure_domain(
+        ::CORBA::ULongLong _domain_id,
+        const Registry::AutomaticKeysetManagement::Keyset& _new_keyset)
+{
+    try
+    {
+        const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
+        Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
+
+        pimpl_->turn_on_automatic_keyset_management_on_secure_domain(
+                domain_id,
+                new_keyset);
+    }
+    catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
+    {
+        throw OBJECT_NOT_FOUND();
+    }
+    catch (Fred::AutomaticKeysetManagement::KeysetIsInvalid&)
+    {
+        throw KEYSET_IS_INVALID();
+    }
+    catch (Fred::AutomaticKeysetManagement::DomainDoesNotHaveKeyset&)
+    {
+        throw DOMAIN_DOES_NOT_HAVE_KEYSET();
+    }
+    catch (Fred::AutomaticKeysetManagement::DomainAlreadyHasAutomaticallyManagedKeyset&)
+    {
+        throw DOMAIN_ALREADY_HAS_AUTOMATICALLY_MANAGED_KEYSET();
+    }
+    catch (Fred::AutomaticKeysetManagement::DomainStatePolicyError&)
+    {
+        throw DOMAIN_STATE_POLICY_ERROR();
+    }
+    catch (Fred::AutomaticKeysetManagement::ConfigurationError&)
+    {
+        throw CONFIGURATION_ERROR();
+    }
+    catch (...)
+    {
+        throw INTERNAL_SERVER_ERROR();
+    }
+}
+
+void Server_i::update_automatically_managed_keyset_of_domain(
+        ::CORBA::ULongLong _domain_id,
+        const Registry::AutomaticKeysetManagement::Keyset& _new_keyset)
+{
+    try
+    {
+        const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
+        Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
+
+        pimpl_->update_automatically_managed_keyset_of_domain(
+                domain_id,
+                new_keyset);
+    }
+    catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
+    {
+        throw OBJECT_NOT_FOUND();
+    }
+    catch (Fred::AutomaticKeysetManagement::KeysetIsInvalid&)
+    {
+        throw KEYSET_IS_INVALID();
+    }
+    catch (Fred::AutomaticKeysetManagement::DomainDoesNotHaveAutomaticallyManagedKeyset&)
+    {
+        throw DOMAIN_DOES_NOT_HAVE_AUTOMATICALLY_MANAGED_KEYSET();
     }
     catch (Fred::AutomaticKeysetManagement::DomainStatePolicyError&)
     {
