@@ -2724,8 +2724,6 @@ tests_test_server_SOURCES = \
 		tests/deprecated/test_locking_trigger.cc \
 		tests/util/test_nullable.cc \
 		tests/util/test_optional.cc \
-		src/corba/epp_corba_client_impl.cc \
-		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
@@ -2866,8 +2864,6 @@ tests_test_blocking_SOURCES = \
 		src/corba/admin/filter_impl.h \
 		tests/setup/tests_common.cc \
 		tests/setup/tests_common.h \
-		src/corba/epp_corba_client_impl.cc \
-		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
