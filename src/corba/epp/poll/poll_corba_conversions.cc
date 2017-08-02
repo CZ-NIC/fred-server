@@ -220,6 +220,7 @@ PollMessage wrap_tech_check_event_into_poll_message(const Epp::Poll::TechCheckEv
     {
         hdm.fqdns[i] = Fred::Corba::wrap_string_to_corba_string(_src.fqdns[i]);
     }
+    hdm.tests.length(_src.tests.size());
     for (std::size_t i = 0; i < _src.tests.size(); ++i)
     {
         hdm.tests[i].testname = Fred::Corba::wrap_string_to_corba_string(_src.tests[i].testname);
