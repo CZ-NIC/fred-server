@@ -60,7 +60,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleAkmdArgs))
 ;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     FakedArgs fa; // producing faked args with unrecognized ones
     try
@@ -85,24 +85,23 @@ int main(int argc, char *argv[])
                         logger_client),
                 "AutomaticKeysetManagement");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
-
     }
-    catch(const CORBA::TRANSIENT&)
+    catch (const CORBA::TRANSIENT&)
     {
         std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const CORBA::SystemException& ex)
+    catch (const CORBA::SystemException& ex)
     {
         std::cerr << "Caught a CORBA::" << ex._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const CORBA::Exception& ex)
+    catch (const CORBA::Exception& ex)
     {
         std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const omniORB::fatalException& fe)
+    catch (const omniORB::fatalException& fe)
     {
         std::cerr << "Caught omniORB::fatalException:" << std::endl;
         std::cerr << "  file: " << fe.file() << std::endl;
@@ -110,16 +109,16 @@ int main(int argc, char *argv[])
         std::cerr << "  mesg: " << fe.errmsg() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const ReturnFromMain&)
+    catch (const ReturnFromMain&)
     {
         return EXIT_SUCCESS;
     }
-    catch(std::exception& ex)
+    catch (std::exception& ex)
     {
         std::cerr << "Error: " << ex.what() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(...)
+    catch (...)
     {
         std::cerr << "Unknown Error" << std::endl;
         return EXIT_FAILURE;

@@ -26,115 +26,13 @@
 #include "src/corba/automatic_keyset_management/server_i.hh"
 
 #include "src/automatic_keyset_management/automatic_keyset_management.hh"
+#include "src/corba/automatic_keyset_management/corba_conversions.cc"
 #include "src/corba/AutomaticKeysetManagement.hh"
-#include "src/corba/util/corba_conversions_string.h"
-#include "src/corba/util/corba_conversions_int.h"
 
 #include <iostream>
 
 namespace Registry {
 namespace AutomaticKeysetManagement {
-
-namespace {
-
-DomainSeq_var wrap_Domains(const Fred::AutomaticKeysetManagement::Domains& domains)
-{
-    DomainSeq_var result(new DomainSeq());
-    result->length(domains.size());
-
-    CORBA::ULong i = 0;
-    for (Fred::AutomaticKeysetManagement::Domains::const_iterator domain = domains.begin();
-         domain != domains.end();
-         ++domain, ++i)
-    {
-        Fred::Corba::wrap_int(domain->id, result[i].id);
-        result[i].fqdn = Corba::wrap_string_to_corba_string(domain->fqdn);
-    }
-
-    return result;
-}
-
-NameserverDomainsSeq_var wrap_NameserversDomains(
-        const Fred::AutomaticKeysetManagement::NameserversDomains& nameservers_domains)
-{
-    NameserverDomainsSeq_var result(new NameserverDomainsSeq());
-    result->length(nameservers_domains.size());
-
-    CORBA::ULong i = 0;
-    for (Fred::AutomaticKeysetManagement::NameserversDomains::const_iterator nameserver_domains =
-             nameservers_domains.begin();
-         nameserver_domains != nameservers_domains.end();
-         ++nameserver_domains, ++i)
-    {
-        result[i].nameserver = Corba::wrap_string_to_corba_string(nameserver_domains->first);
-        result[i].nameserver_domains = wrap_Domains(nameserver_domains->second);
-    }
-
-    return result;
-}
-
-EmailAddressSeq_var wrap_EmailAddresses(const Fred::AutomaticKeysetManagement::EmailAddresses& email_addresses)
-{
-    EmailAddressSeq_var result(new EmailAddressSeq());
-    result->length(email_addresses.size());
-
-    CORBA::ULong i = 0;
-    for (Fred::AutomaticKeysetManagement::EmailAddresses::const_iterator email_address =
-             email_addresses.begin();
-         email_address != email_addresses.end();
-         ++email_address, ++i)
-    {
-        result[i] = Corba::wrap_string_to_corba_string(*email_address);
-    }
-
-    return result;
-}
-
-Fred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Nsset& nsset)
-{
-    Fred::AutomaticKeysetManagement::Nsset result;
-    for (CORBA::ULong i = 0; i < nsset.nameservers.length(); ++i)
-    {
-        result.nameservers.insert(Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
-    }
-    return result;
-}
-
-Fred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const DnsKey& dns_key)
-{
-    unsigned short flags;
-    Fred::Corba::unwrap_int(dns_key.flags, flags);
-    unsigned short protocol;
-    Fred::Corba::unwrap_int(dns_key.protocol, protocol);
-    unsigned short alg;
-    Fred::Corba::unwrap_int(dns_key.alg, alg);
-    const std::string key = Corba::unwrap_string(dns_key.public_key);
-
-    return Fred::AutomaticKeysetManagement::DnsKey(
-            flags,
-            protocol,
-            alg,
-            key);
-}
-
-Fred::AutomaticKeysetManagement::DnsKeys unwrap_DnsKeys(const DnsKeySeq& dns_key_seq)
-{
-    Fred::AutomaticKeysetManagement::DnsKeys result;
-    for (CORBA::ULong i = 0; i < dns_key_seq.length(); ++i)
-    {
-        result.insert(unwrap_DnsKey(dns_key_seq[i]));
-    }
-    return result;
-}
-
-Fred::AutomaticKeysetManagement::Keyset unwrap_Keyset(const Keyset& keyset)
-{
-    Fred::AutomaticKeysetManagement::Keyset result;
-    result.dns_keys = unwrap_DnsKeys(keyset.dns_keys);
-    return result;
-}
-
-} // namespace {anonymous}
 
 Server_i::Server_i(
         const std::string& _server_name,
@@ -170,7 +68,7 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_insecure_automatically_mana
         const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
                 impl_->get_nameservers_with_insecure_automatically_managed_domain_candidates();
 
-        return wrap_NameserversDomains(nameservers_domains)._retn();
+        return Fred::Corba::AutomaticKeysetManagement::wrap_NameserversDomains(nameservers_domains)._retn();
     }
     catch (...)
     {
@@ -185,7 +83,7 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_secure_automatically_manage
         const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
                 impl_->get_nameservers_with_secure_automatically_managed_domain_candidates();
 
-        return wrap_NameserversDomains(nameservers_domains)._retn();
+        return Fred::Corba::AutomaticKeysetManagement::wrap_NameserversDomains(nameservers_domains)._retn();
     }
     catch (...)
     {
@@ -200,7 +98,7 @@ NameserverDomainsSeq* Server_i::get_nameservers_with_automatically_managed_domai
         const Fred::AutomaticKeysetManagement::NameserversDomains nameservers_domains =
                 impl_->get_nameservers_with_automatically_managed_domains();
 
-        return wrap_NameserversDomains(nameservers_domains)._retn();
+        return Fred::Corba::AutomaticKeysetManagement::wrap_NameserversDomains(nameservers_domains)._retn();
     }
     catch (...)
     {
@@ -216,8 +114,8 @@ void Server_i::turn_on_automatic_keyset_management_on_insecure_domain(
     try
     {
         const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
-        Fred::AutomaticKeysetManagement::Nsset current_nsset = unwrap_Nsset(_current_nsset);
-        Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
+        Fred::AutomaticKeysetManagement::Nsset current_nsset = Fred::Corba::AutomaticKeysetManagement::unwrap_Nsset(_current_nsset);
+        Fred::AutomaticKeysetManagement::Keyset new_keyset = Fred::Corba::AutomaticKeysetManagement::unwrap_Keyset(_new_keyset);
 
         impl_->turn_on_automatic_keyset_management_on_insecure_domain(
                 domain_id,
@@ -269,7 +167,7 @@ void Server_i::turn_on_automatic_keyset_management_on_secure_domain(
     try
     {
         const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
-        Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
+        Fred::AutomaticKeysetManagement::Keyset new_keyset = Fred::Corba::AutomaticKeysetManagement::unwrap_Keyset(_new_keyset);
 
         impl_->turn_on_automatic_keyset_management_on_secure_domain(
                 domain_id,
@@ -312,7 +210,7 @@ void Server_i::update_automatically_managed_keyset_of_domain(
     try
     {
         const unsigned long long domain_id = Fred::Corba::wrap_int<unsigned long long>(_domain_id);
-        Fred::AutomaticKeysetManagement::Keyset new_keyset = unwrap_Keyset(_new_keyset);
+        Fred::AutomaticKeysetManagement::Keyset new_keyset = Fred::Corba::AutomaticKeysetManagement::unwrap_Keyset(_new_keyset);
 
         impl_->update_automatically_managed_keyset_of_domain(
                 domain_id,
@@ -358,7 +256,7 @@ EmailAddressSeq* Server_i::get_email_addresses_by_domain_id(
         const Fred::AutomaticKeysetManagement::EmailAddresses email_addresses =
                 impl_->get_email_addresses_by_domain_id(domain_id);
 
-        return wrap_EmailAddresses(email_addresses)._retn();
+        return Fred::Corba::AutomaticKeysetManagement::wrap_EmailAddresses(email_addresses)._retn();
     }
     catch (Fred::AutomaticKeysetManagement::ObjectNotFound&)
     {

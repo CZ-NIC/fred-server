@@ -24,8 +24,8 @@
 #ifndef HANDLE_AKMD_ARGS_H_1DB8D08DB999477AA07B980E2C929C76
 #define HANDLE_AKMD_ARGS_H_1DB8D08DB999477AA07B980E2C929C76
 
-#include "faked_args.h"
-#include "handle_args.h"
+#include "util/cfg/faked_args.h"
+#include "util/cfg/handle_args.h"
 
 #include <boost/program_options.hpp>
 #include <boost/shared_ptr.hpp>
