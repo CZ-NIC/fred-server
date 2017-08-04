@@ -107,3 +107,4 @@ src/nbproject/
 /.settings
 /.autotools
 doc/html
+compile_commands.json
