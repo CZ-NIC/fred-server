@@ -26,7 +26,7 @@
 #include <ctype.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/regex.hpp>
 
 #include "model_zone.h"
@@ -137,7 +137,7 @@ namespace Fred
                    , virtual public  Zone
                    , private ModelZoneSoa
     {
-        typedef std::vector<boost::shared_ptr<ZoneNsImpl> > ZoneNsList;
+        typedef std::vector<std::shared_ptr<ZoneNsImpl> > ZoneNsList;
         typedef ZoneNsList::iterator ZoneNsListIter;
         ZoneNsList zone_ns_list; /// zone ns records
 
@@ -230,7 +230,7 @@ namespace Fred
       /// Create new ZoneNs record
       virtual ZoneNs* newZoneNs()
       {
-          boost::shared_ptr<ZoneNsImpl> new_ZoneNs ( new ZoneNsImpl());
+          std::shared_ptr<ZoneNsImpl> new_ZoneNs ( new ZoneNsImpl());
           zone_ns_list.push_back(new_ZoneNs);
           return new_ZoneNs.get();
       }
@@ -418,7 +418,7 @@ namespace Fred
                   const std::string& fqdn,
                   const std::string& addrs)
       {
-        zone_ns_list.push_back(boost::shared_ptr<ZoneNsImpl>(new ZoneNsImpl(_id,_zoneid,fqdn,addrs)));
+        zone_ns_list.push_back(std::shared_ptr<ZoneNsImpl>(new ZoneNsImpl(_id,_zoneid,fqdn,addrs)));
       }
       bool hasId(TID _id) const
       {
@@ -1471,10 +1471,10 @@ namespace Fred
       virtual std::string utf8_to_punycode(const std::string& fqdn) const
       {
           char *p = 0;
-          boost::shared_ptr<char> release_p;
+          std::shared_ptr<char> release_p;
 
           bool convert_result = (idna_to_ascii_8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS);
-          release_p = boost::shared_ptr<char>(p, free);
+          release_p = std::shared_ptr<char>(p, free);
 
           if(convert_result) {
               std::string result( p );
@@ -1487,10 +1487,10 @@ namespace Fred
       virtual std::string punycode_to_utf8(const std::string& fqdn) const
       {
           char *p = 0;
-          boost::shared_ptr<char> release_p;
+          std::shared_ptr<char> release_p;
 
           bool convert_result = (idna_to_unicode_8z8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS);
-          release_p = boost::shared_ptr<char>(p, free);
+          release_p = std::shared_ptr<char>(p, free);
 
           if(convert_result) {
               std::string result( p );

@@ -163,9 +163,9 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
     }
 
 
-    boost::shared_ptr<po::options_description> HandleAdminDatabaseArgs::get_options_description() {
+    std::shared_ptr<po::options_description> HandleAdminDatabaseArgs::get_options_description() {
 
-         boost::shared_ptr<po::options_description> db_opts(
+         std::shared_ptr<po::options_description> db_opts(
              new po::options_description(
                  std::string("Admin database connection configuration"))
          );

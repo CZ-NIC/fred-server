@@ -38,14 +38,14 @@ class ContactIdentificationRequestManagerPtr
 {
 private:
     DBSharedPtr nodb;
-    mutable boost::shared_ptr<Fred::Mailer::Manager> mailer_manager_;
+    mutable std::shared_ptr<Fred::Mailer::Manager> mailer_manager_;
     mutable std::unique_ptr<Fred::Manager> registry_manager_;
     mutable std::unique_ptr<Fred::Document::Manager> doc_manager_;
     mutable std::unique_ptr<Fred::PublicRequest::Manager> request_manager_;
 
 
 public:
-    ContactIdentificationRequestManagerPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer_manager)
+    ContactIdentificationRequestManagerPtr(std::shared_ptr<Fred::Mailer::Manager> _mailer_manager)
     : mailer_manager_(_mailer_manager)
     {
         /* get config temporary pointer */
@@ -113,7 +113,7 @@ private:
 
 
 public:
-    ContactIdentificationRequestPtr(boost::shared_ptr<Fred::Mailer::Manager> _mailer
+    ContactIdentificationRequestPtr(std::shared_ptr<Fred::Mailer::Manager> _mailer
             , const Fred::PublicRequest::Type &_type)
         : request_manager_(_mailer)
         , type_(_type)

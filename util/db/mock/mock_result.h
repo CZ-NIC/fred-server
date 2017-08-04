@@ -29,7 +29,7 @@
 #include <cstdlib>
 #include <string>
 #include <iterator>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "../row.h"
 #include "../value.h"
@@ -47,7 +47,7 @@ struct DummyResult //PGresult replacement
  */
 class MockResult {
 protected:
-  boost::shared_ptr<DummyResult>  psql_result_; /**< wrapped result structure from lipq library */
+  std::shared_ptr<DummyResult>  psql_result_; /**< wrapped result structure from lipq library */
 
 
 public:

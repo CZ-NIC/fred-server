@@ -45,10 +45,10 @@ public:
     std::size_t thread_number ;//number of threads in test
     std::size_t thread_group_divisor;//
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> thread_opts(
+        std::shared_ptr<boost::program_options::options_description> thread_opts(
                 new boost::program_options::options_description(
                         std::string("Thread group configuration")));
         thread_opts->add_options()

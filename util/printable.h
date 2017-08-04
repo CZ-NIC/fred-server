@@ -33,7 +33,7 @@
 #include <cassert>
 #include <iterator>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
 

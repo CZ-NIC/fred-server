@@ -30,7 +30,6 @@
 
 #include "src/corba/mailer_manager.h"
 
-#include <boost/make_shared.hpp>
 #include <boost/foreach.hpp>
 #include <boost/assign/list_of.hpp>
 
@@ -486,7 +485,7 @@ struct has_domain_big_update : has_domain {
 
 BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
 {
-    boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
+    std::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
     MockMailerManager& mocked_mailer_data_access = *reinterpret_cast<MockMailerManager*>( mocked_mailer.get() );
 
     BOOST_CHECK_EQUAL(
@@ -583,7 +582,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_update_domain, has_domain_big_update)
 
 BOOST_FIXTURE_TEST_CASE(test_process_empty_queue, has_autocomitting_ctx)
 {
-    boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
+    std::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
     MockMailerManager& mocked_mailer_data_access = *reinterpret_cast<MockMailerManager*>( mocked_mailer.get() );
 
     BOOST_CHECK_EQUAL(
@@ -640,7 +639,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_request_parallel_notification_request_acces
 
     ctx.commit_transaction();
 
-    boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
+    std::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockMailerManager);
 
     Fred::OperationContextCreator evil_uncomitted_parallel_transaction;
     Notification::process_one_notification_request(evil_uncomitted_parallel_transaction, mocked_mailer);
@@ -681,7 +680,7 @@ BOOST_FIXTURE_TEST_CASE(test_process_request_invalid_notify_email, has_domain_bi
         "Svtrid-007"
     );
 
-    boost::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockThrowingMailerManager);
+    std::shared_ptr<Fred::Mailer::Manager> mocked_mailer(new MockThrowingMailerManager);
 
     BOOST_CHECK_THROW(
         Notification::process_one_notification_request(ctx, mocked_mailer),

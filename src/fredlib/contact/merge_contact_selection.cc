@@ -29,7 +29,7 @@
 #include <stdexcept>
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/regex.hpp>
 
 #include "src/fredlib/contact/merge_contact_selection.h"
@@ -51,7 +51,7 @@ namespace Fred
         for(std::vector<ContactSelectionFilterType>::const_iterator ci = filter.begin()
                 ; ci !=  filter.end(); ++ci)
         {
-            boost::shared_ptr<ContactSelectionFilterBase> filter = ContactSelectionFilterFactory::instance_ref().create_sh_ptr(*ci);
+            std::shared_ptr<ContactSelectionFilterBase> filter = ContactSelectionFilterFactory::instance_ref().create_sh_ptr(*ci);
             ff_.push_back(std::make_pair(*ci, filter));
         }
     }
@@ -64,7 +64,7 @@ namespace Fred
             {
                 BOOST_THROW_EXCEPTION(NoContactHandles());
             }
-            for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::iterator f = ff_.begin(); f != ff_.end(); ++f)
+            for(std::vector<std::pair<std::string, std::shared_ptr<ContactSelectionFilterBase> > >::iterator f = ff_.begin(); f != ff_.end(); ++f)
             {
                 std::vector<std::string> current_filter_result;
                 if((f->second).get() != 0) current_filter_result = (f->second).get()->operator()(ctx,contact_handle_);
@@ -98,7 +98,7 @@ namespace Fred
 
         data.push_back((std::make_pair("contact_handle",Util::format_container(contact_handle_))));
         std::ostringstream os;
-        for(std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > >::const_iterator ci = ff_.begin()
+        for(std::vector<std::pair<std::string, std::shared_ptr<ContactSelectionFilterBase> > >::const_iterator ci = ff_.begin()
                 ; ci != ff_.end() ; ++ci) os << " " << ci->first;
         data.push_back((std::make_pair("selection filters",os.str())));
         return Util::format_operation_state("MergeContactSelection",data);

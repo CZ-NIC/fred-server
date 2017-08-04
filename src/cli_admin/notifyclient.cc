@@ -856,7 +856,7 @@ void notify_letters_optys_send_impl(
           , nameservice_host_port
           , nameservice_context);//NS_CONTEXT_NAME
     FileManagerClient fm_client(corba_client.getNS());
-    boost::shared_ptr<Fred::File::Manager> file_manager(
+    std::shared_ptr<Fred::File::Manager> file_manager(
           Fred::File::Manager::create(&fm_client));
 
     Fred::Messages::ManagerPtr messages_manager
@@ -1044,7 +1044,7 @@ static std::string join_map(const std::map<std::string, std::string>& _map) {
     return boost::algorithm::join(key_value_pairs, " ");
 }
 
-void send_object_event_notification_emails_impl(boost::shared_ptr<Fred::Mailer::Manager> _mailer) {
+void send_object_event_notification_emails_impl(std::shared_ptr<Fred::Mailer::Manager> _mailer) {
 
     while(true) {
         Fred::OperationContextCreator ctx;

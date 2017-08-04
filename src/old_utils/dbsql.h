@@ -8,7 +8,6 @@
 #include "src/fredlib/types.h"
 #include <map>
 #include <cstdlib>
-#include <boost/shared_ptr.hpp>
 #include <memory>
 #include <stdexcept>
 
@@ -406,7 +405,7 @@ private:
 
 
 //to be able to do something, when DB* goes out of scope
-typedef boost::shared_ptr<DB> DBSharedPtr;
+typedef std::shared_ptr<DB> DBSharedPtr;
 template < typename DELETER >
 class DBPtrT
 {

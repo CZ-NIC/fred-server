@@ -28,7 +28,6 @@
 #include "util/cfg/handle_args.h"
 
 #include <boost/program_options.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <exception>
 #include <iostream>
@@ -48,10 +47,10 @@ struct HandleAkmdArgs : public HandleArgs
     bool disable_notifier;
     bool enable_request_logger;
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+        std::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(std::string("AKMD interface configuration")));
         opts_descs->add_options()
                 ("akmd.automatically_managed_keyset_prefix",

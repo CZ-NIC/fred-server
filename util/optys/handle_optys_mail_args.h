@@ -55,10 +55,10 @@ public:
 
     const std::map<std::string, std::string> get_map() { return optys_config; };
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+        std::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
                         std::string("Optys client upload configuration")
                         , 140 //width of help print in cols
@@ -124,10 +124,10 @@ public:
 
     const std::map<std::string, std::string> get_map() { return optys_config; };
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+        std::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
                         std::string("Optys client download configuration, using ssh with public key authentication")
                         , 140 //width of help print in cols

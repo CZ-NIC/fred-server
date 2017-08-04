@@ -30,7 +30,6 @@
 #include <map>
 #include <memory>
 #include <boost/utility.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -60,7 +59,7 @@ class ObjType : boost::noncopyable //type for object
     ObjData data_;
     std::size_t id_;
 public:
-	typedef typename boost::shared_ptr<ObjType<OBJECT_META_INFO> >ObjPtr;
+	typedef typename std::shared_ptr<ObjType<OBJECT_META_INFO> >ObjPtr;
 	typedef  OBJECT_META_INFO ObjMetaInfo;
 
     ~ObjType(){}//nv public dtor

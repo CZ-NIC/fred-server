@@ -536,7 +536,7 @@ struct Locking_public_request_fixture
     std::vector<Fred::InfoContactOutput> info_contact_history;
     std::unique_ptr<Fred::Manager> registry_manager;
     std::unique_ptr<Fred::Document::Manager> doc_manager;
-    boost::shared_ptr<Fred::Mailer::Manager> mailer_manager;
+    std::shared_ptr<Fred::Mailer::Manager> mailer_manager;
     std::unique_ptr<Fred::PublicRequest::Manager> request_manager;
     unsigned long long preq_id;
 

@@ -32,7 +32,7 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <stdexcept>
 #include <string>
@@ -170,7 +170,7 @@ public:
         ObjectType::Enum object_type,
         const std::string& object_handle,
         const Optional<unsigned long long>& log_request_id,
-        boost::shared_ptr<Fred::Mailer::Manager> manager);
+        std::shared_ptr<Fred::Mailer::Manager> manager);
 
     unsigned long long create_authinfo_request_non_registry_email(
         ObjectType::Enum object_type,
@@ -189,10 +189,10 @@ public:
     Buffer create_public_request_pdf(
         unsigned long long public_request_id,
         Language::Enum lang,
-        boost::shared_ptr<Fred::Document::Manager> manager);
+        std::shared_ptr<Fred::Document::Manager> manager);
 
-    static boost::shared_ptr<Fred::Mailer::Manager> get_default_mailer_manager();
-    static boost::shared_ptr<Fred::Document::Manager> get_default_document_manager();
+    static std::shared_ptr<Fred::Mailer::Manager> get_default_mailer_manager();
+    static std::shared_ptr<Fred::Document::Manager> get_default_document_manager();
 private:
     const std::string server_name_;
 };

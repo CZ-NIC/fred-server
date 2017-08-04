@@ -49,10 +49,10 @@ public:
     unsigned log_syslog_facility;
     bool log_config_dump;
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("Logging configuration")));
         cfg_opts->add_options()
@@ -97,7 +97,7 @@ class HandleLoggingArgsGrp : public HandleGrpArgs
 {
 public:
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
         return HandleLoggingArgs::get_options_description();

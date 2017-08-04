@@ -229,7 +229,7 @@ template <class HELP> CfgArgGroups* CfgArgGroups::init(const HandlerPtrGrid& hpg
             {
                 try
                 {
-                    boost::shared_ptr<
+                    std::shared_ptr<
                         boost::program_options::options_description> options
                         = (*j)->get_options_description();//check if there are some options
                     hga->get_po_description().push_back(options);

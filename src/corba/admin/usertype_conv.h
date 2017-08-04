@@ -33,7 +33,7 @@ inline std::unique_ptr<Fred::Logger::RequestProperties> convert_properties(const
 	return ret_ptr;
 }
 
-inline ccReg::RequestPropertiesDetail convert_properties_detail_d2c(boost::shared_ptr<Fred::Logger::RequestPropertiesDetail> props)
+inline ccReg::RequestPropertiesDetail convert_properties_detail_d2c(std::shared_ptr<Fred::Logger::RequestPropertiesDetail> props)
 {
 
     ccReg::RequestPropertiesDetail res;
@@ -51,7 +51,7 @@ inline ccReg::RequestPropertiesDetail convert_properties_detail_d2c(boost::share
 }
 
 
-inline ccReg::ObjectReferences convert_obj_references_d2c(boost::shared_ptr<Fred::Logger::ObjectReferences> refs)
+inline ccReg::ObjectReferences convert_obj_references_d2c(std::shared_ptr<Fred::Logger::ObjectReferences> refs)
 {
         ccReg::ObjectReferences ret;
 

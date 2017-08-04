@@ -31,7 +31,7 @@
 #include <map>
 #include <set>
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace Notification {
 
@@ -66,7 +66,7 @@ struct FailedToLockRequest { };
  * @throws FailedToSendMail
  * @throws FailedToLockRequest in case other transaction is holding lock
  */
-bool process_one_notification_request(Fred::OperationContext& _ctx, boost::shared_ptr<Fred::Mailer::Manager> _mailer);
+bool process_one_notification_request(Fred::OperationContext& _ctx, std::shared_ptr<Fred::Mailer::Manager> _mailer);
 
 }
 #endif

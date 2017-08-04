@@ -129,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
             Registry::PublicRequestImpl::ConfirmedBy::letter,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
     ctx.commit_transaction();
-    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
+    std::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     const std::string buffer_value = pr.create_public_request_pdf(
             block_transfer_post,
             Registry::PublicRequestImpl::Language::en,
@@ -140,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
 BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
 {
     Fred::OperationContextCreator ctx;
-    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
+    std::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 123,
@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmedBy::email,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
-    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
+    std::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 block_transfer_email,

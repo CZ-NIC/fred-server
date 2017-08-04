@@ -59,10 +59,10 @@ public:
     std::string disable_epp_notifier_cltrid_prefix;
     std::string registry_timezone;
 
-    boost::shared_ptr<po::options_description>
+    std::shared_ptr<po::options_description>
     get_options_description()
     {
-        boost::shared_ptr<po::options_description> opts_descs(
+        std::shared_ptr<po::options_description> opts_descs(
                 new po::options_description(std::string("Registry configuration")));
         opts_descs->add_options()
                 ("registry.restricted_handles",
@@ -144,7 +144,7 @@ class HandleRegistryArgsGrp : public HandleGrpArgs
 {
 public:
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
         return HandleRegistryArgs::get_options_description();

@@ -29,7 +29,6 @@
 #include <map>
 #include <memory>
 #include <boost/utility.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -266,7 +265,7 @@ public:
     EnumList getMessageTypeList();
 };
 
-typedef boost::shared_ptr<Manager> ManagerPtr;
+typedef std::shared_ptr<Manager> ManagerPtr;
 ManagerPtr create_manager();
 
 

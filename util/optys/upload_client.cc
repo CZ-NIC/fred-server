@@ -31,7 +31,7 @@
 #include <iomanip>
 #include <sys/stat.h>
 #include <errno.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/format.hpp>
 #include <boost/utility.hpp>
 #include <boost/filesystem.hpp>
@@ -68,11 +68,11 @@
      */
     class ScpWriteSession
     {
-        boost::shared_ptr<ssh_session_struct>  ssh_session_;
-        boost::shared_ptr<ssh_scp_struct>  scp_session_;
+        std::shared_ptr<ssh_session_struct>  ssh_session_;
+        std::shared_ptr<ssh_scp_struct>  scp_session_;
 
     public:
-        ScpWriteSession(boost::shared_ptr<ssh_session_struct>  ssh_session)
+        ScpWriteSession(std::shared_ptr<ssh_session_struct>  ssh_session)
         : ssh_session_(ssh_session)
         , scp_session_(ssh_scp_new(ssh_session.get(), SSH_SCP_WRITE, "."), ScpSessionDeleter())
         {
@@ -147,13 +147,13 @@
      */
     class SshSession
     {
-        boost::shared_ptr<ssh_session_struct>  ssh_session_;
+        std::shared_ptr<ssh_session_struct>  ssh_session_;
 
         void check_ssh_known_hosts(ssh_session session)
         {
             int state = ssh_is_server_known(session);
 
-            boost::shared_ptr<unsigned char> hash_ptr;
+            std::shared_ptr<unsigned char> hash_ptr;
             size_t hlen = 0;
             {
                 unsigned char *hash = NULL;
@@ -188,7 +188,7 @@
                     throw std::runtime_error("unable to get buffer with the hash of the public key");
                 }
 
-                hash_ptr = boost::shared_ptr<unsigned char>(hash,SshPubKeyHashDeleter());
+                hash_ptr = std::shared_ptr<unsigned char>(hash,SshPubKeyHashDeleter());
             }
             std::ostringstream current_public_key_hash;
             current_public_key_hash <<  std::setw(2) << std::setfill('0') << std::hex << std::uppercase;
@@ -356,7 +356,7 @@
 
     OptysUploadClient::OptysUploadClient(const std::string& host, int port,
         const std::string& user, const std::string& password, const std::string& zip_tmp_dir,
-        bool cleanup_zip_tmp_dir, boost::shared_ptr<Fred::File::Manager> file_manager)
+        bool cleanup_zip_tmp_dir, std::shared_ptr<Fred::File::Manager> file_manager)
     : host_(host)
     , port_(port)
     , user_(user)

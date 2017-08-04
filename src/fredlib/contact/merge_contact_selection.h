@@ -82,7 +82,7 @@ namespace Fred
     class MergeContactSelection : public Util::Printable
     {
         std::vector<std::string> contact_handle_;//contact handle vector
-        std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > > ff_;//filter functor ptr vector
+        std::vector<std::pair<std::string, std::shared_ptr<ContactSelectionFilterBase> > > ff_;//filter functor ptr vector
     public:
 
         struct NoContactHandles

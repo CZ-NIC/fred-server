@@ -22,8 +22,8 @@ private:
   bool is_monitoring;
   std::string raw_request;
   std::string raw_response;
-  boost::shared_ptr<RequestPropertiesDetail> props;
-  boost::shared_ptr<ObjectReferences> refs;
+  std::shared_ptr<RequestPropertiesDetail> props;
+  std::shared_ptr<ObjectReferences> refs;
   int rc_code;
   std::string rc_name;
 
@@ -34,8 +34,8 @@ public:
           std::string &_user_name, ID &_user_id,
           bool &_is_monitoring,
           std::string & _raw_request, std::string & _raw_response,
-          boost::shared_ptr<RequestPropertiesDetail>  _props,
-          boost::shared_ptr<ObjectReferences>   _refs,
+          std::shared_ptr<RequestPropertiesDetail>  _props,
+          std::shared_ptr<ObjectReferences>   _refs,
           const int _rc_code = 0, const std::string &_rc_name = std::string()) :
     CommonObjectImpl(_id),
     time_begin(_time_begin),
@@ -89,10 +89,10 @@ public:
   virtual const std::string& getRawResponse() const {
     return raw_response;
   }
-  virtual boost::shared_ptr<RequestPropertiesDetail> getProperties() {
+  virtual std::shared_ptr<RequestPropertiesDetail> getProperties() {
     return props;
   }
-  virtual boost::shared_ptr<ObjectReferences> getReferences() {
+  virtual std::shared_ptr<ObjectReferences> getReferences() {
         return refs;
   }
   virtual const std::pair<int, std::string> getResultCode() const {

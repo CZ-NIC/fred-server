@@ -16,9 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory> ///< auto_ptr<>
+#include <memory>
 #include <algorithm>
-#include <boost/shared_ptr.hpp>
 
 #include "src/old_utils/dbsql.h"
 #include "registry.h"

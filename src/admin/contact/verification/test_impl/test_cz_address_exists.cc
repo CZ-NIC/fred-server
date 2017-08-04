@@ -30,7 +30,7 @@
 #include <locale>
 #include <algorithm>    // std::reverse, std::next_permutaion
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/scoped_ptr.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>

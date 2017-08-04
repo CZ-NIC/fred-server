@@ -31,7 +31,7 @@
 #include <vector>
 
 #include <boost/program_options.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/function.hpp>
 
 #include "util/types/optional.h"
@@ -140,12 +140,12 @@ public:
  */
 class HandleCommandSelectionArgsGrp : public HandleGrpArgs
 {
-    boost::shared_ptr<boost::program_options::options_description> cfg_opts;
+    std::shared_ptr<boost::program_options::options_description> cfg_opts;
 public:
     std::size_t selection_;
     CommandDescriptionsWithImplCallback command_descriptions_with_impl_callback_;
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
         return cfg_opts;
@@ -235,7 +235,7 @@ public:
 };//class HandleCommandSelectionArgsGrp
 
 //owning container of handlers and implementation callbacks
-typedef boost::shared_ptr<HandleCommandGrpArgs> HandleCommandArgsPtr;
+typedef std::shared_ptr<HandleCommandGrpArgs> HandleCommandArgsPtr;
 struct CommandHandlerParam
 {
     HandleCommandArgsPtr args_ptr;
@@ -316,7 +316,7 @@ public:
 
             //cast handler to other parent
             HandleGrpArgsPtr hg(
-                 boost::dynamic_pointer_cast<HandleGrpArgs>(i->args_ptr));
+			std::dynamic_pointer_cast<HandleGrpArgs>(i->args_ptr));
 
             //copy handler
             command_options_gv.push_back(hg);

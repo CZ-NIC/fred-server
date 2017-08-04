@@ -27,7 +27,6 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/make_shared.hpp>
 
 #include "util/cfg/config_handler_decl.h"
 #include "util/cfg/handle_database_args.h"
@@ -391,12 +390,12 @@ struct contact_verification_start_enqueued_checks_impl
       try {
           started_checks = Admin::run_all_enqueued_checks(
               Admin::create_test_impl_prototypes(
-                  boost::shared_ptr<Fred::Mailer::Manager>(
+                  std::shared_ptr<Fred::Mailer::Manager>(
                       new MailerManager(
                           CorbaContainer::get_instance()->getNS()
                       )
                   ),
-                  boost::shared_ptr<Fred::Document::Manager>(
+                  std::shared_ptr<Fred::Document::Manager>(
                       Fred::Document::Manager::create(
                           CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_path(),
                           CfgArgGroups::instance()->get_handler_ptr_by_type<HandleRegistryArgsGrp>()->get_docgen_template_path(),

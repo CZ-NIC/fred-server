@@ -46,10 +46,10 @@ protected:
     std::string conn_info;
 public:
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> db_opts(
+        std::shared_ptr<boost::program_options::options_description> db_opts(
                 new boost::program_options::options_description(
                         std::string("Database connection configuration")));
         db_opts->add_options()
@@ -132,7 +132,7 @@ class HandleDatabaseArgsGrp : public HandleGrpArgs
                             , private HandleDatabaseArgs
 {
 public:
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
         return HandleDatabaseArgs::get_options_description();

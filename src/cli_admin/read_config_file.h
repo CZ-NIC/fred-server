@@ -43,7 +43,7 @@ std::map<std::string, std::string> read_config_file(
         const std::string& conf_file,
         bool dump_config_into_debug_log)
 {
-    boost::shared_ptr<HANDLE_ARGS> handle_args_ptr(new HANDLE_ARGS);
+        std::shared_ptr<HANDLE_ARGS> handle_args_ptr(new HANDLE_ARGS);
 
     HandlerPtrVector hpv = boost::assign::list_of(
             HandleArgsPtr(new HandleConfigFileArgs(conf_file)))(

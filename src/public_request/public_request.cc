@@ -230,7 +230,7 @@ struct FailedToSendMailToRecipient:std::exception
 };
 
 unsigned long long send_joined_addresses_email(
-    boost::shared_ptr<Fred::Mailer::Manager> mailer,
+    std::shared_ptr<Fred::Mailer::Manager> mailer,
     const EmailData& data)
 {
     std::set<std::string> trimmed_recipient_email_addresses;
@@ -266,7 +266,7 @@ unsigned long long send_authinfo(
     unsigned long long public_request_id,
     const std::string& handle,
     PublicRequestImpl::ObjectType::Enum object_type,
-    boost::shared_ptr<Fred::Mailer::Manager> manager)
+    std::shared_ptr<Fred::Mailer::Manager> manager)
 {
     Fred::OperationContextCreator ctx;
     Fred::Mailer::Parameters email_template_params;
@@ -424,7 +424,7 @@ unsigned long long PublicRequestImpl::create_authinfo_request_registry_email(
     ObjectType::Enum object_type,
     const std::string& object_handle,
     const Optional<unsigned long long>& log_request_id,
-    boost::shared_ptr<Fred::Mailer::Manager> manager) // potentially put as member
+    std::shared_ptr<Fred::Mailer::Manager> manager) // potentially put as member
 {
     LOGGING_CONTEXT(log_ctx, *this);
     try
@@ -788,7 +788,7 @@ std::string language_to_lang_code(PublicRequestImpl::Language::Enum lang)
 PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
     unsigned long long public_request_id,
     Language::Enum lang,
-    boost::shared_ptr<Fred::Document::Manager> manager)
+    std::shared_ptr<Fred::Document::Manager> manager)
 {
     LOGGING_CONTEXT(log_ctx, *this);
     const std::string lang_code = language_to_lang_code(lang);
@@ -850,16 +850,16 @@ PublicRequestImpl::Buffer PublicRequestImpl::create_public_request_pdf(
     return Buffer(pdf_content.str());
 }
 
-boost::shared_ptr<Fred::Mailer::Manager> PublicRequestImpl::get_default_mailer_manager()
+std::shared_ptr<Fred::Mailer::Manager> PublicRequestImpl::get_default_mailer_manager()
 {
-    return boost::shared_ptr<Fred::Mailer::Manager>(
+    return std::shared_ptr<Fred::Mailer::Manager>(
                    new MailerManager(CorbaContainer::get_instance()->getNS()));
 }
 
-boost::shared_ptr<Fred::Document::Manager> PublicRequestImpl::get_default_document_manager()
+std::shared_ptr<Fred::Document::Manager> PublicRequestImpl::get_default_document_manager()
 {
     const HandleRegistryArgs* const args = CfgArgs::instance()->get_handler_ptr_by_type<HandleRegistryArgs>();
-    return boost::shared_ptr<Fred::Document::Manager>(
+    return std::shared_ptr<Fred::Document::Manager>(
             Fred::Document::Manager::create(
                     args->docgen_path,
                     args->docgen_template_path,

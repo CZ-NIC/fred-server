@@ -465,13 +465,13 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
     }
 
     try {
-        boost::shared_ptr<ModelSession> sess = scache.get(session_id);
+        std::shared_ptr<ModelSession> sess = scache.get(session_id);
 
         *user_name = sess->getUserName();
         *user_id = sess->getUserId();
 
     } catch (CACHE_MISS) {
-        boost::shared_ptr<ModelSession> sess(new ModelSession());
+        std::shared_ptr<ModelSession> sess(new ModelSession());
 
         sess->setId(session_id);
         sess->reload();
@@ -713,7 +713,7 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
 
     DateTime time(microsec_clock::universal_time());
 
-    boost::shared_ptr<ModelSession> sess(new ModelSession());
+    std::shared_ptr<ModelSession> sess(new ModelSession());
         sess->setLoginDate(time);
 
     if (name != NULL && *name != '\0') {

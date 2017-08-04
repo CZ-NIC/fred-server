@@ -26,7 +26,7 @@ const ptime current_timestamp() {
     return second_clock::universal_time();
 } 
 
-void SessionCache::add(const Database::ID &id, const boost::shared_ptr<ModelSession> s)
+void SessionCache::add(const Database::ID &id, const std::shared_ptr<ModelSession> s)
 {
     ptime current = current_timestamp();
 
@@ -72,7 +72,7 @@ void SessionCache::remove(const Database::ID id)
 /** 
  * We cannot return a reference here since it can become invalid
  */
-boost::shared_ptr<ModelSession> SessionCache::get(const Database::ID id)
+std::shared_ptr<ModelSession> SessionCache::get(const Database::ID id)
 {
     boost::mutex::scoped_lock lock(cache_mutex);
     CacheType::iterator i = cache.find(id);

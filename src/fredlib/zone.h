@@ -15,7 +15,6 @@
 #include "decimal.h"
 #include "src/fredlib/types.h" 
 #include "src/fredlib/exceptions.h"
-#include <boost/shared_ptr.hpp>
 #include <idna.h>
 /// forward declaration for database connection
 class DB;

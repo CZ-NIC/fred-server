@@ -35,12 +35,12 @@
 
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/join.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <boost/any.hpp>
+#include <memory>
 
 /**
  * \class HandleArgs
@@ -49,8 +49,8 @@
 class HandleArgs
 {
 public:
-    virtual ~HandleArgs() { }
-    virtual boost::shared_ptr<boost::program_options::options_description>
+    virtual ~HandleArgs() { };
+    virtual std::shared_ptr<boost::program_options::options_description>
         get_options_description()=0;
     virtual void handle( int argc, char* argv[], FakedArgs &fa ) = 0;
 };
@@ -86,7 +86,7 @@ class HandleGrpArgs
 {
 public:
     virtual ~HandleGrpArgs() { };
-    virtual boost::shared_ptr<boost::program_options::options_description>
+    virtual std::shared_ptr<boost::program_options::options_description>
         get_options_description()=0;//among other exceptions may throw NO_OPTIONS exception if there are no options
 
     //handle returning option group index
@@ -290,7 +290,7 @@ private:
 struct handler_parse_args
 {
     void operator()(
-        boost::shared_ptr<boost::program_options::options_description> opts_descs
+        std::shared_ptr<boost::program_options::options_description> opts_descs
         , boost::program_options::variables_map& vm
         , int argc, char* argv[],  FakedArgs &fa)
 {
@@ -338,10 +338,10 @@ struct handler_parse_args
 };//handler_parse_args
 
 //owning container of handlers
-typedef boost::shared_ptr<HandleArgs> HandleArgsPtr;
+typedef std::shared_ptr<HandleArgs> HandleArgsPtr;
 typedef std::vector<HandleArgsPtr > HandlerPtrVector;
 
-typedef boost::shared_ptr<HandleGrpArgs> HandleGrpArgsPtr;//group args ptr
+typedef std::shared_ptr<HandleGrpArgs> HandleGrpArgsPtr;//group args ptr
 typedef std::vector<HandleGrpArgsPtr > HandlerGrpVector;//vector of arg groups
 typedef std::vector<HandlerGrpVector > HandlerPtrGrid;//grid of grouped args
 

@@ -18,8 +18,7 @@
 
 #include <set>
 #include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
+#include <memory>
 #include <boost/assign/list_of.hpp>
 #include <boost/tuple/tuple.hpp>
 
@@ -285,7 +284,7 @@ namespace  Admin {
 
     static void run_test(
         Fred::OperationContext&             ctx,
-        const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >&
+        const std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> >&
                                             _tests,
         const uuid&                         _check_handle,
         const std::string&                  _test_handle,
@@ -314,7 +313,7 @@ namespace  Admin {
     }
 
     std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& _tests,
+        const std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> >& _tests,
         Optional<unsigned long long> _logd_request_id
     ) {
         Logging::Context log("run_all_enqueued_checks");

@@ -54,10 +54,10 @@ public:
 
     const HPCfgMap get_map() { return hp_config; };
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+        std::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
                         std::string("Postservice client upload configuration")
                         , 140 //width of help print in cols
@@ -176,10 +176,10 @@ public:
     {}
     const HPCfgMap get_map() { return hp_config; };
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+        std::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
                         std::string("Postservice client upload configuration")
                         , 140 //width of help print in cols

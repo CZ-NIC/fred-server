@@ -210,7 +210,7 @@ class RegistrarImpl : public Fred::CommonObjectImplNew,
                       virtual public Registrar,
                       private ModelRegistrar
 {
-  typedef boost::shared_ptr<ACLImpl> ACLImplPtr;
+  typedef std::shared_ptr<ACLImpl> ACLImplPtr;
   typedef std::vector<ACLImplPtr> ACLList;
   typedef ACLList::iterator ACLListIter;
 
@@ -220,7 +220,7 @@ class RegistrarImpl : public Fred::CommonObjectImplNew,
   typedef std::map<Database::ID, Money> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
-  typedef  boost::shared_ptr<ZoneAccess> ZoneAccessPtr;
+  typedef  std::shared_ptr<ZoneAccess> ZoneAccessPtr;
   typedef std::vector<ZoneAccessPtr> ZoneAccessList;
   typedef ZoneAccessList::iterator ZoneAccessListIter;
   ZoneAccessList actzones;
@@ -504,14 +504,14 @@ public:
 
   virtual ACL* newACL()
   {
-    boost::shared_ptr<ACLImpl> newACL ( new ACLImpl());
+    std::shared_ptr<ACLImpl> newACL ( new ACLImpl());
     acl.push_back(newACL);
     return newACL.get();
   }
 
   virtual ZoneAccess* newZoneAccess()
   {
-    boost::shared_ptr<ZoneAccess> newZoneAccess ( new ZoneAccess());
+    std::shared_ptr<ZoneAccess> newZoneAccess ( new ZoneAccess());
     actzones.push_back(newZoneAccess);
     return newZoneAccess.get();
   }

@@ -103,7 +103,7 @@ BOOST_FIXTURE_TEST_CASE(test_auto_proc_dry_run, auto_proc_fixture)
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+    std::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
     std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE(test_auto_proc, auto_proc_fixture)
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+    std::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
     std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+    std::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
     std::unique_ptr<Fred::Logger::LoggerClient> logger_client(
             new Fred::Logger::DummyLoggerCorbaClientImpl());
 

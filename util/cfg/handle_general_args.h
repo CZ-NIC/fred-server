@@ -83,7 +83,7 @@ class HandleHelpArg : public HandleArgs
 public:
 
     ///options descriptions reference used to print help for all options
-    typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
+    typedef std::vector<std::shared_ptr<boost::program_options::options_description> > PoDescs;
 
     PoDescs po_description;
     std::string usage_;
@@ -92,10 +92,10 @@ public:
     HandleHelpArg(const std::string& usage)
 		: usage_(usage){}
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+        std::shared_ptr<boost::program_options::options_description> gen_opts(
                 new boost::program_options::options_description(
                         usage_//std::string("Help")
                         ));
@@ -135,10 +135,10 @@ public:
     HandleConfigFileArgs(const std::string& def_cfg)
         : default_config(def_cfg) {};
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+        std::shared_ptr<boost::program_options::options_description> gen_opts(
                 new boost::program_options::options_description(
                         std::string("Configfile configuration")));
 
@@ -188,7 +188,7 @@ public:
     HandleHelpGrpArg(const std::string& usage)
         : HandleHelpArg(usage){}
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
         return HandleHelpArg::get_options_description();
@@ -217,7 +217,7 @@ public:
     HandleConfigFileGrpArgs(const std::string& def_cfg)
         : HandleConfigFileArgs(def_cfg) {};
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
         return HandleConfigFileArgs::get_options_description();

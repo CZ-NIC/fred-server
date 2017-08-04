@@ -66,10 +66,10 @@ public:
         return CommandDescription("domain_list");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("domain_list options")));
         cfg_opts->add_options()
@@ -188,10 +188,10 @@ public:
         return CommandDescription("keyset_list");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("keyset_list options")));
         cfg_opts->add_options()
@@ -263,10 +263,10 @@ class HandleHelpDatesArgsGrp : public HandleGrpArgs
 {
 public:
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("date and time format help option")));
         cfg_opts->add_options()
@@ -316,10 +316,10 @@ public:
         return CommandDescription("contact_reminder");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("contact_reminder options")));
         cfg_opts->add_options()
@@ -353,10 +353,10 @@ public:
         return CommandDescription("contact_merge_duplicate_auto");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("contact_merge_duplicate_auto options")));
         cfg_opts->add_options()
@@ -409,10 +409,10 @@ public:
         return CommandDescription("contact_merge");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("contact_merge options")));
         cfg_opts->add_options()
@@ -457,10 +457,10 @@ public:
         return CommandDescription("contact_list");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("contact_list options")));
         cfg_opts->add_options()
@@ -548,10 +548,10 @@ public:
         return CommandDescription("invoice_list");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("invoice_list options")));
         cfg_opts->add_options()
@@ -622,10 +622,10 @@ public:
         return CommandDescription("invoice_archive");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("invoice_archive options")));
         cfg_opts->add_options()
@@ -661,10 +661,10 @@ public:
         return CommandDescription("invoice_credit");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("invoice_credit options")));
         cfg_opts->add_options()
@@ -708,10 +708,10 @@ public:
         return CommandDescription("invoice_billing");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("invoice_billing options")));
         cfg_opts->add_options()
@@ -763,10 +763,10 @@ public:
         return CommandDescription("invoice_add_prefix");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("invoice_add_prefix options")));
         cfg_opts->add_options()
@@ -813,10 +813,10 @@ public:
         return CommandDescription("create_invoice_prefixes");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("create_invoice_prefixes options")));
         cfg_opts->add_options()
@@ -852,10 +852,10 @@ public:
         return CommandDescription("add_invoice_number_prefix");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("add_invoice_number_prefix options")));
         cfg_opts->add_options()
@@ -898,10 +898,10 @@ public:
         return CommandDescription("create_invoice");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("create_invoice options")));
         cfg_opts->add_options()
@@ -940,10 +940,10 @@ public:
         return CommandDescription("bank_payment_list");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("bank_payment_list options")));
         cfg_opts->add_options()
@@ -979,10 +979,10 @@ public:
     {
         return CommandDescription("bank_import_xml");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("bank_import_xml options")));
         cfg_opts->add_options()
@@ -1023,10 +1023,10 @@ public:
     {
         return CommandDescription("bank_add_account");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("bank_add_account options")));
         cfg_opts->add_options()
@@ -1067,10 +1067,10 @@ public:
     {
         return CommandDescription("poll_list_all");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("poll_list_all options")));
         cfg_opts->add_options()
@@ -1112,10 +1112,10 @@ public:
     {
         return CommandDescription("poll_create_statechanges");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("poll_create_statechanges options")));
         cfg_opts->add_options()
@@ -1154,10 +1154,10 @@ public:
         return CommandDescription("poll_create_request_fee_messages");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("poll_create_request_fee_messages options")));
         cfg_opts->add_options()
@@ -1187,10 +1187,10 @@ public:
         return CommandDescription("block_registrar_id");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("block_registrar_id options")));
         cfg_opts->add_options()
@@ -1219,10 +1219,10 @@ public:
         return CommandDescription("unblock_registrar_id");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("unblock_registrar_id options")));
         cfg_opts->add_options()
@@ -1252,10 +1252,10 @@ public:
         return CommandDescription("list_blocked_registrars");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("list_blocked_registrars options")));
         cfg_opts->add_options()
@@ -1285,10 +1285,10 @@ public:
         return CommandDescription("block_registrars_over_limit");
     }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("block_registrars_over_limit options")));
         cfg_opts->add_options()
@@ -1328,10 +1328,10 @@ public:
     {
         return CommandDescription("zone_add");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("zone_add options")));
         cfg_opts->add_options()
@@ -1391,10 +1391,10 @@ public:
     {
         return CommandDescription("registrar_add");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("registrar_add options")));
         cfg_opts->add_options()
@@ -1480,10 +1480,10 @@ public:
     {
         return CommandDescription("registrar_add_zone");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("registrar_add_zone options")));
         cfg_opts->add_options()
@@ -1524,10 +1524,10 @@ public:
     {
         return CommandDescription("registrar_create_certification");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("registrar_create_certification options")));
         cfg_opts->add_options()
@@ -1574,10 +1574,10 @@ public:
     {
         return CommandDescription("registrar_create_group");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("registrar_create_group options")));
         cfg_opts->add_options()
@@ -1609,10 +1609,10 @@ public:
     {
         return CommandDescription("registrar_into_group");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("registrar_into_group options")));
         cfg_opts->add_options()
@@ -1653,10 +1653,10 @@ public:
     {
         return CommandDescription("registrar_list");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("registrar_list options")));
         cfg_opts->add_options()
@@ -1709,10 +1709,10 @@ public:
     {
         return CommandDescription("zone_ns_add");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("zone_ns_add options")));
         cfg_opts->add_options()
@@ -1750,10 +1750,10 @@ public:
     {
         return CommandDescription("registrar_acl_add");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("registrar_acl_add options")));
         cfg_opts->add_options()
@@ -1791,10 +1791,10 @@ public:
     {
         return CommandDescription("price_add");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("price_add options")));
         cfg_opts->add_options()
@@ -1846,10 +1846,10 @@ public:
     {
         return CommandDescription("charge_request_fee");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                         new boost::program_options::options_description(
                                 std::string("charge_request_fee options")));
 
@@ -1892,10 +1892,10 @@ public:
     {
         return CommandDescription("notify_state_changes");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("notify_state_changes options")));
         cfg_opts->add_options()
@@ -1931,10 +1931,10 @@ public:
     {
         return CommandDescription("notify_letters_postservis_send");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("notify_letters_postservis_send options")));
         cfg_opts->add_options()
@@ -1970,10 +1970,10 @@ public:
     {
         return CommandDescription("notify_registered_letters_manual_send");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("notify_registered_letters_manual_send options")));
         cfg_opts->add_options()
@@ -2015,10 +2015,10 @@ public:
     {
         return CommandDescription("notify_sms_send");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("notify_sms_send options")));
         cfg_opts->add_options()
@@ -2051,10 +2051,10 @@ public:
     {
         return CommandDescription("enum_parameter_change");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("enum_parameter_change options")));
         cfg_opts->add_options()
@@ -2090,10 +2090,10 @@ public:
     {
         return CommandDescription("object_new_state_request_name");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("object_new_state_request_name options")));
         cfg_opts->add_options()
@@ -2167,10 +2167,10 @@ public:
     {
         return CommandDescription("object_update_states");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("object_update_states options")));
         cfg_opts->add_options()
@@ -2204,10 +2204,10 @@ public:
     {
         return CommandDescription("object_delete_candidates");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("object_delete_candidates options")));
         cfg_opts->add_options()
@@ -2253,10 +2253,10 @@ public:
     {
         return CommandDescription("object_regular_procedure");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("object_regular_procedure options")));
         cfg_opts->add_options()
@@ -2305,10 +2305,10 @@ public:
     {
         return CommandDescription("file_list");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("file_list options")));
         cfg_opts->add_options()
@@ -2358,10 +2358,10 @@ public:
     {
         return CommandDescription("init_domain_name_validation");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("init_domain_name_validation options")));
         cfg_opts->add_options()
@@ -2400,10 +2400,10 @@ public:
     {
         return CommandDescription("set_zone_domain_name_validation");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("set_zone_domain_name_validation options")));
         cfg_opts->add_options()
@@ -2440,8 +2440,8 @@ class HandleContactVerificationFillQueueArgsGrp : public HandleCommandGrpArgs {
 
         CommandDescription get_command_option() { return CommandDescription(name()); }
 
-        boost::shared_ptr<options_description> get_options_description() {
-            boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
+        std::shared_ptr<options_description> get_options_description() {
+            std::shared_ptr<options_description> cfg_opts( new options_description(name()) );
             cfg_opts->add_options()(name(), "fill contact checks queue");
 
             cfg_opts->add_options()("max_active_checks",
@@ -2495,8 +2495,8 @@ class HandleContactVerificationEnqueueCheckArgsGrp : public HandleCommandGrpArgs
 
         CommandDescription get_command_option() { return CommandDescription(name()); }
 
-        boost::shared_ptr<options_description> get_options_description() {
-            boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
+        std::shared_ptr<options_description> get_options_description() {
+            std::shared_ptr<options_description> cfg_opts( new options_description(name()) );
             cfg_opts->add_options()(name(), "enqueue check for contact specified by id with specified testsuite");
             cfg_opts->add_options()("contact_id",
                 boost::program_options::value<Checked::ulonglong>()
@@ -2532,8 +2532,8 @@ class HandleContactVerificationStartEnqueuedChecksArgsGrp : public HandleCommand
 
         CommandDescription get_command_option() { return CommandDescription(name()); }
 
-        boost::shared_ptr<options_description> get_options_description() {
-            boost::shared_ptr<options_description> cfg_opts( new options_description(name()) );
+        std::shared_ptr<options_description> get_options_description() {
+            std::shared_ptr<options_description> cfg_opts( new options_description(name()) );
             cfg_opts->add_options()(name(), "start enqueued checks");
 
             cfg_opts->add_options()("cz_address_mvcr_xml_path",
@@ -2565,10 +2565,10 @@ public:
     {
         return CommandDescription("notify_letters_optys_send");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("notify_letters_optys_send options")));
         cfg_opts->add_options()
@@ -2608,10 +2608,10 @@ public:
     {
         return CommandDescription("notify_letters_optys_get_undelivered");
     }
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("notify_letters_optys_get_undelivered options")));
         cfg_opts->add_options()
@@ -2644,8 +2644,8 @@ class HandleSendObjectEventNotificationEmailsArgsGrp : public HandleCommandGrpAr
             return CommandDescription( get_command_name() );
         }
 
-        boost::shared_ptr<boost::program_options::options_description> get_options_description() {
-            boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> get_options_description() {
+            std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description( std::string(get_command_name()) + " options" )
             );
 

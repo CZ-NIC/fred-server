@@ -56,7 +56,7 @@ namespace Test {
             std::string dbname;
             std::string timeout;
 
-            boost::shared_ptr<boost::program_options::options_description> get_options_description();
+            std::shared_ptr<boost::program_options::options_description> get_options_description();
 
             void handle( int argc, char* argv[],  FakedArgs &fa);
 
