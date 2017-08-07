@@ -27,6 +27,7 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+#include <memory>
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
@@ -225,7 +226,7 @@ void set_status_back(const std::string& comm_type, const std::string& service_ha
 //Manager factory
 ManagerPtr create_manager()
 {
-    return ManagerPtr(new Manager);
+    return std::make_shared<Manager>();
 }
 
 //Manager impl

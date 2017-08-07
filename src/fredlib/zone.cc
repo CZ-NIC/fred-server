@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <memory>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -418,7 +419,7 @@ namespace Fred
                   const std::string& fqdn,
                   const std::string& addrs)
       {
-        zone_ns_list.push_back(std::shared_ptr<ZoneNsImpl>(new ZoneNsImpl(_id,_zoneid,fqdn,addrs)));
+        zone_ns_list.push_back(std::make_shared<ZoneNsImpl>(_id,_zoneid,fqdn,addrs));
       }
       bool hasId(TID _id) const
       {

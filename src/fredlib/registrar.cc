@@ -20,6 +20,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <memory>
 #include <utility>
 #include <vector>
 #include <algorithm>
@@ -736,7 +737,7 @@ public:
               const std::string& certificateMD5,
               const std::string& password)
   {
-    acl.push_back(ACLImplPtr(new ACLImpl(_id,certificateMD5,password)));
+    acl.push_back(std::make_shared<ACLImpl>(_id,certificateMD5,password));
   }
 
   void putZoneAccess(TID _id
@@ -745,7 +746,7 @@ public:
           , Database::Date _fromdate
           , Database::Date _todate)
   {
-      actzones.push_back(ZoneAccessPtr(new ZoneAccess(_id,_name,_credit,_fromdate,_todate)));
+      actzones.push_back(std::make_shared<ZoneAccess>(_id,_name,_credit,_fromdate,_todate));
   }
 
   bool hasId(TID _id) const
