@@ -29,12 +29,12 @@ namespace Poll {
 
 class CreateStateMessages
 {
-    std::vector<std::string> except_list;
-    int limit;
-
 public:
     CreateStateMessages(const std::string& _except_list, int _limit);
-    void exec(OperationContext& _ctx) const;
+    unsigned long long exec(OperationContext& _ctx) const;
+private:
+    std::vector<std::string> except_list_;
+    int limit_;
 };
 
 } // namespace Fred::Poll

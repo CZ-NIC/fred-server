@@ -32,8 +32,7 @@ unsigned long long create_poll_eppaction_message(
     }
     struct UnexpectedNumberOfRows:InternalError
     {
-        UnexpectedNumberOfRows():InternalError(std::string()) { }
-        const char* what()const noexcept { return "unexpected number of rows"; }
+        UnexpectedNumberOfRows():InternalError("unexpected number of rows") { }
     };
     throw UnexpectedNumberOfRows();
 }
@@ -223,8 +222,7 @@ unsigned long long CreatePollMessage<message_type>::exec(
         {
             struct TooManyRows:InternalError
             {
-                TooManyRows():InternalError(std::string()) { }
-                const char* what()const noexcept { return "too many rows"; }
+                TooManyRows():InternalError("too many rows") { }
             };
             throw TooManyRows();
         }

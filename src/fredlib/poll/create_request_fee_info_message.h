@@ -29,13 +29,6 @@ namespace Poll {
 
 class CreateRequestFeeInfoMessage
 {
-    unsigned long long registrar_id;
-    boost::posix_time::ptime period_from;
-    boost::posix_time::ptime period_to;
-    unsigned long long total_free_count;
-    unsigned long long request_count;
-    Decimal price;
-
 public:
     CreateRequestFeeInfoMessage(
         unsigned long long _registrar_id,
@@ -43,17 +36,27 @@ public:
         const boost::posix_time::ptime& _period_to,
         unsigned long long _total_free_count,
         unsigned long long _request_count,
-        const Decimal& _price)
+        const Decimal& _price,
+        const std::string& _time_zone = "Europe/Prague")
     :
-        registrar_id(_registrar_id),
-        period_from(_period_from),
-        period_to(_period_to),
-        total_free_count(_total_free_count),
-        request_count(_request_count),
-        price(_price)
+        registrar_id_(_registrar_id),
+        period_from_(_period_from),
+        period_to_(_period_to),
+        total_free_count_(_total_free_count),
+        request_count_(_request_count),
+        price_(_price),
+        time_zone_(_time_zone)
     {}
 
-    unsigned long long exec(OperationContext& _ctx, const std::string& _time_zone = "Europe/Prague") const;
+    unsigned long long exec(OperationContext& _ctx) const;
+private:
+    unsigned long long registrar_id_;
+    boost::posix_time::ptime period_from_;
+    boost::posix_time::ptime period_to_;
+    unsigned long long total_free_count_;
+    unsigned long long request_count_;
+    Decimal price_;
+    std::string time_zone_;
 };
 
 } // namespace Fred::Poll

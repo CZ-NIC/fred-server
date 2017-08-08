@@ -23,16 +23,17 @@
 #include "src/fredlib/logger_client.h"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/optional.hpp>
 
 namespace Fred {
 namespace Poll {
 
 void create_request_fee_info_messages(
-    Fred::OperationContext& _ctx,
-    Logger::LoggerClient& _logger_client,
-    unsigned long long _zone_id,
-    boost::gregorian::date _period_to,
-    const std::string& _time_zone = "Europe/Prague");
+        Fred::OperationContext& ctx,
+        Logger::LoggerClient& logger_client,
+        unsigned long long zone_id,
+        const boost::optional<boost::gregorian::date>& period_to,
+        const std::string& time_zone);
 
 } // namespace Fred::Poll
 } // namespace Fred

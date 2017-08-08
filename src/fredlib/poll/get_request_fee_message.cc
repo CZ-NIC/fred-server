@@ -29,20 +29,20 @@ namespace Poll {
 namespace {
 
 RequestFeeInfoEvent get_request_fee_info_message_impl(
-    Fred::OperationContext& _ctx,
-    unsigned long long _registrar_id,
-    const Database::ParamQuery& _query_part)
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id,
+        const Database::ParamQuery& query_part)
 {
     Database::ParamQuery sql_query;
     sql_query("SELECT prf.period_from, prf.period_to, prf.total_free_count, prf.used_count, prf.price "
               "FROM poll_request_fee prf "
               "JOIN message m ON m.id=prf.msgid "
               "JOIN messagetype mt ON mt.id=m.msgtype "
-              "WHERE m.clid=").param_bigint(_registrar_id)
+              "WHERE m.clid=").param_bigint(registrar_id)
               (" AND mt.name=").param_text(Conversion::Enums::to_db_handle(MessageType::request_fee_info))
-              (_query_part);
+              (query_part);
 
-    const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
+    const Database::Result sql_query_result = ctx.get_conn().exec_params(sql_query);
     switch (sql_query_result.size())
     {
         case 0:
@@ -59,8 +59,7 @@ RequestFeeInfoEvent get_request_fee_info_message_impl(
         {
             struct TooManyRows : InternalError
             {
-                TooManyRows() : InternalError(std::string()) { }
-                const char* what() const throw() { return "too many rows"; }
+                TooManyRows() : InternalError("too many rows") { }
             };
             throw TooManyRows();
         }
@@ -78,22 +77,22 @@ RequestFeeInfoEvent get_request_fee_info_message_impl(
 } // namespace Fred::Poll::{anonymous}
 
 RequestFeeInfoEvent get_request_fee_info_message(
-    Fred::OperationContext& _ctx,
-    unsigned long long _registrar_id,
-    const boost::posix_time::ptime& _period_to,
-    const std::string& _time_zone)
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id,
+        const boost::posix_time::ptime& period_to,
+        const std::string& time_zone)
 {
     Database::ParamQuery by_period_to_sql_part(" AND period_to = (");
-    by_period_to_sql_part.param_timestamp(_period_to)(" AT TIME ZONE ").param_text(_time_zone)(" AT TIME ZONE 'UTC')");
-    return get_request_fee_info_message_impl(_ctx, _registrar_id, by_period_to_sql_part);
+    by_period_to_sql_part.param_timestamp(period_to)(" AT TIME ZONE ").param_text(time_zone)(" AT TIME ZONE 'UTC')");
+    return get_request_fee_info_message_impl(ctx, registrar_id, by_period_to_sql_part);
 }
 
 RequestFeeInfoEvent get_last_request_fee_info_message(
-    Fred::OperationContext& _ctx,
-    unsigned long long _registrar_id)
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id)
 {
     const Database::ParamQuery last_sql_part(" ORDER BY m.id DESC LIMIT 1");
-    return get_request_fee_info_message_impl(_ctx, _registrar_id, last_sql_part);
+    return get_request_fee_info_message_impl(ctx, registrar_id, last_sql_part);
 }
 
 } // namespace Fred::Poll

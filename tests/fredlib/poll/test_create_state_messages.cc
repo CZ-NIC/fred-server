@@ -30,7 +30,7 @@ namespace {
 
 unsigned long long get_number_of_poll_messages(Fred::OperationContext& _ctx)
 {
-    const Database::Result sql_query_result = _ctx.get_conn().exec("SELECT COUNT(*) FROM MESSAGE");
+    const Database::Result sql_query_result = _ctx.get_conn().exec("SELECT COUNT(*) FROM message");
     BOOST_REQUIRE_EQUAL(sql_query_result.size(), 1);
     return static_cast<unsigned long long>(sql_query_result[0][0]);
 }

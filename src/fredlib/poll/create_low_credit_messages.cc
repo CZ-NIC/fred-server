@@ -23,7 +23,7 @@
 namespace Fred {
 namespace Poll {
 
-void CreateLowCreditMessages::exec(OperationContext& _ctx) const
+unsigned long long CreateLowCreditMessages::exec(OperationContext& _ctx) const
 {
     const Database::Result sql_query_result = _ctx.get_conn().exec(
         "WITH "
@@ -51,31 +51,19 @@ void CreateLowCreditMessages::exec(OperationContext& _ctx) const
                 "JOIN poll_credit_zone_limit l ON rc.zone_id = l.zone "
                 "LEFT JOIN tmp_message ON tmp_message.clid=rc.registrar_id AND tmp_message.zone=rc.zone_id "
                 "LEFT JOIN tmp_invoice ON tmp_invoice.registrar_id=rc.registrar_id AND tmp_invoice.zone_id=rc.zone_id "
-                "WHERE rc.credit < l.credlimit AND tmp_message.crdate IS NULL OR tmp_message.crdate < tmp_invoice.crdate "
+                "WHERE rc.credit < l.credlimit AND (tmp_message.crdate IS NULL OR tmp_message.crdate < tmp_invoice.crdate) "
             "), "
             "we_dont_care_because_we_dont_actually_use_the_name AS "
             "("
-                "INSERT INTO message "
+                "INSERT INTO message (id, clid, crdate, exdate, seen, msgtype) "
                 "SELECT msgid, reg, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '7days', false, 1 "
                 "FROM tmp_poll_credit "
-            "), "
-            "neither_for_this AS "
-            "("
-                "INSERT INTO poll_credit "
-                "SELECT msgid, zoneid, creditlimit, credititself "
-                "FROM tmp_poll_credit "
             ")"
-        "SELECT true");
+        "INSERT INTO poll_credit (msgid, zone, credlimit, credit) "
+        "SELECT msgid, zoneid, creditlimit, credititself "
+        "FROM tmp_poll_credit");
 
-    if (sql_query_result.size() != 1)
-    {
-        struct UnexpectedNumberOfRows : InternalError
-        {
-            UnexpectedNumberOfRows() : InternalError(std::string()) { }
-            const char* what() const throw() { return "unexpected number of rows"; }
-        };
-        throw UnexpectedNumberOfRows();
-    }
+    return sql_query_result.rows_affected();
 }
 
 } // namespace Fred::Poll

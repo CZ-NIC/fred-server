@@ -26,7 +26,7 @@ namespace Poll {
 
 struct CreateLowCreditMessages
 {
-    void exec(OperationContext& _ctx) const;
+    unsigned long long exec(OperationContext& _ctx) const;
 };
 
 } // namespace Fred::Poll

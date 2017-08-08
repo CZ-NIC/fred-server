@@ -28,6 +28,7 @@
 #include "util/cfg/handle_corbanameservice_args.h"
 #include "util/cfg/config_handler_decl.h"
 
+#include <boost/optional.hpp>
 
 namespace Admin {
 
@@ -45,14 +46,14 @@ PollClient::runMethod()
 void
 PollClient::create_state_changes()
 {
-    std::string exceptTypes;
-    if (poll_create_statechanges_params.poll_except_types.is_value_set()) {//POLL_EXCEPT_TYPES_NAME
-        exceptTypes = poll_create_statechanges_params.poll_except_types.get_value();
-    }
-    int limit = 0;
-    if (poll_create_statechanges_params.poll_limit.is_value_set()) {//POLL_LIMIT_NAME
-        limit = poll_create_statechanges_params.poll_limit.get_value();
-    }
+    const std::string exceptTypes = poll_create_statechanges_params.poll_except_types.is_value_set()
+        ? poll_create_statechanges_params.poll_except_types.get_value()
+        : std::string();
+
+    const int limit = poll_create_statechanges_params.poll_limit.is_value_set()
+        ? poll_create_statechanges_params.poll_limit.get_value()
+        : 0;
+
     Fred::OperationContextCreator ctx;
     Fred::Poll::CreateStateMessages(exceptTypes, limit).exec(ctx);
     ctx.commit_transaction();
@@ -61,13 +62,14 @@ PollClient::create_state_changes()
 void
 PollClient::create_request_fee_messages()
 {
-    boost::gregorian::date period_to;
+    boost::optional<boost::gregorian::date> period_to;
     if(poll_create_request_fee_messages_params.poll_period_to.is_value_set()) {
         period_to = from_simple_string(
             poll_create_request_fee_messages_params.poll_period_to.get_value()
         );
 
-        if(period_to.is_special()) {
+        if (period_to->is_special())
+        {
             throw std::runtime_error("charge: Invalid poll_msg_period_to.");
         }
     }
@@ -87,8 +89,8 @@ PollClient::create_request_fee_messages()
 
     // just to compile it for now
     Fred::OperationContextCreator ctx;
-    unsigned long long zone_id = 2; // bogus variable
-    Fred::Poll::create_request_fee_info_messages(ctx, cl, zone_id, period_to);
+    const unsigned long long zone_id = 2; // bogus argument
+    Fred::Poll::create_request_fee_info_messages(ctx, cl, zone_id, period_to, "Europe/Prague");
     ctx.commit_transaction();
 }
 

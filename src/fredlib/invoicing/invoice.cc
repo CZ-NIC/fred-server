@@ -311,7 +311,8 @@ public:
 
       // TODO handle NULL fields in this method
       Fred::OperationContextCreator ctx;
-      Fred::Poll::RequestFeeInfoEvent rfi = Fred::Poll::get_request_fee_info_message(ctx, registrar_id, ptime(poll_msg_period_to));
+      Fred::Poll::RequestFeeInfoEvent rfi =
+          Fred::Poll::get_request_fee_info_message(ctx, registrar_id, ptime(poll_msg_period_to), "Europe/Prague");
 
       if(boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.from)
               != ptime(poll_msg_period_from)) {
@@ -357,7 +358,7 @@ public:
                 charge_zone_id,//unsigned long long zone_id
                 registrar_id, //unsigned long long registrar_id
                 0, //unsigned long long object_id
-                rfi.to - seconds(1), //boost::posix_time::ptime crdate
+                rfi.to - boost::posix_time::seconds(1), //boost::posix_time::ptime crdate
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.from).date(), //boost::gregorian::date date_from
                 boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi.to).date(), //boost::gregorian::date date_to
                 Decimal(boost::lexical_cast<std::string>(paid_requests)) //unsigned long quantity - for renew in years

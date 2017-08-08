@@ -61,7 +61,8 @@ struct PollRequestFeeInfoMessages : Test::instantiate_db_template
             cest::utc_to_local(golden_output.to),
             golden_output.free_count,
             golden_output.used_count,
-            golden_output.price);
+            golden_output.price,
+            "Europe/Prague");
         BOOST_CHECK_NO_THROW(message_id = message_creator.exec(ctx));
         Fred::Poll::RequestFeeInfoEvent output;
         BOOST_CHECK_NO_THROW(output = Fred::Poll::get_last_request_fee_info_message(ctx, registrar_id));
@@ -76,7 +77,8 @@ struct PollRequestFeeInfoMessages : Test::instantiate_db_template
         BOOST_CHECK_NO_THROW(output2 =
                              Fred::Poll::get_request_fee_info_message(ctx,
                                                                       registrar_id,
-                                                                      cest::utc_to_local(golden_output.to)));
+                                                                      cest::utc_to_local(golden_output.to),
+                                                                      "Europe/Prague"));
         BOOST_CHECK_EQUAL(golden_output.from, output2.from);
         BOOST_CHECK_EQUAL(golden_output.to, output2.to);
         BOOST_CHECK_EQUAL(golden_output.free_count, output2.free_count);

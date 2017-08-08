@@ -37,14 +37,14 @@ struct RequestFeeInfoEvent
 };
 
 RequestFeeInfoEvent get_request_fee_info_message(
-    Fred::OperationContext& _ctx,
-    unsigned long long _registrar_id,
-    const boost::posix_time::ptime& _period_to,
-    const std::string& _time_zone = "Europe/Prague");
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id,
+        const boost::posix_time::ptime& period_to,
+        const std::string& time_zone);
 
 RequestFeeInfoEvent get_last_request_fee_info_message(
-    Fred::OperationContext& _ctx,
-    unsigned long long _registrar_id);
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id);
 
 } // namespace Fred::Poll
 } // namespace Fred

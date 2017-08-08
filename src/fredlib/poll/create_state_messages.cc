@@ -27,22 +27,21 @@
 namespace Fred {
 namespace Poll {
 
-CreateStateMessages::CreateStateMessages(const std::string& _except_list, int _limit) : limit(_limit)
+CreateStateMessages::CreateStateMessages(const std::string& _except_list, int _limit) : limit_(_limit)
 {
-    boost::split(except_list, _except_list, boost::is_any_of(","));
-    for(std::vector<std::string>::const_iterator itr = except_list.begin();
-        itr != except_list.end();
+    boost::split(except_list_, _except_list, boost::is_any_of(","));
+    for (std::vector<std::string>::const_iterator itr = except_list_.begin();
+        itr != except_list_.end();
         ++itr)
     {
-        if (itr->size() == 0)
+        if (!itr->empty())
         {
-            continue;
+            Conversion::Enums::from_db_handle<Fred::Poll::MessageType>(*itr);
         }
-        (void) Conversion::Enums::from_db_handle<Fred::Poll::MessageType>(*itr);
     }
 }
 
-void CreateStateMessages::exec(OperationContext& _ctx) const
+unsigned long long CreateStateMessages::exec(OperationContext& _ctx) const
 {
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(
              "WITH "
@@ -61,21 +60,21 @@ void CreateStateMessages::exec(OperationContext& _ctx) const
                   "), "
                   "sfilter AS "
                   "( "
-                      "SELECT * "
+                      "SELECT stateidname, registrytypename, msgtypename "
                       "FROM pfilter "
                       "WHERE msgtypename != ALL($1::varchar[]) "
                   "), "
-                  "tfilter(stateid, registrytype, msgtype) AS "
+                  "tfilter AS "
                   "( "
-                      "SELECT eos.id, eot.id, mt.id "
+                      "SELECT eos.id AS stateid, eot.id AS registrytype, mt.id AS msgtype "
                       "FROM sfilter f "
                       "JOIN enum_object_states eos ON eos.name=f.stateidname "
                       "LEFT JOIN enum_object_type eot ON eot.name=f.registrytypename "
                       "JOIN messagetype mt ON mt.name=f.msgtypename "
                   "), "
-                  "tmp_table(id, reg, msgtype, stateid) AS "
+                  "tmp_table AS "
                   "( "
-                      "SELECT nextval('message_id_seq'), oh.clid, f.msgtype, os.id "
+                      "SELECT nextval('message_id_seq') AS id, oh.clid AS reg, f.msgtype AS msgtype, os.id AS stateid "
                       "FROM object_registry ob "
                       "JOIN object_state os ON os.object_id=ob.id "
                       "JOIN object_history oh ON oh.historyid=os.ohid_from "
@@ -87,32 +86,20 @@ void CreateStateMessages::exec(OperationContext& _ctx) const
                   "), "
                   "we_dont_care AS "
                   "( "
-                      "INSERT INTO message "
+                      "INSERT INTO message (id, clid, crdate, exdate, seen, msgtype) "
                       "SELECT id, reg, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '7days', false, msgtype "
                       "FROM tmp_table "
                       "ORDER BY stateid "
-                  "), "
-                  "neither_for_this AS "
-                  "( "
-                      "INSERT INTO poll_statechange "
-                      "SELECT id, stateid "
-                      "FROM tmp_table "
-                      "ORDER BY stateid "
                   ") "
-             "SELECT true",
+             "INSERT INTO poll_statechange (msgid, stateid) "
+             "SELECT id, stateid "
+             "FROM tmp_table "
+             "ORDER BY stateid",
              Database::query_param_list
-             (std::string("{") + boost::join(except_list, ",") + std::string("}"))
-             (limit > 0 ? limit : Database::QPNull));
+             (std::string("{") + boost::join(except_list_, ",") + std::string("}"))
+             (limit_ > 0 ? limit_ : Database::QPNull));
 
-    if (sql_query_result.size() != 1)
-    {
-        struct UnexpectedNumberOfRows : InternalError
-        {
-            UnexpectedNumberOfRows() : InternalError(std::string()) { }
-            const char* what() const throw() { return "unexpected number of rows"; }
-        };
-        throw UnexpectedNumberOfRows();
-    }
+    return sql_query_result.rows_affected();
 }
 
 } // namespace Fred::Poll
