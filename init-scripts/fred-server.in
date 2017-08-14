@@ -55,91 +55,101 @@ store_pid()
                 fi
         done
         if [ "$PID" != "" ]; then 
-	    echo $PID > $2; /bin/true; return
-	else 
-	    test -f $2 && rm $2; /bin/false; return
-	fi
+            echo $PID > $2; /bin/true; return
+        else 
+            test -f $2 && rm $2; /bin/false; return
+        fi
 }
 
 fred_start() {
     if [ $DB_INIT -eq 1 -a -x $DB_MANAGER ]
     then
-	# this script will ensure that database exists
+        # this script will ensure that database exists
         if $DB_MANAGER testuser
         then
             $DB_MANAGER install
         elif [ "$(whoami)" = "root" ]; then
-	    /bin/su - postgres -c "$DB_MANAGER install"
+            /bin/su - postgres -c "$DB_MANAGER install"
         fi
-	if [ $? -ne 0 ]; then 
+        if [ $? -ne 0 ]; then 
             log_failure_msg "${MSG_START}"
             exit 1; 
         fi
     fi
     if [ ! -d $VARRUN_PATH ]; then
-	mkdir -p ${VARRUN_PATH}
+        mkdir -p ${VARRUN_PATH}
     fi
     NUM=0
-    if check_pidfile ${VARRUN_PATH}/pyfred.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/pyfred.pid; then
+        NUM=$(($NUM+1));
+    else
         @BINDIR@/pyfredctl start >/dev/null 2>&1
-	if [ $? -eq 0 ]; then
-	    NUM=$(($NUM+1))
-	fi
+        if [ $? -eq 0 ]; then
+            NUM=$(($NUM+1))
+        fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-rifd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-rifd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-rifd ${OPTIONS}${RIFD_PORT} >/dev/null 2>&1 &
-        if store_pid "${FRED_PATH}/fred-rifd" ${VARRUN_PATH}/fred-rifd.pid
-	then
-	    NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-rifd" ${VARRUN_PATH}/fred-rifd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-pifd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-pifd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-pifd ${OPTIONS}${PIFD_PORT} >/dev/null 2>&1 &
-        if store_pid "${FRED_PATH}/fred-pifd" ${VARRUN_PATH}/fred-pifd.pid
-	then
-	    NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-pifd" ${VARRUN_PATH}/fred-pifd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-adifd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-adifd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-adifd ${OPTIONS}${ADIFD_PORT} >/dev/null 2>&1 &
-        if store_pid "${FRED_PATH}/fred-adifd" ${VARRUN_PATH}/fred-adifd.pid
-	then
-	    NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-adifd" ${VARRUN_PATH}/fred-adifd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-logd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-logd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-logd ${OPTIONS}${LOGD_PORT} >/dev/null 2>&1 &
-        if store_pid "${FRED_PATH}/fred-logd" ${VARRUN_PATH}/fred-logd.pid
-	then
-	    NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-logd" ${VARRUN_PATH}/fred-logd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-mifd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-mifd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-mifd ${OPTIONS}${MIFD_PORT} >/dev/null 2>&1 &
-        if store_pid "${FRED_PATH}/fred-mifd" ${VARRUN_PATH}/fred-mifd.pid
-	then
-	    NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-mifd" ${VARRUN_PATH}/fred-mifd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-msgd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-msgd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-msgd ${OPTIONS}${MSGD_PORT} >/dev/null 2>&1 &
-        if store_pid "${FRED_PATH}/fred-msgd" ${VARRUN_PATH}/fred-msgd.pid
-	then
-	    NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-msgd" ${VARRUN_PATH}/fred-msgd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-dbifd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-dbifd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-dbifd ${OPTIONS}${DBIFD_PORT} 2>/dev/null &
-        if store_pid "${FRED_PATH}/fred-dbifd" ${VARRUN_PATH}/fred-dbifd.pid
-	then
-	    NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-dbifd" ${VARRUN_PATH}/fred-dbifd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
-    if check_pidfile ${VARRUN_PATH}/fred-akmd.pid; then NUM=$(($NUM+1)); else
+    if check_pidfile ${VARRUN_PATH}/fred-akmd.pid; then
+        NUM=$(($NUM+1));
+    else
         ${FRED_PATH}/fred-akmd ${OPTIONS}${AKMD_PORT} 2>/dev/null &
-        if store_pid "${FRED_PATH}/fred-akmd" ${VARRUN_PATH}/fred-akmd.pid
-    then
-        NUM=$(($NUM+1))
+        if store_pid "${FRED_PATH}/fred-akmd" ${VARRUN_PATH}/fred-akmd.pid; then
+            NUM=$(($NUM+1))
         fi
     fi
     FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL=9
@@ -147,7 +157,7 @@ fred_start() {
     if [ $NUM -eq $FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL ]; then
         log_success_msg "${MSG_START}"
     else
-	log_failure_msg "${MSG_START}"
+        log_failure_msg "${MSG_START}"
     fi
 }
 
@@ -179,37 +189,37 @@ fred_stop() {
     then
         kill -TERM `cat ${VARRUN_PATH}/fred-rifd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
-	rm -f ${VARRUN_PATH}/fred-rifd.pid
+        rm -f ${VARRUN_PATH}/fred-rifd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-pifd.pid ]
     then
-	kill -TERM `cat ${VARRUN_PATH}/fred-pifd.pid` 2>/dev/null
+        kill -TERM `cat ${VARRUN_PATH}/fred-pifd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
-	rm -f ${VARRUN_PATH}/fred-pifd.pid
+        rm -f ${VARRUN_PATH}/fred-pifd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-adifd.pid ]
     then
-	kill -TERM `cat ${VARRUN_PATH}/fred-adifd.pid` 2>/dev/null
+        kill -TERM `cat ${VARRUN_PATH}/fred-adifd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
-	rm -f ${VARRUN_PATH}/fred-adifd.pid
+        rm -f ${VARRUN_PATH}/fred-adifd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-logd.pid ]
     then
-	kill -TERM `cat ${VARRUN_PATH}/fred-logd.pid` 2>/dev/null
+        kill -TERM `cat ${VARRUN_PATH}/fred-logd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
-	rm -f ${VARRUN_PATH}/fred-logd.pid
+        rm -f ${VARRUN_PATH}/fred-logd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-mifd.pid ]
     then
-	kill -TERM `cat ${VARRUN_PATH}/fred-mifd.pid` 2>/dev/null
+        kill -TERM `cat ${VARRUN_PATH}/fred-mifd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
-	rm -f ${VARRUN_PATH}/fred-mifd.pid
+        rm -f ${VARRUN_PATH}/fred-mifd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-msgd.pid ]
     then
-	kill -TERM `cat ${VARRUN_PATH}/fred-msgd.pid` 2>/dev/null
+        kill -TERM `cat ${VARRUN_PATH}/fred-msgd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
-	rm -f ${VARRUN_PATH}/fred-msgd.pid
+        rm -f ${VARRUN_PATH}/fred-msgd.pid
     fi
     if [ -f ${VARRUN_PATH}/fred-dbifd.pid ]
     then

@@ -21,18 +21,6 @@
  *  implementation of automatic keyset management
  */
 
-#include <iostream>
-#include <string>
-
-#include "log/context.h"
-#include "log/logger.h"
-#include "src/corba/connection_releaser.h"
-#include "src/fredlib/db_settings.h"
-#include "src/fredlib/documents.h"
-#include "util/corba_wrapper.h"
-
-#include "setup_server.h"
-
 #include "cfg/config_handler.h"
 #include "cfg/handle_akmd_args.h"
 #include "cfg/handle_corbanameservice_args.h"
@@ -41,10 +29,21 @@
 #include "cfg/handle_logging_args.h"
 #include "cfg/handle_registry_args.h"
 #include "cfg/handle_server_args.h"
+#include "log/context.h"
+#include "log/logger.h"
 #include "src/corba/automatic_keyset_management/server_i.hh"
+#include "src/corba/connection_releaser.h"
+#include "src/corba/logger_client_impl.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/documents.h"
+#include "util/corba_wrapper.h"
+#include "util/setup_server.h"
 
 #include <boost/assign/list_of.hpp>
 #include <boost/shared_ptr.hpp>
+
+#include <iostream>
+#include <string>
 
 const std::string server_name = "fred-akmd";
 
@@ -61,7 +60,7 @@ boost::assign::list_of
     (HandleArgsPtr(new HandleAkmdArgs))
 ;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     FakedArgs fa; // producing faked args with unrecognized ones
     try
@@ -72,6 +71,8 @@ int main(int argc, char *argv[])
 
         corba_init();
 
+        Fred::Logger::LoggerCorbaClientImpl logger_client;
+
         // create server object with poa and nameservice registration
         CorbaContainer::get_instance()->register_server(
                 new Registry::AutomaticKeysetManagement::Server_i(
@@ -80,27 +81,27 @@ int main(int argc, char *argv[])
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_registrar,
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_tech_contact,
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_zones,
-                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->disable_notifier),
+                        CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->disable_notifier,
+                        logger_client),
                 "AutomaticKeysetManagement");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
-
     }
-    catch(const CORBA::TRANSIENT&)
+    catch (const CORBA::TRANSIENT&)
     {
         std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const CORBA::SystemException& ex)
+    catch (const CORBA::SystemException& ex)
     {
         std::cerr << "Caught a CORBA::" << ex._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const CORBA::Exception& ex)
+    catch (const CORBA::Exception& ex)
     {
         std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const omniORB::fatalException& fe)
+    catch (const omniORB::fatalException& fe)
     {
         std::cerr << "Caught omniORB::fatalException:" << std::endl;
         std::cerr << "  file: " << fe.file() << std::endl;
@@ -108,16 +109,16 @@ int main(int argc, char *argv[])
         std::cerr << "  mesg: " << fe.errmsg() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(const ReturnFromMain&)
+    catch (const ReturnFromMain&)
     {
         return EXIT_SUCCESS;
     }
-    catch(std::exception& ex)
+    catch (std::exception& ex)
     {
         std::cerr << "Error: " << ex.what() << std::endl;
         return EXIT_FAILURE;
     }
-    catch(...)
+    catch (...)
     {
         std::cerr << "Unknown Error" << std::endl;
         return EXIT_FAILURE;

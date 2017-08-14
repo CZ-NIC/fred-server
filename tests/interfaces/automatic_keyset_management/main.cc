@@ -23,6 +23,8 @@
 
 #include "tests/setup/fixtures.h"
 
+#include "util/corba_wrapper.h"
+
 #include "util/cfg/config_handler_decl.h"
 #include "util/cfg/config_handler.h"
 #include "util/cfg/handle_tests_args.h"

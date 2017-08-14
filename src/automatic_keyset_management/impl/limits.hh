@@ -19,12 +19,34 @@
 #ifndef LIMITS_H_7770C55BBBB94FAC8325481636FB0020
 #define LIMITS_H_7770C55BBBB94FAC8325481636FB0020
 
+#include <boost/static_assert.hpp>
+
+#include <cstddef>
+
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
 // allowed values from interval <min, max>
 const unsigned min_number_of_dns_keys =  1;
 const unsigned max_number_of_dns_keys = 10;
+
+// maximal allowed keyset handle length
+const std::size_t keyset_handle_length_max = 30;
+
+// maximal allowed handle length is used for automatically managed keyset handle
+const int automatically_managed_keyset_handle_length = keyset_handle_length_max;
+
+// suffix minimum (prefix value is generated randomly)
+const int automatically_managed_keyset_handle_suffix_length_min = 8;
+
+// prefix minimum (prefix value is taken from configuration)
+const int automatically_managed_keyset_handle_prefix_length_min = 2;
+// prefix maximum (some room must be left for the generated suffix)
+const int automatically_managed_keyset_handle_prefix_length_max = automatically_managed_keyset_handle_length - automatically_managed_keyset_handle_suffix_length_min;
+
+// check that conditions can be met
+BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_min + automatically_managed_keyset_handle_suffix_length_min < automatically_managed_keyset_handle_length);
+BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_max > automatically_managed_keyset_handle_prefix_length_min);
 
 } // namespace Epp::AutomaticKeysetManagement
 } // namespace Epp

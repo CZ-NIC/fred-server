@@ -2144,12 +2144,16 @@ src_corba_domain_browser_fred_dbifd_LDADD = \
 src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
+		src/corba/nameservice.cc \
+		src/corba/nameservice.h \
+		src/corba/logger_client_impl.h \
+		src/corba/logger_client_impl.cc \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
-		src/corba/nameservice.cc \
 		src/corba/automatic_keyset_management/server_i.cc \
 		src/corba/automatic_keyset_management/server_i.hh \
 		src/corba/automatic_keyset_management/fred-akmd.cc
+
 
 src_corba_automatic_keyset_management_fred_akmd_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -2157,10 +2161,15 @@ src_corba_automatic_keyset_management_fred_akmd_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 src_corba_automatic_keyset_management_fred_akmd_LDADD = \
-		src/corba/epp/libepp_impl.a \
 		src/corba/libcorbaautomatickeysetmanagement.a \
 		src/fredlib/libfred.a \
 		src/corba/util/libcorbautil.a \
+		src/corba/libcorba.a \
+		src/corba/libcorbalogger.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbaadmin.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
@@ -2715,8 +2724,6 @@ tests_test_server_SOURCES = \
 		tests/deprecated/test_locking_trigger.cc \
 		tests/util/test_nullable.cc \
 		tests/util/test_optional.cc \
-		src/corba/epp_corba_client_impl.cc \
-		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
@@ -2857,8 +2864,6 @@ tests_test_blocking_SOURCES = \
 		src/corba/admin/filter_impl.h \
 		tests/setup/tests_common.cc \
 		tests/setup/tests_common.h \
-		src/corba/epp_corba_client_impl.cc \
-		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
@@ -3149,6 +3154,14 @@ tests_test_corba_conversion_LDADD = \
 #
 
 tests_interfaces_test_automatic_keyset_management_SOURCES = \
+		src/corba/nameservice.h \
+		src/corba/nameservice.cc \
+		src/corba/logger_client_impl.h \
+		src/corba/logger_client_impl.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
@@ -3156,11 +3169,7 @@ tests_interfaces_test_automatic_keyset_management_SOURCES = \
 		tests/interfaces/automatic_keyset_management/util.h \
 		tests/interfaces/automatic_keyset_management/fixture.h \
 		tests/interfaces/automatic_keyset_management/main.cc \
-		tests/interfaces/automatic_keyset_management/test_automatic_keyset_management.cc \
-		tests/setup/fixtures_utils.h \
-		tests/setup/fixtures_utils.cc \
-		tests/setup/fixtures.h \
-		tests/setup/fixtures.cc
+		tests/interfaces/automatic_keyset_management/test_automatic_keyset_management.cc
 
 tests_interfaces_test_automatic_keyset_management_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
@@ -3168,12 +3177,18 @@ tests_interfaces_test_automatic_keyset_management_LDFLAGS = \
 		$(AM_LDFLAGS)
 
 tests_interfaces_test_automatic_keyset_management_LDADD = \
-		src/corba/epp/libepp_impl.a \
+		src/corba/libcorbaautomatickeysetmanagement.a \
 		src/fredlib/libfred.a \
-		util/types/libtypes.a \
-		util/db/libdb.a \
-		util/log/liblog.a \
+		src/corba/util/libcorbautil.a \
+		src/corba/libcorba.a \
+		src/corba/libcorbalogger.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbaadmin.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
 		util/libutil.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
