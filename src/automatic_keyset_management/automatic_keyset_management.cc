@@ -1058,8 +1058,13 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
                  "JOIN object_registry oreg ON oreg.id = d.id "
                  "JOIN object ok ON ok.id = d.keyset "
                  "JOIN object_registry oregk ON oregk.id = ok.id "
+                 "JOIN registrar r ON r.id = ok.clid "
                  "JOIN zone z ON z.id = d.zone "
-                "WHERE UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(") "
+                "WHERE NOT ( "
+                    "r.handle = UPPER(").param_text(automatically_managed_keyset_registrar_)(") "
+                    "AND UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(")) "
+                  "AND oregk.erdate IS NULL "
+                  "AND oregk.type = get_object_type_id('keyset') "
                   "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
         for (std::set<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
