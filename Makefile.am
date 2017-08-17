@@ -2148,6 +2148,10 @@ src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
 		src/corba/nameservice.h \
 		src/corba/logger_client_impl.h \
 		src/corba/logger_client_impl.cc \
+		src/automatic_keyset_management/impl/util.cc \
+		src/automatic_keyset_management/impl/util.hh \
+		src/automatic_keyset_management/dns_key.cc \
+		src/automatic_keyset_management/dns_key.hh \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
 		src/corba/automatic_keyset_management/server_i.cc \
@@ -3164,6 +3168,8 @@ tests_interfaces_test_automatic_keyset_management_SOURCES = \
 		tests/setup/fixtures.cc \
 		src/epp/keyset/dns_key.cc \
 		src/epp/keyset/dns_key.h \
+		src/automatic_keyset_management/dns_key.cc \
+		src/automatic_keyset_management/dns_key.hh \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
 		tests/interfaces/automatic_keyset_management/util.h \

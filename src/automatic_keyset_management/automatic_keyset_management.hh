@@ -25,6 +25,8 @@
 #define AUTOMATIC_KEYSET_MANAGEMENT_HH_E7D0CA5C7FDA4FF6A7217BE8252D99A1
 
 #include "src/fredlib/logger_client.h"
+#include "src/automatic_keyset_management/keyset.hh"
+#include "src/automatic_keyset_management/nsset.hh"
 
 #include <exception>
 #include <map>
@@ -166,42 +168,6 @@ struct InternalServerError
     {
         return "internal server error";
     }
-};
-
-typedef std::set<std::string> Nameservers;
-
-struct Nsset
-{
-    Nameservers nameservers;
-};
-
-struct DnsKey {
-    unsigned short flags;
-    unsigned short protocol;
-    unsigned short alg;
-    std::string key;
-
-    DnsKey(
-            unsigned short _flags,
-            unsigned short _protocol,
-            unsigned short _alg,
-            const std::string& _key)
-        : flags(_flags),
-          protocol(_protocol),
-          alg(_alg),
-          key(_key)
-    {
-    }
-
-    bool operator<(const DnsKey& rhs) const;
-
-    bool operator==(const DnsKey& rhs) const;
-};
-
-typedef std::set<DnsKey> DnsKeys;
-
-struct Keyset {
-    DnsKeys dns_keys;
 };
 
 struct Domain {
