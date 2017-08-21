@@ -28,7 +28,6 @@
 #include "src/fredlib/contact/info_contact.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/update_domain.h"
-#include "src/fredlib/object/object_id_handle_pair.h"
 #include "src/fredlib/keyset/create_keyset.h"
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/keyset/keyset_dns_key.h"
@@ -38,6 +37,7 @@
 #include "src/fredlib/object/check_handle.h"
 #include "src/fredlib/object/get_id_of_registered.h"
 #include "src/fredlib/object/object_type.h"
+#include "src/fredlib/object/object_id_handle_pair.h"
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
@@ -789,7 +789,7 @@ private:
 
 
 ObjectIdHandlePair create_automatically_managed_keyset(
-        Fred::OperationContext& _ctx, 
+        Fred::OperationContext& _ctx,
         const InfoRegistrarData& _automatically_managed_keyset_registrar,
         const std::string& _automatically_managed_keyset_prefix,
         const std::string& _automatically_managed_keyset_tech_contact,
@@ -842,7 +842,7 @@ ObjectIdHandlePair create_automatically_managed_keyset(
 }
 
 void link_automatically_managed_keyset_to_domain(
-        Fred::OperationContext& _ctx, 
+        Fred::OperationContext& _ctx,
         const InfoRegistrarData& _automatically_managed_keyset_registrar,
         const InfoDomainData& _info_domain_data,
         const std::string& _automatically_managed_keyset,
@@ -874,7 +874,7 @@ void link_automatically_managed_keyset_to_domain(
 }
 
 void update_automatically_managed_keyset(
-        Fred::OperationContext& _ctx, 
+        Fred::OperationContext& _ctx,
         const InfoKeysetData& _info_keyset_data,
         const InfoRegistrarData _automatically_managed_keyset_registrar,
         const Keyset& _new_keyset,
@@ -993,7 +993,8 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
 
     check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
 
-    try {
+    try
+    {
         Fred::OperationContextCreator ctx;
 
         const Fred::InfoRegistrarData automatically_managed_keyset_registrar =
@@ -1292,7 +1293,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
             throw Fred::AutomaticKeysetManagement::ConfigurationError();
         }
 
-        try {
+        try
+        {
             get_id_of_registered<Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
         }
         catch (const ObjectNotFound&)
@@ -1304,7 +1306,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
 
         const LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
-        try {
+        try
+        {
             const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
                     ctx,
                     automatically_managed_keyset_registrar,
@@ -1471,7 +1474,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
             throw Fred::AutomaticKeysetManagement::ConfigurationError();
         }
 
-        try {
+        try
+        {
             get_id_of_registered<Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
         }
         catch (const ObjectNotFound&)
@@ -1507,7 +1511,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         else
         {
             const LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
-            try {
+            try
+            {
                 const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
                         ctx,
                         automatically_managed_keyset_registrar,
