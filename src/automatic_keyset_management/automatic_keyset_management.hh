@@ -183,7 +183,7 @@ struct Domain {
 typedef std::string Nameserver;
 typedef std::set<Domain> Domains;
 typedef std::map<Nameserver, Domains> NameserversDomains;
-typedef std::vector<std::string> EmailAddresses;
+typedef std::set<std::string> EmailAddresses;
 
 class AutomaticKeysetManagementImpl
 {

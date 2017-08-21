@@ -1327,7 +1327,7 @@ EmailAddresses AutomaticKeysetManagementImpl::get_email_addresses_by_domain_id(
         for (unsigned int idx = 0; idx < db_result.size(); ++idx)
         {
             const std::string email_address = static_cast<std::string>(db_result[idx]["email_address"]);
-            email_addresses.push_back(email_address);
+            email_addresses.insert(email_address);
             LOGGER(PACKAGE).debug(std::string("email: ") + email_address);
         }
 
