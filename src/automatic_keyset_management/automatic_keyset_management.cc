@@ -993,7 +993,8 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
 
     check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
 
-    try {
+    try
+    {
         Fred::OperationContextCreator ctx;
 
         const Fred::InfoRegistrarData automatically_managed_keyset_registrar =
@@ -1292,7 +1293,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
             throw Fred::AutomaticKeysetManagement::ConfigurationError();
         }
 
-        try {
+        try
+        {
             get_id_of_registered<Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
         }
         catch (const ObjectNotFound&)
@@ -1304,7 +1306,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
 
         const LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
-        try {
+        try
+        {
             const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
                     ctx,
                     automatically_managed_keyset_registrar,
@@ -1471,7 +1474,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
             throw Fred::AutomaticKeysetManagement::ConfigurationError();
         }
 
-        try {
+        try
+        {
             get_id_of_registered<Object_Type::contact>(ctx, automatically_managed_keyset_tech_contact_);
         }
         catch (const ObjectNotFound&)
@@ -1507,7 +1511,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         else
         {
             const LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
-            try {
+            try
+            {
                 const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
                         ctx,
                         automatically_managed_keyset_registrar,
