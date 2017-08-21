@@ -48,6 +48,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/requests/request.h"
 #include "util/log/context.h"
+#include "util/random.h"
 #include "util/util.h"
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -86,6 +87,39 @@ bool DnsKey::operator==(const DnsKey& rhs) const
 }
 
 namespace {
+
+std::string create_ctx_name(const std::string& _name)
+{
+    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+}
+
+
+std::string create_ctx_operation_name(const char* function_name)
+{
+    std::string ctx_operation_name(function_name);
+    std::replace(ctx_operation_name.begin(), ctx_operation_name.end(), '_', '-');
+    return ctx_operation_name;
+}
+
+
+class LogContext
+{
+public:
+    LogContext(
+            const AutomaticKeysetManagementImpl& _impl,
+            const std::string& _ctx_operation_name)
+        : ctx_server_(create_ctx_name(_impl.get_server_name())),
+          ctx_operation_(_ctx_operation_name)
+    {
+    }
+
+
+private:
+    Logging::Context ctx_server_;
+    Logging::Context ctx_operation_;
+};
+
+#define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_operation_name(__FUNCTION__))
 
 std::string quote(const std::string& str) {
     return "\"" + str + "\"";
@@ -955,6 +989,7 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
       notifier_disabled_(_disable_notifier),
       logger_client_(_logger_client)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
 
     check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
 
@@ -995,6 +1030,8 @@ std::string AutomaticKeysetManagementImpl::get_server_name() const
 
 NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_insecure_automatically_managed_domain_candidates()
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try
     {
         NameserversDomains nameservers_domains;
@@ -1044,6 +1081,8 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_insecure_
 
 NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_automatically_managed_domain_candidates()
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try
     {
         NameserversDomains nameservers_domains;
@@ -1101,6 +1140,8 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
 
 NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatically_managed_domains()
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try
     {
         NameserversDomains nameservers_domains;
@@ -1161,6 +1202,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         const Nsset& _current_nsset,
         const Keyset& _new_keyset)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try
     {
         Fred::OperationContextCreator ctx;
@@ -1350,6 +1393,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         unsigned long long _domain_id,
         const Keyset& _new_keyset)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try
     {
         Fred::OperationContextCreator ctx;
@@ -1552,6 +1597,8 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
         unsigned long long _domain_id,
         const Keyset& _new_keyset)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try
     {
         Fred::OperationContextCreator ctx;
@@ -1752,6 +1799,8 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 EmailAddresses AutomaticKeysetManagementImpl::get_email_addresses_by_domain_id(
         unsigned long long _domain_id)
 {
+    LOGGING_CONTEXT(log_ctx, *this);
+
     try
     {
         EmailAddresses email_addresses;
