@@ -789,7 +789,7 @@ private:
 
 
 ObjectIdHandlePair create_automatically_managed_keyset(
-        Fred::OperationContext& _ctx, 
+        Fred::OperationContext& _ctx,
         const InfoRegistrarData& _automatically_managed_keyset_registrar,
         const std::string& _automatically_managed_keyset_prefix,
         const std::string& _automatically_managed_keyset_tech_contact,
@@ -842,7 +842,7 @@ ObjectIdHandlePair create_automatically_managed_keyset(
 }
 
 void link_automatically_managed_keyset_to_domain(
-        Fred::OperationContext& _ctx, 
+        Fred::OperationContext& _ctx,
         const InfoRegistrarData& _automatically_managed_keyset_registrar,
         const InfoDomainData& _info_domain_data,
         const std::string& _automatically_managed_keyset,
@@ -874,7 +874,7 @@ void link_automatically_managed_keyset_to_domain(
 }
 
 void update_automatically_managed_keyset(
-        Fred::OperationContext& _ctx, 
+        Fred::OperationContext& _ctx,
         const InfoKeysetData& _info_keyset_data,
         const InfoRegistrarData _automatically_managed_keyset_registrar,
         const Keyset& _new_keyset,
