@@ -41,36 +41,6 @@ struct LoggerRequestProperty
 template <LoggerRequestProperty::Enum>
 std::string to_fred_logger_request_property_name();
 
-template <>
-std::string to_fred_logger_request_property_name<LoggerRequestProperty::name>()
-{
-    return "name";
-}
-
-template <>
-std::string to_fred_logger_request_property_name<LoggerRequestProperty::keyset>()
-{
-    return "keyset";
-}
-
-template <>
-std::string to_fred_logger_request_property_name<LoggerRequestProperty::old_dns_key>()
-{
-    return "old_dns_key";
-}
-
-template <>
-std::string to_fred_logger_request_property_name<LoggerRequestProperty::new_dns_key>()
-{
-    return "new_dns_key";
-}
-
-template <>
-std::string to_fred_logger_request_property_name<LoggerRequestProperty::op_tr_id>()
-{
-    return "opTRID";
-}
-
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

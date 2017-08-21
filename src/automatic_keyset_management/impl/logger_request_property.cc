@@ -16,24 +16,40 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/automatic_keyset_management/dns_key.hh"
-
-#include "src/automatic_keyset_management/impl/util.hh"
-
-#include <string>
+#include "logger_request_property.hh"
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
-std::string to_string(const DnsKey& dnskey)
+template <>
+std::string to_fred_logger_request_property_name<LoggerRequestProperty::name>()
 {
-    static const std::string delim = ", ";
-    return "[flags: " + quote(dnskey.flags) + delim +
-           "protocol: " + quote(dnskey.protocol) + delim +
-           "algorithm: " + quote(dnskey.alg) + delim +
-           "key: " + quote(dnskey.key) + "]";
+    return "name";
+}
+
+template <>
+std::string to_fred_logger_request_property_name<LoggerRequestProperty::keyset>()
+{
+    return "keyset";
+}
+
+template <>
+std::string to_fred_logger_request_property_name<LoggerRequestProperty::old_dns_key>()
+{
+    return "old_dns_key";
+}
+
+template <>
+std::string to_fred_logger_request_property_name<LoggerRequestProperty::new_dns_key>()
+{
+    return "new_dns_key";
+}
+
+template <>
+std::string to_fred_logger_request_property_name<LoggerRequestProperty::op_tr_id>()
+{
+    return "opTRID";
 }
 
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
-

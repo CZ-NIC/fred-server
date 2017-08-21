@@ -24,7 +24,10 @@
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
-struct Keyset {
+typedef std::set<DnsKey> DnsKeys;
+
+struct Keyset
+{
     DnsKeys dns_keys;
 };
 

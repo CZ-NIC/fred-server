@@ -25,7 +25,8 @@
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
-struct DnsKey {
+struct DnsKey
+{
     unsigned short flags;
     unsigned short protocol;
     unsigned short alg;
@@ -47,8 +48,6 @@ struct DnsKey {
 
     bool operator==(const DnsKey& rhs) const;
 };
-
-typedef std::set<DnsKey> DnsKeys;
 
 std::string to_string(const DnsKey& dnskey);
 

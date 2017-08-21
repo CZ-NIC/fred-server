@@ -16,22 +16,21 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "src/automatic_keyset_management/dns_key.hh"
-
-#include "src/automatic_keyset_management/impl/util.hh"
-
-#include <string>
+#include "src/automatic_keyset_management/impl/logger_request_object_type.hh"
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
-std::string to_string(const DnsKey& dnskey)
+template <>
+std::string to_fred_logger_request_object_type_name<LoggerRequestObjectType::keyset>()
 {
-    static const std::string delim = ", ";
-    return "[flags: " + quote(dnskey.flags) + delim +
-           "protocol: " + quote(dnskey.protocol) + delim +
-           "algorithm: " + quote(dnskey.alg) + delim +
-           "key: " + quote(dnskey.key) + "]";
+    return "keyset";
+}
+
+template <>
+std::string to_fred_logger_request_object_type_name<LoggerRequestObjectType::domain>()
+{
+    return "domain";
 }
 
 } // namespace Fred::AutomaticKeysetManagement

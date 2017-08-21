@@ -36,18 +36,6 @@ struct LoggerRequestObjectType
 template <LoggerRequestObjectType::Enum>
 std::string to_fred_logger_request_object_type_name();
 
-template <>
-std::string to_fred_logger_request_object_type_name<LoggerRequestObjectType::keyset>()
-{
-    return "keyset";
-}
-
-template <>
-std::string to_fred_logger_request_object_type_name<LoggerRequestObjectType::domain>()
-{
-    return "domain";
-}
-
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

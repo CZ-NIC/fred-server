@@ -37,24 +37,6 @@ struct LoggerRequestType
 template <LoggerRequestType::Enum>
 std::string to_fred_logger_request_type_name();
 
-template <>
-std::string to_fred_logger_request_type_name<LoggerRequestType::akm_turn_on>()
-{
-    return "AkmTurnOn";
-}
-
-template <>
-std::string to_fred_logger_request_type_name<LoggerRequestType::akm_turn_off>()
-{
-    return "AkmTurnOff";
-}
-
-template <>
-std::string to_fred_logger_request_type_name<LoggerRequestType::akm_rollover>()
-{
-    return "AkmRollover";
-}
-
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

@@ -2148,12 +2148,27 @@ src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
 		src/corba/nameservice.h \
 		src/corba/logger_client_impl.h \
 		src/corba/logger_client_impl.cc \
-		src/automatic_keyset_management/impl/util.cc \
-		src/automatic_keyset_management/impl/util.hh \
-		src/automatic_keyset_management/dns_key.cc \
-		src/automatic_keyset_management/dns_key.hh \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
+		src/automatic_keyset_management/dns_key.cc \
+		src/automatic_keyset_management/dns_key.hh \
+		src/automatic_keyset_management/impl/limits.hh \
+		src/automatic_keyset_management/impl/logger_request.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
+		src/automatic_keyset_management/impl/logger_request_data.cc \
+		src/automatic_keyset_management/impl/logger_request_data.hh \
+		src/automatic_keyset_management/impl/logger_request_object_type.cc \
+		src/automatic_keyset_management/impl/logger_request_object_type.hh \
+		src/automatic_keyset_management/impl/logger_request_property.cc \
+		src/automatic_keyset_management/impl/logger_request_property.hh \
+		src/automatic_keyset_management/impl/logger_request_result.hh \
+		src/automatic_keyset_management/impl/logger_request_type.cc \
+		src/automatic_keyset_management/impl/logger_request_type.hh \
+		src/automatic_keyset_management/impl/logger_service_type.hh \
+		src/automatic_keyset_management/impl/util.cc \
+		src/automatic_keyset_management/impl/util.hh \
 		src/corba/automatic_keyset_management/server_i.cc \
 		src/corba/automatic_keyset_management/server_i.hh \
 		src/corba/automatic_keyset_management/fred-akmd.cc
@@ -3172,6 +3187,23 @@ tests_interfaces_test_automatic_keyset_management_SOURCES = \
 		src/automatic_keyset_management/dns_key.hh \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
+		src/automatic_keyset_management/impl/limits.hh \
+		src/automatic_keyset_management/impl/logger_request.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
+		src/automatic_keyset_management/impl/logger_request_data.cc \
+		src/automatic_keyset_management/impl/logger_request_data.hh \
+		src/automatic_keyset_management/impl/logger_request_object_type.cc \
+		src/automatic_keyset_management/impl/logger_request_object_type.hh \
+		src/automatic_keyset_management/impl/logger_request_property.cc \
+		src/automatic_keyset_management/impl/logger_request_property.hh \
+		src/automatic_keyset_management/impl/logger_request_result.hh \
+		src/automatic_keyset_management/impl/logger_request_type.cc \
+		src/automatic_keyset_management/impl/logger_request_type.hh \
+		src/automatic_keyset_management/impl/logger_service_type.hh \
+		src/automatic_keyset_management/impl/util.cc \
+		src/automatic_keyset_management/impl/util.hh \
 		tests/interfaces/automatic_keyset_management/util.h \
 		tests/interfaces/automatic_keyset_management/fixture.h \
 		tests/interfaces/automatic_keyset_management/main.cc \
