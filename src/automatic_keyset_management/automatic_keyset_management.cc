@@ -352,6 +352,26 @@ void link_automatically_managed_keyset_to_domain(
     Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(_ctx);
 }
 
+bool is_keyset_shared(Fred::OperationContext& _ctx, unsigned long long _keyset_id)
+{
+    const std::string sql =
+            "SELECT count(1) as referenced_times FROM domain WHERE keyset = $1::bigint";
+    const Database::Result db_result =
+            _ctx.get_conn().exec_params(
+                    sql,
+                    Database::query_param_list(_keyset_id));
+    if (db_result.size() < 1)
+    {
+        throw Fred::AutomaticKeysetManagement::ObjectNotFound();
+    }
+    if (db_result.size() > 1)
+    {
+        throw std::runtime_error("too many rows");
+    }
+    const unsigned long long referenced_times = static_cast<unsigned long long>(db_result[0]["referenced_times"]);
+    return referenced_times > 1;
+}
+
 void update_automatically_managed_keyset(
         Fred::OperationContext& _ctx,
         const InfoKeysetData& _info_keyset_data,
@@ -377,6 +397,11 @@ void update_automatically_managed_keyset(
     {
         LOGGER(PACKAGE).debug("keyset state prohibits action");
         throw Fred::AutomaticKeysetManagement::KeysetStatePolicyError();
+    }
+
+    if (is_keyset_shared(_ctx, _info_keyset_data.id))
+    {
+        throw std::runtime_error("automatically managed keyset referenced by multiple domains. Cannot update keyset for security reasons. MUST BE fixed!");
     }
 
     Fred::UpdateKeyset update_keyset(
