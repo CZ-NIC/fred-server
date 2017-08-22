@@ -206,6 +206,9 @@ noinst_HEADERS = \
 		src/corba/util/corba_conversions_datetime.h \
 		src/corba/util/corba_conversions_nullable_types.h \
 		src/corba/util/corba_conversions_string.h \
+		src/corba/util/corba_conversions_int.h \
+		src/corba/automatic_keyset_management/corba_conversions.cc \
+		src/corba/automatic_keyset_management/corba_conversions.hh \
 		util/is_equal_optional_nullable.h \
 		tests/fredlib/util.h \
 		tests/fredlib/enum_to_db_handle_conversion.h \
@@ -2150,6 +2153,8 @@ src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
 		src/corba/logger_client_impl.cc \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
+		src/automatic_keyset_management/keyset.hh \
+		src/automatic_keyset_management/nsset.hh \
 		src/automatic_keyset_management/dns_key.cc \
 		src/automatic_keyset_management/dns_key.hh \
 		src/automatic_keyset_management/impl/limits.hh \
