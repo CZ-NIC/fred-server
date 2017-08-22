@@ -2153,6 +2153,8 @@ src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
 		src/corba/logger_client_impl.cc \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
+		src/automatic_keyset_management/keyset.hh \
+		src/automatic_keyset_management/nsset.hh \
 		src/automatic_keyset_management/dns_key.cc \
 		src/automatic_keyset_management/dns_key.hh \
 		src/automatic_keyset_management/impl/limits.hh \
