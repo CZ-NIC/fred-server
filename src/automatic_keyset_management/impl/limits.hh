@@ -45,8 +45,10 @@ const int automatically_managed_keyset_handle_prefix_length_min = 2;
 const int automatically_managed_keyset_handle_prefix_length_max = automatically_managed_keyset_handle_length - automatically_managed_keyset_handle_suffix_length_min;
 
 // check that conditions can be met
-BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_min + automatically_managed_keyset_handle_suffix_length_min < automatically_managed_keyset_handle_length);
-BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_max > automatically_managed_keyset_handle_prefix_length_min);
+BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_min >= 0);
+BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_suffix_length_min >= 0);
+BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_min + automatically_managed_keyset_handle_suffix_length_min <= automatically_managed_keyset_handle_length);
+BOOST_STATIC_ASSERT(automatically_managed_keyset_handle_prefix_length_max >= automatically_managed_keyset_handle_prefix_length_min);
 
 } // namespace Epp::AutomaticKeysetManagement
 } // namespace Epp
