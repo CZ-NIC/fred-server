@@ -909,7 +909,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
                         automatically_managed_keyset_prefix_,
                         automatically_managed_keyset_registrar_);
 
-        if (!domain_has_automatically_managed_keyset)
+        if (domain_has_automatically_managed_keyset)
         {
             LOGGER(PACKAGE).debug("domain already has an automatically managed keyset");
             throw Fred::AutomaticKeysetManagement::DomainAlreadyHasAutomaticallyManagedKeyset();
@@ -1111,7 +1111,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
         if (!domain_has_automatically_managed_keyset)
         {
-            LOGGER(PACKAGE).debug("domain does not have automatically managed keyset");
+            LOGGER(PACKAGE).debug("domain does not have an automatically managed keyset");
             throw Fred::AutomaticKeysetManagement::DomainDoesNotHaveAutomaticallyManagedKeyset();
         }
 
