@@ -880,7 +880,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
     try
     {
         Fred::OperationContextCreator ctx;
-        LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% current_nsset: %2% new_keyset: %3%\n")
+        LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% new_keyset: %2%\n")
                         % _domain_id
                         % _new_keyset.dns_keys.size()));
 
@@ -1086,7 +1086,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
     try
     {
         Fred::OperationContextCreator ctx;
-        LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% current_nsset: %2% new_keyset: %3%\n")
+        LOGGER(PACKAGE).debug(boost::str(boost::format("domain_id: %1% new_keyset: %2%\n")
                         % _domain_id
                         % _new_keyset.dns_keys.size()));
 
