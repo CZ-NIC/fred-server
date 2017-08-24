@@ -755,8 +755,8 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         const bool turn_dnssec_off = is_dnssec_turn_off_requested(_new_keyset);
         if (turn_dnssec_off)
         {
-            LOGGER(PACKAGE).debug("keyset invalid: includes only delete key");
-            throw Fred::AutomaticKeysetManagement::KeysetIsInvalid();
+            LOGGER(PACKAGE).debug("domain already does not have any keyset to remove");
+            throw Fred::AutomaticKeysetManagement::DomainAlreadyDoesNotHaveKeyset();
         }
         else if (!has_valid_dnskeys(ctx, _new_keyset))
         {

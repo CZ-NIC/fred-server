@@ -108,12 +108,12 @@ struct DomainDoesNotHaveKeyset
     }
 };
 
-struct DomainAlreadyHasAutomaticallyManagedKeyset
+struct DomainAlreadyDoesNotHaveKeyset
     : std::exception
 {
     const char* what() const throw ()
     {
-        return "domain already has an automatically managed keyset";
+        return "domain already does not have a keyset";
     }
 };
 
@@ -123,6 +123,15 @@ struct DomainDoesNotHaveAutomaticallyManagedKeyset
     const char* what() const throw ()
     {
         return "domain does not have an automatically managed keyset";
+    }
+};
+
+struct DomainAlreadyHasAutomaticallyManagedKeyset
+    : std::exception
+{
+    const char* what() const throw ()
+    {
+        return "domain already has an automatically managed keyset";
     }
 };
 
