@@ -355,21 +355,24 @@ void link_automatically_managed_keyset_to_domain(
 bool is_keyset_shared(Fred::OperationContext& _ctx, unsigned long long _keyset_id)
 {
     const std::string sql =
-            "SELECT count(1) as referenced_times FROM domain WHERE keyset = $1::bigint";
+            "SELECT 1 < COUNT(*) AS keyset_is_shared "
+              "FROM (SELECT 1 "
+                      "FROM domain "
+                     "WHERE keyset = $1::bigint LIMIT 2) AS some_references";
     const Database::Result db_result =
             _ctx.get_conn().exec_params(
                     sql,
                     Database::query_param_list(_keyset_id));
     if (db_result.size() < 1)
     {
-        throw Fred::AutomaticKeysetManagement::ObjectNotFound();
+        throw std::runtime_error("no rows");
     }
     if (db_result.size() > 1)
     {
         throw std::runtime_error("too many rows");
     }
-    const unsigned long long referenced_times = static_cast<unsigned long long>(db_result[0]["referenced_times"]);
-    return referenced_times > 1;
+    const bool keyset_is_shared = static_cast<bool>(db_result[0]["keyset_is_shared"]);
+    return keyset_is_shared;
 }
 
 void update_automatically_managed_keyset(
