@@ -142,6 +142,10 @@ void Server_i::turn_on_automatic_keyset_management_on_insecure_domain(
     {
         throw DOMAIN_HAS_KEYSET();
     }
+    catch (Fred::AutomaticKeysetManagement::DomainAlreadyDoesNotHaveKeyset&)
+    {
+        throw DOMAIN_ALREADY_DOES_NOT_HAVE_KEYSET();
+    }
     catch (Fred::AutomaticKeysetManagement::DomainStatePolicyError&)
     {
         throw DOMAIN_STATE_POLICY_ERROR();
