@@ -354,11 +354,13 @@ void link_automatically_managed_keyset_to_domain(
 
 bool is_keyset_shared(Fred::OperationContext& _ctx, unsigned long long _keyset_id)
 {
+    // clang-format off
     const std::string sql =
             "SELECT 1 < COUNT(*) AS keyset_is_shared "
               "FROM (SELECT 1 "
                       "FROM domain "
                      "WHERE keyset = $1::bigint LIMIT 2) AS some_references";
+    // clang-format on
     const Database::Result db_result =
             _ctx.get_conn().exec_params(
                     sql,
@@ -498,10 +500,10 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
 {
     LOGGING_CONTEXT(log_ctx, *this);
 
-    check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
-
     try
     {
+        check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
+
         Fred::OperationContextCreator ctx;
 
         const Fred::InfoRegistrarData automatically_managed_keyset_registrar =
@@ -523,6 +525,16 @@ AutomaticKeysetManagementImpl::AutomaticKeysetManagementImpl(
             LOGGER(PACKAGE).error(std::string("registrar: '") + automatically_managed_keyset_registrar_ + "' not found");
             throw Fred::AutomaticKeysetManagement::ConfigurationError();
         }
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("unknown error");
         throw;
     }
 }
@@ -1139,7 +1151,6 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
         if (!domain_has_automatically_managed_keyset)
         {
-            LOGGER(PACKAGE).debug("domain does not have an automatically managed keyset");
             throw Fred::AutomaticKeysetManagement::DomainDoesNotHaveAutomaticallyManagedKeyset();
         }
 
@@ -1179,7 +1190,6 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
                 domain_states.presents(Fred::Object_State::server_update_prohibited) ||
                 domain_states.presents(Fred::Object_State::delete_candidate))
             {
-                LOGGER(PACKAGE).debug("domain state prohibits action");
                 throw Fred::AutomaticKeysetManagement::DomainStatePolicyError();
             }
 
@@ -1212,9 +1222,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
             if (are_keysets_equal(_new_keyset, info_keyset_data.dns_keys))
             {
-                LOGGER(PACKAGE).debug("new keyset same as current keyset, nothing to do");
-                // nothing to commit
-                return;
+                throw Fred::AutomaticKeysetManagement::KeysetSameAsDomainKeyset();
             }
 
             Fred::LockObjectStateRequestLock(info_keyset_data.id).exec(ctx);
@@ -1225,7 +1233,6 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
             if (keyset_states.presents(Fred::Object_State::server_update_prohibited) ||
                 keyset_states.presents(Fred::Object_State::delete_candidate))
             {
-                LOGGER(PACKAGE).debug("keyset state prohibits action");
                 throw Fred::AutomaticKeysetManagement::KeysetStatePolicyError();
             }
 

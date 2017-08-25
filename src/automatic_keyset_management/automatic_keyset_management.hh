@@ -135,6 +135,15 @@ struct DomainAlreadyHasAutomaticallyManagedKeyset
     }
 };
 
+struct KeysetSameAsDomainKeyset
+    : std::exception
+{
+    const char* what() const throw ()
+    {
+        return "the keyset is the same as the current keyset of the domain";
+    }
+};
+
 struct DomainStatePolicyError
     : std::exception
 {
