@@ -1212,9 +1212,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
 
             if (are_keysets_equal(_new_keyset, info_keyset_data.dns_keys))
             {
-                LOGGER(PACKAGE).debug("new keyset same as current keyset, nothing to do");
-                // nothing to commit
-                return;
+                throw Fred::AutomaticKeysetManagement::KeysetSameAsDomainKeyset();
             }
 
             Fred::LockObjectStateRequestLock(info_keyset_data.id).exec(ctx);
