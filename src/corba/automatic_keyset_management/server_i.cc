@@ -228,6 +228,10 @@ void Server_i::update_automatically_managed_keyset_of_domain(
     {
         throw DOMAIN_DOES_NOT_HAVE_AUTOMATICALLY_MANAGED_KEYSET();
     }
+    catch (Fred::AutomaticKeysetManagement::KeysetSameAsDomainKeyset&)
+    {
+        throw KEYSET_SAME_AS_DOMAIN_KEYSET();
+    }
     catch (Fred::AutomaticKeysetManagement::DomainStatePolicyError&)
     {
         throw DOMAIN_STATE_POLICY_ERROR();
