@@ -92,7 +92,7 @@ struct HandleAkmdArgs : public HandleArgs
         std::vector<std::string> tmp = vm["akmd.automatically_managed_keyset_zones"].as<std::vector<std::string> >();
         automatically_managed_keyset_zones = std::set<std::string>(tmp.begin(), tmp.end());
         disable_notifier = vm["akmd.disable_notifier"].as<bool>();
-        enable_request_logger = vm["akm.enable_request_logger"].as<bool>();
+        enable_request_logger = vm["akmd.enable_request_logger"].as<bool>();
     }
 
 };
