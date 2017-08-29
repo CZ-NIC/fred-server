@@ -745,19 +745,16 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
 
         if (!info_domain_data.keyset.isnull())
         {
-            LOGGER(PACKAGE).debug("domain has a keyset (is not insecure)");
             throw Fred::AutomaticKeysetManagement::DomainHasKeyset();
         }
 
         if (info_domain_data.nsset.isnull())
         {
-            LOGGER(PACKAGE).debug("current_nsset empty");
             throw Fred::AutomaticKeysetManagement::DomainNssetIsEmpty();
         }
 
         if (_current_nsset.nameservers.empty())
         {
-            LOGGER(PACKAGE).debug("domain nsset is empty");
             throw Fred::AutomaticKeysetManagement::NssetIsEmpty();
         }
 
@@ -770,7 +767,6 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
         const bool turn_dnssec_off = is_dnssec_turn_off_requested(_new_keyset);
         if (turn_dnssec_off)
         {
-            LOGGER(PACKAGE).debug("domain already does not have any keyset to remove");
             throw Fred::AutomaticKeysetManagement::DomainAlreadyDoesNotHaveKeyset();
         }
         else if (!has_valid_dnskeys(ctx, _new_keyset))
@@ -796,7 +792,6 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
             domain_states.presents(Fred::Object_State::server_update_prohibited) ||
             domain_states.presents(Fred::Object_State::delete_candidate))
         {
-            LOGGER(PACKAGE).debug("domain state prohibits action");
             throw Fred::AutomaticKeysetManagement::DomainStatePolicyError();
         }
 
@@ -937,7 +932,6 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
 
         if (info_domain_data.keyset.isnull())
         {
-            LOGGER(PACKAGE).debug("domain does not have a keyset (is not secure)");
             throw Fred::AutomaticKeysetManagement::DomainDoesNotHaveKeyset();
         }
 
@@ -951,7 +945,6 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
 
         if (domain_has_automatically_managed_keyset)
         {
-            LOGGER(PACKAGE).debug("domain already has an automatically managed keyset");
             throw Fred::AutomaticKeysetManagement::DomainAlreadyHasAutomaticallyManagedKeyset();
         }
 
@@ -977,7 +970,6 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
             domain_states.presents(Fred::Object_State::server_update_prohibited) ||
             domain_states.presents(Fred::Object_State::delete_candidate))
         {
-            LOGGER(PACKAGE).debug("domain state prohibits action");
             throw Fred::AutomaticKeysetManagement::DomainStatePolicyError();
         }
 
