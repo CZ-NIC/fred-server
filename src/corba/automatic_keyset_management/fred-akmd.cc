@@ -36,6 +36,7 @@
 #include "src/corba/logger_client_impl.h"
 #include "src/fredlib/db_settings.h"
 #include "src/fredlib/documents.h"
+#include "util/dummy_logger.hh"
 #include "util/corba_wrapper.h"
 #include "util/setup_server.h"
 
@@ -71,7 +72,15 @@ int main(int argc, char* argv[])
 
         corba_init();
 
-        Fred::Logger::LoggerCorbaClientImpl logger_client;
+        boost::scoped_ptr<Fred::Logger::LoggerClient> logger_client;
+        if (CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->enable_request_logger)
+        {
+            logger_client.reset(new Fred::Logger::LoggerCorbaClientImpl());
+        }
+        else
+        {
+            logger_client.reset(new Fred::Logger::DummyLoggerImpl());
+        }
 
         // create server object with poa and nameservice registration
         CorbaContainer::get_instance()->register_server(
@@ -82,7 +91,7 @@ int main(int argc, char* argv[])
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_tech_contact,
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->automatically_managed_keyset_zones,
                         CfgArgs::instance()->get_handler_ptr_by_type<HandleAkmdArgs>()->disable_notifier,
-                        logger_client),
+                        *logger_client),
                 "AutomaticKeysetManagement");
         run_server(CfgArgs::instance(), CorbaContainer::get_instance());
     }

@@ -46,6 +46,7 @@ struct HandleAkmdArgs : public HandleArgs
     std::string automatically_managed_keyset_tech_contact;
     std::set<std::string> automatically_managed_keyset_zones;
     bool disable_notifier;
+    bool enable_request_logger;
 
     boost::shared_ptr<boost::program_options::options_description>
     get_options_description()
@@ -72,6 +73,10 @@ struct HandleAkmdArgs : public HandleArgs
                 ("akmd.disable_notifier",
                  boost::program_options::value<bool>()->default_value(false),
                  "disable notifications");
+        opts_descs->add_options()
+                ("akmd.enable_request_logger",
+                 boost::program_options::value<bool>()->default_value(true),
+                 "enable logging to request logger component");
 
         return opts_descs;
     }
@@ -87,6 +92,7 @@ struct HandleAkmdArgs : public HandleArgs
         std::vector<std::string> tmp = vm["akmd.automatically_managed_keyset_zones"].as<std::vector<std::string> >();
         automatically_managed_keyset_zones = std::set<std::string>(tmp.begin(), tmp.end());
         disable_notifier = vm["akmd.disable_notifier"].as<bool>();
+        enable_request_logger = vm["akm.enable_request_logger"].as<bool>();
     }
 
 };
