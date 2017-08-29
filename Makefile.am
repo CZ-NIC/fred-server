@@ -2151,6 +2151,8 @@ src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
 		src/corba/nameservice.h \
 		src/corba/logger_client_impl.h \
 		src/corba/logger_client_impl.cc \
+		util/dummy_logger.hh \
+		util/dummy_logger.cc \
 		src/automatic_keyset_management/automatic_keyset_management.cc \
 		src/automatic_keyset_management/automatic_keyset_management.hh \
 		src/automatic_keyset_management/keyset.hh \
