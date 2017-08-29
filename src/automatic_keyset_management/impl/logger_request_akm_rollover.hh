@@ -55,7 +55,6 @@ public:
     {
         LoggerRequestData logger_request_data;
 
-        logger_request_data.add<LoggerRequestObjectType::domain>(_domain.id);
         logger_request_data.add<LoggerRequestObjectType::keyset>(_keyset.id);
 
         logger_request_data.add<LoggerRequestProperty::name>(_domain.handle);
