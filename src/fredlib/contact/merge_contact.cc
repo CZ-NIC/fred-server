@@ -21,10 +21,6 @@
  *  contact merge
  */
 
-#include <string>
-
-#include <boost/algorithm/string.hpp>
-
 #include "src/fredlib/contact/merge_contact.h"
 
 #include "src/fredlib/contact/delete_contact.h"
@@ -43,6 +39,10 @@
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "util/random.h"
+
+#include <boost/algorithm/string.hpp>
+
+#include <string>
 
 namespace Fred {
 
@@ -493,21 +493,21 @@ namespace Fred
         std::stringstream dup_sql;
         dup_sql << \
         "SELECT "//c1.name, oreg1.name, o1.clid, c2.name, oreg2.name , o2.clid,
-        " (trim(both ' ' from COALESCE(c1.name,'')) != trim(both ' ' from COALESCE(c2.name,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.organization,'')) != trim(both ' ' from COALESCE(c2.organization,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street1,'')) != trim(both ' ' from COALESCE(c2.street1,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street2,'')) != trim(both ' ' from COALESCE(c2.street2,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street3,'')) != trim(both ' ' from COALESCE(c2.street3,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.city,'')) != trim(both ' ' from COALESCE(c2.city,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.postalcode,'')) != trim(both ' ' from COALESCE(c2.postalcode,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.stateorprovince,'')) != trim(both ' ' from COALESCE(c2.stateorprovince,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.country,'')) != trim(both ' ' from COALESCE(c2.country,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.telephone,'')) != trim(both ' ' from COALESCE(c2.telephone,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.fax,'')) != trim(both ' ' from COALESCE(c2.fax,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.email,'')) != trim(both ' ' from COALESCE(c2.email,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.notifyemail,'')) != trim(both ' ' from COALESCE(c2.notifyemail,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.vat,'')) != trim(both ' ' from COALESCE(c2.vat,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.ssn,'')) != trim(both ' ' from COALESCE(c2.ssn,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.name,'')) != trim(BOTH ' ' FROM COALESCE(c2.name,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.organization,'')) != trim(BOTH ' ' FROM COALESCE(c2.organization,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.street1,'')) != trim(BOTH ' ' FROM COALESCE(c2.street1,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.street2,'')) != trim(BOTH ' ' FROM COALESCE(c2.street2,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.street3,'')) != trim(BOTH ' ' FROM COALESCE(c2.street3,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.city,'')) != trim(BOTH ' ' FROM COALESCE(c2.city,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.postalcode,'')) != trim(BOTH ' ' FROM COALESCE(c2.postalcode,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.stateorprovince,'')) != trim(BOTH ' ' FROM COALESCE(c2.stateorprovince,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.country,'')) != trim(BOTH ' ' FROM COALESCE(c2.country,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.telephone,'')) != trim(BOTH ' ' FROM COALESCE(c2.telephone,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.fax,'')) != trim(BOTH ' ' FROM COALESCE(c2.fax,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.email,'')) != trim(BOTH ' ' FROM COALESCE(c2.email,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.notifyemail,'')) != trim(BOTH ' ' FROM COALESCE(c2.notifyemail,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.vat,'')) != trim(BOTH ' ' FROM COALESCE(c2.vat,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.ssn,'')) != trim(BOTH ' ' FROM COALESCE(c2.ssn,''))) OR "
         " (COALESCE(c1.ssntype,0) != COALESCE(c2.ssntype,0)) OR "
         " (c1.disclosename != c2.disclosename) OR "
         " (c1.discloseorganization != c2.discloseorganization) OR "
@@ -525,28 +525,28 @@ namespace Fred
         {
             dup_sql << \
             " (SELECT row("
-               " trim(both ' ' from c1a.company_name),"
-               " trim(both ' ' from c1a.street1),"
-               " trim(both ' ' from c1a.street2),"
-               " trim(both ' ' from c1a.street3),"
-               " trim(both ' ' from c1a.city),"
-               " trim(both ' ' from c1a.stateorprovince),"
-               " trim(both ' ' from c1a.postalcode),"
-               " trim(both ' ' from c1a.country)"
+               " trim(BOTH ' ' FROM c1a.company_name),"
+               " trim(BOTH ' ' FROM c1a.street1),"
+               " trim(BOTH ' ' FROM c1a.street2),"
+               " trim(BOTH ' ' FROM c1a.street3),"
+               " trim(BOTH ' ' FROM c1a.city),"
+               " trim(BOTH ' ' FROM c1a.stateorprovince),"
+               " trim(BOTH ' ' FROM c1a.postalcode),"
+               " trim(BOTH ' ' FROM c1a.country)"
                " )"
               " FROM contact_address c1a"
              " WHERE c1a.type = '" << *contact_address_type << "'"
                " AND c1a.contactid = c1.id"
             " ) != "
             " (SELECT row("
-               " trim(both ' ' from c2a.company_name),"
-               " trim(both ' ' from c2a.street1),"
-               " trim(both ' ' from c2a.street2),"
-               " trim(both ' ' from c2a.street3),"
-               " trim(both ' ' from c2a.city),"
-               " trim(both ' ' from c2a.stateorprovince),"
-               " trim(both ' ' from c2a.postalcode),"
-               " trim(both ' ' from c2a.country)"
+               " trim(BOTH ' ' FROM c2a.company_name),"
+               " trim(BOTH ' ' FROM c2a.street1),"
+               " trim(BOTH ' ' FROM c2a.street2),"
+               " trim(BOTH ' ' FROM c2a.street3),"
+               " trim(BOTH ' ' FROM c2a.city),"
+               " trim(BOTH ' ' FROM c2a.stateorprovince),"
+               " trim(BOTH ' ' FROM c2a.postalcode),"
+               " trim(BOTH ' ' FROM c2a.country)"
                " )"
               " FROM contact_address c2a"
              " WHERE c2a.type = '" << *contact_address_type << "'"
@@ -555,7 +555,7 @@ namespace Fred
         }
         dup_sql << \
         " o1.clid != o2.clid "// current registrar
-        "  as differ, c1.id AS src_contact_id, c2.id AS dst_contact_id"
+        "  AS differ, c1.id AS src_contact_id, c2.id AS dst_contact_id"
         " FROM (object_registry oreg1 "
         " JOIN object o1 ON oreg1.id=o1.id "
         " JOIN contact c1 ON c1.id = oreg1.id AND oreg1.name = UPPER($1::text) AND oreg1.erdate IS NULL) "
