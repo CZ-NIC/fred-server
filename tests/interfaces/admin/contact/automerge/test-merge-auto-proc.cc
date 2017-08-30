@@ -122,8 +122,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
  * check merge with given registrar and no optional parameters
  *  - check that merged objects have selected registrar and objects with other registrar are not changed
  *  - check that update registrar of merged objects is system registrar
- *  - check that source contacts with object states SERVER_DELETE_PROHIBITED, SERVER_BLOCKED and MOJEID_CONTACT are not changed
- *  - check that destination contacts with object state SERVER_BLOCKED are not changed
+ *  - check that source contacts with object states (any of) SERVER_DELETE_PROHIBITED, SERVER_BLOCKED, MOJEID_CONTACT, CONTACT_IN_MANUAL_VERIFICATION, CONTACT_FAILED_MANUAL_VERIFICATION are not changed
+ *  - check that destination contacts with object states (any of) SERVER_BLOCKED, CONTACT_IN_MANUAL_VERIFICATION, CONTACT_FAILED_MANUAL_VERIFICATION are not changed
  *  - check that linked objects with object states SERVER_UPDATE_PROHIBITED, SERVER_BLOCKED and SERVER_BLOCKED + SERVER_UPDATE_PROHIBITED are not changed
  *  - check that poll messages exists for deleted source contacts
  *  - check that deleted source contacts are present in notification data
@@ -192,8 +192,10 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
              * ST4 - SERVER_DELETE_PROHIBITED
              * ST5 - SERVER_BLOCKED
              * ST6 - MOJEID_CONTACT
+             * ST7 - CONTACT_IN_MANUAL_VERIFICATION
+             * ST8 - CONTACT_FAILED_MANUAL_VERIFICATION
              */
-            static const  boost::regex src_contact_forbidden_states_regex("-ST4|-ST5|-ST6");
+            static const  boost::regex src_contact_forbidden_states_regex("-ST4|-ST5|-ST6|-ST7|-ST8");
             BOOST_CHECK(!boost::regex_search(ci->first, src_contact_forbidden_states_regex));
 
             //check if poll message exists for deleted contact
@@ -208,9 +210,11 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
             /**
              * forbidden state of destination contact
              * from fixture setup:
-             * -ST5 - SERVER_BLOCKED
+             * ST5 - SERVER_BLOCKED
+             * ST7 - CONTACT_IN_MANUAL_VERIFICATION
+             * ST8 - CONTACT_FAILED_MANUAL_VERIFICATION
              */
-            static const  boost::regex dst_contact_forbidden_states_regex("-ST5");
+            static const  boost::regex dst_contact_forbidden_states_regex("-ST5|-ST7|-ST8");
             BOOST_CHECK(!boost::regex_search(ci->first, dst_contact_forbidden_states_regex));
         }
 

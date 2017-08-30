@@ -61,7 +61,16 @@
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 
+// obsolete
+namespace Fred {
+namespace ObjectState {
 
+const std::string CONTACT_IN_MANUAL_VERIFICATION = "contactInManualVerification"; // 26
+const std::string CONTACT_PASSED_MANUAL_VERIFICATION = "contactPassedManualVerification"; // 25
+const std::string CONTACT_FAILED_MANUAL_VERIFICATION = "contactFailedManualVerification"; // 27
+
+}
+}
 
 namespace MergeContactFixture
 {
@@ -103,6 +112,8 @@ namespace MergeContactFixture
      * - 4 - SERVER_DELETE_PROHIBITED
      * - 5 - SERVER_BLOCKED
      * - 6 - MOJEID_CONTACT
+     * - 7 - CONTACT_IN_MANUAL_VERIFICATION
+     * - 8 - CONTACT_FAILED_MANUAL_VERIFICATION
      *
      * -LS<number> or -ls<number> designates linked object (e.g. domain, nsset or keyset) states configuration where number means:
      * - 0 - no states
@@ -333,13 +344,14 @@ namespace MergeContactFixture
                 //first two stateless states abused in linked objects configuration
                 states_.push_back(std::set<std::string>());//state_case 0
                 states_.push_back(std::set<std::string>());//state_case 1
-
-                //state_case 2 - 6
-                states_.push_back(Util::set_of<std::string>(SERVER_UPDATE_PROHIBITED));
-                states_.push_back(Util::set_of<std::string>(SERVER_TRANSFER_PROHIBITED));
-                states_.push_back(Util::set_of<std::string>(SERVER_DELETE_PROHIBITED));
-                states_.push_back(Util::set_of<std::string>(SERVER_BLOCKED));
-                states_.push_back(Util::set_of<std::string>(MOJEID_CONTACT));
+                // other states
+                states_.push_back(Util::set_of<std::string>(SERVER_UPDATE_PROHIBITED));//state_case 2
+                states_.push_back(Util::set_of<std::string>(SERVER_TRANSFER_PROHIBITED));//state_case 3
+                states_.push_back(Util::set_of<std::string>(SERVER_DELETE_PROHIBITED));//state_case 4
+                states_.push_back(Util::set_of<std::string>(SERVER_BLOCKED));//state_case 5
+                states_.push_back(Util::set_of<std::string>(MOJEID_CONTACT));//state_case 6
+                states_.push_back(Util::set_of<std::string>(CONTACT_IN_MANUAL_VERIFICATION));//state_case 7
+                states_.push_back(Util::set_of<std::string>(CONTACT_FAILED_MANUAL_VERIFICATION));//state_case 8
 
 
                 /* other state cases

@@ -27,19 +27,24 @@
 
 #include "src/fredlib/contact/merge_contact.h"
 
-#include "src/fredlib/domain/update_domain.h"
-#include "src/fredlib/nsset/update_nsset.h"
-#include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/update_contact.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
+#include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "util/random.h"
 
+namespace Fred {
 
 namespace Fred
 {
@@ -168,8 +173,11 @@ namespace Fred
                 tmp.set_registrant = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
-                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                Fred::LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
+                Fred::PerformObjectStateRequest(tmp.domain_id).exec(ctx);
+                const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(tmp.domain_id).exec(ctx));
+                if (domain_states.presents(Fred::Object_State::server_blocked) ||
+                    domain_states.presents(Fred::Object_State::server_update_prohibited))
                 {
                     BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
@@ -211,8 +219,11 @@ namespace Fred
                 tmp.add_admin_contact = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
-                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                Fred::LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
+                Fred::PerformObjectStateRequest(tmp.domain_id).exec(ctx);
+                const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(tmp.domain_id).exec(ctx));
+                if (domain_states.presents(Fred::Object_State::server_blocked) ||
+                    domain_states.presents(Fred::Object_State::server_update_prohibited))
                 {
                     BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
@@ -278,7 +289,10 @@ namespace Fred
                 tmp.add_tech_contact = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.nsset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                Fred::LockObjectStateRequestLock(tmp.nsset_id).exec(ctx);
+                Fred::PerformObjectStateRequest(tmp.nsset_id).exec(ctx);
+                const Fred::ObjectStatesInfo nsset_states(Fred::GetObjectStates(tmp.nsset_id).exec(ctx));
+                if (nsset_states.presents(Fred::Object_State::server_update_prohibited))
                 {
                     BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
                 }
@@ -344,7 +358,10 @@ namespace Fred
                 tmp.add_tech_contact = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.keyset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                Fred::LockObjectStateRequestLock(tmp.keyset_id).exec(ctx);
+                Fred::PerformObjectStateRequest(tmp.keyset_id).exec(ctx);
+                const Fred::ObjectStatesInfo keyset_states(Fred::GetObjectStates(tmp.keyset_id).exec(ctx));
+                if (keyset_states.presents(Fred::Object_State::server_update_prohibited))
                 {
                     BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
                 }
@@ -557,16 +574,28 @@ namespace Fred
 
         unsigned long long dst_contact_id = static_cast<unsigned long long>(diff_result[0]["dst_contact_id"]);
 
-        if(Fred::ObjectHasState(dst_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+        Fred::LockObjectStateRequestLock(dst_contact_id).exec(ctx);
+        Fred::PerformObjectStateRequest(dst_contact_id).exec(ctx);
+        const Fred::ObjectStatesInfo dst_contact_states(Fred::GetObjectStates(dst_contact_id).exec(ctx));
+        //check if object blocked
+        if (dst_contact_states.presents(Fred::Object_State::server_blocked) ||
+            dst_contact_states.presents(Fred::Object_State::contact_in_manual_verification) ||
+            dst_contact_states.presents(Fred::Object_State::contact_failed_manual_verification))
         {
             BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
         }
 
         unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
 
-        if( Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx)
-            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
-            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
+        Fred::LockObjectStateRequestLock(src_contact_id).exec(ctx);
+        Fred::PerformObjectStateRequest(src_contact_id).exec(ctx);
+        const Fred::ObjectStatesInfo src_contact_states(Fred::GetObjectStates(src_contact_id).exec(ctx));
+        //check if object blocked
+        if (src_contact_states.presents(Fred::Object_State::mojeid_contact) ||
+            src_contact_states.presents(Fred::Object_State::server_blocked) ||
+            src_contact_states.presents(Fred::Object_State::server_delete_prohibited) ||
+            src_contact_states.presents(Fred::Object_State::contact_in_manual_verification) ||
+            src_contact_states.presents(Fred::Object_State::contact_failed_manual_verification))
         {
             BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
         }
@@ -603,7 +632,5 @@ namespace Fred
     }
 
 
-
-
-}//namespace Fred
+} // namespace Fred
 
