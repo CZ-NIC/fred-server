@@ -48,10 +48,14 @@ using namespace Database;
 
 namespace Admin {
 
-void notify_letters_optys_get_undelivered_impl(const std::string& optys_config_file, bool all_local_files_only)
+void notify_letters_optys_get_undelivered_impl(
+        const std::string& optys_config_file,
+        bool all_local_files_only,
+        bool dump_config_to_log)
 {
     //optys config
-    std::map<std::string, std::string> set_cfg = readConfigFile<HandleOptysUndeliveredArgs>(optys_config_file);
+    std::map<std::string, std::string> set_cfg = read_config_file<HandleOptysUndeliveredArgs>(optys_config_file,
+            dump_config_to_log);
     std::string local_download_dir = map_at(set_cfg, "local_download_dir");
 
     std::set<std::string> file_names;

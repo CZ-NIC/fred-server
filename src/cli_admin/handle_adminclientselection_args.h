@@ -676,7 +676,7 @@ public:
                 ::value<Checked::id>()->notifier(save_optional_id(params.registrar_id))
                 , "registrar id")
             ("price", boost::program_options
-                ::value<Checked::string_fpnumber>()->notifier(save_optional_string(params.price))
+                ::value<Checked::string_fpnumber>()->notifier(save_arg_using_to_string<optional_string>(params.price))
                 , "price")
             ("taxdate", boost::program_options
               ::value<Checked::string>()->notifier(save_optional_string(params.taxdate))
@@ -1806,7 +1806,7 @@ public:
                 ::value<Checked::string>()->notifier(save_optional_string(params.valid_to))
                 , "price valid to UTC datetime e.g. '2007-09-29 19:15:56'")
             ("operation_price", boost::program_options
-                ::value<Checked::string_fpnumber>()->notifier(save_optional_string(params.operation_price))
+                ::value<Checked::string_fpnumber>()->notifier(save_arg_using_to_string<optional_string>(params.operation_price))
                 , "operation price like: 140.00")
             ("period", boost::program_options
                 ::value<Checked::ulong>()->notifier(save_optional_ulong(params.period))

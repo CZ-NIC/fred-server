@@ -54,7 +54,7 @@ public:
         cfg_opts->add_options()
                 ("daemonize", "turn foreground process into daemon")
                 ("pidfile", boost::program_options
-                        ::value<std::string>()
+                        ::value<std::string>()->default_value("")
                              , "process id file location");
         return cfg_opts;
     }//get_options_description
@@ -63,13 +63,8 @@ public:
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
 
-        if (vm.count("daemonize"))
-            do_daemonize = true;
-        else
-            do_daemonize = false;
-
-        pidfile_name = (vm.count("pidfile") == 0
-                ? std::string("") : vm["pidfile"].as<std::string>());
+        do_daemonize = vm.count("daemonize");
+        pidfile_name = vm["pidfile"].as<std::string>();
     }//handle
 };
 

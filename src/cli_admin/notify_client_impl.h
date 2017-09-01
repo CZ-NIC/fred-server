@@ -183,7 +183,8 @@ struct notify_letters_optys_get_undelivered_impl
       Logging::Context ctx("notify_letters_optys_get_undelivered_impl");
       HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp* cfg_ptr = CfgArgGroups::instance()
           ->get_handler_ptr_by_type<HandleAdminClientNotifyLettersOptysGetUndeliveredArgsGrp>();
-      Admin::notify_letters_optys_get_undelivered_impl(cfg_ptr->optys_config, cfg_ptr->all_local_files_only);
+      Admin::notify_letters_optys_get_undelivered_impl(cfg_ptr->optys_config, cfg_ptr->all_local_files_only,
+          CfgArgGroups::instance()->get_handler_ptr_by_type<HandleLoggingArgsGrp>()->get_log_config_dump());
   }
 };
 
