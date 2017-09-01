@@ -560,8 +560,13 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_insecure_
 
     try
     {
-        NameserversDomains nameservers_domains;
         Fred::OperationContextCreator ctx;
+        NameserversDomains nameservers_domains;
+
+        if (automatically_managed_keyset_zones_.empty())
+        {
+            return nameservers_domains;
+        }
 
         // clang-format off
         Database::ParamQuery sql(
@@ -611,8 +616,13 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
 
     try
     {
-        NameserversDomains nameservers_domains;
         Fred::OperationContextCreator ctx;
+        NameserversDomains nameservers_domains;
+
+        if (automatically_managed_keyset_zones_.empty())
+        {
+            return nameservers_domains;
+        }
 
         // clang-format off
         Database::ParamQuery sql;
@@ -667,11 +677,15 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
 NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatically_managed_domains()
 {
     LOGGING_CONTEXT(log_ctx, *this);
-
     try
     {
-        NameserversDomains nameservers_domains;
         Fred::OperationContextCreator ctx;
+        NameserversDomains nameservers_domains;
+
+        if (automatically_managed_keyset_zones_.empty())
+        {
+            return nameservers_domains;
+        }
 
         // clang-format off
         Database::ParamQuery sql;
