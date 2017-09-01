@@ -24,6 +24,7 @@
 #include "src/automatic_keyset_management/automatic_keyset_management.hh"
 
 #include "src/automatic_keyset_management/impl/limits.hh"
+#include "src/automatic_keyset_management/dns_key.hh"
 #include "src/automatic_keyset_management/impl/logger_request.hh"
 #include "src/automatic_keyset_management/impl/logger_request_akm_rollover.hh"
 #include "src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh"
@@ -74,25 +75,6 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
-
-bool DnsKey::operator<(const DnsKey& rhs) const
-{
-    if (key != rhs.key) {
-        return key < rhs.key;
-    }
-    if (alg != rhs.alg) {
-        return alg < rhs.alg;
-    }
-    if (protocol != rhs.protocol) {
-        return protocol < rhs.protocol;
-    }
-    return flags < rhs.flags;
-}
-
-bool DnsKey::operator==(const DnsKey& rhs) const
-{
-    return !(*this < rhs || rhs < *this);
-}
 
 namespace {
 

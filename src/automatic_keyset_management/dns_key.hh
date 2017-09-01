@@ -27,11 +27,6 @@ namespace AutomaticKeysetManagement {
 
 struct DnsKey
 {
-    unsigned short flags;
-    unsigned short protocol;
-    unsigned short alg;
-    std::string key;
-
     DnsKey(
             unsigned short _flags,
             unsigned short _protocol,
@@ -44,9 +39,14 @@ struct DnsKey
     {
     }
 
-    bool operator<(const DnsKey& rhs) const;
+    friend bool operator<(const DnsKey& _lhs, const DnsKey& _rhs);
 
-    bool operator==(const DnsKey& rhs) const;
+    friend bool operator==(const DnsKey& _lhs, const DnsKey& _rhs);
+
+    unsigned short flags;
+    unsigned short protocol;
+    unsigned short alg;
+    std::string key;
 };
 
 std::string to_string(const DnsKey& dnskey);

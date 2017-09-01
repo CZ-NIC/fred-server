@@ -194,9 +194,11 @@ struct Domain
         : id(_id), fqdn(_fqdn)
     {
     }
+
+    friend bool operator<(const Domain& lhs, const Domain& rhs);
+
     unsigned long long id;
     std::string fqdn;
-    friend bool operator<(const Domain& lhs, const Domain& rhs);
 };
 
 typedef std::string Nameserver;
