@@ -25,14 +25,37 @@
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
+
+bool operator<(const DnsKey& lhs, const DnsKey& rhs)
+{
+    if (lhs.key != rhs.key) {
+        return lhs.key < rhs.key;
+    }
+    if (lhs.alg != rhs.alg) {
+        return lhs.alg < rhs.alg;
+    }
+    if (lhs.protocol != rhs.protocol) {
+        return lhs.protocol < rhs.protocol;
+    }
+    return lhs.flags < rhs.flags;
+}
+
+
+bool operator==(const DnsKey& lhs, const DnsKey& rhs)
+{
+    return !(lhs < rhs || rhs < lhs);
+}
+
+
 std::string to_string(const DnsKey& dnskey)
 {
     static const std::string delim = ", ";
-    return "[flags: " + quote(dnskey.flags) + delim +
-           "protocol: " + quote(dnskey.protocol) + delim +
-           "algorithm: " + quote(dnskey.alg) + delim +
-           "key: " + quote(dnskey.key) + "]";
+    return "[flags: " + Impl::quote(dnskey.flags) + delim +
+           "protocol: " + Impl::quote(dnskey.protocol) + delim +
+           "algorithm: " + Impl::quote(dnskey.alg) + delim +
+           "key: " + Impl::quote(dnskey.key) + "]";
 }
+
 
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred

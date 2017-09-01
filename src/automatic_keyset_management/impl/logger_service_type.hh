@@ -23,6 +23,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 struct LoggerServiceType
 {
@@ -41,6 +42,7 @@ std::string to_fred_logger_service_type_name<LoggerServiceType::admin>()
     return "Admin";
 }
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

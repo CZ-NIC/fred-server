@@ -29,6 +29,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 /* wrapper around logger_client.createRequest / logger_client.closeRequest methods */
 template <LoggerRequestType::Enum R, LoggerServiceType::Enum S>
@@ -67,9 +68,9 @@ public:
                 no_session_id);
     }
 
-    void close_on_failure(const LoggerRequestData& _logger_request_data) const
+    void close_on_failure() const
     {
-        LoggerRequestData logger_request_data = _logger_request_data;
+        LoggerRequestData logger_request_data;
         logger_request_data.add<LoggerRequestProperty::op_tr_id>(request_id_);
         const std::string no_content = "";
         const unsigned long long no_session_id = 0;
@@ -111,6 +112,7 @@ private:
     const unsigned long long request_id_;
 };
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

@@ -20,6 +20,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 template <>
 std::string to_fred_logger_request_object_type_name<LoggerRequestObjectType::keyset>()
@@ -33,6 +34,7 @@ std::string to_fred_logger_request_object_type_name<LoggerRequestObjectType::dom
     return "domain";
 }
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

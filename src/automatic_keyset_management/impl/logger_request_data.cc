@@ -20,6 +20,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 template <>
 LoggerRequestData& LoggerRequestData::add<LoggerRequestObjectType::keyset>(unsigned long long _value)
@@ -94,5 +95,6 @@ LoggerRequestData& LoggerRequestData::add<LoggerRequestProperty::op_tr_id>(unsig
     return *this;
 }
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred

@@ -188,14 +188,17 @@ struct InternalServerError
     }
 };
 
-struct Domain {
+struct Domain
+{
     Domain(const unsigned long long _id, const std::string& _fqdn)
         : id(_id), fqdn(_fqdn)
     {
     }
+
+    friend bool operator<(const Domain& lhs, const Domain& rhs);
+
     unsigned long long id;
     std::string fqdn;
-    friend bool operator<(const Domain& _lhs, const Domain& _rhs);
 };
 
 typedef std::string Nameserver;

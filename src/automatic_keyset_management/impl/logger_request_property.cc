@@ -20,6 +20,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 template <>
 std::string to_fred_logger_request_property_name<LoggerRequestProperty::name>()
@@ -51,5 +52,6 @@ std::string to_fred_logger_request_property_name<LoggerRequestProperty::op_tr_id
     return "opTRID";
 }
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred

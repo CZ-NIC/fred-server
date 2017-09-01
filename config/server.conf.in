@@ -207,7 +207,8 @@ list_contacts_limit=5000
 automatically_managed_keyset_prefix = AUTO-
 automatically_managed_keyset_registrar = REG-FRED_C
 automatically_managed_keyset_tech_contact = KONTAKT
-# use following option for each domain zone which is permitted for automatic keyset management
+# use the following option for each domain zone which is permitted for automatic keyset management
+# (use the option multiple times for multiple zones)
 automatically_managed_keyset_zones = cz
 disable_notifier = false
 # Enable changes to registry object logging through request logger component

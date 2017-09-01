@@ -65,16 +65,16 @@ public:
 
     void turn_on_automatic_keyset_management_on_insecure_domain(
             ::CORBA::ULongLong domain_id,
-            const Registry::AutomaticKeysetManagement::Nsset& current_nsset,
-            const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
+            const Nsset& current_nsset,
+            const Keyset& new_keyset);
 
     void turn_on_automatic_keyset_management_on_secure_domain(
             ::CORBA::ULongLong domain_id,
-            const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
+            const Keyset& new_keyset);
 
     void update_automatically_managed_keyset_of_domain(
             ::CORBA::ULongLong domain_id,
-            const Registry::AutomaticKeysetManagement::Keyset& new_keyset);
+            const Keyset& new_keyset);
 
     EmailAddressSeq* get_email_addresses_by_domain_id(
             ::CORBA::ULongLong domain_id);

@@ -23,6 +23,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 struct LoggerRequestObjectType
 {
@@ -36,6 +37,7 @@ struct LoggerRequestObjectType
 template <LoggerRequestObjectType::Enum>
 std::string to_fred_logger_request_object_type_name();
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

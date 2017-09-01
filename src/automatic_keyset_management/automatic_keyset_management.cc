@@ -24,6 +24,7 @@
 #include "src/automatic_keyset_management/automatic_keyset_management.hh"
 
 #include "src/automatic_keyset_management/impl/limits.hh"
+#include "src/automatic_keyset_management/dns_key.hh"
 #include "src/automatic_keyset_management/impl/logger_request.hh"
 #include "src/automatic_keyset_management/impl/logger_request_akm_rollover.hh"
 #include "src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh"
@@ -75,30 +76,11 @@
 namespace Fred {
 namespace AutomaticKeysetManagement {
 
-bool DnsKey::operator<(const DnsKey& rhs) const
-{
-    if (key != rhs.key) {
-        return key < rhs.key;
-    }
-    if (alg != rhs.alg) {
-        return alg < rhs.alg;
-    }
-    if (protocol != rhs.protocol) {
-        return protocol < rhs.protocol;
-    }
-    return flags < rhs.flags;
-}
-
-bool DnsKey::operator==(const DnsKey& rhs) const
-{
-    return !(*this < rhs || rhs < *this);
-}
-
 namespace {
 
-std::string create_ctx_name(const std::string& _name)
+std::string create_ctx_name(const std::string& name)
 {
-    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+    return str(boost::format("%1%-<%2%>") % name % Random::integer(0, 10000));
 }
 
 
@@ -129,26 +111,32 @@ private:
 
 #define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_operation_name(__FUNCTION__))
 
-bool are_nssets_equal(const Nsset& _nsset, const std::vector<Fred::DnsHost>& _dns_hosts)
+bool are_nssets_equal(const Nsset& nsset, const std::vector<Fred::DnsHost>& dns_hosts)
 {
-    std::set<std::string> dns_hosts;
-    for (std::vector<Fred::DnsHost>::const_iterator dns_host = _dns_hosts.begin();
-         dns_host != _dns_hosts.end();
-         ++dns_host)
+    std::set<std::string> fred_dns_hosts;
+    for (std::vector<Fred::DnsHost>::const_iterator fred_dns_host = dns_hosts.begin();
+         fred_dns_host != dns_hosts.end();
+         ++fred_dns_host)
     {
-        dns_hosts.insert(dns_host->get_fqdn());
+        fred_dns_hosts.insert(fred_dns_host->get_fqdn());
     }
-    return _nsset.nameservers == dns_hosts;
+    return nsset.nameservers == fred_dns_hosts;
 }
 
-bool are_keysets_equal(const Keyset& _keyset, const std::vector<Fred::DnsKey>& _dns_keys)
+bool are_keysets_equal(const Keyset& keyset, const std::vector<Fred::DnsKey>& dns_keys)
 {
-    std::set<DnsKey> dns_keys;
-    for (std::vector<Fred::DnsKey>::const_iterator key = _dns_keys.begin(); key != _dns_keys.end(); ++key)
+    std::set<DnsKey> fred_dns_keys;
+    for (std::vector<Fred::DnsKey>::const_iterator fred_dns_key = dns_keys.begin();
+         fred_dns_key != dns_keys.end();
+         ++fred_dns_key)
     {
-        dns_keys.insert(DnsKey(key->get_flags(), key->get_protocol(), key->get_alg(), key->get_key()));
+        fred_dns_keys.insert(
+                DnsKey(fred_dns_key->get_flags(),
+                       fred_dns_key->get_protocol(),
+                       fred_dns_key->get_alg(),
+                       fred_dns_key->get_key()));
     }
-    return _keyset.dns_keys == dns_keys;
+    return keyset.dns_keys == fred_dns_keys;
 }
 
 bool is_automatically_managed_keyset(
@@ -173,8 +161,8 @@ bool is_automatically_managed_keyset(
 
 void check_configuration_of_automatically_managed_keyset_prefix(const std::string& handle_prefix)
 {
-    if (handle_prefix.length() < automatically_managed_keyset_handle_prefix_length_min ||
-        handle_prefix.length() > automatically_managed_keyset_handle_prefix_length_max)
+    if (handle_prefix.length() < Impl::automatically_managed_keyset_handle_prefix_length_min ||
+        handle_prefix.length() > Impl::automatically_managed_keyset_handle_prefix_length_max)
     {
         LOGGER(PACKAGE).debug("configuration error: automatically_managed_keyset_prefix configuration invalid");
         throw Fred::AutomaticKeysetManagement::ConfigurationError();
@@ -189,8 +177,8 @@ std::string generate_automatically_managed_keyset_handle(const std::string& hand
     boost::random_device rng;
     boost::uniform_int<> index_dist(0, alphabet.size() - 1);
     std::string result = handle_prefix;
-    result.reserve(automatically_managed_keyset_handle_length);
-    while (result.length() < automatically_managed_keyset_handle_length)
+    result.reserve(Impl::automatically_managed_keyset_handle_length);
+    while (result.length() < Impl::automatically_managed_keyset_handle_length)
     {
         result += alphabet.at(index_dist(rng));
     }
@@ -199,8 +187,8 @@ std::string generate_automatically_managed_keyset_handle(const std::string& hand
 
 bool is_keyset_size_within_limits(const Keyset& keyset)
 {
-    return ((keyset.dns_keys.size() >= min_number_of_dns_keys) &&
-            (keyset.dns_keys.size() <= max_number_of_dns_keys));
+    return ((keyset.dns_keys.size() >= Impl::min_number_of_dns_keys) &&
+            (keyset.dns_keys.size() <= Impl::max_number_of_dns_keys));
 }
 
 // RFC 8078 Section 4. "DNSSEC Delete Algorithm"
@@ -268,16 +256,16 @@ bool has_valid_dnskeys(Fred::OperationContext& ctx, const Keyset& keyset)
 }
 
 ObjectIdHandlePair create_automatically_managed_keyset(
-        Fred::OperationContext& _ctx,
-        const InfoRegistrarData& _automatically_managed_keyset_registrar,
-        const std::string& _automatically_managed_keyset_prefix,
-        const std::string& _automatically_managed_keyset_tech_contact,
-        const Keyset& _new_keyset,
-        unsigned long long _logger_request_id,
-        const bool _notifier_disabled)
+        Fred::OperationContext& ctx,
+        const InfoRegistrarData& automatically_managed_keyset_registrar,
+        const std::string& automatically_managed_keyset_prefix,
+        const std::string& automatically_managed_keyset_tech_contact,
+        const Keyset& new_keyset,
+        unsigned long long logger_request_id,
+        const bool notifier_disabled)
 {
     const std::string automatically_managed_keyset_handle =
-            generate_automatically_managed_keyset_handle(_automatically_managed_keyset_prefix);
+            generate_automatically_managed_keyset_handle(automatically_managed_keyset_prefix);
     // TODO check !exists
 
     if (TestHandleOf<Object_Type::keyset>(automatically_managed_keyset_handle).is_invalid_handle())
@@ -286,8 +274,8 @@ ObjectIdHandlePair create_automatically_managed_keyset(
     }
 
     std::vector<Fred::DnsKey> libfred_dns_keys;
-    for (DnsKeys::const_iterator dns_key = _new_keyset.dns_keys.begin();
-            dns_key != _new_keyset.dns_keys.end();
+    for (DnsKeys::const_iterator dns_key = new_keyset.dns_keys.begin();
+            dns_key != new_keyset.dns_keys.end();
             ++dns_key)
     {
         libfred_dns_keys.push_back(Fred::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key));
@@ -296,23 +284,23 @@ ObjectIdHandlePair create_automatically_managed_keyset(
     const Fred::CreateKeyset::Result create_keyset_result =
             Fred::CreateKeyset(
                     automatically_managed_keyset_handle,
-                    _automatically_managed_keyset_registrar.handle,
+                    automatically_managed_keyset_registrar.handle,
                     Optional<std::string>(), // authinfopw
                     libfred_dns_keys,
-                    Util::vector_of<std::string>(_automatically_managed_keyset_tech_contact))
-                    .exec(_ctx, _logger_request_id, "UTC");
+                    Util::vector_of<std::string>(automatically_managed_keyset_tech_contact))
+                    .exec(ctx, logger_request_id, "UTC");
 
     LOGGER(PACKAGE).debug(boost::str(boost::format("creation_time: %1% object_id: %2% history_id: %3%\n")
                     % create_keyset_result.creation_time
                     % create_keyset_result.create_object_result.object_id
                     % create_keyset_result.create_object_result.history_id));
 
-    if (!_notifier_disabled)
+    if (!notifier_disabled)
     {
         Notification::enqueue_notification(
-                _ctx,
+                ctx,
                 Notification::created,
-                _automatically_managed_keyset_registrar.id,
+                automatically_managed_keyset_registrar.id,
                 create_keyset_result.create_object_result.history_id,
                 "");
     }
@@ -321,20 +309,20 @@ ObjectIdHandlePair create_automatically_managed_keyset(
 }
 
 void link_automatically_managed_keyset_to_domain(
-        Fred::OperationContext& _ctx,
-        const InfoRegistrarData& _automatically_managed_keyset_registrar,
-        const InfoDomainData& _info_domain_data,
-        const std::string& _automatically_managed_keyset,
+        Fred::OperationContext& ctx,
+        const InfoRegistrarData& automatically_managed_keyset_registrar,
+        const InfoDomainData& info_domain_data,
+        const std::string& automatically_managed_keyset,
         unsigned long long logger_request_id,
         const bool _notifier_disabled)
 {
     const unsigned long long domain_new_history_id =
             Fred::UpdateDomain(
-                    _info_domain_data.fqdn,
-                    _automatically_managed_keyset_registrar.handle)
-                    .set_keyset(_automatically_managed_keyset) // or get handle by create_keyset_result.create_object_result.object_id
+                    info_domain_data.fqdn,
+                    automatically_managed_keyset_registrar.handle)
+                    .set_keyset(automatically_managed_keyset) // or get handle by create_keyset_result.create_object_result.object_id
                     .set_logd_request_id(logger_request_id)
-                    .exec(_ctx);
+                    .exec(ctx);
 
     LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
                     % domain_new_history_id));
@@ -342,17 +330,17 @@ void link_automatically_managed_keyset_to_domain(
     if (!_notifier_disabled)
     {
         Notification::enqueue_notification(
-                _ctx,
+                ctx,
                 Notification::updated,
-                _automatically_managed_keyset_registrar.id,
+                automatically_managed_keyset_registrar.id,
                 domain_new_history_id,
                 "");
     }
 
-    Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(_ctx);
+    Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
 }
 
-bool is_keyset_shared(Fred::OperationContext& _ctx, unsigned long long _keyset_id)
+bool is_keyset_shared(Fred::OperationContext& ctx, unsigned long long keyset_id)
 {
     // clang-format off
     const std::string sql =
@@ -362,9 +350,9 @@ bool is_keyset_shared(Fred::OperationContext& _ctx, unsigned long long _keyset_i
                      "WHERE keyset = $1::bigint LIMIT 2) AS some_references";
     // clang-format on
     const Database::Result db_result =
-            _ctx.get_conn().exec_params(
+            ctx.get_conn().exec_params(
                     sql,
-                    Database::query_param_list(_keyset_id));
+                    Database::query_param_list(keyset_id));
     if (db_result.size() < 1)
     {
         throw std::runtime_error("no rows");
@@ -378,24 +366,24 @@ bool is_keyset_shared(Fred::OperationContext& _ctx, unsigned long long _keyset_i
 }
 
 void update_automatically_managed_keyset(
-        Fred::OperationContext& _ctx,
-        const InfoKeysetData& _info_keyset_data,
-        const InfoRegistrarData _automatically_managed_keyset_registrar,
-        const Keyset& _new_keyset,
+        Fred::OperationContext& ctx,
+        const InfoKeysetData& info_keyset_data,
+        const InfoRegistrarData automatically_managed_keyset_registrar,
+        const Keyset& new_keyset,
         unsigned long long logger_request_id,
-        const bool _notifier_disabled)
+        const bool notifier_disabled)
 {
-    if (are_keysets_equal(_new_keyset, _info_keyset_data.dns_keys))
+    if (are_keysets_equal(new_keyset, info_keyset_data.dns_keys))
     {
         LOGGER(PACKAGE).debug("new keyset same as current keyset, nothing to do");
         // nothing to commit
         return;
     }
 
-    Fred::LockObjectStateRequestLock(_info_keyset_data.id).exec(_ctx);
+    Fred::LockObjectStateRequestLock(info_keyset_data.id).exec(ctx);
     // process object state requests
-    Fred::PerformObjectStateRequest(_info_keyset_data.id).exec(_ctx);
-    const Fred::ObjectStatesInfo keyset_states(Fred::GetObjectStates(_info_keyset_data.id).exec(_ctx));
+    Fred::PerformObjectStateRequest(info_keyset_data.id).exec(ctx);
+    const Fred::ObjectStatesInfo keyset_states(Fred::GetObjectStates(info_keyset_data.id).exec(ctx));
 
     if (keyset_states.presents(Fred::Object_State::server_update_prohibited) ||
         keyset_states.presents(Fred::Object_State::delete_candidate))
@@ -404,25 +392,25 @@ void update_automatically_managed_keyset(
         throw Fred::AutomaticKeysetManagement::KeysetStatePolicyError();
     }
 
-    if (is_keyset_shared(_ctx, _info_keyset_data.id))
+    if (is_keyset_shared(ctx, info_keyset_data.id))
     {
         throw std::runtime_error("automatically managed keyset referenced by multiple domains. Cannot update keyset for security reasons. MUST BE fixed!");
     }
 
     Fred::UpdateKeyset update_keyset(
-            _info_keyset_data.handle,
-            _automatically_managed_keyset_registrar.handle);
+            info_keyset_data.handle,
+            automatically_managed_keyset_registrar.handle);
 
-    for (std::vector<Fred::DnsKey>::const_iterator dns_key = _info_keyset_data.dns_keys.begin();
-         dns_key != _info_keyset_data.dns_keys.end();
+    for (std::vector<Fred::DnsKey>::const_iterator dns_key = info_keyset_data.dns_keys.begin();
+         dns_key != info_keyset_data.dns_keys.end();
          ++dns_key)
     {
         update_keyset.rem_dns_key(*dns_key);
     }
 
     std::vector<Fred::DnsKey> libfred_dns_keys;
-    for (DnsKeys::const_iterator dns_key = _new_keyset.dns_keys.begin();
-            dns_key != _new_keyset.dns_keys.end();
+    for (DnsKeys::const_iterator dns_key = new_keyset.dns_keys.begin();
+            dns_key != new_keyset.dns_keys.end();
             ++dns_key)
     {
         update_keyset.add_dns_key(Fred::DnsKey(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key));
@@ -431,51 +419,51 @@ void update_automatically_managed_keyset(
     const unsigned long long keyset_new_history_id =
             update_keyset
                     .set_logd_request_id(logger_request_id)
-                    .exec(_ctx);
+                    .exec(ctx);
 
     LOGGER(PACKAGE).debug(boost::str(boost::format("keyset_new_history_id: %1%\n")
                     % keyset_new_history_id));
 
-    if (!_notifier_disabled)
+    if (!notifier_disabled)
     {
         Notification::enqueue_notification(
-                _ctx,
+                ctx,
                 Notification::updated,
-                _automatically_managed_keyset_registrar.id,
+                automatically_managed_keyset_registrar.id,
                 keyset_new_history_id,
                 "");
     }
 }
 
 void unlink_automatically_managed_keyset(
-        Fred::OperationContext& _ctx,
-        const InfoDomainData& _info_domain_data,
-        const InfoRegistrarData& _automatically_managed_keyset_registrar,
+        Fred::OperationContext& ctx,
+        const InfoDomainData& info_domain_data,
+        const InfoRegistrarData& automatically_managed_keyset_registrar,
         unsigned long long logger_request_id,
-        const bool _notifier_disabled)
+        const bool notifier_disabled)
 {
     const unsigned long long domain_new_history_id =
             Fred::UpdateDomain(
-                    _info_domain_data.fqdn,
-                    _automatically_managed_keyset_registrar.handle)
+                    info_domain_data.fqdn,
+                    automatically_managed_keyset_registrar.handle)
             .unset_keyset()
             .set_logd_request_id(logger_request_id)
-            .exec(_ctx);
+            .exec(ctx);
 
     LOGGER(PACKAGE).debug(boost::str(boost::format("domain_new_history_id: %1%\n")
                     % domain_new_history_id));
 
-    if (!_notifier_disabled)
+    if (!notifier_disabled)
     {
         Notification::enqueue_notification(
-                _ctx,
+                ctx,
                 Notification::updated,
-                _automatically_managed_keyset_registrar.id,
+                automatically_managed_keyset_registrar.id,
                 domain_new_history_id,
                 "");
     }
 
-    Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(_ctx);
+    Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
 
 }
 
@@ -554,8 +542,13 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_insecure_
 
     try
     {
-        NameserversDomains nameservers_domains;
         Fred::OperationContextCreator ctx;
+        NameserversDomains nameservers_domains;
+
+        if (automatically_managed_keyset_zones_.empty())
+        {
+            return nameservers_domains;
+        }
 
         // clang-format off
         Database::ParamQuery sql(
@@ -605,8 +598,13 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
 
     try
     {
-        NameserversDomains nameservers_domains;
         Fred::OperationContextCreator ctx;
+        NameserversDomains nameservers_domains;
+
+        if (automatically_managed_keyset_zones_.empty())
+        {
+            return nameservers_domains;
+        }
 
         // clang-format off
         Database::ParamQuery sql;
@@ -661,28 +659,32 @@ NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_secure_au
 NameserversDomains AutomaticKeysetManagementImpl::get_nameservers_with_automatically_managed_domains()
 {
     LOGGING_CONTEXT(log_ctx, *this);
-
     try
     {
-        NameserversDomains nameservers_domains;
         Fred::OperationContextCreator ctx;
+        NameserversDomains nameservers_domains;
+
+        if (automatically_managed_keyset_zones_.empty())
+        {
+            return nameservers_domains;
+        }
 
         // clang-format off
         Database::ParamQuery sql;
         sql(
-                "SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
-                  "FROM host ns "
-                  "JOIN domain d ON d.nsset = ns.nssetid "
-                  "JOIN object_registry oreg ON oreg.id = d.id "
-                  "JOIN object ok ON ok.id = d.keyset "
-                  "JOIN object_registry oregk ON oregk.id = ok.id "
-                  "JOIN registrar r ON r.id = ok.clid "
-                  "JOIN zone z ON z.id = d.zone "
-                 "WHERE r.handle = UPPER(").param_text(automatically_managed_keyset_registrar_)(") "
-                   "AND UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(") "
-                   "AND oregk.erdate IS NULL "
-                   "AND oregk.type = get_object_type_id('keyset') "
-                   "AND z.fqdn IN (");
+               "SELECT ns.fqdn AS nameserver, oreg.name AS domain_fqdn, oreg.id AS domain_id "
+                 "FROM host ns "
+                 "JOIN domain d ON d.nsset = ns.nssetid "
+                 "JOIN object_registry oreg ON oreg.id = d.id "
+                 "JOIN object ok ON ok.id = d.keyset "
+                 "JOIN object_registry oregk ON oregk.id = ok.id "
+                 "JOIN registrar r ON r.id = ok.clid "
+                 "JOIN zone z ON z.id = d.zone "
+                "WHERE r.handle = UPPER(").param_text(automatically_managed_keyset_registrar_)(") "
+                  "AND UPPER(oregk.name) LIKE UPPER(").param_text(automatically_managed_keyset_prefix_ + "%")(") "
+                  "AND oregk.erdate IS NULL "
+                  "AND oregk.type = get_object_type_id('keyset') "
+                  "AND z.fqdn IN (");
         Util::HeadSeparator in_separator("", ", ");
         for (std::set<std::string>::const_iterator it = automatically_managed_keyset_zones_.begin();
                 it != automatically_managed_keyset_zones_.end(); ++it)
@@ -819,7 +821,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_insec
 
         check_configuration_of_automatically_managed_keyset_prefix(automatically_managed_keyset_prefix_);
 
-        const LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+        const Impl::LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
         try
         {
             const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
@@ -997,7 +999,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
 
         if (turn_dnssec_off)
         {
-            const LoggerRequestAkmTurnOff logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmTurnOff logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
             try
             {
                 unlink_automatically_managed_keyset(
@@ -1021,7 +1023,7 @@ void AutomaticKeysetManagementImpl::turn_on_automatic_keyset_management_on_secur
         }
         else
         {
-            const LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmTurnOn logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
             try
             {
                 const ObjectIdHandlePair automatically_managed_keyset = create_automatically_managed_keyset(
@@ -1185,7 +1187,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
                 throw Fred::AutomaticKeysetManagement::DomainStatePolicyError();
             }
 
-            const LoggerRequestAkmTurnOff logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmTurnOff logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
             try
             {
                 unlink_automatically_managed_keyset(
@@ -1228,7 +1230,7 @@ void AutomaticKeysetManagementImpl::update_automatically_managed_keyset_of_domai
                 throw Fred::AutomaticKeysetManagement::KeysetStatePolicyError();
             }
 
-            const LoggerRequestAkmRollover logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
+            const Impl::LoggerRequestAkmRollover logger_request(logger_client_, ObjectIdHandlePair(info_domain_data.id, info_domain_data.fqdn));
             try
             {
                 update_automatically_managed_keyset(
@@ -1372,12 +1374,12 @@ EmailAddresses AutomaticKeysetManagementImpl::get_email_addresses_by_domain_id(
     }
 }
 
-bool operator<(const Domain& _lhs, const Domain& _rhs)
+bool operator<(const Domain& lhs, const Domain& rhs)
 {
-    if (_lhs.id != _rhs.id) {
-        return _lhs.id < _rhs.id;
+    if (lhs.id != rhs.id) {
+        return lhs.id < rhs.id;
     }
-    return _lhs.fqdn < _rhs.fqdn;
+    return lhs.fqdn < rhs.fqdn;
 }
 
 } // namespace Fred::AutomaticKeysetManagement
