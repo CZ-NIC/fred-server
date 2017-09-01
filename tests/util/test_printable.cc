@@ -69,8 +69,6 @@
 #include "src/fredlib/contact/merge_contact.h"
 #include "src/fredlib/contact/merge_contact_email_notification_data.h"
 #include "src/fredlib/contact/merge_contact_selection.h"
-#include "src/fredlib/poll/create_delete_contact_poll_message.h"
-#include "src/fredlib/poll/create_poll_message_impl.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/contact/info_contact_diff.h"
 #include "src/fredlib/domain/info_domain_diff.h"
@@ -852,33 +850,6 @@ BOOST_AUTO_TEST_CASE(merge_contact_selection_output)
     printable_test(
     Fred::MergeContactSelectionOutput("HANDLE", "FILTER")
     );
-}
-
-/**
- * test CreateDeleteContactPollMessage print to string
- */
-
-BOOST_AUTO_TEST_CASE(create_delete_contact_poll_message)
-{
-    printable_test(Fred::Poll::CreateDeleteContactPollMessage(0));
-}
-
-/**
- * test CreatePollMessage print to string
- */
-
-BOOST_AUTO_TEST_CASE(create_poll_message)
-{
-    printable_test(Fred::Poll::CreatePollMessage("REGISTRAR","MSG-TYPE"));
-}
-
-/**
- * test CreateUpdateObjectPollMessage print to string
- */
-
-BOOST_AUTO_TEST_CASE(create_update_object_poll_message)
-{
-    printable_test(Fred::Poll::CreateUpdateObjectPollMessage(0));
 }
 
 /**

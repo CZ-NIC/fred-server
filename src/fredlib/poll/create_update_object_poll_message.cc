@@ -1,49 +1,69 @@
-#include "create_update_object_poll_message.h"
-#include "create_poll_message_impl.h"
-
-#include <boost/lexical_cast.hpp>
+#include "src/fredlib/poll/create_update_object_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/object/object_type.h"
+#include "src/fredlib/opexception.h"
 
 namespace Fred {
 namespace Poll {
 
-
-CreateUpdateObjectPollMessage::CreateUpdateObjectPollMessage(
-        const ObjectHistoryId &_history_id)
-    : history_id_(_history_id)
+void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned long long _history_id)const
 {
-}
+    const Database::Result db_res = _ctx.get_conn().exec_params(
+            "SELECT eot.name "
+            "FROM object_registry obr "
+            "JOIN object_history oh ON oh.id=obr.id "
+            "JOIN enum_object_type eot ON eot.id=obr.type "
+            "WHERE oh.historyid=$1::BIGINT",
+            Database::query_param_list(_history_id));
 
-
-void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx)
-{
-    Database::Result r = _ctx.get_conn().exec_params(
-            "SELECT eot.name AS object_type, r.handle as registrar_handle"
-            " FROM object_registry oreg JOIN object_history oh ON oh.id = oreg.id"
-            " JOIN enum_object_type eot ON eot.id = oreg.type"
-            " JOIN registrar r ON r.id = oh.clid"
-            " WHERE oh.historyid = $1::bigint",
-            Database::query_param_list(history_id_));
-
-    if (r.size() != 1) {
-        BOOST_THROW_EXCEPTION(Exception().set_object_history_not_found(history_id_));
+    switch (db_res.size())
+    {
+        case 0:
+        {
+            struct NotFound:OperationException
+            {
+                const char* what()const throw() { return "object history not found"; }
+            };
+            throw NotFound();
+        }
+        case 1:
+            break;
+        default:
+        {
+            struct TooManyRows:InternalError
+            {
+                TooManyRows():InternalError(std::string()) { }
+                const char* what()const throw() { return "too many rows"; }
+            };
+            throw TooManyRows();
+        }
     }
-    std::string object_type = static_cast<std::string>(r[0][0]);
-    std::string sponsoring_registrar = static_cast<std::string>(r[0][1]);
-    unsigned long long poll_msg_id = CreatePollMessage(sponsoring_registrar, std::string("update_" + object_type)).exec(_ctx);
-
-    _ctx.get_conn().exec_params(
-            "INSERT INTO poll_eppaction (msgid, objid) VALUES ($1::bigint, $2::bigint)",
-            Database::query_param_list(poll_msg_id)(history_id_));
+    switch (Conversion::Enums::from_db_handle<Object_Type>(static_cast<std::string>(db_res[0][0])))
+    {
+        case Object_Type::contact:
+            struct ContactsNotSupported:OperationException
+            {
+                const char* what()const throw() { return "contacts not supported"; }
+            };
+            throw ContactsNotSupported();
+        case Object_Type::domain:
+            CreatePollMessage<MessageType::update_domain>().exec(_ctx, _history_id);
+            return;
+        case Object_Type::keyset:
+            CreatePollMessage<MessageType::update_keyset>().exec(_ctx, _history_id);
+            return;
+        case Object_Type::nsset:
+            CreatePollMessage<MessageType::update_nsset>().exec(_ctx, _history_id);
+            return;
+    }
+    struct UnexpectedObjectType:InternalError
+    {
+        UnexpectedObjectType():InternalError(std::string()) { }
+        const char* what()const throw() { return "unexpected object type"; }
+    };
+    throw UnexpectedObjectType();
 }
 
 
-std::string CreateUpdateObjectPollMessage::to_string() const
-{
-    return Util::format_operation_state("CreateUpdateObjectPollMessage",
-    Util::vector_of<std::pair<std::string,std::string> >
-    (std::make_pair("history_id",boost::lexical_cast<std::string>(history_id_))));
-}
-
-
-}
-}
+}//namespace Fred::Poll
+}//namespace Fred

@@ -18,8 +18,7 @@
 
 
 #include "src/fredlib/poll/create_update_object_poll_message.h"
-#include "src/fredlib/poll/create_poll_message_impl.h"
-#include "src/fredlib/poll/message_types.h"
+#include "src/fredlib/poll/message_type.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -57,9 +56,7 @@ BOOST_AUTO_TEST_CASE( test_correct_generic_data )
         );
     }
 
-    Fred::Poll::CreateUpdateObjectPollMessage(
-        domain.info_data.historyid
-    ).exec(ctx);
+    Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain.info_data.historyid);
 
     Database::Result ids2_res = ctx.get_conn().exec(
         "SELECT id AS count_ "
@@ -144,20 +141,13 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
 
         switch(i) {
             case 0:
-
-                Fred::Poll::CreateUpdateObjectPollMessage(
-                    domain.info_data.historyid
-                ).exec(ctx);
+                Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain.info_data.historyid);
                 break;
             case 1:
-                Fred::Poll::CreateUpdateObjectPollMessage(
-                    keyset.info_data.historyid
-                ).exec(ctx);
+                Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, keyset.info_data.historyid);
                 break;
             case 2:
-                Fred::Poll::CreateUpdateObjectPollMessage(
-                    nsset.info_data.historyid
-                ).exec(ctx);
+                Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, nsset.info_data.historyid);
                 break;
         }
         Database::Result ids2_res = ctx.get_conn().exec(
@@ -195,38 +185,39 @@ BOOST_AUTO_TEST_CASE( test_correct_type_specific_data)
                 (new_message_id)
         );
 
-        switch(i) {
+        switch (i) {
             case 0:
-                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::UPDATE_DOMAIN);
+                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
+                                  Conversion::Enums::to_db_handle(Fred::Poll::MessageType::update_domain));
                 break;
             case 1:
-                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::UPDATE_KEYSET);
+                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
+                                  Conversion::Enums::to_db_handle(Fred::Poll::MessageType::update_keyset));
                 break;
             case 2:
-                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::UPDATE_NSSET);
+                BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
+                                  Conversion::Enums::to_db_handle(Fred::Poll::MessageType::update_nsset));
                 break;
         }
 
         ctx.commit_transaction();
     }
 
-    bool caught_the_right_exception = false;
     try {
         Fred::OperationContextCreator ctx;
 
-        Test::contact contact(ctx);
-        Fred::Poll::CreateUpdateObjectPollMessage(
-            contact.info_data.historyid
-        ).exec(ctx);
+        const Test::contact contact(ctx);
+        Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, contact.info_data.historyid);
+        BOOST_CHECK(false);
 
         ctx.commit_transaction();
-    } catch(const Fred::Poll::CreatePollMessage::Exception& e) {
-        if(e.is_set_poll_message_type_not_found()) {
-            caught_the_right_exception = true;
-        }
     }
-
-    BOOST_CHECK_EQUAL(caught_the_right_exception, true);
+    catch (const Fred::OperationException&) {
+        BOOST_CHECK(true);
+    }
+    catch (...) {
+        BOOST_CHECK(false);
+    }
 }
 
 /**
@@ -240,18 +231,17 @@ BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
 {
     Fred::OperationContextCreator ctx;
 
-    bool correct_exception_caught = false;
+    const unsigned long long nonexistent_object_historyid = Test::get_nonexistent_object_historyid(ctx);
     try {
-        Fred::Poll::CreateUpdateObjectPollMessage(
-            Test::get_nonexistent_object_historyid(ctx)
-        ).exec(ctx);
-    } catch(const Fred::Poll::CreateUpdateObjectPollMessage::Exception& e) {
-        if(e.get_object_history_not_found()) {
-            correct_exception_caught = true;
-        }
+        Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, nonexistent_object_historyid);
+        BOOST_CHECK(false);
     }
-
-    BOOST_CHECK_EQUAL(correct_exception_caught, true);
+    catch (const Fred::OperationException&) {
+        BOOST_CHECK(true);
+    }
+    catch (...) {
+        BOOST_CHECK(false);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();

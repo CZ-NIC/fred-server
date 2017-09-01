@@ -17,8 +17,8 @@
  */
 
 
-#include "src/fredlib/poll/create_delete_contact_poll_message.h"
-#include "src/fredlib/poll/message_types.h"
+#include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/poll/message_type.h"
 
 #include <boost/test/unit_test.hpp>
 
@@ -41,16 +41,13 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
 
     Test::contact contact(ctx);
 
-    Database::Result count_res = ctx.get_conn().exec(
-        "SELECT COUNT(id) AS count_ "
-        "   FROM message "
-    );
+    const Database::Result count_res = ctx.get_conn().exec(
+        "SELECT COUNT(id) AS count_ FROM message");
 
-    int count_before = static_cast<int>(count_res[0]["count_"]);
+    const int count_before = static_cast<int>(count_res[0]["count_"]);
 
-    unsigned long long message_id = Fred::Poll::CreateDeleteContactPollMessage(
-        contact.info_data.historyid
-    ).exec(ctx);
+    const unsigned long long message_id = Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
+            .exec(ctx, contact.info_data.historyid);
 
     Database::Result count_res2 = ctx.get_conn().exec(
         "SELECT COUNT(id) AS count_ "
@@ -72,8 +69,9 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
     );
 
     BOOST_CHECK_EQUAL(message_res.size(), 1);
-    BOOST_CHECK_EQUAL(static_cast<bool>(message_res[0]["seen_"]), false);
-    BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]), Fred::Poll::DELETE_CONTACT);
+    BOOST_CHECK(!static_cast<bool>(message_res[0]["seen_"]));
+    BOOST_CHECK_EQUAL(static_cast<std::string>(message_res[0]["msgtype_name_"]),
+                      Conversion::Enums::to_db_handle(Fred::Poll::MessageType::delete_contact));
 
     Database::Result polleppaction_res = ctx.get_conn().exec_params(
         "SELECT objid "
@@ -96,22 +94,17 @@ BOOST_AUTO_TEST_CASE( test_correct_data )
  @pre nonexistent object history_id (not even for types other than contact)
  @post exception is thrown and has correct flag set
  */
-BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
+BOOST_AUTO_TEST_CASE(test_nonexistent_historyid)
 {
     Fred::OperationContextCreator ctx;
-
-    bool correct_exception_caught = false;
+    const unsigned long long nonexistent_object_historyid = Test::get_nonexistent_object_historyid(ctx);
     try {
-        Fred::Poll::CreateDeleteContactPollMessage(
-            Test::get_nonexistent_object_historyid(ctx)
-        ).exec(ctx);
-    } catch(const Fred::Poll::CreateDeleteContactPollMessage::Exception& e) {
-        if(e.get_object_history_not_found()) {
-            correct_exception_caught = true;
-        }
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
+                .exec(ctx, nonexistent_object_historyid);
     }
-
-    BOOST_CHECK_EQUAL(correct_exception_caught, true);
+    catch (const Fred::OperationException&) {
+        BOOST_CHECK(true);
+    }
 }
 
 /**
@@ -124,20 +117,15 @@ BOOST_AUTO_TEST_CASE( test_nonexistent_historyid )
 BOOST_AUTO_TEST_CASE( test_different_object_type )
 {
     Fred::OperationContextCreator ctx;
-    Test::domain domain(ctx);
+    const Test::domain domain(ctx);
 
-    bool correct_exception_caught = false;
     try {
-        Fred::Poll::CreateDeleteContactPollMessage(
-            domain.info_data.historyid
-        ).exec(ctx);
-    } catch(const Fred::Poll::CreateDeleteContactPollMessage::Exception& e) {
-        if(e.get_contact_not_found()) {
-            correct_exception_caught = true;
-        }
+        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
+                .exec(ctx, domain.info_data.historyid);
     }
-
-    BOOST_CHECK_EQUAL(correct_exception_caught, true);
+    catch (const Fred::OperationException&) {
+        BOOST_CHECK(true);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END();

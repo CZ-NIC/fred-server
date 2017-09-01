@@ -263,6 +263,7 @@ noinst_HEADERS = \
 		tests/interfaces/epp/fixture.h \
 		tests/interfaces/epp/contact/fixture.h \
 		tests/interfaces/epp/domain/fixture.h \
+		tests/interfaces/epp/poll/fixture.h \
 		src/corba/mojeid/mojeid_corba_conversion.h \
 		src/mojeid/mojeid_impl_data.h \
 		src/mojeid/mojeid_public_request.h \
@@ -899,23 +900,11 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object/transfer_object.cc \
 		src/fredlib/object/transfer_object_exception.h \
 		src/fredlib/object/object.cc \
-		src/fredlib/poll/message_types.h \
-		src/fredlib/poll/create_poll_message_impl.h \
-		src/fredlib/poll/create_poll_message_impl.cc \
-		src/fredlib/poll/create_epp_action_poll_message_impl.h \
-		src/fredlib/poll/create_epp_action_poll_message_impl.cc \
+		src/fredlib/poll/message_type.h \
+		src/fredlib/poll/create_poll_message.h \
+		src/fredlib/poll/create_poll_message.cc \
 		src/fredlib/poll/create_update_object_poll_message.h \
 		src/fredlib/poll/create_update_object_poll_message.cc \
-		src/fredlib/poll/create_delete_contact_poll_message.h \
-		src/fredlib/poll/create_delete_contact_poll_message.cc \
-		src/fredlib/poll/create_delete_domain_poll_message.h \
-		src/fredlib/poll/create_delete_domain_poll_message.cc \
-		src/fredlib/poll/create_transfer_contact_poll_message.h \
-		src/fredlib/poll/create_transfer_contact_poll_message.cc \
-		src/fredlib/poll/create_transfer_nsset_poll_message.h \
-		src/fredlib/poll/create_transfer_nsset_poll_message.cc \
-		src/fredlib/poll/create_transfer_domain_poll_message.h \
-		src/fredlib/poll/create_transfer_domain_poll_message.cc \
 		src/fredlib/opexception.h \
 		src/fredlib/contact/copy_history_impl.h \
 		src/fredlib/contact/copy_history_impl.cc \
@@ -1535,6 +1524,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/contact/contact_corba_conversions.h \
 		src/corba/epp/domain/domain_corba_conversions.cc \
 		src/corba/epp/domain/domain_corba_conversions.h \
+		src/corba/epp/poll/poll_corba_conversions.cc \
+		src/corba/epp/poll/poll_corba_conversions.h \
 		src/corba/epp/keyset/keyset_corba_conversions.cc \
 		src/corba/epp/keyset/keyset_corba_conversions.h \
 		src/corba/epp/nsset/nsset_corba_conversions.cc \
@@ -1619,6 +1610,26 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain.cc \
 		src/epp/domain/check_domain.h \
+		src/epp/poll/poll_acknowledgement_localized.cc \
+		src/epp/poll/poll_acknowledgement_localized.h \
+		src/epp/poll/poll_acknowledgement.cc \
+		src/epp/poll/poll_acknowledgement.h \
+		src/epp/poll/poll_request_localized.cc \
+		src/epp/poll/poll_request_localized.h \
+		src/epp/poll/poll_request.cc \
+		src/epp/poll/poll_request.h \
+		src/epp/poll/poll_request_get_update_domain_details.cc \
+		src/epp/poll/poll_request_get_update_domain_details.h \
+		src/epp/poll/poll_request_get_update_keyset_details.cc \
+		src/epp/poll/poll_request_get_update_keyset_details.h \
+		src/epp/poll/poll_request_get_update_nsset_details.cc \
+		src/epp/poll/poll_request_get_update_nsset_details.h \
+		src/epp/poll/poll_request_get_update_domain_details_localized.cc \
+		src/epp/poll/poll_request_get_update_domain_details_localized.h \
+		src/epp/poll/poll_request_get_update_keyset_details_localized.cc \
+		src/epp/poll/poll_request_get_update_keyset_details_localized.h \
+		src/epp/poll/poll_request_get_update_nsset_details_localized.cc \
+		src/epp/poll/poll_request_get_update_nsset_details_localized.h \
 		src/epp/domain/delete_domain_localized.cc \
 		src/epp/domain/delete_domain_localized.h \
 		src/epp/domain/delete_domain.cc \
@@ -1644,6 +1655,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/domain/renew_domain_localized.h \
 		src/epp/domain/impl/domain_billing.cc \
 		src/epp/domain/impl/domain_billing.h \
+		src/epp/domain/impl/domain_output.cc \
+		src/epp/domain/impl/domain_output.h \
 		src/epp/domain/update_domain_localized.cc \
 		src/epp/domain/update_domain_localized.h \
 		src/epp/domain/update_domain.cc \
@@ -1667,6 +1680,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/keyset/update_keyset_localized.cc \
 		src/epp/keyset/update_keyset_localized.h \
 		src/epp/keyset/impl/limits.h \
+		src/epp/keyset/impl/keyset_output.cc \
+		src/epp/keyset/impl/keyset_output.h \
 		src/epp/keyset/check_keyset.cc \
 		src/epp/keyset/check_keyset.h \
 		src/epp/keyset/keyset_handle_registration_obstruction.h \
@@ -1708,6 +1723,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/transfer_nsset.h \
 		src/epp/nsset/impl/nsset.cc \
 		src/epp/nsset/impl/nsset.h \
+		src/epp/nsset/impl/nsset_output.cc \
+		src/epp/nsset/impl/nsset_output.h \
 		src/epp/nsset/status_value.h
 
 #
@@ -2548,6 +2565,13 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
+		tests/interfaces/epp/poll/fixture.h \
+		tests/interfaces/epp/poll/fixture.cc \
+		tests/interfaces/epp/poll/test_poll_request.cc \
+		tests/interfaces/epp/poll/test_poll_acknowledgement.cc \
+		tests/interfaces/epp/poll/test_poll_request_nsset_details.cc \
+		tests/interfaces/epp/poll/test_poll_request_domain_details.cc \
+		tests/interfaces/epp/poll/test_poll_request_keyset_details.cc \
 		tests/setup/fixtures.cc
 
 tests_interfaces_test_epp_LDFLAGS = \

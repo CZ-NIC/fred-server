@@ -23,6 +23,10 @@ namespace Test {
         return get_nonexistent_value(ctx, "object_registry", "name", "text", generate_random_handle);
     }
 
+    unsigned long long get_nonexistent_message_id(Fred::OperationContext& ctx) {
+        return get_nonexistent_value(ctx, "message", "id", "bigint", generate_random_bigserial);
+    }
+
     unsigned long long get_nonexistent_registrar_id(Fred::OperationContext& ctx) {
         return get_nonexistent_value(ctx, "registrar", "id", "bigint", generate_random_bigserial);
     }

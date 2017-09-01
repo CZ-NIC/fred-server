@@ -8,7 +8,7 @@
 
 #include <fredlib/domain.h>
 #include <fredlib/contact.h>
-#include "src/fredlib/poll/create_delete_domain_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
 #include "util/log/context.h"
@@ -89,8 +89,8 @@ namespace  Admin {
 
             for(std::set<unsigned long long>::const_iterator it = domain_ids_to_delete.begin();
                 it != domain_ids_to_delete.end();
-                ++it
-            ){
+                ++it)
+            {
                 // beware - need to get info before deleting
                 Fred::InfoDomainData info_domain = Fred::InfoDomainById(*it).exec(_ctx).info_domain_data;
                 Fred::DeleteDomainById(*it).exec(_ctx);
@@ -98,12 +98,11 @@ namespace  Admin {
                 store_check_poll_message_relation(
                     _ctx,
                     _check_handle,
-                    Fred::Poll::CreateDeleteDomainPollMessage(
-                        info_domain.historyid
-                    ).exec(_ctx)
-                );
+                    Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_domain>()
+                        .exec(_ctx, info_domain.historyid));
             }
-        } catch (const Fred::ExceptionUnknownCheckHandle&) {
+        }
+        catch (const Fred::ExceptionUnknownCheckHandle&) {
             throw Admin::ExceptionUnknownCheckHandle();
         }
     }
@@ -154,22 +153,18 @@ namespace  Admin {
 
     bool related_delete_domain_poll_message_exists(
         Fred::OperationContext& _ctx,
-        const uuid&             _check_handle
-    ) {
-        return
-            _ctx.get_conn().exec_params(
+        const uuid& _check_handle)
+    {
+        return 0 < _ctx.get_conn().exec_params(
                 "SELECT 1 "  // ...whatever, just to keep it smaller than "*"
-                    "FROM contact_check_poll_message_map AS p_m_map "
-                        "JOIN message AS m          ON p_m_map.poll_message_id = m.id "
-                        "JOIN messagetype AS mtype  ON m.msgtype = mtype.id "
-                        "JOIN contact_check AS c_ch ON p_m_map.contact_check_id = c_ch.id "
-                    "WHERE "
-                        "c_ch.handle = $1::uuid "
-                        "AND mtype.name = $2::varchar "
-                    "LIMIT 1 ", // going for bool value eventually, one would be enough
+                "FROM contact_check_poll_message_map p_m_map "
+                "JOIN message AS m ON p_m_map.poll_message_id=m.id "
+                "JOIN messagetype AS mtype ON m.msgtype=mtype.id "
+                "JOIN contact_check AS c_ch ON p_m_map.contact_check_id=c_ch.id "
+                "WHERE c_ch.handle=$1::UUID AND mtype.name=$2::TEXT "
+                "LIMIT 1", // going for bool value eventually, one would be enough
                 Database::query_param_list
                     (_check_handle)
-                    (Fred::Poll::DELETE_DOMAIN)
-            ).size() > 0;
+                    (Conversion::Enums::to_db_handle(Fred::Poll::MessageType::delete_domain))).size();
     }
 }

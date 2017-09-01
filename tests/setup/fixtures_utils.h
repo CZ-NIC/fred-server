@@ -375,15 +375,17 @@ namespace Test {
     unsigned long long generate_random_bigserial();
     std::string generate_random_handle();
 
-    /** @returns value not used in object_registry.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    /** @returns a value not used in object_registry.id. No other qualities (e.g. being constant, non-repeating, ...) are guaranteed. */
     unsigned long long  get_nonexistent_object_id(Fred::OperationContext& ctx);
-    /** @returns value not used in object_history.historyid. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    /** @returns a value not used in object_history.historyid. No other qualities (e.g. being constant, non-repeating, ...) are guaranteed. */
     unsigned long long  get_nonexistent_object_historyid(Fred::OperationContext& ctx);
-    /** @returns value not used in object_registry.handle. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    /** @returns a value not used in message.id. No other qualities (e.g. being constant, non-repeating, ...) are guaranteed. */
+    unsigned long long get_nonexistent_message_id(Fred::OperationContext& ctx);
+    /** @returns a value not used in object_registry.handle. No other qualities (e.g. being constant, non-repeating, ...) are guaranteed. */
     std::string         get_nonexistent_object_handle(Fred::OperationContext& ctx);
-    /** @returns value not used in registrar.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    /** @returns a value not used in registrar.id. No other qualities (e.g. being constant, non-repeating, ...) are guaranteed. */
     unsigned long long  get_nonexistent_registrar_id(Fred::OperationContext& ctx);
-    /** @returns value not used in zone.id. No other qualities (e. g. being constant, non-repeating, ...) are quaranteed. */
+    /** @returns a value not used in zone.id. No other qualities (e.g. being constant, non-repeating, ...) are guaranteed. */
     unsigned long long  get_nonexistent_zone_id(Fred::OperationContext& ctx);
 
     template<typename T> T get_nonexistent_value(

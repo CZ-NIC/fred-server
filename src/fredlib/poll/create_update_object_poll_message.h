@@ -2,8 +2,6 @@
 #define CREATE_UPDATE_OBJECT_POLL_MESSAGE_H_72EDC4E50CA9441B8CFEB009CE910DC9
 
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/opexception.h"
-#include "util/printable.h"
 
 /**
  *  @file
@@ -13,44 +11,19 @@
 namespace Fred {
 namespace Poll {
 
-
-class CreateUpdateObjectPollMessage : public Util::Printable
+class CreateUpdateObjectPollMessage
 {
 public:
-    typedef unsigned long long ObjectHistoryId;
-
     /**
-    * @param _history_id specific history version of domain to which the new message shall be related
-    */
-    CreateUpdateObjectPollMessage(const ObjectHistoryId &_history_id);
-
-    /**
-    * @throws Exception
-    * @throws CreatePollMessage::Exception when history_id_ is not related to any update message type
-    */
-    void exec(Fred::OperationContext &_ctx);
-
-    DECLARE_EXCEPTION_DATA(object_history_not_found, unsigned long long);
-    struct Exception
-    : virtual Fred::OperationException
-    , ExceptionData_object_history_not_found<Exception>
-    {
-        const char* what() const throw()
-        {
-            return "CreateUpdateObjectPollMessage::Exception";
-        }
-    };
-
-    /**
-    * @return string with description of the instance state
-    */
-    std::string to_string() const;
-
-private:
-    ObjectHistoryId history_id_;
+     * @param _ctx operation context
+     * @param _history_id specific history version of object to which the new message shall be related
+     * @throws Fred::OperationException an operation specific exception
+     * @throws Fred::InternalError an unexpected exception
+     */
+    void exec(Fred::OperationContext& _ctx, unsigned long long _history_id)const;
 };
 
-}
-}
+}//namespace Fred::Poll
+}//namespace Fred
 
 #endif

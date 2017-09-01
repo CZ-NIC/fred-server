@@ -25,6 +25,7 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <stdlib.h>
 #include <string.h>
@@ -42,9 +43,6 @@
 
 // database functions
 #include "src/old_utils/dbsql.h"
-
-// support function
-#include "src/old_utils/util.h"
 
 #include "action.h"    // code of the EPP operations
 #include "response.h"  // errors code
@@ -64,7 +62,6 @@
 #include "src/fredlib/nsset.h"
 #include "src/fredlib/keyset.h"
 #include "src/fredlib/info_buffer.h"
-#include "src/fredlib/poll.h"
 #include "src/fredlib/zone.h"
 #include "src/fredlib/invoicing/invoice.h"
 #include <memory>
@@ -110,6 +107,12 @@
 #include "src/epp/nsset/transfer_nsset_localized.h"
 #include "src/epp/nsset/update_nsset_localized.h"
 
+#include "src/epp/poll/poll_acknowledgement_localized.h"
+#include "src/epp/poll/poll_request_localized.h"
+#include "src/epp/poll/poll_request_get_update_domain_details_localized.h"
+#include "src/epp/poll/poll_request_get_update_nsset_details_localized.h"
+#include "src/epp/poll/poll_request_get_update_keyset_details_localized.h"
+
 #include "src/epp/reason.h"
 #include "src/epp/param.h"
 #include "src/epp/session_lang.h"
@@ -123,10 +126,12 @@
 #include "src/corba/epp/contact/contact_corba_conversions.h"
 #include "src/corba/epp/corba_conversions.h"
 #include "src/corba/epp/domain/domain_corba_conversions.h"
+#include "src/corba/epp/poll/poll_corba_conversions.h"
 #include "src/corba/epp/epp_legacy_compatibility.h"
 #include "src/corba/epp/keyset/keyset_corba_conversions.h"
 #include "src/corba/epp/nsset/nsset_corba_conversions.h"
 #include "src/corba/util/corba_conversions_string.h"
+#include "src/corba/util/corba_conversions_int.h"
 #include "util/util.h"
 
 #include "src/epp/contact/check_contact_config_data.h"
@@ -391,12 +396,6 @@ public:
 
 };
 
-static std::string formatTime(const boost::posix_time::ptime& tm) {
-  char buffer[100];
-  convert_rfc3339_timestamp(buffer, sizeof(buffer), boost::posix_time::to_iso_extended_string(tm).c_str());
-  return buffer;
-}
-
 /// replace GetContactID
 static long int getIdOfContact(
 DBSharedPtr db, const char *handle, bool restricted_handles
@@ -459,243 +458,6 @@ getIdOfKeyset(DBSharedPtr db, const char *handle, bool restricted_handles
     } catch (...) {}
     return ret;
 }
-
-/*
- * common function to copy domain data to corba structure
- *
- * \param a        action data (transaction and registrar info - authinfo fill check)
- * \param regMan   registry manager - to get object states description
- * \param d        destination corba domain structure to fill data into
- * \param dom      source domain data
- */
-void corba_domain_data_copy(
-        EPPAction &a,
-        const Fred::Manager * const regMan,
-        ccReg::Domain *d,
-        const Fred::Domain::Domain * const dom)
-{
-  std::auto_ptr<Fred::Zone::Manager>
-      zman(Fred::Zone::Manager::create() );
-  std::auto_ptr<Fred::Domain::Manager>
-      dman(Fred::Domain::Manager::create(a.getDB(), zman.get()) );
-
-  // fill common object data
-  d->ROID = CORBA::string_dup(dom->getROID().c_str());
-  d->name = CORBA::string_dup(dom->getFQDN().c_str());
-  d->CrDate = CORBA::string_dup(formatTime(dom->getCreateDate()).c_str());
-  d->UpDate = CORBA::string_dup(formatTime(dom->getUpdateDate()).c_str());
-  d->TrDate = CORBA::string_dup(formatTime(dom->getTransferDate()).c_str());
-  d->ClID = CORBA::string_dup(dom->getRegistrarHandle().c_str());
-  d->CrID = CORBA::string_dup(dom->getCreateRegistrarHandle().c_str());
-  d->UpID = CORBA::string_dup(dom->getUpdateRegistrarHandle().c_str());
-  // authinfo is filled only if session registar is ownering registrar
-  d->AuthInfoPw = CORBA::string_dup(
-    a.getRegistrar() == (int)dom->getRegistrarId() ? dom->getAuthPw().c_str()
-          : ""
-  );
-  // states
-  for (unsigned i=0; i<dom->getStatusCount(); i++) {
-    Fred::TID stateId = dom->getStatusByIdx(i)->getStatusId();
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
-    if (!sd || !sd->getExternal())
-      continue;
-    d->stat.length(d->stat.length()+1);
-    d->stat[d->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
-    d->stat[d->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
-        a.getLang() == LANG_CS ? "CS" : "EN"
-    ).c_str());
-  }
-  if (!d->stat.length()) {
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
-    if (sd) {
-      d->stat.length(1);
-      d->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-      d->stat[0].text = CORBA::string_dup(sd->getDesc(
-          a.getLang() == LANG_CS ? "CS" : "EN"
-      ).c_str());
-    }
-  }
-  // fill domain specific data
-  d->nsset = CORBA::string_dup(dom->getNssetHandle().c_str());
-  d->keyset = CORBA::string_dup(dom->getKeysetHandle().c_str());
-  d->ExDate = CORBA::string_dup(to_iso_extended_string(dom->getExpirationDate()).c_str() );
-  // registrant and contacts are disabled for other registrars
-  // in case of enum domain
-  bool disabled = a.getRegistrar() != (int)dom->getRegistrarId()
-      && zman->findApplicableZone(dom->getFQDN())->isEnumZone();
-  // registrant
-  d->Registrant = CORBA::string_dup(disabled ? "" : dom->getRegistrantHandle().c_str() );
-  // admin
-  unsigned adminCount = disabled ? 0 : dom->getAdminCount(1);
-  d->admin.length(adminCount);
-  for (unsigned i=0; i<adminCount; i++)
-    d->admin[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,1).c_str());
-  // temps
-  unsigned tempCount = disabled ? 0 : dom->getAdminCount(2);
-  d->tmpcontact.length(tempCount);
-  for (unsigned i=0; i<tempCount; i++)
-    d->tmpcontact[i] = CORBA::string_dup(dom->getAdminHandleByIdx(i,2).c_str());
-  // validation
-  if (!dom->getValExDate().is_special()) {
-    ccReg::ENUMValidationExtension *enumVal =
-        new ccReg::ENUMValidationExtension();
-    enumVal->valExDate = CORBA::string_dup(to_iso_extended_string(dom->getValExDate()).c_str() );
-    enumVal->publish = dom->getPublish() ? ccReg::DISCL_DISPLAY : ccReg::DISCL_HIDE;
-    d->ext.length(1);
-    d->ext[0] <<= enumVal;
-  }
-}
-
-
-/*
- * common function to copy nsset data to corba structure
- *
- * \param a        action data (transaction and registrar info - authinfo fill check)
- * \param regMan   registry manager - to get object states description
- * \param n        destination corba nsset structure to fill data into
- * \param nss      source nsset data
- */
-void corba_nsset_data_copy(
-        EPPAction &a,
-        const Fred::Manager * const regMan,
-        ccReg::NSSet *n,
-        const Fred::Nsset::Nsset * const nss)
-{
-  // fill common object data
-  n->ROID = CORBA::string_dup(nss->getROID().c_str());
-  n->CrDate = CORBA::string_dup(formatTime(nss->getCreateDate()).c_str());
-  n->UpDate = CORBA::string_dup(formatTime(nss->getUpdateDate()).c_str());
-  n->TrDate = CORBA::string_dup(formatTime(nss->getTransferDate()).c_str());
-  n->ClID = CORBA::string_dup(nss->getRegistrarHandle().c_str());
-  n->CrID = CORBA::string_dup(nss->getCreateRegistrarHandle().c_str());
-  n->UpID = CORBA::string_dup(nss->getUpdateRegistrarHandle().c_str());
-  // authinfo is filled only if session registar is ownering registrar
-  n->AuthInfoPw = CORBA::string_dup(
-    a.getRegistrar() == (int)nss->getRegistrarId() ? nss->getAuthPw().c_str()
-          : ""
-  );
-  // states
-  for (unsigned i=0; i<nss->getStatusCount(); i++) {
-    Fred::TID stateId = nss->getStatusByIdx(i)->getStatusId();
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(stateId);
-    if (!sd || !sd->getExternal())
-      continue;
-    n->stat.length(n->stat.length()+1);
-    n->stat[n->stat.length()-1].value = CORBA::string_dup(sd->getName().c_str() );
-    n->stat[n->stat.length()-1].text = CORBA::string_dup(sd->getDesc(
-        a.getLang() == LANG_CS ? "CS" : "EN"
-    ).c_str());
-  }
-  if (!n->stat.length()) {
-    const Fred::StatusDesc* sd = regMan->getStatusDesc(0);
-    if (sd) {
-      n->stat.length(1);
-      n->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-      n->stat[0].text = CORBA::string_dup(sd->getDesc(
-          a.getLang() == LANG_CS ? "CS" : "EN"
-      ).c_str());
-    }
-  }
-  // nsset specific data
-  n->handle = CORBA::string_dup(nss->getHandle().c_str());
-  n->level = nss->getCheckLevel();
-  n->tech.length(nss->getAdminCount());
-  for (unsigned i=0; i<nss->getAdminCount(); i++)
-    n->tech[i] = CORBA::string_dup(nss->getAdminByIdx(i).c_str());
-  n->dns.length(nss->getHostCount());
-  for (unsigned i=0; i<nss->getHostCount(); i++) {
-    const Fred::Nsset::Host *h = nss->getHostByIdx(i);
-    n->dns[i].fqdn = CORBA::string_dup(h->getName().c_str());
-    n->dns[i].inet.length(h->getAddrCount());
-    for (unsigned j=0; j<h->getAddrCount(); j++)
-      n->dns[i].inet[j] = CORBA::string_dup(h->getAddrByIdx(j).c_str());
-  }
-}
-
-
-/*
- * common function to copy keyset data to corba structure
- *
- * \param a        action data (transaction and registrar info - authinfo fill check)
- * \param regMan   registry manager - to get object states description
- * \param n        destination corba keyset structure to fill data into
- * \param nss      source keyset data
- */
-void corba_keyset_data_copy(
-        EPPAction &a,
-        const Fred::Manager * const regMan,
-        ccReg::KeySet *k,
-        const Fred::Keyset::Keyset * const kss)
-{
-    //fill common object data
-    k->ROID = CORBA::string_dup(kss->getROID().c_str());
-    k->CrDate = CORBA::string_dup(formatTime(kss->getCreateDate()).c_str());
-    k->UpDate = CORBA::string_dup(formatTime(kss->getUpdateDate()).c_str());
-    k->TrDate = CORBA::string_dup(formatTime(kss->getTransferDate()).c_str());
-    k->ClID = CORBA::string_dup(kss->getRegistrarHandle().c_str());
-    k->CrID = CORBA::string_dup(kss->getCreateRegistrarHandle().c_str());
-    k->UpID = CORBA::string_dup(kss->getUpdateRegistrarHandle().c_str());
-    //authinfo is filled only if session registrar is also owner
-    k->AuthInfoPw = CORBA::string_dup(
-            a.getRegistrar() == (int)kss->getRegistrarId() ?
-            kss->getAuthPw().c_str() : "");
-
-
-    // states
-    for (unsigned int i = 0; i < kss->getStatusCount(); i++) {
-        Fred::TID stateId = kss->getStatusByIdx(i)->getStatusId();
-        const Fred::StatusDesc *sd = regMan->getStatusDesc(stateId);
-        if (!sd || !sd->getExternal())
-            continue;
-        k->stat.length(k->stat.length() + 1);
-        k->stat[k->stat.length()-1].value =
-            CORBA::string_dup(sd->getName().c_str());
-        k->stat[k->stat.length()-1].text =
-            CORBA::string_dup(sd->getDesc(
-                        a.getLang() == LANG_CS ? "CS" : "EN").c_str()
-                    );
-    }
-
-    if (!k->stat.length()) {
-        const Fred::StatusDesc *sd = regMan->getStatusDesc(0);
-        if (sd) {
-            k->stat.length(1);
-            k->stat[0].value = CORBA::string_dup(sd->getName().c_str());
-            k->stat[0].text = CORBA::string_dup(
-                    sd->getDesc(a.getLang() == LANG_CS ? "CS" : "EN").c_str());
-        }
-    }
-
-    // keyset specific data
-    k->handle = CORBA::string_dup(kss->getHandle().c_str());
-    k->tech.length(kss->getAdminCount());
-    for (unsigned int i = 0; i < kss->getAdminCount(); i++)
-        k->tech[i] = CORBA::string_dup(kss->getAdminByIdx(i).c_str());
-
-
-    // dsrecord
-    k->dsrec.length(kss->getDSRecordCount());
-    for (unsigned int i = 0; i < kss->getDSRecordCount(); i++) {
-        const Fred::Keyset::DSRecord *dsr = kss->getDSRecordByIdx(i);
-        k->dsrec[i].keyTag = dsr->getKeyTag();
-        k->dsrec[i].alg = dsr->getAlg();
-        k->dsrec[i].digestType = dsr->getDigestType();
-        k->dsrec[i].digest = CORBA::string_dup(dsr->getDigest().c_str());
-        k->dsrec[i].maxSigLife = dsr->getMaxSigLife();
-    }
-
-    // dnskey record
-    k->dnsk.length(kss->getDNSKeyCount());
-    for (unsigned int i = 0; i < kss->getDNSKeyCount(); i++) {
-        const Fred::Keyset::DNSKey *dnsk = kss->getDNSKeyByIdx(i);
-        k->dnsk[i].flags = dnsk->getFlags();
-        k->dnsk[i].protocol = dnsk->getProtocol();
-        k->dnsk[i].alg = dnsk->getAlg();
-        k->dnsk[i].key = CORBA::string_dup(dnsk->getKey().c_str());
-    }
-}
-
-
 
 //
 // Example implementational code for IDL interface ccReg::EPP
@@ -1458,233 +1220,113 @@ ccReg::Response* ccReg_EPP_i::GetTransaction(
 }
 
 ccReg::Response* ccReg_EPP_i::PollAcknowledgement(
-  const char* msgID, CORBA::ULongLong& count, CORBA::String_out newmsgID,
-  const ccReg::EppParams &params)
+    const char* _msg_id,
+    CORBA::ULongLong& _count,
+    CORBA::String_out _next_msg_id,
+    const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-  LOG(
-      NOTICE_LOG,
-      "PollAcknowledgement: clientID -> %llu clTRID [%s] msgID -> %s",
-       params.loginID, static_cast<const char*>(params.clTRID), msgID
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_PollAcknowledgement,static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  try {
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-        Fred::Poll::Manager::create(a.getDB())
-    );
-    pollMan->setMessageSeen(STR_TO_ID(msgID), a.getRegistrar());
-    /// convert count of messages and next message id to string
-    count = pollMan->getMessageCount(a.getRegistrar());
-    if (!count) a.NoMessage();
-    std::stringstream buffer;
-    buffer << pollMan->getNextMessageId(a.getRegistrar());
-    newmsgID = CORBA::string_dup(buffer.str().c_str());
-    return a.getRet()._retn();
-  }
-  catch (Fred::NOT_FOUND) {
-    // message id not found
-    a.failed(SetErrorReason(
-            a.getErrors(),COMMAND_PARAMETR_ERROR,
-            ccReg::poll_msgID,1,REASON_MSG_MSGID_NOTEXIST,a.getLang()
-        ));
-  }
-  catch (ccReg::EPP::NoMessages) {throw;}
-  catch (...) {a.failedInternal("Connection problems");}
-  // previous commands throw exception so this code
-  // will never be called
-  return NULL;
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
+
+        const std::string message_id = Fred::Corba::unwrap_string_from_const_char_ptr(_msg_id);
+
+        const Epp::Poll::PollAcknowledgementLocalizedResponse poll_acknowledgement_response =
+            Epp::Poll::poll_acknowledgement_localized(
+                message_id,
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle);
+
+        if (poll_acknowledgement_response.data.number_of_unseen_messages == 0)
+        {
+            throw ccReg::EPP::NoMessages(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                         ccReg_EPP_i::GetErrorMessage(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                                                      registrar_session_data.language),
+                                         server_transaction_handle.c_str());
+        }
+
+        CORBA::String_var next_msg_id = Fred::Corba::wrap_string_to_corba_string(poll_acknowledgement_response
+                                                                           .data
+                                                                           .oldest_unseen_message_id);
+
+        Fred::Corba::wrap_int(poll_acknowledgement_response.data.number_of_unseen_messages, _count);
+
+        ccReg::Response_var return_value = new ccReg::Response(
+            Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                poll_acknowledgement_response.epp_response,
+                server_transaction_handle));
+
+        _next_msg_id = next_msg_id._retn();
+        return return_value._retn();
+    }
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
+    }
 }
 
 ccReg::Response* ccReg_EPP_i::PollRequest(
-  CORBA::String_out msgID, CORBA::ULongLong& count, ccReg::timestamp_out qDate,
-  ccReg::PollType& type, CORBA::Any_OUT_arg msg, const ccReg::EppParams &params
-  )
+    CORBA::String_out _msg_id,
+    CORBA::ULongLong& _count,
+    ccReg::timestamp_out _create_time,
+    ccReg::PollType& _type,
+    CORBA::Any_OUT_arg _msg,
+    const ccReg::EppParams& _epp_params)
 {
-  Logging::Context::clear();
-  Logging::Context ctx("rifd");
-  Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-  ConnectionReleaser releaser;
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-  LOG(
-      NOTICE_LOG,
-      "PollRequest: clientID -> %llu clTRID [%s]", params.loginID,static_cast<const char*>(params.clTRID)
-  );
-  // start EPP action - this will handle all init stuff
-  EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
-  std::auto_ptr<Fred::Poll::Message> m;
-  try {
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
-        Fred::Poll::Manager::create(a.getDB())
-    );
-    // fill count
-    count = pollMan->getMessageCount(a.getRegistrar());
-    if (!count) a.NoMessage(); // throw exception NoMessage
-    m.reset(pollMan->getNextMessage(a.getRegistrar()));
-  }
-  catch (ccReg::EPP::NoMessages) {throw;}
-  catch (...) {a.failedInternal("Connection problems");}
-  if (!m.get())
-    a.failedInternal("Cannot get message"); // throw internal exception
-  a.setCode(COMMAND_ACK_MESG);
-  msg = new CORBA::Any;
-  // first fill common fields
-  // transform numeric id to string and fill msgID
-  std::stringstream buffer;
-  buffer << m->getId();
-  msgID = CORBA::string_dup(buffer.str().c_str());
-  // fill qdate
-  qDate = CORBA::string_dup(formatTime(m->getCrTime()).c_str());
-  // Test type of Message object wheter it's one of
-  // MessageEvent, MessageEventReg, MessageTechCheck or MessageLowCredit
-  // check MessageEventReg before MessageEvent because
-  // MessageEvent is ancestor of MessageEventReg
-  Fred::Poll::MessageEventReg *mer =
-      dynamic_cast<Fred::Poll::MessageEventReg *>(m.get());
-  if (mer) {
-    switch (m->getType()) {
-      case Fred::Poll::MT_TRANSFER_CONTACT:
-        type = ccReg::polltype_transfer_contact;
-        break;
-      case Fred::Poll::MT_TRANSFER_NSSET:
-        type = ccReg::polltype_transfer_nsset;
-        break;
-      case Fred::Poll::MT_TRANSFER_DOMAIN:
-        type = ccReg::polltype_transfer_domain;
-        break;
-      case Fred::Poll::MT_TRANSFER_KEYSET:
-        type = ccReg::polltype_transfer_keyset;
-        break;
-      default:
-        a.failedInternal("Invalid message type"); // thow exception
+    try {
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
+
+        const Epp::Poll::PollRequestLocalizedResponse poll_request_response =
+            Epp::Poll::poll_request_localized(
+                registrar_session_data.registrar_id,
+                registrar_session_data.language,
+                server_transaction_handle);
+
+        if (poll_request_response.data.number_of_unseen_messages == 0)
+        {
+            throw ccReg::EPP::NoMessages(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                         ccReg_EPP_i::GetErrorMessage(Epp::EppResultCode::command_completed_successfully_no_messages,
+                                                                      registrar_session_data.language),
+                                         server_transaction_handle.c_str());
+        }
+
+        Fred::Corba::PollMessage message_and_type;
+        message_and_type = Fred::Corba::wrap_into_poll_message(poll_request_response.data.message);
+        _msg = message_and_type.content._retn();
+
+        _type = message_and_type.type;
+
+        ccReg::timestamp_var create_time =
+            Fred::Corba::wrap_string_to_corba_string(
+                Fred::Corba::convert_time_to_local_rfc3339(poll_request_response.data.creation_time));
+
+        Fred::Corba::wrap_int(poll_request_response.data.number_of_unseen_messages, _count);
+
+        const std::string msg_id_string = boost::lexical_cast<std::string>(poll_request_response
+                                                                           .data
+                                                                           .message_id);
+        CORBA::String_var msg_id = Fred::Corba::wrap_string_to_corba_string(msg_id_string);
+
+        ccReg::Response_var return_value = new ccReg::Response(
+            Fred::Corba::wrap_Epp_EppResponseSuccessLocalized(
+                poll_request_response.epp_response,
+                server_transaction_handle));
+
+        _create_time = create_time._retn();
+        _msg_id = msg_id._retn();
+        return return_value._retn();
     }
-    ccReg::PollMsg_HandleDateReg *hdm = new ccReg::PollMsg_HandleDateReg;
-    hdm->handle = CORBA::string_dup(mer->getObjectHandle().c_str());
-    hdm->date = CORBA::string_dup(to_iso_extended_string(mer->getEventDate()).c_str() );
-    hdm->clID = CORBA::string_dup(mer->getRegistrarHandle().c_str());
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageEvent *me =
-      dynamic_cast<Fred::Poll::MessageEvent *>(m.get());
-  if (me) {
-    switch (m->getType()) {
-      case Fred::Poll::MT_IDLE_DELETE_CONTACT:
-      case Fred::Poll::MT_DELETE_CONTACT:
-        type = ccReg::polltype_delete_contact;
-        break;
-      case Fred::Poll::MT_IDLE_DELETE_NSSET:
-        type = ccReg::polltype_delete_nsset;
-        break;
-      case Fred::Poll::MT_IDLE_DELETE_DOMAIN:
-      case Fred::Poll::MT_DELETE_DOMAIN:
-        type = ccReg::polltype_delete_domain;
-        break;
-      case Fred::Poll::MT_IDLE_DELETE_KEYSET:
-        type = ccReg::polltype_delete_keyset;
-        break;
-      case Fred::Poll::MT_IMP_EXPIRATION:
-        type = ccReg::polltype_impexpiration;
-        break;
-      case Fred::Poll::MT_EXPIRATION:
-        type = ccReg::polltype_expiration;
-        break;
-      case Fred::Poll::MT_IMP_VALIDATION:
-        type = ccReg::polltype_impvalidation;
-        break;
-      case Fred::Poll::MT_VALIDATION:
-        type = ccReg::polltype_validation;
-        break;
-      case Fred::Poll::MT_OUTZONE:
-        type = ccReg::polltype_outzone;
-        break;
-      default:
-        a.failedInternal("Invalid message type"); // thow exception
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    ccReg::PollMsg_HandleDate *hdm = new ccReg::PollMsg_HandleDate;
-    hdm->handle = CORBA::string_dup(me->getObjectHandle().c_str());
-    hdm->date = CORBA::string_dup(to_iso_extended_string(me->getEventDate()).c_str() );
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageLowCredit *mlc =
-      dynamic_cast<Fred::Poll::MessageLowCredit *>(m.get());
-  if (mlc) {
-    type = ccReg::polltype_lowcredit;
-    ccReg::PollMsg_LowCredit *hdm = new ccReg::PollMsg_LowCredit;
-    hdm->zone = CORBA::string_dup(mlc->getZone().c_str());
-    hdm->limit = CORBA::string_dup((mlc->getLimit()).get_string(".2f").c_str());
-    hdm->credit = CORBA::string_dup((mlc->getCredit()).get_string(".2f").c_str());
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageTechCheck *mtc =
-      dynamic_cast<Fred::Poll::MessageTechCheck *>(m.get());
-  if (mtc) {
-    type = ccReg::polltype_techcheck;
-    ccReg::PollMsg_Techcheck *hdm = new ccReg::PollMsg_Techcheck;
-    hdm->handle = CORBA::string_dup(mtc->getHandle().c_str());
-    hdm->fqdns.length(mtc->getFQDNS().size());
-    for (unsigned i=0; i<mtc->getFQDNS().size(); i++)
-      hdm->fqdns[i] = mtc->getFQDNS()[i].c_str();
-    hdm->tests.length(mtc->getTests().size());
-    for (unsigned i=0; i<mtc->getTests().size(); i++) {
-      Fred::Poll::MessageTechCheckItem *test = mtc->getTests()[i];
-      hdm->tests[i].testname = CORBA::string_dup(test->getTestname().c_str());
-      hdm->tests[i].status = test->getStatus();
-      hdm->tests[i].note = CORBA::string_dup(test->getNote().c_str());
-    }
-    *msg <<= hdm;
-    return a.getRet()._retn();
-  }
-  Fred::Poll::MessageRequestFeeInfo *mrf =
-      dynamic_cast<Fred::Poll::MessageRequestFeeInfo*>(m.get());
-  if (mrf)
-  {
-      type = ccReg::polltype_request_fee_info;
-      ccReg::PollMsg_RequestFeeInfo *hdm = new ccReg::PollMsg_RequestFeeInfo;
-      hdm->periodFrom = CORBA::string_dup(formatTime(mrf->getPeriodFrom()).c_str());
-      hdm->periodTo = CORBA::string_dup(formatTime(mrf->getPeriodTo() - boost::posix_time::seconds(1)).c_str());
-      hdm->totalFreeCount = mrf->getTotalFreeCount();
-      hdm->usedCount = mrf->getUsedCount();
-      hdm->price = CORBA::string_dup(mrf->getPrice().c_str());
-      *msg <<= hdm;
-      LOGGER(PACKAGE).debug("poll message request_fee_info packed");
-      return a.getRet()._retn();
-  }
-  Fred::Poll::MessageUpdateObject *muo =
-      dynamic_cast<Fred::Poll::MessageUpdateObject*>(m.get());
-  if (muo)
-  {
-      switch (muo->getType())
-      {
-          case Fred::Poll::MT_UPDATE_DOMAIN:
-              type = ccReg::polltype_update_domain;
-              break;
-          case Fred::Poll::MT_UPDATE_NSSET:
-              type = ccReg::polltype_update_nsset;
-              break;
-          case Fred::Poll::MT_UPDATE_KEYSET:
-              type = ccReg::polltype_update_keyset;
-              break;
-      }
-      ccReg::PollMsg_Update *hdm = new ccReg::PollMsg_Update;
-      hdm->opTRID = CORBA::string_dup(muo->getOpTRID().c_str());
-      hdm->pollID = muo->getId();
-      *msg <<= hdm;
-      LOGGER(PACKAGE).debug("poll message update_domain packed");
-      return a.getRet()._retn();
-  }
-  a.failedInternal("Invalid message structure");
-  // previous command throw exception in any case so this code
-  // will never be called
-  return NULL;
 }
-
 
 /*
  * idl method for retrieving old and new data of updated domain
@@ -1698,63 +1340,44 @@ ccReg::Response* ccReg_EPP_i::PollRequest(
  */
 void
 ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
-        CORBA::ULongLong _poll_id,
-        ccReg::Domain_out _old_data,
-        ccReg::Domain_out _new_data,
-        const ccReg::EppParams &params)
+    CORBA::ULongLong _message_id,
+    ccReg::Domain_out _old_data,
+    ccReg::Domain_out _new_data,
+    const ccReg::EppParams& _epp_params)
 {
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        Logging::Context::clear();
-        Logging::Context ctx("rifd");
-        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-        Logging::Context ctx3("poll-req-update-domain-details");
-        ConnectionReleaser releaser;
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+        const Epp::Poll::PollRequestUpdateDomainLocalizedResponse domain_update_response =
+            Epp::Poll::poll_request_get_update_domain_details_localized(
+                _message_id,
+                Epp::SessionData(
+                    registrar_session_data.registrar_id,
+                    registrar_session_data.language,
+                    server_transaction_handle,
+                    epp_request_params.log_request_id.get_value_or(0)));
 
-        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::Domain_var old_data = new ccReg::Domain;
+        Fred::Corba::Epp::Domain::wrap_Epp_Domain_InfoDomainLocalizedOutputData(
+            domain_update_response.data.old_data,
+            old_data);
 
-        _old_data = new ccReg::Domain;
-        _new_data = new ccReg::Domain;
+        ccReg::Domain_var new_data = new ccReg::Domain;
+        Fred::Corba::Epp::Domain::wrap_Epp_Domain_InfoDomainLocalizedOutputData(
+            domain_update_response.data.new_data,
+            new_data);
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result hids = conn.exec_params(
-                "SELECT h1.id as old_hid, h1.next as new_hid"
-                " FROM poll_eppaction pea"
-                " JOIN domain_history dh ON dh.historyid = pea.objid"
-                " JOIN history h1 ON h1.next = pea.objid"
-                " WHERE pea.msgid = $1::bigint",
-                Database::query_param_list(_poll_id));
-
-        if (hids.size() != 1) {
-            throw std::runtime_error("unable to get poll message data");
-        }
-
-        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
-        rmgr->initStates();
-        std::auto_ptr<const Fred::Domain::Domain> old_data = Fred::get_object_by_hid<
-            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
-                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::Domain::Domain> new_data = Fred::get_object_by_hid<
-            Fred::Domain::Domain, Fred::Domain::Manager, Fred::Domain::List, Database::Filters::DomainHistoryImpl>(
-                    rmgr->getDomainManager(), static_cast<unsigned long long>(hids[0][1]));
-
-        corba_domain_data_copy(a, rmgr.get(), _old_data, old_data.get());
-        corba_domain_data_copy(a, rmgr.get(), _new_data, new_data.get());
-
-        return;
+        _old_data = old_data._retn();
+        _new_data = new_data._retn();
     }
-    catch (std::exception &ex)
-    {
-        LOGGER(PACKAGE).error(ex.what());
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    catch (...)
-    {
-        LOGGER(PACKAGE).error("unknown error");
-    }
-    this->ServerInternalError(">> PollRequestGetUpdateDomainDetails - failed internal");
 }
-
 
 /*
  * idl method for retrieving old and new data of updated nsset
@@ -1768,63 +1391,39 @@ ccReg_EPP_i::PollRequestGetUpdateDomainDetails(
  */
 void
 ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
-        CORBA::ULongLong _poll_id,
-        ccReg::NSSet_out _old_data,
-        ccReg::NSSet_out _new_data,
-        const ccReg::EppParams &params)
+    CORBA::ULongLong _message_id,
+    ccReg::NSSet_out _old_data,
+    ccReg::NSSet_out _new_data,
+    const ccReg::EppParams &_epp_params)
 {
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        Logging::Context::clear();
-        Logging::Context ctx("rifd");
-        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-        Logging::Context ctx3("poll-req-update-nsset-details");
-        ConnectionReleaser releaser;
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+        const Epp::Poll::PollRequestUpdateNssetLocalizedResponse nsset_update_response =
+            Epp::Poll::poll_request_get_update_nsset_details_localized(
+                _message_id,
+                Epp::SessionData(
+                    registrar_session_data.registrar_id,
+                    registrar_session_data.language,
+                    server_transaction_handle,
+                    epp_request_params.log_request_id.get_value_or(0)));
 
-        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::NSSet_var old_data =
+            new ccReg::NSSet(Fred::Corba::wrap_localized_info_nsset(nsset_update_response.data.old_data));
+        ccReg::NSSet_var new_data =
+            new ccReg::NSSet(Fred::Corba::wrap_localized_info_nsset(nsset_update_response.data.new_data));
 
-        _old_data = new ccReg::NSSet;
-        _new_data = new ccReg::NSSet;
-
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result hids = conn.exec_params(
-                "SELECT h1.id as old_hid, h1.next as new_hid"
-                " FROM poll_eppaction pea"
-                " JOIN nsset_history dh ON dh.historyid = pea.objid"
-                " JOIN history h1 ON h1.next = pea.objid"
-                " WHERE pea.msgid = $1::bigint",
-                Database::query_param_list(_poll_id));
-
-        if (hids.size() != 1) {
-            throw std::runtime_error("unable to get poll message data");
-        }
-
-        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
-        rmgr->initStates();
-        std::auto_ptr<const Fred::Nsset::Nsset> old_data = Fred::get_object_by_hid<
-            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::Nsset::Nsset> new_data = Fred::get_object_by_hid<
-            Fred::Nsset::Nsset, Fred::Nsset::Manager, Fred::Nsset::List, Database::Filters::NSSetHistoryImpl>(
-                    rmgr->getNssetManager(), static_cast<unsigned long long>(hids[0][1]));
-
-        corba_nsset_data_copy(a, rmgr.get(), _old_data, old_data.get());
-        corba_nsset_data_copy(a, rmgr.get(), _new_data, new_data.get());
-
-        return;
+        _old_data = old_data._retn();
+        _new_data = new_data._retn();
     }
-    catch (std::exception &ex)
-    {
-        LOGGER(PACKAGE).error(ex.what());
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    catch (...)
-    {
-        LOGGER(PACKAGE).error("unknown error");
-    }
-    this->ServerInternalError(">> PollRequestGetUpdateNssetDetails - failed internal");
 }
-
 
 /*
  * idl method for retrieving old and new data of updated keyset
@@ -1838,63 +1437,44 @@ ccReg_EPP_i::PollRequestGetUpdateNSSetDetails(
  */
 void
 ccReg_EPP_i::PollRequestGetUpdateKeySetDetails(
-        CORBA::ULongLong _poll_id,
-        ccReg::KeySet_out _old_data,
-        ccReg::KeySet_out _new_data,
-        const ccReg::EppParams &params)
+    CORBA::ULongLong _message_id,
+    ccReg::KeySet_out _old_data,
+    ccReg::KeySet_out _new_data,
+    const ccReg::EppParams &_epp_params)
 {
+    const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
+    const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
+
     try {
-        Logging::Context::clear();
-        Logging::Context ctx("rifd");
-        Logging::Context ctx2(str(boost::format("clid-%1%") % params.loginID));
-        Logging::Context ctx3("poll-req-update-keyset-details");
-        ConnectionReleaser releaser;
+        const Epp::RegistrarSessionData registrar_session_data =
+            Epp::get_registrar_session_data(epp_sessions_, epp_request_params.session_id);
 
-        LOGGER(PACKAGE).debug(boost::format("poll_id=%1%") % _poll_id);
+        const Epp::Poll::PollRequestUpdateKeysetLocalizedResponse keyset_update_response =
+            Epp::Poll::poll_request_get_update_keyset_details_localized(
+                _message_id,
+                Epp::SessionData(
+                    registrar_session_data.registrar_id,
+                    registrar_session_data.language,
+                    server_transaction_handle,
+                    epp_request_params.log_request_id.get_value_or(0)));
 
-        EPPAction a(this, params.loginID, EPP_PollResponse, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
+        ccReg::KeySet_var old_data = new ccReg::KeySet;
+        Fred::Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
+            keyset_update_response.data.old_data,
+            old_data);
 
-        _old_data = new ccReg::KeySet;
-        _new_data = new ccReg::KeySet;
+        ccReg::KeySet_var new_data = new ccReg::KeySet;
+        Fred::Corba::wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
+            keyset_update_response.data.new_data,
+            new_data);
 
-        Database::Connection conn = Database::Manager::acquire();
-        Database::Result hids = conn.exec_params(
-                "SELECT h1.id as old_hid, h1.next as new_hid"
-                " FROM poll_eppaction pea"
-                " JOIN keyset_history dh ON dh.historyid = pea.objid"
-                " JOIN history h1 ON h1.next = pea.objid"
-                " WHERE pea.msgid = $1::bigint",
-                Database::query_param_list(_poll_id));
-
-        if (hids.size() != 1) {
-            throw std::runtime_error("unable to get poll message data");
-        }
-
-        std::auto_ptr<Fred::Manager> rmgr(Fred::Manager::create(a.getDB(), false));
-        rmgr->initStates();
-        std::auto_ptr<const Fred::Keyset::Keyset> old_data = Fred::get_object_by_hid<
-            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][0]));
-        std::auto_ptr<const Fred::Keyset::Keyset> new_data = Fred::get_object_by_hid<
-            Fred::Keyset::Keyset, Fred::Keyset::Manager, Fred::Keyset::List, Database::Filters::KeySetHistoryImpl>(
-                    rmgr->getKeysetManager(), static_cast<unsigned long long>(hids[0][1]));
-
-        corba_keyset_data_copy(a, rmgr.get(), _old_data, old_data.get());
-        corba_keyset_data_copy(a, rmgr.get(), _new_data, new_data.get());
-
-        return;
+        _old_data = old_data._retn();
+        _new_data = new_data._retn();
     }
-    catch (std::exception &ex)
-    {
-        LOGGER(PACKAGE).error(ex.what());
+    catch (const Epp::EppResponseFailureLocalized& e) {
+        throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
-    catch (...)
-    {
-        LOGGER(PACKAGE).error("unknown error");
-    }
-    this->ServerInternalError(">> PollRequestGetUpdateKeysetDetails - failed internal");
 }
-
 
 ccReg::Response *
 ccReg_EPP_i::ClientCredit(ccReg::ZoneCredit_out credit, const ccReg::EppParams &params)
