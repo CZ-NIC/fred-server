@@ -28,6 +28,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 class LoggerRequestData
 {
@@ -64,6 +65,7 @@ private:
     Logger::RequestProperties request_properties_;
 };
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

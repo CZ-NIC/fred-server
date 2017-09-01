@@ -24,6 +24,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 
 std::string quote(const std::string& str) {
@@ -37,7 +38,7 @@ std::string quote(int value) {
 std::string to_string(const Fred::DnsKey& dnskey)
 {
     static const std::string delim = ", ";
-    return std::string("[") +
+    return "["
            "flags: " + quote(dnskey.get_flags()) + delim +
            "protocol: " + quote(dnskey.get_protocol()) + delim +
            "algorithm: " + quote(dnskey.get_alg()) + delim +
@@ -45,5 +46,6 @@ std::string to_string(const Fred::DnsKey& dnskey)
            "]";
 }
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred

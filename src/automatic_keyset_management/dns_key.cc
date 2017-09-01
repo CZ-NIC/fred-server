@@ -28,10 +28,10 @@ namespace AutomaticKeysetManagement {
 std::string to_string(const DnsKey& dnskey)
 {
     static const std::string delim = ", ";
-    return "[flags: " + quote(dnskey.flags) + delim +
-           "protocol: " + quote(dnskey.protocol) + delim +
-           "algorithm: " + quote(dnskey.alg) + delim +
-           "key: " + quote(dnskey.key) + "]";
+    return "[flags: " + Impl::quote(dnskey.flags) + delim +
+           "protocol: " + Impl::quote(dnskey.protocol) + delim +
+           "algorithm: " + Impl::quote(dnskey.alg) + delim +
+           "key: " + Impl::quote(dnskey.key) + "]";
 }
 
 } // namespace Fred::AutomaticKeysetManagement

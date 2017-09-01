@@ -20,6 +20,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 template <>
 std::string to_fred_logger_request_type_name<LoggerRequestType::akm_turn_on>()
@@ -39,6 +40,7 @@ std::string to_fred_logger_request_type_name<LoggerRequestType::akm_rollover>()
     return "AkmRollover";
 }
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

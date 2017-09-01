@@ -43,6 +43,7 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -100,31 +101,31 @@ int main(int argc, char* argv[])
         std::cerr << "Caught system exception TRANSIENT -- unable to contact the server." << std::endl;
         return EXIT_FAILURE;
     }
-    catch (const CORBA::SystemException& ex)
+    catch (const CORBA::SystemException& e)
     {
-        std::cerr << "Caught a CORBA::" << ex._name() << std::endl;
+        std::cerr << "Caught a CORBA::" << e._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch (const CORBA::Exception& ex)
+    catch (const CORBA::Exception& e)
     {
-        std::cerr << "Caught CORBA::Exception: " << ex._name() << std::endl;
+        std::cerr << "Caught CORBA::Exception: " << e._name() << std::endl;
         return EXIT_FAILURE;
     }
-    catch (const omniORB::fatalException& fe)
+    catch (const omniORB::fatalException& e)
     {
         std::cerr << "Caught omniORB::fatalException:" << std::endl;
-        std::cerr << "  file: " << fe.file() << std::endl;
-        std::cerr << "  line: " << fe.line() << std::endl;
-        std::cerr << "  mesg: " << fe.errmsg() << std::endl;
+        std::cerr << "  file: " << e.file() << std::endl;
+        std::cerr << "  line: " << e.line() << std::endl;
+        std::cerr << "  mesg: " << e.errmsg() << std::endl;
         return EXIT_FAILURE;
     }
     catch (const ReturnFromMain&)
     {
         return EXIT_SUCCESS;
     }
-    catch (std::exception& ex)
+    catch (std::exception& e)
     {
-        std::cerr << "Error: " << ex.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
     catch (...)

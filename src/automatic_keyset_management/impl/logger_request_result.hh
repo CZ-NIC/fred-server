@@ -23,6 +23,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 struct LoggerRequestResult
 {
@@ -55,6 +56,7 @@ std::string to_fred_logger_request_result_name<LoggerRequestResult::error>()
     return "Error";
 }
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 

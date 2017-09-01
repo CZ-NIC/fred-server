@@ -30,6 +30,7 @@
 
 namespace Fred {
 namespace AutomaticKeysetManagement {
+namespace Impl {
 
 class LoggerRequestAkmTurnOn
 {
@@ -69,9 +70,7 @@ public:
 
     void close_on_failure() const
     {
-        LoggerRequestData logger_request_data;
-
-        logger_request_.close_on_failure(logger_request_data);
+        logger_request_.close_on_failure();
     }
 
     unsigned long long get_request_id() const
@@ -83,6 +82,7 @@ private:
     LoggerRequest<LoggerRequestType::akm_turn_on, LoggerServiceType::admin> logger_request_;
 };
 
+} // namespace Fred::AutomaticKeysetManagement::Impl
 } // namespace Fred::AutomaticKeysetManagement
 } // namespace Fred
 
