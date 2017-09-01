@@ -114,6 +114,7 @@ namespace MergeContactFixture
      * - 6 - MOJEID_CONTACT
      * - 7 - CONTACT_IN_MANUAL_VERIFICATION
      * - 8 - CONTACT_FAILED_MANUAL_VERIFICATION
+     * - 9 - CONTACT_PASSED_MANUAL_VERIFICATION
      *
      * -LS<number> or -ls<number> designates linked object (e.g. domain, nsset or keyset) states configuration where number means:
      * - 0 - no states
@@ -352,6 +353,7 @@ namespace MergeContactFixture
                 states_.push_back(Util::set_of<std::string>(MOJEID_CONTACT));//state_case 6
                 states_.push_back(Util::set_of<std::string>(CONTACT_IN_MANUAL_VERIFICATION));//state_case 7
                 states_.push_back(Util::set_of<std::string>(CONTACT_FAILED_MANUAL_VERIFICATION));//state_case 8
+                states_.push_back(Util::set_of<std::string>(CONTACT_PASSED_MANUAL_VERIFICATION));//state_case 9
 
 
                 /* other state cases

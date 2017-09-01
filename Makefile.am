@@ -2511,6 +2511,7 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 # tests/interfaces/test-admin-contact-automerge
 #
 tests_interfaces_test_admin_contact_automerge_SOURCES = \
+		src/fredlib/object/states_info.h \
 		tests/interfaces/admin/contact/automerge/main.cc \
 		tests/interfaces/admin/contact/automerge/test-merge-auto-proc.cc \
 		src/admin/contact/merge_contact.cc \

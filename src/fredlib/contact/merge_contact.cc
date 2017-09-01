@@ -29,7 +29,9 @@
 #include "src/fredlib/domain/update_domain.h"
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
@@ -46,8 +48,6 @@
 
 namespace Fred {
 
-namespace Fred
-{
     MergeContact::MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar,
             DiffContacts diff_contacts_impl)
     : src_contact_handle_(from_contact_handle)
@@ -151,6 +151,14 @@ namespace Fred
     {
         MergeContactOutput output;
 
+        //lock object_registry row for update
+        const MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx, dry_run);
+
+        //diff contacts
+        diff_contacts(ctx);
+
+        output.contactid = locked_contact;
+
         //domain_registrant lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
@@ -173,13 +181,13 @@ namespace Fred
                 tmp.set_registrant = dst_contact_handle_;
 
                 //check if object blocked
-                Fred::LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
-                Fred::PerformObjectStateRequest(tmp.domain_id).exec(ctx);
-                const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(tmp.domain_id).exec(ctx));
-                if (domain_states.presents(Fred::Object_State::server_blocked) ||
-                    domain_states.presents(Fred::Object_State::server_update_prohibited))
+                LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
+                PerformObjectStateRequest(tmp.domain_id).exec(ctx);
+                const ObjectStatesInfo domain_states(GetObjectStates(tmp.domain_id).exec(ctx));
+                if (domain_states.presents(Object_State::server_blocked) ||
+                    domain_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
 
                 if(!dry_run)
@@ -191,7 +199,7 @@ namespace Fred
                     tmp.history_id = ud.exec(ctx);
                 }
                 output.update_domain_registrant.push_back(tmp);
-            }//for
+            }
         }
 
         //domain_admin lock and update
@@ -219,13 +227,13 @@ namespace Fred
                 tmp.add_admin_contact = dst_contact_handle_;
 
                 //check if object blocked
-                Fred::LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
-                Fred::PerformObjectStateRequest(tmp.domain_id).exec(ctx);
-                const Fred::ObjectStatesInfo domain_states(Fred::GetObjectStates(tmp.domain_id).exec(ctx));
-                if (domain_states.presents(Fred::Object_State::server_blocked) ||
-                    domain_states.presents(Fred::Object_State::server_update_prohibited))
+                LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
+                PerformObjectStateRequest(tmp.domain_id).exec(ctx);
+                const ObjectStatesInfo domain_states(GetObjectStates(tmp.domain_id).exec(ctx));
+                if (domain_states.presents(Object_State::server_blocked) ||
+                    domain_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
 
                 if(!dry_run)
@@ -262,7 +270,7 @@ namespace Fred
                     }
                 }
                 output.update_domain_admin_contact.push_back(tmp);
-            }//for
+            }
         }
 
         //nsset_tech lock and update
@@ -289,12 +297,12 @@ namespace Fred
                 tmp.add_tech_contact = dst_contact_handle_;
 
                 //check if object blocked
-                Fred::LockObjectStateRequestLock(tmp.nsset_id).exec(ctx);
-                Fred::PerformObjectStateRequest(tmp.nsset_id).exec(ctx);
-                const Fred::ObjectStatesInfo nsset_states(Fred::GetObjectStates(tmp.nsset_id).exec(ctx));
-                if (nsset_states.presents(Fred::Object_State::server_update_prohibited))
+                LockObjectStateRequestLock(tmp.nsset_id).exec(ctx);
+                PerformObjectStateRequest(tmp.nsset_id).exec(ctx);
+                const ObjectStatesInfo nsset_states(GetObjectStates(tmp.nsset_id).exec(ctx));
+                if (nsset_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.handle));
                 }
 
                 if(!dry_run)
@@ -331,7 +339,7 @@ namespace Fred
                     }
                 }
                 output.update_nsset_tech_contact.push_back(tmp);
-            }//for
+            }
         }
 
         //keyset_tech lock and update
@@ -358,12 +366,12 @@ namespace Fred
                 tmp.add_tech_contact = dst_contact_handle_;
 
                 //check if object blocked
-                Fred::LockObjectStateRequestLock(tmp.keyset_id).exec(ctx);
-                Fred::PerformObjectStateRequest(tmp.keyset_id).exec(ctx);
-                const Fred::ObjectStatesInfo keyset_states(Fred::GetObjectStates(tmp.keyset_id).exec(ctx));
-                if (keyset_states.presents(Fred::Object_State::server_update_prohibited))
+                LockObjectStateRequestLock(tmp.keyset_id).exec(ctx);
+                PerformObjectStateRequest(tmp.keyset_id).exec(ctx);
+                const ObjectStatesInfo keyset_states(GetObjectStates(tmp.keyset_id).exec(ctx));
+                if (keyset_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.handle));
                 }
 
                 if(!dry_run)
@@ -398,7 +406,32 @@ namespace Fred
                     }
                 }
                 output.update_keyset_tech_contact.push_back(tmp);
-            }//for
+            }
+        }
+
+        //transfer concrete src contact states to dst contact
+        {
+            LockObjectStateRequestLock(locked_contact.src_contact_id).exec(ctx);
+            PerformObjectStateRequest(locked_contact.src_contact_id).exec(ctx);
+            const ObjectStatesInfo src_contact_states(GetObjectStates(locked_contact.src_contact_id).exec(ctx));
+            const ObjectStatesInfo dst_contact_states(GetObjectStates(locked_contact.dst_contact_id).exec(ctx));
+
+            StatusList status_list;
+
+            if (src_contact_states.presents(Object_State::contact_passed_manual_verification) &&
+                !dst_contact_states.presents(Object_State::contact_passed_manual_verification))
+            {
+                status_list.insert(Conversion::Enums::to_db_handle(Object_State::contact_passed_manual_verification));
+            }
+
+            if (!status_list.empty())
+            {
+                if (!dry_run)
+                {
+                    CreateObjectStateRequestId(locked_contact.dst_contact_id, status_list).exec(ctx);
+                    PerformObjectStateRequest(locked_contact.dst_contact_id).exec(ctx);
+                }
+            }
         }
 
         //delete src contact
@@ -414,30 +447,23 @@ namespace Fred
         }
 
         return output;
-    }//merge_contact_impl
+    }
 
     MergeContactOutput MergeContact::exec_dry_run(OperationContext& ctx)
     {
-        const bool dry_run = true;
         try
         {
-            //lock object_registry row for update
-            MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx,dry_run);
+            const bool dry_run = true;
 
-            //diff contacts
-            diff_contacts(ctx);
-
-            MergeContactOutput out = merge_contact_impl(ctx, dry_run);
-            out.contactid = locked_contact;
-            return out;
-        }//try
-        catch(ExceptionStack& ex)
+            return merge_contact_impl(ctx, dry_run);
+        }
+        catch (ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return MergeContactOutput();
-    }//MergeContact::exec_dry_run
+    }
 
     MergeContactOutput MergeContact::exec(OperationContext& ctx)
     {
@@ -445,23 +471,15 @@ namespace Fred
         {
             const bool dry_run = false;
 
-            //lock object_registry row for update
-            MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx,dry_run);
-
-            //diff contacts
-            diff_contacts(ctx);
-
-            MergeContactOutput out = merge_contact_impl(ctx, dry_run);
-            out.contactid = locked_contact;
-            return out;
-        }//try
-        catch(ExceptionStack& ex)
+            return merge_contact_impl(ctx, dry_run);
+        }
+        catch (ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return MergeContactOutput();
-    }//MergeContact::exec
+    }
 
     std::string MergeContact::to_string() const
     {
@@ -574,30 +592,28 @@ namespace Fred
 
         unsigned long long dst_contact_id = static_cast<unsigned long long>(diff_result[0]["dst_contact_id"]);
 
-        Fred::LockObjectStateRequestLock(dst_contact_id).exec(ctx);
-        Fred::PerformObjectStateRequest(dst_contact_id).exec(ctx);
-        const Fred::ObjectStatesInfo dst_contact_states(Fred::GetObjectStates(dst_contact_id).exec(ctx));
-        //check if object blocked
-        if (dst_contact_states.presents(Fred::Object_State::server_blocked) ||
-            dst_contact_states.presents(Fred::Object_State::contact_in_manual_verification) ||
-            dst_contact_states.presents(Fred::Object_State::contact_failed_manual_verification))
+        LockObjectStateRequestLock(dst_contact_id).exec(ctx);
+        PerformObjectStateRequest(dst_contact_id).exec(ctx);
+        const ObjectStatesInfo dst_contact_states(GetObjectStates(dst_contact_id).exec(ctx));
+        if (dst_contact_states.presents(Object_State::server_blocked) ||
+            dst_contact_states.presents(Object_State::contact_in_manual_verification) ||
+            dst_contact_states.presents(Object_State::contact_failed_manual_verification))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
+            BOOST_THROW_EXCEPTION(MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
         }
 
         unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
 
-        Fred::LockObjectStateRequestLock(src_contact_id).exec(ctx);
-        Fred::PerformObjectStateRequest(src_contact_id).exec(ctx);
-        const Fred::ObjectStatesInfo src_contact_states(Fred::GetObjectStates(src_contact_id).exec(ctx));
-        //check if object blocked
-        if (src_contact_states.presents(Fred::Object_State::mojeid_contact) ||
-            src_contact_states.presents(Fred::Object_State::server_blocked) ||
-            src_contact_states.presents(Fred::Object_State::server_delete_prohibited) ||
-            src_contact_states.presents(Fred::Object_State::contact_in_manual_verification) ||
-            src_contact_states.presents(Fred::Object_State::contact_failed_manual_verification))
+        LockObjectStateRequestLock(src_contact_id).exec(ctx);
+        PerformObjectStateRequest(src_contact_id).exec(ctx);
+        const ObjectStatesInfo src_contact_states(GetObjectStates(src_contact_id).exec(ctx));
+        if (src_contact_states.presents(Object_State::mojeid_contact) ||
+            src_contact_states.presents(Object_State::server_blocked) ||
+            src_contact_states.presents(Object_State::server_delete_prohibited) ||
+            src_contact_states.presents(Object_State::contact_in_manual_verification) ||
+            src_contact_states.presents(Object_State::contact_failed_manual_verification))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
+            BOOST_THROW_EXCEPTION(MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
         }
 
         bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
@@ -605,32 +621,30 @@ namespace Fred
     }
 
 
-    void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
+    void create_poll_messages(const MergeContactOutput &_merge_data, OperationContext &_ctx)
     {
-        for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+        for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
                 i != _merge_data.update_domain_registrant.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+        for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
                 i != _merge_data.update_domain_admin_contact.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+        for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
                 i != _merge_data.update_nsset_tech_contact.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+        for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
                 i != _merge_data.update_keyset_tech_contact.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
-                .exec(_ctx, _merge_data.contactid.src_contact_historyid);
+        Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>().exec(_ctx, _merge_data.contactid.src_contact_historyid);
     }
 
 
 } // namespace Fred
-

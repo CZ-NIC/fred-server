@@ -46,6 +46,8 @@
 #include "tests/mockup/logger_client_dummy.h"
 
 #include "src/fredlib/contact/create_contact.h"
+#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
@@ -118,6 +120,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
     BOOST_CHECK(notification_email.empty());//no notifications
 
 }
+
 /**
  * check merge with given registrar and no optional parameters
  *  - check that merged objects have selected registrar and objects with other registrar are not changed
@@ -131,6 +134,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
  */
 BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
 {
+    Fred::OperationContextCreator ctx;
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
     //conf pointers
@@ -171,10 +175,10 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
     static const  boost::regex forbidden_registrar_regex(registrar_mc_2_handle, boost::regex::icase);
 
 
-
     //contact changes
     std::set<std::string> removed_contact_handle;
     std::map<std::string, Fred::InfoContactDiff> changed_contacts = diff_contacts();
+
     for(std::map<std::string, Fred::InfoContactDiff>::const_iterator ci = changed_contacts.begin(); ci != changed_contacts.end(); ++ci)
     {
         //check update registrar is system registrar
@@ -205,6 +209,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
         }
         else
         {//destination contact
+
             BOOST_CHECK(ci->first == notification_email.at(0).email_data.dst_contact_handle);
 
             /**
@@ -216,6 +221,21 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
              */
             static const  boost::regex dst_contact_forbidden_states_regex("-ST5|-ST7|-ST8");
             BOOST_CHECK(!boost::regex_search(ci->first, dst_contact_forbidden_states_regex));
+
+            /**
+             * state passed from source contact to destination contact
+             * ST9 - CONTACT_PASSED_MANUAL_VERIFICATION
+             */
+            static const  boost::regex dst_contact_passed_states_regex("-ST9");
+            if (boost::regex_search(ci->first, dst_contact_passed_states_regex))
+            {
+                if (ci->second.roid.isset() && (ci->first == ci->second.roid.get_value().second)) // dst contact is the second one
+                {
+                    const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(ci->second.id.get_value().second).exec(ctx));
+                    BOOST_CHECK(contact_states.presents(Fred::Object_State::contact_passed_manual_verification));
+                }
+            }
+
         }
 
         BOOST_CHECK_MESSAGE(boost::regex_search(ci->first, selected_registrar_regex)
@@ -225,6 +245,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
         BOOST_CHECK_MESSAGE(!boost::regex_search(ci->first, forbidden_registrar_regex)
             , "changed contact  ci->first: " << ci->first << " forbidden_registrar_regex: " << forbidden_registrar_regex.str());
     }
+
     //check all removed contacts are notified
     BOOST_CHECK(std::set<std::string>(notification_email.at(0).email_data.removed_list.begin(), notification_email.at(0).email_data.removed_list.end()) == removed_contact_handle);
 
