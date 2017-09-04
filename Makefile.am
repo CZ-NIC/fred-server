@@ -3085,7 +3085,9 @@ tests_test_fredlib_SOURCES = \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
-		tests/setup/fixtures.cc
+		tests/setup/fixtures.cc \
+		util/random.h \
+		util/random.cc
 
 
 tests_test_fredlib_LDFLAGS = \

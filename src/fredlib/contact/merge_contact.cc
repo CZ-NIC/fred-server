@@ -30,6 +30,7 @@
 #include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/object/object_state.h"
+#include "src/fredlib/object/generate_authinfo_password.h"
 #include "src/fredlib/object/states_info.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
@@ -438,12 +439,14 @@ namespace Fred {
         if(!dry_run)
         {
             DeleteContactByHandle(src_contact_handle_).exec(ctx);
-            /* #9877 - change authinfo of destination contact */
-            std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
-            UpdateContactByHandle ucbh (dst_contact_handle_, registrar_);
-                if(logd_request_id_.isset()) ucbh.set_logd_request_id(logd_request_id_.get_value());
-                ucbh.set_authinfo(new_authinfo)
-                .exec(ctx);
+            // #9877 - change authinfo of destination contact
+            const std::string new_authinfo = generate_authinfo_pw().password_;
+            UpdateContactByHandle update_contact_by_handle(dst_contact_handle_, registrar_);
+            if (logd_request_id_.isset())
+            {
+                update_contact_by_handle.set_logd_request_id(logd_request_id_.get_value());
+            }
+            update_contact_by_handle.set_authinfo(new_authinfo).exec(ctx);
         }
 
         return output;
