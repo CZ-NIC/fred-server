@@ -233,7 +233,7 @@ namespace Fred
                 ; ci != email_data_.end(); ++ci)
             {
                 Database::Result  email_result = ctx.get_conn().exec_params(
-                    "SELECT trim(both ' ' FROM  COALESCE(c.notifyemail,'')), trim(both ' ' FROM COALESCE(c.email, '')), oreg.name "
+                    "SELECT trim(BOTH ' ' FROM  COALESCE(c.notifyemail,'')), trim(BOTH ' ' FROM COALESCE(c.email, '')), oreg.name "
                     " FROM object_registry oreg "
                     " JOIN contact c ON  oreg.id = c.id "
                     " WHERE oreg.roid = $1::text"

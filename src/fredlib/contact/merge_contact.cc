@@ -73,13 +73,17 @@ namespace Fred {
         MergeContactLockedContactId ret;
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.id, oreg.historyid, oreg.roid, r.handle"
-                " FROM enum_object_type eot "
-                " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
-                " AND oreg.name = UPPER($1::text) "
-                " JOIN object o ON o.id = oreg.id JOIN registrar r ON r.id = o.clid"
-                " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
-                , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.id, oreg.historyid, oreg.roid, r.handle "
+                              "FROM object_registry oreg "
+                              "JOIN object o ON o.id = oreg.id "
+                              "JOIN registrar r ON r.id = o.clid "
+                             "WHERE oreg.name = UPPER($1::text) "
+                               "AND oreg.type = get_object_type_id('contact') "
+                               "AND oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                            Database::query_param_list(src_contact_handle_));
 
             if (lock_res.size() == 0)
             {
@@ -98,13 +102,17 @@ namespace Fred {
 
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.id, oreg.historyid, oreg.roid, r.handle "
-                        " FROM enum_object_type eot "
-                        " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
-                        " AND oreg.name = UPPER($1::text) "
-                        " JOIN object o ON o.id = oreg.id JOIN registrar r ON r.id = o.clid"
-                        " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
-                , Database::query_param_list(dst_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.id, oreg.historyid, oreg.roid, r.handle "
+                              "FROM object_registry oreg "
+                              "JOIN object o ON o.id = oreg.id "
+                              "JOIN registrar r ON r.id = o.clid "
+                             "WHERE oreg.name = UPPER($1::text) "
+                               "AND oreg.type = get_object_type_id('contact') "
+                               "AND oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                            Database::query_param_list(dst_contact_handle_));
 
             if (lock_res.size() == 0)
             {
@@ -163,15 +171,19 @@ namespace Fred {
         //domain_registrant lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, d.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
-                " JOIN domain d ON d.registrant = src_c.id "
-                " JOIN object_registry oreg  ON oreg.id = d.id AND oreg.erdate IS NULL "
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, d.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN domain d ON d.registrant = src_c.id "
+                              "JOIN object_registry oreg  ON oreg.id = d.id AND oreg.erdate IS NULL "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND src_oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -206,17 +218,21 @@ namespace Fred {
         //domain_admin lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, d.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
-                " JOIN domain_contact_map dcm ON dcm.role = 1 "
-                " AND dcm.contactid  = src_c.id "
-                " JOIN domain d ON dcm.domainid = d.id "
-                " JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, d.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN domain_contact_map dcm ON dcm.role = 1 "
+                              "JOIN domain d ON dcm.domainid = d.id "
+                              "JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND dcm.contactid  = src_c.id "
+                               "AND src_oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -277,16 +293,20 @@ namespace Fred {
         //nsset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, n.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL "
-                " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id "
-                " JOIN nsset n ON ncm.nssetid = n.id "
-                " JOIN object_registry oreg  ON oreg.id = n.id AND oreg.erdate IS NULL "
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, n.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id "
+                              "JOIN nsset n ON ncm.nssetid = n.id "
+                              "JOIN object_registry oreg  ON oreg.id = n.id AND oreg.erdate IS NULL "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND src_oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -346,16 +366,21 @@ namespace Fred {
         //keyset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, k.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
-                " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id "
-                " JOIN keyset k ON kcm.keysetid = k.id "
-                " JOIN object_registry oreg  ON oreg.id = k.id AND oreg.erdate IS NULL"
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, k.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id "
+                              "JOIN keyset k ON kcm.keysetid = k.id "
+                              "JOIN object_registry oreg  ON oreg.id = k.id "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND src_oreg.erdate IS NULL "
+                               "AND oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format off
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -429,7 +454,7 @@ namespace Fred {
             {
                 if (!dry_run)
                 {
-                    CreateObjectStateRequestId(locked_contact.dst_contact_id, status_list).exec(ctx);
+                    //CreateObjectStateRequestId(locked_contact.dst_contact_id, status_list).exec(ctx); // FIXME!!!
                     PerformObjectStateRequest(locked_contact.dst_contact_id).exec(ctx);
                 }
             }
