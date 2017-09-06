@@ -34,11 +34,14 @@
 
 #include "test_merge_contact_fixture.h"
 
-BOOST_AUTO_TEST_SUITE(TestMergeContact)
+namespace Test {
+namespace LibFred {
+namespace Contact {
+namespace MergeContact {
 
 /**
  * @namespace ObjectCombinations
- * tests using MergeContactFixture for linked object configurations
+ * tests using MergeContactAutoProc for linked object configurations
  */
 BOOST_AUTO_TEST_SUITE(ObjectCombinations)
 /**
@@ -46,10 +49,10 @@ BOOST_AUTO_TEST_SUITE(ObjectCombinations)
  * With mergeable contacts having data from one mergeable group,
  * with enumerated linked object configurations in default set of quantities per contact, set no states to contacts and set no states to linked objects.
  */
-struct merge_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states
+struct merge_fixture : MergeContactAutoProc::mergeable_contact_grps_with_linked_objects_and_blocking_states
 {
     merge_fixture()
-    : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
+    : MergeContactAutoProc::mergeable_contact_grps_with_linked_objects_and_blocking_states(
         ""//empty db name suffix
         ,1//mergeable_contact_group_count
         ,Util::set_of<unsigned>(0)(1)(2)(3)(4)(5)(6)(7)(8)(9)(10)(11)(12)(13)(14)(15)(20)//linked_object_cases
@@ -2124,11 +2127,11 @@ BOOST_FIXTURE_TEST_CASE(test_src_domain_owner_with_admin_to_different_admin, mer
     BOOST_CHECK(diff_registrars().empty());
 }
 
-BOOST_AUTO_TEST_SUITE_END();//ObjectCombinations
+BOOST_AUTO_TEST_SUITE_END(); // Test::LibFred::MergeContact::ObjectCombinations
 
 /**
  * @namespace StateCombinations
- * tests using MergeContactFixture for linked object configurations with object states
+ * tests using MergeContactAutoProc for linked object configurations with object states
  */
 BOOST_AUTO_TEST_SUITE(StateCombinations)
 
@@ -2137,10 +2140,10 @@ BOOST_AUTO_TEST_SUITE(StateCombinations)
  * With mergeable contacts having data from one mergeable group,
  * with enumerated linked object configurations in default set of quantities per contact, set default states to contacts and set default states to linked objects.
  */
-struct merge_with_states_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states
+struct merge_with_states_fixture : MergeContactAutoProc::mergeable_contact_grps_with_linked_objects_and_blocking_states
 {
     merge_with_states_fixture()
-    : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
+    : MergeContactAutoProc::mergeable_contact_grps_with_linked_objects_and_blocking_states(
         ""//empty db name suffix
         ,1//mergeable_contact_group_count
         ,Util::set_of<unsigned>(15)(18)(19)(20)//linked_object_cases
@@ -2779,6 +2782,9 @@ BOOST_FIXTURE_TEST_CASE(test_src_updproh_domain_owner_and_admin_to_other_admin, 
     BOOST_CHECK(diff_registrars().empty());
 }
 
-BOOST_AUTO_TEST_SUITE_END();//StateCombinations
-BOOST_AUTO_TEST_SUITE_END();//TestMergeContactSeparatedFixture
+BOOST_AUTO_TEST_SUITE_END(); // Test::LibFred::MergeContact::StateCombinations
 
+} // namespace Test::LibFred::MergeContact
+} // namespace Test::LibFred::Contact
+} // namespace Test::LibFred
+} // namespace Test

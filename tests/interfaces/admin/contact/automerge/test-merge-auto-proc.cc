@@ -31,6 +31,7 @@
 #include <boost/iostreams/device/null.hpp>
 
 #include "util/printable.h"
+#include "util/db/query_param.h"
 #include "cfg/handle_corbanameservice_args.h"
 
 
@@ -51,9 +52,16 @@
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"
 
+#include "tests/fredlib/contact/util.h"
+#include "tests/fredlib/contact/fixture.h"
 #include "tests/fredlib/contact/test_merge_contact_fixture.h"
 
-BOOST_AUTO_TEST_SUITE(TestMergeContactAutoProc)
+namespace Test {
+
+BOOST_AUTO_TEST_SUITE(Backend)
+BOOST_AUTO_TEST_SUITE(Admin)
+BOOST_AUTO_TEST_SUITE(Contact)
+BOOST_AUTO_TEST_SUITE(MergeContactAutoProcedure)
 
 const std::string server_name = "test-merge-contact-auto-proc";
 
@@ -64,10 +72,10 @@ boost::iostreams::stream<boost::iostreams::null_sink> null_stream((boost::iostre
 /**
  * Setup merge contact test data with states.
  */
-struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states
+struct auto_proc_fixture : Test::LibFred::Contact::MergeContactAutoProc::mergeable_contact_grps_with_linked_objects_and_blocking_states
 {
     auto_proc_fixture(const std::string& db_name_suffix = "")
-    : MergeContactFixture::mergeable_contact_grps_with_linked_objects_and_blocking_states(
+    : Test::LibFred::Contact::MergeContactAutoProc::mergeable_contact_grps_with_linked_objects_and_blocking_states(
         db_name_suffix
         , 1//mergeable_contact_group_count
         , Util::set_of<unsigned>(1)(5)(9)(13)////linked_object_cases: nsset, keyset, domain via admin, domain via owner
@@ -81,7 +89,7 @@ struct auto_proc_fixture : MergeContactFixture::mergeable_contact_grps_with_link
 /**
  * check that dry run do no changes
  */
-BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
+BOOST_FIXTURE_TEST_CASE(test_auto_proc_dry_run, auto_proc_fixture)
 {
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
@@ -100,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
 
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
 
-    notification_email = Admin::MergeContactAutoProcedure(
+    notification_email = ::Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             registrar_mc_1_handle)
@@ -109,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
 
     BOOST_CHECK(notification_email.empty());//no notifications
 
-    notification_email = Admin::MergeContactAutoProcedure(
+    notification_email = ::Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             registrar_mc_1_handle)
@@ -132,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc_dry_run, auto_proc_fixture )
  *  - check that deleted source contacts are present in notification data
  *  - check that changed objects are present in notification data
  */
-BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
+BOOST_FIXTURE_TEST_CASE(test_auto_proc, auto_proc_fixture)
 {
     Fred::OperationContextCreator ctx;
     //corba config
@@ -152,7 +160,7 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
 
     std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
 
-    notification_email = Admin::MergeContactAutoProcedure(
+    notification_email = ::Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             registrar_mc_1_handle)
@@ -181,6 +189,8 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
 
     for(std::map<std::string, Fred::InfoContactDiff>::const_iterator ci = changed_contacts.begin(); ci != changed_contacts.end(); ++ci)
     {
+        BOOST_TEST_MESSAGE("DEBUG " << ci->first);
+
         //check update registrar is system registrar
         if(ci->second.update_registrar_handle.isset())
         {
@@ -221,21 +231,6 @@ BOOST_FIXTURE_TEST_CASE( test_auto_proc, auto_proc_fixture )
              */
             static const  boost::regex dst_contact_forbidden_states_regex("-ST5|-ST7|-ST8");
             BOOST_CHECK(!boost::regex_search(ci->first, dst_contact_forbidden_states_regex));
-
-            /**
-             * state passed from source contact to destination contact
-             * ST9 - CONTACT_PASSED_MANUAL_VERIFICATION
-             */
-            static const  boost::regex dst_contact_passed_states_regex("-ST9");
-            if (boost::regex_search(ci->first, dst_contact_passed_states_regex))
-            {
-                if (ci->second.roid.isset() && (ci->first == ci->second.roid.get_value().second)) // dst contact is the second one
-                {
-                    const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(ci->second.id.get_value().second).exec(ctx));
-                    BOOST_CHECK(contact_states.presents(Fred::Object_State::contact_passed_manual_verification));
-                }
-            }
-
         }
 
         BOOST_CHECK_MESSAGE(boost::regex_search(ci->first, selected_registrar_regex)
@@ -384,7 +379,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
     {
         auto_proc_fixture fixture("_1");
 
-        quiet_notification_emails = Admin::MergeContactAutoProcedure(
+        quiet_notification_emails = ::Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             fixture.registrar_mc_1_handle)
@@ -405,7 +400,7 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
     {
         auto_proc_fixture fixture("_2");
 
-        verbose_notification_emails = Admin::MergeContactAutoProcedure(
+        verbose_notification_emails = ::Admin::MergeContactAutoProcedure(
             *(mm.get()),
             *(logger_client.get()),
             fixture.registrar_mc_1_handle)
@@ -565,5 +560,45 @@ BOOST_AUTO_TEST_CASE(test_compare_verbose)
 
 }
 
+BOOST_FIXTURE_TEST_CASE(test_keep_contact_states, Test::LibFred::Contact::supply_ctx<Test::LibFred::Contact::HasRegistrarWithContactWithPassedManualVerification>)
+{
+    Test::LibFred::Contact::Contact contact(ctx, registrar.data.handle); // MCS_FILTER_RECENTLY_CREATED should prioritize this contact against the contact with contactPassedManualVerification status
 
-BOOST_AUTO_TEST_SUITE_END();
+    //corba config
+    FakedArgs fa = CfgArgs::instance()->fa;
+    //conf pointers
+    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
+                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+
+    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
+            , ns_args_ptr->nameservice_host
+            , ns_args_ptr->nameservice_port
+            , ns_args_ptr->nameservice_context);
+
+    const boost::shared_ptr<Fred::Mailer::Manager> mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
+    const std::auto_ptr<Fred::Logger::LoggerClient> logger_client(new Fred::Logger::DummyLoggerCorbaClientImpl());
+
+    std::vector<Fred::MergeContactNotificationEmailWithAddr> notification_email;
+
+    commit_transaction();
+
+    notification_email =
+            ::Admin::MergeContactAutoProcedure(
+                    *(mm.get()),
+                    *(logger_client.get()),
+                    registrar.data.handle)
+                    .exec(null_stream);
+                  //.set_verbose(3).exec(std::cout);
+
+    Fred::OperationContextCreator ctx;
+
+    const Fred::ObjectStatesInfo contact_states(Fred::GetObjectStates(contact.data.id).exec(ctx));
+    BOOST_CHECK(contact_states.presents(Fred::Object_State::contact_passed_manual_verification));
+}
+
+BOOST_AUTO_TEST_SUITE_END(); // Backend::Admin::Contact::MergeContactAutoProcedure
+BOOST_AUTO_TEST_SUITE_END(); // Backend::Admin::Contact
+BOOST_AUTO_TEST_SUITE_END(); // Backend::Admin
+BOOST_AUTO_TEST_SUITE_END(); // Backend
+
+} // namespace Test

@@ -55,6 +55,7 @@
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/fredlib/registrar/info_registrar_diff.h"
 
+#include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
@@ -72,8 +73,12 @@ const std::string CONTACT_FAILED_MANUAL_VERIFICATION = "contactFailedManualVerif
 }
 }
 
-namespace MergeContactFixture
-{
+namespace Test {
+namespace LibFred {
+namespace Contact {
+namespace MergeContactAutoProc {
+
+
     /**
      * Setup test data for MergeContact related tests.
      *
@@ -1457,6 +1462,11 @@ public:
 
         virtual ~mergeable_contact_grps_with_linked_objects_and_blocking_states(){}
     };
-}
+
+
+} // namespace Test::LibFred::Contact::MergeContactAutoProc
+} // namespace Test::LibFred::Contact
+} // namespace Test::LibFred
+} // namespace Test
 
 #endif // TEST_MERGE_CONTACT_FIXTURE_H_7b8f6ad0c0a540419a8a9b52ba626425

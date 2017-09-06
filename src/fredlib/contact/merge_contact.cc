@@ -454,7 +454,7 @@ namespace Fred {
             {
                 if (!dry_run)
                 {
-                    //CreateObjectStateRequestId(locked_contact.dst_contact_id, status_list).exec(ctx); // FIXME!!!
+                    CreateObjectStateRequestId(locked_contact.dst_contact_id, status_list).exec(ctx);
                     PerformObjectStateRequest(locked_contact.dst_contact_id).exec(ctx);
                 }
             }
