@@ -38,15 +38,41 @@ TestHandleOf< TYPE_OF_OBJECT >::TestHandleOf(const std::string &_handle)
 { }
 
 template < Object_Type::Enum TYPE_OF_OBJECT >
-bool TestHandleOf< TYPE_OF_OBJECT >::is_invalid_handle()const
+bool TestHandleOf< TYPE_OF_OBJECT >::is_invalid_handle(OperationContext &_ctx)const
 {
-    static const std::size_t max_length_of_handle = 30;
-    if (max_length_of_handle < handle_.length())
-    {
-        return true;
-    }
-    const boost::regex handle_syntax_rule("[a-zA-Z0-9](-?[a-zA-Z0-9])*");
-    return !boost::regex_match(handle_, handle_syntax_rule);
+    const std::string object_type_name = Conversion::Enums::to_db_handle(TYPE_OF_OBJECT);
+    const Database::Result db_res = _ctx.get_conn().exec_params(
+        "WITH "
+            "regexes AS "
+            "( "
+                "SELECT rc.regex AS regex "
+                "FROM enum_object_type eot "
+                "JOIN regex_object_type_handle_validation_checker_map rm ON eot.id=rm.type_id "
+                "JOIN regex_handle_validation_checker rc ON rc.id=rm.checker_id "
+                "WHERE eot.name=$1::text "
+            "), "
+            "regexes_count(n) AS "
+            "( "
+                "SELECT COUNT(*) "
+                "FROM regexes "
+            "), "
+            "matches AS "
+            "( "
+                "SELECT regex "
+                "FROM regexes "
+                "WHERE $2::text ~ ('^' || regex || '$') "
+            "), "
+            "matches_count(n) AS "
+            "( "
+                "SELECT COUNT(*) "
+                "FROM matches "
+            ") "
+        "SELECT regexes_count.n - matches_count.n "
+        "FROM regexes_count CROSS JOIN matches_count",
+        Database::query_param_list(object_type_name)
+                                  (handle_));
+
+    return db_res.size() != 1 || db_res[0][0].isnull() || static_cast< int >(db_res[0][0]) != 0;
 }
 
 

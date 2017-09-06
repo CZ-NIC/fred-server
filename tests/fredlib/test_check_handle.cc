@@ -119,13 +119,13 @@ struct check_handle_fixture : public Test::Fixture::instantiate_db_template
  */
 BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
 {
+    Fred::OperationContextCreator ctx;
+
     BOOST_CHECK(
-        Fred::Contact::get_handle_syntax_validity(admin_contact_handle + "@")
+        Fred::Contact::get_handle_syntax_validity(ctx, admin_contact_handle + "@")
         ==
         Fred::ContactHandleState::SyntaxValidity::invalid
     );
-
-    Fred::OperationContextCreator ctx;
 
     BOOST_CHECK(
         Fred::Contact::get_handle_registrability(ctx, admin_contact_handle)
@@ -151,36 +151,37 @@ BOOST_FIXTURE_TEST_CASE(check_contact_handle_true, check_handle_fixture)
  */
 BOOST_AUTO_TEST_CASE(check_contact_handle_validity_invalid)
 {
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("!") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("@") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("#") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("$") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("%") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("^") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("&") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("*") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("(") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(")") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("[") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("]") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("/") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(".") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(",") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(":") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("{") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("}") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("~") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("'") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("+") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("-") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("\"") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("\\") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOO--BAR") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("-FOOBAR") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOOBAR-") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOOBAR-") == Fred::ContactHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("1234567890123456789012345678901") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    Fred::OperationContextCreator ctx;
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "!") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "@") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "#") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "$") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "%") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "^") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "&") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "*") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "(") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, ")") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "[") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "]") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "/") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, ".") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, ",") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, ":") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "{") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "}") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "~") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "'") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "+") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "-") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "\"") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "\\") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "FOO--BAR") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "-FOOBAR") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "FOOBAR-") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "FOOBAR-") == Fred::ContactHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "1234567890123456789012345678901") == Fred::ContactHandleState::SyntaxValidity::invalid);
 }
 
 /**
@@ -188,12 +189,13 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_validity_invalid)
  */
 BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
 {
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("F") == Fred::ContactHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOOBAR") == Fred::ContactHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOO-BAR") == Fred::ContactHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("123-BAR") == Fred::ContactHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("FOO-BAR-BAZ") == Fred::ContactHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity("123456789012345678901234567890") == Fred::ContactHandleState::SyntaxValidity::valid);
+    Fred::OperationContextCreator ctx;
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "F") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "FOOBAR") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "FOO-BAR") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "123-BAR") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "FOO-BAR-BAZ") == Fred::ContactHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Contact::get_handle_syntax_validity(ctx, "123456789012345678901234567890") == Fred::ContactHandleState::SyntaxValidity::valid);
 }
 
 /**
@@ -202,9 +204,8 @@ BOOST_AUTO_TEST_CASE(check_contact_handle_validity_ok)
 BOOST_FIXTURE_TEST_CASE(check_nsset_handle_ok, check_handle_fixture)
 {
     Fred::OperationContextCreator ctx;
-
     BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle) == Fred::NssetHandleState::Registrability::registered);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(test_nsset_handle+"@") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, test_nsset_handle+"@") == Fred::NssetHandleState::SyntaxValidity::invalid);
     BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle_rem) == Fred::NssetHandleState::Registrability::in_protection_period);
     BOOST_CHECK(Fred::Nsset::get_handle_registrability(ctx, test_nsset_handle+"1") == Fred::NssetHandleState::Registrability::unregistered);
 
@@ -212,36 +213,37 @@ BOOST_FIXTURE_TEST_CASE(check_nsset_handle_ok, check_handle_fixture)
 
 BOOST_AUTO_TEST_CASE(check_nsset_handle_validity_invalid)
 {
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("!") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("@") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("#") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("$") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("%") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("^") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("&") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("*") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("(") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(")") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("[") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("]") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("/") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(".") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(",") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(":") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("{") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("}") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("~") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("'") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("+") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("-") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("\"") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("\\") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOO--BAR") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("-FOOBAR") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOOBAR-") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOOBAR-") == Fred::NssetHandleState::SyntaxValidity::invalid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("1234567890123456789012345678901") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    Fred::OperationContextCreator ctx;
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "!") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "@") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "#") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "$") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "%") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "^") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "&") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "*") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "(") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, ")") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "[") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "]") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "/") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, ".") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, ",") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, ":") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "{") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "}") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "~") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "'") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "+") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "-") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "\"") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "\\") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "FOO--BAR") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "-FOOBAR") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "FOOBAR-") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "FOOBAR-") == Fred::NssetHandleState::SyntaxValidity::invalid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "1234567890123456789012345678901") == Fred::NssetHandleState::SyntaxValidity::invalid);
 }
 
 /**
@@ -249,12 +251,13 @@ BOOST_AUTO_TEST_CASE(check_nsset_handle_validity_invalid)
  */
 BOOST_AUTO_TEST_CASE(check_nsset_handle_validity_ok)
 {
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("F") == Fred::NssetHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOOBAR") == Fred::NssetHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOO-BAR") == Fred::NssetHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("123-BAR") == Fred::NssetHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("FOO-BAR-BAZ") == Fred::NssetHandleState::SyntaxValidity::valid);
-    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity("123456789012345678901234567890") == Fred::NssetHandleState::SyntaxValidity::valid);
+    Fred::OperationContextCreator ctx;
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "F") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "FOOBAR") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "FOO-BAR") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "123-BAR") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "FOO-BAR-BAZ") == Fred::NssetHandleState::SyntaxValidity::valid);
+    BOOST_CHECK(Fred::Nsset::get_handle_syntax_validity(ctx, "123456789012345678901234567890") == Fred::NssetHandleState::SyntaxValidity::valid);
 }
 
 
@@ -266,7 +269,7 @@ BOOST_FIXTURE_TEST_CASE(check_keyset_handle_true, check_handle_fixture)
 {
     Fred::OperationContextCreator ctx;
     BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle) == Fred::KeySet::HandleState::registered);
-    BOOST_CHECK(Fred::KeySet::get_handle_syntax_validity(test_keyset_handle+"@") == Fred::KeySet::HandleState::invalid);
+    BOOST_CHECK(Fred::KeySet::get_handle_syntax_validity(ctx, test_keyset_handle+"@") == Fred::KeySet::HandleState::invalid);
     BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle_rem) == Fred::KeySet::HandleState::in_protection_period);
     BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle + xmark) == Fred::KeySet::HandleState::available);
 }
@@ -276,8 +279,8 @@ BOOST_FIXTURE_TEST_CASE(check_keyset_handle_true, check_handle_fixture)
  */
 BOOST_FIXTURE_TEST_CASE(check_keyset_handle_false, check_handle_fixture)
 {
-    BOOST_CHECK(Fred::KeySet::get_handle_syntax_validity(test_keyset_handle) == Fred::KeySet::HandleState::valid);
     Fred::OperationContextCreator ctx;
+    BOOST_CHECK(Fred::KeySet::get_handle_syntax_validity(ctx, test_keyset_handle) == Fred::KeySet::HandleState::valid);
     BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle + xmark) != Fred::KeySet::HandleState::registered);
     BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle) != Fred::KeySet::HandleState::in_protection_period);
     BOOST_CHECK(Fred::KeySet::get_handle_registrability(ctx, test_keyset_handle) != Fred::KeySet::HandleState::available);

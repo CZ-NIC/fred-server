@@ -39,7 +39,7 @@ public:
     TestHandleOf(const std::string &_handle);
 
     //check handle syntax
-    bool is_invalid_handle()const;
+    bool is_invalid_handle(OperationContext &_ctx)const;
 
     //check if handle is in protected period
     bool is_protected(OperationContext &_ctx)const;

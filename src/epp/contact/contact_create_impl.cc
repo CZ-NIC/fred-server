@@ -56,7 +56,7 @@ ContactCreateResult contact_create_impl(
         throw AuthErrorServerClosingConnection();
     }
 
-    const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_contact_handle) ==
+    const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_ctx, _contact_handle) ==
                                  Fred::ContactHandleState::SyntaxValidity::valid;
     if (!handle_is_valid) {
         throw InvalidHandle();

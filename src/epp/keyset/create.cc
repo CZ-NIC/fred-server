@@ -25,7 +25,7 @@ Success check_keyset_handle(const std::string &_keyset_handle,
                             Fred::OperationContext &_ctx,
                             ParameterErrors &_param_errors)
 {
-    switch (Fred::KeySet::get_handle_syntax_validity(_keyset_handle))
+    switch (Fred::KeySet::get_handle_syntax_validity(_ctx, _keyset_handle))
     {
         case Fred::KeySet::HandleState::valid:
             switch (Fred::KeySet::get_handle_registrability(_ctx, _keyset_handle))

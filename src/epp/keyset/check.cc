@@ -46,8 +46,8 @@ std::map< std::string, Nullable< KeySet::HandleCheckResult::Enum > > keyset_chec
          handle_ptr != _keyset_handles.end(); ++handle_ptr)
     {
         result[*handle_ptr] = keyset_handle_state_to_check_result(
-            Fred::KeySet::get_handle_syntax_validity(*handle_ptr),
-            Fred::KeySet::get_handle_registrability(_ctx, *handle_ptr));
+                Fred::KeySet::get_handle_syntax_validity(_ctx, *handle_ptr),
+                Fred::KeySet::get_handle_registrability(_ctx, *handle_ptr));
     }
 
     return result;
