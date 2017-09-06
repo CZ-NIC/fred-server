@@ -567,13 +567,15 @@ BOOST_FIXTURE_TEST_CASE(test_keep_contact_states, Test::LibFred::Contact::supply
     //corba config
     FakedArgs fa = CfgArgs::instance()->fa;
     //conf pointers
-    HandleCorbaNameServiceArgs* ns_args_ptr=CfgArgs::instance()->
-                get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
+    HandleCorbaNameServiceArgs* ns_args_ptr =
+            CfgArgs::instance()->get_handler_ptr_by_type<HandleCorbaNameServiceArgs>();
 
-    CorbaContainer::set_instance(fa.get_argc(), fa.get_argv()
-            , ns_args_ptr->nameservice_host
-            , ns_args_ptr->nameservice_port
-            , ns_args_ptr->nameservice_context);
+    CorbaContainer::set_instance(
+            fa.get_argc(),
+            fa.get_argv(),
+            ns_args_ptr->nameservice_host,
+            ns_args_ptr->nameservice_port,
+            ns_args_ptr->nameservice_context);
 
     const boost::shared_ptr<Fred::Mailer::Manager> mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
     const std::auto_ptr<Fred::Logger::LoggerClient> logger_client(new Fred::Logger::DummyLoggerCorbaClientImpl());

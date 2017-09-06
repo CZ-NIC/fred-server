@@ -56,25 +56,23 @@ struct Registrar
         data = Fred::InfoRegistrarByHandle(_registrar_handle).exec(_ctx).info_registrar_data;
         BOOST_REQUIRE(!data.system.get_value_or(false));
 
-        // clang-format off
         _ctx.get_conn().exec_params(
+                // clang-format off
                 "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
                     "SELECT $1::bigint, z.id, NOW() "
                         "FROM zone z "
                         "WHERE z.fqdn = $2::text",
-                Database::query_param_list(data.id)
-                ("cz"));
-        // clang-format on
+                // clang-format on
+                Database::query_param_list(data.id)("cz"));
 
-        // clang-format off
         _ctx.get_conn().exec_params(
+                // clang-format off
                 "INSERT INTO registrarinvoice (registrarid, zone, fromdate) "
                     "SELECT $1::bigint, z.id, NOW() "
                         "FROM zone z "
                         "WHERE z.fqdn = $2::text",
-                Database::query_param_list(data.id)
-                ("0.2.4.e164.arpa"));
-        // clang-format on
+                // clang-format on
+                Database::query_param_list(data.id)("0.2.4.e164.arpa"));
     }
 
 
@@ -108,7 +106,11 @@ struct ObjectWithStatus
             const std::string& _status)
     {
         _ctx.get_conn().exec_params(
-                "UPDATE enum_object_states SET manual = 'true'::bool WHERE name = $1::text",
+                // clang-format off
+                "UPDATE enum_object_states "
+                   "SET manual = 'true'::bool "
+                 "WHERE name = $1::text",
+                // clang-format on
                 Database::query_param_list(_status));
 
         const std::set<std::string> statuses = boost::assign::list_of(_status);
