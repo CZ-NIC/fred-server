@@ -22,22 +22,37 @@
 #include <boost/integer_traits.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
+#include <exception>
+
 namespace Fred {
 namespace Corba {
+
+struct IntegerConversionFailed : std::bad_cast
+{
+    const char* what() const throw () {
+        return "integer conversion failed";
+    }
+};
 
 /**
  * Basic integral types conversion with under/overflow detection
  */
 template <class SOURCE_INTEGRAL_TYPE, class TARGET_INTEGRAL_TYPE>
-void
-int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE& dst)
+void int_to_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE& dst)
 {
     typedef boost::integer_traits<SOURCE_INTEGRAL_TYPE> source_integral_type_traits;
     typedef boost::integer_traits<TARGET_INTEGRAL_TYPE> target_integral_type_traits;
 
     BOOST_MPL_ASSERT_MSG(source_integral_type_traits::is_integral, source_type_have_to_be_integral, (SOURCE_INTEGRAL_TYPE));
     BOOST_MPL_ASSERT_MSG(target_integral_type_traits::is_integral, target_type_have_to_be_integral, (TARGET_INTEGRAL_TYPE));
-    dst = boost::numeric_cast<TARGET_INTEGRAL_TYPE>(src);
+    try
+    {
+        dst = boost::numeric_cast<TARGET_INTEGRAL_TYPE>(src);
+    }
+    catch (const boost::bad_numeric_cast&)
+    {
+        throw IntegerConversionFailed();
+    }
 }
 
 /**
@@ -59,8 +74,7 @@ void wrap_int(SOURCE_INTEGRAL_TYPE src, TARGET_INTEGRAL_TYPE& dst)
 }
 
 template <class TARGET_INTEGRAL_TYPE, class SOURCE_INTEGRAL_TYPE>
-TARGET_INTEGRAL_TYPE
-wrap_int(SOURCE_INTEGRAL_TYPE src)
+TARGET_INTEGRAL_TYPE wrap_int(SOURCE_INTEGRAL_TYPE src)
 {
     TARGET_INTEGRAL_TYPE dst;
     wrap_int(src, dst);

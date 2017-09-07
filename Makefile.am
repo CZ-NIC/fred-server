@@ -104,7 +104,11 @@ CLEANFILES = \
 		src/corba/NotificationSK.cc \
 		src/corba/NotificationDynSK.cc \
 		src/corba/NotificationSK.h \
-		src/corba/Notification.hh
+		src/corba/Notification.hh \
+		src/corba/AutomaticKeysetManagementSK.cc \
+		src/corba/AutomaticKeysetManagementDynSK.cc \
+		src/corba/AutomaticKeysetManagementSK.h \
+		src/corba/AutomaticKeysetManagement.hh
 
 
 
@@ -185,6 +189,7 @@ noinst_HEADERS = \
 		util/cfg/handle_contactverification_args.h \
 		util/cfg/handle_tests_args.h \
 		util/optys/handle_optys_mail_args.h \
+		util/cfg/handle_akmd_args.h \
 		util/types/optional.h \
 		util/types/optional_from_program_options.h \
 		util/types/money.h \
@@ -203,6 +208,8 @@ noinst_HEADERS = \
 		src/corba/util/corba_conversions_nullable_types.h \
 		src/corba/util/corba_conversions_string.h \
 		src/corba/util/corba_conversions_int.h \
+		src/corba/automatic_keyset_management/corba_conversions.cc \
+		src/corba/automatic_keyset_management/corba_conversions.hh \
 		util/is_equal_optional_nullable.h \
 		tests/fredlib/util.h \
 		tests/fredlib/enum_to_db_handle_conversion.h \
@@ -325,6 +332,7 @@ noinst_LIBRARIES = \
 		src/corba/libcorbacontactverification.a \
 		src/corba/libcorbadomainbrowser.a \
 		src/corba/libcorbapublicrequest.a \
+		src/corba/libcorbaautomatickeysetmanagement.a \
 		src/corba/libcorbaadmincontactverification.a \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorba_conversion_test.a \
@@ -350,6 +358,7 @@ sbin_PROGRAMS = \
 		src/corba/mojeid/fred-mifd \
 		src/corba/mojeid/messages/fred-mojeid-msggen \
 		src/corba/domain_browser/fred-dbifd \
+		src/corba/automatic_keyset_management/fred-akmd \
 		src/cli_admin/fred-admin \
 		tools/logd_migration/migrate_log \
 		tools/contact_migration/mojeid_contact_address_import \
@@ -1211,7 +1220,8 @@ BUILT_SOURCES = \
 		src/corba/PublicRequestSK.cc \
 		src/corba/AdminContactVerificationSK.cc \
 		src/corba/corba_conversion_testSK.cc \
-		src/corba/NotificationSK.cc
+		src/corba/NotificationSK.cc \
+		src/corba/AutomaticKeysetManagementSK.cc
 
 
 # src/corba/libcorba.a
@@ -1357,6 +1367,11 @@ nodist_src_corba_libcorbanotification_a_SOURCES = \
 		src/corba/NotificationDynSK.cc \
 		src/corba/Notification.hh
 
+nodist_src_corba_libcorbaautomatickeysetmanagement_a_SOURCES = \
+		src/corba/AutomaticKeysetManagementSK.cc \
+		src/corba/AutomaticKeysetManagementDynSK.cc \
+		src/corba/AutomaticKeysetManagement.hh
+
 #
 # nodist corba libs
 
@@ -1386,6 +1401,7 @@ src/corba/DomainBrowserSK.cc: $(IDLDIR)/DomainBrowser.idl
 src/corba/AdminContactVerificationSK.cc: $(IDLDIR)/AdminContactVerification.idl $(IDLDIR)/_dataTypes.idl
 src/corba/NotificationSK.cc: $(IDLDIR)/Notification.idl
 src/corba/PublicRequestSK.cc: $(IDLDIR)/PublicRequest.idl $(IDLDIR)/NullableTypes.idl
+src/corba/AutomaticKeysetManagementSK.cc: $(IDLDIR)/AutomaticKeysetManagement.idl
 
 src/corba/%.cc:
 		omniidl -bcxx -Wbuse_quotes -Wba -C$(top_builddir)/src/corba $<
@@ -2142,6 +2158,77 @@ src_corba_domain_browser_fred_dbifd_LDADD = \
 # src/corba/domain_browser/fred-dbifd
 
 
+# src/corba/automatic_keyset_management/fred-akmd
+#
+src_corba_automatic_keyset_management_fred_akmd_SOURCES = \
+		src/epp/keyset/dns_key.cc \
+		src/epp/keyset/dns_key.h \
+		src/corba/nameservice.cc \
+		src/corba/nameservice.h \
+		src/corba/logger_client_impl.h \
+		src/corba/logger_client_impl.cc \
+		util/dummy_logger.hh \
+		util/dummy_logger.cc \
+		src/automatic_keyset_management/automatic_keyset_management.cc \
+		src/automatic_keyset_management/automatic_keyset_management.hh \
+		src/automatic_keyset_management/keyset.hh \
+		src/automatic_keyset_management/nsset.hh \
+		src/automatic_keyset_management/dns_key.cc \
+		src/automatic_keyset_management/dns_key.hh \
+		src/automatic_keyset_management/impl/limits.hh \
+		src/automatic_keyset_management/impl/logger_request.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
+		src/automatic_keyset_management/impl/logger_request_data.cc \
+		src/automatic_keyset_management/impl/logger_request_data.hh \
+		src/automatic_keyset_management/impl/logger_request_object_type.cc \
+		src/automatic_keyset_management/impl/logger_request_object_type.hh \
+		src/automatic_keyset_management/impl/logger_request_property.cc \
+		src/automatic_keyset_management/impl/logger_request_property.hh \
+		src/automatic_keyset_management/impl/logger_request_result.hh \
+		src/automatic_keyset_management/impl/logger_request_type.cc \
+		src/automatic_keyset_management/impl/logger_request_type.hh \
+		src/automatic_keyset_management/impl/logger_service_type.hh \
+		src/automatic_keyset_management/impl/util.cc \
+		src/automatic_keyset_management/impl/util.hh \
+		src/corba/automatic_keyset_management/server_i.cc \
+		src/corba/automatic_keyset_management/server_i.hh \
+		src/corba/automatic_keyset_management/fred-akmd.cc
+
+
+src_corba_automatic_keyset_management_fred_akmd_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+src_corba_automatic_keyset_management_fred_akmd_LDADD = \
+		src/corba/libcorbaautomatickeysetmanagement.a \
+		src/fredlib/libfred.a \
+		src/corba/util/libcorbautil.a \
+		src/corba/libcorba.a \
+		src/corba/libcorbalogger.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbaadmin.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		-lmpdec -lm -lrt \
+		$(LIBIDN_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB)
+#
+# src/corba/automatic_keyset_management/fred-akmd
+
+
 # src/cli_admin/fred-admin
 #
 src_cli_admin_fred_admin_SOURCES = \
@@ -2373,6 +2460,7 @@ SERVER_TESTS = \
 		tests/interfaces/test-epp \
 		tests/interfaces/test-whois \
 		tests/interfaces/test-public-request \
+		tests/interfaces/test-automatic-keyset-management \
 		tests/test-exception \
 		tests/test-blocking \
 		tests/test-fredlib \
@@ -2684,8 +2772,6 @@ tests_test_server_SOURCES = \
 		tests/deprecated/test_locking_trigger.cc \
 		tests/util/test_nullable.cc \
 		tests/util/test_optional.cc \
-		src/corba/epp_corba_client_impl.cc \
-		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
@@ -2827,8 +2913,6 @@ tests_test_blocking_SOURCES = \
 		src/corba/admin/filter_impl.h \
 		tests/setup/tests_common.cc \
 		tests/setup/tests_common.h \
-		src/corba/epp_corba_client_impl.cc \
-		src/corba/epp_corba_client_impl.h \
 		src/contact_verification/contact_verification_impl.cc \
 		src/contact_verification/contact_verification_impl.h \
 		src/fredlib/contact_verification/cancel_contact_verification.cc \
@@ -3115,6 +3199,76 @@ tests_test_corba_conversion_LDADD = \
 #
 # tests/test_corba_conversion
 
+# tests/interfaces/test-automatic-keyset-management
+#
+
+tests_interfaces_test_automatic_keyset_management_SOURCES = \
+		src/corba/nameservice.h \
+		src/corba/nameservice.cc \
+		src/corba/logger_client_impl.h \
+		src/corba/logger_client_impl.cc \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc \
+		src/epp/keyset/dns_key.cc \
+		src/epp/keyset/dns_key.h \
+		src/automatic_keyset_management/dns_key.cc \
+		src/automatic_keyset_management/dns_key.hh \
+		src/automatic_keyset_management/automatic_keyset_management.cc \
+		src/automatic_keyset_management/automatic_keyset_management.hh \
+		src/automatic_keyset_management/impl/limits.hh \
+		src/automatic_keyset_management/impl/logger_request.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_rollover.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_off.hh \
+		src/automatic_keyset_management/impl/logger_request_akm_turn_on.hh \
+		src/automatic_keyset_management/impl/logger_request_data.cc \
+		src/automatic_keyset_management/impl/logger_request_data.hh \
+		src/automatic_keyset_management/impl/logger_request_object_type.cc \
+		src/automatic_keyset_management/impl/logger_request_object_type.hh \
+		src/automatic_keyset_management/impl/logger_request_property.cc \
+		src/automatic_keyset_management/impl/logger_request_property.hh \
+		src/automatic_keyset_management/impl/logger_request_result.hh \
+		src/automatic_keyset_management/impl/logger_request_type.cc \
+		src/automatic_keyset_management/impl/logger_request_type.hh \
+		src/automatic_keyset_management/impl/logger_service_type.hh \
+		src/automatic_keyset_management/impl/util.cc \
+		src/automatic_keyset_management/impl/util.hh \
+		tests/interfaces/automatic_keyset_management/util.h \
+		tests/interfaces/automatic_keyset_management/fixture.h \
+		tests/interfaces/automatic_keyset_management/main.cc \
+		tests/interfaces/automatic_keyset_management/test_automatic_keyset_management.cc
+
+tests_interfaces_test_automatic_keyset_management_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_interfaces_test_automatic_keyset_management_LDADD = \
+		src/corba/libcorbaautomatickeysetmanagement.a \
+		src/fredlib/libfred.a \
+		src/corba/util/libcorbautil.a \
+		src/corba/libcorba.a \
+		src/corba/libcorbalogger.a \
+		src/corba/libcorbadatatypes.a \
+		src/corba/libcorbaadmin.a \
+		src/corba/libcorbaregistry.a \
+		src/corba/libcorbafilters.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_THREAD_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+
+#
+# tests_interfaces_test_automatic_keyset_management
 
 
 # non-corba tests with overloaded global operator new
