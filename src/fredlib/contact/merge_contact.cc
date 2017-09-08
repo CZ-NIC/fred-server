@@ -31,7 +31,7 @@
 #include "src/fredlib/nsset/update_nsset.h"
 #include "src/fredlib/object/object_state.h"
 #include "src/fredlib/object/generate_authinfo_password.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object_state/create_object_state_request_id.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"

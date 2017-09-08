@@ -47,7 +47,7 @@
 #include "tests/mockup/logger_client_dummy.h"
 
 #include "src/fredlib/contact/create_contact.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/registrar/create_registrar.h"
 #include "src/fredlib/registrar/info_registrar.h"

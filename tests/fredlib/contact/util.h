@@ -28,7 +28,7 @@ namespace Contact {
 
 
 struct autocommitting_context
-    : virtual Test::Fixture::instantiate_db_template
+    : virtual Test::instantiate_db_template
 {
     Fred::OperationContextCreator ctx;
 
@@ -42,7 +42,7 @@ struct autocommitting_context
 };
 
 struct autorollbacking_context
-    : virtual Test::Fixture::instantiate_db_template
+    : virtual Test::instantiate_db_template
 {
     Fred::OperationContextCreator ctx;
 
