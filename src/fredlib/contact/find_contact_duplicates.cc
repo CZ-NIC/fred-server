@@ -37,26 +37,26 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext& _ctx)
             ("SHIPPING_3");
     std::stringstream dup_sql;
     dup_sql << "SELECT unnest(dup_set)"
-        " FROM (SELECT array_agg(oreg.name) as dup_set,";
+        " FROM (SELECT array_agg(oreg.name) AS dup_set,";
         for (std::vector<std::string>::const_iterator contact_address_type = contact_address_types.begin();
             contact_address_type != contact_address_types.end();
             ++contact_address_type)
         {
             dup_sql << \
             " (SELECT row("
-               " trim(both ' ' from ca.company_name),"
-               " trim(both ' ' from ca.street1),"
-               " trim(both ' ' from ca.street2),"
-               " trim(both ' ' from ca.street3),"
-               " trim(both ' ' from ca.city),"
-               " trim(both ' ' from ca.stateorprovince),"
-               " trim(both ' ' from ca.postalcode),"
-               " trim(both ' ' from ca.country)"
+               " trim(BOTH ' ' FROM ca.company_name),"
+               " trim(BOTH ' ' FROM ca.street1),"
+               " trim(BOTH ' ' FROM ca.street2),"
+               " trim(BOTH ' ' FROM ca.street3),"
+               " trim(BOTH ' ' FROM ca.city),"
+               " trim(BOTH ' ' FROM ca.stateorprovince),"
+               " trim(BOTH ' ' FROM ca.postalcode),"
+               " trim(BOTH ' ' FROM ca.country)"
                " )"
               " FROM contact_address ca"
              " WHERE ca.type = '" << *contact_address_type << "'"
                " AND ca.contactid = c.id"
-            " ) as " << *contact_address_type << "_addr" << (contact_address_type != contact_address_types.end() - 1 ? "," : "");
+            " ) AS " << *contact_address_type << "_addr" << (contact_address_type != contact_address_types.end() - 1 ? "," : "");
         }
     dup_sql << \
         " FROM object_registry oreg"
@@ -70,22 +70,22 @@ std::set<std::string> FindContactDuplicates::exec(Fred::OperationContext& _ctx)
     }
 
     dup_sql << " GROUP BY"
-        " trim(both ' ' from c.name),"
-        " trim(both ' ' from c.organization),"
+        " trim(BOTH ' ' FROM c.name),"
+        " trim(BOTH ' ' FROM c.organization),"
         " c.ssntype,"
-        " trim(both ' ' from c.ssn),"
-        " trim(both ' ' from c.vat),"
-        " trim(both ' ' from c.telephone),"
-        " trim(both ' ' from c.fax),"
-        " trim(both ' ' from c.email),"
-        " trim(both ' ' from c.notifyemail),"
-        " trim(both ' ' from c.street1),"
-        " trim(both ' ' from c.street2),"
-        " trim(both ' ' from c.street3),"
-        " trim(both ' ' from c.city),"
-        " trim(both ' ' from c.stateorprovince),"
-        " trim(both ' ' from c.postalcode),"
-        " trim(both ' ' from c.country),"
+        " trim(BOTH ' ' FROM c.ssn),"
+        " trim(BOTH ' ' FROM c.vat),"
+        " trim(BOTH ' ' FROM c.telephone),"
+        " trim(BOTH ' ' FROM c.fax),"
+        " trim(BOTH ' ' FROM c.email),"
+        " trim(BOTH ' ' FROM c.notifyemail),"
+        " trim(BOTH ' ' FROM c.street1),"
+        " trim(BOTH ' ' FROM c.street2),"
+        " trim(BOTH ' ' FROM c.street3),"
+        " trim(BOTH ' ' FROM c.city),"
+        " trim(BOTH ' ' FROM c.stateorprovince),"
+        " trim(BOTH ' ' FROM c.postalcode),"
+        " trim(BOTH ' ' FROM c.country),"
         " o.clid,"
         " c.disclosename,"
         " c.discloseorganization,"

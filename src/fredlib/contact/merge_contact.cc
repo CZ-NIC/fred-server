@@ -21,28 +21,34 @@
  *  contact merge
  */
 
-#include <string>
-
-#include <boost/algorithm/string.hpp>
-
 #include "src/fredlib/contact/merge_contact.h"
 
-#include "src/fredlib/domain/update_domain.h"
-#include "src/fredlib/nsset/update_nsset.h"
-#include "src/fredlib/keyset/update_keyset.h"
 #include "src/fredlib/contact/delete_contact.h"
 #include "src/fredlib/contact/update_contact.h"
+#include "src/fredlib/db_settings.h"
+#include "src/fredlib/domain/update_domain.h"
+#include "src/fredlib/keyset/update_keyset.h"
+#include "src/fredlib/nsset/update_nsset.h"
+#include "src/fredlib/object/object_state.h"
+#include "src/fredlib/object/generate_authinfo_password.h"
+#include "src/fredlib/object/object_states_info.h"
+#include "src/fredlib/object_state/create_object_state_request_id.h"
+#include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/object_has_state.h"
 #include "src/fredlib/object_state/object_state_name.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/poll/create_poll_message.h"
+#include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/db_settings.h"
+#include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "util/random.h"
 
+#include <boost/algorithm/string.hpp>
 
-namespace Fred
-{
+#include <string>
+
+namespace Fred {
+
     MergeContact::MergeContact(const std::string& from_contact_handle, const std::string& to_contact_handle, const std::string& registrar,
             DiffContacts diff_contacts_impl)
     : src_contact_handle_(from_contact_handle)
@@ -67,13 +73,17 @@ namespace Fred
         MergeContactLockedContactId ret;
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.id, oreg.historyid, oreg.roid, r.handle"
-                " FROM enum_object_type eot "
-                " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
-                " AND oreg.name = UPPER($1::text) "
-                " JOIN object o ON o.id = oreg.id JOIN registrar r ON r.id = o.clid"
-                " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
-                , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.id, oreg.historyid, oreg.roid, r.handle "
+                              "FROM object_registry oreg "
+                              "JOIN object o ON o.id = oreg.id "
+                              "JOIN registrar r ON r.id = o.clid "
+                             "WHERE oreg.name = UPPER($1::text) "
+                               "AND oreg.type = get_object_type_id('contact') "
+                               "AND oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                            Database::query_param_list(src_contact_handle_));
 
             if (lock_res.size() == 0)
             {
@@ -92,13 +102,17 @@ namespace Fred
 
         {
             Database::Result lock_res = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.id, oreg.historyid, oreg.roid, r.handle "
-                        " FROM enum_object_type eot "
-                        " JOIN object_registry oreg ON oreg.type = eot.id AND oreg.erdate IS NULL "
-                        " AND oreg.name = UPPER($1::text) "
-                        " JOIN object o ON o.id = oreg.id JOIN registrar r ON r.id = o.clid"
-                        " WHERE eot.name = 'contact' ") + (dry_run ? " " : " FOR UPDATE OF oreg")
-                , Database::query_param_list(dst_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.id, oreg.historyid, oreg.roid, r.handle "
+                              "FROM object_registry oreg "
+                              "JOIN object o ON o.id = oreg.id "
+                              "JOIN registrar r ON r.id = o.clid "
+                             "WHERE oreg.name = UPPER($1::text) "
+                               "AND oreg.type = get_object_type_id('contact') "
+                               "AND oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                            Database::query_param_list(dst_contact_handle_));
 
             if (lock_res.size() == 0)
             {
@@ -146,18 +160,30 @@ namespace Fred
     {
         MergeContactOutput output;
 
+        //lock object_registry row for update
+        const MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx, dry_run);
+
+        //diff contacts
+        diff_contacts(ctx);
+
+        output.contactid = locked_contact;
+
         //domain_registrant lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, d.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
-                " JOIN domain d ON d.registrant = src_c.id "
-                " JOIN object_registry oreg  ON oreg.id = d.id AND oreg.erdate IS NULL "
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, d.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN domain d ON d.registrant = src_c.id "
+                              "JOIN object_registry oreg  ON oreg.id = d.id AND oreg.erdate IS NULL "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND src_oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -168,10 +194,13 @@ namespace Fred
                 tmp.set_registrant = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
-                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
+                PerformObjectStateRequest(tmp.domain_id).exec(ctx);
+                const ObjectStatesInfo domain_states(GetObjectStates(tmp.domain_id).exec(ctx));
+                if (domain_states.presents(Object_State::server_blocked) ||
+                    domain_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
 
                 if(!dry_run)
@@ -183,23 +212,27 @@ namespace Fred
                     tmp.history_id = ud.exec(ctx);
                 }
                 output.update_domain_registrant.push_back(tmp);
-            }//for
+            }
         }
 
         //domain_admin lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, d.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
-                " JOIN domain_contact_map dcm ON dcm.role = 1 "
-                " AND dcm.contactid  = src_c.id "
-                " JOIN domain d ON dcm.domainid = d.id "
-                " JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, d.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN domain_contact_map dcm ON dcm.role = 1 "
+                              "JOIN domain d ON dcm.domainid = d.id "
+                              "JOIN object_registry oreg ON oreg.id = d.id AND oreg.erdate IS NULL "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND dcm.contactid  = src_c.id "
+                               "AND src_oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -211,10 +244,13 @@ namespace Fred
                 tmp.add_admin_contact = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx)
-                    || Fred::ObjectHasState(tmp.domain_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+                LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
+                PerformObjectStateRequest(tmp.domain_id).exec(ctx);
+                const ObjectStatesInfo domain_states(GetObjectStates(tmp.domain_id).exec(ctx));
+                if (domain_states.presents(Object_State::server_blocked) ||
+                    domain_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.fqdn));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.fqdn));
                 }
 
                 if(!dry_run)
@@ -251,22 +287,26 @@ namespace Fred
                     }
                 }
                 output.update_domain_admin_contact.push_back(tmp);
-            }//for
+            }
         }
 
         //nsset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, n.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL "
-                " JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id "
-                " JOIN nsset n ON ncm.nssetid = n.id "
-                " JOIN object_registry oreg  ON oreg.id = n.id AND oreg.erdate IS NULL "
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, n.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN nsset_contact_map ncm ON ncm.contactid  = src_c.id "
+                              "JOIN nsset n ON ncm.nssetid = n.id "
+                              "JOIN object_registry oreg  ON oreg.id = n.id AND oreg.erdate IS NULL "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND src_oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format on
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -278,9 +318,12 @@ namespace Fred
                 tmp.add_tech_contact = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.nsset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                LockObjectStateRequestLock(tmp.nsset_id).exec(ctx);
+                PerformObjectStateRequest(tmp.nsset_id).exec(ctx);
+                const ObjectStatesInfo nsset_states(GetObjectStates(tmp.nsset_id).exec(ctx));
+                if (nsset_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.handle));
                 }
 
                 if(!dry_run)
@@ -317,22 +360,27 @@ namespace Fred
                     }
                 }
                 output.update_nsset_tech_contact.push_back(tmp);
-            }//for
+            }
         }
 
         //keyset_tech lock and update
         {
             Database::Result result = ctx.get_conn().exec_params(
-                std::string("SELECT oreg.name, r.handle, k.id "
-                " FROM contact src_c "
-                " JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
-                " AND src_oreg.name = UPPER($1::text) AND src_oreg.erdate IS NULL"
-                " JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id "
-                " JOIN keyset k ON kcm.keysetid = k.id "
-                " JOIN object_registry oreg  ON oreg.id = k.id AND oreg.erdate IS NULL"
-                " JOIN object o ON oreg.id = o.id "
-                " JOIN registrar r ON o.clid = r.id") + (dry_run ? " " : " FOR UPDATE OF oreg")
-            , Database::query_param_list(src_contact_handle_));
+                    std::string(
+                            // clang-format off
+                            "SELECT oreg.name, r.handle, k.id "
+                              "FROM contact src_c "
+                              "JOIN object_registry src_oreg ON src_c.id = src_oreg.id "
+                              "JOIN keyset_contact_map kcm ON kcm.contactid  = src_c.id "
+                              "JOIN keyset k ON kcm.keysetid = k.id "
+                              "JOIN object_registry oreg  ON oreg.id = k.id "
+                              "JOIN object o ON oreg.id = o.id "
+                              "JOIN registrar r ON o.clid = r.id "
+                             "WHERE src_oreg.name = UPPER($1::text) "
+                               "AND src_oreg.erdate IS NULL "
+                               "AND oreg.erdate IS NULL") + (dry_run ? "" : " FOR UPDATE OF oreg"),
+                            // clang-format off
+                    Database::query_param_list(src_contact_handle_));
 
             for(Database::Result::size_type i = 0; i < result.size(); ++i)
             {
@@ -344,9 +392,12 @@ namespace Fred
                 tmp.add_tech_contact = dst_contact_handle_;
 
                 //check if object blocked
-                if(Fred::ObjectHasState(tmp.keyset_id,Fred::ObjectState::SERVER_UPDATE_PROHIBITED).exec(ctx))
+                LockObjectStateRequestLock(tmp.keyset_id).exec(ctx);
+                PerformObjectStateRequest(tmp.keyset_id).exec(ctx);
+                const ObjectStatesInfo keyset_states(GetObjectStates(tmp.keyset_id).exec(ctx));
+                if (keyset_states.presents(Object_State::server_update_prohibited))
                 {
-                    BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_object_blocked(tmp.handle));
+                    BOOST_THROW_EXCEPTION(MergeContact::Exception().set_object_blocked(tmp.handle));
                 }
 
                 if(!dry_run)
@@ -381,46 +432,66 @@ namespace Fred
                     }
                 }
                 output.update_keyset_tech_contact.push_back(tmp);
-            }//for
+            }
+        }
+
+        //transfer concrete src contact states to dst contact
+        {
+            LockObjectStateRequestLock(locked_contact.src_contact_id).exec(ctx);
+            PerformObjectStateRequest(locked_contact.src_contact_id).exec(ctx);
+            const ObjectStatesInfo src_contact_states(GetObjectStates(locked_contact.src_contact_id).exec(ctx));
+            const ObjectStatesInfo dst_contact_states(GetObjectStates(locked_contact.dst_contact_id).exec(ctx));
+
+            StatusList status_list;
+
+            if (src_contact_states.presents(Object_State::contact_passed_manual_verification) &&
+                !dst_contact_states.presents(Object_State::contact_passed_manual_verification))
+            {
+                status_list.insert(Conversion::Enums::to_db_handle(Object_State::contact_passed_manual_verification));
+            }
+
+            if (!status_list.empty())
+            {
+                if (!dry_run)
+                {
+                    CreateObjectStateRequestId(locked_contact.dst_contact_id, status_list).exec(ctx);
+                    PerformObjectStateRequest(locked_contact.dst_contact_id).exec(ctx);
+                }
+            }
         }
 
         //delete src contact
         if(!dry_run)
         {
             DeleteContactByHandle(src_contact_handle_).exec(ctx);
-            /* #9877 - change authinfo of destination contact */
-            std::string new_authinfo =  Random::string_from(8, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789");
-            UpdateContactByHandle ucbh (dst_contact_handle_, registrar_);
-                if(logd_request_id_.isset()) ucbh.set_logd_request_id(logd_request_id_.get_value());
-                ucbh.set_authinfo(new_authinfo)
-                .exec(ctx);
+            // #9877 - change authinfo of destination contact
+            const std::string new_authinfo = generate_authinfo_pw().password_;
+            UpdateContactByHandle update_contact_by_handle(dst_contact_handle_, registrar_);
+            if (logd_request_id_.isset())
+            {
+                update_contact_by_handle.set_logd_request_id(logd_request_id_.get_value());
+            }
+            update_contact_by_handle.set_authinfo(new_authinfo).exec(ctx);
         }
 
         return output;
-    }//merge_contact_impl
+    }
 
     MergeContactOutput MergeContact::exec_dry_run(OperationContext& ctx)
     {
-        const bool dry_run = true;
         try
         {
-            //lock object_registry row for update
-            MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx,dry_run);
+            const bool dry_run = true;
 
-            //diff contacts
-            diff_contacts(ctx);
-
-            MergeContactOutput out = merge_contact_impl(ctx, dry_run);
-            out.contactid = locked_contact;
-            return out;
-        }//try
-        catch(ExceptionStack& ex)
+            return merge_contact_impl(ctx, dry_run);
+        }
+        catch (ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return MergeContactOutput();
-    }//MergeContact::exec_dry_run
+    }
 
     MergeContactOutput MergeContact::exec(OperationContext& ctx)
     {
@@ -428,23 +499,15 @@ namespace Fred
         {
             const bool dry_run = false;
 
-            //lock object_registry row for update
-            MergeContactLockedContactId locked_contact = lock_object_registry_row_for_update(ctx,dry_run);
-
-            //diff contacts
-            diff_contacts(ctx);
-
-            MergeContactOutput out = merge_contact_impl(ctx, dry_run);
-            out.contactid = locked_contact;
-            return out;
-        }//try
-        catch(ExceptionStack& ex)
+            return merge_contact_impl(ctx, dry_run);
+        }
+        catch (ExceptionStack& ex)
         {
             ex.add_exception_stack_info(to_string());
             throw;
         }
         return MergeContactOutput();
-    }//MergeContact::exec
+    }
 
     std::string MergeContact::to_string() const
     {
@@ -476,21 +539,21 @@ namespace Fred
         std::stringstream dup_sql;
         dup_sql << \
         "SELECT "//c1.name, oreg1.name, o1.clid, c2.name, oreg2.name , o2.clid,
-        " (trim(both ' ' from COALESCE(c1.name,'')) != trim(both ' ' from COALESCE(c2.name,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.organization,'')) != trim(both ' ' from COALESCE(c2.organization,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street1,'')) != trim(both ' ' from COALESCE(c2.street1,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street2,'')) != trim(both ' ' from COALESCE(c2.street2,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.street3,'')) != trim(both ' ' from COALESCE(c2.street3,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.city,'')) != trim(both ' ' from COALESCE(c2.city,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.postalcode,'')) != trim(both ' ' from COALESCE(c2.postalcode,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.stateorprovince,'')) != trim(both ' ' from COALESCE(c2.stateorprovince,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.country,'')) != trim(both ' ' from COALESCE(c2.country,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.telephone,'')) != trim(both ' ' from COALESCE(c2.telephone,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.fax,'')) != trim(both ' ' from COALESCE(c2.fax,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.email,'')) != trim(both ' ' from COALESCE(c2.email,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.notifyemail,'')) != trim(both ' ' from COALESCE(c2.notifyemail,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.vat,'')) != trim(both ' ' from COALESCE(c2.vat,''))) OR "
-        " (trim(both ' ' from COALESCE(c1.ssn,'')) != trim(both ' ' from COALESCE(c2.ssn,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.name,'')) != trim(BOTH ' ' FROM COALESCE(c2.name,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.organization,'')) != trim(BOTH ' ' FROM COALESCE(c2.organization,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.street1,'')) != trim(BOTH ' ' FROM COALESCE(c2.street1,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.street2,'')) != trim(BOTH ' ' FROM COALESCE(c2.street2,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.street3,'')) != trim(BOTH ' ' FROM COALESCE(c2.street3,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.city,'')) != trim(BOTH ' ' FROM COALESCE(c2.city,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.postalcode,'')) != trim(BOTH ' ' FROM COALESCE(c2.postalcode,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.stateorprovince,'')) != trim(BOTH ' ' FROM COALESCE(c2.stateorprovince,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.country,'')) != trim(BOTH ' ' FROM COALESCE(c2.country,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.telephone,'')) != trim(BOTH ' ' FROM COALESCE(c2.telephone,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.fax,'')) != trim(BOTH ' ' FROM COALESCE(c2.fax,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.email,'')) != trim(BOTH ' ' FROM COALESCE(c2.email,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.notifyemail,'')) != trim(BOTH ' ' FROM COALESCE(c2.notifyemail,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.vat,'')) != trim(BOTH ' ' FROM COALESCE(c2.vat,''))) OR "
+        " (trim(BOTH ' ' FROM COALESCE(c1.ssn,'')) != trim(BOTH ' ' FROM COALESCE(c2.ssn,''))) OR "
         " (COALESCE(c1.ssntype,0) != COALESCE(c2.ssntype,0)) OR "
         " (c1.disclosename != c2.disclosename) OR "
         " (c1.discloseorganization != c2.discloseorganization) OR "
@@ -508,28 +571,28 @@ namespace Fred
         {
             dup_sql << \
             " (SELECT row("
-               " trim(both ' ' from c1a.company_name),"
-               " trim(both ' ' from c1a.street1),"
-               " trim(both ' ' from c1a.street2),"
-               " trim(both ' ' from c1a.street3),"
-               " trim(both ' ' from c1a.city),"
-               " trim(both ' ' from c1a.stateorprovince),"
-               " trim(both ' ' from c1a.postalcode),"
-               " trim(both ' ' from c1a.country)"
+               " trim(BOTH ' ' FROM c1a.company_name),"
+               " trim(BOTH ' ' FROM c1a.street1),"
+               " trim(BOTH ' ' FROM c1a.street2),"
+               " trim(BOTH ' ' FROM c1a.street3),"
+               " trim(BOTH ' ' FROM c1a.city),"
+               " trim(BOTH ' ' FROM c1a.stateorprovince),"
+               " trim(BOTH ' ' FROM c1a.postalcode),"
+               " trim(BOTH ' ' FROM c1a.country)"
                " )"
               " FROM contact_address c1a"
              " WHERE c1a.type = '" << *contact_address_type << "'"
                " AND c1a.contactid = c1.id"
             " ) != "
             " (SELECT row("
-               " trim(both ' ' from c2a.company_name),"
-               " trim(both ' ' from c2a.street1),"
-               " trim(both ' ' from c2a.street2),"
-               " trim(both ' ' from c2a.street3),"
-               " trim(both ' ' from c2a.city),"
-               " trim(both ' ' from c2a.stateorprovince),"
-               " trim(both ' ' from c2a.postalcode),"
-               " trim(both ' ' from c2a.country)"
+               " trim(BOTH ' ' FROM c2a.company_name),"
+               " trim(BOTH ' ' FROM c2a.street1),"
+               " trim(BOTH ' ' FROM c2a.street2),"
+               " trim(BOTH ' ' FROM c2a.street3),"
+               " trim(BOTH ' ' FROM c2a.city),"
+               " trim(BOTH ' ' FROM c2a.stateorprovince),"
+               " trim(BOTH ' ' FROM c2a.postalcode),"
+               " trim(BOTH ' ' FROM c2a.country)"
                " )"
               " FROM contact_address c2a"
              " WHERE c2a.type = '" << *contact_address_type << "'"
@@ -538,7 +601,7 @@ namespace Fred
         }
         dup_sql << \
         " o1.clid != o2.clid "// current registrar
-        "  as differ, c1.id AS src_contact_id, c2.id AS dst_contact_id"
+        "  AS differ, c1.id AS src_contact_id, c2.id AS dst_contact_id"
         " FROM (object_registry oreg1 "
         " JOIN object o1 ON oreg1.id=o1.id "
         " JOIN contact c1 ON c1.id = oreg1.id AND oreg1.name = UPPER($1::text) AND oreg1.erdate IS NULL) "
@@ -557,18 +620,28 @@ namespace Fred
 
         unsigned long long dst_contact_id = static_cast<unsigned long long>(diff_result[0]["dst_contact_id"]);
 
-        if(Fred::ObjectHasState(dst_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx))
+        LockObjectStateRequestLock(dst_contact_id).exec(ctx);
+        PerformObjectStateRequest(dst_contact_id).exec(ctx);
+        const ObjectStatesInfo dst_contact_states(GetObjectStates(dst_contact_id).exec(ctx));
+        if (dst_contact_states.presents(Object_State::server_blocked) ||
+            dst_contact_states.presents(Object_State::contact_in_manual_verification) ||
+            dst_contact_states.presents(Object_State::contact_failed_manual_verification))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
+            BOOST_THROW_EXCEPTION(MergeContact::Exception().set_dst_contact_invalid(dst_contact_handle));
         }
 
         unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
 
-        if( Fred::ObjectHasState(src_contact_id,Fred::ObjectState::MOJEID_CONTACT).exec(ctx)
-            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_BLOCKED).exec(ctx)
-            || Fred::ObjectHasState(src_contact_id,Fred::ObjectState::SERVER_DELETE_PROHIBITED).exec(ctx))
+        LockObjectStateRequestLock(src_contact_id).exec(ctx);
+        PerformObjectStateRequest(src_contact_id).exec(ctx);
+        const ObjectStatesInfo src_contact_states(GetObjectStates(src_contact_id).exec(ctx));
+        if (src_contact_states.presents(Object_State::mojeid_contact) ||
+            src_contact_states.presents(Object_State::server_blocked) ||
+            src_contact_states.presents(Object_State::server_delete_prohibited) ||
+            src_contact_states.presents(Object_State::contact_in_manual_verification) ||
+            src_contact_states.presents(Object_State::contact_failed_manual_verification))
         {
-            BOOST_THROW_EXCEPTION(Fred::MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
+            BOOST_THROW_EXCEPTION(MergeContact::Exception().set_src_contact_invalid(src_contact_handle));
         }
 
         bool contact_differs = static_cast<bool>(diff_result[0]["differ"]);
@@ -576,34 +649,30 @@ namespace Fred
     }
 
 
-    void create_poll_messages(const Fred::MergeContactOutput &_merge_data, Fred::OperationContext &_ctx)
+    void create_poll_messages(const MergeContactOutput &_merge_data, OperationContext &_ctx)
     {
-        for (std::vector<Fred::MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
+        for (std::vector<MergeContactUpdateDomainRegistrant>::const_iterator i = _merge_data.update_domain_registrant.begin();
                 i != _merge_data.update_domain_registrant.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        for (std::vector<Fred::MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
+        for (std::vector<MergeContactUpdateDomainAdminContact>::const_iterator i = _merge_data.update_domain_admin_contact.begin();
                 i != _merge_data.update_domain_admin_contact.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        for (std::vector<Fred::MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
+        for (std::vector<MergeContactUpdateNssetTechContact>::const_iterator i = _merge_data.update_nsset_tech_contact.begin();
                 i != _merge_data.update_nsset_tech_contact.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        for (std::vector<Fred::MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
+        for (std::vector<MergeContactUpdateKeysetTechContact>::const_iterator i = _merge_data.update_keyset_tech_contact.begin();
                 i != _merge_data.update_keyset_tech_contact.end(); ++i)
         {
-            Fred::Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
+            Poll::CreateUpdateObjectPollMessage().exec(_ctx, i->history_id.get_value());
         }
-        Fred::Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>()
-                .exec(_ctx, _merge_data.contactid.src_contact_historyid);
+        Poll::CreatePollMessage<Fred::Poll::MessageType::delete_contact>().exec(_ctx, _merge_data.contactid.src_contact_historyid);
     }
 
 
-
-
-}//namespace Fred
-
+} // namespace Fred

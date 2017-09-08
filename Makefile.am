@@ -2511,6 +2511,7 @@ tests_interfaces_test_admin_contact_verification_LDADD = \
 # tests/interfaces/test-admin-contact-automerge
 #
 tests_interfaces_test_admin_contact_automerge_SOURCES = \
+		src/fredlib/object/states_info.h \
 		tests/interfaces/admin/contact/automerge/main.cc \
 		tests/interfaces/admin/contact/automerge/test-merge-auto-proc.cc \
 		src/admin/contact/merge_contact.cc \
@@ -3084,7 +3085,9 @@ tests_test_fredlib_SOURCES = \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc \
 		tests/setup/fixtures.h \
-		tests/setup/fixtures.cc
+		tests/setup/fixtures.cc \
+		util/random.h \
+		util/random.cc
 
 
 tests_test_fredlib_LDFLAGS = \
