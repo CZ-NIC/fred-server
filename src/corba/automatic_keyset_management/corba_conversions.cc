@@ -39,7 +39,7 @@ Registry::AutomaticKeysetManagement::DomainSeq_var wrap_Domains(const Fred::Auto
          ++domain, ++i)
     {
         Fred::Corba::wrap_int(domain->id, result[i].id);
-        result[i].fqdn = ::Corba::wrap_string_to_corba_string(domain->fqdn);
+        result[i].fqdn = Fred::Corba::wrap_string_to_corba_string(domain->fqdn);
     }
 
     return result;
@@ -57,7 +57,7 @@ Registry::AutomaticKeysetManagement::NameserverDomainsSeq_var wrap_NameserversDo
          nameserver_domains != nameservers_domains.end();
          ++nameserver_domains, ++i)
     {
-        result[i].nameserver = ::Corba::wrap_string_to_corba_string(nameserver_domains->first);
+        result[i].nameserver = Fred::Corba::wrap_string_to_corba_string(nameserver_domains->first);
         result[i].nameserver_domains = wrap_Domains(nameserver_domains->second);
     }
 
@@ -75,7 +75,7 @@ Registry::AutomaticKeysetManagement::EmailAddressSeq_var wrap_EmailAddresses(con
          email_address != email_addresses.end();
          ++email_address, ++i)
     {
-        result[i] = ::Corba::wrap_string_to_corba_string(*email_address);
+        result[i] = Fred::Corba::wrap_string_to_corba_string(*email_address);
     }
 
     return result;
@@ -86,7 +86,7 @@ Fred::AutomaticKeysetManagement::Nsset unwrap_Nsset(const Registry::AutomaticKey
     Fred::AutomaticKeysetManagement::Nsset result;
     for (CORBA::ULong i = 0; i < nsset.nameservers.length(); ++i)
     {
-        result.nameservers.insert(::Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
+        result.nameservers.insert(Fred::Corba::unwrap_string_from_const_char_ptr(nsset.nameservers[i]));
     }
     return result;
 }
@@ -99,7 +99,7 @@ Fred::AutomaticKeysetManagement::DnsKey unwrap_DnsKey(const Registry::AutomaticK
     Fred::Corba::unwrap_int(dns_key.protocol, protocol);
     unsigned short alg;
     Fred::Corba::unwrap_int(dns_key.alg, alg);
-    const std::string key = ::Corba::unwrap_string(dns_key.public_key);
+    const std::string key = Fred::Corba::unwrap_string(dns_key.public_key);
 
     return Fred::AutomaticKeysetManagement::DnsKey(
             flags,

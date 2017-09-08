@@ -49,12 +49,12 @@
 #include "src/fredlib/object/get_id_of_registered.h"
 #include "src/fredlib/object/object_id_handle_pair.h"
 #include "src/fredlib/object/object_type.h"
-#include "src/fredlib/object/states_info.h"
+#include "src/fredlib/object/object_states_info.h"
 #include "src/fredlib/object_state/get_object_states.h"
 #include "src/fredlib/object_state/lock_object_state_request_lock.h"
 #include "src/fredlib/object_state/perform_object_state_request.h"
 #include "src/fredlib/opcontext.h"
-#include "src/fredlib/poll/create_transfer_domain_poll_message.h"
+#include "src/fredlib/poll/create_poll_message.h"
 #include "src/fredlib/poll/create_update_object_poll_message.h"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "util/log/context.h"
@@ -217,12 +217,12 @@ bool is_dnssec_turn_off_requested(const Keyset& keyset)
 
 bool has_valid_dnskeys(Fred::OperationContext& ctx, const Keyset& keyset)
 {
-    Epp::KeySet::DnsKey::AlgValidator alg_validator(ctx);
+    Epp::Keyset::DnsKey::AlgValidator alg_validator(ctx);
 
     for (DnsKeys::const_iterator dns_key = keyset.dns_keys.begin();
          dns_key != keyset.dns_keys.end(); ++dns_key)
     {
-        const Epp::KeySet::DnsKey epp_dns_key(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key);
+        const Epp::Keyset::DnsKey epp_dns_key(dns_key->flags, dns_key->protocol, dns_key->alg, dns_key->key);
 
         if (!epp_dns_key.is_flags_correct())
         {
@@ -241,13 +241,13 @@ bool has_valid_dnskeys(Fred::OperationContext& ctx, const Keyset& keyset)
 
         switch (epp_dns_key.check_key())
         {
-            case Epp::KeySet::DnsKey::CheckKey::ok:
+            case Epp::Keyset::DnsKey::CheckKey::ok:
                 break;
 
-            case Epp::KeySet::DnsKey::CheckKey::bad_char:
+            case Epp::Keyset::DnsKey::CheckKey::bad_char:
                 return false;
 
-            case Epp::KeySet::DnsKey::CheckKey::bad_length:
+            case Epp::Keyset::DnsKey::CheckKey::bad_length:
                 return false;
         }
     }
@@ -337,7 +337,7 @@ void link_automatically_managed_keyset_to_domain(
                 "");
     }
 
-    Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
+    Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain_new_history_id);
 }
 
 bool is_keyset_shared(Fred::OperationContext& ctx, unsigned long long keyset_id)
@@ -463,7 +463,7 @@ void unlink_automatically_managed_keyset(
                 "");
     }
 
-    Fred::Poll::CreateUpdateObjectPollMessage(domain_new_history_id).exec(ctx);
+    Fred::Poll::CreateUpdateObjectPollMessage().exec(ctx, domain_new_history_id);
 
 }
 
