@@ -300,6 +300,7 @@ noinst_LIBRARIES = \
 		util/log/liblog.a \
 		util/types/libtypes.a \
 		util/db/libdb.a \
+		util/tz/libtimezones.a \
 		src/old_utils/liboldutils.a \
 		src/model/libmodel.a \
 		src/fredlib/libfred.a \
@@ -507,6 +508,22 @@ util_db_libdb_a_SOURCES = \
 		util/db/manager_old_db.h
 #
 # util/db/libdb.a
+
+
+# util/tz/libtimezones.a
+#
+util_tz_libtimezones_a_SOURCES = \
+		util/timezones.hh \
+		util/tz/local_timestamp.hh \
+		util/tz/local_timestamp.cc \
+		util/tz/get_psql_handle_of.hh \
+		util/tz/utc.cc \
+		util/tz/utc.hh \
+		util/tz/europe/prague.cc \
+		util/tz/europe/prague.hh \
+		util/tz/europe/timezones.hh
+#
+# util/tz/libtimezones.a
 
 
 # util/db/test-db
@@ -2317,9 +2334,16 @@ src_corba_automatic_keyset_management_fred_akmd_LDADD = \
 src_corba_record_statement_fred_rsifd_SOURCES = \
 		src/record_statement/record_statement.cc \
 		src/record_statement/record_statement.hh \
-		src/record_statement/record_statement_exception.hh \
+		src/record_statement/purpose.hh \
+		src/record_statement/exceptions.cc \
+		src/record_statement/exceptions.hh \
 		src/record_statement/impl/record_statement_xml.cc \
 		src/record_statement/impl/record_statement_xml.hh \
+		src/record_statement/impl/templates_impl.hh \
+		src/record_statement/impl/factory.cc \
+		src/record_statement/impl/factory.hh \
+		src/record_statement/impl/utc_impl.cc \
+		src/record_statement/impl/europe_prague_impl.cc \
 		src/corba/nameservice.cc \
 		src/corba/record_statement/record_statement_i.cc \
 		src/corba/record_statement/record_statement_i.hh \
@@ -2333,6 +2357,11 @@ src_corba_record_statement_fred_rsifd_LDFLAGS = \
 src_corba_record_statement_fred_rsifd_LDADD = \
 		src/fredlib/libfred.a \
 		src/corba/util/libcorbautil.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		util/db/libdb.a \
+		util/tz/libtimezones.a \
+		-lmpdec -lm -lrt \
 		src/corba/libcorba.a \
 		src/corba/libmailer.a \
 		src/corba/libcorbadatatypes.a \
@@ -3229,6 +3258,7 @@ tests_test_fredlib_LDADD = \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
+		util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		src/corba/libcorba.a \
 		src/corba/libmailer.a \
@@ -3405,8 +3435,16 @@ tests_interfaces_test_automatic_keyset_management_LDADD = \
 tests_interfaces_test_record_statement_SOURCES = \
 		src/record_statement/record_statement.cc \
 		src/record_statement/record_statement.hh \
+		src/record_statement/purpose.hh \
+		src/record_statement/exceptions.cc \
+		src/record_statement/exceptions.hh \
 		src/record_statement/impl/record_statement_xml.cc \
 		src/record_statement/impl/record_statement_xml.hh \
+		src/record_statement/impl/templates_impl.hh \
+		src/record_statement/impl/factory.cc \
+		src/record_statement/impl/factory.hh \
+		src/record_statement/impl/utc_impl.cc \
+		src/record_statement/impl/europe_prague_impl.cc \
 		tests/interfaces/record_statement/util.h \
 		tests/interfaces/record_statement/fixture.h \
 		tests/interfaces/record_statement/main.cc \
@@ -3426,6 +3464,7 @@ tests_interfaces_test_record_statement_LDADD = \
 		util/libutil.a \
 		util/log/liblog.a \
 		util/db/libdb.a \
+		util/tz/libtimezones.a \
 		-lmpdec -lm -lrt \
 		src/corba/libcorba.a \
 		src/corba/libmailer.a \

@@ -28,64 +28,62 @@
 
 #include "src/corba/RecordStatement.hh"
 
-#include <string>
-#include <boost/shared_ptr.hpp>
 #include "src/fredlib/documents.h"
 #include "src/fredlib/mailer.h"
 
-namespace Registry
+#include <boost/shared_ptr.hpp>
+
+#include <string>
+
+namespace Registry {
+namespace RecordStatement {
+
+class RecordStatementImpl;//pimpl class
+
+///record statement corba interface
+class Server_i:public POA_Registry::RecordStatement::Server
 {
-namespace RecordStatement
-{
-    class RecordStatementImpl;//pimpl class
+public:
+    Server_i(
+        const std::string &_server_name,
+        const boost::shared_ptr<Fred::Document::Manager>& _doc_manager,
+        const boost::shared_ptr<Fred::Mailer::Manager>& _mailer_manager,
+        const std::string& _registry_timezone);
+    virtual ~Server_i();
 
-    ///record statement corba interface
-    class Server_i: public POA_Registry::RecordStatement::Server
-    {
-    public:
-        Server_i(
-            const std::string &_server_name,
-            boost::shared_ptr<Fred::Document::Manager>  doc_manager,
-            boost::shared_ptr<Fred::Mailer::Manager> mailer_manager,
-            const std::string& registry_timezone);
-        virtual ~Server_i();
+    // methods corresponding to defined IDL attributes and operations
 
-        // methods corresponding to defined IDL attributes and operations
+    PdfBuffer* domain_printout(const char* _fqdn, ::CORBA::Boolean _is_private_printout);
 
-        Registry::RecordStatement::PdfBuffer* domain_printout(const char* fqdn, ::CORBA::Boolean is_private_printout);
+    PdfBuffer* nsset_printout(const char* _handle);
 
-        Registry::RecordStatement::PdfBuffer* nsset_printout(const char* handle);
+    PdfBuffer* keyset_printout(const char* _handle);
 
-        Registry::RecordStatement::PdfBuffer* keyset_printout(const char* handle);
+    PdfBuffer* contact_printout(const char* _handle, ::CORBA::Boolean _is_private_printout);
 
-        Registry::RecordStatement::PdfBuffer* contact_printout(const char* handle, ::CORBA::Boolean is_private_printout);
+    PdfBuffer* historic_domain_printout(const char* _fqdn, const DateTime& _time);
 
-        Registry::RecordStatement::PdfBuffer* historic_domain_printout(
-                const char* fqdn, const Registry::RecordStatement::DateTime& time);
+    PdfBuffer* historic_nsset_printout(const char* _handle, const DateTime& _time);
 
-        Registry::RecordStatement::PdfBuffer* historic_nsset_printout(
-                const char* handle, const Registry::RecordStatement::DateTime& time);
+    PdfBuffer* historic_keyset_printout(const char* _handle, const DateTime& _time);
 
-        Registry::RecordStatement::PdfBuffer* historic_keyset_printout(
-                const char* handle, const Registry::RecordStatement::DateTime& time);
+    PdfBuffer* historic_contact_printout(const char* _handle, const DateTime& _time);
 
-        Registry::RecordStatement::PdfBuffer* historic_contact_printout(
-                const char* handle, const Registry::RecordStatement::DateTime& time);
+    void send_domain_printout(const char* _fqdn);
 
-        void send_domain_printout(const char* fqdn);
+    void send_nsset_printout(const char* _handle);
 
-        void send_nsset_printout(const char* handle);
+    void send_keyset_printout(const char* _handle);
 
-        void send_keyset_printout(const char* handle);
+    void send_contact_printout(const char* _handle);
+private:
+    // do not copy
+    RecordStatementImpl* const impl_;
+    Server_i(const Server_i&);//no body
+    Server_i& operator=(const Server_i&);//no body
+};
 
-        void send_contact_printout(const char* handle);
-    private:
-        // do not copy
-        RecordStatementImpl * const pimpl_;
-        Server_i(const Server_i&);//no body
-        Server_i& operator= (const Server_i&);//no body
-    };//class Server_i
-}//namespace RecordStatement
+}//namespace Registry::RecordStatement
 }//namespace Registry
 
 #endif

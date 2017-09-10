@@ -230,9 +230,9 @@ AC_ARG_WITH([akmdport], [AS_HELP_STRING([--with-akmdport],
             [AC_SUBST([AKMDPORT], [2230])])
 #rsifd port
 AC_ARG_WITH([rsifdport], [AS_HELP_STRING([--with-rsifdport],
-            [CORBA fred-rsifd port [2230]])],
+            [CORBA fred-rsifd port [2231]])],
             [AC_SUBST([RSIFDPORT], [$withval])],
-            [AC_SUBST([RSIFDPORT], [2230])])
+            [AC_SUBST([RSIFDPORT], [2231])])
 
 
 #hp login name

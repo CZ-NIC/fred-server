@@ -21,12 +21,14 @@
  *  registry record statement xml implementation
  */
 
-#include "record_statement_xml.hh"
-#include "src/record_statement/record_statement_exception.hh"
+#include "src/record_statement/impl/record_statement_xml.hh"
+#include "src/record_statement/exceptions.hh"
 
 #include "util/log/context.h"
 #include "util/util.h"
 #include "util/xmlgen.h"
+#include "util/timezones.hh"
+#include "util/tz/get_psql_handle_of.hh"
 #include "src/fredlib/opcontext.h"
 #include "src/fredlib/zone/zone.h"
 #include "src/fredlib/contact/info_contact.h"
@@ -35,825 +37,524 @@
 #include "src/fredlib/keyset/info_keyset.h"
 #include "src/fredlib/object_state/get_object_states.h"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+#include <cstring>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <sstream>
 
-#include <boost/lexical_cast.hpp>
 
+namespace Fred {
+namespace RecordStatement {
+namespace Impl {
 
-namespace Fred
+std::set<std::string> make_external_states(
+        unsigned long long object_id,
+        Fred::OperationContext& ctx)
 {
-namespace RecordStatement
+    std::set<std::string> ret;
+
+    const std::vector<Fred::ObjectStateData> states = Fred::GetObjectStates(object_id).exec(ctx);
+    for (std::vector<Fred::ObjectStateData>::const_iterator states_itr = states.begin();
+         states_itr != states.end(); ++states_itr)
+    {
+        if (states_itr->is_external)
+        {
+            ret.insert(states_itr->state_name);
+        }
+    }
+
+    return ret;
+}
+
+std::set<std::string> make_historic_external_states(
+        const unsigned long long object_id,
+        const Tz::LocalTimestamp& valid_at,
+        Fred::OperationContext& ctx)
 {
-    TimeWithOffset make_time_with_offset(const std::string& rfc3339_timestamp)
+    const Database::Result db_res = ctx.get_conn().exec_params(
+            "WITH valid_at AS ("
+                "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time) "
+            "SELECT DISTINCT eos.name "
+            "FROM valid_at v "
+            "JOIN object_state os ON os.valid_from<(v.utc_time+'1SECOND'::INTERVAL) AND "
+                                    "(v.utc_time<os.valid_to OR os.valid_to IS NULL) "
+            "JOIN enum_object_states eos ON eos.id=os.state_id "
+            "WHERE os.object_id=$3::BIGINT AND "
+                  "eos.external",
+            Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
+                                      (valid_at.get_timezone_offset_in_minutes())
+                                      (object_id));
+
+    std::set<std::string> historic_external_states;
+    for (unsigned long long idx = 0 ; idx < db_res.size() ; ++idx)
     {
-        TimeWithOffset ret;
-        std::string::size_type tpos = rfc3339_timestamp.find_last_of("Tt ");
-
-        if(tpos != std::string::npos)
-        {
-            std::string time_with_offset = rfc3339_timestamp.substr(tpos, std::string::npos);
-
-            std::string::size_type offset_pos = time_with_offset.find_first_of("+-Zz");
-
-            if(offset_pos != std::string::npos)
-            {
-                std::string toffset = time_with_offset.substr(offset_pos, std::string::npos);
-                ret.offset = time_with_offset.substr(offset_pos, std::string::npos);
-                ret.time = rfc3339_timestamp.substr(0, rfc3339_timestamp.size() - ret.offset.size());
-            }
-            else
-            {
-                ret.time = rfc3339_timestamp;
-            }
-        }
-        else
-        {
-            ret.time = rfc3339_timestamp;
-        }
-
-        return ret;
+        historic_external_states.insert(static_cast<std::string>(db_res[idx][0]));
     }
 
-    Database::ParamQuery make_utc_timestamp_query(const std::string& timestamp)
+    return historic_external_states;
+}
+
+boost::optional<NssetPrintoutInputData> make_nsset_data(
+        const boost::optional<std::string>& nsset_handle,
+        Fred::OperationContext& ctx)
+{
+    if (nsset_handle == boost::none)
     {
-        const TimeWithOffset object_timestamp = make_time_with_offset(timestamp);
-        const Database::ReusableParameter object_time(object_timestamp.time, "timestamp");
-        const Database::ReusableParameter object_time_offset(object_timestamp.offset
-            + (object_timestamp.offset.find(':') == std::string::npos //if missing ':' in offset
-                ? " hours" //add unit to interval
-                : ""), "interval");
-
-        Database::ParamQuery utc_timestamp_query;
-        utc_timestamp_query("date_trunc('second', ((").param(object_time);//truncate to whole seconds
-        if(object_timestamp.offset.size() > 1)//Z or empty offset is invalid intervall
-        {
-            utc_timestamp_query(" - ").param(object_time_offset);
-        }
-        utc_timestamp_query(") AT TIME ZONE 'UTC' AT TIME ZONE 'UTC')::timestamp)");
-
-        return utc_timestamp_query;
+        return boost::optional<NssetPrintoutInputData>();
     }
 
+    NssetPrintoutInputData retval;
+    retval.info = Fred::InfoNssetByHandle(*nsset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+    retval.tech_contact.reserve(retval.info.info_nsset_data.tech_contacts.size());
 
-    std::vector<std::string> make_external_states(unsigned long long object_id, Fred::OperationContext& ctx)
+    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
+         itr != retval.info.info_nsset_data.tech_contacts.end(); ++itr)
     {
-        std::vector<std::string> ret;
-
-        const std::vector<Fred::ObjectStateData> states = Fred::GetObjectStates(object_id).exec(ctx);
-        for(std::vector<Fred::ObjectStateData>::const_iterator ci = states.begin();
-            ci != states.end(); ++ci)
-        {
-            if(ci->is_external)
-            {
-                ret.push_back(ci->state_name);
-            }
-        }
-
-        return ret;
+        retval.tech_contact.push_back(Fred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
-    std::vector<std::string> make_historic_external_states(
-            const unsigned long long object_id,
-            const std::string& timestamp,
-            Fred::OperationContext& ctx)
+    retval.sponsoring_registrar = Fred::InfoRegistrarByHandle(
+            retval.info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+
+    retval.external_states = make_external_states(retval.info.info_nsset_data.id, ctx);
+
+    return retval;
+}
+
+boost::optional<KeysetPrintoutInputData> make_keyset_data(
+        const boost::optional<std::string>& keyset_handle,
+        Fred::OperationContext& ctx)
+{
+    if (keyset_handle == boost::none)
     {
-        std::vector<std::string> ret;
-        Database::ParamQuery timestamp_query = make_utc_timestamp_query(timestamp);
-        Database::Result historic_external_states_result = ctx.get_conn().exec_params(
-            Database::ParamQuery(
-            "SELECT DISTINCT ON (eos.name) eos.name"
-            " FROM object_state os "
-                " JOIN enum_object_states eos ON eos.id = os.state_id "
-                " WHERE os.object_id = ").param_bigint(object_id)(
-                    " AND eos.external = TRUE "
-                    " AND date_trunc('second', os.valid_from) <= ")(timestamp_query)(
-                    " AND (os.valid_to IS NULL OR date_trunc('second', os.valid_to) > ")(timestamp_query)(") "
-            " ORDER BY eos.name, eos.importance ")
-        );
-
-        ret.reserve(historic_external_states_result.size());
-        for(unsigned long long i = 0 ; i < historic_external_states_result.size() ; ++i)
-        {
-            ret.push_back(static_cast<std::string>(historic_external_states_result[i][0]));
-        }
-
-        return ret;
+        return boost::optional<KeysetPrintoutInputData>();
     }
 
-    boost::optional<NssetPrintoutInputData> make_nsset_data(
-        boost::optional<std::string> nsset_handle, Fred::OperationContext& ctx)
+    KeysetPrintoutInputData retval;
+    retval.info = Fred::InfoKeysetByHandle(*keyset_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+    retval.tech_contact.reserve(retval.info.info_keyset_data.tech_contacts.size());
+
+    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
+         itr != retval.info.info_keyset_data.tech_contacts.end(); ++itr)
     {
-        boost::optional<NssetPrintoutInputData> ret;
-
-        if(nsset_handle.is_initialized())
-        {
-            NssetPrintoutInputData nd;
-            nd.info = Fred::InfoNssetByHandle(
-                    *nsset_handle).exec(ctx, "UTC");
-
-            for(std::vector<Fred::ObjectIdHandlePair>::const_iterator
-                it = nd.info.info_nsset_data.tech_contacts.begin();
-                it != nd.info.info_nsset_data.tech_contacts.end(); ++it)
-            {
-                nd.tech_contact.push_back(Fred::InfoContactByHandle(it->handle).exec(ctx, "UTC"));
-            }
-
-            nd.sponsoring_registrar = Fred::InfoRegistrarByHandle(
-                nd.info.info_nsset_data.sponsoring_registrar_handle).exec(ctx, "UTC");
-
-            nd.external_states = make_external_states(nd.info.info_nsset_data.id, ctx);
-
-            ret = nd;
-        }
-
-        return ret;
+        retval.tech_contact.push_back(Fred::InfoContactByHandle(itr->handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
-    boost::optional<KeysetPrintoutInputData> make_keyset_data(
-        boost::optional<std::string> keyset_handle, Fred::OperationContext& ctx)
+    retval.sponsoring_registrar = Fred::InfoRegistrarByHandle(
+            retval.info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+
+    retval.external_states = make_external_states(retval.info.info_keyset_data.id, ctx);
+    return retval;
+}
+
+DbDateTimeArithmetic::DbDateTimeArithmetic(Fred::OperationContext& _ctx)
+    : ctx_(_ctx)
+{ }
+
+Tz::LocalTimestamp DbDateTimeArithmetic::append_offset(
+        const boost::posix_time::ptime& _local_time,
+        const std::string& _timezone_handle)const
+{
+    const Database::Result dbres = ctx_.get_conn().exec_params(
+            "WITH src AS (SELECT $1::TIMESTAMP AS t) "
+            "SELECT EXTRACT(EPOCH FROM t-(t AT TIME ZONE $2::TEXT AT TIME ZONE $3::TEXT)) FROM src",
+            Database::query_param_list(boost::posix_time::to_simple_string(_local_time))
+                                      (_timezone_handle)
+                                      (Tz::get_psql_handle_of<Tz::UTC>()));
+    const int offset_in_seconds = static_cast<int>(dbres[0][0]);
+    return Tz::LocalTimestamp(_local_time, offset_in_seconds / 60);
+}
+
+Tz::LocalTimestamp DbDateTimeArithmetic::convert_into_other_timezone(
+        const boost::posix_time::ptime& _src_local_time,
+        ::int16_t _src_timezone_offset_in_minutes,
+        const std::string& _dst_timezone_handle)const
+{
+    const Database::Result dbres = ctx_.get_conn().exec_params(
+            "WITH src AS (SELECT $1::TIMESTAMP AS t,($2::INT||'MINUTES')::INTERVAL AS o),"
+                 "dst AS (SELECT (t-o) AT TIME ZONE $3::TEXT AT TIME ZONE $4::TEXT AS t FROM src) "
+            "SELECT EXTRACT(EPOCH FROM src.t-dst.t),"//difference between both local times
+                   "EXTRACT(EPOCH FROM dst.t-(src.t-src.o)) "//difference of dst local time from UTC time
+            "FROM src,dst",
+            Database::query_param_list(boost::posix_time::to_simple_string(_src_local_time))
+                                      (_src_timezone_offset_in_minutes)
+                                      (Tz::get_psql_handle_of<Tz::UTC>())
+                                      (_dst_timezone_handle));
+    const int diff_src_from_dst_in_seconds = static_cast<int>(dbres[0][0]);
+    const int diff_dst_from_utc_in_seconds = static_cast<int>(dbres[0][1]);
+    const boost::posix_time::ptime dst_local_time =
+            _src_local_time - boost::posix_time::seconds(diff_src_from_dst_in_seconds);
+    return Tz::LocalTimestamp(dst_local_time, diff_dst_from_utc_in_seconds / 60);
+}
+
+template <>
+Tz::LocalTimestamp convert_utc_timestamp_to_local<Tz::UTC>(
+        Fred::OperationContext&,
+        const boost::posix_time::ptime& utc_timestamp)
+{
+    return Tz::LocalTimestamp::within_utc(utc_timestamp);
+}
+
+std::vector<Util::XmlCallback> external_states_xml(
+        const std::set<std::string>& external_states)
+{
+    std::vector<Util::XmlCallback> ret;
+    ret.reserve(external_states.size());
+    for (std::set<std::string>::const_iterator itr = external_states.begin(); itr != external_states.end(); ++itr)
     {
-        boost::optional<KeysetPrintoutInputData> ret;
+        ret.push_back(Util::XmlTagPair("state", Util::XmlEscapeTag(*itr)));
+    }
+    return ret;
+}
 
-        if(keyset_handle.is_initialized())
-        {
-            KeysetPrintoutInputData kd;
-            kd.info = Fred::InfoKeysetByHandle(
-                    *keyset_handle).exec(ctx, "UTC");
-
-            for(std::vector<Fred::ObjectIdHandlePair>::const_iterator
-                it = kd.info.info_keyset_data.tech_contacts.begin();
-                it != kd.info.info_keyset_data.tech_contacts.end(); ++it)
-            {
-                kd.tech_contact.push_back(Fred::InfoContactByHandle(it->handle).exec(ctx, "UTC"));
-            }
-
-            kd.sponsoring_registrar = Fred::InfoRegistrarByHandle(
-                kd.info.info_keyset_data.sponsoring_registrar_handle).exec(ctx, "UTC");
-
-            kd.external_states = make_external_states(kd.info.info_keyset_data.id, ctx);
-
-            ret = kd;
-        }
-
-        return ret;
+std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInputData>& nsset_data)
+{
+    if (nsset_data == boost::none)
+    {
+        return Util::vector_of<Util::XmlCallback>(Util::XmlTagPair("nsset", std::vector<Util::XmlCallback>()));
     }
 
+    std::vector<Util::XmlCallback> nameserver_list;
+    nameserver_list.reserve(nsset_data->info.info_nsset_data.dns_hosts.size());
 
-
-    boost::posix_time::ptime convert_utc_timestamp_to_local(
-        Fred::OperationContext& ctx,
-        const boost::posix_time::ptime& utc_timestamp,
-        const std::string& local_timezone)
+    for (std::vector<Fred::DnsHost>::const_iterator itr = nsset_data->info.info_nsset_data.dns_hosts.begin();
+         itr != nsset_data->info.info_nsset_data.dns_hosts.end(); ++itr)
     {
-        Database::Result datetime_conversion = ctx.get_conn().exec_params(
-            Database::ParamQuery("SELECT ")
-            .param_timestamp(utc_timestamp)
-            (" AT TIME ZONE 'UTC' AT TIME ZONE ")
-            .param_text(local_timezone)(" AS local_timestamp"));
+        std::vector<Util::XmlCallback> ip_list;
+        const std::vector<boost::asio::ip::address> ns_ip_info = itr->get_inet_addr();
+        ip_list.reserve(ns_ip_info.size());
 
-        return boost::posix_time::time_from_string(
-            static_cast<std::string>(datetime_conversion[0]["local_timestamp"]));
+        for (std::vector<boost::asio::ip::address>::const_iterator ip_itr = ns_ip_info.begin();
+             ip_itr != ns_ip_info.end(); ++ip_itr)
+        {
+            ip_list.push_back(Util::XmlTagPair("ip", Util::XmlEscapeTag(ip_itr->to_string())));
+        }
+
+        nameserver_list.push_back(
+                Util::XmlTagPair(
+                        "nameserver",
+                        Util::vector_of<Util::XmlCallback>
+                            (Util::XmlTagPair("fqdn", Util::XmlEscapeTag(itr->get_fqdn())))
+                            (Util::XmlTagPair("ip_list", ip_list))));
     }
 
-    std::string ptime_to_rfc3339_datetime_string(
-            const boost::posix_time::ptime& local_datetime,
-            const boost::posix_time::time_duration& current_local_offset)
+    std::vector<Util::XmlCallback> tech_contact_list;
+    tech_contact_list.reserve(nsset_data->tech_contact.size());
+
+    for (std::vector<Fred::InfoContactOutput>::const_iterator itr = nsset_data->tech_contact.begin();
+         itr != nsset_data->tech_contact.end(); ++itr)
     {
-        std::string datetime = boost::posix_time::to_iso_extended_string(
-            boost::posix_time::ptime(local_datetime.date(),
-                boost::posix_time::seconds(local_datetime.time_of_day().total_seconds()) //to remove fractional seconds
-            )
-        );//YYYY-MM-DDTHH:MM:SS part
-
-        std::string offset = ((current_local_offset.hours() || current_local_offset.minutes())
-            ? std::string(boost::str(boost::format("%1$+03d:%2$02d")
-                % current_local_offset.hours()
-                % boost::date_time::absolute_value(current_local_offset.minutes())))
-            : std::string("Z"));//+ZZ:ZZ or "Z" part
-
-        return datetime + offset;
+        tech_contact_list.push_back(
+                Util::XmlTagPair(
+                        "tech_contact",
+                        Util::vector_of<Util::XmlCallback>
+                            (Util::XmlTagPair("handle", Util::XmlEscapeTag(itr->info_contact_data.handle)))
+                            (Util::XmlTagPair("name", Util::XmlEscapeTag(itr->info_contact_data.name.get_value_or(""))))
+                            (Util::XmlTagPair("organization",
+                                              Util::XmlEscapeTag(itr->info_contact_data.organization.get_value_or(""))))));
     }
 
+    return Util::vector_of<Util::XmlCallback>
+        (Util::XmlTagPair(
+                "nsset",
+                Util::vector_of<Util::XmlCallback>
+                    (Util::XmlTagPair(
+                            "handle",
+                            Util::XmlEscapeTag(nsset_data->info.info_nsset_data.handle)))
+                    (Util::XmlTagPair(
+                            "nameserver_list",
+                            nameserver_list))
+                    (Util::XmlTagPair(
+                            "tech_contact_list",
+                            tech_contact_list))
+                    (Util::XmlTagPair(
+                            "sponsoring_registrar",
+                            Util::vector_of<Util::XmlCallback>
+                                (Util::XmlTagPair(
+                                        "handle",
+                                        Util::XmlEscapeTag(
+                                                nsset_data->sponsoring_registrar.info_registrar_data.handle)))
+                                (Util::XmlTagPair(
+                                        "name",
+                                        Util::XmlEscapeTag(
+                                                nsset_data->sponsoring_registrar.info_registrar_data.name.get_value_or(""))))
+                                (Util::XmlTagPair(
+                                        "organization",
+                                        Util::XmlEscapeTag(
+                                                nsset_data->sponsoring_registrar.info_registrar_data.organization.get_value_or(""))))))
+                    (Util::XmlTagPair("external_states_list", external_states_xml(nsset_data->external_states)))));
+}
 
-    std::vector<Util::XmlCallback> external_states_xml(const std::vector<std::string>& external_states)
+std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutInputData>& keyset_data)
+{
+    if (keyset_data == boost::none)
     {
-        std::vector<Util::XmlCallback> ret;
-        for(std::vector<std::string>::const_iterator
-            i = external_states.begin();
-            i != external_states.end(); ++i)
-        {
-            ret.push_back(Util::XmlTagPair("state", Util::XmlEscapeTag(*i)));
-        }
-        return ret;
+        return Util::vector_of<Util::XmlCallback>(Util::XmlTagPair("keyset", std::vector<Util::XmlCallback>()));
     }
 
-    std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInputData>& nsset_data)
+    std::vector<Util::XmlCallback> dns_key_list;
+    dns_key_list.reserve(keyset_data->info.info_keyset_data.dns_keys.size());
+
+    for (std::vector<Fred::DnsKey>::const_iterator itr = keyset_data->info.info_keyset_data.dns_keys.begin();
+         itr != keyset_data->info.info_keyset_data.dns_keys.end(); ++itr)
     {
-        if(!nsset_data.is_initialized())
-        {
-            return Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("nsset", std::vector<Util::XmlCallback>()));
-        }
-
-        std::vector<Util::XmlCallback> nameserver_list;
-
-        for(std::vector<Fred::DnsHost>::const_iterator it = nsset_data.operator *().info.info_nsset_data.dns_hosts.begin();
-            it != nsset_data.operator *().info.info_nsset_data.dns_hosts.end(); ++it)
-        {
-            std::vector<Util::XmlCallback> ip_list;
-
-            const std::vector<boost::asio::ip::address> ns_ip_info = it->get_inet_addr();
-            for(std::vector<boost::asio::ip::address>::const_iterator ip_it = ns_ip_info.begin();
-                    ip_it != ns_ip_info.end(); ++ip_it)
-            {
-                ip_list.push_back(Util::XmlTagPair("ip", Util::XmlEscapeTag(ip_it->to_string())));
-            }
-
-            nameserver_list.push_back(
-                Util::XmlTagPair("nameserver", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("fqdn", Util::XmlEscapeTag(it->get_fqdn())))
-                    (Util::XmlTagPair("ip_list", ip_list))));
-        }
-
-
-        std::vector<Util::XmlCallback> tech_contact_list;
-        for(std::vector<Fred::InfoContactOutput>::const_iterator
-            i = nsset_data.operator *().tech_contact.begin();
-            i != nsset_data.operator *().tech_contact.end(); ++i)
-        {
-            tech_contact_list.push_back(
-                Util::XmlTagPair("tech_contact", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("handle", Util::XmlEscapeTag(i->info_contact_data.handle)))
-                    (Util::XmlTagPair("name", Util::XmlEscapeTag(i->info_contact_data.name.get_value_or(""))))
-                    (Util::XmlTagPair("organization", Util::XmlEscapeTag(i->info_contact_data.organization.get_value_or(""))))
-                )
-            );
-        }
-
-        return Util::vector_of<Util::XmlCallback>
-        (Util::XmlTagPair("nsset", Util::vector_of<Util::XmlCallback>
-            (Util::XmlTagPair("handle", Util::XmlEscapeTag(nsset_data.operator *().info.info_nsset_data.handle)))
-            (Util::XmlTagPair("nameserver_list", nameserver_list))
-            (Util::XmlTagPair("tech_contact_list", tech_contact_list))
-            (Util::XmlTagPair("sponsoring_registrar", Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("handle", Util::XmlEscapeTag(
-                    nsset_data.operator *().sponsoring_registrar.info_registrar_data.handle)))
-                (Util::XmlTagPair("name", Util::XmlEscapeTag(
-                    nsset_data.operator *().sponsoring_registrar.info_registrar_data.name.get_value_or(""))))
-                (Util::XmlTagPair("organization", Util::XmlEscapeTag(
-                    nsset_data.operator *().sponsoring_registrar.info_registrar_data.organization.get_value_or(""))))
-            ))
-            (Util::XmlTagPair("external_states_list", external_states_xml(nsset_data.operator *().external_states)))
-        ));
-    }
-
-
-    std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutInputData>& keyset_data)
-    {
-        if(!keyset_data.is_initialized())
-        {
-            return Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("keyset", std::vector<Util::XmlCallback>()));
-        }
-
-        std::vector<Util::XmlCallback> dns_key_list;
-
-        for(std::vector<Fred::DnsKey>::const_iterator it = keyset_data.operator *().info.info_keyset_data.dns_keys.begin();
-            it != keyset_data.operator *().info.info_keyset_data.dns_keys.end(); ++it)
-        {
-            dns_key_list.push_back(
+        dns_key_list.push_back(
                 Util::XmlTagPair("dns_key", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("flags", Util::XmlEscapeTag(boost::lexical_cast<std::string>(it->get_flags()))))
-                    (Util::XmlTagPair("protocol", Util::XmlEscapeTag(boost::lexical_cast<std::string>(it->get_protocol()))))
-                    (Util::XmlTagPair("algorithm", Util::XmlEscapeTag(boost::lexical_cast<std::string>(it->get_alg()))))
-                    (Util::XmlTagPair("key", Util::XmlEscapeTag(it->get_key())))
-            ));
-        }
-
-        std::vector<Util::XmlCallback> tech_contact_list;
-        for(std::vector<Fred::InfoContactOutput>::const_iterator
-            i = keyset_data.operator *().tech_contact.begin();
-            i != keyset_data.operator *().tech_contact.end(); ++i)
-        {
-            tech_contact_list.push_back(
-                Util::XmlTagPair("tech_contact", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("handle", Util::XmlEscapeTag(i->info_contact_data.handle)))
-                    (Util::XmlTagPair("name", Util::XmlEscapeTag(i->info_contact_data.name.get_value_or(""))))
-                    (Util::XmlTagPair("organization", Util::XmlEscapeTag(i->info_contact_data.organization.get_value_or(""))))
-                )
-            );
-        }
-
-        return Util::vector_of<Util::XmlCallback>
-            (Util::XmlTagPair("keyset", Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("handle", Util::XmlEscapeTag(keyset_data.operator *().info.info_keyset_data.handle)))
-                (Util::XmlTagPair("dns_key_list", dns_key_list))
-                (Util::XmlTagPair("tech_contact_list", tech_contact_list))
-                (Util::XmlTagPair("sponsoring_registrar", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("handle", Util::XmlEscapeTag(
-                        keyset_data.operator *().sponsoring_registrar.info_registrar_data.handle)))
-                    (Util::XmlTagPair("name", Util::XmlEscapeTag(
-                        keyset_data.operator *().sponsoring_registrar.info_registrar_data.name.get_value_or(""))))
-                    (Util::XmlTagPair("organization", Util::XmlEscapeTag(
-                        keyset_data.operator *().sponsoring_registrar.info_registrar_data.organization.get_value_or(""))))
-                ))
-                (Util::XmlTagPair("external_states_list", external_states_xml(keyset_data.operator *().external_states)))
-            ));
+                    (Util::XmlTagPair("flags", Util::XmlEscapeTag(boost::lexical_cast<std::string>(itr->get_flags()))))
+                    (Util::XmlTagPair("protocol", Util::XmlEscapeTag(boost::lexical_cast<std::string>(itr->get_protocol()))))
+                    (Util::XmlTagPair("algorithm", Util::XmlEscapeTag(boost::lexical_cast<std::string>(itr->get_alg()))))
+                    (Util::XmlTagPair("key", Util::XmlEscapeTag(itr->get_key())))));
     }
 
-    std::string domain_printout_xml(
-        const Fred::InfoDomainOutput& info,
-        const boost::posix_time::ptime& local_timestamp,
-        const boost::posix_time::ptime& local_creation_time,
-        const boost::optional<boost::posix_time::ptime>& local_update_time,
-        const bool is_private_printout,
-        const Fred::InfoContactOutput& registrant_info,
-        const std::vector<Fred::InfoContactOutput>& admin_contact_info,
-        const Fred::InfoRegistrarOutput& sponsoring_registrar_info,
-        const boost::optional<NssetPrintoutInputData>& nsset_data,
-        const boost::optional<KeysetPrintoutInputData>& keyset_data,
-        const std::vector<std::string>& external_states
-        )
+    std::vector<Util::XmlCallback> tech_contact_list;
+    tech_contact_list.reserve(keyset_data->tech_contact.size());
+
+    for (std::vector<Fred::InfoContactOutput>::const_iterator itr = keyset_data->tech_contact.begin();
+         itr != keyset_data->tech_contact.end(); ++itr)
     {
-        std::vector<Util::XmlCallback> admin_contact_list;
-
-        for(std::vector<Fred::InfoContactOutput>::const_iterator
-            i = admin_contact_info.begin();
-            i != admin_contact_info.end(); ++i)
-        {
-            admin_contact_list.push_back(
-                Util::XmlTagPair("admin_contact", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("handle", Util::XmlEscapeTag(i->info_contact_data.handle)))
-                    (Util::XmlTagPair("name", Util::XmlEscapeTag(i->info_contact_data.name.get_value_or(""))))
-                    (Util::XmlTagPair("organization", Util::XmlEscapeTag(i->info_contact_data.organization.get_value_or(""))))
-                )
-            );
-        }
-
-        std::stringstream private_printout_attr;
-        private_printout_attr << std::boolalpha
-            << "is_private_printout='" << is_private_printout << "'";
-
-        std::stringstream disclose_flags;
-        disclose_flags << std::boolalpha
-            << "name='" << registrant_info.info_contact_data.disclosename << "'"
-            << " organization='" << registrant_info.info_contact_data.discloseorganization << "'"
-            << " address='" << registrant_info.info_contact_data.discloseaddress << "'"
-            << " telephone='" << registrant_info.info_contact_data.disclosetelephone << "'"
-            << " fax='" << registrant_info.info_contact_data.disclosefax << "'"
-            << " email='" << registrant_info.info_contact_data.discloseemail << "'"
-            << " vat='" << registrant_info.info_contact_data.disclosevat << "'"
-            << " ident='" << registrant_info.info_contact_data.discloseident << "'"
-            << " notifyemail='" << registrant_info.info_contact_data.disclosenotifyemail << "'"
-            ;
-
-
-        std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        Util::XmlTagPair("record_statement", Util::vector_of<Util::XmlCallback>
-            (Util::XmlTagPair("current_datetime", Util::XmlEscapeTag(ptime_to_rfc3339_datetime_string(
-                local_timestamp, local_timestamp - info.utc_timestamp))))
-            (Util::XmlTagPair("domain", Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("fqdn", Util::XmlEscapeTag(info.info_domain_data.fqdn)))
-                (Util::XmlTagPair("creation_date", Util::XmlEscapeTag(
-                    boost::gregorian::to_iso_extended_string(local_creation_time.date()))))
-                (Util::XmlTagPair("last_update_date", Util::XmlEscapeTag(
-                    local_update_time.is_initialized()
-                        ? boost::gregorian::to_iso_extended_string(local_update_time.operator *().date())
-                        :  std::string()
-                )))
-                (Util::XmlTagPair("expiration_date", Util::XmlEscapeTag(
-                    boost::gregorian::to_iso_extended_string(info.info_domain_data.expiration_date))))
-
-                (Util::XmlTagPair("holder", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("handle", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.handle)))
-                    (Util::XmlTagPair("name", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.name.get_value_or(""))))
-                    (Util::XmlTagPair("organization", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.organization.get_value_or(""))))
-                    (Util::XmlTagPair("id_number", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.ssntype.get_value_or("") == "ICO"
-                        ? registrant_info.info_contact_data.ssn.get_value_or("") : std::string())))
-                    (Util::XmlTagPair("street1", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.place.get_value().street1)))
-                    (Util::XmlTagPair("street2", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.place.get_value().street2.get_value_or(""))))
-                    (Util::XmlTagPair("street3", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.place.get_value().street3.get_value_or(""))))
-                    (Util::XmlTagPair("city", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.place.get_value().city)))
-                    (Util::XmlTagPair("stateorprovince", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.place.get_value().stateorprovince.get_value_or(""))))
-                    (Util::XmlTagPair("postal_code", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.place.get_value().postalcode)))
-                    (Util::XmlTagPair("country", Util::XmlEscapeTag(
-                        registrant_info.info_contact_data.place.get_value().country)))
-                    (Util::XmlTagPair("disclose", "", disclose_flags.str())),
-                    private_printout_attr.str()))
-                (Util::XmlTagPair("admin_contact_list", admin_contact_list))
-
-                (Util::XmlTagPair("sponsoring_registrar", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("handle", Util::XmlEscapeTag(
-                        sponsoring_registrar_info.info_registrar_data.handle)))
-                    (Util::XmlTagPair("name", Util::XmlEscapeTag(
-                        sponsoring_registrar_info.info_registrar_data.name.get_value_or(""))))
-                    (Util::XmlTagPair("organization", Util::XmlEscapeTag(
-                        sponsoring_registrar_info.info_registrar_data.organization.get_value_or(""))))
-                ))
-                (nsset_xml(nsset_data))
-                (keyset_xml(keyset_data))
-                (Util::XmlTagPair("external_states_list", external_states_xml(external_states)))
-        ))
-        )(printout_xml);
-
-        return printout_xml;
+        tech_contact_list.push_back(
+                Util::XmlTagPair(
+                        "tech_contact",
+                        Util::vector_of<Util::XmlCallback>
+                            (Util::XmlTagPair("handle", Util::XmlEscapeTag(itr->info_contact_data.handle)))
+                            (Util::XmlTagPair("name", Util::XmlEscapeTag(itr->info_contact_data.name.get_value_or(""))))
+                            (Util::XmlTagPair("organization",
+                                              Util::XmlEscapeTag(itr->info_contact_data.organization.get_value_or(""))))));
     }
 
+    return Util::vector_of<Util::XmlCallback>
+        (Util::XmlTagPair(
+                "keyset",
+                Util::vector_of<Util::XmlCallback>
+                    (Util::XmlTagPair(
+                            "handle",
+                            Util::XmlEscapeTag(keyset_data->info.info_keyset_data.handle)))
+                    (Util::XmlTagPair(
+                            "dns_key_list",
+                            dns_key_list))
+                    (Util::XmlTagPair(
+                            "tech_contact_list",
+                            tech_contact_list))
+                    (Util::XmlTagPair(
+                            "sponsoring_registrar",
+                            Util::vector_of<Util::XmlCallback>
+                                (Util::XmlTagPair(
+                                        "handle",
+                                        Util::XmlEscapeTag(
+                                                keyset_data->sponsoring_registrar.info_registrar_data.handle)))
+                                (Util::XmlTagPair(
+                                        "name",
+                                        Util::XmlEscapeTag(
+                                                keyset_data->sponsoring_registrar.info_registrar_data.name.get_value_or(""))))
+                                (Util::XmlTagPair(
+                                        "organization",
+                                        Util::XmlEscapeTag(
+                                                keyset_data->sponsoring_registrar.info_registrar_data.organization.get_value_or(""))))))
+                    (Util::XmlTagPair("external_states_list", external_states_xml(keyset_data->external_states)))));
+}
 
-    std::string nsset_printout_xml(
+std::string nsset_printout_xml(
         const NssetPrintoutInputData& nsset_input_data,
-        const boost::posix_time::ptime& local_timestamp)
-    {
-        std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        Util::XmlTagPair("record_statement", Util::vector_of<Util::XmlCallback>
-            (Util::XmlTagPair("current_datetime", Util::XmlEscapeTag(ptime_to_rfc3339_datetime_string(
-                local_timestamp, local_timestamp -  nsset_input_data.info.utc_timestamp))))
-                (nsset_xml(nsset_input_data))
-        )(printout_xml);
+        const Tz::LocalTimestamp& valid_at)
+{
+    std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+    Util::XmlTagPair(
+            "record_statement",
+            Util::vector_of<Util::XmlCallback>
+                (Util::XmlTagPair(
+                        "current_datetime",
+                        Util::XmlEscapeTag(valid_at.get_rfc3339_formated_string())))
+                (nsset_xml(nsset_input_data)))
+    (printout_xml);
 
-        return printout_xml;
-    }
+    return printout_xml;
+}
 
-    std::string keyset_printout_xml(
+std::string keyset_printout_xml(
         const KeysetPrintoutInputData& keyset_input_data,
-        const boost::posix_time::ptime& local_timestamp)
-    {
-        std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        Util::XmlTagPair("record_statement", Util::vector_of<Util::XmlCallback>
-            (Util::XmlTagPair("current_datetime", Util::XmlEscapeTag(ptime_to_rfc3339_datetime_string(
-                local_timestamp, local_timestamp -  keyset_input_data.info.utc_timestamp))))
-                (keyset_xml(keyset_input_data))
-        )(printout_xml);
+        const Tz::LocalTimestamp& valid_at)
+{
+    std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+    Util::XmlTagPair(
+            "record_statement",
+            Util::vector_of<Util::XmlCallback>
+                (Util::XmlTagPair(
+                        "current_datetime",
+                        Util::XmlEscapeTag(valid_at.get_rfc3339_formated_string())))
+                (keyset_xml(keyset_input_data)))
+    (printout_xml);
 
-        return printout_xml;
+    return printout_xml;
+}
+
+XmlWithData::XmlWithData()
+    : xml(),
+      email_out(),
+      request_local_timestamp(Tz::LocalTimestamp::within_utc(boost::posix_time::ptime()))
+{ }
+
+template <Fred::Object_Type::Enum object_type>
+unsigned long long get_history_id_of(
+        const std::string& handle,
+        const Tz::LocalTimestamp& valid_at,
+        Fred::OperationContext& ctx)
+{
+    const Database::Result db_res = ctx.get_conn().exec_params(
+            "WITH valid_at AS ("
+                "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time) "
+            "SELECT h.id "
+            "FROM object_registry obr "
+            "JOIN object_history oh ON oh.id=obr.id "
+            "JOIN history h ON h.id=oh.historyid "
+            "JOIN valid_at v ON h.valid_from<(v.utc_time+'1SECOND'::INTERVAL) AND "
+                               "(v.utc_time<h.valid_to OR h.valid_to IS NULL) "
+            "WHERE obr.type=get_object_type_id($3::TEXT) AND "
+                  "UPPER(obr.name)=UPPER($4::TEXT)"
+            "ORDER BY h.id DESC "
+            "LIMIT 1",
+            Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
+                                      (valid_at.get_timezone_offset_in_minutes())
+                                      (Conversion::Enums::to_db_handle(object_type))
+                                      (handle));
+
+    if (db_res.size() == 0)
+    {
+        throw Registry::RecordStatement::ObjectNotFound();
     }
 
-    std::string contact_printout_xml(
-        const bool is_private_printout,
-        const Fred::InfoContactOutput& info,
-        const boost::posix_time::ptime& local_timestamp,
-        const boost::posix_time::ptime& local_creation_time,
-        const boost::optional<boost::posix_time::ptime>& local_update_time,
-        const boost::optional<boost::posix_time::ptime>& local_transfer_time,
-        const Fred::InfoRegistrarOutput& sponsoring_registrar_info,
-        const std::vector<std::string>& external_states
-        )
-    {
-        std::string printout_xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+    return static_cast<unsigned long long>(db_res[0][0]);
+}
 
-        std::stringstream private_printout_attr;
-        private_printout_attr << std::boolalpha
-            << "is_private_printout='" << is_private_printout << "'";
+template unsigned long long get_history_id_of<Fred::Object_Type::contact>(
+        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
+template unsigned long long get_history_id_of<Fred::Object_Type::keyset>(
+        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
+template unsigned long long get_history_id_of<Fred::Object_Type::nsset>(
+        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
 
-        std::stringstream disclose_flags;
-        disclose_flags << std::boolalpha
-            << "name='" << info.info_contact_data.disclosename << "'"
-            << " organization='" << info.info_contact_data.discloseorganization << "'"
-            << " address='" << info.info_contact_data.discloseaddress << "'"
-            << " telephone='" << info.info_contact_data.disclosetelephone << "'"
-            << " fax='" << info.info_contact_data.disclosefax << "'"
-            << " email='" << info.info_contact_data.discloseemail << "'"
-            << " vat='" << info.info_contact_data.disclosevat << "'"
-            << " ident='" << info.info_contact_data.discloseident << "'"
-            << " notifyemail='" << info.info_contact_data.disclosenotifyemail << "'"
-            ;
-
-        Util::XmlTagPair("record_statement", Util::vector_of<Util::XmlCallback>
-            (Util::XmlTagPair("current_datetime", Util::XmlEscapeTag(ptime_to_rfc3339_datetime_string(
-                local_timestamp, local_timestamp - info.utc_timestamp))))
-
-            (Util::XmlTagPair("contact", Util::vector_of<Util::XmlCallback>
-                (Util::XmlTagPair("handle", Util::XmlEscapeTag(
-                    info.info_contact_data.handle)))
-                (Util::XmlTagPair("name", Util::XmlEscapeTag(
-                    info.info_contact_data.name.get_value_or(""))))
-                (Util::XmlTagPair("organization", Util::XmlEscapeTag(
-                    info.info_contact_data.organization.get_value_or(""))))
-                (Util::XmlTagPair("taxpayer_id_number", Util::XmlEscapeTag(
-                    info.info_contact_data.vat.get_value_or(""))))
-                (Util::XmlTagPair("id_type", Util::XmlEscapeTag(
-                    info.info_contact_data.ssntype.get_value_or(""))))
-                (Util::XmlTagPair("id_value", Util::XmlEscapeTag(
-                    info.info_contact_data.ssn.get_value_or(""))))
-                (Util::XmlTagPair("email", Util::XmlEscapeTag(
-                    info.info_contact_data.email.get_value_or(""))))
-                (Util::XmlTagPair("notification_email", Util::XmlEscapeTag(
-                    info.info_contact_data.notifyemail.get_value_or(""))))
-                (Util::XmlTagPair("phone", Util::XmlEscapeTag(
-                    info.info_contact_data.telephone.get_value_or(""))))
-                (Util::XmlTagPair("fax", Util::XmlEscapeTag(
-                    info.info_contact_data.fax.get_value_or(""))))
-
-                (Util::XmlTagPair("creation_date", Util::XmlEscapeTag(
-                    boost::gregorian::to_iso_extended_string(local_creation_time.date())
-                )))
-                (Util::XmlTagPair("last_update_date", Util::XmlEscapeTag(
-                    local_update_time.is_initialized()
-                        ? boost::gregorian::to_iso_extended_string(local_update_time.operator *().date())
-                        :  std::string()
-                )))
-                (Util::XmlTagPair("last_transfer_date", Util::XmlEscapeTag(
-                    local_transfer_time.is_initialized()
-                        ? boost::gregorian::to_iso_extended_string(local_transfer_time.operator *().date())
-                        :  std::string()
-                )))
-                (Util::XmlTagPair("address", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("street1", Util::XmlEscapeTag(
-                        info.info_contact_data.place.get_value().street1)))
-                    (Util::XmlTagPair("street2", Util::XmlEscapeTag(
-                        info.info_contact_data.place.get_value().street2.get_value_or(""))))
-                    (Util::XmlTagPair("street3", Util::XmlEscapeTag(
-                        info.info_contact_data.place.get_value().street3.get_value_or(""))))
-                    (Util::XmlTagPair("city", Util::XmlEscapeTag(
-                        info.info_contact_data.place.get_value().city)))
-                    (Util::XmlTagPair("stateorprovince", Util::XmlEscapeTag(
-                        info.info_contact_data.place.get_value().stateorprovince.get_value_or(""))))
-                    (Util::XmlTagPair("postal_code", Util::XmlEscapeTag(
-                        info.info_contact_data.place.get_value().postalcode)))
-                    (Util::XmlTagPair("country", Util::XmlEscapeTag(
-                        info.info_contact_data.place.get_value().country)))
-                ))
-                (Util::XmlTagPair("sponsoring_registrar", Util::vector_of<Util::XmlCallback>
-                    (Util::XmlTagPair("handle", Util::XmlEscapeTag(
-                        sponsoring_registrar_info.info_registrar_data.handle)))
-                    (Util::XmlTagPair("name", Util::XmlEscapeTag(
-                        sponsoring_registrar_info.info_registrar_data.name.get_value_or(""))))
-                    (Util::XmlTagPair("organization", Util::XmlEscapeTag(
-                        sponsoring_registrar_info.info_registrar_data.organization.get_value_or(""))))
-                ))
-                (Util::XmlTagPair("disclose", "", disclose_flags.str()))
-                (Util::XmlTagPair("external_states_list", external_states_xml(external_states))),
-            private_printout_attr.str()))
-        )(printout_xml);
-        return printout_xml;
-    }
-
-    std::string domain_printout_xml_with_data(
+template <>
+unsigned long long get_history_id_of<Fred::Object_Type::domain>(
         const std::string& fqdn,
-        const std::string& registry_timezone,
-        bool is_private_printout,
-        Fred::OperationContext& ctx,
-        std::string* registrant_email_out,
-        boost::posix_time::ptime* request_local_timestamp
-        )
+        const Tz::LocalTimestamp& valid_at,
+        Fred::OperationContext& ctx)
+{
+    const Database::Result db_res = ctx.get_conn().exec_params(
+            "WITH valid_at AS ("
+                "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time) "
+            "SELECT h.id "
+            "FROM object_registry obr "
+            "JOIN object_history oh ON oh.id=obr.id "
+            "JOIN history h ON h.id=oh.historyid "
+            "JOIN valid_at v ON h.valid_from<(v.utc_time+'1SECOND'::INTERVAL) AND "
+                               "(v.utc_time<h.valid_to OR h.valid_to IS NULL) "
+            "WHERE obr.type=get_object_type_id($3::TEXT) AND "
+                  "obr.name=LOWER($4::TEXT)"
+            "ORDER BY h.id DESC "
+            "LIMIT 1",
+            Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
+                                      (valid_at.get_timezone_offset_in_minutes())
+                                      (Conversion::Enums::to_db_handle(Fred::Object_Type::domain))
+                                      (fqdn));
+
+    if (db_res.size() == 0)
     {
-        Fred::InfoDomainOutput info_domain_output;
-        try
-        {
-            info_domain_output = Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(fqdn)).exec(ctx, "UTC");
-        }
-        catch (const Fred::InfoDomainByHandle::Exception& e)
-        {
-            if (e.is_set_unknown_fqdn())
-            {
-                throw Registry::RecordStatement::ObjectNotFound();
-            }
-
-            //other error
-            throw;
-        }
-
-        Fred::InfoContactOutput info_registrant_output = Fred::InfoContactByHandle(
-                info_domain_output.info_domain_data.registrant.handle).exec(ctx, "UTC");
-
-        if(registrant_email_out != NULL)
-        {
-            *registrant_email_out = info_registrant_output.info_contact_data.email.get_value_or("");
-        }
-
-        Fred::InfoRegistrarOutput info_sponsoring_registrar_output = Fred::InfoRegistrarByHandle(
-                info_domain_output.info_domain_data.sponsoring_registrar_handle).exec(ctx, "UTC");
-
-        std::vector<Fred::InfoContactOutput> info_admin_contact_output;
-
-        for(std::vector<Fred::ObjectIdHandlePair>::const_iterator
-            i = info_domain_output.info_domain_data.admin_contacts.begin();
-            i != info_domain_output.info_domain_data.admin_contacts.end(); ++i)
-        {
-            info_admin_contact_output.push_back(
-                Fred::InfoContactByHandle(i->handle).exec(ctx, "UTC"));
-        }
-
-        boost::optional<std::string> nsset_handle = info_domain_output.info_domain_data.nsset.isnull()
-            ? boost::optional<std::string>()
-            : boost::optional<std::string>(info_domain_output.info_domain_data.nsset.get_value().handle);
-
-        boost::optional<NssetPrintoutInputData> nsset_data = make_nsset_data(nsset_handle, ctx);
-
-        boost::optional<std::string> keyset_handle = info_domain_output.info_domain_data.keyset.isnull()
-            ? boost::optional<std::string>()
-            : boost::optional<std::string>(info_domain_output.info_domain_data.keyset.get_value().handle);
-
-        boost::optional<KeysetPrintoutInputData> keyset_data = make_keyset_data(keyset_handle, ctx);
-
-        const boost::posix_time::ptime local_timestamp = convert_utc_timestamp_to_local(ctx, info_domain_output.utc_timestamp, registry_timezone);
-
-        if(request_local_timestamp != NULL)
-        {
-            *request_local_timestamp = local_timestamp;
-        }
-
-        const std::string xml_document = domain_printout_xml(
-            info_domain_output,
-            local_timestamp,
-            convert_utc_timestamp_to_local(ctx, info_domain_output.info_domain_data.creation_time, registry_timezone),
-            (info_domain_output.info_domain_data.update_time.isnull()
-                ? boost::optional<boost::posix_time::ptime>()
-                : boost::optional<boost::posix_time::ptime>(
-                    convert_utc_timestamp_to_local(
-                        ctx, info_domain_output.info_domain_data.update_time.get_value(), registry_timezone))),
-            is_private_printout,
-            info_registrant_output,
-            info_admin_contact_output,
-            info_sponsoring_registrar_output,
-            nsset_data,
-            keyset_data,
-            make_external_states(info_domain_output.info_domain_data.id, ctx)
-        );
-
-        ctx.get_log().debug(xml_document);
-        return xml_document;
+        throw Registry::RecordStatement::ObjectNotFound();
     }
 
+    return static_cast<unsigned long long>(db_res[0][0]);
+}
 
-    std::string nsset_printout_xml_with_data(
-        const std::string& handle,
-        const std::string& registry_timezone,
-        Fred::OperationContext& ctx,
-        std::vector<std::string>* email_out,
-        boost::posix_time::ptime* request_local_timestamp)
+template <Fred::Object_Type::Enum object_type>
+unsigned long long get_history_id_internal_of(
+        const std::string& object_name,
+        const Tz::LocalTimestamp& valid_at,
+        Fred::OperationContext& ctx)
+{
+    try
     {
-        NssetPrintoutInputData nsset_data;
+        return get_history_id_of<object_type>(object_name, valid_at, ctx);
+    }
+    catch (const std::exception& e)
+    {
+        throw std::runtime_error(e.what());
+    }
+}
 
-        try
-        {
-            nsset_data = *make_nsset_data(handle, ctx);
-        }
-        catch (const Fred::InfoNssetByHandle::Exception& e)
-        {
-            if (e.is_set_unknown_handle())
-            {
-                throw Registry::RecordStatement::ObjectNotFound();
-            }
+template unsigned long long get_history_id_internal_of<Fred::Object_Type::domain>(
+        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
+template unsigned long long get_history_id_internal_of<Fred::Object_Type::contact>(
+        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
+template unsigned long long get_history_id_internal_of<Fred::Object_Type::keyset>(
+        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
+template unsigned long long get_history_id_internal_of<Fred::Object_Type::nsset>(
+        const std::string&, const Tz::LocalTimestamp&, Fred::OperationContext&);
 
-            //other error
-            throw;
-        }
+boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
+        const boost::optional<unsigned long long>& nsset_historyid,
+        const Tz::LocalTimestamp& timestamp,
+        Fred::OperationContext& ctx)
+{
+    if (nsset_historyid == boost::none)
+    {
+        return boost::optional<NssetPrintoutInputData>();
+    }
+    NssetPrintoutInputData retval;
+    retval.info = Fred::InfoNssetHistoryByHistoryid(*nsset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-        if(email_out != NULL)
-        {
-            email_out->reserve(nsset_data.tech_contact.size());
-            for(std::vector<Fred::InfoContactOutput>::const_iterator ci = nsset_data.tech_contact.begin();
-                    ci != nsset_data.tech_contact.end(); ++ci)
-            {
-                if(!ci->info_contact_data.email.isnull())
-                {
-                    email_out->push_back(ci->info_contact_data.email.get_value());
-                }
-            }
-        }
-
-        const boost::posix_time::ptime local_timestamp = convert_utc_timestamp_to_local(ctx, nsset_data.info.utc_timestamp, registry_timezone);
-
-        if(request_local_timestamp != NULL)
-        {
-            *request_local_timestamp = local_timestamp;
-        }
-
-        const std::string xml_document = nsset_printout_xml(nsset_data, local_timestamp);
-
-        ctx.get_log().debug(xml_document);
-        return xml_document;
+    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_nsset_data.tech_contacts.begin();
+         itr != retval.info.info_nsset_data.tech_contacts.end(); ++itr)
+    {
+        retval.tech_contact.push_back(
+                Fred::InfoContactHistoryByHistoryid(
+                        get_history_id_internal_of<Fred::Object_Type::contact>(itr->handle, timestamp, ctx))
+                .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
+    retval.sponsoring_registrar =
+            Fred::InfoRegistrarByHandle(retval.info.info_nsset_data.sponsoring_registrar_handle)
+            .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-    std::string keyset_printout_xml_with_data(
-        const std::string& handle,
-        const std::string& registry_timezone,
-        Fred::OperationContext& ctx,
-        std::vector<std::string>* email_out,
-        boost::posix_time::ptime* request_local_timestamp)
+    retval.external_states =
+            Fred::RecordStatement::Impl::make_historic_external_states(retval.info.info_nsset_data.id, timestamp, ctx);
+
+    return retval;
+}
+
+boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
+        const boost::optional<unsigned long long>& keyset_historyid,
+        const Tz::LocalTimestamp& timestamp,
+        Fred::OperationContext& ctx)
+{
+    if (keyset_historyid == boost::none)
     {
-        KeysetPrintoutInputData keyset_data;
+        return boost::optional<KeysetPrintoutInputData>();
+    }
+    KeysetPrintoutInputData retval;
+    retval.info = Fred::InfoKeysetHistoryByHistoryid(*keyset_historyid).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-        try
-        {
-            keyset_data = *make_keyset_data(handle, ctx);
-        }
-        catch (const Fred::InfoKeysetByHandle::Exception& e)
-        {
-            if (e.is_set_unknown_handle())
-            {
-                throw Registry::RecordStatement::ObjectNotFound();
-            }
-
-            //other error
-            throw;
-        }
-
-        if(email_out != NULL)
-        {
-            email_out->reserve(keyset_data.tech_contact.size());
-            for(std::vector<Fred::InfoContactOutput>::const_iterator ci = keyset_data.tech_contact.begin();
-                    ci != keyset_data.tech_contact.end(); ++ci)
-            {
-                if(!ci->info_contact_data.email.isnull())
-                {
-                    email_out->push_back(ci->info_contact_data.email.get_value());
-                }
-            }
-        }
-
-        const boost::posix_time::ptime local_timestamp = convert_utc_timestamp_to_local(ctx, keyset_data.info.utc_timestamp, registry_timezone);
-
-        if(request_local_timestamp != NULL)
-        {
-            *request_local_timestamp = local_timestamp;
-        }
-
-        const std::string xml_document = keyset_printout_xml(keyset_data, local_timestamp);
-
-        ctx.get_log().debug(xml_document);
-        return xml_document;
+    for (std::vector<Fred::ObjectIdHandlePair>::const_iterator itr = retval.info.info_keyset_data.tech_contacts.begin();
+         itr != retval.info.info_keyset_data.tech_contacts.end(); ++itr)
+    {
+        retval.tech_contact.push_back(
+                Fred::InfoContactHistoryByHistoryid(
+                        get_history_id_internal_of<Fred::Object_Type::contact>(itr->handle, timestamp, ctx))
+                .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()));
     }
 
-    std::string contact_printout_xml_with_data(
-        const std::string& handle,
-        const std::string& registry_timezone,
-        bool is_private_printout,
-        Fred::OperationContext& ctx,
-        std::string* email_out,
-        boost::posix_time::ptime* request_local_timestamp
-        )
-    {
-        Fred::InfoContactOutput info_contact_output;
+    retval.sponsoring_registrar =
+            Fred::InfoRegistrarByHandle(retval.info.info_keyset_data.sponsoring_registrar_handle)
+            .exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
 
-        try
-        {
-            info_contact_output = Fred::InfoContactByHandle(handle).exec(ctx, "UTC");
-        }
-        catch (const Fred::InfoContactByHandle::Exception& e)
-        {
-            if (e.is_set_unknown_contact_handle())
-            {
-                throw Registry::RecordStatement::ObjectNotFound();
-            }
+    retval.external_states =
+            make_historic_external_states(retval.info.info_keyset_data.id, timestamp, ctx);
 
-            //other error
-            throw;
-        }
+    return retval;
+}
 
-        if(email_out != NULL)
-        {
-            *email_out = info_contact_output.info_contact_data.email.get_value_or("");
-        }
-
-        Fred::InfoRegistrarOutput info_sponsoring_registrar_output = Fred::InfoRegistrarByHandle(
-            info_contact_output.info_contact_data.sponsoring_registrar_handle).exec(ctx, "UTC");
-
-        const boost::posix_time::ptime local_timestamp = convert_utc_timestamp_to_local(
-                ctx, info_contact_output.utc_timestamp, registry_timezone);
-
-        if(request_local_timestamp != NULL)
-        {
-            *request_local_timestamp = local_timestamp;
-        }
-
-         const std::string xml_document = contact_printout_xml(is_private_printout, info_contact_output,
-             local_timestamp,
-            convert_utc_timestamp_to_local(ctx, info_contact_output.info_contact_data.creation_time, registry_timezone),
-            (info_contact_output.info_contact_data.update_time.isnull()
-                ? boost::optional<boost::posix_time::ptime>()
-                : boost::optional<boost::posix_time::ptime>(
-                    convert_utc_timestamp_to_local(
-                        ctx, info_contact_output.info_contact_data.update_time.get_value(), registry_timezone))),
-            (info_contact_output.info_contact_data.transfer_time.isnull()
-                ? boost::optional<boost::posix_time::ptime>()
-                : boost::optional<boost::posix_time::ptime>(
-                    convert_utc_timestamp_to_local(
-                        ctx, info_contact_output.info_contact_data.transfer_time.get_value(), registry_timezone))),
-            info_sponsoring_registrar_output,
-                make_external_states(info_contact_output.info_contact_data.id, ctx)
-        );
-
-        ctx.get_log().debug(xml_document);
-        return xml_document;
-    }
-
-
-}//namespace RecordStatement
-}//namespace Registry
-
+}//namespace Fred::RecordStatement::Impl
+}//namespace Fred::RecordStatement
+}//namespace Fred

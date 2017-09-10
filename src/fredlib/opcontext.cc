@@ -25,11 +25,9 @@
 
 #include <stdexcept>
 
-namespace Fred
-{
+namespace Fred {
 
-namespace
-{
+namespace {
 
 const std::string& check_transaction_id(const std::string &_value)
 {
@@ -57,7 +55,7 @@ std::auto_ptr< StandaloneConnection > get_database_conn()
     return std::auto_ptr< StandaloneConnection >(manager.acquire());
 }
 
-}//Fred::{anonymous}
+}//namespace Fred::{anonymous}
 
 OperationContext::OperationContext()
 :   conn_(get_database_conn()),
@@ -140,11 +138,4 @@ void rollback_transaction(const std::string &_transaction_id)
     conn_ptr->exec("ROLLBACK PREPARED '" + _transaction_id + "'");
 }
 
-OperationContext& select_operation_context(
-    OperationContext& internal_ctx,
-    OperationContext* external_ctx)
-{
-    return external_ctx ? *external_ctx : internal_ctx;
-}
-
-}//Fred
+}//namespace Fred

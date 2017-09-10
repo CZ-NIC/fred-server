@@ -153,7 +153,6 @@ fred_start() {
             NUM=$(($NUM+1))
         fi
     fi
-    FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL=9
     if check_pidfile ${VARRUN_PATH}/fred-rsifd.pid; then NUM=$(($NUM+1)); else
         ${FRED_PATH}/fred-rsifd ${OPTIONS}${RSIFD_PORT} 2>/dev/null &
         if store_pid "${FRED_PATH}/fred-rsifd" ${VARRUN_PATH}/fred-rsifd.pid
@@ -162,6 +161,7 @@ fred_start() {
         fi
     fi
 
+    FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL=10
     if [ $NUM -eq $FRED_CENTRAL_REGISTRY_CORBA_SERVERS_TOTAL ]; then
         log_success_msg "${MSG_START}"
     else
@@ -241,6 +241,7 @@ fred_stop() {
     kill -TERM `cat ${VARRUN_PATH}/fred-akmd.pid` 2>/dev/null
         STOP_SUCCEDED=$(($STOP_SUCCEDED * $?))
     rm -f ${VARRUN_PATH}/fred-akmd.pid
+    fi
     if [ -f ${VARRUN_PATH}/fred-rsifd.pid ]
     then
     kill -TERM `cat ${VARRUN_PATH}/fred-rsifd.pid` 2>/dev/null

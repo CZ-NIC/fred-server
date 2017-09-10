@@ -24,7 +24,8 @@
 #ifndef RECORD_STATEMENT_HH_72FF9604ED0747FAA4BC91F598728BBC
 #define RECORD_STATEMENT_HH_72FF9604ED0747FAA4BC91F598728BBC
 
-#include "src/record_statement/record_statement_exception.hh"
+#include "src/record_statement/exceptions.hh"
+#include "src/record_statement/purpose.hh"
 
 #include "src/fredlib/documents.h"
 #include "src/fredlib/mailer.h"
@@ -34,6 +35,9 @@
 #include "src/fredlib/contact/place_address.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
+#include "util/timezones.hh"
+#include "util/tz/get_psql_handle_of.hh"
+#include "util/tz/local_timestamp.hh"
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -42,106 +46,142 @@
 #include <string>
 #include <vector>
 
-namespace Registry
+namespace Registry {
+namespace RecordStatement {
+
+struct PdfBufferImpl
 {
-namespace RecordStatement
+    explicit PdfBufferImpl(const std::string& _s);
+    const std::string value;
+};
+
+class RecordStatementImpl
 {
+public:
+    RecordStatementImpl(
+            const std::string& _server_name,
+            const boost::shared_ptr<Fred::Document::Manager>& _doc_manager,
+            const boost::shared_ptr<Fred::Mailer::Manager>& _mailer_manager,
+            const std::string& _handle_of_registry_timezone);//"Europe/Prague" or "UTC"
+    virtual ~RecordStatementImpl();
 
-    struct PdfBufferImpl
+    /**
+     * Get server name
+     * @return name for logging context
+     */
+    const std::string& get_server_name()const;
+
+    template <Purpose::Enum _purpose>
+    PdfBufferImpl domain_printout(
+            const std::string& _fqdn)const;
+
+    PdfBufferImpl nsset_printout(
+            const std::string& _handle)const;
+
+    PdfBufferImpl keyset_printout(
+            const std::string& _handle)const;
+
+    template <Purpose::Enum _purpose>
+    PdfBufferImpl contact_printout(
+            const std::string& _handle)const;
+
+    PdfBufferImpl historic_domain_printout(
+            const std::string& _fqdn,
+            const Tz::LocalTimestamp& _valid_at)const;
+
+    PdfBufferImpl historic_nsset_printout(
+            const std::string& _handle,
+            const Tz::LocalTimestamp& _valid_at)const;
+
+    PdfBufferImpl historic_keyset_printout(
+            const std::string& _handle,
+            const Tz::LocalTimestamp& _valid_at)const;
+
+    PdfBufferImpl historic_contact_printout(
+            const std::string& _handle,
+            const Tz::LocalTimestamp& _valid_at)const;
+
+    template <Purpose::Enum _purpose>
+    void send_domain_printout(
+            const std::string& _fqdn)const;
+
+    void send_nsset_printout(
+            const std::string& _handle)const;
+
+    void send_keyset_printout(
+            const std::string& _handle)const;
+
+    template <Purpose::Enum _purpose>
+    void send_contact_printout(
+            const std::string& _handle)const;
+
+    class WithExternalContext
     {
-        explicit PdfBufferImpl(const std::string& s);
-        const std::string value;
-    };
-
-    class RecordStatementImpl
-    {
-    private:
-        std::string server_name_;
-        boost::shared_ptr<Fred::Document::Manager> doc_manager_;
-        boost::shared_ptr<Fred::Mailer::Manager> mailer_manager_;
-        std::string registry_timezone_;
-
     public:
-        RecordStatementImpl(
-            const std::string& server_name,
-            boost::shared_ptr<Fred::Document::Manager> doc_manager,
-            boost::shared_ptr<Fred::Mailer::Manager> mailer_manager,
-            const std::string& registry_timezone_);
-        virtual ~RecordStatementImpl();
+        virtual ~WithExternalContext() { }
 
-        /**
-         * Get server name
-         * @return name for logging context
-         */
-        std::string get_server_name() const;
+        virtual PdfBufferImpl domain_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _fqdn,
+                Purpose::Enum _purpose)const = 0;
 
-        PdfBufferImpl domain_printout(const std::string& fqdn,
-                bool is_private_printout,
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual PdfBufferImpl nsset_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle)const = 0;
 
-        PdfBufferImpl nsset_printout(const std::string& handle,
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual PdfBufferImpl keyset_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle)const = 0;
 
-        PdfBufferImpl keyset_printout(const std::string& handle,
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual PdfBufferImpl contact_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle,
+                Purpose::Enum _purpose)const = 0;
 
-        PdfBufferImpl contact_printout(const std::string& handle,
-                bool is_private_printout,
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual PdfBufferImpl historic_domain_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _fqdn,
+                const Tz::LocalTimestamp& _valid_at)const = 0;
 
-        PdfBufferImpl historic_domain_printout(
-                const std::string& fqdn,
-                const std::string& timestamp,/**< RFC3339 format: YYYY-MM-DDTHH:MM:SS+ZZ:ZZ, in case of missing zone offset, it is considered to be time in UTC */
-                Fred::OperationContext* ex_ctx = NULL /**< optional test context */
-            ) const;
+        virtual PdfBufferImpl historic_nsset_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle,
+                const Tz::LocalTimestamp& _valid_at)const = 0;
 
-        PdfBufferImpl historic_nsset_printout(
-                const std::string& handle,
-                const std::string& timestamp,/**< RFC3339 format: YYYY-MM-DDTHH:MM:SS+ZZ:ZZ, in case of missing zone offset, it is considered to be time in UTC */
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual PdfBufferImpl historic_keyset_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle,
+                const Tz::LocalTimestamp& _valid_at)const = 0;
 
-        PdfBufferImpl historic_keyset_printout(
-                const std::string& handle,
-                const std::string& timestamp,/**< RFC3339 format: YYYY-MM-DDTHH:MM:SS+ZZ:ZZ, in case of missing zone offset, it is considered to be time in UTC */
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual PdfBufferImpl historic_contact_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle,
+                const Tz::LocalTimestamp& _valid_at)const = 0;
 
-        PdfBufferImpl historic_contact_printout(
-                const std::string& handle,
-                const std::string& timestamp,/**< RFC3339 format: YYYY-MM-DDTHH:MM:SS+ZZ:ZZ, in case of missing zone offset, it is considered to be time in UTC */
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual void send_domain_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _fqdn,
+                Purpose::Enum _purpose)const = 0;
 
-        void send_domain_printout(
-                const std::string& fqdn,
-                bool is_private_printout,
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual void send_nsset_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle)const = 0;
 
-        void send_nsset_printout(
-                const std::string& handle,
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
+        virtual void send_keyset_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle)const = 0;
 
-        void send_keyset_printout(
-                const std::string& handle,
-                Fred::OperationContext* ext_ctx = NULL/**< optional test context */
-            ) const;
-
-        void send_contact_printout(
-                const std::string& handle,
-                bool is_private_printout,
-                Fred::OperationContext* ex_ctx = NULL/**< optional test context */
-            ) const;
-
+        virtual void send_contact_printout(
+                Fred::OperationContext& _ctx,
+                const std::string& _handle,
+                Purpose::Enum _purpose)const = 0;
     };
+private:
+    std::string server_name_;
+    boost::shared_ptr<WithExternalContext> impl_;
+};
 
-}//namespace RecordStatement
+}//namespace Registry::RecordStatement
 }//namespace Registry
 
 #endif
