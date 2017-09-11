@@ -19,6 +19,7 @@
 #ifndef INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
 #define INFO_CONTACT_H_F087DD16707E43589C93442CE9D0CED5
 
+#include "src/epp/contact/contact_data.h"
 #include "src/epp/contact/contact_disclose.h"
 #include "src/epp/contact/info_contact_config_data.h"
 #include "src/epp/contact/status_value.h"
@@ -40,11 +41,7 @@ namespace Contact {
 
 struct InfoContactOutputData
 {
-
-
     explicit InfoContactOutputData(const boost::optional<ContactDisclose>& _disclose);
-
-
     std::string handle;
     std::string roid;
     std::string sponsoring_registrar_handle;
@@ -63,6 +60,7 @@ struct InfoContactOutputData
     Nullable<std::string> state_or_province;
     Nullable<std::string> postal_code;
     Nullable<std::string> country_code;
+    boost::optional<ContactData::Address> mailing_address;
     Nullable<std::string> telephone;
     Nullable<std::string> fax;
     Nullable<std::string> email;
@@ -71,7 +69,6 @@ struct InfoContactOutputData
     boost::optional<Fred::PersonalIdUnion> personal_id;
     boost::optional<std::string> authinfopw;
     boost::optional<ContactDisclose> disclose;
-
 };
 
 /**
@@ -83,7 +80,6 @@ InfoContactOutputData info_contact(
         const std::string& _contact_handle,
         const InfoContactConfigData& _info_contact_config_data,
         const SessionData& _session_data);
-
 
 } // namespace Epp::Contact
 } // namespace Epp

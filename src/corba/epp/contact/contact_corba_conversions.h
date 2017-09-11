@@ -22,6 +22,7 @@
 #include "src/corba/EPP.hh"
 
 #include "src/epp/contact/contact_change.h"
+#include "src/epp/contact/contact_data.h"
 #include "src/epp/contact/contact_handle_registration_obstruction_localized.h"
 #include "src/epp/contact/info_contact_localized.h"
 
@@ -34,29 +35,23 @@
 namespace Fred {
 namespace Corba {
 
-void
-unwrap_ContactChange(
-        const ccReg::ContactChange& src,
-        Epp::Contact::ContactChange& dst);
+void unwrap_ContactChange(const ccReg::ContactChange& src, Epp::Contact::ContactChange& dst);
 
+void unwrap_ContactData(const ccReg::ContactData& src, Epp::Contact::ContactData& dst);
 
 /**
  * @returns data ordered the same way as input contact_handles
  */
-ccReg::CheckResp
-wrap_localized_check_info(
+ccReg::CheckResp wrap_localized_check_info(
         const std::vector<std::string>& contact_handles,
-        const std::map<std::string,
+        const std::map< std::string,
                 boost::optional<Epp::Contact::ContactHandleRegistrationObstructionLocalized> >& contact_handle_check_results);
 
-
-void
-wrap_InfoContactLocalizedOutputData(
+void wrap_InfoContactLocalizedOutputData(
         const Epp::Contact::InfoContactLocalizedOutputData& src,
         ccReg::Contact& dst);
 
+}//namespace Fred::Corba
+}//namespace Fred
 
-} // namespace Fred::Corba
-} // namespace Fred
-
-#endif
+#endif//CONTACT_CORBA_CONVERSIONS_H_366458F9F5E84E6F994E130D1ADAB195

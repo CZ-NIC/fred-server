@@ -19,6 +19,7 @@
 #ifndef UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
 #define UPDATE_CONTACT_H_AC0FEA7E8B954D94BA589B65399518D9
 
+#include "src/epp/session_data.h"
 #include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/update_contact_localized.h"
 #include "src/fredlib/opcontext.h"
@@ -40,7 +41,6 @@ unsigned long long update_contact(
         const ContactChange& _data,
         const UpdateContactConfigData& _update_contact_config_data,
         const SessionData& _session_data);
-
 
 } // namespace Epp::Contact
 } // namespace Epp

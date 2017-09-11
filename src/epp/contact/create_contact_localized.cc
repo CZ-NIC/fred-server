@@ -43,70 +43,72 @@ namespace Epp {
 namespace Contact {
 
 CreateContactLocalizedResponse create_contact_localized(
-        const std::string& _contact_handle,
-        const CreateContactInputData& _create_contact_input_data,
-        const CreateContactConfigData& _create_contact_config_data,
-        const SessionData& _session_data,
-        const NotificationData& _notification_data)
+        const std::string& contact_handle,
+        const CreateContactInputData& create_contact_input_data,
+        const CreateContactConfigData& create_contact_config_data,
+        const SessionData& session_data,
+        const NotificationData& notification_data)
 {
     Logging::Context logging_ctx("rifd");
-    Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % _session_data.registrar_id));
-    Logging::Context logging_ctx3(_session_data.server_transaction_handle);
+    Logging::Context logging_ctx2(boost::str(boost::format("clid-%1%") % session_data.registrar_id));
+    Logging::Context logging_ctx3(session_data.server_transaction_handle);
     Logging::Context logging_ctx4(boost::str(boost::format("action-%1%") % static_cast<unsigned>(Action::CreateContact) ) );
 
     try
     {
         Fred::OperationContextCreator ctx;
 
-        const CreateContactResult create_contact_result(
+        const CreateContactResult result(
                 create_contact(
                         ctx,
-                        _contact_handle,
-                        _create_contact_input_data,
-                        _create_contact_config_data,
-                        _session_data));
+                        contact_handle,
+                        create_contact_input_data,
+                        create_contact_config_data,
+                        session_data));
 
-        const CreateContactLocalizedResponse create_contact_localized_response(
+        const CreateContactLocalizedResponse response(
                 EppResponseSuccessLocalized(
                         ctx,
                         EppResponseSuccess(EppResultSuccess(EppResultCode::command_completed_successfully)),
-                        _session_data.lang),
-                create_contact_result.crdate);
+                        session_data.lang),
+                result.crdate);
 
         ctx.commit_transaction();
 
         conditionally_enqueue_notification(
                 Notification::created,
-                create_contact_result.create_history_id,
-                _session_data,
-                _notification_data);
+                result.create_history_id,
+                session_data,
+                notification_data);
 
-        return create_contact_localized_response;
-
+        return response;
     }
-    catch (const EppResponseFailure& e) {
+    catch (const EppResponseFailure& e)
+    {
         Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("create_contact_localized: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 e,
-                _session_data.lang);
+                session_data.lang);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         Fred::OperationContextCreator ctx;
         ctx.get_log().info(std::string("create_contact_localized failure: ") + e.what());
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _session_data.lang);
+                session_data.lang);
     }
-    catch (...) {
+    catch (...)
+    {
         Fred::OperationContextCreator ctx;
         ctx.get_log().info("unexpected exception in create_contact_localized function");
         throw EppResponseFailureLocalized(
                 ctx,
                 EppResponseFailure(EppResultFailure(EppResultCode::command_failed)),
-                _session_data.lang);
+                session_data.lang);
     }
 }
 

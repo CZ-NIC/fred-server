@@ -18,10 +18,12 @@
 
 #include "src/epp/contact/create_contact_input_data.h"
 
-#include "src/epp/contact/contact_change.h"
+#include "src/epp/contact/contact_data.h"
 #include "src/epp/contact/util.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
+
+#include <boost/optional.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -34,63 +36,52 @@ namespace {
 
 std::string convert(const boost::optional<std::string>& src)
 {
-    return ContactChange::does_value_mean<ContactChange::Value::to_set>(src)
-           ? ContactChange::get_value(src)
-           : std::string();
+    return src == boost::none ? std::string() : *src;
 }
 
-
-std::string convert(const boost::optional<Nullable<std::string> >& src)
+boost::optional<CreateContactInputData::Address>
+convert(const boost::optional<ContactData::Address>& src)
 {
-    return ContactChange::does_value_mean<ContactChange::Value::to_set>(src)
-           ? ContactChange::get_value(src)
-           : std::string();
-}
-
-
-std::vector<std::string> convert(const std::vector<boost::optional<Nullable<std::string> > >& src)
-{
-    std::vector<std::string> result;
-    result.reserve(src.size());
-
-    typedef std::vector<boost::optional<Nullable<std::string> > > VectorOfChangeData;
-    for (VectorOfChangeData::const_iterator data_ptr = src.begin(); data_ptr != src.end(); ++data_ptr)
+    if (src == boost::none)
     {
-        result.push_back(convert(*data_ptr));
+        return boost::none;
     }
-    return result;
+    CreateContactInputData::Address dst;
+    dst.street1 = convert(src->street1);
+    dst.street2 = convert(src->street2);
+    dst.street3 = convert(src->street3);
+    dst.city = convert(src->city);
+    dst.state_or_province = convert(src->state_or_province);
+    dst.postal_code = convert(src->postal_code);
+    dst.country_code = convert(src->country_code);
+    return dst;
 }
-
 
 } // namespace Epp::Contact::{anonymous}
 
-
-CreateContactInputData::CreateContactInputData(const ContactChange& src)
+CreateContactInputData::CreateContactInputData(const ContactData& src)
     : name(convert(trim(src.name))),
       organization(convert(trim(src.organization))),
-      streets(convert(trim(src.streets))),
+      streets(trim(src.streets)),
       city(convert(trim(src.city))),
       state_or_province(convert(trim(src.state_or_province))),
       postal_code(convert(trim(src.postal_code))),
       country_code(convert(trim(src.country_code))),
+      mailing_address(convert(trim(src.mailing_address))),
       telephone(convert(trim(src.telephone))),
       fax(convert(trim(src.fax))),
       email(convert(trim(src.email))),
       notify_email(convert(trim(src.notify_email))),
       vat(convert(trim(src.vat))),
-      ident(convert(trim(src.ident))),
-      identtype(src.ident_type),
-      authinfopw((src.authinfopw && (*src.authinfopw).isnull())
-              ? boost::optional<std::string>()
-              : boost::optional<std::string>(convert(src.authinfopw))),
+      ident(trim(src.ident)),
+      authinfopw(src.authinfopw),
       disclose(src.disclose)
 {
-    if (disclose.is_initialized())
+    if (disclose != boost::none)
     {
         disclose->check_validity();
     }
 }
-
 
 } // namespace Epp::Contact
 } // namespace Epp

@@ -19,19 +19,29 @@
 #ifndef CREATE_CONTACT_INPUT_DATA_H_D431534126A348DFA7E2C485EB27B2A7
 #define CREATE_CONTACT_INPUT_DATA_H_D431534126A348DFA7E2C485EB27B2A7
 
-#include "src/epp/contact/contact_change.h"
-#include "util/db/nullable.h"
-#include "util/optional_value.h"
+#include "src/epp/contact/contact_data.h"
 
-#include <stdexcept>
 #include <string>
 #include <vector>
+
+#include <boost/optional.hpp>
 
 namespace Epp {
 namespace Contact {
 
 struct CreateContactInputData
 {
+    explicit CreateContactInputData(const ContactData& _src);
+    struct Address
+    {
+        std::string street1;
+        std::string street2;
+        std::string street3;
+        std::string city;
+        std::string state_or_province;
+        std::string postal_code;
+        std::string country_code;
+    };
     std::string name;
     std::string organization;
     std::vector<std::string> streets;
@@ -39,24 +49,18 @@ struct CreateContactInputData
     std::string state_or_province;
     std::string postal_code;
     std::string country_code;
+    boost::optional<Address> mailing_address;
     std::string telephone;
     std::string fax;
     std::string email;
     std::string notify_email;
     std::string vat;
-    std::string ident;
-    Nullable<ContactChange::IdentType::Enum> identtype;
+    boost::optional<ContactIdent> ident;
     boost::optional<std::string> authinfopw;
     boost::optional<ContactDisclose> disclose;
-
-
-    explicit CreateContactInputData(const ContactChange& src);
-
-
 };
-
 
 } // namespace Epp::Contact
 } // namespace Epp
 
-#endif
+#endif//CREATE_CONTACT_INPUT_DATA_H_D431534126A348DFA7E2C485EB27B2A7

@@ -91,17 +91,63 @@ Nullable<std::string> get_new_value(
     return before;
 }
 
-std::string ident_type_to_string(::Epp::Contact::ContactChange::IdentType::Enum type)
+struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<Fred::PersonalIdUnion>
 {
-    switch (type)
+    Fred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Op >& src)const
     {
-        case ::Epp::Contact::ContactChange::IdentType::op:       return Fred::PersonalIdUnion::get_OP("").get_type();
-        case ::Epp::Contact::ContactChange::IdentType::pass:     return Fred::PersonalIdUnion::get_PASS("").get_type();
-        case ::Epp::Contact::ContactChange::IdentType::ico:      return Fred::PersonalIdUnion::get_ICO("").get_type();
-        case ::Epp::Contact::ContactChange::IdentType::mpsv:     return Fred::PersonalIdUnion::get_MPSV("").get_type();
-        case ::Epp::Contact::ContactChange::IdentType::birthday: return Fred::PersonalIdUnion::get_BIRTHDAY("").get_type();
+        return Fred::PersonalIdUnion::get_OP(src.value);
     }
-    throw std::runtime_error("Invalid ::Epp::Contact::ContactChange::IdentType::Enum value.");
+    Fred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Pass >& src)const
+    {
+        return Fred::PersonalIdUnion::get_PASS(src.value);
+    }
+    Fred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Ico >& src)const
+    {
+        return Fred::PersonalIdUnion::get_ICO(src.value);
+    }
+    Fred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Mpsv >& src)const
+    {
+        return Fred::PersonalIdUnion::get_MPSV(src.value);
+    }
+    Fred::PersonalIdUnion operator()(const ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Birthday >& src)const
+    {
+        return Fred::PersonalIdUnion::get_BIRTHDAY(src.value);
+    }
+};
+
+Fred::PersonalIdUnion get_ident(const ::Epp::Contact::ContactIdent& ident)
+{
+    return boost::apply_visitor(GetPersonalIdUnionFromContactIdent(), ident);
+}
+
+Nullable<std::string> get_ident_type(
+        const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
+        const Nullable<std::string>& previous_value)
+{
+    if (ident == boost::none)
+    {
+        return previous_value;
+    }
+    if (*ident == boost::none)
+    {
+        return Nullable<std::string>();
+    }
+    return get_ident(**ident).get_type();
+}
+
+Nullable<std::string> get_ident_value(
+        const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
+        const Nullable<std::string>& previous_value)
+{
+    if (ident == boost::none)
+    {
+        return previous_value;
+    }
+    if (*ident == boost::none)
+    {
+        return Nullable<std::string>();
+    }
+    return get_ident(**ident).get();
 }
 
 } // namespace Test::{anonymous}
@@ -329,10 +375,8 @@ static void check_equal(
     BOOST_CHECK_EQUAL(info_after.email, get_new_value(update.email, info_before.email));
     BOOST_CHECK_EQUAL(info_after.notifyemail, get_new_value(update.notify_email, info_before.notifyemail));
     BOOST_CHECK_EQUAL(info_after.vat, get_new_value(update.vat, info_before.vat));
-    BOOST_CHECK_EQUAL(info_after.ssn, get_new_value(update.ident, info_before.ssn));
-    BOOST_CHECK_EQUAL(info_after.ssntype,
-                      !update.ident_type.isnull() ? ident_type_to_string(update.ident_type.get_value())
-                                                  : info_before.ssntype);
+    BOOST_CHECK_EQUAL(info_after.ssn, get_ident_value(update.ident, info_before.ssn));
+    BOOST_CHECK_EQUAL(info_after.ssntype, get_ident_type(update.ident, info_before.ssntype));
     BOOST_CHECK_EQUAL(info_after.authinfopw, get_new_value(update.authinfopw, info_before.authinfopw));
     BOOST_CHECK_EQUAL(info_after.disclosename,
                       updated< ::Epp::Contact::ContactDisclose::Item::name         >(update, info_before.disclosename));

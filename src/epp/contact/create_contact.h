@@ -19,6 +19,7 @@
 #ifndef CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
 #define CREATE_CONTACT_H_04AAC9626F1042B0B8B6CFCDB9220277
 
+#include "src/epp/contact/create_contact_input_data.h"
 #include "src/epp/contact/create_contact_config_data.h"
 #include "src/epp/contact/create_contact_localized.h"
 #include "src/epp/session_data.h"
@@ -33,34 +34,24 @@ namespace Contact {
 
 struct CreateContactResult
 {
-    const unsigned long long id;
-    const unsigned long long create_history_id;
-    // TODO guarantee non-special
-    const boost::posix_time::ptime crdate;
-
-
     CreateContactResult(
             unsigned long long _contact_id,
             unsigned long long _create_history_id,
-            const boost::posix_time::ptime& _contact_crdate)
-        : id(_contact_id),
-          create_history_id(_create_history_id),
-          crdate(_contact_crdate)
-    {
-    }
-
-
+            const boost::posix_time::ptime& _contact_crdate);
+    unsigned long long id;
+    unsigned long long create_history_id;
+    // TODO guarantee non-special
+    boost::posix_time::ptime crdate;
 };
 
 CreateContactResult create_contact(
-        Fred::OperationContext& _ctx,
-        const std::string& _contact_handle,
-        const CreateContactInputData& _data,
-        const CreateContactConfigData& _create_contact_config_data,
-        const SessionData& _session_data);
+        Fred::OperationContext& ctx,
+        const std::string& contact_handle,
+        const CreateContactInputData& data,
+        const CreateContactConfigData& create_contact_config_data,
+        const SessionData& session_data);
 
-
-} // namespace Epp::Contact
-} // namespace Epp
+}//namespace Epp::Contact
+}//namespace Epp
 
 #endif
