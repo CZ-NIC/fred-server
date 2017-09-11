@@ -982,6 +982,12 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/registrar/get_registrar_handles.h \
 		src/fredlib/registrar/check_registrar.h \
 		src/fredlib/registrar/check_registrar.cc \
+		src/fredlib/registrar/zone_credit.h \
+		src/fredlib/registrar/zone_credit.cc \
+		src/fredlib/registrar/registrar_zone_credit.h \
+		src/fredlib/registrar/registrar_zone_credit.cc \
+		src/fredlib/registrar/get_registrar_zone_credit.h \
+		src/fredlib/registrar/get_registrar_zone_credit.cc \
 		src/fredlib/object/object_id_handle_pair.h \
 		src/fredlib/object/object_id_handle_pair.cc \
 		src/fredlib/object_state/object_state_name.h \
@@ -1517,6 +1523,8 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/corba/epp/epp_impl.h \
 		src/corba/epp/contact/contact_corba_conversions.cc \
 		src/corba/epp/contact/contact_corba_conversions.h \
+		src/corba/epp/credit/credit_corba_conversions.cc \
+		src/corba/epp/credit/credit_corba_conversions.h \
 		src/corba/epp/domain/domain_corba_conversions.cc \
 		src/corba/epp/domain/domain_corba_conversions.h \
 		src/corba/epp/poll/poll_corba_conversions.cc \
@@ -1614,6 +1622,13 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/create_contact_config_data.h \
 		src/epp/contact/create_contact_localized_response.h \
 		src/epp/contact/status_value.h \
+		src/epp/credit/client_credit_output_data.cc \
+		src/epp/credit/client_credit_output_data.h \
+		src/epp/credit/client_credit.cc \
+		src/epp/credit/client_credit.h \
+		src/epp/credit/client_credit_localized_response.h \
+		src/epp/credit/client_credit_localized.cc \
+		src/epp/credit/client_credit_localized.h \
 		src/epp/domain/check_domain_localized.cc \
 		src/epp/domain/check_domain_localized.h \
 		src/epp/domain/check_domain_localized_response.h \
@@ -2670,6 +2685,7 @@ tests_interfaces_test_epp_SOURCES = \
 		tests/interfaces/epp/contact/test_check_contact.cc \
 		tests/interfaces/epp/contact/test_transfer_contact.cc \
 		tests/interfaces/epp/contact/test_contact_handle_state_to_check_result.cc \
+		tests/interfaces/epp/credit/test_client_credit.cc \
 		tests/interfaces/epp/domain/fixture.h \
 		tests/interfaces/epp/domain/fixture.cc \
 		tests/interfaces/epp/domain/test_check_domain.cc \
@@ -3048,6 +3064,7 @@ tests_test_blocking_LDADD = \
 tests_test_fredlib_SOURCES = \
 		tests/fredlib/main.cc \
 		tests/fredlib/registrar/test_registrar_zone_access.cc \
+		tests/fredlib/registrar/test_get_registrar_zone_credit.cc \
 		tests/fredlib/registrar/test_info_registrar.cc \
 		tests/fredlib/registrar/test_create_registrar.cc \
 		tests/fredlib/contact/test_delete_contact.cc \
