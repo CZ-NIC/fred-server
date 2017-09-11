@@ -268,7 +268,7 @@ ObjectIdHandlePair create_automatically_managed_keyset(
             generate_automatically_managed_keyset_handle(automatically_managed_keyset_prefix);
     // TODO check !exists
 
-    if (TestHandleOf<Object_Type::keyset>(automatically_managed_keyset_handle).is_invalid_handle())
+    if (TestHandleOf<Object_Type::keyset>(automatically_managed_keyset_handle).is_invalid_handle(ctx))
     {
         throw std::runtime_error("automatically_managed_keyset_handle invalid");
     }

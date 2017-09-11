@@ -82,7 +82,7 @@ CreateContactResult create_contact(
                 EppResultCode::authentication_error_server_closing_connection));
     }
 
-    const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_contact_handle) ==
+    const bool handle_is_valid = Fred::Contact::get_handle_syntax_validity(_ctx, _contact_handle) ==
                                  Fred::ContactHandleState::SyntaxValidity::valid;
     if (!handle_is_valid) {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_syntax_error)

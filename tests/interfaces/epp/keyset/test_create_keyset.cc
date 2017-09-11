@@ -385,9 +385,9 @@ void create_with_correct_data_but_invalid_handle_by(const KeysetCreateData &data
                                                     const ObjectsProvider &objects_provider)
 {
     const std::string invalid_keyset_handle = data.keyset_handle + "-";
-    BOOST_REQUIRE(Fred::Keyset::get_handle_syntax_validity(invalid_keyset_handle) ==
-                  Fred::Keyset::HandleState::invalid);
     Fred::OperationContextCreator ctx;
+    BOOST_REQUIRE(Fred::Keyset::get_handle_syntax_validity(ctx, invalid_keyset_handle) ==
+                  Fred::Keyset::HandleState::invalid);
     static const unsigned long long logd_request_id = 12347;
     const unsigned long long registrar_id = get_registrar_id< REGISTRAR >(objects_provider);
     BOOST_CHECK_EXCEPTION(

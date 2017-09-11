@@ -31,7 +31,8 @@
 namespace Fred {
 namespace Keyset {
 
-HandleState::SyntaxValidity get_handle_syntax_validity(const std::string &_keyset_handle);
+HandleState::SyntaxValidity get_handle_syntax_validity(OperationContext &_ctx,
+                                                       const std::string &_keyset_handle);
 
 HandleState::Registrability get_handle_registrability(OperationContext &_ctx,
                                                       const std::string &_keyset_handle);

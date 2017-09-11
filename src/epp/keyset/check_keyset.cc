@@ -89,7 +89,7 @@ std::map<std::string, Nullable<Keyset::KeysetHandleRegistrationObstruction::Enum
     {
         result[*handle_ptr] =
                 keyset_handle_state_to_check_result(
-                        Fred::Keyset::get_handle_syntax_validity(*handle_ptr),
+                        Fred::Keyset::get_handle_syntax_validity(_ctx, *handle_ptr),
                         Fred::Keyset::get_handle_registrability(_ctx, *handle_ptr));
     }
 

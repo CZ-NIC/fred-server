@@ -46,8 +46,9 @@ std::map<std::string, Nullable<NssetHandleRegistrationObstruction::Enum> > check
 
     BOOST_FOREACH(const std::string & handle, _nsset_handles) {
         result[handle] = nsset_handle_state_to_check_result(
-                Fred::Nsset::get_handle_syntax_validity(handle),
-                Fred::Nsset::get_handle_registrability(_ctx, handle));
+                Fred::Nsset::get_handle_syntax_validity(_ctx, handle),
+                Fred::Nsset::get_handle_registrability(_ctx, handle)
+        );
     }
 
     return result;

@@ -49,7 +49,7 @@ Success check_keyset_handle(
         EppResultFailure& policy_errors,
         EppResultFailure& syntax_errors)
 {
-    switch (Fred::Keyset::get_handle_syntax_validity(_keyset_handle))
+    switch (Fred::Keyset::get_handle_syntax_validity(_ctx, _keyset_handle))
     {
         case Fred::Keyset::HandleState::valid:
             switch (Fred::Keyset::get_handle_registrability(_ctx, _keyset_handle))

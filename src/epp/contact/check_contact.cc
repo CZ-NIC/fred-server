@@ -46,7 +46,7 @@ std::map<std::string, Nullable<ContactHandleRegistrationObstruction::Enum> > che
     BOOST_FOREACH(const std::string& handle, _contact_handles) {
 
         result[handle] = contact_handle_state_to_check_result(
-            Fred::Contact::get_handle_syntax_validity(handle),
+            Fred::Contact::get_handle_syntax_validity(_ctx, handle),
             Fred::Contact::get_handle_registrability(_ctx, handle)
         );
 

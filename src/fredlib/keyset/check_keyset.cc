@@ -23,9 +23,9 @@
 namespace Fred {
 namespace Keyset {
 
-HandleState::SyntaxValidity get_handle_syntax_validity(const std::string &_keyset_handle)
+HandleState::SyntaxValidity get_handle_syntax_validity(OperationContext &_ctx, const std::string &_keyset_handle)
 {
-    if (TestHandleOf< Object_Type::keyset >(_keyset_handle).is_invalid_handle()) {
+    if (TestHandleOf< Object_Type::keyset >(_keyset_handle).is_invalid_handle(_ctx)) {
         return HandleState::invalid;
     }
     return HandleState::valid;

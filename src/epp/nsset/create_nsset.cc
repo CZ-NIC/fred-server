@@ -93,7 +93,7 @@ CreateNssetResult create_nsset(
     }
 
     // check new nsset handle
-    if (Fred::Nsset::get_handle_syntax_validity(_nsset_data.handle) !=
+    if (Fred::Nsset::get_handle_syntax_validity(_ctx, _nsset_data.handle) !=
         Fred::NssetHandleState::SyntaxValidity::valid)
     {
         throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_syntax_error)
