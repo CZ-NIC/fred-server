@@ -19,27 +19,16 @@
 #ifndef UTIL_H_B03B5CE2A82E4F1EA6B482414595DB5D
 #define UTIL_H_B03B5CE2A82E4F1EA6B482414595DB5D
 
-#include "util/db/nullable.h"
-
-#include <boost/optional.hpp>
-
-#include <string>
 #include <vector>
 
 namespace Epp {
 namespace Contact {
 
-boost::optional<std::string>
-trim(const boost::optional<std::string>& src);
+template <typename T>
+T trim(const T& src);
 
-
-boost::optional<Nullable<std::string> >
-trim(const boost::optional<Nullable<std::string> >& src);
-
-
-std::vector<boost::optional<Nullable<std::string> > >
-trim(const std::vector<boost::optional<Nullable<std::string> > >& src);
-
+template <typename T>
+std::vector<T> trim(const std::vector<T>& src);
 
 } // namespace Epp::Contact
 } // namespace Epp

@@ -124,6 +124,7 @@ InfoContactLocalizedResponse info_contact_localized(
         info_contact_localized_output_data.state_or_province = info_contact_output_data.state_or_province;
         info_contact_localized_output_data.postal_code = info_contact_output_data.postal_code;
         info_contact_localized_output_data.country_code = info_contact_output_data.country_code;
+        info_contact_localized_output_data.mailing_address = info_contact_output_data.mailing_address;
         info_contact_localized_output_data.telephone = info_contact_output_data.telephone;
         info_contact_localized_output_data.fax = info_contact_output_data.fax;
         info_contact_localized_output_data.email = info_contact_output_data.email;
@@ -131,33 +132,37 @@ InfoContactLocalizedResponse info_contact_localized(
         info_contact_localized_output_data.VAT = info_contact_output_data.VAT;
         if (info_contact_output_data.personal_id.is_initialized())
         {
-            info_contact_localized_output_data.ident         = info_contact_output_data.personal_id->get();
             if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_OP("").get_type())
             {
-                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::op;
+                info_contact_localized_output_data.ident =
+                        ContactIdentValueOf<ContactIdentType::Op>(info_contact_output_data.personal_id->get());
             }
             else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_PASS("").get_type())
             {
-                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::pass;
+                info_contact_localized_output_data.ident =
+                        ContactIdentValueOf<ContactIdentType::Pass>(info_contact_output_data.personal_id->get());
             }
             else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_ICO("").get_type())
             {
-                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::ico;
+                info_contact_localized_output_data.ident =
+                        ContactIdentValueOf<ContactIdentType::Ico>(info_contact_output_data.personal_id->get());
             }
             else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_MPSV("").get_type())
             {
-                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::mpsv;
+                info_contact_localized_output_data.ident =
+                        ContactIdentValueOf<ContactIdentType::Mpsv>(info_contact_output_data.personal_id->get());
             }
             else if (info_contact_output_data.personal_id->get_type() == Fred::PersonalIdUnion::get_BIRTHDAY("").get_type())
             {
-                info_contact_localized_output_data.identtype = InfoContactLocalizedOutputData::IdentType::birthday;
+                info_contact_localized_output_data.ident =
+                        ContactIdentValueOf<ContactIdentType::Birthday>(info_contact_output_data.personal_id->get());
             }
             else
             {
                 throw std::runtime_error("Invalid ident type.");
             }
         }
-        info_contact_localized_output_data.authinfopw      = info_contact_output_data.authinfopw;
+        info_contact_localized_output_data.authinfopw = info_contact_output_data.authinfopw;
 
         return InfoContactLocalizedResponse(
                 EppResponseSuccessLocalized(

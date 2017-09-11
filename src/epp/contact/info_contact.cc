@@ -132,13 +132,14 @@ InfoContactOutputData info_contact(
         const InfoContactConfigData& _info_contact_config_data,
         const SessionData& _session_data)
 {
-
-    if (!is_session_registrar_valid(_session_data)) {
+    if (!is_session_registrar_valid(_session_data))
+    {
         throw EppResponseFailure(EppResultFailure(
                 EppResultCode::authentication_error_server_closing_connection));
     }
 
-    try {
+    try
+    {
         const Fred::InfoContactData info_contact_data = Fred::InfoContactByHandle(_contact_handle).exec(_ctx, "UTC").info_contact_data;
 
         InfoContactOutputData info_contact_output_data(get_discloseflags(info_contact_data));
@@ -205,6 +206,29 @@ InfoContactOutputData info_contact(
                 info_contact_data.place.isnull()
                         ? Nullable<std::string>()
                         : info_contact_data.place.get_value().country;
+        const Fred::ContactAddressList::const_iterator addresses_itr =
+                info_contact_data.addresses.find(Fred::ContactAddressType::MAILING);
+        if (addresses_itr != info_contact_data.addresses.end())
+        {
+            ContactData::Address mailing_address;
+            mailing_address.street1 = addresses_itr->second.street1;
+            if (addresses_itr->second.street2.isset())
+            {
+                mailing_address.street2 = addresses_itr->second.street2.get_value();
+            }
+            if (addresses_itr->second.street3.isset())
+            {
+                mailing_address.street3 = addresses_itr->second.street3.get_value();
+            }
+            mailing_address.city = addresses_itr->second.city;
+            if (addresses_itr->second.stateorprovince.isset())
+            {
+                mailing_address.state_or_province = addresses_itr->second.stateorprovince.get_value();
+            }
+            mailing_address.postal_code = addresses_itr->second.postalcode;
+            mailing_address.country_code = addresses_itr->second.country;
+            info_contact_output_data.mailing_address = mailing_address;
+        }
         info_contact_output_data.telephone = info_contact_data.telephone;
         info_contact_output_data.fax = info_contact_data.fax;
         info_contact_output_data.email = info_contact_data.email;

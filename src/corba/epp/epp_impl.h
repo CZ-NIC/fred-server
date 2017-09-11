@@ -303,7 +303,7 @@ public:
 
     ccReg::Response* ContactCreate(
             const char* _handle,
-            const ccReg::ContactChange& _contact_data,
+            const ccReg::ContactData& _contact_data,
             ccReg::timestamp_out _creation_time,
             const ccReg::EppParams& _epp_params);
 

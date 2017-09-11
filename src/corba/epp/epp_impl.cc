@@ -1717,7 +1717,7 @@ ccReg::Response* ccReg_EPP_i::ContactCheck(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -1775,7 +1775,7 @@ ccReg::Response* ccReg_EPP_i::NSSetCheck(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -1888,7 +1888,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCheck(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -1937,7 +1937,7 @@ ccReg::Response* ccReg_EPP_i::ContactInfo(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -1987,7 +1987,7 @@ ccReg::Response* ccReg_EPP_i::ContactDelete(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2043,23 +2043,24 @@ ccReg::Response* ccReg_EPP_i::ContactUpdate(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
 
 ccReg::Response* ccReg_EPP_i::ContactCreate(
         const char* const _contact_handle,
-        const ccReg::ContactChange& _contact_data,
+        const ccReg::ContactData& _contact_data,
         ccReg::timestamp_out _create_time,
         const ccReg::EppParams& _epp_params)
 {
     const Epp::RequestParams epp_request_params = Fred::Corba::unwrap_EppParams(_epp_params);
     const std::string server_transaction_handle = epp_request_params.get_server_transaction_handle();
 
-    try {
-        Epp::Contact::ContactChange contact_create_data;
-        Fred::Corba::unwrap_ContactChange(_contact_data, contact_create_data);
+    try
+    {
+        Epp::Contact::ContactData contact_create_data;
+        Fred::Corba::unwrap_ContactData(_contact_data, contact_create_data);
 
         const Epp::Contact::CreateContactInputData create_contact_input_data(contact_create_data);
 
@@ -2104,9 +2105,9 @@ ccReg::Response* ccReg_EPP_i::ContactCreate(
 
         _create_time = create_time._retn();
         return return_value._retn();
-
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e)
+    {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2158,7 +2159,7 @@ ccReg::Response* ccReg_EPP_i::ContactTransfer(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2209,7 +2210,7 @@ ccReg::Response* ccReg_EPP_i::NSSetTransfer(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2261,7 +2262,7 @@ ccReg::Response* ccReg_EPP_i::DomainTransfer(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2313,7 +2314,7 @@ ccReg::Response* ccReg_EPP_i::KeySetTransfer(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2361,7 +2362,7 @@ ccReg::Response* ccReg_EPP_i::NSSetInfo(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2411,7 +2412,7 @@ ccReg::Response* ccReg_EPP_i::NSSetDelete(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2483,7 +2484,7 @@ ccReg::Response* ccReg_EPP_i::NSSetCreate(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2550,7 +2551,7 @@ ccReg::Response* ccReg_EPP_i::NSSetUpdate(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2601,7 +2602,7 @@ ccReg::Response* ccReg_EPP_i::DomainInfo(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2651,7 +2652,7 @@ ccReg::Response* ccReg_EPP_i::DomainDelete(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2723,7 +2724,7 @@ ccReg::Response* ccReg_EPP_i::DomainUpdate(
         return update_domain_response._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2808,7 +2809,7 @@ ccReg::Response* ccReg_EPP_i::DomainCreate(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2874,7 +2875,7 @@ ccReg::Response* ccReg_EPP_i::DomainRenew(
         _exdate = exdate._retn();
         return return_value._retn();
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2929,7 +2930,7 @@ ccReg::Response* ccReg_EPP_i::KeySetInfo(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -2979,7 +2980,7 @@ ccReg::Response* ccReg_EPP_i::KeySetDelete(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -3086,7 +3087,7 @@ ccReg::Response* ccReg_EPP_i::KeySetCreate(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }
@@ -3155,7 +3156,7 @@ ccReg::Response* ccReg_EPP_i::KeySetUpdate(
         return return_value._retn();
 
     }
-    catch(const Epp::EppResponseFailureLocalized& e) {
+    catch (const Epp::EppResponseFailureLocalized& e) {
         throw Fred::Corba::wrap_Epp_EppResponseFailureLocalized(e, server_transaction_handle);
     }
 }

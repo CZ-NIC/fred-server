@@ -246,9 +246,9 @@ noinst_HEADERS = \
 		tests/util/corba_conversion_test.idl \
 		src/fredlib/object/object_type.h \
 		src/fredlib/notifier/gather_email_data/objecttype_specific_impl/util.h \
+		src/epp/contact/contact_change.h \
 		src/epp/exception.h \
 		src/epp/session_lang.h \
-		src/epp/contact/contact_change.h \
 		src/epp/get_registrar_session_data.h \
 		src/corba/epp/epp_legacy_compatibility.h \
 		src/epp/registrar_session_data.h \
@@ -1573,6 +1573,9 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/contact/util.cc \
 		src/epp/contact/util.h \
 		src/epp/contact/contact_change.cc \
+		src/epp/contact/contact_change.h \
+		src/epp/contact/contact_data.cc \
+		src/epp/contact/contact_data.h \
 		src/epp/contact/update_contact_localized.cc \
 		src/epp/contact/update_contact_localized.h \
 		src/epp/contact/update_contact.cc \
@@ -1772,7 +1775,6 @@ src_corba_epp_libepp_impl_a_SOURCES = \
 		src/epp/nsset/impl/nsset_output.cc \
 		src/epp/nsset/impl/nsset_output.h \
 		src/epp/nsset/status_value.h
-
 #
 # src/corba/epp/libepp_impl.a
 
@@ -1790,7 +1792,9 @@ src_corba_log_liblog_impl_a_SOURCES = \
 # src/corba/fred-rifd
 #
 src_corba_fred_rifd_SOURCES = \
-		src/corba/fred-rifd.cc
+		src/corba/fred-rifd.cc \
+		util/corba_conversion.h \
+		util/corba_conversion.cc
 
 src_corba_fred_rifd_LDADD = \
 		src/corba/epp/libepp_impl.a \
@@ -2784,7 +2788,7 @@ tests_interfaces_test_whois_LDADD = \
 #
 # tests/interfaces/test-whois
 
-# tests/test_server
+# tests/test-server
 #
 tests_test_server_SOURCES = \
 		tests/deprecated/test_server.cc \
@@ -2837,6 +2841,8 @@ tests_test_server_SOURCES = \
 		tests/util/test_csv_parser.cc \
 		util/optys/download_client.cc \
 		util/optys/download_client.h \
+		util/corba_conversion.h \
+		util/corba_conversion.cc \
 		tests/util/test_is_equal_optional_nullable.cc \
 		src/admin/contact/merge_contact.cc \
 		src/admin/contact/merge_contact.h \

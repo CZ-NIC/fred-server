@@ -25,6 +25,8 @@
 
 #include "src/epp/contact/check_contact_config_data.h"
 #include "src/epp/contact/contact_disclose.h"
+#include "src/epp/contact/contact_data.h"
+#include "src/epp/contact/contact_change.h"
 #include "src/epp/contact/create_contact_config_data.h"
 #include "src/epp/contact/create_contact_input_data.h"
 #include "src/epp/contact/delete_contact_config_data.h"
@@ -92,9 +94,7 @@ struct DefaultTransferContactConfigData : ::Epp::Contact::TransferContactConfigD
     }
 };
 
-namespace {
-
-boost::optional< ::Epp::Contact::ContactDisclose > set_all_disclose_flags(bool to_disclose)
+inline boost::optional< ::Epp::Contact::ContactDisclose > set_all_disclose_flags(bool to_disclose)
 {
     if (::Epp::is_the_default_policy_to_disclose() == to_disclose)
     {
@@ -114,7 +114,7 @@ boost::optional< ::Epp::Contact::ContactDisclose > set_all_disclose_flags(bool t
     return disclose;
 }
 
-::Epp::Contact::ContactDisclose get_all_items(bool to_disclose = true)
+inline ::Epp::Contact::ContactDisclose get_all_items(bool to_disclose = true)
 {
     ::Epp::Contact::ContactDisclose disclose(to_disclose ? ::Epp::Contact::ContactDisclose::Flag::disclose
                                                        : ::Epp::Contact::ContactDisclose::Flag::hide);
@@ -130,14 +130,12 @@ boost::optional< ::Epp::Contact::ContactDisclose > set_all_disclose_flags(bool t
     return disclose;
 }
 
-} // namespace {anonymous}
-
 struct DefaultCreateContactInputData : ::Epp::Contact::CreateContactInputData
 {
     std::string handle;
 
     DefaultCreateContactInputData()
-        : CreateContactInputData(::Epp::Contact::ContactChange()),
+        : CreateContactInputData(::Epp::Contact::ContactData()),
           handle(ValidHandle().handle)
     {
         name = "Jan Novak Jr.";
@@ -156,8 +154,7 @@ struct DefaultCreateContactInputData : ::Epp::Contact::CreateContactInputData
         email = "jan@novak.novak";
         notify_email = "jan.notify@novak.novak";
         vat = "MyVATstring";
-        ident = "";
-        identtype = Nullable< ::Epp::Contact::ContactChange::IdentType::Enum>();
+        ident = boost::none;
         authinfopw = "authInfo123";
         disclose = set_all_disclose_flags(true);
     }
@@ -165,8 +162,6 @@ struct DefaultCreateContactInputData : ::Epp::Contact::CreateContactInputData
 
 struct DefaultUpdateContactInputData : ::Epp::Contact::ContactChange
 {
-    std::string handle;
-
     DefaultUpdateContactInputData()
         : ContactChange(),
           handle(ValidHandle().handle)
@@ -192,20 +187,19 @@ struct DefaultUpdateContactInputData : ::Epp::Contact::ContactChange
         email = "jan@novak.novak";
         notify_email = "jan.notify@novak.novak";
         vat = "MyVATstring";
-        ident = "CZ0123456789";
-        ident_type = ::Epp::Contact::ContactChange::IdentType::op;
+        ident = boost::optional< ::Epp::Contact::ContactIdent >(
+                ::Epp::Contact::ContactIdentValueOf< ::Epp::Contact::ContactIdentType::Op >("CZ0123456789"));
         authinfopw = "a6tg85jk57yu97";
         disclose = get_all_items();
 
         return *this;
     }
+
+    std::string handle;
 };
 
 struct Contact
 {
-    Fred::InfoContactData data;
-
-
     Contact(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -214,8 +208,7 @@ struct Contact
         Fred::CreateContact(_contact_handle, _registrar_handle).exec(_ctx);
         data = Fred::InfoContactByHandle(_contact_handle).exec(_ctx).info_contact_data;
     }
-
-
+    Fred::InfoContactData data;
 };
 
 

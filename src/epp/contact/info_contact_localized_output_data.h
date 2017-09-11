@@ -20,7 +20,9 @@
 #define INFO_CONTACT_LOCALIZED_OUTPUT_DATA_H_671EB821E0A641C5BE786A96B551FE13
 
 #include "src/epp/contact/contact_disclose.h"
+#include "src/epp/contact/contact_data.h"
 #include "src/epp/contact/status_value.h"
+#include "src/epp/contact/contact_ident.h"
 #include "src/epp/object_states_localized.h"
 #include "util/db/nullable.h"
 
@@ -53,27 +55,13 @@ struct InfoContactLocalizedOutputData
     Nullable<std::string> state_or_province;
     Nullable<std::string> postal_code;
     Nullable<std::string> country_code;
+    boost::optional<ContactData::Address> mailing_address;
     Nullable<std::string> telephone;
     Nullable<std::string> fax;
     Nullable<std::string> email;
     Nullable<std::string> notify_email;
     Nullable<std::string> VAT;
-    Nullable<std::string> ident;
-    struct IdentType
-    {
-        enum Enum
-        {
-            op,
-            pass,
-            ico,
-            mpsv,
-            birthday
-
-        };
-
-    };
-
-    Nullable<IdentType::Enum> identtype;
+    boost::optional<ContactIdent> ident;
     boost::optional<std::string> authinfopw;
     boost::optional<ContactDisclose> disclose;
 
