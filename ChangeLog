@@ -1,3 +1,14 @@
+2017-09-12 (2.33.0)
+
+  * epp rewrite - domain, nsset, keyset, contact - code cleanup
+
+  * epp rewrite - poll methods and credit info method
+
+  * epp contact support mailing address
+
+  * add possibility to dump configuration parameters to debug log (for testing
+    configuration changes)
+
 2017-09-06 (2.32.0)
 
   * add regex configuration (database) for contact / nsset / keyset handles
