@@ -57,6 +57,7 @@ public:
     unsigned int docgen_domain_count_limit;
     std::string fileclient_path;
     std::string disable_epp_notifier_cltrid_prefix;
+    std::string registry_timezone;
 
     boost::shared_ptr<po::options_description>
     get_options_description()
@@ -97,7 +98,13 @@ public:
                 ("registry.disable_epp_notifier_cltrid_prefix",
                  po::value<std::string>()->default_value("do_not_notify"),
                  "disable epp command notification with specific cltrid prefix"
-                 " (only for system registrar)");
+                 " (only for system registrar)")
+                ("registry.registry_timezone",
+                 po::value<std::string>()->default_value("UTC"),
+                 "registry timezone in Olson format,"
+                 " must be the same as local system timezone,"
+                 " value must be from PostgreSQL pg_timezone_names.name")
+                ;
 
         return opts_descs;
     }//get_options_description
@@ -123,6 +130,7 @@ public:
         docgen_template_path = vm["registry.docgen_template_path"].as<std::string>();
         fileclient_path = vm["registry.fileclient_path"].as<std::string>();
         disable_epp_notifier_cltrid_prefix = vm["registry.disable_epp_notifier_cltrid_prefix"].as<std::string>();
+        registry_timezone = vm["registry.registry_timezone"].as<std::string>();
     }//handle
 };//HandleRegistryArgs
 
@@ -170,6 +178,8 @@ public:
         {return HandleRegistryArgs::fileclient_path;}
     const std::string& get_disable_epp_notifier_cltrid_prefix()
         {return HandleRegistryArgs::disable_epp_notifier_cltrid_prefix;}
+    const std::string& get_registry_timezone()
+        {return HandleRegistryArgs::registry_timezone;}
 };//class HandleRegistryArgsGrp
 
 #endif
