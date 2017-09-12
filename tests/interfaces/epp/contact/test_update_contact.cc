@@ -370,6 +370,108 @@ static void check_equal(
                       get_new_value(update.state_or_province, info_before.place.get_value_or_default().stateorprovince));
     BOOST_CHECK_EQUAL(info_after.place.get_value_or_default().country,
                       get_new_value(update.country_code, info_before.place.get_value_or_default().country));
+    if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_set >(
+            update.mailing_address))
+    {
+        const Fred::ContactAddressList::const_iterator addresses_itr = info_after.addresses.find(Fred::ContactAddressType::MAILING);
+        const bool mailing_address_presents_after = addresses_itr != info_after.addresses.end();
+        BOOST_CHECK(mailing_address_presents_after);
+        if (mailing_address_presents_after)
+        {
+            const ::Epp::Contact::ContactChange::Address mailing_address =
+                    ::Epp::Contact::ContactChange::get_value(update.mailing_address);
+            BOOST_CHECK(!addresses_itr->second.company_name.isset());
+            BOOST_CHECK(mailing_address.street1 != boost::none);
+            if (mailing_address.street1 != boost::none)
+            {
+                BOOST_CHECK_EQUAL(*mailing_address.street1, addresses_itr->second.street1);
+            }
+            BOOST_CHECK_EQUAL(mailing_address.street2 != boost::none, addresses_itr->second.street2.isset());
+            if ((mailing_address.street2 != boost::none) && (addresses_itr->second.street2.isset()))
+            {
+                BOOST_CHECK_EQUAL(*mailing_address.street2, addresses_itr->second.street2.get_value());
+            }
+            BOOST_CHECK_EQUAL(mailing_address.street3 != boost::none, addresses_itr->second.street3.isset());
+            if ((mailing_address.street3 != boost::none) && (addresses_itr->second.street3.isset()))
+            {
+                BOOST_CHECK_EQUAL(*mailing_address.street3, addresses_itr->second.street3.get_value());
+            }
+            BOOST_CHECK(mailing_address.city != boost::none);
+            if (mailing_address.city != boost::none)
+            {
+                BOOST_CHECK_EQUAL(*mailing_address.city, addresses_itr->second.city);
+            }
+            BOOST_CHECK_EQUAL(mailing_address.state_or_province != boost::none, addresses_itr->second.stateorprovince.isset());
+            if ((mailing_address.state_or_province != boost::none) && (addresses_itr->second.stateorprovince.isset()))
+            {
+                BOOST_CHECK_EQUAL(*mailing_address.state_or_province, addresses_itr->second.stateorprovince.get_value());
+            }
+            BOOST_CHECK(mailing_address.postal_code != boost::none);
+            if (mailing_address.postal_code != boost::none)
+            {
+                BOOST_CHECK_EQUAL(*mailing_address.postal_code, addresses_itr->second.postalcode);
+            }
+            BOOST_CHECK(mailing_address.country_code != boost::none);
+            if (mailing_address.country_code != boost::none)
+            {
+                BOOST_CHECK_EQUAL(*mailing_address.country_code, addresses_itr->second.country);
+            }
+        }
+    }
+    else if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::to_delete >(
+            update.mailing_address))
+    {
+        const Fred::ContactAddressList::const_iterator addresses_after_itr =
+                info_after.addresses.find(Fred::ContactAddressType::MAILING);
+        const bool mailing_address_presents_after = addresses_after_itr != info_after.addresses.end();
+        BOOST_CHECK(!mailing_address_presents_after);
+    }
+    else if (::Epp::Contact::ContactChange::does_value_mean< ::Epp::Contact::ContactChange::Value::not_to_touch >(
+            update.mailing_address))
+    {
+        const Fred::ContactAddressList::const_iterator addresses_before_itr =
+                info_before.addresses.find(Fred::ContactAddressType::MAILING);
+        const bool mailing_address_presents_before = addresses_before_itr != info_before.addresses.end();
+        const Fred::ContactAddressList::const_iterator addresses_after_itr =
+                info_after.addresses.find(Fred::ContactAddressType::MAILING);
+        const bool mailing_address_presents_after = addresses_after_itr != info_after.addresses.end();
+        BOOST_CHECK_EQUAL(mailing_address_presents_before, mailing_address_presents_after);
+        if (mailing_address_presents_before && mailing_address_presents_after)
+        {
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.company_name.isset(),
+                              addresses_after_itr->second.company_name.isset());
+            if (addresses_before_itr->second.company_name.isset() && addresses_after_itr->second.company_name.isset())
+            {
+                BOOST_CHECK_EQUAL(addresses_before_itr->second.company_name.get_value(),
+                                  addresses_after_itr->second.company_name.get_value());
+            }
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.street1, addresses_after_itr->second.street1);
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.street2.isset(),
+                              addresses_after_itr->second.street2.isset());
+            if (addresses_before_itr->second.street2.isset() && addresses_after_itr->second.street2.isset())
+            {
+                BOOST_CHECK_EQUAL(addresses_before_itr->second.street2.get_value(),
+                                  addresses_after_itr->second.street2.get_value());
+            }
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.street3.isset(),
+                              addresses_after_itr->second.street3.isset());
+            if (addresses_before_itr->second.street3.isset() && addresses_after_itr->second.street3.isset())
+            {
+                BOOST_CHECK_EQUAL(addresses_before_itr->second.street3.get_value(),
+                                  addresses_after_itr->second.street3.get_value());
+            }
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.city, addresses_after_itr->second.city);
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.stateorprovince.isset(),
+                              addresses_after_itr->second.stateorprovince.isset());
+            if (addresses_before_itr->second.stateorprovince.isset() && addresses_after_itr->second.stateorprovince.isset())
+            {
+                BOOST_CHECK_EQUAL(addresses_before_itr->second.stateorprovince.get_value(),
+                                  addresses_after_itr->second.stateorprovince.get_value());
+            }
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.postalcode, addresses_after_itr->second.postalcode);
+            BOOST_CHECK_EQUAL(addresses_before_itr->second.country, addresses_after_itr->second.country);
+        }
+    }
     BOOST_CHECK_EQUAL(info_after.telephone, get_new_value(update.telephone, info_before.telephone));
     BOOST_CHECK_EQUAL(info_after.fax, get_new_value(update.fax, info_before.fax));
     BOOST_CHECK_EQUAL(info_after.email, get_new_value(update.email, info_before.email));
@@ -401,7 +503,22 @@ static void check_equal(
 BOOST_FIXTURE_TEST_CASE(update_ok_full_data, supply_ctx<HasRegistrarWithSessionAndContact>)
 {
     DefaultUpdateContactInputData update_contact_input_data;
-    update_contact_input_data.add_additional_data();
+    update_contact_input_data.add_additional_data().drop_mailing_address();
+
+    ::Epp::Contact::update_contact(
+            ctx,
+            contact.data.handle,
+            update_contact_input_data,
+            DefaultUpdateContactConfigData(),
+            session.data);
+
+    check_equal(contact.data, update_contact_input_data, Fred::InfoContactByHandle(contact.data.handle).exec(ctx).info_contact_data);
+}
+
+BOOST_FIXTURE_TEST_CASE(update_mailing_address_ok, supply_ctx<HasRegistrarWithSessionAndContact>)
+{
+    DefaultUpdateContactInputData update_contact_input_data;
+    update_contact_input_data.update_mailing_address();
 
     ::Epp::Contact::update_contact(
             ctx,
@@ -443,9 +560,9 @@ BOOST_FIXTURE_TEST_CASE(update_ok_states_are_upgraded, supply_ctx<HasRegistrarWi
     }
 }
 
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
-BOOST_AUTO_TEST_SUITE_END();
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Contact/UpdateContact
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp/Contact
+BOOST_AUTO_TEST_SUITE_END()//Backend/Epp
+BOOST_AUTO_TEST_SUITE_END()//Backend
 
 } // namespace Test

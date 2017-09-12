@@ -132,6 +132,22 @@ void check_equal(const ::Epp::Contact::CreateContactInputData &create_data, cons
     BOOST_CHECK_EQUAL(get_ident_value(create_data.ident), get_value(info_data.ssn));
     BOOST_CHECK_EQUAL(get_ident_type(create_data.ident), get_value(info_data.ssntype));
 
+    const bool to_create_mailing_address = create_data.mailing_address != boost::none;
+    const Fred::ContactAddressList::const_iterator addresses_itr = info_data.addresses.find(Fred::ContactAddressType::MAILING);
+    const bool mailing_address_created = addresses_itr != info_data.addresses.end();
+    BOOST_CHECK_EQUAL(to_create_mailing_address, mailing_address_created);
+    if (to_create_mailing_address && mailing_address_created)
+    {
+        BOOST_CHECK(!addresses_itr->second.company_name.isset());
+        BOOST_CHECK_EQUAL(create_data.mailing_address->street1, addresses_itr->second.street1);
+        BOOST_CHECK_EQUAL(create_data.mailing_address->street2, get_value(addresses_itr->second.street2));
+        BOOST_CHECK_EQUAL(create_data.mailing_address->street3, get_value(addresses_itr->second.street3));
+        BOOST_CHECK_EQUAL(create_data.mailing_address->city, addresses_itr->second.city);
+        BOOST_CHECK_EQUAL(create_data.mailing_address->state_or_province, get_value(addresses_itr->second.stateorprovince));
+        BOOST_CHECK_EQUAL(create_data.mailing_address->postal_code, addresses_itr->second.postalcode);
+        BOOST_CHECK_EQUAL(create_data.mailing_address->country_code, addresses_itr->second.country);
+    }
+
     BOOST_CHECK_EQUAL(create_data.authinfopw ? *create_data.authinfopw : std::string("not set"), info_data.authinfopw);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::name >(create_data), info_data.disclosename);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::organization >(create_data), info_data.discloseorganization);
