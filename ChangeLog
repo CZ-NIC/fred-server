@@ -9,6 +9,8 @@
   * add possibility to dump configuration parameters to debug log (for testing
     configuration changes)
 
+  * add registry record statement interface impl.
+
 2017-09-06 (2.32.0)
 
   * add regex configuration (database) for contact / nsset / keyset handles
