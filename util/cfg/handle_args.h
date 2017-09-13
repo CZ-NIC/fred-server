@@ -168,69 +168,69 @@ public:
             std::string value;
             try
             {
-                if (it->second.value().type() == typeid(std::string))
+                if ((*it->second).type() == typeid(std::string))
                 {
-                    value = boost::any_cast<std::string>(it->second.value());
+                    value = boost::any_cast<std::string>(*it->second);
                 }
-                else if (it->second.value().type() == typeid(unsigned))
+                else if ((*it->second).type() == typeid(unsigned))
                 {
-                    value = boost::lexical_cast<std::string>(boost::any_cast<unsigned>(it->second.value()));
+                    value = boost::lexical_cast<std::string>(boost::any_cast<unsigned>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(bool))
+                else if ((*it->second).type() == typeid(bool))
                 {
-                    value = boost::any_cast<bool>(it->second.value()) ? "TRUE" : "FALSE";
+                    value = boost::any_cast<bool>(*it->second) ? "TRUE" : "FALSE";
                 }
-                else if (it->second.value().type() == typeid(boost::gregorian::date))
+                else if ((*it->second).type() == typeid(boost::gregorian::date))
                 {
                     value = boost::gregorian::to_iso_extended_string(
-                            boost::any_cast<boost::gregorian::date>(it->second.value()));
+                            boost::any_cast<boost::gregorian::date>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(boost::posix_time::ptime))
+                else if ((*it->second).type() == typeid(boost::posix_time::ptime))
                 {
                     value = boost::posix_time::to_iso_extended_string(
-                            boost::any_cast<boost::posix_time::ptime>(it->second.value()));
+                            boost::any_cast<boost::posix_time::ptime>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::string))
+                else if ((*it->second).type() == typeid(Checked::string))
                 {
-                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::string>(it->second.value()));
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::string>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::string_fpnumber))
+                else if ((*it->second).type() == typeid(Checked::string_fpnumber))
                 {
-                    value = boost::any_cast<Checked::string_fpnumber>(it->second.value()).to_string();
+                    value = boost::any_cast<Checked::string_fpnumber>(*it->second).to_string();
                 }
-                else if (it->second.value().type() == typeid(Checked::ulonglong))
+                else if ((*it->second).type() == typeid(Checked::ulonglong))
                 {
-                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulonglong>(it->second.value()));
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulonglong>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::ulong))
+                else if ((*it->second).type() == typeid(Checked::ulong))
                 {
-                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulong>(it->second.value()));
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ulong>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::id))
+                else if ((*it->second).type() == typeid(Checked::id))
                 {
-                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::id>(it->second.value()));
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::id>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::fpnumber))
+                else if ((*it->second).type() == typeid(Checked::fpnumber))
                 {
-                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::fpnumber>(it->second.value()));
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::fpnumber>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::ushort))
+                else if ((*it->second).type() == typeid(Checked::ushort))
                 {
-                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ushort>(it->second.value()));
+                    value = boost::lexical_cast<std::string>(boost::any_cast<Checked::ushort>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::date))
+                else if ((*it->second).type() == typeid(Checked::date))
                 {
                     value = boost::gregorian::to_iso_extended_string(
-                            boost::any_cast<Checked::date>(it->second.value()));
+                            boost::any_cast<Checked::date>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(Checked::ptime))
+                else if ((*it->second).type() == typeid(Checked::ptime))
                 {
                     value = boost::posix_time::to_iso_extended_string(
-                            boost::any_cast<Checked::ptime>(it->second.value()));
+                            boost::any_cast<Checked::ptime>(*it->second));
                 }
-                else if (it->second.value().type() == typeid(std::vector<std::string>))
+                else if ((*it->second).type() == typeid(std::vector<std::string>))
                 {
-                    value = boost::algorithm::join(boost::any_cast<std::vector<std::string> >(it->second.value()), ", ");
+                    value = boost::algorithm::join(boost::any_cast<std::vector<std::string> >(*it->second), ", ");
                 }
                 else
                 {

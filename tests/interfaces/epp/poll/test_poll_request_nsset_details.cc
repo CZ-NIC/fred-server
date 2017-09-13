@@ -39,7 +39,7 @@ void check_equal(const Epp::Nsset::InfoNssetOutputData& nsset_data, const Fred::
     BOOST_CHECK_EQUAL(boost::to_upper_copy(nsset_data.handle), info_data.handle);
 
     BOOST_REQUIRE(nsset_data.authinfopw);
-    BOOST_CHECK_EQUAL(nsset_data.authinfopw.value(), info_data.authinfopw);
+    BOOST_CHECK_EQUAL(*nsset_data.authinfopw, info_data.authinfopw);
 
     BOOST_CHECK_EQUAL(nsset_data.dns_hosts.size(), info_data.dns_hosts.size());
     if (nsset_data.dns_hosts.size() == info_data.dns_hosts.size())

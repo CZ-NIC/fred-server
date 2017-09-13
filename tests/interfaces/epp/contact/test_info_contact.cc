@@ -112,7 +112,7 @@ void check_equal(const ::Epp::Contact::InfoContactOutputData& epp_data, const Fr
     BOOST_CHECK_EQUAL(epp_data.personal_id.is_initialized() ? epp_data.personal_id->get_type() : "",
             fred_data.ssntype.get_value_or_default());
     BOOST_REQUIRE(epp_data.authinfopw);
-    BOOST_CHECK_EQUAL(epp_data.authinfopw.value(), fred_data.authinfopw);
+    BOOST_CHECK_EQUAL(*epp_data.authinfopw, fred_data.authinfopw);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::name>(epp_data), fred_data.disclosename);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::organization>(epp_data), fred_data.discloseorganization);
     BOOST_CHECK_EQUAL(to_disclose< ::Epp::Contact::ContactDisclose::Item::address>(epp_data), fred_data.discloseaddress);

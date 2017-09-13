@@ -44,7 +44,7 @@ struct SessionData
           lang(_lang),
           server_transaction_handle(_server_transaction_handle),
           logd_request_id(_logd_request_id
-                                  ? Optional<unsigned long long>(_logd_request_id.value())
+                                  ? Optional<unsigned long long>(*_logd_request_id)
                                   : Optional<unsigned long long>())
     {
     }

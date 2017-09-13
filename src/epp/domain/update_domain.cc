@@ -159,7 +159,7 @@ unsigned long long update_domain(
         if (_update_domain_data.enum_validation)
         {
 
-            req_enum_valexdate = _update_domain_data.enum_validation.value().get_valexdate();
+            req_enum_valexdate = (*_update_domain_data.enum_validation).get_valexdate();
 
             if (req_enum_valexdate.get_value().is_special())
             {
@@ -195,7 +195,7 @@ unsigned long long update_domain(
                 }
             }
 
-            enum_publish_flag = _update_domain_data.enum_validation.value().get_publish();
+            enum_publish_flag = (*_update_domain_data.enum_validation).get_publish();
         }
     }
     else   // not enum

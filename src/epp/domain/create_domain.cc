@@ -238,7 +238,7 @@ CreateDomainResult create_domain(
     // check range of ENUM domain validation expiration
     if (zone_data.is_enum)
     {
-        const boost::gregorian::date new_valexdate = _data.enum_validation_extension.value().get_valexdate();
+        const boost::gregorian::date new_valexdate = (*_data.enum_validation_extension).get_valexdate();
 
         if (is_new_enum_domain_validation_expiration_date_invalid(
                     new_valexdate,
@@ -299,12 +299,12 @@ CreateDomainResult create_domain(
 
         const Optional<boost::gregorian::date>
                 enum_validation_expiration(zone_data.is_enum
-                    ? Optional<boost::gregorian::date>(_data.enum_validation_extension.value().get_valexdate())
+                    ? Optional<boost::gregorian::date>((*_data.enum_validation_extension).get_valexdate())
                     : Optional<boost::gregorian::date>());
 
         const Optional<bool>
                 enum_publish_flag(zone_data.is_enum
-                                  ? Optional<bool>(_data.enum_validation_extension.value().get_publish())
+                                  ? Optional<bool>((*_data.enum_validation_extension).get_publish())
                                   : Optional<bool>());
 
         const Fred::CreateDomain::Result result = Fred::CreateDomain(

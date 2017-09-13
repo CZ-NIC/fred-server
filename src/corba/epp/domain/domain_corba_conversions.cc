@@ -180,7 +180,7 @@ wrap_Epp_Domain_InfoDomainLocalizedOutputData(
     _dst.ExDate = Fred::Corba::wrap_string_to_corba_string(boost::gregorian::to_iso_extended_string(_src.exdate));
 
     _dst.AuthInfoPw = Fred::Corba::wrap_string_to_corba_string(
-            _src.authinfopw ? _src.authinfopw.value() : std::string());
+            _src.authinfopw ? *_src.authinfopw : std::string());
 
     _dst.admin.length(_src.admin.size());
     unsigned long dst_admin_index = 0;

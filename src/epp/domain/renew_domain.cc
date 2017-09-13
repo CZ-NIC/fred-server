@@ -233,7 +233,7 @@ RenewDomainResult renew_domain(
     if (zone_data.is_enum && _renew_domain_input_data.enum_validation_extension)
     {
         const boost::gregorian::date new_valexdate =
-            _renew_domain_input_data.enum_validation_extension.value().get_valexdate();
+            (*_renew_domain_input_data.enum_validation_extension).get_valexdate();
 
         // ENUM validation expiration date is optional, if missing ENUM domain is not currently validated
         const boost::optional<boost::gregorian::date> current_valexdate =
@@ -294,9 +294,9 @@ RenewDomainResult renew_domain(
         if (zone_data.is_enum && _renew_domain_input_data.enum_validation_extension)
         {
             renew_domain.set_enum_validation_expiration(
-                    _renew_domain_input_data.enum_validation_extension.value().get_valexdate())
+                    (*_renew_domain_input_data.enum_validation_extension).get_valexdate())
                 .set_enum_publish_flag(
-                    _renew_domain_input_data.enum_validation_extension.value().get_publish());
+                    (*_renew_domain_input_data.enum_validation_extension).get_publish());
         }
 
         if (_session_data.logd_request_id.isset())

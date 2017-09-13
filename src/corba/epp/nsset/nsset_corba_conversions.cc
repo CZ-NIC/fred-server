@@ -215,7 +215,7 @@ wrap_localized_info_nsset(const Epp::Nsset::InfoNssetLocalizedOutputData& _input
     result.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_input.last_transfer);
 
     result.AuthInfoPw = Corba::wrap_string_to_corba_string(
-            _input.authinfopw ? _input.authinfopw.value() : std::string());
+            _input.authinfopw ? *_input.authinfopw : std::string());
 
     {
         result.dns.length(_input.dns_host.size());
