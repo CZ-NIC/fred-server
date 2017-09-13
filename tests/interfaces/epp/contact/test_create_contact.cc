@@ -73,28 +73,28 @@ struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<Fred::PersonalId
 
 boost::optional<Fred::PersonalIdUnion> get_ident(const boost::optional< ::Epp::Contact::ContactIdent >& ident)
 {
-    return ident != boost::none ? boost::apply_visitor(GetPersonalIdUnionFromContactIdent(), *ident)
-                                : boost::optional<Fred::PersonalIdUnion>();
+    return ident ? boost::apply_visitor(GetPersonalIdUnionFromContactIdent(), *ident)
+                 : boost::optional<Fred::PersonalIdUnion>();
 }
 
 std::string get_ident_type(const boost::optional< ::Epp::Contact::ContactIdent >& ident)
 {
     const boost::optional<Fred::PersonalIdUnion> personal_id = get_ident(ident);
-    return personal_id != boost::none ? personal_id->get_type()
-                                      : std::string();
+    return personal_id ? personal_id->get_type()
+                       : std::string();
 }
 
 std::string get_ident_value(const boost::optional< ::Epp::Contact::ContactIdent >& ident)
 {
     const boost::optional<Fred::PersonalIdUnion> personal_id = get_ident(ident);
-    return personal_id != boost::none ? personal_id->get()
-                                      : std::string();
+    return personal_id ? personal_id->get()
+                       : std::string();
 }
 
 template <class T>
 T get_value(const boost::optional<T>& src)
 {
-    return src != boost::none ? *src : T();
+    return src ? *src : T();
 }
 
 template <class T>

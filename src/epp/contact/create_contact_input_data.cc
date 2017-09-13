@@ -36,13 +36,13 @@ namespace {
 
 std::string convert(const boost::optional<std::string>& src)
 {
-    return src == boost::none ? std::string() : *src;
+    return !src ? std::string() : *src;
 }
 
 boost::optional<CreateContactInputData::Address>
 convert(const boost::optional<ContactData::Address>& src)
 {
-    if (src == boost::none)
+    if (!src)
     {
         return boost::none;
     }
@@ -77,7 +77,7 @@ CreateContactInputData::CreateContactInputData(const ContactData& src)
       authinfopw(src.authinfopw),
       disclose(src.disclose)
 {
-    if (disclose != boost::none)
+    if (disclose)
     {
         disclose->check_validity();
     }

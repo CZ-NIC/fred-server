@@ -102,7 +102,7 @@ boost::optional<NssetPrintoutInputData> make_nsset_data(
         const boost::optional<std::string>& nsset_handle,
         Fred::OperationContext& ctx)
 {
-    if (nsset_handle == boost::none)
+    if (!nsset_handle)
     {
         return boost::optional<NssetPrintoutInputData>();
     }
@@ -129,7 +129,7 @@ boost::optional<KeysetPrintoutInputData> make_keyset_data(
         const boost::optional<std::string>& keyset_handle,
         Fred::OperationContext& ctx)
 {
-    if (keyset_handle == boost::none)
+    if (!keyset_handle)
     {
         return boost::optional<KeysetPrintoutInputData>();
     }
@@ -213,7 +213,7 @@ std::vector<Util::XmlCallback> external_states_xml(
 
 std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInputData>& nsset_data)
 {
-    if (nsset_data == boost::none)
+    if (!nsset_data)
     {
         return Util::vector_of<Util::XmlCallback>(Util::XmlTagPair("nsset", std::vector<Util::XmlCallback>()));
     }
@@ -291,7 +291,7 @@ std::vector<Util::XmlCallback> nsset_xml(const boost::optional<NssetPrintoutInpu
 
 std::vector<Util::XmlCallback> keyset_xml(const boost::optional<KeysetPrintoutInputData>& keyset_data)
 {
-    if (keyset_data == boost::none)
+    if (!keyset_data)
     {
         return Util::vector_of<Util::XmlCallback>(Util::XmlTagPair("keyset", std::vector<Util::XmlCallback>()));
     }
@@ -498,7 +498,7 @@ boost::optional<NssetPrintoutInputData> make_historic_nsset_data(
         const Tz::LocalTimestamp& timestamp,
         Fred::OperationContext& ctx)
 {
-    if (nsset_historyid == boost::none)
+    if (!nsset_historyid)
     {
         return boost::optional<NssetPrintoutInputData>();
     }
@@ -529,7 +529,7 @@ boost::optional<KeysetPrintoutInputData> make_historic_keyset_data(
         const Tz::LocalTimestamp& timestamp,
         Fred::OperationContext& ctx)
 {
-    if (keyset_historyid == boost::none)
+    if (!keyset_historyid)
     {
         return boost::optional<KeysetPrintoutInputData>();
     }

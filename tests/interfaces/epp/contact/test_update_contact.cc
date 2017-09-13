@@ -124,11 +124,11 @@ Nullable<std::string> get_ident_type(
         const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
         const Nullable<std::string>& previous_value)
 {
-    if (ident == boost::none)
+    if (!ident)
     {
         return previous_value;
     }
-    if (*ident == boost::none)
+    if (!*ident)
     {
         return Nullable<std::string>();
     }
@@ -139,11 +139,11 @@ Nullable<std::string> get_ident_value(
         const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
         const Nullable<std::string>& previous_value)
 {
-    if (ident == boost::none)
+    if (!ident)
     {
         return previous_value;
     }
-    if (*ident == boost::none)
+    if (!*ident)
     {
         return Nullable<std::string>();
     }

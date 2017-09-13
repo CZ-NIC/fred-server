@@ -109,7 +109,7 @@ std::string domain_printout_xml(
                             (Util::XmlTagPair("creation_date", Util::XmlEscapeTag(
                                     boost::gregorian::to_iso_extended_string(local_creation_time.get_local_time().date()))))
                             (Util::XmlTagPair("last_update_date", Util::XmlEscapeTag(
-                                    local_update_time != boost::none
+                                    local_update_time
                                         ? boost::gregorian::to_iso_extended_string(local_update_time->get_local_time().date())
                                         : std::string())))
                             (Util::XmlTagPair("expiration_date", Util::XmlEscapeTag(
@@ -236,11 +236,11 @@ std::string contact_printout_xml(
                             (Util::XmlTagPair("creation_date", Util::XmlEscapeTag(
                                     boost::gregorian::to_iso_extended_string(local_creation_time.get_local_time().date()))))
                             (Util::XmlTagPair("last_update_date", Util::XmlEscapeTag(
-                                    local_update_time != boost::none
+                                    local_update_time
                                         ? boost::gregorian::to_iso_extended_string(local_update_time->get_local_time().date())
                                         : std::string())))
                             (Util::XmlTagPair("last_transfer_date", Util::XmlEscapeTag(
-                                    local_transfer_time != boost::none
+                                    local_transfer_time
                                         ? boost::gregorian::to_iso_extended_string(local_transfer_time->get_local_time().date())
                                         : std::string())))
                             (Util::XmlTagPair(
