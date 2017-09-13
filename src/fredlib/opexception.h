@@ -250,8 +250,8 @@ static std::string to_string(const BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag)&
 {\
     std::ostringstream oss;\
     oss << "vector data:";\
-    for(BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag)::value_type::const_iterator ci = (*info).begin()\
-            ; ci != (*info).end(); ++ci) oss << ' ' << *ci;\
+    for(BOOST_JOIN(ErrorInfo_vector_of_,ex_data_tag)::value_type::const_iterator ci = info.value().begin()\
+            ; ci != info.value().end(); ++ci) oss << ' ' << *ci;\
     return oss.str();\
 }\
 \
