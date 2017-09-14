@@ -35,7 +35,7 @@ struct RequestParams
 
     std::string get_server_transaction_handle() const
     {
-        return Util::make_svtrid(log_request_id ? log_request_id.value() : 0);
+        return Util::make_svtrid(log_request_id ? *log_request_id : 0);
     }
 
 

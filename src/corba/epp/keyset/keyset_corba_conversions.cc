@@ -217,7 +217,7 @@ wrap_Epp_Keyset_Localized_InfoKeysetLocalizedOutputData(
     _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
     _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);
     _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);
-    _dst.AuthInfoPw = wrap_string_to_corba_string(_src.authinfopw ? _src.authinfopw.value() : std::string());
+    _dst.AuthInfoPw = wrap_string_to_corba_string(_src.authinfopw ? *_src.authinfopw : std::string());
     _dst.dsrec.length(0); // has to be empty
     wrap_Epp_InfoKeysetOutputData_DnsKeys(_src.dns_keys, _dst.dnsk);
     wrap_Epp_InfoKeysetOutputData_TechContacts(_src.tech_contacts, _dst.tech);

@@ -49,7 +49,7 @@ void check_equal(
     BOOST_CHECK_EQUAL(output_data.last_transfer, domain_data.transfer_time);
     BOOST_CHECK_EQUAL(output_data.exdate, domain_data.expiration_date);
     BOOST_REQUIRE(output_data.authinfopw);
-    BOOST_CHECK_EQUAL(output_data.authinfopw.value(), domain_data.authinfopw);
+    BOOST_CHECK_EQUAL(*output_data.authinfopw, domain_data.authinfopw);
 
     std::set<std::string> info_domain_data_admin_contacts;
     for (std::vector<Fred::ObjectIdHandlePair>::const_iterator object_id_handle_pair = domain_data.admin_contacts.begin();
