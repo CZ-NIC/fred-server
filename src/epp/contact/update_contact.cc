@@ -500,31 +500,31 @@ unsigned long long update_contact(
             {
                 const ContactChange::Address src = ContactChange::get_value(trimmed_change.mailing_address);
                 Fred::ContactAddress dst;
-                if (src.street1 != boost::none)
+                if (src.street1)
                 {
                     dst.street1 = *src.street1;
                 }
-                if ((src.street2 != boost::none) && !src.street2->empty())
+                if ((src.street2) && !src.street2->empty())
                 {
                     dst.street2 = *src.street2;
                 }
-                if ((src.street3 != boost::none) && !src.street3->empty())
+                if ((src.street3) && !src.street3->empty())
                 {
                     dst.street3 = *src.street3;
                 }
-                if (src.city != boost::none)
+                if (src.city)
                 {
                     dst.city = *src.city;
                 }
-                if ((src.state_or_province != boost::none) && !src.state_or_province->empty())
+                if ((src.state_or_province) && !src.state_or_province->empty())
                 {
                     dst.stateorprovince = *src.state_or_province;
                 }
-                if (src.postal_code != boost::none)
+                if (src.postal_code)
                 {
                     dst.postalcode = *src.postal_code;
                 }
-                if (src.country_code != boost::none)
+                if (src.country_code)
                 {
                     dst.country = *src.country_code;
                 }
@@ -536,7 +536,7 @@ unsigned long long update_contact(
             }
         }
 
-        if (trimmed_change.disclose != boost::none)
+        if (trimmed_change.disclose)
         {
             trimmed_change.disclose->check_validity();
             set_ContactUpdate_discloseflag_address(ctx, trimmed_change, contact_data_before_update, update);

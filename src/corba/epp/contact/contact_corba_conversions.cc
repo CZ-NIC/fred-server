@@ -360,7 +360,7 @@ void unwrap_ContactData(const ccReg::ContactData& src, Epp::Contact::ContactData
     {
         boost::optional<std::string> street;
         unwrap_contact_create_string(src.Streets[idx], street);
-        if (street == boost::none)
+        if (!street)
         {
             street = std::string();
         }
@@ -454,7 +454,7 @@ struct GetIdentFromContactIdent:boost::static_visitor<Ident>
 Ident wrap_ident(const boost::optional<Epp::Contact::ContactIdent>& src)
 {
     Ident ident;
-    if (src == boost::none)
+    if (!src)
     {
         ident.type = ccReg::EMPTY;
         ident.value = "";
@@ -494,14 +494,14 @@ namespace {
 
 CORBA::String_var wrap_optional_string_to_corba_string(const boost::optional<std::string>& src)
 {
-    return Fred::Corba::wrap_string_to_corba_string(src == boost::none ? std::string() : *src);
+    return Fred::Corba::wrap_string_to_corba_string(!src ? std::string() : *src);
 }
 
 ccReg::OptionalAddressData wrap_OptionalAddressData(
         const boost::optional<Epp::Contact::ContactData::Address>& src)
 {
     ccReg::OptionalAddressData dst;
-    if (src == boost::none)
+    if (!src)
     {
         dst.is_set = wrap_int<CORBA::Boolean>(false);
         return dst;
@@ -588,7 +588,7 @@ void wrap_InfoContactLocalizedOutputData(
     _dst.identtype = ident.type;
     _dst.AuthInfoPw = wrap_optional_string_to_corba_string(_src.authinfopw);
 
-    if (_src.disclose == boost::none)
+    if (!_src.disclose)
     {
         _dst.DiscloseFlag = ccReg::DISCL_EMPTY;
         _dst.DiscloseName = wrap_int<CORBA::Boolean>(false);
