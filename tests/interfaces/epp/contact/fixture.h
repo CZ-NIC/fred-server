@@ -132,23 +132,30 @@ inline ::Epp::Contact::ContactDisclose get_all_items(bool to_disclose = true)
 
 struct DefaultCreateContactInputData : ::Epp::Contact::CreateContactInputData
 {
-    std::string handle;
-
     DefaultCreateContactInputData()
         : CreateContactInputData(::Epp::Contact::ContactData()),
           handle(ValidHandle().handle)
     {
-        name = "Jan Novak Jr.";
+        name = "Jan Novák Jr.";
         organization = "";
         streets.clear();
         streets.reserve(3);
         streets.push_back("ulice 1");
         streets.push_back("ulice 2");
         streets.push_back("ulice 3");
-        city = "mesto";
-        state_or_province = "hejtmanstvi";
+        city = "město";
+        state_or_province = "hejtmanství";
         postal_code = "12345";
         country_code = "CZ";
+        ::Epp::Contact::CreateContactInputData::Address address;
+        address.street1 = "Korešpondenčná";
+        address.street2 = "ulica";
+        address.street3 = "1";
+        address.city = "Korešpondenčné Mesto";
+        address.state_or_province = "Korešpondenčné hajtmanstvo";
+        address.postal_code = "54321";
+        address.country_code = "SK";
+        mailing_address = address;
         telephone = "+420 123 456 789";
         fax = "+420 987 654 321";
         email = "jan@novak.novak";
@@ -158,6 +165,7 @@ struct DefaultCreateContactInputData : ::Epp::Contact::CreateContactInputData
         authinfopw = "authInfo123";
         disclose = set_all_disclose_flags(true);
     }
+    const std::string handle;
 };
 
 struct DefaultUpdateContactInputData : ::Epp::Contact::ContactChange
@@ -166,11 +174,11 @@ struct DefaultUpdateContactInputData : ::Epp::Contact::ContactChange
         : ContactChange(),
           handle(ValidHandle().handle)
     {
-        name = "Jan Novak";
+        name = "Jan Novák";
         organization = "Firma, a. s.";
         streets.clear();
         streets.reserve(3);
-        streets.push_back(Nullable<std::string>("Vaclavske namesti 1"));
+        streets.push_back(Nullable<std::string>("Václavské náměstí 1"));
         streets.push_back(Nullable<std::string>("53. patro"));
         streets.push_back(Nullable<std::string>("vpravo"));
         city = "Brno";
@@ -195,7 +203,27 @@ struct DefaultUpdateContactInputData : ::Epp::Contact::ContactChange
         return *this;
     }
 
-    std::string handle;
+    DefaultUpdateContactInputData& drop_mailing_address()
+    {
+        mailing_address = Nullable< ::Epp::Contact::ContactChange::Address >();
+        return *this;
+    }
+
+    DefaultUpdateContactInputData& update_mailing_address()
+    {
+        ::Epp::Contact::ContactChange::Address address;
+        address.street1 = "Korespondenční";
+        address.street2 = "ulice";
+        address.street3 = "2";
+        address.city = "Korespondenční Město";
+        address.state_or_province = "Korespondenční hajtmanství";
+        address.postal_code = "12345";
+        address.country_code = "CZ";
+        mailing_address = Nullable< ::Epp::Contact::ContactChange::Address >(address);
+        return *this;
+    }
+
+    const std::string handle;
 };
 
 struct Contact
@@ -216,29 +244,19 @@ struct Contact
 
 struct HasRegistrarWithSessionAndContact
 {
-    Registrar registrar;
-    Session session;
-    Contact contact;
-
-
     HasRegistrarWithSessionAndContact(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
           contact(_ctx, registrar.data.handle)
     {
     }
-
-
+    Registrar registrar;
+    Session session;
+    Contact contact;
 };
 
 struct HasRegistrarWithSessionAndContactAndDifferentRegistrar
 {
-    Registrar registrar;
-    Session session;
-    Contact contact;
-    Registrar different_registrar;
-
-
     HasRegistrarWithSessionAndContactAndDifferentRegistrar(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
@@ -246,18 +264,14 @@ struct HasRegistrarWithSessionAndContactAndDifferentRegistrar
           different_registrar(_ctx, "REG-TEST2")
     {
     }
-
-
+    Registrar registrar;
+    Session session;
+    Contact contact;
+    Registrar different_registrar;
 };
 
 struct HasRegistrarWithSessionAndContactOfDifferentRegistrar
 {
-    Registrar registrar;
-    Session session;
-    Registrar different_registrar;
-    Contact contact_of_different_registrar;
-
-
     HasRegistrarWithSessionAndContactOfDifferentRegistrar(Fred::OperationContext& _ctx)
         : registrar(_ctx),
           session(_ctx, registrar.data.id),
@@ -265,16 +279,15 @@ struct HasRegistrarWithSessionAndContactOfDifferentRegistrar
           contact_of_different_registrar(_ctx, different_registrar.data.handle)
     {
     }
-
-
+    Registrar registrar;
+    Session session;
+    Registrar different_registrar;
+    Contact contact_of_different_registrar;
 };
 
 struct ContactWithStatusRequest
     : Contact
 {
-    const std::string status;
-
-
     ContactWithStatusRequest(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -284,15 +297,12 @@ struct ContactWithStatusRequest
     {
         ObjectWithStatus(_ctx, data.id, _status);
     }
-
-
+    const std::string status;
 };
 
 struct ContactWithStatus
     : ContactWithStatusRequest
 {
-
-
     ContactWithStatus(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle,
@@ -304,117 +314,84 @@ struct ContactWithStatus
     {
         Fred::PerformObjectStateRequest(data.id).exec(_ctx);
     }
-
-
 };
 
 struct ContactWithServerDeleteProhibited
     : ContactWithStatus
 {
-
-
     ContactWithServerDeleteProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatus(_ctx, _registrar_handle, "serverDeleteProhibited")
     {
     }
-
-
 };
 
 struct ContactWithStatusServerUpdateProhibited
     : ContactWithStatus
 {
-
-
     ContactWithStatusServerUpdateProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatus(_ctx, _registrar_handle, "serverUpdateProhibited")
     {
     }
-
-
 };
 
 struct ContactWithStatusServerTransferProhibited
     : ContactWithStatus
 {
-
-
     ContactWithStatusServerTransferProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatus(_ctx, _registrar_handle, "serverTransferProhibited")
     {
     }
-
-
 };
 
 struct ContactWithStatusRequestServerTransferProhibited
     : ContactWithStatusRequest
 {
-
-
     ContactWithStatusRequestServerTransferProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatusRequest(_ctx, _registrar_handle, "serverTransferProhibited")
     {
     }
-
-
 };
 
 struct ContactWithStatusRequestServerUpdateProhibited
     : ContactWithStatusRequest
 {
-
-
     ContactWithStatusRequestServerUpdateProhibited(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatusRequest(_ctx, _registrar_handle, "serverUpdateProhibited")
     {
     }
-
-
 };
-
 
 struct ContactWithStatusDeleteCandidate
     : ContactWithStatus
 {
-
-
     ContactWithStatusDeleteCandidate(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatus(_ctx, _registrar_handle, "deleteCandidate")
     {
     }
-
-
 };
-
 
 struct ContactWithStatusRequestDeleteCandidate
     : ContactWithStatusRequest
 {
-
-
     ContactWithStatusRequestDeleteCandidate(
             Fred::OperationContext& _ctx,
             const std::string& _registrar_handle)
         : ContactWithStatusRequest(_ctx, _registrar_handle, "deleteCandidate")
     {
     }
-
-
 };
-
 
 } // namespace Test::Backend::Epp::Contact
 } // namespace Test::Backend::Epp

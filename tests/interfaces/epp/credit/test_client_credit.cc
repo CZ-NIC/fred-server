@@ -25,6 +25,7 @@
 #include "util/random_data_generator.h"
 
 #include "tests/setup/fixtures.h"
+#include "tests/interfaces/epp/util.h"
 
 #include <string>
 
@@ -37,7 +38,7 @@ BOOST_AUTO_TEST_SUITE(Credit)
 
 namespace {
 
-struct test_client_credit_fixture
+struct test_client_credit_fixture:autorollbacking_context
 {
     test_client_credit_fixture()
         : xmark(RandomDataGenerator().xnumstring(6)),
@@ -159,7 +160,6 @@ struct test_client_credit_fixture
     unsigned long long registrar_1_id;
     const std::string registrar_2_handle;
     unsigned long long registrar_2_id;
-    Fred::OperationContextCreator ctx;
     ::Epp::Credit::ClientCreditOutputData registrar_1_zones;
     ::Epp::Credit::ClientCreditOutputData registrar_2_zones;
 };
