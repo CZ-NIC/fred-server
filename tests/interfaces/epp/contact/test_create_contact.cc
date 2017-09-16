@@ -73,28 +73,28 @@ struct GetPersonalIdUnionFromContactIdent:boost::static_visitor<Fred::PersonalId
 
 boost::optional<Fred::PersonalIdUnion> get_ident(const boost::optional< ::Epp::Contact::ContactIdent >& ident)
 {
-    return ident ? boost::apply_visitor(GetPersonalIdUnionFromContactIdent(), *ident)
-                 : boost::optional<Fred::PersonalIdUnion>();
+    return static_cast<bool>(ident) ? boost::apply_visitor(GetPersonalIdUnionFromContactIdent(), *ident)
+                                    : boost::optional<Fred::PersonalIdUnion>();
 }
 
 std::string get_ident_type(const boost::optional< ::Epp::Contact::ContactIdent >& ident)
 {
     const boost::optional<Fred::PersonalIdUnion> personal_id = get_ident(ident);
-    return personal_id ? personal_id->get_type()
-                       : std::string();
+    return static_cast<bool>(personal_id) ? personal_id->get_type()
+                                          : std::string();
 }
 
 std::string get_ident_value(const boost::optional< ::Epp::Contact::ContactIdent >& ident)
 {
     const boost::optional<Fred::PersonalIdUnion> personal_id = get_ident(ident);
-    return personal_id ? personal_id->get()
-                       : std::string();
+    return static_cast<bool>(personal_id) ? personal_id->get()
+                                          : std::string();
 }
 
 template <class T>
 T get_value(const boost::optional<T>& src)
 {
-    return src ? *src : T();
+    return static_cast<bool>(src) ? *src : T();
 }
 
 template <class T>
@@ -132,7 +132,7 @@ void check_equal(const ::Epp::Contact::CreateContactInputData &create_data, cons
     BOOST_CHECK_EQUAL(get_ident_value(create_data.ident), get_value(info_data.ssn));
     BOOST_CHECK_EQUAL(get_ident_type(create_data.ident), get_value(info_data.ssntype));
 
-    const bool to_create_mailing_address = create_data.mailing_address != boost::none;
+    const bool to_create_mailing_address = static_cast<bool>(create_data.mailing_address);
     const Fred::ContactAddressList::const_iterator addresses_itr = info_data.addresses.find(Fred::ContactAddressType::MAILING);
     const bool mailing_address_created = addresses_itr != info_data.addresses.end();
     BOOST_CHECK_EQUAL(to_create_mailing_address, mailing_address_created);

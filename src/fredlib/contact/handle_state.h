@@ -23,25 +23,29 @@
 #ifndef HANDLE_STATE_35441783769
 #define HANDLE_STATE_35441783769
 
-namespace Fred
-{
-
+namespace Fred {
 namespace ContactHandleState {
-    struct Registrability {
-        enum Enum {
-            registered,
-            in_protection_period,
-            available,
-        };
-    };
 
-    struct SyntaxValidity {
-        enum Enum {
-            valid,
-            invalid,
-        };
+struct Registrability
+{
+    enum Enum
+    {
+        registered,
+        in_protection_period,
+        available,
     };
-}
+};
 
-}
-#endif
+struct SyntaxValidity
+{
+    enum Enum
+    {
+        valid,
+        invalid,
+    };
+};
+
+}//namespace Fred::ContactHandleState
+}//namespace Fred
+
+#endif//HANDLE_STATE_35441783769
