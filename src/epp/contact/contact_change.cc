@@ -33,7 +33,7 @@ struct ClassifyValue< boost::optional< Nullable<T> > >
 {
     static ContactChange::Value::Meaning get_meaning_of_value(const boost::optional< Nullable<T> > &_value)
     {
-        if (_value)
+        if (static_cast<bool>(_value))
         {
             if (_value->isnull())
             {
@@ -50,9 +50,9 @@ struct ClassifyValue< boost::optional< boost::optional<T> > >
 {
     static ContactChange::Value::Meaning get_meaning_of_value(const boost::optional< boost::optional<T> > &_value)
     {
-        if (_value)
+        if (static_cast<bool>(_value))
         {
-            if (!*_value)
+            if (!static_cast<bool>(*_value))
             {
                 return ContactChange::Value::to_delete;
             }
@@ -67,7 +67,7 @@ struct ClassifyValue< boost::optional<std::string> >
 {
     static ContactChange::Value::Meaning get_meaning_of_value(const boost::optional<std::string> &_value)
     {
-        if (_value)
+        if (static_cast<bool>(_value))
         {
             return ContactChange::Value::to_set;
         }

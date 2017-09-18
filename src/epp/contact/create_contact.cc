@@ -191,7 +191,7 @@ CreateContactResult create_contact(
 
         const boost::optional<Fred::PersonalIdUnion> ident = get_ident(contact_data.ident);
         Optional<Fred::ContactAddressList> addresses;
-        if (contact_data.mailing_address)
+        if (static_cast<bool>(contact_data.mailing_address))
         {
             Fred::ContactAddress mailing_address;
             mailing_address.street1 = contact_data.mailing_address->street1;

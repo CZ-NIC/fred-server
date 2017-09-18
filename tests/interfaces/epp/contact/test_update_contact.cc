@@ -124,11 +124,11 @@ Nullable<std::string> get_ident_type(
         const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
         const Nullable<std::string>& previous_value)
 {
-    if (!ident)
+    if (!static_cast<bool>(ident))
     {
         return previous_value;
     }
-    if (!*ident)
+    if (!static_cast<bool>(*ident))
     {
         return Nullable<std::string>();
     }
@@ -139,11 +139,11 @@ Nullable<std::string> get_ident_value(
         const boost::optional< boost::optional< ::Epp::Contact::ContactIdent > >& ident,
         const Nullable<std::string>& previous_value)
 {
-    if (!ident)
+    if (!static_cast<bool>(ident))
     {
         return previous_value;
     }
-    if (!*ident)
+    if (!static_cast<bool>(*ident))
     {
         return Nullable<std::string>();
     }
@@ -381,38 +381,38 @@ static void check_equal(
             const ::Epp::Contact::ContactChange::Address mailing_address =
                     ::Epp::Contact::ContactChange::get_value(update.mailing_address);
             BOOST_CHECK(!addresses_itr->second.company_name.isset());
-            BOOST_CHECK(mailing_address.street1 != boost::none);
-            if (mailing_address.street1 != boost::none)
+            BOOST_CHECK(static_cast<bool>(mailing_address.street1));
+            if (static_cast<bool>(mailing_address.street1))
             {
                 BOOST_CHECK_EQUAL(*mailing_address.street1, addresses_itr->second.street1);
             }
-            BOOST_CHECK_EQUAL(mailing_address.street2 != boost::none, addresses_itr->second.street2.isset());
-            if ((mailing_address.street2 != boost::none) && (addresses_itr->second.street2.isset()))
+            BOOST_CHECK_EQUAL(static_cast<bool>(mailing_address.street2), addresses_itr->second.street2.isset());
+            if ((static_cast<bool>(mailing_address.street2)) && (addresses_itr->second.street2.isset()))
             {
                 BOOST_CHECK_EQUAL(*mailing_address.street2, addresses_itr->second.street2.get_value());
             }
-            BOOST_CHECK_EQUAL(mailing_address.street3 != boost::none, addresses_itr->second.street3.isset());
-            if ((mailing_address.street3 != boost::none) && (addresses_itr->second.street3.isset()))
+            BOOST_CHECK_EQUAL(static_cast<bool>(mailing_address.street3), addresses_itr->second.street3.isset());
+            if ((static_cast<bool>(mailing_address.street3)) && (addresses_itr->second.street3.isset()))
             {
                 BOOST_CHECK_EQUAL(*mailing_address.street3, addresses_itr->second.street3.get_value());
             }
-            BOOST_CHECK(mailing_address.city != boost::none);
-            if (mailing_address.city != boost::none)
+            BOOST_CHECK(static_cast<bool>(mailing_address.city));
+            if (static_cast<bool>(mailing_address.city))
             {
                 BOOST_CHECK_EQUAL(*mailing_address.city, addresses_itr->second.city);
             }
-            BOOST_CHECK_EQUAL(mailing_address.state_or_province != boost::none, addresses_itr->second.stateorprovince.isset());
-            if ((mailing_address.state_or_province != boost::none) && (addresses_itr->second.stateorprovince.isset()))
+            BOOST_CHECK_EQUAL(static_cast<bool>(mailing_address.state_or_province), addresses_itr->second.stateorprovince.isset());
+            if ((static_cast<bool>(mailing_address.state_or_province)) && (addresses_itr->second.stateorprovince.isset()))
             {
                 BOOST_CHECK_EQUAL(*mailing_address.state_or_province, addresses_itr->second.stateorprovince.get_value());
             }
-            BOOST_CHECK(mailing_address.postal_code != boost::none);
-            if (mailing_address.postal_code != boost::none)
+            BOOST_CHECK(static_cast<bool>(mailing_address.postal_code));
+            if (static_cast<bool>(mailing_address.postal_code))
             {
                 BOOST_CHECK_EQUAL(*mailing_address.postal_code, addresses_itr->second.postalcode);
             }
-            BOOST_CHECK(mailing_address.country_code != boost::none);
-            if (mailing_address.country_code != boost::none)
+            BOOST_CHECK(static_cast<bool>(mailing_address.country_code));
+            if (static_cast<bool>(mailing_address.country_code))
             {
                 BOOST_CHECK_EQUAL(*mailing_address.country_code, addresses_itr->second.country);
             }

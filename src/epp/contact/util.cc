@@ -72,7 +72,7 @@ boost::optional< Nullable<ContactChange::Address> > trim(const boost::optional< 
 template <>
 boost::optional<ContactData::Address> trim(const boost::optional<ContactData::Address>& src)
 {
-    if (!src)
+    if (!static_cast<bool>(src))
     {
         return src;
     }
@@ -103,14 +103,14 @@ struct TrimContactIdent:boost::static_visitor<ContactIdent>
 template <>
 boost::optional<ContactIdent> trim(const boost::optional<ContactIdent>& src)
 {
-    return src ? boost::optional<ContactIdent>(boost::apply_visitor(TrimContactIdent(), *src))
-                              : src;
+    return static_cast<bool>(src) ? boost::optional<ContactIdent>(boost::apply_visitor(TrimContactIdent(), *src))
+                                  : src;
 }
 
 template <>
 boost::optional< boost::optional<ContactIdent> > trim(const boost::optional< boost::optional<ContactIdent> >& src)
 {
-    if (!src)
+    if (!static_cast<bool>(src))
     {
         return src;
     }
