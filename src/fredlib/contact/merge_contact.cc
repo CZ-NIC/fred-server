@@ -195,7 +195,6 @@ namespace Fred {
 
                 //check if object blocked
                 LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
-                PerformObjectStateRequest(tmp.domain_id).exec(ctx);
                 const ObjectStatesInfo domain_states(GetObjectStates(tmp.domain_id).exec(ctx));
                 if (domain_states.presents(Object_State::server_blocked) ||
                     domain_states.presents(Object_State::server_update_prohibited))
@@ -245,7 +244,6 @@ namespace Fred {
 
                 //check if object blocked
                 LockObjectStateRequestLock(tmp.domain_id).exec(ctx);
-                PerformObjectStateRequest(tmp.domain_id).exec(ctx);
                 const ObjectStatesInfo domain_states(GetObjectStates(tmp.domain_id).exec(ctx));
                 if (domain_states.presents(Object_State::server_blocked) ||
                     domain_states.presents(Object_State::server_update_prohibited))
@@ -319,7 +317,6 @@ namespace Fred {
 
                 //check if object blocked
                 LockObjectStateRequestLock(tmp.nsset_id).exec(ctx);
-                PerformObjectStateRequest(tmp.nsset_id).exec(ctx);
                 const ObjectStatesInfo nsset_states(GetObjectStates(tmp.nsset_id).exec(ctx));
                 if (nsset_states.presents(Object_State::server_update_prohibited))
                 {
@@ -393,7 +390,6 @@ namespace Fred {
 
                 //check if object blocked
                 LockObjectStateRequestLock(tmp.keyset_id).exec(ctx);
-                PerformObjectStateRequest(tmp.keyset_id).exec(ctx);
                 const ObjectStatesInfo keyset_states(GetObjectStates(tmp.keyset_id).exec(ctx));
                 if (keyset_states.presents(Object_State::server_update_prohibited))
                 {
@@ -438,7 +434,6 @@ namespace Fred {
         //transfer concrete src contact states to dst contact
         {
             LockObjectStateRequestLock(locked_contact.src_contact_id).exec(ctx);
-            PerformObjectStateRequest(locked_contact.src_contact_id).exec(ctx);
             const ObjectStatesInfo src_contact_states(GetObjectStates(locked_contact.src_contact_id).exec(ctx));
             const ObjectStatesInfo dst_contact_states(GetObjectStates(locked_contact.dst_contact_id).exec(ctx));
 
@@ -621,7 +616,6 @@ namespace Fred {
         unsigned long long dst_contact_id = static_cast<unsigned long long>(diff_result[0]["dst_contact_id"]);
 
         LockObjectStateRequestLock(dst_contact_id).exec(ctx);
-        PerformObjectStateRequest(dst_contact_id).exec(ctx);
         const ObjectStatesInfo dst_contact_states(GetObjectStates(dst_contact_id).exec(ctx));
         if (dst_contact_states.presents(Object_State::server_blocked) ||
             dst_contact_states.presents(Object_State::contact_in_manual_verification) ||
@@ -633,7 +627,6 @@ namespace Fred {
         unsigned long long src_contact_id = static_cast<unsigned long long>(diff_result[0]["src_contact_id"]);
 
         LockObjectStateRequestLock(src_contact_id).exec(ctx);
-        PerformObjectStateRequest(src_contact_id).exec(ctx);
         const ObjectStatesInfo src_contact_states(GetObjectStates(src_contact_id).exec(ctx));
         if (src_contact_states.presents(Object_State::mojeid_contact) ||
             src_contact_states.presents(Object_State::server_blocked) ||
