@@ -87,8 +87,11 @@ unsigned long long delete_domain(
     Fred::InfoDomainData domain_data_before_delete;
     try
     {
-        domain_data_before_delete = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_domain_fqdn)).set_lock().exec(_ctx).info_domain_data;
+        domain_data_before_delete =
+                Fred::InfoDomainByHandle(_domain_fqdn)
+                        .set_lock()
+                        .exec(_ctx)
+                        .info_domain_data;
     }
     catch (const Fred::InfoDomainByHandle::Exception& ex)
     {

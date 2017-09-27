@@ -39,13 +39,6 @@ namespace Domain {
 /// returns true if _fqdn is RFC1123 section 2.1 compliant host name (however, final dot '.' is optional)
 bool is_rfc1123_compliant_host_name(const std::string& fqdn);
 
-/**
- * remove optional root dot from fqdn, domain names are considered fully qualified without trailing dot internally
- * optional root dot is required to be accepted by applications according to RFC3696 section 2.
- * but is not part of preferred name syntax RFC1035 section 2.3.1.
- */
-std::string rem_trailing_dot(const std::string& fqdn);
-
 class ExceptionInvalidFqdn : public std::exception {};
 class ExceptionInvalidLabelCount : public std::exception {};
 

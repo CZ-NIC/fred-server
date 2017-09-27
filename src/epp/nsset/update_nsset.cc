@@ -67,13 +67,6 @@ unsigned long long update_nsset(
                 EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if (Fred::Nsset::get_handle_registrability(
-                _ctx,
-                _update_nsset_data.handle) != Fred::NssetHandleState::Registrability::registered)
-    {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
-    }
-
     struct translate_info_nsset_exception
     {
         static Fred::InfoNssetData exec(
@@ -94,18 +87,17 @@ unsigned long long update_nsset(
             }
         }
 
-
     };
-
-    const Fred::InfoNssetData nsset_data_before_update =
-            translate_info_nsset_exception::exec(
-                    _ctx,
-                    _update_nsset_data.handle);
 
     const Fred::InfoRegistrarData session_registrar =
             Fred::InfoRegistrarById(_session_data.registrar_id)
                     .exec(_ctx)
                     .info_registrar_data;
+
+    const Fred::InfoNssetData nsset_data_before_update =
+            translate_info_nsset_exception::exec(
+                    _ctx,
+                    _update_nsset_data.handle);
 
     const bool is_sponsoring_registrar = (nsset_data_before_update.sponsoring_registrar_handle ==
                                           session_registrar.handle);

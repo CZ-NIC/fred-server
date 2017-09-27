@@ -47,8 +47,10 @@ InfoDomainOutputData info_domain(
 
     try
     {
-        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_fqdn)).exec(_ctx, "UTC").info_domain_data;
+        const Fred::InfoDomainData info_domain_data =
+                Fred::InfoDomainByHandle(_fqdn)
+                        .exec(_ctx, "UTC")
+                        .info_domain_data;
 
         const std::string session_registrar_handle =
             Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;

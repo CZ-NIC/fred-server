@@ -62,7 +62,10 @@ namespace Fred
         try
         {
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::fqdn())(" = LOWER(").param_text(fqdn_)(")")).set_history_query(false);
+            id.set_inline_view_filter(
+                    Database::ParamQuery(InfoDomain::GetAlias::fqdn())
+                    (" = LOWER(").param_text(Fred::Zone::rem_trailing_dot(fqdn_))(")"))
+                    .set_history_query(false);
 
             if(lock_)
             {

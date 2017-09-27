@@ -70,11 +70,14 @@ unsigned long long transfer_domain(
     const boost::gregorian::date current_local_date = current_local_time.date();
 
     Fred::Zone::Data zone_data;
-    try {
-        zone_data = Fred::Zone::find_zone_in_fqdn(_ctx,
-            Fred::Zone::rem_trailing_dot(_fqdn));
-    } catch (const Fred::Zone::Exception& e) {
-        if (e.is_set_unknown_zone_in_fqdn()) {
+    try
+    {
+        zone_data = Fred::Zone::find_zone_in_fqdn(_ctx, Fred::Zone::rem_trailing_dot(_fqdn));
+    }
+    catch (const Fred::Zone::Exception& e)
+    {
+        if (e.is_set_unknown_zone_in_fqdn())
+        {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
         }
         /* in the improbable case that exception is incorrectly set */
@@ -88,10 +91,13 @@ unsigned long long transfer_domain(
     Fred::InfoDomainData domain_data_before_transfer;
     try
     {
-        domain_data_before_transfer = Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(_fqdn))
-                                              .set_lock().exec(_ctx).info_domain_data;
+        domain_data_before_transfer =
+                Fred::InfoDomainByHandle(_fqdn)
+                        .set_lock()
+                        .exec(_ctx)
+                        .info_domain_data;
     }
-    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    catch (const Fred::InfoDomainByHandle::Exception& ex)
     {
         if (ex.is_set_unknown_fqdn())
         {
