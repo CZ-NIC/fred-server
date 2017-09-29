@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_SUITE(Delete)
 
 template<typename Thas_domain> struct has_deleted_domain : public Thas_domain {
     has_deleted_domain() {
-        Fred::DeleteDomainByHandle(Thas_domain::dom.fqdn).exec(Thas_domain::ctx);
+        Fred::DeleteDomainByFqdn(Thas_domain::dom.fqdn).exec(Thas_domain::ctx);
     }
 };
 

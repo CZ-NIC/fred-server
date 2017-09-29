@@ -53,7 +53,7 @@ namespace Test {
             typedef Fred::InfoContactByHandle type;
         };
         template<> struct InfoXByHandle_type<Fred::CreateDomain> {
-            typedef Fred::InfoDomainByHandle type;
+            typedef Fred::InfoDomainByFqdn type;
         };
         template<> struct InfoXByHandle_type<Fred::CreateNsset> {
             typedef Fred::InfoNssetByHandle type;

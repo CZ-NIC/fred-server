@@ -177,7 +177,7 @@ struct domain_fixture : virtual public Test::instantiate_db_template
                     ("2010-06-30T23:59:59.653796")
                     (static_cast<unsigned long long>(id_res[0]["registrant_contact_handle_id"])));
 
-        test_info_domain_output = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "Europe/Prague");
+        test_info_domain_output = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, "Europe/Prague");
     }
     ~domain_fixture() { }
 
@@ -282,7 +282,7 @@ struct domain_by_name_and_time_fixture : virtual public Test::instantiate_db_tem
                 Optional<bool>(),
                 0).exec(ctx);
 
-        test_info_domain_output = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "Europe/Prague");
+        test_info_domain_output = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, "Europe/Prague");
         offset = test_info_domain_output.info_domain_data.creation_time - test_info_domain_output.utc_timestamp;
 
         timestamp =

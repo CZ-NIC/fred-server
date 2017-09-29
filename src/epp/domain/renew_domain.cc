@@ -110,12 +110,12 @@ RenewDomainResult renew_domain(
     try
     {
         info_domain_data_before_renew =
-                Fred::InfoDomainByHandle(_renew_domain_input_data.fqdn)
+                Fred::InfoDomainByFqdn(_renew_domain_input_data.fqdn)
                         .set_lock()
                         .exec(_ctx, "UTC")
                         .info_domain_data;
     }
-    catch (const Fred::InfoDomainByHandle::Exception& ex)
+    catch (const Fred::InfoDomainByFqdn::Exception& ex)
     {
         if (ex.is_set_unknown_fqdn())
         {

@@ -97,7 +97,7 @@ struct check_domain_fixture : public Test::instantiate_db_template
             .set_admin_contacts(Util::vector_of<std::string>(admin_contact_handle))
             .set_keyset(test_keyset_handle).set_nsset(test_nsset_handle).exec(ctx);
 
-        Fred::DeleteDomainByHandle(test_domain_name_rem).exec(ctx);
+        Fred::DeleteDomainByFqdn(test_domain_name_rem).exec(ctx);
 
         //blacklist
         ctx.get_conn().exec_params("INSERT into domain_blacklist (regexp,valid_from,valid_to,reason) "

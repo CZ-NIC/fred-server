@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_exdate)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
     Fred::OperationContextCreator ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByFqdn(test_domain_handle).exec(ctx);
     BOOST_CHECK(info_data_1.info_domain_data.expiration_date == exdate);
 }
 
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(create_domain_set_valexdate)
         BOOST_ERROR(boost::diagnostic_information(ex));
     }
     Fred::OperationContextCreator ctx;
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByFqdn(test_enum_domain).exec(ctx);
     BOOST_CHECK(info_data_1.info_domain_data.enum_domain_validation.get_value()
             .validation_expiration == valexdate);
 }

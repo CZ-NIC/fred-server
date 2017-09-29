@@ -101,8 +101,8 @@ BOOST_AUTO_TEST_CASE(test_Deleting_domains)
         domain_deleted = false;
 
         try {
-            Fred::InfoDomainByHandle(*it).exec(ctx);
-        } catch(const Fred::InfoDomainByHandle::Exception& e) {
+            Fred::InfoDomainByFqdn(*it).exec(ctx);
+        } catch(const Fred::InfoDomainByFqdn::Exception& e) {
             ctx.get_conn().exec("ROLLBACK TO pre_info_savepoint");
 
             if(e.is_set_unknown_fqdn()) {

@@ -260,7 +260,7 @@ struct Domain
         : registrant(_ctx, _registrar_handle, _registrant_handle)
     {
         Fred::CreateDomain(_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
-        data = Fred::InfoDomainByHandle(_fqdn).exec(_ctx, "UTC").info_domain_data;
+        data = Fred::InfoDomainByFqdn(_fqdn).exec(_ctx, "UTC").info_domain_data;
     }
 
 
@@ -283,7 +283,7 @@ struct EnumDomain
         const std::string tmp_fqdn = "tmpdomain.cz";
 
         Fred::CreateDomain(tmp_fqdn, _registrar_handle, registrant.data.handle).exec(_ctx);
-        data = Fred::InfoDomainByHandle(tmp_fqdn).exec(_ctx, "UTC").info_domain_data;
+        data = Fred::InfoDomainByFqdn(tmp_fqdn).exec(_ctx, "UTC").info_domain_data;
 
         Fred::CreateDomain(_enum_fqdn, _registrar_handle, registrant.data.handle)
         .set_enum_validation_expiration(data.creation_time.date() + boost::gregorian::months(3))
@@ -292,7 +292,7 @@ struct EnumDomain
         // .set_admin_contacts(admin_contacts)
         .exec(_ctx);
 
-        data = Fred::InfoDomainByHandle(_enum_fqdn).exec(_ctx, "UTC").info_domain_data;
+        data = Fred::InfoDomainByFqdn(_enum_fqdn).exec(_ctx, "UTC").info_domain_data;
     }
 
 
@@ -478,7 +478,7 @@ struct FullDomain
                 .set_keyset(std::string("KEYSET1"))
                 .exec(_ctx);
 
-        data = Fred::InfoDomainByHandle("fulldomain.cz").exec(_ctx, "UTC").info_domain_data;
+        data = Fred::InfoDomainByFqdn("fulldomain.cz").exec(_ctx, "UTC").info_domain_data;
     }
 
 

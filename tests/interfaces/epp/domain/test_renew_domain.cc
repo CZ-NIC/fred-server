@@ -612,7 +612,7 @@ BOOST_FIXTURE_TEST_CASE(renew_ok, supply_ctx<HasRegistrarWithSessionAndDomainAnd
                     DefaultRenewDomainConfigData(),
                     session.data);
 
-    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(renew_domain_input_data.data.fqdn).exec(ctx, "UTC").info_domain_data;
+    Fred::InfoDomainData info_data = Fred::InfoDomainByFqdn(renew_domain_input_data.data.fqdn).exec(ctx, "UTC").info_domain_data;
 
     //warning: timestamp conversion using local system timezone
     const boost::gregorian::date current_local_date = boost::date_time::c_local_adjustor<ptime>::utc_to_local(

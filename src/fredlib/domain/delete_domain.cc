@@ -37,7 +37,7 @@
 
 namespace Fred
 {
-    DeleteDomainByHandle::DeleteDomainByHandle(const std::string& _fqdn)
+    DeleteDomainByFqdn::DeleteDomainByFqdn(const std::string& _fqdn)
     : fqdn_(_fqdn)
     {}
 
@@ -66,7 +66,7 @@ namespace Fred
         }
     }
 
-    void DeleteDomainByHandle::exec(OperationContext& _ctx)
+    void DeleteDomainByFqdn::exec(OperationContext& _ctx)
     {
         try
         {
@@ -95,10 +95,10 @@ namespace Fred
 
     }
 
-    std::string DeleteDomainByHandle::to_string() const
+    std::string DeleteDomainByFqdn::to_string() const
     {
         return Util::format_operation_state(
-            "DeleteDomainByHandle",
+            "DeleteDomainByFqdn",
             boost::assign::list_of
                 (std::make_pair("fqdn", fqdn_ ))
         );

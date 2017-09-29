@@ -48,7 +48,7 @@ InfoDomainOutputData info_domain(
     try
     {
         const Fred::InfoDomainData info_domain_data =
-                Fred::InfoDomainByHandle(_fqdn)
+                Fred::InfoDomainByFqdn(_fqdn)
                         .exec(_ctx, "UTC")
                         .info_domain_data;
 
@@ -62,7 +62,7 @@ InfoDomainOutputData info_domain(
 
         return get_info_domain_output(info_domain_data, object_state_data, info_is_for_sponsoring_registrar);
     }
-    catch (const Fred::InfoDomainByHandle::Exception& e)
+    catch (const Fred::InfoDomainByFqdn::Exception& e)
     {
         if (e.is_set_unknown_fqdn())
         {

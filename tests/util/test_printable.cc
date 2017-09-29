@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(create_domain)
 BOOST_AUTO_TEST_CASE(delete_domain)
 {
     printable_test(
-    Fred::DeleteDomainByHandle("TEST-DELETE-CONTACT-HANDLE")
+    Fred::DeleteDomainByFqdn("TEST-DELETE-CONTACT-HANDLE")
     );
 }
 
@@ -294,12 +294,12 @@ BOOST_AUTO_TEST_CASE(info_domain_history)
 }
 
 /**
- * test InfoDomainByHandle print to string
+ * test InfoDomainByFqdn print to string
  */
 BOOST_AUTO_TEST_CASE(info_domain)
 {
     printable_test(
-    Fred::InfoDomainByHandle("fred.cz")
+    Fred::InfoDomainByFqdn("fred.cz")
     );
 }
 

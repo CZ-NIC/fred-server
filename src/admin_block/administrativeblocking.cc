@@ -572,7 +572,7 @@ namespace Registry
                             sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
                         }
 
-                        const boost::gregorian::date expiration_date = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data.expiration_date;
+                        const boost::gregorian::date expiration_date = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data.expiration_date;
 
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = expiration_date < today;
@@ -754,7 +754,7 @@ namespace Registry
                         if (sys_registrar.empty()) {
                             sys_registrar = get_sys_registrar(ctx, is_sys_registrar);
                         }
-                        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+                        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
 
                         const boost::gregorian::date today(boost::gregorian::day_clock::universal_day());
                         const bool set_expire_today = info_domain_data.expiration_date < today;
@@ -818,7 +818,7 @@ namespace Registry
                             throw std::runtime_error("Fred::UpdateDomain::Exception");
                         }
                     }
-                    catch (const Fred::InfoDomainByHandle::Exception &e) {
+                    catch (const Fred::InfoDomainByFqdn::Exception &e) {
                         if (e.is_set_unknown_fqdn()) {
                             EX_INTERNAL_SERVER_ERROR ex;
                             ex.what = "domain doesn't exist"; 
@@ -881,7 +881,7 @@ namespace Registry
                             "WHERE id=$1::bigint", Database::query_param_list(object_id));
                         if (object_handle_res.size() == 1) {
                             const std::string domain = static_cast< std::string >(object_handle_res[0][0]);
-                            Fred::DeleteDomainByHandle(domain).exec(ctx);
+                            Fred::DeleteDomainByFqdn(domain).exec(ctx);
                         }
                     }
                     catch (const Fred::CreateDomainNameBlacklistId::Exception &e) {
@@ -892,7 +892,7 @@ namespace Registry
                             throw;
                         }
                     }
-                    catch (const Fred::DeleteDomainByHandle::Exception &e) {
+                    catch (const Fred::DeleteDomainByFqdn::Exception &e) {
                         if (e.is_set_unknown_domain_fqdn()) {
                             domain_id_not_found.what.insert(object_id);
                         }

@@ -286,9 +286,9 @@ XmlWithData domain_printout_xml_with_data(
     Fred::InfoDomainOutput info_domain_output;
     try
     {
-        info_domain_output = Fred::InfoDomainByHandle(Fred::Zone::rem_trailing_dot(fqdn)).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
+        info_domain_output = Fred::InfoDomainByFqdn(Fred::Zone::rem_trailing_dot(fqdn)).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>());
     }
-    catch (const Fred::InfoDomainByHandle::Exception& e)
+    catch (const Fred::InfoDomainByFqdn::Exception& e)
     {
         if (e.is_set_unknown_fqdn())
         {

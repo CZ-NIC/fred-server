@@ -386,7 +386,7 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasDataForUpdateDomain>)
         session.data
     );
 
-    Fred::InfoDomainData domain_data_after_update = Fred::InfoDomainByHandle(domain.data.fqdn).exec(ctx, "UTC").info_domain_data;
+    Fred::InfoDomainData domain_data_after_update = Fred::InfoDomainByFqdn(domain.data.fqdn).exec(ctx, "UTC").info_domain_data;
 
     BOOST_CHECK_EQUAL(domain_data_after_update.roid, domain.data.roid);
     BOOST_CHECK_EQUAL(domain_data_after_update.fqdn, domain.data.fqdn);

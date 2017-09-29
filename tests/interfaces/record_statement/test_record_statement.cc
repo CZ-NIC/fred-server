@@ -51,7 +51,7 @@ BOOST_FIXTURE_TEST_CASE(domain_printout_xml, Test::domain_fixture)
     try
     {
         Fred::InfoDomainOutput info_domain_output =
-                Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "UTC");
+                Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, "UTC");
         const Fred::InfoContactOutput info_registrant_output =
                 Fred::InfoContactByHandle(info_domain_output.info_domain_data.registrant.handle).exec(ctx, "UTC");
 

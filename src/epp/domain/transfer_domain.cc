@@ -92,12 +92,12 @@ unsigned long long transfer_domain(
     try
     {
         domain_data_before_transfer =
-                Fred::InfoDomainByHandle(_fqdn)
+                Fred::InfoDomainByFqdn(_fqdn)
                         .set_lock()
                         .exec(_ctx)
                         .info_domain_data;
     }
-    catch (const Fred::InfoDomainByHandle::Exception& ex)
+    catch (const Fred::InfoDomainByFqdn::Exception& ex)
     {
         if (ex.is_set_unknown_fqdn())
         {

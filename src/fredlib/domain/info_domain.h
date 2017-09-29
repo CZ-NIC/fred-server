@@ -42,7 +42,7 @@ namespace Fred
     * Domain fully qualified name to get info about is set via constructor.
     * It's executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
     */
-    class InfoDomainByHandle : public Util::Printable
+    class InfoDomainByFqdn : public Util::Printable
     {
         const std::string fqdn_;/**< fully qualified domain name */
         bool lock_;/**< if set to true lock object_registry row for update, if set to false lock for share */
@@ -58,7 +58,7 @@ namespace Fred
         * Info domain constructor with mandatory parameter.
         * @param fqdn sets fully qualified domain name into @ref fqdn_ attribute
         */
-        InfoDomainByHandle(const std::string& fqdn);
+        InfoDomainByFqdn(const std::string& fqdn);
 
         /**
          * Sets lock for update.
@@ -66,7 +66,7 @@ namespace Fred
          * Sets true to lock flag in @ref lock_ attribute
          * @return operation instance reference to allow method chaining
          */
-        InfoDomainByHandle& set_lock();
+        InfoDomainByFqdn& set_lock();
 
         /**
         * Executes getting info about the domain.

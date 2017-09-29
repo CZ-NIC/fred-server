@@ -341,14 +341,14 @@ struct has_updated_domain_followed_by_future_changes {
 
         BOOST_FOREACH(
             const Fred::ObjectIdHandlePair& a_c,
-            Fred::InfoDomainByHandle(_fqdn).exec(_ctx).info_domain_data.admin_contacts
+            Fred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.admin_contacts
         ) {
             future_update.rem_admin_contact(a_c.handle);
         }
 
         const unsigned long long future_hid = future_update.exec(_ctx);
 
-        make_history_version_end_older( _ctx, Fred::InfoDomainByHandle(_fqdn).exec(_ctx).info_domain_data.crhistoryid, notification_is_years_ago );
+        make_history_version_end_older( _ctx, Fred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.crhistoryid, notification_is_years_ago );
         make_history_version_begin_older( _ctx, to_be_notified_hid, notification_is_years_ago, false );
 
         make_history_version_end_older( _ctx, to_be_notified_hid, future_starts_years_ago );
@@ -447,7 +447,7 @@ struct has_domain_big_update : has_domain {
         input_svtrid("abc-123")
     {
         /* assuming Fred::InfoDomainHistory::exec() result ordering - implementation does so, documentation is probably missing */
-        domain_data_pre_update = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+        domain_data_pre_update = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
 
         make_history_version_begin_older( ctx, new_registrant.crhistoryid, history_starts_years_ago, true );
 

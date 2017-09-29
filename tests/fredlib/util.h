@@ -92,7 +92,7 @@ struct has_domain : has_contact {
             const std::vector<std::string> admin_contacts = boost::assign::list_of(admin_contact1.handle)(admin_contact2.handle);
             Test::generate_test_data( Fred::CreateDomain(fqdn, registrar.handle, contact.handle) )
                 .set_admin_contacts(admin_contacts).exec(ctx);
-            domain = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+            domain = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
         }
     }
 };
@@ -195,7 +195,7 @@ struct has_enum_domain : has_contact {
                     )
                 )
                 .exec(ctx);
-            domain = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+            domain = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
         }
     }
 };

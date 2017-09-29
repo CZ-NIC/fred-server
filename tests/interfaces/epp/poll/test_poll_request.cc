@@ -611,8 +611,8 @@ struct HasPollDeleteDomainMessage : virtual Test::Backend::Epp::autorollbacking_
         const Test::domain domain(ctx);
         handle = domain.info_data.fqdn;
         unsigned long long history_id =
-            Fred::InfoDomainByHandle(domain.info_data.fqdn).exec(ctx).info_domain_data.historyid;
-        Fred::DeleteDomainByHandle(domain.info_data.fqdn).exec(ctx);
+            Fred::InfoDomainByFqdn(domain.info_data.fqdn).exec(ctx).info_domain_data.historyid;
+        Fred::DeleteDomainByFqdn(domain.info_data.fqdn).exec(ctx);
 
         date = get_erase_date_by_handle(ctx, handle, Fred::Object_Type::domain);
 

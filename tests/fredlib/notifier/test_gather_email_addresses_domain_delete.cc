@@ -223,9 +223,9 @@ struct has_deleted_domain : public has_domain {
 
     has_deleted_domain() {
 
-        const unsigned long long pre_delete_hid = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data.historyid;
+        const unsigned long long pre_delete_hid = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data.historyid;
 
-        Fred::DeleteDomainByHandle(fqdn).exec(ctx);
+        Fred::DeleteDomainByFqdn(fqdn).exec(ctx);
         make_history_version_end_older( ctx, pre_delete_hid, notification_is_years_ago );
 
         dom_data_to_be_notified = Fred::InfoDomainHistoryByHistoryid(pre_delete_hid).exec(ctx).info_domain_data;

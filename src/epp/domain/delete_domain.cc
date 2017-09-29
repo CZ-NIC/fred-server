@@ -88,12 +88,12 @@ unsigned long long delete_domain(
     try
     {
         domain_data_before_delete =
-                Fred::InfoDomainByHandle(_domain_fqdn)
+                Fred::InfoDomainByFqdn(_domain_fqdn)
                         .set_lock()
                         .exec(_ctx)
                         .info_domain_data;
     }
-    catch (const Fred::InfoDomainByHandle::Exception& ex)
+    catch (const Fred::InfoDomainByFqdn::Exception& ex)
     {
         if (ex.is_set_unknown_fqdn())
         {
@@ -135,12 +135,12 @@ unsigned long long delete_domain(
     try
     {
 
-        Fred::DeleteDomainByHandle(_domain_fqdn).exec(_ctx);
+        Fred::DeleteDomainByFqdn(_domain_fqdn).exec(_ctx);
 
         return domain_data_before_delete.historyid;
 
     }
-    catch (const Fred::DeleteDomainByHandle::Exception& e)
+    catch (const Fred::DeleteDomainByFqdn::Exception& e)
     {
 
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
