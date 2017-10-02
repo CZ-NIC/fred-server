@@ -783,12 +783,12 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                 return Domain(generate_obfuscate_domain_delete_candidate(no_root_dot_fqdn));
             }
             return make_domain_from_info_data(
-                    Fred::InfoDomainByHandle(no_root_dot_fqdn)
+                    Fred::InfoDomainByFqdn(no_root_dot_fqdn)
                         .exec( ctx, get_output_timezone() )
                         .info_domain_data,
                     ctx);
         }
-        catch (const Fred::InfoDomainByHandle::Exception& e)
+        catch (const Fred::InfoDomainByFqdn::Exception& e)
         {
             if (e.is_set_unknown_fqdn())
             {
@@ -801,7 +801,7 @@ WhoisImpl::Domain Server_impl::get_domain_by_handle(const std::string& handle)
                         return Domain(generate_obfuscate_domain_delete_candidate(conflicting_enum_domain));
                     }
                     return make_domain_from_info_data(
-                            Fred::InfoDomainByHandle(conflicting_enum_domain)
+                            Fred::InfoDomainByFqdn(conflicting_enum_domain)
                                 .exec( ctx, get_output_timezone() )
                                 .info_domain_data,
                             ctx);

@@ -56,12 +56,32 @@ unsigned long long transfer_contact(
         throw EppResponseFailure(EppResultFailure(EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if (Fred::Contact::get_handle_registrability(_ctx, _contact_handle) != Fred::ContactHandleState::Registrability::registered) {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
+    Fred::InfoContactData contact_data_before_transfer;
+
+    try
+    {
+        contact_data_before_transfer =
+                Fred::InfoContactByHandle(_contact_handle)
+                        .set_lock()
+                        .exec(_ctx)
+                        .info_contact_data;
+    }
+    catch (const Fred::InfoContactByHandle::Exception& ex)
+    {
+        if (ex.is_set_unknown_contact_handle())
+        {
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
+        }
+
+        throw;
     }
 
-    const Fred::InfoContactData contact_data_before_transfer =
-        Fred::InfoContactByHandle(_contact_handle).set_lock().exec(_ctx).info_contact_data;
+
+    contact_data_before_transfer =
+            Fred::InfoContactByHandle(_contact_handle)
+                    .set_lock()
+                    .exec(_ctx)
+                    .info_contact_data;
 
     const Fred::InfoRegistrarData session_registrar =
         Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;

@@ -110,7 +110,7 @@ struct domains_by_nsset_fixture
                 "FROM object_registry "
                 "WHERE name = $1::text)",
                 Database::query_param_list(delete_fqdn));
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, "UTC");
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByFqdn(delete_fqdn).exec(ctx, "UTC");
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
 
         ctx.commit_transaction();
@@ -259,7 +259,7 @@ struct update_domains_by_nsset_fixture
             .unset_keyset()
             .exec(ctx);
         Fred::TransferDomain(
-            Fred::InfoDomainByHandle(test_fqdn)
+            Fred::InfoDomainByFqdn(test_fqdn)
                 .exec( ctx, "UTC" )
                 .info_domain_data
                 .id,
@@ -267,7 +267,7 @@ struct update_domains_by_nsset_fixture
             domain.authinfopw,
             0)
             .exec(ctx);
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "UTC");
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, "UTC");
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
         now_utc = boost::posix_time::time_from_string(
                 static_cast<std::string>(ctx.get_conn()

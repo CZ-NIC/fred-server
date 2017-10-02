@@ -654,7 +654,7 @@ struct get_my_domain_fixture
                     ).exec(ctx);
 
 
-        Fred::InfoDomainOutput domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        Fred::InfoDomainOutput domain_info = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
         Fred::CreateObjectStateRequestId(domain_info.info_domain_data.id,
             Util::set_of<std::string>(Fred::ObjectState::SERVER_BLOCKED)).exec(ctx);
@@ -705,7 +705,7 @@ struct get_domain_fixture
 BOOST_FIXTURE_TEST_CASE(get_my_domain_detail, get_my_domain_fixture )
 {
     Fred::OperationContextCreator ctx;
-    Fred::InfoDomainOutput my_domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+    Fred::InfoDomainOutput my_domain_info = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
     Fred::InfoRegistrarOutput sponsoring_registrar_info = Fred::InfoRegistrarByHandle(my_domain_info.info_domain_data.sponsoring_registrar_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
     Fred::InfoNssetOutput nsset_info = Fred::InfoNssetByHandle(test_nsset_handle).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
@@ -1388,7 +1388,7 @@ struct registrant_domain_fixture
                     , 0//const Optional<unsigned long long> logd_request_id
                     ).exec(ctx);
 
-        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        domain_info = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
 
@@ -1502,7 +1502,7 @@ struct admin_domain_fixture
                     , 0//const Optional<unsigned long long> logd_request_id
                     ).exec(ctx);
 
-        domain_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+        domain_info = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         ctx.commit_transaction();//commit fixture
     }
 
@@ -2069,7 +2069,7 @@ struct get_my_domains_fixture
                 , 0//const Optional<unsigned long long> logd_request_id
                 ).exec(ctx);
 
-            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            domain_info[fqdn.str()]= Fred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
 
             if(i%2)
             {
@@ -2093,14 +2093,14 @@ struct get_my_domains_fixture
             Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
                     current_local_day - boost::gregorian::days(1)).exec(ctx);
 
-            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            domain_info[fqdn.str()]= Fred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         }
 
         {   std::ostringstream fqdn;
             fqdn << "n"<<2<<test_fqdn;
             Fred::UpdateDomain(fqdn.str(), test_registrar_handle).set_domain_expiration(
                     current_local_day - boost::gregorian::days(outzone_protection+1)).exec(ctx);
-            domain_info[fqdn.str()]= Fred::InfoDomainByHandle(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
+            domain_info[fqdn.str()]= Fred::InfoDomainByFqdn(fqdn.str()).exec(ctx, Registry::DomainBrowserImpl::DomainBrowser::output_timezone);
         }
 
         ctx.commit_transaction();//commit fixture

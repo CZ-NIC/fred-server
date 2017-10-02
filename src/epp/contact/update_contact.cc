@@ -411,13 +411,6 @@ unsigned long long update_contact(
                 EppResultCode::authentication_error_server_closing_connection));
     }
 
-    const bool contact_is_registered = Fred::Contact::get_handle_registrability(ctx, contact_handle) ==
-                                       Fred::ContactHandleState::Registrability::registered;
-    if (!contact_is_registered)
-    {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
-    }
-
     const Fred::InfoContactData contact_data_before_update = info_contact_by_handle(contact_handle, ctx);
 
     const Fred::InfoRegistrarData session_registrar =

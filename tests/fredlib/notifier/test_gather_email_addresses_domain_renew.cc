@@ -225,7 +225,7 @@ struct has_renewed_domain : public has_domain {
         const unsigned long long to_be_notified_hid =
             Fred::UpdateDomain(fqdn, registrar.handle)
                 .set_domain_expiration(
-                    Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data.expiration_date + boost::gregorian::years(3)
+                    Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data.expiration_date + boost::gregorian::years(3)
                 )
                 .exec(ctx);
 
@@ -264,7 +264,7 @@ struct has_renewed_domain : public has_domain {
                 .add_admin_contact(different_admin_handle)
                 .exec(ctx);
 
-        make_history_version_end_older( ctx, Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data.crhistoryid, notification_is_years_ago );
+        make_history_version_end_older( ctx, Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data.crhistoryid, notification_is_years_ago );
         make_history_version_begin_older( ctx, to_be_notified_hid, notification_is_years_ago, false );
 
         make_history_version_end_older( ctx, to_be_notified_hid, future_starts_years_ago );

@@ -764,7 +764,7 @@ BOOST_FIXTURE_TEST_CASE(create_empty_authinfopw, supply_ctx<HasRegistrarWithSess
             DefaultCreateDomainConfigData(),
             session.data);
 
-    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
+    Fred::InfoDomainData info_data = Fred::InfoDomainByFqdn(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
 
     //warning: timestamp conversion using local system timezone
@@ -806,7 +806,7 @@ BOOST_FIXTURE_TEST_CASE(create_authinfopw_not_set, supply_ctx<HasRegistrarWithSe
             DefaultCreateDomainConfigData(),
             session.data);
 
-    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
+    Fred::InfoDomainData info_data = Fred::InfoDomainByFqdn(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
 
     //warning: timestamp conversion using local system timezone
@@ -887,7 +887,7 @@ BOOST_FIXTURE_TEST_CASE(create_ok, supply_ctx<HasRegistrarWithSessionAndCreateDo
                     DefaultCreateDomainConfigData(),
                     session.data));
 
-    Fred::InfoDomainData info_data = Fred::InfoDomainByHandle(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
+    Fred::InfoDomainData info_data = Fred::InfoDomainByFqdn(create_domain_input_data.data.fqdn).exec(ctx,"UTC").info_domain_data;
     BOOST_TEST_MESSAGE(info_data.to_string());
 
 

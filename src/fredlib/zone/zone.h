@@ -70,7 +70,11 @@ namespace Zone {
     ///lock zone for share and get zone data
     Data get_zone(OperationContext& ctx, const std::string& zone_name);
 
-    ///remove trailing dot from domain name
+    /**
+     * Remove optional root dot from fqdn. Domain names are considered fully qualified without trailing dot internally.
+     * Optional dot is not part of preferred name syntax (RFC1035 section 2.3.1.), but must be accepted by applications
+     * according to RFC3696 section 2.
+     */
     std::string rem_trailing_dot(const std::string& fqdn);
 
 }//namespace Zone

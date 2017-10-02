@@ -276,14 +276,14 @@ template<typename Tdomainoperation = Fred::UpdateDomain> struct has_domain_opera
 
             BOOST_FOREACH(
                 const Fred::ObjectIdHandlePair& a_c,
-                Fred::InfoDomainByHandle(_fqdn).exec(_ctx).info_domain_data.admin_contacts
+                Fred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.admin_contacts
             ) {
                 future_update.rem_admin_contact(a_c.handle);
             }
 
             const unsigned long long future_hid = future_update.exec(_ctx);
 
-        make_history_version_end_older( _ctx, Fred::InfoDomainByHandle(_fqdn).exec(_ctx).info_domain_data.crhistoryid, notification_is_years_ago );
+        make_history_version_end_older( _ctx, Fred::InfoDomainByFqdn(_fqdn).exec(_ctx).info_domain_data.crhistoryid, notification_is_years_ago );
         make_history_version_begin_older( _ctx, to_be_notified_hid, notification_is_years_ago, false );
 
         make_history_version_end_older( _ctx, to_be_notified_hid, future_starts_years_ago );
@@ -302,7 +302,7 @@ struct has_transferred_domain : has_domain {
         has_domain(),
         new_registrar(Test::registrar(ctx).info_data)
     {
-        const Fred::InfoDomainData domain_data = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+        const Fred::InfoDomainData domain_data = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
         Fred::TransferDomain transfer(domain_data.id, new_registrar.handle, domain_data.authinfopw, Nullable<unsigned long long>());
 
         dom_data_to_be_notified = has_domain_operation_followed_by_future_changes<Fred::TransferDomain>(

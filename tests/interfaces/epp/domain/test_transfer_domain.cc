@@ -208,7 +208,7 @@ BOOST_FIXTURE_TEST_CASE(ok_state_requests_updated, supply_ctx<HasRegistrarWithSe
 BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, supply_ctx<HasSystemRegistrarWithSessionAndDifferentRegistrar>)
 {
     const DomainWithStatusRequestServerUpdateProhibited domain_of_different_registrar_and_with_server_update_prohibited_request(ctx, Registrar(ctx).data.handle);
-    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(domain_of_different_registrar_and_with_server_update_prohibited_request.data.fqdn).exec(ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByFqdn(domain_of_different_registrar_and_with_server_update_prohibited_request.data.fqdn).exec(ctx).info_domain_data;
 
     ::Epp::Domain::transfer_domain(
         ctx,
@@ -218,7 +218,7 @@ BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, supply_ctx<
         session.data
     );
 
-    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByHandle(domain_data_before.fqdn).exec(ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByFqdn(domain_data_before.fqdn).exec(ctx).info_domain_data;
 
     const Fred::InfoDomainDiff domain_data_change = diff_domain_data(domain_data_before, domain_data_after);
     const std::set<std::string> change_fields_etalon = boost::assign::list_of
@@ -249,7 +249,7 @@ BOOST_FIXTURE_TEST_CASE(ok_transfer_prohibited_but_system_registrar, supply_ctx<
 
 BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasRegistrarWithSessionAndDomainOfDifferentRegistrar>)
 {
-    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByHandle(domain_of_different_registrar.data.fqdn).exec(ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_before = Fred::InfoDomainByFqdn(domain_of_different_registrar.data.fqdn).exec(ctx).info_domain_data;
 
     ::Epp::Domain::transfer_domain(
         ctx,
@@ -259,7 +259,7 @@ BOOST_FIXTURE_TEST_CASE(ok, supply_ctx<HasRegistrarWithSessionAndDomainOfDiffere
         session.data
     );
 
-    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByHandle(domain_data_before.fqdn).exec(ctx).info_domain_data;
+    const Fred::InfoDomainData domain_data_after = Fred::InfoDomainByFqdn(domain_data_before.fqdn).exec(ctx).info_domain_data;
 
     const Fred::InfoDomainDiff domain_data_change = diff_domain_data(domain_data_before, domain_data_after);
     const std::set<std::string> change_fields_etalon = boost::assign::list_of

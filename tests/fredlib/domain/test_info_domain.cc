@@ -175,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain, test_domain_fixture)
 {
     Fred::OperationContextCreator ctx;
 
-    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+    Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     BOOST_CHECK(test_info_domain_output == info_data_1);
     Fred::InfoDomainOutput info_data_2 = Fred::InfoDomainById(test_info_domain_output.info_domain_data.id).exec(ctx);
     BOOST_CHECK(test_info_domain_output == info_data_2);
@@ -203,7 +203,7 @@ BOOST_FIXTURE_TEST_CASE(test_info_domain_output_timestamp, test_domain_fixture)
 {
     const std::string timezone = "Europe/Prague";
     Fred::OperationContextCreator ctx;
-    const Fred::InfoDomainOutput domain_output_by_handle              = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, timezone);
+    const Fred::InfoDomainOutput domain_output_by_handle              = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, timezone);
     const Fred::InfoDomainOutput domain_output_by_id                  = Fred::InfoDomainById(domain_output_by_handle.info_domain_data.id).exec(ctx, timezone);
     const Fred::InfoDomainOutput domain_output_history_by_historyid   = Fred::InfoDomainHistoryByHistoryid(domain_output_by_handle.info_domain_data.historyid).exec(ctx, timezone);
     const Fred::InfoDomainOutput domain_output_history_by_id          = Fred::InfoDomainHistoryById(domain_output_by_handle.info_domain_data.id).exec(ctx, timezone).at(0);
@@ -225,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE(test_info_domain_output_timestamp, test_domain_fixture)
 }
 
 /**
- * test InfoDomainByHandle with wrong fqdn
+ * test InfoDomainByFqdn with wrong fqdn
  */
 BOOST_FIXTURE_TEST_CASE(info_domain_wrong_handle, test_domain_fixture)
 {
@@ -234,11 +234,11 @@ BOOST_FIXTURE_TEST_CASE(info_domain_wrong_handle, test_domain_fixture)
     try
     {
         Fred::OperationContextCreator ctx;
-        Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByHandle(wrong_fqdn).exec(ctx);
+        Fred::InfoDomainOutput info_data_1 = Fred::InfoDomainByFqdn(wrong_fqdn).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
     }
-    catch(const Fred::InfoDomainByHandle::Exception& ex)
+    catch(const Fred::InfoDomainByFqdn::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_fqdn());
         BOOST_TEST_MESSAGE(wrong_fqdn);
@@ -346,8 +346,8 @@ BOOST_FIXTURE_TEST_CASE(info_domain_unknown_keyset_handle, test_domain_fixture)
 BOOST_FIXTURE_TEST_CASE(info_domain_diff, test_domain_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
-    Fred::InfoDomainOutput domain_info2 = Fred::InfoDomainByHandle(test_fqdn).set_lock().exec(ctx);
+    Fred::InfoDomainOutput domain_info1 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
+    Fred::InfoDomainOutput domain_info2 = Fred::InfoDomainByFqdn(test_fqdn).set_lock().exec(ctx);
 
     Fred::InfoDomainDiff test_diff, test_empty_diff;
 
@@ -409,7 +409,7 @@ BOOST_FIXTURE_TEST_CASE(info_domain_history_order, test_info_domain_order_fixtur
 {
     Fred::OperationContextCreator ctx;
 
-    Fred::InfoDomainOutput domain_history_info = Fred::InfoDomainByHandle(test_fqdn).exec(ctx);
+    Fred::InfoDomainOutput domain_history_info = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
 
     std::vector<Fred::InfoDomainOutput> domain_history_info_by_roid = Fred::InfoDomainHistoryByRoid(domain_history_info.info_domain_data.roid).exec(ctx);
     BOOST_CHECK(domain_history_info_by_roid.size() == 2);

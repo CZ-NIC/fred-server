@@ -42,15 +42,15 @@ struct renew_domain_fixture : virtual public Test::instantiate_db_template
     std::string xmark;
     std::string admin_contact2_handle;
     std::string registrant_contact_handle;
-    std::string test_domain_handle;
-    std::string test_enum_domain;
+    std::string test_fqdn;
+    std::string test_enum_fqdn;
 
     renew_domain_fixture()
     : xmark(RandomDataGenerator().xnumstring(9))
     , admin_contact2_handle(std::string("TEST-ADMIN-CONTACT3-HANDLE")+xmark)
     , registrant_contact_handle(std::string("TEST-REGISTRANT-CONTACT-HANDLE") + xmark)
-    , test_domain_handle ( std::string("fred")+xmark+".cz")
-    , test_enum_domain ( std::string()+xmark.at(0)+'.'+xmark.at(1)+'.'+xmark.at(2)+'.'
+    , test_fqdn(std::string("fred")+xmark+".cz")
+    , test_enum_fqdn(std::string()+xmark.at(0)+'.'+xmark.at(1)+'.'+xmark.at(2)+'.'
                                         +xmark.at(3)+'.'+xmark.at(4)+'.'+xmark.at(5)+'.'
                                         +xmark.at(6)+'.'+xmark.at(7)+'.'+xmark.at(8)+".0.2.4.e164.arpa")
     {
@@ -79,7 +79,7 @@ struct renew_domain_fixture : virtual public Test::instantiate_db_template
                 .exec(ctx);
 
         Fred::CreateDomain(
-                test_domain_handle //const std::string& fqdn
+                test_fqdn //const std::string& fqdn
                 , registrar_handle //const std::string& registrar
                 , registrant_contact_handle //registrant
                 )
@@ -87,7 +87,7 @@ struct renew_domain_fixture : virtual public Test::instantiate_db_template
         .exec(ctx);
 
         Fred::CreateDomain(
-                test_enum_domain//const std::string& fqdn
+                test_enum_fqdn//const std::string& fqdn
                 , registrar_handle //const std::string& registrar
                 , registrant_contact_handle //registrant
                 )
@@ -125,19 +125,19 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_exception, Test::instantiate_db_template)
 
 BOOST_AUTO_TEST_CASE(renew_domain_wrong_fqdn)
 {
-    std::string bad_test_domain_handle = "bad" + xmark + ".cz";
+    std::string bad_test_fqdn = "bad" + xmark + ".cz";
     try
     {
         Fred::OperationContextCreator ctx;
-        Fred::RenewDomain(bad_test_domain_handle, registrar_handle,
-                Fred::InfoDomainByHandle(test_domain_handle).exec(ctx).info_domain_data.expiration_date
+        Fred::RenewDomain(bad_test_fqdn, registrar_handle,
+                Fred::InfoDomainByFqdn(test_fqdn).exec(ctx).info_domain_data.expiration_date
             ).exec(ctx);
         BOOST_ERROR("no exception thrown");
     }
     catch(const Fred::RenewDomain::Exception& ex)
     {
         BOOST_CHECK(ex.is_set_unknown_domain_fqdn());
-        BOOST_CHECK(ex.get_unknown_domain_fqdn().compare(bad_test_domain_handle) == 0);
+        BOOST_CHECK(ex.get_unknown_domain_fqdn().compare(bad_test_fqdn) == 0);
     }
 }
 
@@ -150,14 +150,14 @@ BOOST_AUTO_TEST_CASE(renew_domain_wrong_registrar)
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     }
 
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_domain_handle, bad_registrar_handle,
-                Fred::InfoDomainByHandle(test_domain_handle).exec(ctx).info_domain_data.expiration_date
+        Fred::RenewDomain(test_fqdn, bad_registrar_handle,
+                Fred::InfoDomainByFqdn(test_fqdn).exec(ctx).info_domain_data.expiration_date
             ).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(renew_domain_wrong_registrar)
     Fred::InfoDomainOutput info_data_2;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
@@ -190,13 +190,13 @@ BOOST_AUTO_TEST_CASE(info_domain_history_test)
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     }
     //call renew
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_domain_handle, registrar_handle,
-                Fred::InfoDomainByHandle(test_domain_handle).exec(ctx).info_domain_data.expiration_date)
+        Fred::RenewDomain(test_fqdn, registrar_handle,
+                Fred::InfoDomainByFqdn(test_fqdn).exec(ctx).info_domain_data.expiration_date)
         .exec(ctx);
         ctx.commit_transaction();
     }
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(info_domain_history_test)
     std::vector<Fred::InfoDomainOutput> history_info_data;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
         history_info_data = Fred::InfoDomainHistoryByRoid(info_data_1.info_domain_data.roid).exec(ctx);
     }
 
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(renew_domain)
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     }
 
     boost::gregorian::date exdate(boost::gregorian::from_string("2010-12-20"));
@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE(renew_domain)
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_domain_handle, registrar_handle, exdate).exec(ctx);
+        Fred::RenewDomain(test_fqdn, registrar_handle, exdate).exec(ctx);
         ctx.commit_transaction();
     }
     catch(const Fred::RenewDomain::Exception& ex)
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE(renew_domain)
     Fred::InfoDomainOutput info_data_2;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     }
     BOOST_CHECK(info_data_2.info_domain_data.expiration_date == exdate);
 }
@@ -262,7 +262,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_wrong_exdate, renew_domain_fixture)
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     }
 
     boost::gregorian::date exdate;
@@ -270,7 +270,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_wrong_exdate, renew_domain_fixture)
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_domain_handle, registrar_handle, exdate).exec(ctx);
+        Fred::RenewDomain(test_fqdn, registrar_handle, exdate).exec(ctx);
         ctx.commit_transaction();
         BOOST_ERROR("no exception thrown");
     }
@@ -283,7 +283,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_wrong_exdate, renew_domain_fixture)
     Fred::InfoDomainOutput info_data_2;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_domain_handle).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
@@ -297,7 +297,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_valexdate, renew_domain_fixture)
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
 
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
@@ -305,7 +305,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_valexdate, renew_domain_fixture)
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_enum_domain, registrar_handle,
+        Fred::RenewDomain(test_enum_fqdn, registrar_handle,
             info_data_1.info_domain_data.expiration_date)
                 .set_enum_validation_expiration(valexdate)
                 .exec(ctx);
@@ -319,7 +319,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_valexdate, renew_domain_fixture)
     Fred::InfoDomainOutput info_data_2;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
     BOOST_CHECK(info_data_2.info_domain_data.enum_domain_validation.get_value()
             .validation_expiration == valexdate);
@@ -334,7 +334,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_wrong_valexdate, renew_domain_fixture)
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
 
     boost::gregorian::date valexdate;
@@ -342,7 +342,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_wrong_valexdate, renew_domain_fixture)
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_enum_domain, registrar_handle,
+        Fred::RenewDomain(test_enum_fqdn, registrar_handle,
             info_data_1.info_domain_data.expiration_date)
         .set_enum_validation_expiration(valexdate)
         .exec(ctx);
@@ -358,7 +358,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_wrong_valexdate, renew_domain_fixture)
     Fred::InfoDomainOutput info_data_2;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
@@ -372,7 +372,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_valexdate_wrong_domain, renew_domain_fi
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
 
     boost::gregorian::date valexdate(boost::gregorian::from_string("2010-12-20"));
@@ -380,7 +380,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_valexdate_wrong_domain, renew_domain_fi
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_domain_handle, registrar_handle,
+        Fred::RenewDomain(test_fqdn, registrar_handle,
                 info_data_1.info_domain_data.expiration_date)
         .set_enum_validation_expiration(valexdate)
         .exec(ctx);
@@ -395,7 +395,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_valexdate_wrong_domain, renew_domain_fi
     Fred::InfoDomainOutput info_data_2;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());
@@ -409,13 +409,13 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_publish_wrong_domain, renew_domain_fixt
     Fred::InfoDomainOutput info_data_1;
     {
         Fred::OperationContextCreator ctx;
-        info_data_1 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_1 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
 
     try
     {
         Fred::OperationContextCreator ctx;//new connection to rollback on error
-        Fred::RenewDomain(test_domain_handle, registrar_handle,
+        Fred::RenewDomain(test_fqdn, registrar_handle,
             info_data_1.info_domain_data.expiration_date)
         .set_enum_publish_flag(true)
         .exec(ctx);
@@ -430,7 +430,7 @@ BOOST_FIXTURE_TEST_CASE(renew_domain_set_publish_wrong_domain, renew_domain_fixt
     Fred::InfoDomainOutput info_data_2;
     {
         Fred::OperationContextCreator ctx;
-        info_data_2 = Fred::InfoDomainByHandle(test_enum_domain).exec(ctx);
+        info_data_2 = Fred::InfoDomainByFqdn(test_enum_fqdn).exec(ctx);
     }
     BOOST_CHECK(info_data_1 == info_data_2);
     BOOST_CHECK(info_data_2.info_domain_data.delete_time.isnull());

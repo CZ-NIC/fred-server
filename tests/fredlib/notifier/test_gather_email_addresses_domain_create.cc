@@ -213,7 +213,7 @@ struct has_domain : has_autocomitting_ctx {
                     ctx
                 ).historyid;
             make_history_version_begin_older( ctx, crhid, notification_is_years_ago, true );
-            dom = Fred::InfoDomainByHandle(fqdn).exec(ctx).info_domain_data;
+            dom = Fred::InfoDomainByFqdn(fqdn).exec(ctx).info_domain_data;
         }
     }
 };

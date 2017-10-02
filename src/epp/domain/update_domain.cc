@@ -132,13 +132,12 @@ unsigned long long update_domain(
     try
     {
         info_domain_data_before_update =
-                Fred::InfoDomainByHandle(
-                        Fred::Zone::rem_trailing_dot(_update_domain_data.fqdn))
+                Fred::InfoDomainByFqdn(_update_domain_data.fqdn)
                         .set_lock()
                         .exec(_ctx, "UTC")
                         .info_domain_data;
     }
-    catch (const Fred::InfoDomainByHandle::Exception& ex)
+    catch (const Fred::InfoDomainByFqdn::Exception& ex)
     {
         if (ex.is_set_unknown_fqdn())
         {

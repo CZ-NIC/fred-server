@@ -1203,7 +1203,7 @@ namespace MergeContactAutoProc {
              std::map<std::string, Fred::InfoDomainDiff> diff_map;
              for(std::map<std::string, Fred::InfoDomainData>::const_iterator ci = domain_info.begin(); ci != domain_info.end(); ++ci)
              {
-                 Fred::InfoDomainDiff diff = Fred::diff_domain_data(ci->second, Fred::InfoDomainByHandle(ci->first).exec(ctx).info_domain_data);
+                 Fred::InfoDomainDiff diff = Fred::diff_domain_data(ci->second, Fred::InfoDomainByFqdn(ci->first).exec(ctx).info_domain_data);
                  if(!diff.is_empty()) diff_map.insert(std::make_pair(ci->first, diff));
              }
              return diff_map;

@@ -44,25 +44,28 @@
 namespace Fred
 {
 
-    InfoDomainByHandle::InfoDomainByHandle(const std::string& fqdn)
+    InfoDomainByFqdn::InfoDomainByFqdn(const std::string& fqdn)
         : fqdn_(fqdn)
         , lock_(false)
     {}
 
-    InfoDomainByHandle& InfoDomainByHandle::set_lock()
+    InfoDomainByFqdn& InfoDomainByFqdn::set_lock()
     {
         lock_ = true;
         return *this;
     }
 
-    InfoDomainOutput InfoDomainByHandle::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
+    InfoDomainOutput InfoDomainByFqdn::exec(OperationContext& ctx, const std::string& local_timestamp_pg_time_zone_name)
     {
         std::vector<InfoDomainOutput> domain_res;
 
         try
         {
             InfoDomain id;
-            id.set_inline_view_filter(Database::ParamQuery(InfoDomain::GetAlias::fqdn())(" = LOWER(").param_text(fqdn_)(")")).set_history_query(false);
+            id.set_inline_view_filter(
+                    Database::ParamQuery(InfoDomain::GetAlias::fqdn())
+                    (" = LOWER(").param_text(Fred::Zone::rem_trailing_dot(fqdn_))(")"))
+                    .set_history_query(false);
 
             if(lock_)
             {
@@ -90,9 +93,9 @@ namespace Fred
         return domain_res.at(0);
     }
 
-    std::string InfoDomainByHandle::to_string() const
+    std::string InfoDomainByFqdn::to_string() const
     {
-        return Util::format_operation_state("InfoDomainByHandle",
+        return Util::format_operation_state("InfoDomainByFqdn",
         Util::vector_of<std::pair<std::string,std::string> >
         (std::make_pair("handle", fqdn_))
         (std::make_pair("lock",lock_ ? "true":"false"))

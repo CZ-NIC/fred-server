@@ -58,15 +58,24 @@ unsigned long long transfer_nsset(
                 EppResultCode::authentication_error_server_closing_connection));
     }
 
-    if (Fred::Nsset::get_handle_registrability(
-                _ctx,
-                _nsset_handle) != Fred::NssetHandleState::Registrability::registered)
+    Fred::InfoNssetData nsset_data_before_transfer;
+    try
     {
-        throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
+        nsset_data_before_transfer =
+                Fred::InfoNssetByHandle(_nsset_handle)
+                        .set_lock()
+                        .exec(_ctx)
+                        .info_nsset_data;
     }
+    catch(const Fred::InfoNssetByHandle::Exception& ex)
+    {
+        if(ex.is_set_unknown_handle())
+        {
+           throw EppResponseFailure(EppResultFailure(EppResultCode::object_does_not_exist));
+        }
 
-    const Fred::InfoNssetData nsset_data_before_transfer =
-            Fred::InfoNssetByHandle(_nsset_handle).set_lock().exec(_ctx).info_nsset_data;
+        throw;
+    }
 
     const Fred::InfoRegistrarData session_registrar =
             Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data;

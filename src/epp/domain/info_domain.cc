@@ -47,8 +47,10 @@ InfoDomainOutputData info_domain(
 
     try
     {
-        const Fred::InfoDomainData info_domain_data = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_fqdn)).exec(_ctx, "UTC").info_domain_data;
+        const Fred::InfoDomainData info_domain_data =
+                Fred::InfoDomainByFqdn(_fqdn)
+                        .exec(_ctx, "UTC")
+                        .info_domain_data;
 
         const std::string session_registrar_handle =
             Fred::InfoRegistrarById(_session_data.registrar_id).exec(_ctx).info_registrar_data.handle;
@@ -60,7 +62,7 @@ InfoDomainOutputData info_domain(
 
         return get_info_domain_output(info_domain_data, object_state_data, info_is_for_sponsoring_registrar);
     }
-    catch (const Fred::InfoDomainByHandle::Exception& e)
+    catch (const Fred::InfoDomainByFqdn::Exception& e)
     {
         if (e.is_set_unknown_fqdn())
         {

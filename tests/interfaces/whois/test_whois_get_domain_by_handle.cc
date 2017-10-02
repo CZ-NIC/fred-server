@@ -189,7 +189,7 @@ struct update_domain_fixture
             .unset_nsset()
             .exec(ctx);
         Fred::TransferDomain(
-            Fred::InfoDomainByHandle(test_fqdn)
+            Fred::InfoDomainByFqdn(test_fqdn)
                 .exec( ctx, "UTC" )
                 .info_domain_data
                 .id,
@@ -197,7 +197,7 @@ struct update_domain_fixture
             domain.authinfopw,
             0)
             .exec(ctx);
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(test_fqdn).exec(ctx, "UTC");
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByFqdn(test_fqdn).exec(ctx, "UTC");
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
         now_utc = boost::posix_time::time_from_string(
                 static_cast<std::string>(ctx.get_conn()
@@ -510,7 +510,7 @@ struct delete_candidate_fixture
                  "WHERE name = $1::text)",
             Database::query_param_list(delete_fqdn));
 
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, "UTC");
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByFqdn(delete_fqdn).exec(ctx, "UTC");
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
 
         ctx.commit_transaction();
@@ -520,7 +520,7 @@ struct delete_candidate_fixture
 BOOST_FIXTURE_TEST_CASE(delete_candidate, delete_candidate_fixture)
 {
     Fred::OperationContextCreator ctx;
-    Fred::InfoDomainData idd = Fred::InfoDomainByHandle(delete_fqdn).exec(ctx, "UTC").info_domain_data;
+    Fred::InfoDomainData idd = Fred::InfoDomainByFqdn(delete_fqdn).exec(ctx, "UTC").info_domain_data;
     Registry::WhoisImpl::Domain dom = impl.get_domain_by_handle(delete_fqdn);
     BOOST_CHECK(dom.fqdn == idd.fqdn);
     BOOST_CHECK(dom.changed.isnull());
@@ -737,7 +737,7 @@ struct del_can_child_parent_fixture
                  "WHERE name = $1::text)",
             Database::query_param_list(parent));
 
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(parent).exec(ctx, "UTC");
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByFqdn(parent).exec(ctx, "UTC");
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
 
         ctx.commit_transaction();
@@ -816,7 +816,7 @@ struct del_can_parent_child_fixture
                  "WHERE name = $1::text)",
             Database::query_param_list(child));
 
-        Fred::InfoDomainOutput dom = Fred::InfoDomainByHandle(child).exec(ctx, "UTC");
+        Fred::InfoDomainOutput dom = Fred::InfoDomainByFqdn(child).exec(ctx, "UTC");
         Fred::PerformObjectStateRequest(dom.info_domain_data.id).exec(ctx);
 
         ctx.commit_transaction();

@@ -37,10 +37,10 @@ namespace Fred
     * Delete of domain.
     * Fully qualified domain name of domain to be deleted is set via constructor.
     * Delete is executed by @ref exec method with database connection supplied in @ref OperationContext parameter.
-    * In case of wrong input data or other predictable and superable failure, an instance of @ref DeleteDomainByHandle::Exception is thrown with appropriate attributes set.
+    * In case of wrong input data or other predictable and superable failure, an instance of @ref DeleteDomainByFqdn::Exception is thrown with appropriate attributes set.
     * In case of other insuperable failures and inconsistencies, an instance of @ref InternalError or other exception is thrown.
     */
-    class DeleteDomainByHandle : public Util::Printable
+    class DeleteDomainByFqdn : public Util::Printable
     {
         const std::string fqdn_;/**< fully qualified domain name */
     public:
@@ -54,7 +54,7 @@ namespace Fred
         * Delete domain constructor with mandatory parameter.
         * @param fqdn sets fully qualified domain name into @ref fqdn_ attribute
         */
-        DeleteDomainByHandle(const std::string& fqdn);
+        DeleteDomainByFqdn(const std::string& fqdn);
 
         /**
         * Executes delete.

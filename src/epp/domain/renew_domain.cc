@@ -25,7 +25,6 @@
 #include "src/epp/exception.h"
 #include "src/epp/impl/util.h"
 #include "src/epp/reason.h"
-#include "src/fredlib/domain/check_domain.h"
 #include "src/fredlib/domain/domain.h"
 #include "src/fredlib/domain/info_domain.h"
 #include "src/fredlib/domain/renew_domain.h"
@@ -110,13 +109,13 @@ RenewDomainResult renew_domain(
     Fred::InfoDomainData info_domain_data_before_renew;
     try
     {
-        info_domain_data_before_renew = Fred::InfoDomainByHandle(
-                Fred::Zone::rem_trailing_dot(_renew_domain_input_data.fqdn))
-                                   .set_lock()
-                                   .exec(_ctx, "UTC")
-                                   .info_domain_data;
+        info_domain_data_before_renew =
+                Fred::InfoDomainByFqdn(_renew_domain_input_data.fqdn)
+                        .set_lock()
+                        .exec(_ctx, "UTC")
+                        .info_domain_data;
     }
-    catch (const Fred::InfoDomainByHandle::Exception& ex)
+    catch (const Fred::InfoDomainByFqdn::Exception& ex)
     {
         if (ex.is_set_unknown_fqdn())
         {
