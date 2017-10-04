@@ -38,7 +38,9 @@
 #include "util/log/context.h"
 #include "util/util.h"
 #include "util/subprocess.h"
+#include "util/random.h"
 
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <cstring>
@@ -52,6 +54,40 @@
 
 namespace Registry {
 namespace RecordStatement {
+
+namespace {
+
+std::string create_ctx_name(const std::string &_name)
+{
+    return str(boost::format("%1%-<%2%>") % _name % Random::integer(0, 10000));
+}
+
+std::string create_ctx_function_name(const char *fnc)
+{
+    std::string name(fnc);
+    std::replace(name.begin(), name.end(), '_', '-');
+    return name;
+}
+
+class LogContext
+{
+public:
+    LogContext(const RecordStatementImpl &_impl, const std::string &_op_name)
+    :   ctx_server_(create_ctx_name(_impl.get_server_name())),
+        ctx_interface_("record-statement"),
+        ctx_operation_(_op_name)
+    {
+    }
+private:
+    Logging::Context ctx_server_;
+    Logging::Context ctx_interface_;
+    Logging::Context ctx_operation_;
+};
+
+#define LOGGING_CONTEXT(CTX_VAR, IMPL_OBJ) LogContext CTX_VAR((IMPL_OBJ), create_ctx_function_name(__FUNCTION__))
+
+}
+
 
 PdfBufferImpl::PdfBufferImpl(const std::string& s)
     : value(s)
@@ -81,6 +117,7 @@ template <Purpose::Enum _purpose>
 PdfBufferImpl RecordStatementImpl::domain_printout(
         const std::string& _fqdn)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->domain_printout(ctx, _fqdn, _purpose);
 }
@@ -91,6 +128,7 @@ template PdfBufferImpl RecordStatementImpl::domain_printout<Purpose::public_prin
 PdfBufferImpl RecordStatementImpl::nsset_printout(
         const std::string& _handle)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->nsset_printout(ctx, _handle);
 }
@@ -98,6 +136,7 @@ PdfBufferImpl RecordStatementImpl::nsset_printout(
 PdfBufferImpl RecordStatementImpl::keyset_printout(
         const std::string& _handle)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->keyset_printout(ctx, _handle);
 }
@@ -106,6 +145,7 @@ template <Purpose::Enum _purpose>
 PdfBufferImpl RecordStatementImpl::contact_printout(
         const std::string& _handle)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->contact_printout(ctx, _handle, _purpose);
 }
@@ -117,6 +157,7 @@ PdfBufferImpl RecordStatementImpl::historic_domain_printout(
         const std::string& _fqdn,
         const Tz::LocalTimestamp& _valid_at)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->historic_domain_printout(ctx, _fqdn, _valid_at);
 }
@@ -125,6 +166,7 @@ PdfBufferImpl RecordStatementImpl::historic_nsset_printout(
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->historic_nsset_printout(ctx, _handle, _valid_at);
 }
@@ -133,6 +175,7 @@ PdfBufferImpl RecordStatementImpl::historic_keyset_printout(
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->historic_keyset_printout(ctx, _handle, _valid_at);
 }
@@ -141,6 +184,7 @@ PdfBufferImpl RecordStatementImpl::historic_contact_printout(
         const std::string& _handle,
         const Tz::LocalTimestamp& _valid_at)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     return impl_->historic_contact_printout(ctx, _handle, _valid_at);
 }
@@ -149,6 +193,7 @@ template <Purpose::Enum _purpose>
 void RecordStatementImpl::send_domain_printout(
         const std::string& _fqdn)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     impl_->send_domain_printout(ctx, _fqdn, _purpose);
 }
@@ -159,6 +204,7 @@ template void RecordStatementImpl::send_domain_printout<Purpose::public_printout
 void RecordStatementImpl::send_nsset_printout(
         const std::string& _handle)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     impl_->send_nsset_printout(ctx, _handle);
 }
@@ -166,6 +212,7 @@ void RecordStatementImpl::send_nsset_printout(
 void RecordStatementImpl::send_keyset_printout(
         const std::string& _handle)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     impl_->send_keyset_printout(ctx, _handle);
 }
@@ -174,6 +221,7 @@ template <Purpose::Enum _purpose>
 void RecordStatementImpl::send_contact_printout(
         const std::string& _handle)const
 {
+    LOGGING_CONTEXT(log_ctx, *this);
     Fred::OperationContextCreator ctx;
     impl_->send_contact_printout(ctx, _handle, _purpose);
 }
