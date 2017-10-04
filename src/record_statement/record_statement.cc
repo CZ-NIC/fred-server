@@ -118,8 +118,21 @@ PdfBufferImpl RecordStatementImpl::domain_printout(
         const std::string& _fqdn)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->domain_printout(ctx, _fqdn, _purpose);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->domain_printout(ctx, _fqdn, _purpose);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 template PdfBufferImpl RecordStatementImpl::domain_printout<Purpose::private_printout>(const std::string&)const;
@@ -129,16 +142,42 @@ PdfBufferImpl RecordStatementImpl::nsset_printout(
         const std::string& _handle)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->nsset_printout(ctx, _handle);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->nsset_printout(ctx, _handle);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 PdfBufferImpl RecordStatementImpl::keyset_printout(
         const std::string& _handle)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->keyset_printout(ctx, _handle);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->keyset_printout(ctx, _handle);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 template <Purpose::Enum _purpose>
@@ -146,8 +185,21 @@ PdfBufferImpl RecordStatementImpl::contact_printout(
         const std::string& _handle)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->contact_printout(ctx, _handle, _purpose);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->contact_printout(ctx, _handle, _purpose);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 template PdfBufferImpl RecordStatementImpl::contact_printout<Purpose::private_printout>(const std::string&)const;
@@ -158,8 +210,21 @@ PdfBufferImpl RecordStatementImpl::historic_domain_printout(
         const Tz::LocalTimestamp& _valid_at)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->historic_domain_printout(ctx, _fqdn, _valid_at);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->historic_domain_printout(ctx, _fqdn, _valid_at);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 PdfBufferImpl RecordStatementImpl::historic_nsset_printout(
@@ -167,8 +232,21 @@ PdfBufferImpl RecordStatementImpl::historic_nsset_printout(
         const Tz::LocalTimestamp& _valid_at)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->historic_nsset_printout(ctx, _handle, _valid_at);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->historic_nsset_printout(ctx, _handle, _valid_at);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 PdfBufferImpl RecordStatementImpl::historic_keyset_printout(
@@ -176,8 +254,21 @@ PdfBufferImpl RecordStatementImpl::historic_keyset_printout(
         const Tz::LocalTimestamp& _valid_at)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->historic_keyset_printout(ctx, _handle, _valid_at);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->historic_keyset_printout(ctx, _handle, _valid_at);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 PdfBufferImpl RecordStatementImpl::historic_contact_printout(
@@ -185,8 +276,21 @@ PdfBufferImpl RecordStatementImpl::historic_contact_printout(
         const Tz::LocalTimestamp& _valid_at)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    return impl_->historic_contact_printout(ctx, _handle, _valid_at);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        return impl_->historic_contact_printout(ctx, _handle, _valid_at);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 template <Purpose::Enum _purpose>
@@ -194,8 +298,21 @@ void RecordStatementImpl::send_domain_printout(
         const std::string& _fqdn)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    impl_->send_domain_printout(ctx, _fqdn, _purpose);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        impl_->send_domain_printout(ctx, _fqdn, _purpose);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 template void RecordStatementImpl::send_domain_printout<Purpose::private_printout>(const std::string&)const;
@@ -205,16 +322,42 @@ void RecordStatementImpl::send_nsset_printout(
         const std::string& _handle)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    impl_->send_nsset_printout(ctx, _handle);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        impl_->send_nsset_printout(ctx, _handle);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 void RecordStatementImpl::send_keyset_printout(
         const std::string& _handle)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    impl_->send_keyset_printout(ctx, _handle);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        impl_->send_keyset_printout(ctx, _handle);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 template <Purpose::Enum _purpose>
@@ -222,8 +365,21 @@ void RecordStatementImpl::send_contact_printout(
         const std::string& _handle)const
 {
     LOGGING_CONTEXT(log_ctx, *this);
-    Fred::OperationContextCreator ctx;
-    impl_->send_contact_printout(ctx, _handle, _purpose);
+    try
+    {
+        Fred::OperationContextCreator ctx;
+        impl_->send_contact_printout(ctx, _handle, _purpose);
+    }
+    catch (const std::exception& e)
+    {
+        LOGGER(PACKAGE).error(e.what());
+        throw;
+    }
+    catch (...)
+    {
+        LOGGER(PACKAGE).error("Unknown error");
+        throw;
+    }
 }
 
 template void RecordStatementImpl::send_contact_printout<Purpose::private_printout>(const std::string&)const;
