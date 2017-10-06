@@ -1,0 +1,42 @@
+stages:
+  - image
+  - build
+
+.image: &image
+  stage: image
+  before_script:
+    - docker info
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker pull "$IMAGE_TAG" || true
+    - docker build --cache-from "$IMAGE_TAG" -t "$IMAGE_TAG" "scripts/docker/$IMAGE_NAME"
+    - docker push "$IMAGE_TAG"
+  tags:
+    - dind
+
+docker:server:ubuntu:
+  <<: *image
+  variables:
+    IMAGE_NAME: ubuntu:latest
+    IMAGE_TAG: $CI_REGISTRY_IMAGE/$IMAGE_NAME
+
+.ubuntu_latest: &ubuntu_latest
+  image: "$CI_REGISTRY/fred/server/ubuntu:latest"
+  tags:
+    - docker
+    - linux
+    - amd64
+
+.build: &build_job
+  stage: build
+  script:
+    - autoreconf -vfi
+    - git clone git@gitlab.office.nic.cz:fred/idl.git
+    # TODO: checkout branch
+    - ./configure --with-idldir=./idl || ( cat config.log && exit 1 )
+    # TODO: distcheck
+    - make -j5
+
+build:ubuntu:amd64:
+  <<: *ubuntu_latest
+  <<: *build_job
