@@ -23,8 +23,6 @@ docker:server:ubuntu:
 .ubuntu_latest: &ubuntu_latest
   image: "$CI_REGISTRY/fred/server/ubuntu:latest"
   tags:
-    - docker
-    - linux
     - amd64
 
 .build: &build_job
