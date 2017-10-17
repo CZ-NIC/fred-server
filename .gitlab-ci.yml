@@ -38,6 +38,8 @@ docker:server:fedora:
 
 .build: &build_job
   stage: build
+  before_script:
+    - /usr/local/env/setup
   script:
     - autoreconf -vfi
     - git clone git@gitlab.office.nic.cz:fred/idl.git
