@@ -40,12 +40,12 @@ docker:server:fedora:
   stage: build
   before_script:
     - /usr/local/env/setup
-  script:
     # get pr-version repository to get idl branch name
     - git clone git@gitlab.office.nic.cz:pr-utils/pr-version.git
-    - if [ -e pr-version/devel/$CI_BUILD_REF_NAME.conf ]; then IDL_BRANCH=$(python -c "import json;obj=json.loads(open('pr-version/devel/${CI_BUILD_REF_NAME}.conf').read());print obj.get('idl',{}).get('revision', 'master')"); fi
+    - if [ -e pr-version/devel/$CI_BUILD_REF_NAME.conf ]; then IDL_BRANCH=$(python -c "import json;obj=json.loads(open('pr-version/devel/${CI_BUILD_REF_NAME}.conf').read());print obj.get('idl',{}).get('revision', 'master')"); else IDL_BRANCH="master"; fi
     # get idl repository and checkout corresponding branch
     - git clone git@gitlab.office.nic.cz:fred/idl.git --single-branch --branch $IDL_BRANCH
+  script:
     - autoreconf -vfi
     - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
     # TODO: distcheck
