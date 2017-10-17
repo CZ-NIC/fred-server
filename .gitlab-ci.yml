@@ -44,7 +44,7 @@ docker:server:fedora:
     - autoreconf -vfi
     - git clone git@gitlab.office.nic.cz:fred/idl.git
     # TODO: checkout branch
-    - ./configure --with-idldir=./idl || ( cat config.log && exit 1 )
+    - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
     # TODO: distcheck
     - make -j5
 
