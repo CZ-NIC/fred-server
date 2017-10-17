@@ -48,8 +48,7 @@ docker:server:fedora:
   script:
     - autoreconf -vfi
     - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
-    # TODO: distcheck
-    - make -j5
+    - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=./idl/idl" make -j
 
 build:ubuntu:amd64:
   <<: *ubuntu_latest
