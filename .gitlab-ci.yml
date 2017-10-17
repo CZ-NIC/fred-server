@@ -48,7 +48,7 @@ docker:server:fedora:
   script:
     - autoreconf -vfi
     - ./configure --with-idldir=./idl/idl || ( cat config.log && exit 1 )
-    - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=./idl/idl" make -j
+    - DISTCHECK_CONFIGURE_FLAGS="--with-idldir=./idl/idl" make -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
 
 build:ubuntu:amd64:
   <<: *ubuntu_latest
