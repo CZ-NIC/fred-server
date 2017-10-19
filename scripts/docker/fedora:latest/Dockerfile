@@ -8,7 +8,6 @@ RUN dnf -y install       \
         make             \
         gcc-c++          \
         git              \
-        omniORB-devel    \
         boost-devel      \
         postgresql-devel \
         libxml2-devel    \
@@ -17,3 +16,5 @@ RUN dnf -y install       \
         mpdecimal-devel  \
         libssh-devel     \
         minizip-devel
+RUN dnf -y --disablerepo=updates install \
+        omniORB-devel
