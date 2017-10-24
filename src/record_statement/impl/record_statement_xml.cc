@@ -404,16 +404,22 @@ unsigned long long get_history_id_of(
         Fred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
-            "WITH valid_at AS ("
-                "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time) "
+            "WITH "
+                "valid_at AS ("
+                    "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time),"
+                "obr AS ("
+                    "SELECT MAX(obr.id) AS id "
+                    "FROM object_registry obr "
+                    "JOIN valid_at v ON obr.crdate<(v.utc_time+'1SECOND'::INTERVAL) AND "
+                                       "(v.utc_time<obr.erdate OR obr.erdate IS NULL) "
+                    "WHERE obr.type=get_object_type_id($3::TEXT) AND "
+                          "UPPER(obr.name)=UPPER($4::TEXT)) "
             "SELECT h.id "
-            "FROM object_registry obr "
+            "FROM obr "
             "JOIN object_history oh ON oh.id=obr.id "
             "JOIN history h ON h.id=oh.historyid "
             "JOIN valid_at v ON h.valid_from<(v.utc_time+'1SECOND'::INTERVAL) AND "
                                "(v.utc_time<h.valid_to OR h.valid_to IS NULL) "
-            "WHERE obr.type=get_object_type_id($3::TEXT) AND "
-                  "UPPER(obr.name)=UPPER($4::TEXT)"
             "ORDER BY h.id DESC "
             "LIMIT 1",
             Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
@@ -443,16 +449,22 @@ unsigned long long get_history_id_of<Fred::Object_Type::domain>(
         Fred::OperationContext& ctx)
 {
     const Database::Result db_res = ctx.get_conn().exec_params(
-            "WITH valid_at AS ("
-                "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time) "
+            "WITH "
+                "valid_at AS ("
+                    "SELECT $1::TIMESTAMP-($2::INT||'MINUTES')::INTERVAL AS utc_time),"
+                "obr AS ("
+                    "SELECT MAX(obr.id) AS id "
+                    "FROM object_registry obr "
+                    "JOIN valid_at v ON obr.crdate<(v.utc_time+'1SECOND'::INTERVAL) AND "
+                                       "(v.utc_time<obr.erdate OR obr.erdate IS NULL) "
+                    "WHERE obr.type=get_object_type_id($3::TEXT) AND "
+                          "obr.name=LOWER($4::TEXT)) "
             "SELECT h.id "
-            "FROM object_registry obr "
+            "FROM obr "
             "JOIN object_history oh ON oh.id=obr.id "
             "JOIN history h ON h.id=oh.historyid "
             "JOIN valid_at v ON h.valid_from<(v.utc_time+'1SECOND'::INTERVAL) AND "
                                "(v.utc_time<h.valid_to OR h.valid_to IS NULL) "
-            "WHERE obr.type=get_object_type_id($3::TEXT) AND "
-                  "obr.name=LOWER($4::TEXT)"
             "ORDER BY h.id DESC "
             "LIMIT 1",
             Database::query_param_list(boost::posix_time::to_iso_extended_string(valid_at.get_local_time()))
