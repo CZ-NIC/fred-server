@@ -45,7 +45,6 @@ unsigned long long delete_nsset(
         const DeleteNssetConfigData& _delete_nsset_config_data,
         const SessionData& _session_data)
 {
-
     if (!is_session_registrar_valid(_session_data))
     {
         throw EppResponseFailure(EppResultFailure(
@@ -114,15 +113,11 @@ unsigned long long delete_nsset(
 
     try
     {
-
         Fred::DeleteNssetByHandle(_nsset_handle).exec(_ctx);
-
         return nsset_data_before_delete.historyid;
-
     }
     catch (const Fred::DeleteNssetByHandle::Exception& e)
     {
-
         // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
         if (e.is_set_unknown_nsset_handle())
         {
@@ -131,7 +126,7 @@ unsigned long long delete_nsset(
 
         if (e.is_set_object_linked_to_nsset_handle())
         {
-            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_association_prohibits_operation));
         }
 
         // in the improbable case that exception is incorrectly set
@@ -139,6 +134,5 @@ unsigned long long delete_nsset(
     }
 }
 
-
-} // namespace Epp::Nsset
-} // namespace Epp
+}//namespace Epp::Nsset
+}//namespace Epp
