@@ -98,12 +98,16 @@ unsigned long long delete_keyset(
         {
             keyset_states.insert(Conversion::Enums::from_db_handle<Fred::Object_State>(data_ptr->state_name));
         }
-        if ((!is_system_registrar && (presents(keyset_states, Fred::Object_State::server_update_prohibited) ||
-                                      presents(keyset_states, Fred::Object_State::server_delete_prohibited) ||
-                                      presents(keyset_states, Fred::Object_State::delete_candidate))) ||
-            presents(keyset_states, Fred::Object_State::linked))
+        if (!is_system_registrar && (presents(keyset_states, Fred::Object_State::server_update_prohibited) ||
+                                     presents(keyset_states, Fred::Object_State::server_delete_prohibited) ||
+                                     presents(keyset_states, Fred::Object_State::delete_candidate)))
         {
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+        }
+
+        if (presents(keyset_states, Fred::Object_State::linked))
+        {
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_association_prohibits_operation));
         }
 
         Fred::DeleteKeysetByHandle(_keyset_handle).exec(_ctx);
@@ -121,7 +125,7 @@ unsigned long long delete_keyset(
     catch (const Fred::DeleteKeysetByHandle::Exception& e)
     {
 
-        // general errors (possibly but not NECESSARILLY caused by input data) signalizing unknown/bigger problems have priority
+        // general errors (possibly but not NECESSARILLY caused by input data) signaling unknown/bigger problems have priority
         if (e.is_set_unknown_keyset_handle())
         {
             throw;
@@ -129,7 +133,7 @@ unsigned long long delete_keyset(
 
         if (e.is_set_object_linked_to_keyset_handle())
         {
-            throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
+            throw EppResponseFailure(EppResultFailure(EppResultCode::object_association_prohibits_operation));
         }
 
         // in the improbable case that exception is incorrectly set
