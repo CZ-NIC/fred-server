@@ -64,7 +64,7 @@ Fred::InfoKeysetData check_keyset_handle(
         {
             _ctx.get_log().info("check_keyset_handle failure: registrar not authorized for this operation");
             throw EppResponseFailure(EppResultFailure(
-                    EppResultCode::authentication_error_server_closing_connection));
+                    EppResultCode::authorization_error));
         }
         if (!is_system_registrar)
         {
