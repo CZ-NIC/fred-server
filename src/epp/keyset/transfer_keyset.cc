@@ -94,11 +94,6 @@ unsigned long long transfer_keyset(
             }
         }
 
-        if (keyset_data_before_transfer.authinfopw != _authinfopw)
-        {
-            throw EppResponseFailure(EppResultFailure(EppResultCode::invalid_authorization_information));
-        }
-
         const unsigned long long post_transfer_history_id =
             Fred::TransferKeyset(
                     keyset_data_before_transfer.id,
@@ -137,6 +132,5 @@ unsigned long long transfer_keyset(
     }
 }
 
-
-} // namespace Epp::Keyset
-} // namespace Epp
+}//namespace Epp::Keyset
+}//namespace Epp
