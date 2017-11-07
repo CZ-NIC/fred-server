@@ -737,7 +737,7 @@ UpdateKeysetResult update_keyset(
                 policy_errors_to_throw.add_extended_errors(
                         Epp::extended_errors_with_param_reason(
                                 policy_errors,
-                                Param::keyset_tech,
+                                Param::keyset_tech_add,
                                 Reason::technical_contact_not_registered));
                 policy_errors_to_throw.add_extended_errors(
                         Epp::extended_errors_with_param_reason(
