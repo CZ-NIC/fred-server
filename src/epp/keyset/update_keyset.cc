@@ -607,9 +607,8 @@ Success check_dns_keys(
     if ((current_dns_keys.size() + _dns_keys_add.size()) < _dns_keys_rem.size())
     {
         _policy_errors.add_extended_error(
-                EppExtendedError::of_vector_parameter(
+                EppExtendedError::of_scalar_parameter(
                         Param::keyset_dnskey,
-                        idx,
                         Reason::no_dnskey_dsrecord));
         return false;
     }
@@ -618,18 +617,16 @@ Success check_dns_keys(
     if (number_of_dns_keys < Keyset::min_number_of_dns_keys)
     {
         _policy_errors.add_extended_error(
-                EppExtendedError::of_vector_parameter(
+                EppExtendedError::of_scalar_parameter(
                         Param::keyset_dnskey,
-                        idx,
                         Reason::no_dnskey_dsrecord));
         return false;
     }
     if (Keyset::max_number_of_dns_keys < number_of_dns_keys)
     {
         _policy_errors.add_extended_error(
-                EppExtendedError::of_vector_parameter(
+                EppExtendedError::of_scalar_parameter(
                         Param::keyset_dnskey,
-                        idx,
                         Reason::dnskey_limit));
         return false;
     }
