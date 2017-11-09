@@ -148,29 +148,26 @@ unsigned long long update_domain(
     }
 
     EppResultFailure parameter_value_range_errors(EppResultCode::parameter_value_range_error);
+    EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
     Optional<boost::gregorian::date> req_enum_valexdate;
     Optional<bool> enum_publish_flag;
 
     if (zone_data.is_enum)
     {
-
         if (_update_domain_data.enum_validation)
         {
-
             req_enum_valexdate = (*_update_domain_data.enum_validation).get_valexdate();
 
             if (req_enum_valexdate.get_value().is_special())
             {
                 parameter_value_range_errors.add_extended_error(
-                        EppExtendedError::of_vector_parameter(
+                        EppExtendedError::of_scalar_parameter(
                                 Param::domain_ext_val_date,
-                                0,
                                 Reason::valexpdate_not_valid));
             }
             else
             {
-
                 const boost::optional<boost::gregorian::date> curr_enum_valexdate =
                         info_domain_data_before_update.enum_domain_validation.isnull()
                                 ? boost::optional<boost::gregorian::date>()
@@ -187,9 +184,8 @@ unsigned long long update_domain(
                             _ctx))
                 {
                     parameter_value_range_errors.add_extended_error(
-                            EppExtendedError::of_vector_parameter(
+                            EppExtendedError::of_scalar_parameter(
                                     Param::domain_ext_val_date,
-                                    0,
                                     Reason::valexpdate_not_valid));
                 }
             }
@@ -201,9 +197,9 @@ unsigned long long update_domain(
     {
         if (_update_domain_data.enum_validation)
         {
-            parameter_value_range_errors.add_extended_error(
-                    EppExtendedError::of_vector_parameter(
-                            Param::domain_ext_val_date, 0,
+            parameter_value_policy_errors.add_extended_error(
+                    EppExtendedError::of_scalar_parameter(
+                            Param::domain_ext_val_date,
                             Reason::valexpdate_not_used));
         }
     }
@@ -240,8 +236,6 @@ unsigned long long update_domain(
             throw EppResponseFailure(EppResultFailure(EppResultCode::object_status_prohibits_operation));
         }
     }
-
-    EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
 
     std::set<std::string> admin_contact_add_duplicity;
     for (
