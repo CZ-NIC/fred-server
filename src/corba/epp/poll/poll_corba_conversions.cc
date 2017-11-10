@@ -202,8 +202,8 @@ PollMessage wrap_low_credit_event_into_poll_message(const Epp::Poll::LowCreditEv
 {
     ccReg::PollMsg_LowCredit hdm;
     hdm.zone = Fred::Corba::wrap_string_to_corba_string(_src.zone);
-    hdm.limit = Fred::Corba::wrap_string_to_corba_string(_src.credit.get_string(".2f"));
-    hdm.credit = Fred::Corba::wrap_string_to_corba_string(_src.limit.get_string(".2f"));
+    hdm.credit = Fred::Corba::wrap_string_to_corba_string(_src.credit.get_string(".2f"));
+    hdm.limit = Fred::Corba::wrap_string_to_corba_string(_src.limit.get_string(".2f"));
     PollMessage ret;
     ret.content = new CORBA::Any;
     ret.content <<= hdm;
