@@ -265,13 +265,12 @@ std::vector<Epp::Poll::Test> create_check_result_record(
 
     BOOST_REQUIRE(sql_query_result.size() > 0);
 
-    for (std::size_t i = 0; i < sql_query_result.size(); ++i)
+    for (std::size_t idx = 0; idx < sql_query_result.size(); ++idx)
     {
-        Epp::Poll::Test test;
-        test.testname = static_cast<std::string>(sql_query_result[i][0]);
-        test.status = 0;
-        test.note = "";
-        ret.push_back(test);
+        const std::string testname = static_cast<std::string>(sql_query_result[idx][0]);
+        const int status = 0;
+        const std::string note;
+        ret.push_back(Epp::Poll::Test(testname, note, status));
     }
 
     return ret;
@@ -950,7 +949,7 @@ struct HasPollTechCheckMessage : virtual Test::Backend::Epp::autorollbacking_con
              ++test_itr, ++golden_itr)
         {
             BOOST_CHECK_EQUAL(test_itr->testname, golden_itr->testname);
-            BOOST_CHECK_EQUAL(test_itr->status, golden_itr->status);
+            BOOST_CHECK_EQUAL(test_itr->get_status(), golden_itr->get_status());
             BOOST_CHECK_EQUAL(test_itr->note, golden_itr->note);
         }
 

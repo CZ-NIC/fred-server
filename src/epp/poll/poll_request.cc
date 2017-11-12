@@ -24,9 +24,40 @@
 #include "util/db/param_query_composition.h"
 
 #include <cstddef>
+#include <stdexcept>
 
 namespace Epp {
 namespace Poll {
+
+Test::Test(const std::string& _testname, const std::string& _note, int _status)
+    : testname(_testname),
+      note(_note),
+      status(_status)
+{
+}
+
+bool Test::is_test_successful()const
+{
+    switch (status)
+    {
+        case 0:
+            return true;
+        case 1:
+            return false;
+        case 2:
+            return false;
+    }
+    struct UnexpectedStatusValue:std::runtime_error
+    {
+        UnexpectedStatusValue():std::runtime_error("Unexpected value of status") { }
+    };
+    throw UnexpectedStatusValue();
+}
+
+int Test::get_status()const
+{
+    return status;
+}
 
 namespace {
 
@@ -324,13 +355,12 @@ std::vector<Test> get_tech_check_event_tests(
     const Database::Result sql_query_result = _ctx.get_conn().exec_params(sql_query);
 
     std::vector<Test> ret;
-    for (std::size_t i = 0; i < sql_query_result.size(); ++i)
+    for (std::size_t idx = 0; idx < sql_query_result.size(); ++idx)
     {
-        Test test;
-        test.testname = static_cast<std::string>(sql_query_result[i][0]);
-        test.status = static_cast<int>(sql_query_result[i][1]);
-        test.note = static_cast<std::string>(sql_query_result[i][2]);
-        ret.push_back(test);
+        const std::string testname = static_cast<std::string>(sql_query_result[idx][0]);
+        const int status = static_cast<int>(sql_query_result[idx][1]);
+        const std::string note = static_cast<std::string>(sql_query_result[idx][2]);
+        ret.push_back(Test(testname, note, status));
     }
 
     return ret;
