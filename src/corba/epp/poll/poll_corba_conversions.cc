@@ -216,16 +216,16 @@ PollMessage wrap_tech_check_event_into_poll_message(const Epp::Poll::TechCheckEv
     ccReg::PollMsg_Techcheck hdm;
     hdm.handle = Fred::Corba::wrap_string_to_corba_string(_src.handle);
     hdm.fqdns.length(_src.fqdns.size());
-    for (std::size_t i = 0; i < _src.fqdns.size(); ++i)
+    for (std::size_t idx = 0; idx < _src.fqdns.size(); ++idx)
     {
-        hdm.fqdns[i] = Fred::Corba::wrap_string_to_corba_string(_src.fqdns[i]);
+        hdm.fqdns[idx] = Fred::Corba::wrap_string_to_corba_string(_src.fqdns[idx]);
     }
     hdm.tests.length(_src.tests.size());
-    for (std::size_t i = 0; i < _src.tests.size(); ++i)
+    for (std::size_t idx = 0; idx < _src.tests.size(); ++idx)
     {
-        hdm.tests[i].testname = Fred::Corba::wrap_string_to_corba_string(_src.tests[i].testname);
-        hdm.tests[i].status = _src.tests[i].status;
-        hdm.tests[i].note = Fred::Corba::wrap_string_to_corba_string(_src.tests[i].note);
+        hdm.tests[idx].testname = Fred::Corba::wrap_string_to_corba_string(_src.tests[idx].testname);
+        Fred::Corba::wrap_int(_src.tests[idx].is_test_successful(), hdm.tests[idx].status);
+        hdm.tests[idx].note = Fred::Corba::wrap_string_to_corba_string(_src.tests[idx].note);
     }
     PollMessage ret;
     ret.content = new CORBA::Any;

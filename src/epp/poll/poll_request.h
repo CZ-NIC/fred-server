@@ -104,9 +104,13 @@ struct LowCreditEvent
 
 struct Test
 {
+    Test(const std::string& _testname, const std::string& _note, int _status);
+    bool is_test_successful()const;
+    int get_status()const;
     std::string testname;
-    int status;
     std::string note;
+private:
+    int status;
 };
 
 struct TechCheckEvent
