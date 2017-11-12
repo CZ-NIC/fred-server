@@ -39,11 +39,13 @@ PollAcknowledgementOutputData poll_acknowledgement(
     }
 
     Database::ParamQuery sql_command;
-    sql_command("UPDATE message m SET seen=true WHERE id=")
-        .param_bigint(_message_id)(" AND clid=")
-        .param_bigint(_registrar_id)(" RETURNING "
-         "(SELECT COUNT(*) FROM message WHERE clid=m.clid AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen),"
-         "(SELECT MIN(id) FROM message WHERE clid=m.clid AND exdate>CURRENT_TIMESTAMP AND id<>m.id AND NOT seen)");
+    sql_command("UPDATE message m "
+                "SET seen=true "
+                "WHERE NOT seen AND "
+                      "id=").param_bigint(_message_id)(" AND "
+                      "clid=").param_bigint(_registrar_id)(" "
+                "RETURNING (SELECT COUNT(*) FROM message WHERE clid=m.clid AND CURRENT_TIMESTAMP<exdate AND id!=m.id AND NOT seen),"
+                          "(SELECT MIN(id) FROM message WHERE clid=m.clid AND CURRENT_TIMESTAMP<exdate AND id!=m.id AND NOT seen)");
     const Database::Result sql_command_result = _ctx.get_conn().exec_params(sql_command);
     if (sql_command_result.size() == 0)
     {
@@ -69,5 +71,5 @@ PollAcknowledgementOutputData poll_acknowledgement(
     return poll_acknowledgement_output_data;
 }
 
-} // namespace Epp::Poll
-} // namespace Epp
+}//namespace Epp::Poll
+}//namespace Epp
