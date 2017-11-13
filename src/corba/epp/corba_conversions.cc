@@ -172,9 +172,6 @@ wrap_param_error(Epp::Param::Enum _param)
 }
 
 
-} // namespace Fred::Corba::{anonymous}
-
-
 // represents RFC 3339 time offset formatted with respect to RFC 5731
 // append to boost::posix_time::to_iso_extended_string() to get RFC3339 timestamp
 struct TimeZoneOffset
@@ -218,21 +215,22 @@ struct TimeZoneOffset
 
 };
 
+}//namespace Fred::Corba::{anonymous}
+
 std::string
-convert_time_to_local_rfc3339(const boost::posix_time::ptime& _utc_ptime)
+convert_time_to_local_rfc3339(const boost::posix_time::ptime& utc_ptime)
 {
     // _utc_ptime converted to local ptime with seconds fraction trimmed
     const boost::posix_time::ptime local_ptime =
             boost::date_time::c_local_adjustor<boost::posix_time::ptime>::utc_to_local(
                     boost::posix_time::ptime(
-                            _utc_ptime.date(),
-                            boost::posix_time::seconds(_utc_ptime.time_of_day().total_seconds())));
+                            utc_ptime.date(),
+                            boost::posix_time::seconds(utc_ptime.time_of_day().total_seconds())));
 
     return
         boost::posix_time::to_iso_extended_string(local_ptime) +
         TimeZoneOffset(local_ptime).to_rfc3339_string();
 }
-
 
 CORBA::String_var
 wrap_Nullable_string_to_string(const Nullable<std::string>& src)

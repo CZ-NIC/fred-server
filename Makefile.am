@@ -1854,6 +1854,7 @@ src_corba_fred_rifd_LDADD = \
 		src/fredlib/libfred.a \
 		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
+		util/tz/libtimezones.a \
 		util/db/libdb.a \
 		util/types/libtypes.a \
 		util/log/liblog.a \
@@ -2807,6 +2808,7 @@ tests_interfaces_test_epp_LDFLAGS = \
 tests_interfaces_test_epp_LDADD = \
 		src/corba/epp/libepp_impl.a \
 		src/fredlib/libfred.a \
+		util/tz/libtimezones.a \
 		util/types/libtypes.a \
 		util/db/libdb.a \
 		util/log/liblog.a \
@@ -2978,6 +2980,7 @@ tests_test_server_LDADD = \
 		src/fredlib/libfred.a \
 		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
+		util/tz/libtimezones.a \
 		util/db/libdb.a \
 		util/types/libtypes.a \
 		src/old_utils/liboldutils.a \
