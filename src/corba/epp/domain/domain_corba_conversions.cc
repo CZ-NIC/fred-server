@@ -167,15 +167,9 @@ wrap_Epp_Domain_InfoDomainLocalizedOutputData(
     _dst.CrID = Fred::Corba::wrap_string_to_corba_string(_src.creating_registrar_handle);
     _dst.UpID = Fred::Corba::wrap_string_to_corba_string(_src.last_update_registrar_handle.get_value_or_default());
 
-    _dst.CrDate = Fred::Corba::wrap_string_to_corba_string(convert_time_to_local_rfc3339(_src.crdate));
-    _dst.UpDate = Fred::Corba::wrap_string_to_corba_string(
-            _src.last_update.isnull()
-                    ? std::string()
-                    : convert_time_to_local_rfc3339(_src.last_update.get_value()));
-    _dst.TrDate = Fred::Corba::wrap_string_to_corba_string(
-            _src.last_transfer.isnull()
-                    ? std::string()
-                    : convert_time_to_local_rfc3339(_src.last_transfer.get_value()));
+    _dst.CrDate = wrap_boost_posix_time_ptime_to_string(_src.crdate);
+    _dst.UpDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_update);
+    _dst.TrDate = wrap_Nullable_boost_posix_time_ptime_to_string(_src.last_transfer);
 
     _dst.ExDate = Fred::Corba::wrap_string_to_corba_string(boost::gregorian::to_iso_extended_string(_src.exdate));
 

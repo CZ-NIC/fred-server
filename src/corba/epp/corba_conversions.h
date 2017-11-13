@@ -59,7 +59,7 @@ namespace Corba {
  * @return time converted to local time zone (if possible), with seconds fraction trimmed, formatted as RFC3339 string.
  */
 std::string
-convert_time_to_local_rfc3339(const boost::posix_time::ptime& _utc_ptime);
+convert_time_to_local_rfc3339(const boost::posix_time::ptime& utc_ptime);
 
 
 CORBA::String_var
@@ -67,11 +67,10 @@ wrap_Nullable_string_to_string(const Nullable<std::string>& src);
 
 
 CORBA::String_var
-wrap_boost_posix_time_ptime_to_string(const boost::posix_time::ptime& _src);
-
+wrap_boost_posix_time_ptime_to_string(const boost::posix_time::ptime& src);
 
 CORBA::String_var
-wrap_Nullable_boost_posix_time_ptime_to_string(const Nullable<boost::posix_time::ptime>& _src);
+wrap_Nullable_boost_posix_time_ptime_to_string(const Nullable<boost::posix_time::ptime>& src);
 
 
 /**
