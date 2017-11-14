@@ -68,8 +68,8 @@ GetObjectStatesByHistoryId::Result GetObjectStatesByHistoryId::exec(OperationCon
         flag.is_external = static_cast<bool>(dbres[idx][6]);
         flag.is_manual = static_cast<bool>(dbres[idx][7]);
         flag.importance = static_cast<long>(dbres[idx][8]);
-        const bool flag_presents_at_valid_from = static_cast<long>(dbres[idx][9]);
-        const bool flag_presents_before_valid_to = static_cast<long>(dbres[idx][10]);
+        const bool flag_presents_at_valid_from = static_cast<bool>(dbres[idx][9]);
+        const bool flag_presents_before_valid_to = static_cast<bool>(dbres[idx][10]);
         if (flag_presents_at_valid_from)
         {
             result.object_state_at_begin.push_back(flag);
