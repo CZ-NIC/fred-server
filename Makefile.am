@@ -1022,6 +1022,8 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/object_state/get_object_state_descriptions.cc \
 		src/fredlib/object_state/get_object_states.h \
 		src/fredlib/object_state/get_object_states.cc \
+		src/fredlib/object_state/get_object_states_by_history_id.hh \
+		src/fredlib/object_state/get_object_states_by_history_id.cc \
 		src/fredlib/object_state/get_object_state_id_map.h \
 		src/fredlib/object_state/get_object_state_id_map.cc \
 		src/fredlib/object_state/get_blocking_status_desc_list.cc \

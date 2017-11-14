@@ -25,6 +25,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/epp_result_success.h"
 #include "src/fredlib/nsset/info_nsset.h"
+#include "src/fredlib/object_state/get_object_states_by_history_id.hh"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "util/db/param_query_composition.h"
 #include "util/tz/utc.hh"
@@ -35,23 +36,43 @@ namespace Poll {
 
 namespace {
 
-Epp::Nsset::InfoNssetOutputData get_nsset_output_data_by_history_id(
-        Fred::OperationContext& ctx,
-        unsigned long long history_id,
-        unsigned long long registrar_id)
+struct HistoryNssetData
 {
-    const Fred::InfoNssetData info_nsset_data =
-        Fred::InfoNssetHistoryByHistoryid(history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_nsset_data;
+    Epp::Nsset::InfoNssetOutputData old_data;
+    Epp::Nsset::InfoNssetOutputData new_data;
+};
 
+HistoryNssetData get_history_nsset_data(
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id,
+        unsigned long long old_history_id,
+        unsigned long long new_history_id)
+{
     const std::string session_registrar_handle =
-        Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
-    const bool info_is_for_sponsoring_registrar =
-        info_nsset_data.sponsoring_registrar_handle == session_registrar_handle;
+            Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
 
-    const std::vector<Fred::ObjectStateData> object_states_data =
-        Fred::GetObjectStates(info_nsset_data.id).exec(ctx);
+    const Fred::InfoNssetData old_history_data =
+            Fred::InfoNssetHistoryByHistoryid(old_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_nsset_data;
+    const bool old_info_is_for_sponsoring_registrar = old_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const std::vector<Fred::ObjectStateData> old_nsset_states_data =
+            Fred::GetObjectStatesByHistoryId(old_history_id).exec(ctx).object_state_at_end;
 
-    return Epp::Nsset::get_info_nsset_output(info_nsset_data, object_states_data, info_is_for_sponsoring_registrar);
+    const Fred::InfoNssetData new_history_data =
+            Fred::InfoNssetHistoryByHistoryid(new_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_nsset_data;
+    const bool new_info_is_for_sponsoring_registrar = new_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const std::vector<Fred::ObjectStateData> new_nsset_states_data =
+            Fred::GetObjectStatesByHistoryId(new_history_id).exec(ctx).object_state_at_begin;
+
+    HistoryNssetData retval;
+    retval.old_data = Epp::Nsset::get_info_nsset_output(
+            old_history_data,
+            old_nsset_states_data,
+            old_info_is_for_sponsoring_registrar);
+    retval.new_data = Epp::Nsset::get_info_nsset_output(
+            new_history_data,
+            new_nsset_states_data,
+            new_info_is_for_sponsoring_registrar);
+    return retval;
 }
 
 }//namespace Epp::Poll::{anonymous}
@@ -68,7 +89,7 @@ PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
     }
 
     Database::ParamQuery sql_query;
-    sql_query("SELECT h1.id, h1.next "
+    sql_query("SELECT h1.id,h1.next "
               "FROM poll_eppaction pea "
               "JOIN nsset_history nh ON nh.historyid=pea.objid "
               "JOIN history h1 ON h1.next=pea.objid "
@@ -92,10 +113,12 @@ PollRequestUpdateNssetOutputData poll_request_get_update_nsset_details(
 
     try
     {
-        const PollRequestUpdateNssetOutputData ret(
-            get_nsset_output_data_by_history_id(ctx, old_history_id, registrar_id),
-            get_nsset_output_data_by_history_id(ctx, new_history_id, registrar_id));
-        return ret;
+        const HistoryNssetData history_nsset_data = get_history_nsset_data(
+                ctx,
+                registrar_id,
+                old_history_id,
+                new_history_id);
+        return PollRequestUpdateNssetOutputData(history_nsset_data.old_data, history_nsset_data.new_data);
     }
     catch (const Fred::InfoNssetHistoryByHistoryid::Exception&)
     {

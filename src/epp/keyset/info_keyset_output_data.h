@@ -35,7 +35,6 @@ namespace Keyset {
 
 struct InfoKeysetOutputData
 {
-
     typedef std::set<StatusValue::Enum> States;
     typedef std::set<Keyset::DsRecord> DsRecords;
     typedef std::set<Keyset::DnsKey> DnsKeys;
@@ -54,10 +53,9 @@ struct InfoKeysetOutputData
     DsRecords ds_records; ///< List of ds records
     DnsKeys dns_keys; ///< List of dnskeys
     TechContacts tech_contacts; ///< List of technical contacts identifier
-
 };
 
-} // namespace Epp::Keyset
-} // namespace Epp
+}//namespace Epp::Keyset
+}//namespace Epp
 
 #endif
