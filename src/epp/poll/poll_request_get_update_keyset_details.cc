@@ -25,6 +25,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/epp_result_success.h"
 #include "src/fredlib/keyset/info_keyset.h"
+#include "src/fredlib/object_state/get_object_states_by_history_id.hh"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "util/db/param_query_composition.h"
 #include "util/tz/utc.hh"
@@ -35,22 +36,43 @@ namespace Poll {
 
 namespace {
 
-Epp::Keyset::InfoKeysetOutputData get_keyset_output_data_by_history_id(
-        Fred::OperationContext& ctx,
-        unsigned long long history_id,
-        unsigned long long registrar_id)
+struct HistoryKeysetData
 {
-    const Fred::InfoKeysetData history_data =
-        Fred::InfoKeysetHistoryByHistoryid(history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_keyset_data;
+    Epp::Keyset::InfoKeysetOutputData old_data;
+    Epp::Keyset::InfoKeysetOutputData new_data;
+};
 
+HistoryKeysetData get_history_keyset_data(
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id,
+        unsigned long long old_history_id,
+        unsigned long long new_history_id)
+{
     const std::string session_registrar_handle =
-        Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
-    const bool info_is_for_sponsoring_registrar = history_data.sponsoring_registrar_handle == session_registrar_handle;
+            Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
 
-    const std::vector<Fred::ObjectStateData> keyset_states_data = Fred::GetObjectStates(history_data.id).exec(ctx);
+    const Fred::InfoKeysetData old_history_data =
+            Fred::InfoKeysetHistoryByHistoryid(old_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_keyset_data;
+    const bool old_info_is_for_sponsoring_registrar = old_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const std::vector<Fred::ObjectStateData> old_keyset_states_data =
+            Fred::GetObjectStatesByHistoryId(old_history_id).exec(ctx).object_state_at_end;
 
-    return Epp::Keyset::get_info_keyset_output(history_data, keyset_states_data, info_is_for_sponsoring_registrar);
+    const Fred::InfoKeysetData new_history_data =
+            Fred::InfoKeysetHistoryByHistoryid(new_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_keyset_data;
+    const bool new_info_is_for_sponsoring_registrar = new_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const std::vector<Fred::ObjectStateData> new_keyset_states_data =
+            Fred::GetObjectStatesByHistoryId(new_history_id).exec(ctx).object_state_at_begin;
 
+    HistoryKeysetData retval;
+    retval.old_data = Epp::Keyset::get_info_keyset_output(
+            old_history_data,
+            old_keyset_states_data,
+            old_info_is_for_sponsoring_registrar);
+    retval.new_data = Epp::Keyset::get_info_keyset_output(
+            new_history_data,
+            new_keyset_states_data,
+            new_info_is_for_sponsoring_registrar);
+    return retval;
 }
 
 }//namespace Epp::Poll::{anonymous}
@@ -67,7 +89,7 @@ PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
     }
 
     Database::ParamQuery sql_query;
-    sql_query("SELECT h1.id, h1.next "
+    sql_query("SELECT h1.id,h1.next "
               "FROM poll_eppaction pea "
               "JOIN keyset_history kh ON kh.historyid=pea.objid "
               "JOIN history h1 ON h1.next=pea.objid "
@@ -91,10 +113,15 @@ PollRequestUpdateKeysetOutputData poll_request_get_update_keyset_details(
 
     try
     {
-        PollRequestUpdateKeysetOutputData ret;
-        ret.old_data = get_keyset_output_data_by_history_id(ctx, old_history_id, registrar_id);
-        ret.new_data = get_keyset_output_data_by_history_id(ctx, new_history_id, registrar_id);
-        return ret;
+        const HistoryKeysetData history_keyset_data = get_history_keyset_data(
+                ctx,
+                registrar_id,
+                old_history_id,
+                new_history_id);
+        PollRequestUpdateKeysetOutputData retval;
+        retval.old_data = history_keyset_data.old_data;
+        retval.new_data = history_keyset_data.new_data;
+        return retval;
     }
     catch (const Fred::InfoKeysetHistoryByHistoryid::Exception&)
     {

@@ -24,6 +24,7 @@
 #include "src/epp/epp_result_failure.h"
 #include "src/epp/epp_result_success.h"
 #include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/object_state/get_object_states_by_history_id.hh"
 #include "src/fredlib/registrar/info_registrar.h"
 #include "src/epp/domain/impl/domain_output.h"
 #include "src/epp/domain/info_domain.h"
@@ -36,23 +37,43 @@ namespace Poll {
 
 namespace {
 
-Epp::Domain::InfoDomainOutputData get_domain_output_data_by_history_id(
-        Fred::OperationContext& ctx,
-        unsigned long long history_id,
-        unsigned long long registrar_id)
+struct HistoryDomainData
 {
-    const Fred::InfoDomainData info_domain_data =
-        Fred::InfoDomainHistoryByHistoryid(history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_domain_data;
+    Epp::Domain::InfoDomainOutputData old_data;
+    Epp::Domain::InfoDomainOutputData new_data;
+};
 
+HistoryDomainData get_history_domain_data(
+        Fred::OperationContext& ctx,
+        unsigned long long registrar_id,
+        unsigned long long old_history_id,
+        unsigned long long new_history_id)
+{
     const std::string session_registrar_handle =
-        Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
-    const bool info_is_for_sponsoring_registrar =
-        info_domain_data.sponsoring_registrar_handle == session_registrar_handle;
+            Fred::InfoRegistrarById(registrar_id).exec(ctx).info_registrar_data.handle;
 
-    const std::vector<Fred::ObjectStateData> object_state_data =
-        Fred::GetObjectStates(info_domain_data.id).exec(ctx);
+    const Fred::InfoDomainData old_history_data =
+            Fred::InfoDomainHistoryByHistoryid(old_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_domain_data;
+    const bool old_info_is_for_sponsoring_registrar = old_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const std::vector<Fred::ObjectStateData> old_domain_states_data =
+            Fred::GetObjectStatesByHistoryId(old_history_id).exec(ctx).object_state_at_end;
 
-    return Epp::Domain::get_info_domain_output(info_domain_data, object_state_data, info_is_for_sponsoring_registrar);
+    const Fred::InfoDomainData new_history_data =
+            Fred::InfoDomainHistoryByHistoryid(new_history_id).exec(ctx, Tz::get_psql_handle_of<Tz::UTC>()).info_domain_data;
+    const bool new_info_is_for_sponsoring_registrar = new_history_data.sponsoring_registrar_handle == session_registrar_handle;
+    const std::vector<Fred::ObjectStateData> new_domain_states_data =
+            Fred::GetObjectStatesByHistoryId(new_history_id).exec(ctx).object_state_at_begin;
+
+    HistoryDomainData retval;
+    retval.old_data = Epp::Domain::get_info_domain_output(
+            old_history_data,
+            old_domain_states_data,
+            old_info_is_for_sponsoring_registrar);
+    retval.new_data = Epp::Domain::get_info_domain_output(
+            new_history_data,
+            new_domain_states_data,
+            new_info_is_for_sponsoring_registrar);
+    return retval;
 }
 
 }//namespace Epp::Poll::{anonymous}
@@ -69,7 +90,7 @@ PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
     }
 
     Database::ParamQuery sql_query;
-    sql_query("SELECT h1.id, h1.next "
+    sql_query("SELECT h1.id,h1.next "
               "FROM poll_eppaction pea "
               "JOIN domain_history dh ON dh.historyid=pea.objid "
               "JOIN history h1 ON h1.next=pea.objid "
@@ -93,10 +114,15 @@ PollRequestUpdateDomainOutputData poll_request_get_update_domain_details(
 
     try
     {
-        PollRequestUpdateDomainOutputData ret;
-        ret.old_data = get_domain_output_data_by_history_id(ctx, old_history_id, registrar_id);
-        ret.new_data = get_domain_output_data_by_history_id(ctx, new_history_id, registrar_id);
-        return ret;
+        const HistoryDomainData history_domain_data = get_history_domain_data(
+                ctx,
+                registrar_id,
+                old_history_id,
+                new_history_id);
+        PollRequestUpdateDomainOutputData retval;
+        retval.old_data = history_domain_data.old_data;
+        retval.new_data = history_domain_data.new_data;
+        return retval;
     }
     catch (const Fred::InfoDomainHistoryByHistoryid::Exception&)
     {

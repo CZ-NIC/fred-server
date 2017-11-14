@@ -31,6 +31,38 @@
 namespace Epp {
 namespace Nsset {
 
+InfoNssetOutputData::InfoNssetOutputData()
+{ }
+
+InfoNssetOutputData::InfoNssetOutputData(
+        const std::string& _handle,
+        const std::string& _roid,
+        const std::string& _sponsoring_registrar_handle,
+        const std::string& _creating_registrar_handle,
+        const Nullable<std::string>& _last_update_registrar_handle,
+        const std::set<StatusValue::Enum>& _states,
+        const boost::posix_time::ptime& _crdate,
+        const Nullable<boost::posix_time::ptime>& _last_update,
+        const Nullable<boost::posix_time::ptime>& _last_transfer,
+        const boost::optional<std::string>& _authinfopw,
+        const std::vector<DnsHostOutput>& _dns_hosts,
+        const std::vector<std::string>& _tech_contacts,
+        short _tech_check_level)
+    : handle(_handle),
+      roid(_roid),
+      sponsoring_registrar_handle(_sponsoring_registrar_handle),
+      creating_registrar_handle(_creating_registrar_handle),
+      last_update_registrar_handle(_last_update_registrar_handle),
+      states(_states),
+      crdate(_crdate),
+      last_update(_last_update),
+      last_transfer(_last_transfer),
+      authinfopw(_authinfopw),
+      dns_hosts(_dns_hosts),
+      tech_contacts(_tech_contacts),
+      tech_check_level(_tech_check_level)
+{ }
+
 InfoNssetOutputData info_nsset(
         Fred::OperationContext& _ctx,
         const std::string& _nsset_handle,

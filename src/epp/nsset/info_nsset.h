@@ -39,21 +39,7 @@ namespace Nsset {
 
 struct InfoNssetOutputData
 {
-    std::string handle;
-    std::string roid;
-    std::string sponsoring_registrar_handle;
-    std::string creating_registrar_handle;
-    Nullable<std::string> last_update_registrar_handle;
-    std::set<Epp::Nsset::StatusValue::Enum> states;
-    boost::posix_time::ptime crdate;
-    Nullable<boost::posix_time::ptime> last_update;
-    Nullable<boost::posix_time::ptime> last_transfer;
-    boost::optional<std::string> authinfopw;
-    std::vector<DnsHostOutput> dns_hosts;
-    std::vector<std::string> tech_contacts;
-    short tech_check_level;
-
-
+    InfoNssetOutputData();
     InfoNssetOutputData(
             const std::string& _handle,
             const std::string& _roid,
@@ -67,24 +53,20 @@ struct InfoNssetOutputData
             const boost::optional<std::string>& _authinfopw,
             const std::vector<DnsHostOutput>& _dns_hosts,
             const std::vector<std::string>& _tech_contacts,
-            short _tech_check_level)
-        : handle(_handle),
-          roid(_roid),
-          sponsoring_registrar_handle(_sponsoring_registrar_handle),
-          creating_registrar_handle(_creating_registrar_handle),
-          last_update_registrar_handle(_last_update_registrar_handle),
-          states(_states),
-          crdate(_crdate),
-          last_update(_last_update),
-          last_transfer(_last_transfer),
-          authinfopw(_authinfopw),
-          dns_hosts(_dns_hosts),
-          tech_contacts(_tech_contacts),
-          tech_check_level(_tech_check_level)
-    {
-    }
-
-
+            short _tech_check_level);
+    std::string handle;
+    std::string roid;
+    std::string sponsoring_registrar_handle;
+    std::string creating_registrar_handle;
+    Nullable<std::string> last_update_registrar_handle;
+    std::set<Epp::Nsset::StatusValue::Enum> states;
+    boost::posix_time::ptime crdate;
+    Nullable<boost::posix_time::ptime> last_update;
+    Nullable<boost::posix_time::ptime> last_transfer;
+    boost::optional<std::string> authinfopw;
+    std::vector<DnsHostOutput> dns_hosts;
+    std::vector<std::string> tech_contacts;
+    short tech_check_level;
 };
 
 InfoNssetOutputData info_nsset(
@@ -93,8 +75,7 @@ InfoNssetOutputData info_nsset(
         const InfoNssetConfigData& _info_nsset_config_data,
         const SessionData& _session_data);
 
+}//namespace Epp::Nsset
+}//namespace Epp
 
-} // namespace Epp::Nsset
-} // namespace Epp
-
-#endif
+#endif//INFO_NSSET_H_0EB95E12F9594FE1BAEA1D2E56AAA5F8
