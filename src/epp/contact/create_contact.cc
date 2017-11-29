@@ -162,6 +162,14 @@ CreateContactResult create_contact(
                             Reason::country_notexist));
         }
 
+        if (static_cast<bool>(contact_data.mailing_address))
+        {
+            if (!is_country_code_valid(ctx, contact_data.mailing_address->country_code))
+            {
+                throw EppResponseFailure(parameter_value_policy_errors);
+            }
+        }
+
         if (!parameter_value_policy_errors.empty())
         {
             throw EppResponseFailure(parameter_value_policy_errors);
