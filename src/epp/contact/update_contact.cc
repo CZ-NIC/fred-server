@@ -448,18 +448,39 @@ unsigned long long update_contact(
 
     const ContactChange trimmed_change = trim(change);
 
+    EppResultFailure parameter_value_policy_errors(EppResultCode::parameter_value_policy_error);
+
     // when deleting or not-changing, no check of data is needed
     if (ContactChange::does_value_mean<ContactChange::Value::to_set>(trimmed_change.country_code))
     {
         if (!is_country_code_valid(ctx, ContactChange::get_value(trimmed_change.country_code)))
         {
-            throw EppResponseFailure(EppResultFailure(EppResultCode::parameter_value_policy_error)
-                                             .add_extended_error(
-                                                     EppExtendedError::of_scalar_parameter(
-                                                             Param::contact_cc,
-                                                             Reason::country_notexist)));
+            parameter_value_policy_errors.add_extended_error(
+                    EppExtendedError::of_scalar_parameter(
+                            Param::contact_cc,
+                            Reason::country_notexist));
+        }
+
+    }
+
+    // when deleting or not-changing, no check of data is needed
+    if (ContactChange::does_value_mean<ContactChange::Value::to_set>(trimmed_change.mailing_address))
+    {
+        const ContactChange::Address mailing_address = ContactChange::get_value(trimmed_change.mailing_address);
+        if (static_cast<bool>(mailing_address.country_code))
+        {
+            if (!is_country_code_valid(ctx, *mailing_address.country_code))
+            {
+                throw EppResponseFailure(parameter_value_policy_errors);
+            }
         }
     }
+
+    if (!parameter_value_policy_errors.empty())
+    {
+        throw EppResponseFailure(parameter_value_policy_errors);
+    }
+
 
     // update itself
     {
