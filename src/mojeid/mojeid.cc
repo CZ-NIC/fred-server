@@ -1460,7 +1460,7 @@ MojeIDImpl::ContactId MojeIDImpl::process_registration_request(
                 }
                 break;
             default:
-                const std::string error_message = "unexpected public request type unexpected public request type ";
+                const std::string error_message = "unexpected public request type ";
                 throw std::runtime_error(error_message + pub_req_info.get_type());
             }
 
