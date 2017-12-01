@@ -1,3 +1,7 @@
+2017-12-01 (2.33.1)
+
+  * epp - fix response code for invalid country code in mailing address (without reason message)
+
 2017-09-12 (2.33.0)
 
   * epp rewrite - domain, nsset, keyset, contact - code cleanup
