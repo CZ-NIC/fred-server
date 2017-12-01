@@ -374,8 +374,8 @@ private:
    *
    */
   template<class _class>
-  void load__(_class *_object, const Database::Row &_data, const typename _class::field_list &_fields) 
-    throw (Model::DataLoadError) {
+  void load__(_class *_object, const Database::Row &_data, const typename _class::field_list &_fields)
+  {
     try {
       BOOST_FOREACH(typename _class::field_list::value_type field, _fields) {
         /* it is loaded to database so reset the is_set flag (false parameter) */

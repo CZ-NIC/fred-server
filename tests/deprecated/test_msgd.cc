@@ -17,6 +17,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <utility>
+
 #include "test_msgd.h"
 
 BOOST_AUTO_TEST_SUITE(TestMsgd)

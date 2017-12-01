@@ -5,7 +5,7 @@
 #include <string>
 #include <stdexcept>
 #include <boost/utility.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "singleton.h"
 #include "map_get.h"
@@ -34,7 +34,7 @@ public:
     }
 
 
-    /* boost::shared_ptr<Base> create(const Key &_key) const */
+    /* std::shared_ptr<Base> create(const Key &_key) const */
 
 
     /*
@@ -60,7 +60,7 @@ public:
      * \param _key      name of registered class to instance
      * \return          instance of concrete type through shared Base pointer
      */
-    boost::shared_ptr<Base> create_sh_ptr(const Key &_key) const
+    std::shared_ptr<Base> create_sh_ptr(const Key &_key) const
     {
         typename FunctionMap::const_iterator it = class_creators_.find(_key);
         if (it != class_creators_.end()) {
@@ -95,7 +95,7 @@ struct ClassCreator
 {
     virtual ~ClassCreator(){}
     virtual Base* create() const = 0;
-    virtual boost::shared_ptr<Base> create_sh_ptr() const = 0;
+    virtual std::shared_ptr<Base> create_sh_ptr() const = 0;
 };
 
 
@@ -109,9 +109,9 @@ struct DerivedClassCreator : public ClassCreator<Base>
         return new Derived();
     }
 
-    boost::shared_ptr<Base> create_sh_ptr() const
+    std::shared_ptr<Base> create_sh_ptr() const
     {
-        return boost::shared_ptr<Base>(
+        return std::shared_ptr<Base>(
                 dynamic_cast<Base*>(new Derived())
         );
     }

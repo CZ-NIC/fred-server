@@ -6,7 +6,7 @@
 namespace Fred
 {
     struct NewRegistrarIsAlreadySponsoring : Exception {
-        const char* what() const throw() { return "new registrar is already sponsoring"; }
+        const char* what() const noexcept { return "new registrar is already sponsoring"; }
     };
 }
 

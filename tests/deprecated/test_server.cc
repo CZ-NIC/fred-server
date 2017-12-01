@@ -19,6 +19,8 @@
 
 #define BOOST_TEST_MODULE Test Server
 
+#include <utility>
+
 #include "test_server.h"
 
 #include "config.h" // needed for CONFIG_FILE

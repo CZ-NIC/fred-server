@@ -100,11 +100,11 @@ public:
     /// return count of DS records
     virtual unsigned int getDSRecordCount() const = 0;
     /// return appropriate DS record by index
-    virtual const DSRecord *getDSRecordByIdx(unsigned int idx) const throw (NOT_FOUND) = 0;
+    virtual const DSRecord *getDSRecordByIdx(unsigned int idx) const = 0;
     /// return count of DNSKey records
     virtual unsigned int getDNSKeyCount() const = 0;
     /// return appropriate DNSKey record by index
-    virtual const DNSKey *getDNSKeyByIdx(unsigned int idx) const throw (NOT_FOUND) = 0;
+    virtual const DNSKey *getDNSKeyByIdx(unsigned int idx) const = 0;
 };
 
 /// list of keysets
@@ -118,7 +118,7 @@ public:
     /// set filter for tech admin
     virtual void setAdminFilter(const std::string &handle) = 0;
     /// reload list with current filter
-    virtual void reload() throw (SQL_ERROR) = 0;
+    virtual void reload() = 0;
     /// reload list with current filter
     virtual void reload(Database::Filters::Union &uf) = 0;
     /// clear filter data
@@ -153,7 +153,7 @@ public:
     virtual CheckAvailType checkAvail(
             const std::string &handle,
             NameIdPair &conflict,
-            bool lock = false) const throw (SQL_ERROR) = 0;
+            bool lock = false) const = 0;
 
     static Manager *create(DBSharedPtr db, bool restrictedHandle);
 };

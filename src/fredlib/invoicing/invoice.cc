@@ -297,7 +297,7 @@ public:
       Database::Connection conn = Database::Manager::acquire();
       DBSharedPtr ldb_dc_guard (new DB(conn));
 
-      std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
+      std::unique_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
 
       date poll_msg_period_from;
 
@@ -312,7 +312,7 @@ public:
       LOGGER(PACKAGE).info(msg);
 
       // TODO handle NULL fields in this method
-      std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
+      std::unique_ptr<Fred::Poll::MessageRequestFeeInfo> rfi
           = poll_mgr->getRequestFeeInfoMessage(registrar_id, ptime(poll_msg_period_to));
 
       if(boost::date_time::c_local_adjustor<ptime>::utc_to_local (rfi->getPeriodFrom())
@@ -2286,7 +2286,7 @@ public:
       if(!i) throw std::runtime_error("ExporterArchiver::doExport i");
       try {
         // create generator for pdf 
-        std::auto_ptr<Document::Generator> gPDF(
+        std::unique_ptr<Document::Generator> gPDF(
             docman->createSavingGenerator(
                 i->getType() == IT_DEPOSIT ?
                 Document::GT_ADVANCE_INVOICE_PDF :
@@ -2303,7 +2303,7 @@ public:
         LOGGER(PACKAGE).debug ( boost::format("ExporterArchiver::doExport pdf file id: %1% ") % filePDF);
 
         // create generator for XML
-        std::auto_ptr<Document::Generator> gXML(
+        std::unique_ptr<Document::Generator> gXML(
             docman->createSavingGenerator(
                 Document::GT_INVOICE_OUT_XML,
                 makeFileName(i,".xml"),INVOICE_XML_FILE_TYPE,
@@ -2492,7 +2492,7 @@ public:
 
       bool at_least_one = false;
       Database::SelectQuery id_query;
-      std::auto_ptr<Database::Filters::Iterator> fit(_uf.createIterator());
+      std::unique_ptr<Database::Filters::Iterator> fit(_uf.createIterator());
       for (fit->first(); !fit->isDone(); fit->next()) {
         Database::Filters::Invoice *inv_filter =
             dynamic_cast<Database::Filters::Invoice*>(fit->get());

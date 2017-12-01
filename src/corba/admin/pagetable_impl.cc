@@ -39,7 +39,7 @@ ccReg_PageTable_i::page()
 
 void 
 ccReg_PageTable_i::setPage(CORBA::Short _v) 
-  throw (Registry::PageTable::INVALID_PAGE)
+
 {
   aPage = _v;
 }
@@ -74,7 +74,6 @@ ccReg_PageTable_i::numPages()
 
 Registry::TableRow* 
 ccReg_PageTable_i::getPageRow(CORBA::Short pageRow)
-  throw (Registry::Table::INVALID_ROW)
 {
   return getRow(pageRow + start());
 }
@@ -91,7 +90,6 @@ ccReg_PageTable_i::numPageRows()
 
 ccReg::TID 
 ccReg_PageTable_i::getPageRowId(CORBA::Short row) 
-  throw (Registry::Table::INVALID_ROW)
 {
   return getRowId(row + start());
 }
@@ -132,7 +130,7 @@ ccReg_PageTable_i::loadFilter(ccReg::TID _id) {
   uf.clear();
   it.clearF();
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
       tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->load(_id, uf);
 }

@@ -34,7 +34,7 @@
 #include <utility>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/assign/list_of.hpp>
@@ -50,9 +50,9 @@ namespace ContactVerification
         Test,
         test_auto_registration<TestSendLetter>
     {
-        boost::shared_ptr<Fred::Mailer::Manager>    email_manager_;
-        boost::shared_ptr<Fred::Document::Manager>  document_file_manager_;
-        boost::shared_ptr<Fred::Messages::Manager>  letter_manager_;
+        std::shared_ptr<Fred::Mailer::Manager>    email_manager_;
+        std::shared_ptr<Fred::Document::Manager>  document_file_manager_;
+        std::shared_ptr<Fred::Messages::Manager>  letter_manager_;
 
         // snail mail
         const static std::string                    letter_message_type_;
@@ -77,12 +77,12 @@ namespace ContactVerification
         ) const;
 
         public:
-            TestSendLetter& set_document_file_manager(boost::shared_ptr<Fred::Document::Manager> _document_file_manager) {
+            TestSendLetter& set_document_file_manager(std::shared_ptr<Fred::Document::Manager> _document_file_manager) {
                 document_file_manager_ = _document_file_manager;
                 return *this;
             }
 
-            TestSendLetter& set_letter_manager(boost::shared_ptr<Fred::Messages::Manager> _letter_manager) {
+            TestSendLetter& set_letter_manager(std::shared_ptr<Fred::Messages::Manager> _letter_manager) {
                 letter_manager_ = _letter_manager;
                 return *this;
             }

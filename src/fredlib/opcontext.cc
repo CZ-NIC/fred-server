@@ -48,11 +48,11 @@ const std::string& check_transaction_id(const std::string &_value)
 
 using namespace Database;
 
-std::auto_ptr< StandaloneConnection > get_database_conn()
+std::unique_ptr< StandaloneConnection > get_database_conn()
 {
     //manager is responsible for a factory destroying
     StandaloneManager manager(new StandaloneConnectionFactory(Manager::getConnectionString()));
-    return std::auto_ptr< StandaloneConnection >(manager.acquire());
+    return std::unique_ptr< StandaloneConnection >(manager.acquire());
 }
 
 }//namespace Fred::{anonymous}
@@ -125,7 +125,7 @@ void OperationContextTwoPhaseCommitCreator::commit_transaction()
 void commit_transaction(const std::string &_transaction_id)
 {
     check_transaction_id(_transaction_id);
-    std::auto_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
+    std::unique_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
     //"COMMIT PREPARED $1::TEXT" failed
     conn_ptr->exec("COMMIT PREPARED '" + _transaction_id + "'");
 }
@@ -133,7 +133,7 @@ void commit_transaction(const std::string &_transaction_id)
 void rollback_transaction(const std::string &_transaction_id)
 {
     check_transaction_id(_transaction_id);
-    std::auto_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
+    std::unique_ptr< Database::StandaloneConnection > conn_ptr = get_database_conn();
     //"ROLLBACK PREPARED $1::TEXT" failed
     conn_ptr->exec("ROLLBACK PREPARED '" + _transaction_id + "'");
 }

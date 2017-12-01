@@ -240,13 +240,13 @@ public:
   virtual bool isInZone(std::string zone_fqdn) const = 0;
 
   /// Save changes to database
-  virtual void save() throw (SQL_ERROR) = 0;
+  virtual void save() = 0;
 
   /// Zones number for credit by zone
   //virtual unsigned long getZonesNumber() = 0;
 
   ///Registrar smart pointer
-  typedef std::auto_ptr<Registrar> AutoPtr;
+  typedef std::unique_ptr<Registrar> AutoPtr;
 
 };
 
@@ -261,7 +261,7 @@ public:
   virtual ~RegistrarList()
   {}
   ///RegistrarList smart pointer
-  typedef std::auto_ptr<RegistrarList> AutoPtr;
+  typedef std::unique_ptr<RegistrarList> AutoPtr;
   /// testing new reload function
   virtual void reload(Database::Filters::Union &uf) = 0;
   /// Get registrar detail object by list index for update
@@ -358,27 +358,26 @@ struct BlockedReg {
     std::string telephone;
 };
 
-typedef std::auto_ptr< std::vector<BlockedReg> > BlockedRegistrars;
+typedef std::unique_ptr< std::vector<BlockedReg> > BlockedRegistrars;
 
 /// Main entry point for Registrar namespace
 class Manager {
 public:
   /// Public destructor, user is responsible for delete
   virtual ~Manager() {}
-  virtual bool checkHandle(const std::string) const throw (SQL_ERROR) = 0;
+  virtual bool checkHandle(const std::string) const = 0;
 
   virtual Registrar::AutoPtr createRegistrar() = 0;
   ///add Registrar acl record  used by fred-admin option registrar_acl_add
   virtual void addRegistrarAcl(
           const std::string &registrarHandle,
           const std::string &cert,
-          const std::string &pass)
-      throw (SQL_ERROR) = 0;
+          const std::string &pass) = 0;
 
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR) = 0;
+          const Database::Date &toDate) = 0;
 
   ///list factory
   virtual RegistrarList::AutoPtr createList() =0;
@@ -461,13 +460,13 @@ public:
 
   virtual bool isRegistrarBlocked(Database::ID regId) = 0;
 
-  virtual std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
+  virtual std::unique_ptr<RequestFeeDataMap> getRequestFeeDataMap(
           Logger::LoggerClient *logger_client,
           boost::posix_time::ptime p_from,
           boost::posix_time::ptime p_to,
           boost::gregorian::date zone_access_date) = 0;
 
-  typedef std::auto_ptr<Fred::Registrar::Manager> AutoPtr;
+  typedef std::unique_ptr<Fred::Registrar::Manager> AutoPtr;
 
   /// Factory method
   static AutoPtr create(DBSharedPtr db);

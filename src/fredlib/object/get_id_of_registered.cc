@@ -5,7 +5,7 @@
 
 namespace Fred {
 
-const char* UnknownObject::what()const throw()
+const char* UnknownObject::what()const noexcept
 {
     return "unknown registry object type or handle";
 }

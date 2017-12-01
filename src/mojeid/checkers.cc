@@ -255,12 +255,14 @@ contact_birthday::contact_birthday(
 contact_birthday_validity::contact_birthday_validity(
     const Nullable< std::string > &_ssntype,
     const Nullable< std::string > &_ssn)
-try:invalid(ssntype_present(_ssntype, SSNType::birthday) &&
-            birthdate_from_string_to_date(_ssn.get_value()).is_special())
 {
-}
-catch (...) {
-    invalid = true;
+    try {
+        invalid = ssntype_present(_ssntype, SSNType::birthday)
+            && birthdate_from_string_to_date(_ssn.get_value()).is_special();
+    }
+    catch (...) {
+        invalid = true;
+    }
 }
 
 contact_vat_id_presence::contact_vat_id_presence(

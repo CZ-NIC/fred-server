@@ -39,7 +39,7 @@ namespace Registry
         {
         private:
             // do not copy
-            const std::auto_ptr< BlockingImpl > bimpl_;
+            const std::unique_ptr< BlockingImpl > bimpl_;
             Server_i(const Server_i&);//no body
             Server_i& operator= (const Server_i&);//no body
 

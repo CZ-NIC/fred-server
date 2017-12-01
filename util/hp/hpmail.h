@@ -74,8 +74,8 @@ class HPMail : boost::noncopyable
     bool compressed_file_for_upload_; //have some compressed file for upload
 
     static HPCfgMap required_config;//required postservice config with default values
-    static std::auto_ptr<HPMail> instance_ptr;
-    friend class std::auto_ptr<HPMail>;
+    static std::unique_ptr<HPMail> instance_ptr;
+    friend std::unique_ptr<HPMail>::deleter_type;
 protected:
     ~HPMail()
     {

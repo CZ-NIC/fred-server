@@ -116,7 +116,7 @@ void CommonListImpl::release(const unsigned long long &_idx)
     data_.erase(data_.begin() + _idx);
 }
 
-CommonObject* CommonListImpl::findId(TID _id) const throw (Fred::NOT_FOUND) {
+CommonObject* CommonListImpl::findId(TID _id) const {
   list_type::const_iterator it = std::find_if(data_.begin(),
                                               data_.end(),
                                               CheckId(_id));
@@ -205,7 +205,7 @@ void CommonListImpl::makeRealCount(Database::Filters::Union &_filter) {
     }
 }
 
-void CommonListImpl::makeRealCount() throw (SQL_ERROR) {
+void CommonListImpl::makeRealCount() {
   std::stringstream sql;
   add = false;
   makeQuery(true, false, sql);
@@ -238,7 +238,7 @@ void CommonListImpl::fillTempTable(Database::InsertQuery& _query) {
   }
 }
 
-void CommonListImpl::fillTempTable(bool _limit) const throw (SQL_ERROR) {
+void CommonListImpl::fillTempTable(bool _limit) const {
   // this code is same fo every object should be inherited
   std::stringstream sql;
   if (!add) {

@@ -22,6 +22,7 @@
 #include "util/cfg/handle_threadgroup_args.h"
 
 #include <boost/assign/list_of.hpp>
+#include <utility>
 
 namespace Test {
 

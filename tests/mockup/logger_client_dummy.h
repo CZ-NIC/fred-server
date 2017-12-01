@@ -28,13 +28,13 @@ public:
         return 0;
     }
 
-    std::auto_ptr<RequestCountInfo> getRequestCountUsers(
+    std::unique_ptr<RequestCountInfo> getRequestCountUsers(
                const boost::posix_time::ptime&//from
                , const boost::posix_time::ptime&//to
                , const std::string&//service
                )
     {
-        return std::auto_ptr<RequestCountInfo>(new RequestCountInfo);
+        return std::make_unique<RequestCountInfo>();
     }
 
     unsigned long long createRequest(

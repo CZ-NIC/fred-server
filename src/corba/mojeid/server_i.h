@@ -132,7 +132,7 @@ public:
     void generate_letter_messages();
     void enable_letter_messages_generation(::CORBA::Boolean enable);
 private:
-    const std::auto_ptr< MojeIDImpl > impl_ptr_;
+    const std::unique_ptr< MojeIDImpl > impl_ptr_;
 };//class Server_i
 
 }//namespace Registry::MojeID

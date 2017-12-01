@@ -58,7 +58,7 @@ Registry::MojeID::NullableShippingAddress_var wrap_Nullable_ShippingAddress(cons
 struct ArgumentIsSpecial:std::invalid_argument
 {
     ArgumentIsSpecial();
-    virtual ~ArgumentIsSpecial() throw() {}
+    virtual ~ArgumentIsSpecial() {}
 };
 
 void unwrap_DateTime(const Registry::MojeID::DateTime &src, boost::posix_time::ptime &dst);
@@ -70,7 +70,7 @@ Registry::MojeID::DateTime_var wrap_DateTime(const boost::posix_time::ptime &src
 struct NotEnumValidationResultValue:std::invalid_argument
 {
     NotEnumValidationResultValue();
-    virtual ~NotEnumValidationResultValue() throw() {}
+    virtual ~NotEnumValidationResultValue() {}
 };
 
 /**
@@ -79,7 +79,7 @@ struct NotEnumValidationResultValue:std::invalid_argument
 struct ValidationResultWasNotSet:std::invalid_argument
 {
     ValidationResultWasNotSet();
-    virtual ~ValidationResultWasNotSet() throw() {}
+    virtual ~ValidationResultWasNotSet() {}
 };
 
 void wrap_ValidationResult(Registry::MojeIDImplData::ValidationResult::Value src, Registry::MojeID::ValidationResult &dst);
@@ -126,7 +126,7 @@ Registry::MojeID::Buffer_var wrap_Buffer(const Registry::MojeIDImplData::Buffer 
 struct AllocbufFailed:std::invalid_argument
 {
     AllocbufFailed();
-    virtual ~AllocbufFailed() throw() {}
+    virtual ~AllocbufFailed() {}
 };
 
 Registry::MojeID::ContactHandleList_var wrap_ContactHandleList(const Registry::MojeIDImplData::ContactHandleList &src);

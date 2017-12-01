@@ -36,6 +36,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/crc.hpp>
 #include <boost/assign.hpp>
+#include <utility>
 
 #include "hp.h"
 #include "hpmail.h"
@@ -43,7 +44,7 @@
 //class HPMail implementation
 
 ///static instance init
-std::auto_ptr<HPMail> HPMail::instance_ptr(0);
+std::unique_ptr<HPMail> HPMail::instance_ptr;
 
 ///required HPMail configuration init with default values
 ///HPMail::set is ending values of keys containing "_dir" substring with '/' or '\' for win32
@@ -94,8 +95,8 @@ HPMail* HPMail::set(const HPCfgMap& config_changes)
     //config
     HPCfgMap config = hp_create_config_map(HPMail::required_config, config_changes );
 
-    std::auto_ptr<HPMail> tmp_instance(new HPMail(config));
-    instance_ptr = tmp_instance;
+    std::unique_ptr<HPMail> tmp_instance(new HPMail(config));
+    instance_ptr = std::move(tmp_instance);
     if (instance_ptr.get() == 0)
         throw std::runtime_error(
                 "HPMail::set error: instance not set");

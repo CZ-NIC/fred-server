@@ -48,7 +48,7 @@ class MailerManager : public Fred::Mailer::Manager
     const Fred::Mailer::Handles &handles,
     const Fred::Mailer::Attachments &attach,
     const std::string& reply_to = std::string("")
-  ) throw (Fred::Mailer::NOT_SEND) ;
+  ) ;
   /**
    * Besides of checking, also MODIFIES _email_list (removes emails without @, removes dupliacates, sorts, sets separator to " ").
    */
@@ -82,10 +82,10 @@ class MailerManager : public Fred::Mailer::Manager
   typedef std::vector<Detail> List;  
  private:
   List mailList;
-  void _resolveInit() throw (RESOLVE_FAILED);
+  void _resolveInit();
  public:
   List& getMailList();
-  void reload(Filter& mf) throw (LOAD_ERROR);
+  void reload(Filter& mf);
 };
 
 #endif

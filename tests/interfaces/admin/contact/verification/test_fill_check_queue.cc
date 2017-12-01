@@ -34,8 +34,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "tests/interfaces/admin/contact/verification/setup_utils.h"
 #include "tests/setup/fixtures.h"
@@ -44,7 +43,7 @@ namespace TestStatus = Fred::ContactTestStatus;
 namespace CheckStatus = Fred::ContactCheckStatus;
 
 typedef std::vector<Admin::ContactVerificationQueue::enqueued_check> T_enq_ch;
-typedef std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> > T_testimpl_map;
+typedef std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> > T_testimpl_map;
 
 void clean_queue() {
     std::string status_array =
@@ -160,10 +159,10 @@ void empty_automatic_testsuite() {
 }
 
 T_testimpl_map create_dummy_automatic_testsuite() {
-    std::map< std::string, boost::shared_ptr<Admin::ContactVerification::Test> > test_impls;
+    std::map< std::string, std::shared_ptr<Admin::ContactVerification::Test> > test_impls;
 
     Fred::OperationContextCreator ctx;
-    boost::shared_ptr<Admin::ContactVerification::Test> temp_ptr
+    std::shared_ptr<Admin::ContactVerification::Test> temp_ptr
         (new DummyTestReturning(TestStatus::OK));
 
     std::string handle = dynamic_cast<DummyTestReturning*>(temp_ptr.get())->get_handle();
@@ -646,7 +645,7 @@ void process_filtered_contacts_testcase(
             bool> > // should be enqueued?
         Ttestdata;
 
-    std::vector<boost::shared_ptr<setup_special_contact> > test_contacts;
+    std::vector<std::shared_ptr<setup_special_contact> > test_contacts;
     std::vector<unsigned long long> contacts_to_be_enqueued;
     for(Ttestdata::const_iterator it = testcases.begin();
         it != testcases.end();
@@ -654,7 +653,7 @@ void process_filtered_contacts_testcase(
     ) {
         test_contacts
             .push_back(
-                boost::make_shared<TestContactVerification::TestFillAutomaticQueue::setup_special_contact>(
+                std::make_shared<TestContactVerification::TestFillAutomaticQueue::setup_special_contact>(
                     setup_special_contact( (*it).get<0>(), (*it).get<1>(), (*it).get<2>() )
         ));
 

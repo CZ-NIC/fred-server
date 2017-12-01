@@ -2,7 +2,7 @@
 #define CORBA_AUTO_GARBAGED_LIST
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/thread/thread.hpp>
 #include "util/log/logger.h"
@@ -14,7 +14,7 @@ template<typename T>
 class CorbaAutoGarbagedList
 {
 private:
-    typedef boost::shared_ptr<T> value_type_ptr;
+    typedef std::shared_ptr<T> value_type_ptr;
     typedef std::vector<value_type_ptr> value_type_ptr_list;
 
     std::string name_;

@@ -76,15 +76,15 @@ struct PlaceAddress
 
 };
 
-}//namespace Contact
-}//namespace Fred
-
 /**
  * Inserts string representation that conforms value of @a src into stream @a out.
  * @param out object where characters are inserted
  * @param src object with the content to insert
  * @return the same as parameter @a out
  */
-std::ostream& operator<<(std::ostream &out, const Fred::Contact::PlaceAddress &src);
+std::ostream& operator<<(std::ostream &out, const PlaceAddress &src);
+
+}//namespace Contact
+}//namespace Fred
 
 #endif//PLACE_ADDRESS_H_40BCB51572DBDD30F6E1441AE2CCADF5

@@ -39,7 +39,7 @@ public:
 };
 
 // smart pointert
-typedef std::auto_ptr<StatementList> StatementListPtr;
+typedef std::unique_ptr<StatementList> StatementListPtr;
 
 }
 }

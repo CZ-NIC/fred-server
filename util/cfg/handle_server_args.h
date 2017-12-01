@@ -45,10 +45,10 @@ public:
     bool do_daemonize;
     std::string pidfile_name;
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("Common server process configuration")));
         cfg_opts->add_options()

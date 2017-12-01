@@ -26,12 +26,12 @@
 namespace Registry {
 namespace RecordStatement {
 
-const char* InternalServerError::what()const throw()
+const char* InternalServerError::what()const noexcept
 {
     return "internal server error";
 }
 
-const char* ObjectNotFound::what()const throw()
+const char* ObjectNotFound::what()const noexcept
 {
     return "registry object with specified ID does not exist";
 }

@@ -16,6 +16,8 @@
  * along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <utility>
+
 #include "config.h"
 
 // FRED logging
@@ -545,8 +547,8 @@ public:
             std::string request;
             std::string response;
 
-            std::auto_ptr<RequestPropertiesDetail> props;
-            std::auto_ptr<ObjectReferences> refs;
+            std::unique_ptr<RequestPropertiesDetail> props;
+            std::unique_ptr<ObjectReferences> refs;
 
             if (!partialLoad) {
                 request = (std::string) *(++col);
@@ -560,7 +562,7 @@ public:
             data_.push_back(new RequestImpl(id, time_begin, time_end,
                     serv_type, source_ip, request_type_id, session_id,
                     user_name, user_id, is_monitoring, request, response,
-                    props, refs, rc_code, rc_name));
+                    std::move(props), std::move(refs), rc_code, rc_name));
         }
 
         if (data_.empty()) {
@@ -620,8 +622,8 @@ public:
 
   }
 
-  virtual std::auto_ptr<RequestPropertiesDetail> getPropsForId(ID id, DateTime time_begin, int sid, bool mon) {
-    std::auto_ptr<RequestPropertiesDetail> ret(new RequestPropertiesDetail());
+  virtual std::unique_ptr<RequestPropertiesDetail> getPropsForId(ID id, DateTime time_begin, int sid, bool mon) {
+    std::unique_ptr<RequestPropertiesDetail> ret(new RequestPropertiesDetail());
     Database::SelectQuery query;
 
     query.select() << "t_2.name, t_1.value, t_1.output, (t_1.parent_id is not null)";
@@ -646,8 +648,8 @@ public:
     return ret;
   }
 
-  virtual std::auto_ptr<ObjectReferences> getObjectRefsForId(ID id, DateTime time_begin, int sid, bool mon) {
-        std::auto_ptr<ObjectReferences> ret(new ObjectReferences());
+  virtual std::unique_ptr<ObjectReferences> getObjectRefsForId(ID id, DateTime time_begin, int sid, bool mon) {
+        std::unique_ptr<ObjectReferences> ret(new ObjectReferences());
 
         Connection conn = Database::Manager::acquire();
 
@@ -728,8 +730,8 @@ public:
                 std::string     request;
                 std::string     response;
 
-                std::auto_ptr<RequestPropertiesDetail> props;
-                                std::auto_ptr<ObjectReferences> refs;
+                std::unique_ptr<RequestPropertiesDetail> props;
+                                std::unique_ptr<ObjectReferences> refs;
 
                 if(!partialLoad) {
                     request     = (std::string)*(++col);
@@ -750,8 +752,8 @@ public:
                             is_monitoring,
                             request,
                             response,
-                            props,
-                                                        refs));
+                            std::move(props),
+                                                        std::move(refs)));
             }
 
             if(data_.empty()) {

@@ -57,8 +57,8 @@ class HPMailBatchState : boost::noncopyable
     FILE* curl_log_file_;//curl log file pointer
 
     static HPCfgMap required_config;//required postservice config with default values
-    static std::auto_ptr<HPMailBatchState> instance_ptr;
-    friend class std::auto_ptr<HPMailBatchState>;
+    static std::unique_ptr<HPMailBatchState> instance_ptr;
+    friend std::unique_ptr<HPMailBatchState>::deleter_type;
 protected:
     ~HPMailBatchState()
     {

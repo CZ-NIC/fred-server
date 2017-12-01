@@ -46,14 +46,14 @@ public:
         : epp_result_(_epp_result)
     { }
 
-    virtual ~EppResponseSuccess() throw()
+    virtual ~EppResponseSuccess()
     { }
 
     const EppResultSuccess& epp_result() const {
         return epp_result_;
     }
 
-    const char* what() const throw() {
+    const char* what() const noexcept {
         return epp_result().c_str();
     }
 

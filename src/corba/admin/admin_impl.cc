@@ -166,7 +166,7 @@ void ccReg_Admin_i::checkHandle(const char* handle,
   Database::Connection conn = Database::Manager::acquire();
   db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
+  std::unique_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   ccReg::CheckHandleTypeSeq* chs = new ccReg::CheckHandleTypeSeq;
   Fred::CheckHandleList chl;
@@ -240,7 +240,7 @@ void ccReg_Admin_i::garbageSession() {
 
 void ccReg_Admin_i::authenticateUser(const char* _username,
                                      const char* _password)
-    throw (ccReg::Admin::AuthFailed) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -321,7 +321,7 @@ void ccReg_Admin_i::destroySession(const char* _session_id) {
 }
 
 ccReg::Session_ptr ccReg_Admin_i::getSession(const char* _session_id)
-    throw (ccReg::Admin::ObjectNotFound) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -370,7 +370,6 @@ void ccReg_Admin_i::fillRegistrar(ccReg::AdminRegistrar& creg,
 }
 
 ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
-    throw (ccReg::Admin::SQL_ERROR)
 {
     Logging::Context ctx(server_name_);
     ConnectionReleaser releaser;
@@ -380,7 +379,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
     Database::Connection conn = Database::Manager::acquire();
     db.reset(new DB(conn));
 
-    std::auto_ptr<Fred::Manager> regm(
+    std::unique_ptr<Fred::Manager> regm(
         Fred::Manager::create(db
                 , restricted_handles_)
     );
@@ -404,7 +403,7 @@ ccReg::RegistrarList* ccReg_Admin_i::getRegistrars()
 }
 
 ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
-    throw (ccReg::Admin::ObjectNotFound, ccReg::Admin::SQL_ERROR) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -417,14 +416,14 @@ ccReg::AdminRegistrar* ccReg_Admin_i::getRegistrarById(ccReg::TID id)
     Database::Connection conn = Database::Manager::acquire();
     db.reset(new DB(conn));
 
-    std::auto_ptr<Fred::Manager> regm(
+    std::unique_ptr<Fred::Manager> regm(
         Fred::Manager::create(db,restricted_handles_)
     );
     Fred::Registrar::Manager *rm = regm->getRegistrarManager();
     Fred::Registrar::RegistrarList::AutoPtr rl = rm->createList();
 
     Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
-    std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+    std::unique_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
     r->addId().setValue(Database::ID(id));
     unionFilter->addFilter( r.release() );
     rl->reload(*unionFilter.get());
@@ -450,7 +449,7 @@ CORBA::Long ccReg_Admin_i::getDomainCount(const char *zone) {
   db.reset(new DB(conn));
 
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
+  std::unique_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getDomainCount(zone);
@@ -466,7 +465,7 @@ CORBA::Long ccReg_Admin_i::getSignedDomainCount(const char *_fqdn)
   Database::Connection conn = Database::Manager::acquire();
   db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
+  std::unique_ptr<Fred::Manager> r(Fred::Manager::create(db
           ,restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getSignedDomainCount(_fqdn);
@@ -481,7 +480,7 @@ CORBA::Long ccReg_Admin_i::getEnumNumberCount() {
   Database::Connection conn = Database::Manager::acquire();
   db.reset(new DB(conn));
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
+  std::unique_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   Fred::Domain::Manager *dm = r->getDomainManager();
   CORBA::Long ret = dm->getEnumNumberCount();
@@ -498,7 +497,7 @@ Registry::CountryDescSeq* ccReg_Admin_i::getCountryDescList() {
   db.reset(new DB(conn));
 
 
-  std::auto_ptr<Fred::Manager> r(Fred::Manager::create(db
+  std::unique_ptr<Fred::Manager> r(Fred::Manager::create(db
           , restricted_handles_));
   /*
    * TEMP: this is for loading country codes from database - until new database
@@ -573,7 +572,7 @@ char* ccReg_Admin_i::getCreditByZone(const char*registrarHandle, ccReg::TID zone
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
-  std::auto_ptr<Fred::Invoicing::Manager>
+  std::unique_ptr<Fred::Invoicing::Manager>
       invman(Fred::Invoicing::Manager::create());
   char *ret = DUPSTRC(invman->getCreditByZone(registrarHandle, zone));
   return ret;
@@ -591,35 +590,35 @@ void ccReg_Admin_i::generateLetters() {
 
 
     MailerManager mm(ns);
-    std::auto_ptr<Fred::Document::Manager> docman(
+    std::unique_ptr<Fred::Document::Manager> docman(
         Fred::Document::Manager::create(docgen_path_,
                                             docgen_template_path_,
                                             fileclient_path_,
                                             ns->getHostName()));
-    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+    std::unique_ptr<Fred::Zone::Manager> zoneMan(
         Fred::Zone::Manager::create());
 
     Fred::Messages::ManagerPtr msgMan
         = Fred::Messages::create_manager();
 
 
-    std::auto_ptr<Fred::Domain::Manager> domMan(
+    std::unique_ptr<Fred::Domain::Manager> domMan(
         Fred::Domain::Manager::create(db,
                                           zoneMan.get()));
-    std::auto_ptr<Fred::Contact::Manager> conMan(
+    std::unique_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(db,
                                            restricted_handles_));
-    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+    std::unique_ptr<Fred::Nsset::Manager> nssMan(
         Fred::Nsset::Manager::create(db,
                                          zoneMan.get(),
                                          restricted_handles_));
-    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+    std::unique_ptr<Fred::Keyset::Manager> keyMan(
             Fred::Keyset::Manager::create(
                     db,
                 restricted_handles_));
-    std::auto_ptr<Fred::Registrar::Manager> rMan(
+    std::unique_ptr<Fred::Registrar::Manager> rMan(
         Fred::Registrar::Manager::create(db));
-    std::auto_ptr<Fred::Notify::Manager> notifyMan(
+    std::unique_ptr<Fred::Notify::Manager> notifyMan(
         Fred::Notify::Manager::create(db,
                                           &mm,
                                           conMan.get(),
@@ -686,11 +685,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
                                               const char *_email_to_answer,
                                               const ccReg::Admin::ObjectIdList& _object_ids,
                                               const ccReg::TID requestId)
-  throw (
-    ccReg::Admin::BAD_EMAIL, ccReg::Admin::OBJECT_NOT_FOUND,
-    ccReg::Admin::ACTION_NOT_FOUND, ccReg::Admin::SQL_ERROR,
-    ccReg::Admin::INVALID_INPUT, ccReg::Admin::REQUEST_BLOCKED
-  ) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -699,14 +694,14 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
 
   MailerManager mailer_manager(ns);
 
-  std::auto_ptr<Fred::Document::Manager> doc_manager(
+  std::unique_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
               docgen_path_,
               docgen_template_path_,
               fileclient_path_,
               ns->getHostName())
           );
-  std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
+  std::unique_ptr<Fred::PublicRequest::Manager> request_manager(
           Fred::PublicRequest::Manager::create(
               registry_manager_->getDomainManager(),
               registry_manager_->getContactManager(),
@@ -741,7 +736,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
       throw ccReg::Admin::INVALID_INPUT();
   }
 
-  std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(request_type));
+  std::unique_ptr<Fred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(request_type));
   new_request->setType(request_type);
   new_request->setRegistrarId(0);
   new_request->setReason(_reason);
@@ -770,10 +765,7 @@ ccReg::TID ccReg_Admin_i::createPublicRequest(Registry::PublicRequest::Type _typ
 }
 
 void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
-    throw (
-    ccReg::Admin::SQL_ERROR, ccReg::Admin::OBJECT_NOT_FOUND,
-    ccReg::Admin::MAILER_ERROR, ccReg::Admin::REQUEST_BLOCKED
-  ) {
+{
   Logging::Context ctx(server_name_);
   ConnectionReleaser releaser;
 
@@ -781,14 +773,14 @@ void ccReg_Admin_i::processPublicRequest(ccReg::TID id, CORBA::Boolean invalid)
   	id % invalid);
 
   MailerManager mailer_manager(ns);
-  std::auto_ptr<Fred::Document::Manager> doc_manager(
+  std::unique_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
               docgen_path_,
               docgen_template_path_,
               fileclient_path_,
               ns->getHostName())
           );
-  std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
+  std::unique_ptr<Fred::PublicRequest::Manager> request_manager(
           Fred::PublicRequest::Manager::create(
               registry_manager_->getDomainManager(),
               registry_manager_->getContactManager(),
@@ -830,14 +822,14 @@ ccReg::Admin::Buffer* ccReg_Admin_i::getPublicRequestPDF(ccReg::TID id,
 
   MailerManager mailer_manager(ns);
 
-  std::auto_ptr<Fred::Document::Manager> doc_manager(
+  std::unique_ptr<Fred::Document::Manager> doc_manager(
           Fred::Document::Manager::create(
               docgen_path_,
               docgen_template_path_,
               fileclient_path_,
               ns->getHostName())
           );
-  std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
+  std::unique_ptr<Fred::PublicRequest::Manager> request_manager(
           Fred::PublicRequest::Manager::create(
               registry_manager_->getDomainManager(),
               registry_manager_->getContactManager(),
@@ -1442,7 +1434,7 @@ Registry_Registrar_Certification_Manager_i::getCertificationsByRegistrar(
         Fred::Registrar::CertificationSeq cs
         = regman->getRegistrarCertifications(registrar_id);
 
-        std::auto_ptr<Registry::Registrar::Certification::CertificationList> cl
+        std::unique_ptr<Registry::Registrar::Certification::CertificationList> cl
          (new Registry::Registrar::Certification::CertificationList);
         cl->length(cs.size());
 
@@ -1626,7 +1618,7 @@ Registry_Registrar_Group_Manager_i::getGroups()
         Fred::Registrar::GroupSeq gs
         = regman->getRegistrarGroups();
 
-        std::auto_ptr<Registry::Registrar::Group::GroupList> gl
+        std::unique_ptr<Registry::Registrar::Group::GroupList> gl
          (new Registry::Registrar::Group::GroupList);
         gl->length(gs.size());
 
@@ -1668,7 +1660,7 @@ Registry_Registrar_Group_Manager_i::getMembershipsByRegistar(
         Fred::Registrar::MembershipByRegistrarSeq mbrs
         = regman->getMembershipByRegistrar(registrar_id);
 
-        std::auto_ptr<Registry::Registrar::Group::MembershipByRegistrarList> mbrl
+        std::unique_ptr<Registry::Registrar::Group::MembershipByRegistrarList> mbrl
          (new Registry::Registrar::Group::MembershipByRegistrarList);
         mbrl->length(mbrs.size());
 
@@ -1709,7 +1701,7 @@ Registry_Registrar_Group_Manager_i::getMembershipsByGroup(ccReg::TID group_id)
         Fred::Registrar::MembershipByGroupSeq mbgs
         = regman->getMembershipByGroup(group_id);
 
-        std::auto_ptr<Registry::Registrar::Group::MembershipByGroupList> mbgl
+        std::unique_ptr<Registry::Registrar::Group::MembershipByGroupList> mbgl
          (new Registry::Registrar::Group::MembershipByGroupList);
         mbgl->length(mbgs.size());
 
@@ -1773,8 +1765,8 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
 
         Database::Connection conn = Database::Manager::acquire();
         DBSharedPtr ldb_dc_guard (new DB(conn));
-        std::auto_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
-        std::auto_ptr<Fred::Poll::MessageRequestFeeInfo> rfi(poll_mgr->getLastRequestFeeInfoMessage(_registrar));
+        std::unique_ptr<Fred::Poll::Manager> poll_mgr(Fred::Poll::Manager::create(ldb_dc_guard));
+        std::unique_ptr<Fred::Poll::MessageRequestFeeInfo> rfi(poll_mgr->getLastRequestFeeInfoMessage(_registrar));
 
         ccReg::RegistrarRequestCountInfo_var ret = new ccReg::RegistrarRequestCountInfo;
         ret->periodFrom = CORBA::string_dup(formatTime(rfi->getPeriodFrom(), true, true).c_str());
@@ -1798,8 +1790,7 @@ ccReg::RegistrarRequestCountInfo* ccReg_Admin_i::getRegistrarRequestCount(const 
     }
 }
 
-bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
-         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound)
+bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id)
 {
     try {
         Logging::Context(server_name_);
@@ -1807,7 +1798,7 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
         TRACE(boost::format("[CALL] ccReg_Admin_i::isRegistrarBlocked(%1%)") % reg_id);
 
         DBSharedPtr nodb;
-        std::auto_ptr<Fred::Registrar::Manager> regman(
+        std::unique_ptr<Fred::Registrar::Manager> regman(
                 Fred::Registrar::Manager::create(nodb));
 
         regman->checkRegistrarExists(reg_id);
@@ -1824,8 +1815,7 @@ bool ccReg_Admin_i::isRegistrarBlocked(ccReg::TID reg_id) throw (
 
 }
 
-bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id) throw (
-         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound)
+bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id)
 {
     try {
         Logging::Context(server_name_);
@@ -1833,12 +1823,12 @@ bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id) throw (
         TRACE(boost::format("[CALL] ccReg_Admin_i::blockRegistrar(%1%)") % reg_id);
 
         DBSharedPtr nodb;
-        std::auto_ptr<Fred::Registrar::Manager> regman(
+        std::unique_ptr<Fred::Registrar::Manager> regman(
                 Fred::Registrar::Manager::create(nodb));
 
         regman->checkRegistrarExists(reg_id);
 
-        std::auto_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
+        std::unique_ptr<EppCorbaClient> epp_cli(new EppCorbaClientImpl());
         return regman->blockRegistrar(reg_id, epp_cli.get());
     } catch (Fred::NOT_FOUND &) {
         throw ccReg::Admin::ObjectNotFound();
@@ -1852,8 +1842,7 @@ bool ccReg_Admin_i::blockRegistrar(ccReg::TID reg_id) throw (
 
 }
 
-void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) throw (
-         ccReg::Admin::InternalServerError, ccReg::Admin::ObjectNotFound, ccReg::Admin::ObjectNotBlocked)
+void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id)
 {
     try {
         Logging::Context(server_name_);
@@ -1861,7 +1850,7 @@ void ccReg_Admin_i::unblockRegistrar(ccReg::TID reg_id, ccReg::TID request_id) t
         TRACE(boost::format("[CALL] ccReg_Admin_i::unblockRegistrar(%1%, %2%)") % reg_id % request_id);
 
         DBSharedPtr nodb;
-        std::auto_ptr<Fred::Registrar::Manager> regman(
+        std::unique_ptr<Fred::Registrar::Manager> regman(
                 Fred::Registrar::Manager::create(nodb));
 
         regman->checkRegistrarExists(reg_id);

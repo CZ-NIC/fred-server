@@ -45,10 +45,10 @@ class HandleSmsArgs : public HandleArgs
 public:
     std::string command;
 
-    boost::shared_ptr<po::options_description>
+    std::shared_ptr<po::options_description>
     get_options_description()
     {
-        boost::shared_ptr<po::options_description> opts_descs(
+        std::shared_ptr<po::options_description> opts_descs(
                 new po::options_description(std::string("Sms sender configuration")));
         opts_descs->add_options()
                 ("sms.command",
@@ -77,7 +77,7 @@ class HandleSmsArgsGrp : public HandleGrpArgs
 {
 public:
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
         return HandleSmsArgs::get_options_description();

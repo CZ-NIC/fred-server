@@ -117,7 +117,7 @@ public:
     void sms_send();
     void file_send();
     void sendFile(const std::string &filename, const std::string &conf_file); 
-    void sendLetters(std::auto_ptr<Fred::File::Transferer> fileman
+    void sendLetters(std::unique_ptr<Fred::File::Transferer> fileman
             , const std::string &conf_file);
     void sendSMS(const std::string& command , const std::string& param_quote_by);
     void send_letters_impl(
@@ -144,7 +144,7 @@ void notify_letters_optys_send_impl(const std::string& nameservice_host_port
         , const std::string& optys_config_file
         );
 
-void send_object_event_notification_emails_impl(boost::shared_ptr<Fred::Mailer::Manager> _mailer);
+void send_object_event_notification_emails_impl(std::shared_ptr<Fred::Mailer::Manager> _mailer);
 
 } // namespace Admin;
 

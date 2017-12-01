@@ -16,6 +16,7 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <memory>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -26,7 +27,7 @@
 #include <ctype.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/regex.hpp>
 
 #include "model_zone.h"
@@ -108,7 +109,7 @@ namespace Fred
              return getId() == _id;
            }
 
-           virtual void save() throw (SQL_ERROR)
+           virtual void save()
            {
              try
              {
@@ -137,7 +138,7 @@ namespace Fred
                    , virtual public  Zone
                    , private ModelZoneSoa
     {
-        typedef std::vector<boost::shared_ptr<ZoneNsImpl> > ZoneNsList;
+        typedef std::vector<std::shared_ptr<ZoneNsImpl> > ZoneNsList;
         typedef ZoneNsList::iterator ZoneNsListIter;
         ZoneNsList zone_ns_list; /// zone ns records
 
@@ -230,7 +231,7 @@ namespace Fred
       /// Create new ZoneNs record
       virtual ZoneNs* newZoneNs()
       {
-          boost::shared_ptr<ZoneNsImpl> new_ZoneNs ( new ZoneNsImpl());
+          std::shared_ptr<ZoneNsImpl> new_ZoneNs ( new ZoneNsImpl());
           zone_ns_list.push_back(new_ZoneNs);
           return new_ZoneNs.get();
       }
@@ -257,7 +258,7 @@ namespace Fred
           zone_ns_list.clear();
       }
       /// Save changes to database
-      virtual void save() throw (SQL_ERROR)
+      virtual void save()
       {
           // save zone data
         try
@@ -418,7 +419,7 @@ namespace Fred
                   const std::string& fqdn,
                   const std::string& addrs)
       {
-        zone_ns_list.push_back(boost::shared_ptr<ZoneNsImpl>(new ZoneNsImpl(_id,_zoneid,fqdn,addrs)));
+        zone_ns_list.push_back(std::make_shared<ZoneNsImpl>(_id,_zoneid,fqdn,addrs));
       }
       bool hasId(TID _id) const
       {
@@ -513,7 +514,7 @@ namespace Fred
 			    return ret_ptr;
 			  }//findIDSequence
 
-			  virtual void reload() throw (SQL_ERROR)
+			  virtual void reload()
 			  {
 			      TRACE("[CALL] ZoneListImpl::reload()");
 			      try
@@ -599,7 +600,7 @@ namespace Fred
 
 		          bool at_least_one = false;
 		          Database::SelectQuery info_query;
-		          std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+		          std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
 		          for (fit->first(); !fit->isDone(); fit->next())
 		          {
 		            Database::Filters::Zone *zf =
@@ -834,7 +835,7 @@ namespace Fred
       /// interface method implementation
       void parseDomainName(
         const std::string& fqdn, DomainName& domain, bool allowIDN
-      ) const throw (INVALID_DOMAIN_NAME)
+      ) const
       {
           // ! the last asterisk means only that last label has {0,n} chars with 0 enabling fqdn to end with dot
           //                                    (somelabel.)*(label )
@@ -923,7 +924,7 @@ namespace Fred
       }
       /// interface method implementation
       std::string makeEnumDomain(const std::string& number)
-        const throw (NOT_A_NUMBER)
+        const
       {
         std::string result;
         unsigned l = number.size();
@@ -1011,7 +1012,6 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-		throw (SQL_ERROR, ALREADY_EXISTS)
       {
         try
         {
@@ -1069,7 +1069,6 @@ namespace Fred
               const std::string& fqdn,
               int ex_period_min=12,
               int ex_period_max=120)
-        throw (SQL_ERROR, ALREADY_EXISTS)
 		{
 		try
 		{
@@ -1123,7 +1122,6 @@ namespace Fred
               int expiry=1209600,
               int minimum=7200,
               const std::string &ns_fqdn="localhost")
-		throw (SQL_ERROR, ALREADY_EXISTS, NOT_FOUND)
 		{
 			try
 			{
@@ -1193,7 +1191,6 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-		throw (SQL_ERROR, NOT_FOUND)
       {
         try
         {
@@ -1248,7 +1245,6 @@ namespace Fred
               int expiry,
               int minimum,
               const std::string &ns_fqdn)
-		throw (SQL_ERROR)
       {
         try
         {
@@ -1293,7 +1289,6 @@ namespace Fred
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
-          throw (SQL_ERROR,NOT_FOUND)
       {
           try
           {
@@ -1326,7 +1321,6 @@ namespace Fred
               const std::string &zone,
               const std::string &fqdn,
               const std::string &addr)
-          throw (SQL_ERROR,NOT_FOUND)
 	{
 		try
 		{
@@ -1478,10 +1472,10 @@ namespace Fred
       virtual std::string utf8_to_punycode(const std::string& fqdn) const
       {
           char *p = 0;
-          boost::shared_ptr<char> release_p;
+          std::shared_ptr<char> release_p;
 
           bool convert_result = (idna_to_ascii_8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS);
-          release_p = boost::shared_ptr<char>(p, free);
+          release_p = std::shared_ptr<char>(p, free);
 
           if(convert_result) {
               std::string result( p );
@@ -1494,10 +1488,10 @@ namespace Fred
       virtual std::string punycode_to_utf8(const std::string& fqdn) const
       {
           char *p = 0;
-          boost::shared_ptr<char> release_p;
+          std::shared_ptr<char> release_p;
 
           bool convert_result = (idna_to_unicode_8z8z(fqdn.c_str(), &p, 0) == IDNA_SUCCESS);
-          release_p = boost::shared_ptr<char>(p, free);
+          release_p = std::shared_ptr<char>(p, free);
 
           if(convert_result) {
               std::string result( p );

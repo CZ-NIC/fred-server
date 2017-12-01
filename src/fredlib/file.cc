@@ -135,7 +135,7 @@ List::reload(Database::Filters::Union &filter)
 }
 
 File *
-List::get(unsigned int index) const throw (std::exception)
+List::get(unsigned int index) const
 {
     try {
         File *file = dynamic_cast<File *>(CommonListImplNew::get(index));

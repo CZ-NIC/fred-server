@@ -29,7 +29,7 @@
 #include <cstdlib>
 #include <string>
 #include <iterator>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/lexical_cast.hpp>
 
 #include "../row.h"
@@ -46,7 +46,7 @@ namespace Database {
  */
 class PSQLResult {
 protected:
-  boost::shared_ptr<PGresult>  psql_result_; /**< wrapped result structure from lipq library */
+  std::shared_ptr<PGresult>  psql_result_; /**< wrapped result structure from lipq library */
 
 
 public:

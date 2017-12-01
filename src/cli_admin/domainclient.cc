@@ -16,6 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <utility>
+
 #include "commonclient.h"
 #include "domainclient.h"
 #include "src/fredlib/registry.h"
@@ -39,12 +41,12 @@ DomainClient::runMethod()
 void
 DomainClient::domain_list()
 {
-    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+    std::unique_ptr<Fred::Zone::Manager> zoneMan(
             Fred::Zone::Manager::create());
 
-    std::auto_ptr<Fred::Domain::Manager> domMan(
+    std::unique_ptr<Fred::Domain::Manager> domMan(
             Fred::Domain::Manager::create(m_db, zoneMan.get()));
-    std::auto_ptr<Fred::Domain::List> domList(
+    std::unique_ptr<Fred::Domain::List> domList(
             domMan->createList());
 
     Database::Filters::Domain *domFilter;

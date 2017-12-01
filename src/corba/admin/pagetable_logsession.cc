@@ -31,7 +31,7 @@ Registry::Table::ColumnHeaders* ccReg_LogSession_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_LogSession_i::getRow(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   try {
@@ -75,7 +75,7 @@ void ccReg_LogSession_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 }
 
 ccReg::TID ccReg_LogSession_i::getRowId(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   const Fred::Session::Session *a = m_lel->get(row);
@@ -150,7 +150,7 @@ void ccReg_LogSession_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_LogSession_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
       tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->save(Fred::Filter::FT_SESSION, _name, uf);
 }

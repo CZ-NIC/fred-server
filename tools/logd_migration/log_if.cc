@@ -396,7 +396,7 @@ Fred::Logger::RequestProperties *epp_property_push_dnskey(Fred::Logger::RequestP
  *
  * @return  status
  */
-auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
+unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id)
 {
 #define PUSH_PROPERTY(seq, name, value)								\
 	seq = epp_property_push(seq, name, value, false);	\
@@ -446,7 +446,7 @@ auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdat
 		PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
 		// res = epp_log_new_message(request, c_props, &errmsg);
-		return auto_ptr<Fred::Logger::RequestProperties>(c_props);
+		return unique_ptr<Fred::Logger::RequestProperties>(c_props);
 	}
 
 	switch(cmdtype) {
@@ -493,7 +493,7 @@ auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdat
 
 				PUSH_PROPERTY(c_props, "id", ai->id);
 
-				return auto_ptr<Fred::Logger::RequestProperties>(c_props);
+				return unique_ptr<Fred::Logger::RequestProperties>(c_props);
 			}
 			break;
 
@@ -937,7 +937,7 @@ auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdat
 	PUSH_PROPERTY (c_props, "svTRID", cdata->svTRID);
 
 
-	return auto_ptr<Fred::Logger::RequestProperties>(c_props);
+	return unique_ptr<Fred::Logger::RequestProperties>(c_props);
 	// res = epp_log_new_message(  request, c_props, &errmsg);
 
 #undef PUSH_PROPERTY

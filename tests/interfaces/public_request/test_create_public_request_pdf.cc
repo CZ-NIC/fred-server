@@ -31,6 +31,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sstream>
+#include <utility>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(CreatePdf)
@@ -77,12 +78,12 @@ class FakeManager : public Fred::Document::Manager
 private:
     struct UnexpectedCall : std::exception
     {
-        const char* what() const throw() { return "method must not be called"; }
+        const char* what() const noexcept { return "method must not be called"; }
     };
 public:
     virtual ~FakeManager() {}
 
-    virtual std::auto_ptr<Fred::Document::Generator> createOutputGenerator(
+    virtual std::unique_ptr<Fred::Document::Generator> createOutputGenerator(
         Fred::Document::GenerationType type,
         std::ostream& output,
         const std::string& lang) const
@@ -95,11 +96,11 @@ public:
         {
             throw std::invalid_argument("language code not recognized");
         }
-        std::auto_ptr<Fred::Document::Generator> generator(new FakeGenerator);
+        std::unique_ptr<Fred::Document::Generator> generator(new FakeGenerator);
         return generator;
     }
 
-    virtual std::auto_ptr<Fred::Document::Generator> createSavingGenerator(
+    virtual std::unique_ptr<Fred::Document::Generator> createSavingGenerator(
         Fred::Document::GenerationType, const std::string&, unsigned, const std::string&)const
     {
         throw UnexpectedCall();
@@ -128,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
             Registry::PublicRequestImpl::ConfirmedBy::letter,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
     ctx.commit_transaction();
-    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
+    std::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     const std::string buffer_value = pr.create_public_request_pdf(
             block_transfer_post,
             Registry::PublicRequestImpl::Language::en,
@@ -139,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE(create_pdf, create_pdf_fixture)
 BOOST_FIXTURE_TEST_CASE(no_public_request, create_pdf_fixture)
 {
     Fred::OperationContextCreator ctx;
-    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
+    std::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 123,
@@ -157,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(not_a_post_type, create_pdf_fixture)
             Optional<unsigned long long>(),
             Registry::PublicRequestImpl::ConfirmedBy::email,
             Registry::PublicRequestImpl::LockRequestType::block_transfer);
-    boost::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
+    std::shared_ptr<Fred::Document::Manager> manager(new FakeManager);
     BOOST_CHECK_THROW(
             pr.create_public_request_pdf(
                 block_transfer_email,

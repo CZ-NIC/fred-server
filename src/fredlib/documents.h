@@ -58,13 +58,13 @@ namespace Fred
       /// public destructor for 
       virtual ~Manager() {}
       /// create generator returning output in given stream
-      virtual std::auto_ptr<Fred::Document::Generator> createOutputGenerator(
+      virtual std::unique_ptr<Fred::Document::Generator> createOutputGenerator(
         GenerationType type, 
         std::ostream& output, 
         const std::string& lang
       ) const = 0;
       /// create generator that save output as given filename
-      virtual std::auto_ptr<Fred::Document::Generator> createSavingGenerator(
+      virtual std::unique_ptr<Fred::Document::Generator> createSavingGenerator(
         GenerationType type, 
         const std::string& filename, unsigned filetype,
         const std::string& lang
@@ -82,7 +82,7 @@ namespace Fred
         const std::string& name, unsigned filetype,
         const std::string& lang
       ) const = 0;
-      static std::auto_ptr<Fred::Document::Manager> create(
+      static std::unique_ptr<Fred::Document::Manager> create(
         const std::string& path, const std::string& pathTemplates,
         const std::string& pathFM,
         const std::string& corbaNS

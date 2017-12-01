@@ -59,7 +59,6 @@ Registry::Table::ColumnHeaders* ccReg_Domains_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_Domains_i::getRow(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
     try
@@ -179,7 +178,6 @@ void ccReg_Domains_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 }
 
 ccReg::TID ccReg_Domains_i::getRowId(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW)
 {
   Logging::Context ctx(base_context_);
     try
@@ -253,7 +251,7 @@ void ccReg_Domains_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Domains_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
       tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->save(Fred::Filter::FT_DOMAIN, _name, uf);
 }

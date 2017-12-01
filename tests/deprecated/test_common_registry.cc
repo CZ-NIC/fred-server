@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <functional>
 #include <numeric>
+#include <utility>
 #include <vector>
 #include <map>
 #include <queue>
@@ -188,7 +189,7 @@ void try_insert_invoice_prefix()
     Database::Connection conn = Database::Manager::acquire();
     unsigned long long zone_cz_id = conn.exec("select id from zone where fqdn='cz'")[0][0];
 
-    std::auto_ptr<Fred::Invoicing::Manager> invMan(
+    std::unique_ptr<Fred::Invoicing::Manager> invMan(
             Fred::Invoicing::Manager::create());
 
     for (int year = 2000; year < boost::gregorian::day_clock::universal_day().year() + 10 ; ++year)
@@ -298,7 +299,7 @@ void insert_poll_request_fee(Database::ID reg_id,
     Database::Connection conn = Database::Manager::acquire();
     DBSharedPtr ldb_dc_guard (new DB(conn));
 
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
+    std::unique_ptr<Fred::Poll::Manager> pollMan(
         Fred::Poll::Manager::create(ldb_dc_guard)
     );
 

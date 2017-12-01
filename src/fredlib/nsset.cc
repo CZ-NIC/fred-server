@@ -132,13 +132,13 @@ public:
       return admins[idx].handle;
   }
   virtual const std::string& getAdminHandleByIdx(unsigned idx) const
-      throw (NOT_FOUND) {
+      {
     if (idx >= getAdminCount())
       throw NOT_FOUND();
     return admins[idx].handle;
   }
   virtual TID getAdminIdByIdx(unsigned idx) const
-      throw (NOT_FOUND) {
+      {
     if (idx >= getAdminCount())
       throw NOT_FOUND();
     return admins[idx].id;
@@ -150,7 +150,7 @@ public:
     return hosts.size();
   }
   const Host *getHostByIdx(unsigned idx) const
-      throw (NOT_FOUND) {
+      {
     if (idx>=hosts.size())
       throw NOT_FOUND();
       // return NULL; <-- it is not checked anywhere!!
@@ -280,7 +280,7 @@ public:
     sql << from.rdbuf();
     sql << where.rdbuf();
   }
-  void reload() throw (SQL_ERROR) {
+  void reload() {
     std::map<TID,std::string> registrars;
     std::ostringstream sql;
     sql << "SELECT id, handle FROM registrar";
@@ -390,7 +390,7 @@ public:
 
     bool at_least_one = false;
     Database::SelectQuery id_query;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       Database::Filters::NSSet *df = dynamic_cast<Database::Filters::NSSetHistoryImpl* >(fit->get());
       if (!df)
@@ -620,7 +620,7 @@ class ManagerImpl : public virtual Manager {
   }
   /// check if object is in database
   bool checkHandleRegistration(const std::string& handle, NameIdPair& conflict,
-      bool lock) const throw (SQL_ERROR) {
+      bool lock) const {
     std::ostringstream sql;
     sql << "SELECT id,name FROM object_registry "
         << "WHERE type=2 AND erDate ISNULL AND " << "UPPER(name)=UPPER('"
@@ -637,7 +637,7 @@ class ManagerImpl : public virtual Manager {
   }
   /// check if object handle is in protection period (true=protected)
   bool checkProtection(const std::string& name, unsigned type,
-      const std::string& monthPeriodSQL) const throw (SQL_ERROR) {
+      const std::string& monthPeriodSQL) const {
     std::stringstream sql;
     sql << "SELECT COALESCE(" << "MAX(erdate) + (" << monthPeriodSQL
         << ")::interval" << " > CURRENT_TIMESTAMP, false) " << "FROM object_registry "
@@ -659,7 +659,7 @@ public:
     return new ListImpl(db, zm);
   }
   virtual CheckAvailType checkAvail(const std::string& handle,
-      NameIdPair& conflict, bool lock) const throw (SQL_ERROR) {
+      NameIdPair& conflict, bool lock) const {
     conflict.id = 0;
     conflict.name = "";
     if (!checkHandleFormat(handle))

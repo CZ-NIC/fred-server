@@ -29,7 +29,7 @@ namespace Corba {
 
 struct IntegerConversionFailed : std::bad_cast
 {
-    const char* what() const throw () {
+    const char* what() const noexcept {
         return "integer conversion failed";
     }
 };

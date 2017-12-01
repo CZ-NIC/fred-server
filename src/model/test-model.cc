@@ -56,7 +56,7 @@ void exec_and_print(SelectQuery& _q, Union& _f) {
   std::cout << "\n" << "exec_and_print: " << info_query_str << "\n"
   << std::endl;
 
-  std::auto_ptr<Connection> conn(init_connection());
+  std::unique_ptr<Connection> conn(init_connection());
   if(conn.get() == NULL) return;
   Result result = conn->exec(info_query_str);
 
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
       uf->addFilter(zoneFilter);
 
       Database::SelectQuery info_query;
-                        std::auto_ptr<Database::Filters::Iterator> fit(uf->createIterator());
+                        std::unique_ptr<Database::Filters::Iterator> fit(uf->createIterator());
                         for (fit->first(); !fit->isDone(); fit->next())
                         {
                           Database::Filters::Zone *zf =

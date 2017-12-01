@@ -63,7 +63,7 @@ public:
 private:
     OperationContext();
     ~OperationContext();
-    typedef std::auto_ptr< DbConn > DbConnPtr;
+    typedef std::unique_ptr< DbConn > DbConnPtr;
     DbConnPtr conn_;
     Logging::Log &log_;
     friend class OperationContextCreator;

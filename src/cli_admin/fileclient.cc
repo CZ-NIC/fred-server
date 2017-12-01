@@ -41,7 +41,7 @@ FileClient::list()
     FileManagerClient fm_client(corba_client.getNS());
     Fred::File::ManagerPtr file_manager(Fred::File::Manager::create(&fm_client));
 
-    std::auto_ptr<Fred::File::List> fileList(file_manager->createList());
+    std::unique_ptr<Fred::File::List> fileList(file_manager->createList());
 
     Database::Filters::File *fileFilter;
     fileFilter = new Database::Filters::FileImpl(true);

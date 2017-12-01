@@ -48,10 +48,10 @@ public:
     unsigned adifd_session_garbage;
 
 
-    boost::shared_ptr<po::options_description>
+    std::shared_ptr<po::options_description>
     get_options_description()
     {
-        boost::shared_ptr<po::options_description> opts_descs(
+        std::shared_ptr<po::options_description> opts_descs(
                 new po::options_description(std::string("Admin interface configuration")));
         opts_descs->add_options()
                 ("adifd.session_max",

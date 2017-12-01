@@ -27,9 +27,11 @@
 #include "log/logger.h"
 #include "log/context.h"
 
+#include <memory>
 #include <stdexcept>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 #include "src/fredlib/db_settings.h"
 
@@ -224,7 +226,7 @@ void set_status_back(const std::string& comm_type, const std::string& service_ha
 //Manager factory
 ManagerPtr create_manager()
 {
-    return ManagerPtr(new Manager);
+    return std::make_shared<Manager>();
 }
 
 //Manager impl
@@ -994,7 +996,7 @@ void Manager::set_sms_status(const SmsProcInfo& messages, const std::string& ser
 Manager::MessageListPtr Manager::createList()
 {
 	return Manager::MessageListPtr( new MessageList(
-			std::auto_ptr <MessageReload>(new MessageReload())
+			std::unique_ptr <MessageReload>(new MessageReload())
 			));
 }
 
@@ -1134,7 +1136,7 @@ void MessageReload::operator ()
 
     bool at_least_one = false;
     Database::SelectQuery info_query;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next())
     {
         Database::Filters::Message *f =

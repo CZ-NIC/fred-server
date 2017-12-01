@@ -50,7 +50,7 @@ private:
   typedef std::map<std::string, ccReg_Logger_i*> pagetables_list;
 
   pagetables_list pagetables;
-  std::auto_ptr<Fred::Logger::Manager> back;
+  std::unique_ptr<Fred::Logger::Manager> back;
 
   boost::mutex pagetables_mutex;
 

@@ -35,6 +35,7 @@
 #include "concurrent_set.h"
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
+#include <utility>
 #include "cfg/handle_threadgroup_args.h"
 #include "tests/setup/tests_common.h"
 
@@ -115,8 +116,8 @@ BOOST_FIXTURE_TEST_SUITE(TestLogd, MyFixture)
 
 class TestImplLog {
 	// TODO this should follow the common ways with create(...) 
-        std::auto_ptr<Fred::Logger::ManagerImpl> logd;
-        std::auto_ptr<Fred::Logger::RequestPropertyNameCache> pcache;
+        std::unique_ptr<Fred::Logger::ManagerImpl> logd;
+        std::unique_ptr<Fred::Logger::RequestPropertyNameCache> pcache;
 
 
 public:
@@ -157,15 +158,15 @@ public:
         return ret;
     }
 
-    std::auto_ptr<RequestCountInfo> getRequestCountUsers(const boost::posix_time::ptime &from,
+    std::unique_ptr<RequestCountInfo> getRequestCountUsers(const boost::posix_time::ptime &from,
                                                         const boost::posix_time::ptime &to,
                                                         const std::string              &service) {
         return logd->i_getRequestCountUsers(from, to , service);
     }
 
 	// auxiliary testing functions
-	std::auto_ptr<Fred::Logger::RequestProperties> create_generic_properties(int number, int value_id);
-	std::auto_ptr<Fred::Logger::RequestProperties> create_properties_req_count(unsigned num_handles, unsigned num_others, int value_id);
+	std::unique_ptr<Fred::Logger::RequestProperties> create_generic_properties(int number, int value_id);
+	std::unique_ptr<Fred::Logger::RequestProperties> create_properties_req_count(unsigned num_handles, unsigned num_others, int value_id);
 
         void check_obj_references(ID rec_id, const Fred::Logger::ObjectReferences &refs);
         void check_obj_references_subset(ID rec_id, const Fred::Logger::ObjectReferences &refs);
@@ -483,9 +484,9 @@ ID TestImplLog::find_property_name(const std::string &name) {
     return ret_id;
 }
 
-std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_properties(int number, int value_id)
+std::unique_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_properties(int number, int value_id)
 {
-	std::auto_ptr<Fred::Logger::RequestProperties> ret(new Fred::Logger::RequestProperties(number));
+	std::unique_ptr<Fred::Logger::RequestProperties> ret(new Fred::Logger::RequestProperties(number));
 	Fred::Logger::RequestProperties &ref = *ret;
 
 	for(int i=0;i<number;i++) {
@@ -498,9 +499,9 @@ std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_generic_prope
 	return ret;
 }
 
-std::auto_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_req_count(unsigned num_handles, unsigned num_others, int value_id)
+std::unique_ptr<Fred::Logger::RequestProperties> TestImplLog::create_properties_req_count(unsigned num_handles, unsigned num_others, int value_id)
 {
-    std::auto_ptr<Fred::Logger::RequestProperties> ret(new Fred::Logger::RequestProperties(num_handles + num_others));
+    std::unique_ptr<Fred::Logger::RequestProperties> ret(new Fred::Logger::RequestProperties(num_handles + num_others));
     Fred::Logger::RequestProperties &ref = *ret;
 
     for(unsigned int i=0;i<num_handles;i++) {
@@ -875,7 +876,7 @@ BOOST_AUTO_TEST_CASE( long_property_name)
 
 	Database::ID id;
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(2, global_call_count++);
 
@@ -895,7 +896,7 @@ BOOST_AUTO_TEST_CASE( zero_property_name)
 
 	Database::ID id;
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(2, global_call_count++);
 
@@ -916,7 +917,7 @@ BOOST_AUTO_TEST_CASE( property_name_too_long )
 
     Database::ID id;
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
-    std::auto_ptr<Fred::Logger::RequestProperties> props
+    std::unique_ptr<Fred::Logger::RequestProperties> props
         = test.create_generic_properties(1, global_call_count++);
 
     (*props)[0].name = std::string(1000, 'N');
@@ -1043,7 +1044,7 @@ BOOST_AUTO_TEST_CASE( zero_length_strings )
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.createRequest("", LC_PUBLIC_REQUEST, "", *props);
@@ -1062,7 +1063,7 @@ BOOST_AUTO_TEST_CASE( null_strings )
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.createRequest(NULL, LC_PUBLIC_REQUEST, NULL, *props);
@@ -1080,7 +1081,7 @@ BOOST_AUTO_TEST_CASE( long_strings )
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
     bool exception = false;
@@ -1109,7 +1110,7 @@ BOOST_AUTO_TEST_CASE( normal_event )
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 	Database::ID id1;
 
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 
 	id1 = test.createRequest("100.100.100.100", LC_PUBLIC_REQUEST, "AAABBBBCCCCCDDDDDD", *props);
@@ -1144,7 +1145,7 @@ BOOST_AUTO_TEST_CASE( _2_events )
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 	Database::ID id1, id2;
 
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 	props = test.create_generic_properties(3, global_call_count++);
 	props = test.create_generic_properties(3, global_call_count++);
 
@@ -1168,7 +1169,7 @@ BOOST_AUTO_TEST_CASE( already_closed )
 
 	TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 	Database::ID id1, id2;
-	std::auto_ptr<Fred::Logger::RequestProperties> props;
+	std::unique_ptr<Fred::Logger::RequestProperties> props;
 
 	props = test.create_generic_properties(3, global_call_count++);
 
@@ -1440,7 +1441,7 @@ BOOST_AUTO_TEST_CASE( get_request_count_users_compare )
     boost::posix_time::ptime begin (time_from_string("2011-01-01 00:00:00"));
     boost::posix_time::ptime end   (time_from_string("2011-06-30 00:00:00"));
 
-    std::auto_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
+    std::unique_ptr<RequestCountInfo> info_ptr = test.getRequestCountUsers(begin, end, "EPP");
 
     for (RequestCountInfo::iterator it = info_ptr->begin(); it != info_ptr->end(); it++) {
         unsigned long long check_count = test.getRequestCount(begin, end, "EPP", it->first);
@@ -1473,7 +1474,7 @@ BOOST_AUTO_TEST_CASE(test_request_count)
 {
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+    std::unique_ptr<Fred::Logger::RequestProperties> props1;
 
     props1 = test.create_generic_properties(17, global_call_count++);
 
@@ -1488,7 +1489,7 @@ BOOST_AUTO_TEST_CASE(test_request_count)
 
     ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1505,7 +1506,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_props_handle)
 {
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+    std::unique_ptr<Fred::Logger::RequestProperties> props1;
 
     props1 = test.create_properties_req_count(7, 10, global_call_count++);
 
@@ -1520,7 +1521,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_props_handle)
 
     ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1553,7 +1554,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_errors_simple)
 
     ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
     RequestCountInfo::iterator it = info->find(reg_handle);
     BOOST_REQUIRE(it != info->end());
 
@@ -1567,10 +1568,10 @@ BOOST_AUTO_TEST_CASE(test_request_count_errors_props)
 {
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    std::auto_ptr<Fred::Logger::RequestProperties> props_in;
+    std::unique_ptr<Fred::Logger::RequestProperties> props_in;
     props_in = test.create_generic_properties(17, global_call_count++);
 
-    std::auto_ptr<Fred::Logger::RequestProperties> props_out;
+    std::unique_ptr<Fred::Logger::RequestProperties> props_out;
     props_out = test.create_generic_properties(5, global_call_count++);
 
     std::string time_string(TimeStamp::microsec());
@@ -1588,7 +1589,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_errors_props)
 
     ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - hours(1), current_tstamp + hours(1), "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1627,7 +1628,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_simple)
     test.closeRequest(r4, "");
 
     ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
     RequestCountInfo::iterator it = info->find(reg_handle);
 
     BOOST_REQUIRE(it != info->end());
@@ -1641,7 +1642,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_props)
 {
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+    std::unique_ptr<Fred::Logger::RequestProperties> props1;
 
     props1 = test.create_generic_properties(17, global_call_count++);
 
@@ -1668,7 +1669,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_props)
 
     ptime current_tstamp = boost::posix_time::microsec_clock::local_time();
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - minutes(1), current_tstamp + minutes(1), "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1682,7 +1683,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_poll_props)
 
 void test_registrar_request_count(TestImplLog &test, boost::posix_time::ptime p_from, boost::posix_time::ptime p_to, const std::string &reg_name, unsigned long long req_count)
 {
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(p_from, p_to, "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(p_from, p_to, "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_name);
 
@@ -1698,7 +1699,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_past)
 {
     TestImplLog test(CfgArgs::instance()->get_handler_ptr_by_type<HandleDatabaseArgs>()->get_conn_info());
 
-    std::auto_ptr<Fred::Logger::RequestProperties> props1;
+    std::unique_ptr<Fred::Logger::RequestProperties> props1;
 
     props1 = test.create_generic_properties(17, global_call_count++);
 
@@ -1715,7 +1716,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_past)
 
     test.insert_custom_request(current_tstamp - days(2), reg_handle);
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - days(3), current_tstamp + days(3), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - days(3), current_tstamp + days(3), "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1814,7 +1815,7 @@ BOOST_AUTO_TEST_CASE(test_request_count_short_period)
         sleep(3);
     }
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - seconds(3), current_tstamp - seconds(2), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(current_tstamp - seconds(3), current_tstamp - seconds(2), "EPP");
 
     RequestCountInfo::iterator it = info->find(reg_handle);
 
@@ -1852,11 +1853,11 @@ BOOST_AUTO_TEST_CASE(test_request_count_timezone)
         sleep (3);
     }
 
-    std::auto_ptr<RequestCountInfo> info = test.getRequestCountUsers(day_start, current_tstamp - seconds(2), "EPP");
+    std::unique_ptr<RequestCountInfo> info = test.getRequestCountUsers(day_start, current_tstamp - seconds(2), "EPP");
     RequestCountInfo::iterator it = info->find(reg_handle);
     BOOST_CHECK(it == info->end() || it->second == 0);
 
-    std::auto_ptr<RequestCountInfo> info2 = test.getRequestCountUsers(current_tstamp + seconds(2), day_end, "EPP");
+    std::unique_ptr<RequestCountInfo> info2 = test.getRequestCountUsers(current_tstamp + seconds(2), day_end, "EPP");
     RequestCountInfo::iterator it2 = info2->find(reg_handle);
     BOOST_CHECK(it2 == info2->end() || it2->second == 0);
 

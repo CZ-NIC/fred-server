@@ -32,7 +32,6 @@
 #include <map>
 
 #include <boost/utility.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <curl/curl.h>
 
@@ -74,7 +73,7 @@ public:
 
 
 ///curl easy cleanup
-typedef boost::shared_ptr<CURL> CURLSharedPtr;
+typedef std::shared_ptr<CURL> CURLSharedPtr;
 template < typename DELETER >
 class CURLPtrT
 {
@@ -129,7 +128,7 @@ CURLcode hp_form_post(struct curl_httppost *form  //linked list ptr
 
 ///curl_httppost form free
 ///actual pointer may change so pointer to pointer usage
-typedef boost::shared_ptr< curl_httppost* > CFormSharedPtr;
+typedef std::shared_ptr< curl_httppost* > CFormSharedPtr;
 template < typename DELETER >
 class CFormPtrT
 {

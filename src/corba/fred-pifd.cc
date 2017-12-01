@@ -58,6 +58,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 #include <boost/assign/list_of.hpp>
+#include <utility>
 
 
 const std::string server_name = "fred-pifd";
@@ -108,7 +109,7 @@ int main(int argc, char *argv[])
         HandleAdifdArgs* adifd_args_ptr = CfgArgs::instance()
             ->get_handler_ptr_by_type<HandleAdifdArgs>();
 
-        std::auto_ptr<ccReg_Admin_i> myccReg_Admin_i(new ccReg_Admin_i(
+        std::unique_ptr<ccReg_Admin_i> myccReg_Admin_i(new ccReg_Admin_i(
                     db_args_ptr->get_conn_info(),
                     CorbaContainer::get_instance()->getNS(),
                     registry_args_ptr->restricted_handles,
@@ -121,17 +122,17 @@ int main(int argc, char *argv[])
                     adifd_args_ptr->adifd_session_garbage,
                     false));
 
-        std::auto_ptr<ccReg_Whois_i> myccReg_Whois_i(new ccReg_Whois_i(
+        std::unique_ptr<ccReg_Whois_i> myccReg_Whois_i(new ccReg_Whois_i(
                 db_args_ptr->get_conn_info(),
                 server_name,
                 registry_args_ptr->restricted_handles));
 
-        std::auto_ptr<Registry::Whois::Server_impl> my_whois2(new Registry::Whois::Server_impl("Whois2"));
+        std::unique_ptr<Registry::Whois::Server_impl> my_whois2(new Registry::Whois::Server_impl("Whois2"));
 
-        std::auto_ptr<Registry::PublicRequest::Server_i> my_public_request(
+        std::unique_ptr<Registry::PublicRequest::Server_i> my_public_request(
                 new Registry::PublicRequest::Server_i(server_name));
 
-        std::auto_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
+        std::unique_ptr<Registry::Contact::Verification::ContactVerification_i> contact_vrf_iface(
                 new Registry::Contact::Verification::ContactVerification_i("fred-pifd-cv"));
 
             // create session use values from config

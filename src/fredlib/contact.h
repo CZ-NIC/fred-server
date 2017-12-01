@@ -185,7 +185,7 @@ public:
   static Manager *create(DBSharedPtr db, bool restrictedHandle);
 };
 
-typedef std::auto_ptr<Manager> ManagerPtr;
+typedef std::unique_ptr<Manager> ManagerPtr;
 
 } // namespace Contact
 } // namespace Fred

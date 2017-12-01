@@ -30,7 +30,7 @@
 #include <stack>
 
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "util/db/query_param.h"
 #include "util/util.h"
@@ -42,7 +42,7 @@ namespace Database
      */
     class ReusableParameter
     {
-        boost::shared_ptr<int> lid_;
+        std::shared_ptr<int> lid_;
         std::string type_;
         Database::QueryParam value_;
     public:
@@ -58,7 +58,7 @@ namespace Database
          * Gets identification of query parameter instance.
          * Identification is valid and unique in process scope.
          */
-        boost::shared_ptr<int> get_lid() const;
+        std::shared_ptr<int> get_lid() const;
         /**
          * Gets postgresql type of parameter.
          *
@@ -79,7 +79,7 @@ namespace Database
             enum TypeTag {PQE_NONE, PQE_STRING, PQE_PARAM, PQE_PARAM_REPETABLE};
         private:
             TypeTag tag_;
-            boost::shared_ptr<int> lid_;
+            std::shared_ptr<int> lid_;
             std::string query_string_element_;
             Database::QueryParam query_param_element_;
         public:
@@ -94,11 +94,11 @@ namespace Database
             Element& set_param(
                 const Database::QueryParam& val,
                 const std::string& pg_typname,
-                const boost::shared_ptr<int>& lid);
+                const std::shared_ptr<int>& lid);
 
             TypeTag get_tag() const;
 
-            boost::shared_ptr<int> get_lid() const;
+            std::shared_ptr<int> get_lid() const;
 
             std::string get_string() const;
 

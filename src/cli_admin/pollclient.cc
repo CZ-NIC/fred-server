@@ -16,6 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <utility>
+
 #include "commonclient.h"
 #include "pollclient.h"
 #include "src/fredlib/poll.h"
@@ -46,11 +48,11 @@ void
 PollClient::list_all()
 {
 
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
+    std::unique_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
                 m_db)
             );
-    std::auto_ptr<Fred::Poll::List> pmList(pollMan->createList());
+    std::unique_ptr<Fred::Poll::List> pmList(pollMan->createList());
     if (poll_list_all_params.poll_type.is_value_set())//POLL_TYPE_NAME
         pmList->setTypeFilter(poll_list_all_params.poll_type.get_value());
     if (poll_list_all_params.registrar_id.is_value_set())//REGISTRAR_ID_NAME
@@ -74,7 +76,7 @@ void
 PollClient::create_state_changes()
 {
 
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
+    std::unique_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
                 m_db)
             );
@@ -118,9 +120,9 @@ PollClient::create_request_fee_messages()
            , ns_args_ptr->get_nameservice_port()
            , ns_args_ptr->get_nameservice_context());
 
-    std::auto_ptr<Fred::Logger::LoggerClient> cl(new Fred::Logger::LoggerCorbaClientImpl());
+    std::unique_ptr<Fred::Logger::LoggerClient> cl(new Fred::Logger::LoggerCorbaClientImpl());
 
-    std::auto_ptr<Fred::Poll::Manager> pollMan(
+    std::unique_ptr<Fred::Poll::Manager> pollMan(
             Fred::Poll::Manager::create(
                 m_db)
             );

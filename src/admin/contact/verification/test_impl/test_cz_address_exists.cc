@@ -30,7 +30,7 @@
 #include <locale>
 #include <algorithm>    // std::reverse, std::next_permutaion
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/scoped_ptr.hpp>
 #include <boost/foreach.hpp>
 #include <boost/regex.hpp>
@@ -64,11 +64,11 @@ namespace ContactVerification {
     const std::string TestCzAddress::city_shortened_word_signs_("./");
 
     struct ExceptionMissingHouseNumber : virtual Fred::OperationException {
-        const char* what() const throw() {return "missing house number";}
+        const char* what() const noexcept {return "missing house number";}
     };
 
     struct ExceptionInvalidPostalCode : virtual Fred::OperationException {
-        const char* what() const throw() {return "invalid postalcode";}
+        const char* what() const noexcept {return "invalid postalcode";}
     };
 
     TestCzAddress& TestCzAddress::set_mvcr_address_xml_filename(const std::string& _mvcr_address_xml_filename) {

@@ -40,7 +40,7 @@ namespace Registry
 
             ContactVerification_i::ContactVerification_i(const std::string &_server_name)
             : pimpl_(new ContactVerificationImpl(_server_name
-                    , boost::shared_ptr<Fred::Mailer::Manager>(
+                    , std::shared_ptr<Fred::Mailer::Manager>(
                         new MailerManager(CorbaContainer::get_instance()
                         ->getNS()))))
             {}

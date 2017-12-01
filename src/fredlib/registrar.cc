@@ -20,6 +20,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <memory>
+#include <utility>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -111,7 +113,7 @@ public:
   {
     return getId() == _id;
   }
-  virtual void save() throw (SQL_ERROR)
+  virtual void save()
   {
       TRACE("[CALL] ACLImpl::save()");
 	try
@@ -209,7 +211,7 @@ class RegistrarImpl : public Fred::CommonObjectImplNew,
                       virtual public Registrar,
                       private ModelRegistrar
 {
-  typedef boost::shared_ptr<ACLImpl> ACLImplPtr;
+  typedef std::shared_ptr<ACLImpl> ACLImplPtr;
   typedef std::vector<ACLImplPtr> ACLList;
   typedef ACLList::iterator ACLListIter;
 
@@ -219,7 +221,7 @@ class RegistrarImpl : public Fred::CommonObjectImplNew,
   typedef std::map<Database::ID, Money> ZoneCreditMap;
   ZoneCreditMap zone_credit_map;
 
-  typedef  boost::shared_ptr<ZoneAccess> ZoneAccessPtr;
+  typedef  std::shared_ptr<ZoneAccess> ZoneAccessPtr;
   typedef std::vector<ZoneAccessPtr> ZoneAccessList;
   typedef ZoneAccessList::iterator ZoneAccessListIter;
   ZoneAccessList actzones;
@@ -503,14 +505,14 @@ public:
 
   virtual ACL* newACL()
   {
-    boost::shared_ptr<ACLImpl> newACL ( new ACLImpl());
+    std::shared_ptr<ACLImpl> newACL ( new ACLImpl());
     acl.push_back(newACL);
     return newACL.get();
   }
 
   virtual ZoneAccess* newZoneAccess()
   {
-    boost::shared_ptr<ZoneAccess> newZoneAccess ( new ZoneAccess());
+    std::shared_ptr<ZoneAccess> newZoneAccess ( new ZoneAccess());
     actzones.push_back(newZoneAccess);
     return newZoneAccess.get();
   }
@@ -542,7 +544,7 @@ public:
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR)
+          const Database::Date &toDate)
   {///expecting external transaction, no transaction inside
       try
       {
@@ -672,7 +674,7 @@ public:
   }//isInZone by fqdn
 
 
-  virtual void save() throw (SQL_ERROR)
+  virtual void save()
   {
     TRACE("[CALL] RegistrarImpl::save()");
       // save registrar data
@@ -735,7 +737,7 @@ public:
               const std::string& certificateMD5,
               const std::string& password)
   {
-    acl.push_back(ACLImplPtr(new ACLImpl(_id,certificateMD5,password)));
+    acl.push_back(std::make_shared<ACLImpl>(_id,certificateMD5,password));
   }
 
   void putZoneAccess(TID _id
@@ -744,7 +746,7 @@ public:
           , Database::Date _fromdate
           , Database::Date _todate)
   {
-      actzones.push_back(ZoneAccessPtr(new ZoneAccess(_id,_name,_credit,_fromdate,_todate)));
+      actzones.push_back(std::make_shared<ZoneAccess>(_id,_name,_credit,_fromdate,_todate));
   }
 
   bool hasId(TID _id) const
@@ -880,7 +882,7 @@ public:
 
     bool at_least_one = false;
     Database::SelectQuery info_query;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       Database::Filters::Registrar *rf =
           dynamic_cast<Database::Filters::Registrar*>(fit->get());
@@ -1199,7 +1201,6 @@ public:
   }
 
   virtual bool checkHandle(const std::string handle) const
-	  throw (SQL_ERROR)
   {
       try
       {
@@ -1232,7 +1233,6 @@ public:
           const std::string &registrarHandle,
           const std::string &cert,
           const std::string &pass)
-      throw (SQL_ERROR)
   {
       try
       {
@@ -1263,7 +1263,7 @@ public:
   virtual void updateRegistrarZone(
           const TID& id,
           const Database::Date &fromDate,
-          const Database::Date &toDate) throw (SQL_ERROR)
+          const Database::Date &toDate)
   {
       try
       {
@@ -1317,14 +1317,14 @@ public:
         RegistrarList::AutoPtr registrarlist ( createList());
 
         Database::Filters::UnionPtr unionFilter = Database::Filters::CreateClearedUnionPtr();
-        std::auto_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
+        std::unique_ptr<Database::Filters::Registrar> r ( new Database::Filters::RegistrarImpl(true));
         r->addHandle().setValue(handle);
         unionFilter->addFilter( r.release() );
         registrarlist->reload(*unionFilter.get());
 
         if (registrarlist->size() != 1)
         {
-            return Registrar::AutoPtr(0);
+            return Registrar::AutoPtr();
         }
         return Registrar::AutoPtr(registrarlist->getAndRelease(0));
     }//getRegistrarByHandle
@@ -1885,7 +1885,7 @@ public:
             return;
         }
 
-        std::auto_ptr<RequestFeeDataMap> request_fee_data =
+        std::unique_ptr<RequestFeeDataMap> request_fee_data =
                 getRequestFeeDataMap(logger_client, boost::posix_time::ptime(p_from), p_to, today);
 
         for (unsigned i = 0; i < res_registrars.size(); i++) {
@@ -2015,11 +2015,11 @@ public:
         }
     }
 
-    std::auto_ptr<RequestFeeDataMap> getRequestFeeDataMap(
+    std::unique_ptr<RequestFeeDataMap> getRequestFeeDataMap(
             Logger::LoggerClient *logger_client, boost::posix_time::ptime p_from,
             boost::posix_time::ptime p_to,
             boost::gregorian::date zone_access_date) {
-        std::auto_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
+        std::unique_ptr<RequestFeeDataMap> ret(new RequestFeeDataMap());
 
         std::string price_unit_request;
         unsigned int base_free_count;
@@ -2047,7 +2047,7 @@ public:
 
         // TODO why should we compute request count for all of them? But maybe it's not so much different
         // to think
-        std::auto_ptr<Fred::Logger::RequestCountInfo> request_counts =
+        std::unique_ptr<Fred::Logger::RequestCountInfo> request_counts =
                 logger_client->getRequestCountUsers(p_from, p_to, "EPP");
 
         for (unsigned i = 0; i < res_registrars.size(); i++) {

@@ -29,7 +29,6 @@
 #include <map>
 #include <memory>
 #include <boost/utility.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/posix_time/time_period.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -49,7 +48,7 @@ namespace Messages
 
 struct MessageCopyProhibited : virtual std::exception
 {
-    const char* what() const throw()
+    const char* what() const noexcept
     {
         return "message copy is prohibited by status";
     }
@@ -253,7 +252,7 @@ public:
     LetterInfo get_letter_info_by_id(unsigned long long id);
 
     ///list factory
-    typedef std::auto_ptr<MessageList> MessageListPtr;
+    typedef std::unique_ptr<MessageList> MessageListPtr;
     MessageListPtr createList();
 
     ///status names
@@ -266,7 +265,7 @@ public:
     EnumList getMessageTypeList();
 };
 
-typedef boost::shared_ptr<Manager> ManagerPtr;
+typedef std::shared_ptr<Manager> ManagerPtr;
 ManagerPtr create_manager();
 
 

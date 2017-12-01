@@ -37,7 +37,7 @@ public:
         : epp_result_code_(_epp_result_code)
     { }
 
-    virtual const char* c_str() const throw() {
+    virtual const char* c_str() const noexcept {
         return EppResultCode::c_str(epp_result_code_);
     }
 

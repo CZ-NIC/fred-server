@@ -30,7 +30,7 @@
 #include <vector>
 
 #include <boost/program_options.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "faked_args.h"
 #include "handle_args.h"
@@ -44,7 +44,7 @@ class HandleWrongPathGrp : public HandleGrpArgs
 {
 public:
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
         throw NO_OPTIONS();
@@ -69,7 +69,7 @@ class HandleCheckArgsRecognitionGrp : public HandleGrpArgs
 {
 public:
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
         throw NO_OPTIONS();
@@ -80,7 +80,7 @@ public:
         //remove passed config file option from check
         FakedArgs tmp_fa;
         boost::program_options::variables_map vm;
-        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+        std::shared_ptr<boost::program_options::options_description> gen_opts(
                    new boost::program_options::options_description(
                            std::string("Passed options configuration")));
                gen_opts->add_options()

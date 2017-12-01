@@ -41,7 +41,7 @@ public:
             const EppResultFailure& _epp_result,
             SessionLang::Enum _session_lang);
 
-    virtual const char* c_str() const throw() {
+    virtual const char* c_str() const noexcept {
         return epp_result_description_.c_str();
     }
 

@@ -37,7 +37,7 @@ public:
             const EppResponseFailure& _epp_response,
             Epp::SessionLang::Enum _session_lang);
 
-    virtual ~EppResponseFailureLocalized() throw()
+    virtual ~EppResponseFailureLocalized()
     { }
 
     const std::vector<EppResultFailureLocalized>& epp_results() const {

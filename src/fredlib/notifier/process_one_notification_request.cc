@@ -54,13 +54,13 @@ struct FailedToSendMailToRecipient : std::exception
         : failed_recipient(_failed_recipient),
           skipped_recipients(_skipped_recipients)
     {}
-    ~FailedToSendMailToRecipient()throw() { }
-    const char* what()const throw() { return "failed to send mail to recipient"; }
+    ~FailedToSendMailToRecipient() { }
+    const char* what()const noexcept { return "failed to send mail to recipient"; }
     const std::string failed_recipient;
     const std::set<std::string> skipped_recipients;
 };
 
-void send_email(boost::shared_ptr<Fred::Mailer::Manager> mailer, const EmailData& data)
+void send_email(std::shared_ptr<Fred::Mailer::Manager> mailer, const EmailData& data)
 {
     std::set<std::string> trimmed_recipient_email_addresses;
     BOOST_FOREACH(const std::string& email, data.recipient_email_addresses)
@@ -93,7 +93,7 @@ void send_email(boost::shared_ptr<Fred::Mailer::Manager> mailer, const EmailData
 
 }//namespace Notification::{anonymous}
 
-bool process_one_notification_request(Fred::OperationContext& _ctx, boost::shared_ptr<Fred::Mailer::Manager> _mailer) {
+bool process_one_notification_request(Fred::OperationContext& _ctx, std::shared_ptr<Fred::Mailer::Manager> _mailer) {
 
     std::string log_prefix = "process_one_notification_request() ";
 

@@ -193,7 +193,7 @@ public:
   virtual unsigned getPDFType() const = 0;
 };
 
-typedef boost::shared_ptr<PublicRequest> PublicRequestPtr;
+typedef std::shared_ptr<PublicRequest> PublicRequestPtr;
 
 
 class PublicRequestAuth : virtual public PublicRequest
@@ -213,7 +213,7 @@ public:
     virtual void sendPasswords() = 0;
 };
 
-typedef boost::shared_ptr<PublicRequestAuth> PublicRequestAuthPtr;
+typedef std::shared_ptr<PublicRequestAuth> PublicRequestAuthPtr;
 
 
 class List : virtual public Fred::CommonList {

@@ -217,7 +217,7 @@ class EPPAction
   Optional<NotificationParams> notification_params_ ;
   std::string cltrid;
   Database::Connection conn_;
-  std::auto_ptr<Database::Transaction> tx_;
+  std::unique_ptr<Database::Transaction> tx_;
 
 public:
   struct ACTION_START_ERROR
@@ -423,7 +423,7 @@ DBSharedPtr db, const char *handle, bool restricted_handles
     , bool lock_epp_commands, bool lock = false)
 {
   if (lock && !lock_epp_commands) lock = false;
-  std::auto_ptr<Fred::Contact::Manager>
+  std::unique_ptr<Fred::Contact::Manager>
       cman(Fred::Contact::Manager::create(db, restricted_handles) );
   Fred::Contact::Manager::CheckAvailType caType;
   long int ret = -1;
@@ -443,9 +443,9 @@ DBSharedPtr db, const char *handle, bool restricted_handles
     , bool lock_epp_commands, bool lock = false)
 {
   if (lock && !lock_epp_commands) lock = false;
-  std::auto_ptr<Fred::Zone::Manager>
+  std::unique_ptr<Fred::Zone::Manager>
       zman(Fred::Zone::Manager::create() );
-  std::auto_ptr<Fred::Nsset::Manager> man(Fred::Nsset::Manager::create(
+  std::unique_ptr<Fred::Nsset::Manager> man(Fred::Nsset::Manager::create(
       db, zman.get(), restricted_handles) );
   Fred::Nsset::Manager::CheckAvailType caType;
   long int ret = -1;
@@ -466,7 +466,7 @@ getIdOfKeyset(DBSharedPtr db, const char *handle, bool restricted_handles
 {
     if (lock && !lock_epp_commands)
         lock = false;
-    std::auto_ptr<Fred::Keyset::Manager> man(
+    std::unique_ptr<Fred::Keyset::Manager> man(
             Fred::Keyset::Manager::create(db, restricted_handles));
     Fred::Keyset::Manager::CheckAvailType caType;
     long int ret = -1;
@@ -1564,7 +1564,7 @@ ccReg::Response * ccReg_EPP_i::ClientLogin(
     DBSharedPtr nodb;
     DBSharedPtr DBsql (new DB(conn));
 
-    std::auto_ptr<Fred::Registrar::Manager> regman(
+    std::unique_ptr<Fred::Registrar::Manager> regman(
          Fred::Registrar::Manager::create(nodb));
     try {
         // get ID of registrar by handle
@@ -3349,7 +3349,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
 
     LOG( NOTICE_LOG , "ObjectSendAuthInfo type %d  object [%s]  clientID -> %llu clTRID [%s] " , act , name , params.loginID , static_cast<const char*>(params.clTRID) );
 
-    std::auto_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
+    std::unique_ptr<Fred::Zone::Manager> zm( Fred::Zone::Manager::create() );
     std::vector<std::string> dev_null;
 
     switch (act) {
@@ -3413,7 +3413,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
             break;
     }
     if (code == 0) {
-        std::auto_ptr<Fred::Document::Manager> doc_manager(
+        std::unique_ptr<Fred::Document::Manager> doc_manager(
                 Fred::Document::Manager::create(
                     docgen_path_,
                     docgen_template_path_,
@@ -3421,7 +3421,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                     ns->getHostName()
                     )
                 );
-        std::auto_ptr<Fred::PublicRequest::Manager> request_manager(
+        std::unique_ptr<Fred::PublicRequest::Manager> request_manager(
                 Fred::PublicRequest::Manager::create(
                     regMan->getDomainManager(),
                     regMan->getContactManager(),
@@ -3437,7 +3437,7 @@ ccReg_EPP_i::ObjectSendAuthInfo(
                     NOTICE_LOG , "createRequest objectID %d" ,
                     id
                );
-            std::auto_ptr<Fred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
+            std::unique_ptr<Fred::PublicRequest::PublicRequest> new_request(request_manager->createRequest(
                         Fred::PublicRequest::PRT_AUTHINFO_AUTO_RIF));
 
             new_request->setRequestId(params.requestID);
@@ -3530,26 +3530,26 @@ ccReg::Response* ccReg_EPP_i::info(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, params.loginID, EPP_Info, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   try {
-    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+    std::unique_ptr<Fred::Zone::Manager> zoneMan(
         Fred::Zone::Manager::create()
     );
-    std::auto_ptr<Fred::Domain::Manager> domMan(
+    std::unique_ptr<Fred::Domain::Manager> domMan(
         Fred::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
-    std::auto_ptr<Fred::Contact::Manager> conMan(
+    std::unique_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
-    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+    std::unique_ptr<Fred::Nsset::Manager> nssMan(
         Fred::Nsset::Manager::create(
             a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
-    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+    std::unique_ptr<Fred::Keyset::Manager> keyMan(
             Fred::Keyset::Manager::create(
                 a.getDB(), restricted_handles_
                 )
             );
-    std::auto_ptr<Fred::InfoBuffer::Manager> infoBufMan(
+    std::unique_ptr<Fred::InfoBuffer::Manager> infoBufMan(
         Fred::InfoBuffer::Manager::create(
             a.getDB(),
             domMan.get(),
@@ -3601,26 +3601,26 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
   // start EPP action - this will handle all init stuff
   EPPAction a(this, params.loginID, EPP_GetInfoResults, static_cast<const char*>(params.clTRID), params.XML, params.requestID);
   try {
-    std::auto_ptr<Fred::Zone::Manager> zoneMan(
+    std::unique_ptr<Fred::Zone::Manager> zoneMan(
         Fred::Zone::Manager::create()
     );
-    std::auto_ptr<Fred::Domain::Manager> domMan(
+    std::unique_ptr<Fred::Domain::Manager> domMan(
         Fred::Domain::Manager::create(a.getDB(), zoneMan.get())
     );
-    std::auto_ptr<Fred::Contact::Manager> conMan(
+    std::unique_ptr<Fred::Contact::Manager> conMan(
         Fred::Contact::Manager::create(a.getDB(),restricted_handles_)
     );
-    std::auto_ptr<Fred::Nsset::Manager> nssMan(
+    std::unique_ptr<Fred::Nsset::Manager> nssMan(
         Fred::Nsset::Manager::create(
             a.getDB(),zoneMan.get(),restricted_handles_
         )
     );
-    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+    std::unique_ptr<Fred::Keyset::Manager> keyMan(
             Fred::Keyset::Manager::create(
                 a.getDB(), restricted_handles_
                 )
             );
-    std::auto_ptr<Fred::InfoBuffer::Manager> infoBufMan(
+    std::unique_ptr<Fred::InfoBuffer::Manager> infoBufMan(
         Fred::InfoBuffer::Manager::create(
             a.getDB(),
             domMan.get(),
@@ -3629,7 +3629,7 @@ ccReg::Response* ccReg_EPP_i::getInfoResults(
             keyMan.get()
         )
     );
-    std::auto_ptr<Fred::InfoBuffer::Chunk> chunk(
+    std::unique_ptr<Fred::InfoBuffer::Chunk> chunk(
         infoBufMan->getChunk(a.getRegistrar(),1000)
     );
     handles = new ccReg::Lists();

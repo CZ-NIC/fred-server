@@ -36,7 +36,7 @@
 #include "util/corba_wrapper_decl.h"
 
 //static init
-CorbaContainer::CorbaContainerPtr CorbaContainer::instance_ptr(0);
+CorbaContainer::CorbaContainerPtr CorbaContainer::instance_ptr;
 
 void OrbThread::operator ()() //run orb in thread
 {
@@ -49,7 +49,7 @@ void OrbThread::operator ()() //run orb in thread
 
 ThreadPtr CorbaContainer::run_orb_thread()
 {
-    return ThreadPtr(new boost::thread(OrbThread()));
+    return std::make_unique<boost::thread>(OrbThread());
 }
 
 PortableServer::POA_var CorbaContainer::create_persistent_poa()
@@ -83,7 +83,7 @@ CorbaContainer::CorbaContainer(int& argc, char ** argv)
 , root_poa_initial_ref(orb->resolve_initial_references("RootPOA"))
 , root_poa(PortableServer::POA::_narrow(root_poa_initial_ref))
 , poa_mgr(root_poa->the_POAManager())
-, ns_ptr(0)
+, ns_ptr(nullptr)
 {
     //poa for persistent refs
     poa_persistent = create_persistent_poa();
@@ -165,7 +165,7 @@ void CorbaContainer::set_instance(int argc, char** argv
             (argc, argv, nameservice_host, nameservice_port, nameservice_context)
     );
 
-    instance_ptr = tmp_instance;
+    instance_ptr = std::move(tmp_instance);
 }
 
 CorbaContainer* CorbaContainer::get_instance()

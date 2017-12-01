@@ -27,7 +27,7 @@
 #include <utility>
 #include <stack>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "util/db/param_query_composition.h"
 #include "util/db/query_param.h"
@@ -45,7 +45,7 @@ namespace Database
     , value_(value)
     {}
 
-    boost::shared_ptr<int> ReusableParameter::get_lid() const
+    std::shared_ptr<int> ReusableParameter::get_lid() const
     {
         return lid_;
     }
@@ -78,7 +78,7 @@ namespace Database
         const std::string& pg_typname)
     {
         tag_ = PQE_PARAM;
-        boost::shared_ptr<int> new_lid(static_cast<int*>(0));
+        std::shared_ptr<int> new_lid(static_cast<int*>(0));
         lid_ = new_lid;
         query_string_element_ = pg_typname;
         query_param_element_ = val;
@@ -89,7 +89,7 @@ namespace Database
     ParamQuery::Element& ParamQuery::Element::set_param(
         const Database::QueryParam& val,
         const std::string& pg_typname,
-        const boost::shared_ptr<int>& lid)
+        const std::shared_ptr<int>& lid)
     {
         tag_ = PQE_PARAM_REPETABLE;
         lid_ = lid;
@@ -104,7 +104,7 @@ namespace Database
         return tag_;
     }
 
-    boost::shared_ptr<int> ParamQuery::Element::get_lid() const
+    std::shared_ptr<int> ParamQuery::Element::get_lid() const
     {
         return lid_;
     }
@@ -194,7 +194,7 @@ namespace Database
 
     std::pair<std::string,query_param_list> ParamQuery::get_query() const
     {
-        std::map<boost::shared_ptr<int>, std::string > param_lid_position;
+        std::map<std::shared_ptr<int>, std::string > param_lid_position;
         std::pair<std::string,query_param_list> query;
 
         for(std::vector<Element>::const_iterator
@@ -220,7 +220,7 @@ namespace Database
 
                 case Element::PQE_PARAM_REPETABLE:
                 {
-                    boost::shared_ptr<int> lid = ci->get_lid();
+                    std::shared_ptr<int> lid = ci->get_lid();
                     Optional<std::string> pos = optional_map_at<Optional>(param_lid_position, lid);
 
                     if(!pos.isset()) //new parameter instance

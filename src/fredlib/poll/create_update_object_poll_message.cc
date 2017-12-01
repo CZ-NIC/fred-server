@@ -22,7 +22,7 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
         {
             struct NotFound:OperationException
             {
-                const char* what()const throw() { return "object history not found"; }
+                const char* what()const noexcept { return "object history not found"; }
             };
             throw NotFound();
         }
@@ -33,7 +33,7 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
             struct TooManyRows:InternalError
             {
                 TooManyRows():InternalError(std::string()) { }
-                const char* what()const throw() { return "too many rows"; }
+                const char* what()const noexcept { return "too many rows"; }
             };
             throw TooManyRows();
         }
@@ -43,7 +43,7 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
         case Object_Type::contact:
             struct ContactsNotSupported:OperationException
             {
-                const char* what()const throw() { return "contacts not supported"; }
+                const char* what()const noexcept { return "contacts not supported"; }
             };
             throw ContactsNotSupported();
         case Object_Type::domain:
@@ -59,7 +59,7 @@ void CreateUpdateObjectPollMessage::exec(Fred::OperationContext &_ctx, unsigned 
     struct UnexpectedObjectType:InternalError
     {
         UnexpectedObjectType():InternalError(std::string()) { }
-        const char* what()const throw() { return "unexpected object type"; }
+        const char* what()const noexcept { return "unexpected object type"; }
     };
     throw UnexpectedObjectType();
 }

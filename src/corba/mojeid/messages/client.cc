@@ -12,6 +12,7 @@
 #include <sstream>
 #include <set>
 #include <boost/assign/list_of.hpp>
+#include <utility>
 
 struct CommChannel
 {

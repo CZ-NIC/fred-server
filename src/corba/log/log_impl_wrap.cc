@@ -2,6 +2,7 @@
 
 #include "src/corba/Logger.hh"
 #include <boost/thread.hpp>
+#include <utility>
 
 
 ccReg_Log_i::ccReg_Log_i(const std::string database, const std::string &monitoring_hosts_file) : pagetables()
@@ -28,7 +29,6 @@ ccReg_Log_i::~ccReg_Log_i()
 
 // use ONLY in exception handlers
 void Logger_common_exception_handler(const std::string &method_name)
-  throw(ccReg::Logger::INCORRECT_USAGE, ccReg::Logger::INTERNAL_SERVER_ERROR)
 {
     try {
         throw;
@@ -53,8 +53,8 @@ void Logger_common_exception_handler(const std::string &method_name)
 ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServiceType service, const char *content, const ccReg::RequestProperties& props, const ccReg::ObjectReferences &refs, CORBA::Long request_type_id, ccReg::TID session_id)
 {
     try {
-        std::auto_ptr<Fred::Logger::RequestProperties> p(convert_properties(props));
-        std::auto_ptr<Fred::Logger::ObjectReferences> r(convert_obj_references(refs));
+        std::unique_ptr<Fred::Logger::RequestProperties> p(convert_properties(props));
+        std::unique_ptr<Fred::Logger::ObjectReferences> r(convert_obj_references(refs));
         return back->i_createRequest(sourceIP, (Database::Filters::ServiceType)service, content, *(p.get()), *(r.get()), request_type_id, session_id);
 
     } catch(...) {
@@ -67,8 +67,8 @@ ccReg::TID ccReg_Log_i::createRequest(const char *sourceIP, ccReg::RequestServic
 void ccReg_Log_i::closeRequest(ccReg::TID id, const char *content, const ccReg::RequestProperties &props, const ccReg::ObjectReferences &refs, const CORBA::Long result_code, ccReg::TID session_id)
 {
     try {
-        std::auto_ptr<Fred::Logger::RequestProperties> p = convert_properties(props);
-        std::auto_ptr<Fred::Logger::ObjectReferences> r(convert_obj_references(refs));
+        std::unique_ptr<Fred::Logger::RequestProperties> p = convert_properties(props);
+        std::unique_ptr<Fred::Logger::ObjectReferences> r(convert_obj_references(refs));
 
         if( back->i_closeRequest(id, content, *(p.get()), *(r.get()), result_code, session_id) == false) {
             throw ccReg::Logger::REQUEST_NOT_EXISTS();
@@ -234,7 +234,7 @@ Registry::PageTable_ptr ccReg_Log_i::createPageTable(const char *session_id)
             return it->second->_this();
 
         } else {
-            std::auto_ptr<Fred::Logger::Manager> logger_manager;
+            std::unique_ptr<Fred::Logger::Manager> logger_manager;
 
             Fred::Logger::List *list = back->createList();
             ccReg_Logger_i * ret_ptr = new ccReg_Logger_i(list);
@@ -298,7 +298,7 @@ ccReg::Logger::Detail*  ccReg_Log_i::getDetail(ccReg::TID _id)
         LOGGER(PACKAGE).debug(boost::format("constructing request filter for object id=%1% detail") % _id);
 
         boost::mutex::scoped_lock slm (pagetables_mutex);
-        std::auto_ptr<Fred::Logger::List> request_list(back->createList());
+        std::unique_ptr<Fred::Logger::List> request_list(back->createList());
 
         Database::Filters::Union union_filter;
         // where is it deleted? TODO
@@ -394,7 +394,7 @@ ccReg::RequestCountInfo* ccReg_Log_i::getRequestCountUsers(const char *datetime_
 
         ptime from (from_iso_string(datetime_from));
         ptime to   (from_iso_string(datetime_to));
-        std::auto_ptr<RequestCountInfo> info = back->i_getRequestCountUsers(from, to, service);
+        std::unique_ptr<RequestCountInfo> info = back->i_getRequestCountUsers(from, to, service);
 
         size_t size = info->size();
 

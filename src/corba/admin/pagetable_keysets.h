@@ -24,7 +24,7 @@
 class ccReg_KeySets_i : public ccReg_PageTable_i,
     public PortableServer::RefCountServantBase {
 private:
-    std::auto_ptr<Fred::Keyset::List> m_kl;
+    std::unique_ptr<Fred::Keyset::List> m_kl;
 
 public:
     ccReg_KeySets_i(Fred::Keyset::List *kl, const Settings *_ptr);

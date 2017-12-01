@@ -7,7 +7,7 @@
 
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 
 namespace Registry
@@ -72,7 +72,7 @@ namespace Registry
                     errors(_e)
                 {
                 }
-                ~DATA_VALIDATION_ERROR() throw () {}
+                ~DATA_VALIDATION_ERROR() {}
                 FIELD_ERROR_MAP errors;
             };
 
@@ -82,11 +82,11 @@ namespace Registry
                 const HandleRegistryArgs *registry_conf_;
                 const std::string server_name_;
 
-                boost::shared_ptr<Fred::Mailer::Manager> mailer_;
+                std::shared_ptr<Fred::Mailer::Manager> mailer_;
 
             public:
                 ContactVerificationImpl(const std::string &_server_name
-                        , boost::shared_ptr<Fred::Mailer::Manager> _mailer);
+                        , std::shared_ptr<Fred::Mailer::Manager> _mailer);
                 virtual ~ContactVerificationImpl();
 
                 const std::string& get_server_name();

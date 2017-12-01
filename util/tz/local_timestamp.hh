@@ -38,8 +38,8 @@ public:
     {
     public:
         NotRfc3339Compliant(const std::string& _msg):msg_(_msg) { }
-        ~NotRfc3339Compliant()throw() { }
-        const char* what()const throw() { return msg_.c_str(); }
+        ~NotRfc3339Compliant() { }
+        const char* what()const noexcept { return msg_.c_str(); }
     private:
         const std::string msg_;
     };

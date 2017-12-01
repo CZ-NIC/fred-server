@@ -501,7 +501,7 @@ struct FatalException : Exception { };
  */
 struct ObjectNotExists : Exception
 {
-    const char* what() const throw() { return "registry object with specified ID does not exist"; }
+    const char* what() const noexcept { return "registry object with specified ID does not exist"; }
 };
 
 /**
@@ -510,7 +510,7 @@ struct ObjectNotExists : Exception
  */
 struct InvalidHandle : Exception
 {
-    const char* what() const throw() { return "registry object with specified handle does not exist"; }
+    const char* what() const noexcept { return "registry object with specified handle does not exist"; }
 };
 
 /**
@@ -519,7 +519,7 @@ struct InvalidHandle : Exception
  */
 struct InternalServerError : FatalException
 {
-    const char* what() const throw() { return "internal server error"; }
+    const char* what() const noexcept { return "internal server error"; }
 };
 
 /**
@@ -527,7 +527,7 @@ struct InternalServerError : FatalException
  */
 struct InvalidLabel : Exception
 {
-    const char* what() const throw() { return "the label is invalid"; }
+    const char* what() const noexcept { return "the label is invalid"; }
 };
 
 /**
@@ -535,7 +535,7 @@ struct InvalidLabel : Exception
  */
 struct UnmanagedZone : Exception
 {
-    const char* what() const throw() { return "this zone is not managed"; }
+    const char* what() const noexcept { return "this zone is not managed"; }
 };
 
 /**
@@ -543,7 +543,7 @@ struct UnmanagedZone : Exception
  */
 struct TooManyLabels : Exception
 {
-    const char* what() const throw() { return "domain has too many labels"; }
+    const char* what() const noexcept { return "domain has too many labels"; }
 };
 
 /**
@@ -551,7 +551,7 @@ struct TooManyLabels : Exception
  */
 struct MissingLocalization : Exception
 {
-    const char* what() const throw() { return "the localization is missing"; }
+    const char* what() const noexcept { return "the localization is missing"; }
 };
 
 /**

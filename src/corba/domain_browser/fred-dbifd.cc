@@ -4,6 +4,7 @@
 #include <string>
 
 #include <boost/assign/list_of.hpp>
+#include <utility>
 
 #include "src/fredlib/db_settings.h"
 #include "util/corba_wrapper.h"

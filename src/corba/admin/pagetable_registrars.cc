@@ -1,10 +1,12 @@
+#include <utility>
+
 #include "pagetable_registrars.h"
 
 ccReg_Registrars_i::ccReg_Registrars_i(Fred::Registrar::RegistrarList::AutoPtr _rl
         , Fred::Zone::Manager::ZoneListPtr _zl
 		)
-  : rl(_rl)
-  , zl(_zl)
+  : rl(std::move(_rl))
+  , zl(std::move(_zl))
   , rza()
 {
     ConnectionReleaser releaser;
@@ -84,7 +86,6 @@ ccReg_Registrars_i::getColumnHeaders()
 
 Registry::TableRow* 
 ccReg_Registrars_i::getRow(CORBA::UShort row)
-  throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
   try
@@ -182,7 +183,6 @@ ccReg_Registrars_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 
 ccReg::TID 
 ccReg_Registrars_i::getRowId(CORBA::UShort row) 
-  throw (Registry::Table::INVALID_ROW)
 {
     Logging::Context ctx(base_context_);
     try
@@ -274,7 +274,7 @@ ccReg_Registrars_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Registrars_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
       tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->save(Fred::Filter::FT_REGISTRAR, _name, uf);
 }

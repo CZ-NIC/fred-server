@@ -20,6 +20,7 @@
 #include <memory>
 #include <iomanip>
 #include <algorithm>
+#include <utility>
 #include "src/corba/Admin.hh"
 
 #include "session_impl.h"
@@ -410,7 +411,7 @@ Registry::Domain::Detail* ccReg_Session_i::getDomainDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing domain filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::Domain::List>
+    std::unique_ptr<Fred::Domain::List>
         tmp_domain_list(m_registry_manager->getDomainManager()->createList());
 
     Database::Filters::Union uf(&settings_);
@@ -436,7 +437,7 @@ Registry::Contact::Detail* ccReg_Session_i::getContactDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing contact filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::Contact::List>
+    std::unique_ptr<Fred::Contact::List>
         tmp_contact_list(m_registry_manager->getContactManager()->createList());
 
     Database::Filters::Union uf(&settings_);
@@ -463,7 +464,7 @@ Registry::NSSet::Detail* ccReg_Session_i::getNSSetDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing nsset filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::Nsset::List>
+    std::unique_ptr<Fred::Nsset::List>
         tmp_nsset_list(m_registry_manager->getNssetManager()->createList());
 
     Database::Filters::Union uf(&settings_);
@@ -492,7 +493,7 @@ ccReg_Session_i::getKeySetDetail(ccReg::TID _id)
     else {
         LOGGER(PACKAGE).debug(boost::format("constructing keyset filter for object id=%1%' detail") % _id);
 
-        std::auto_ptr <Fred::Keyset::List>
+        std::unique_ptr <Fred::Keyset::List>
             tmp_keyset_list(m_registry_manager->getKeysetManager()->createList());
 
         Database::Filters::Union uf(&settings_);
@@ -574,7 +575,7 @@ Registry::PublicRequest::Detail* ccReg_Session_i::getPublicRequestDetail(ccReg::
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing public request filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
+    std::unique_ptr<Fred::PublicRequest::List> tmp_request_list(m_publicrequest_manager->createList());
 
     Database::Filters::Union union_filter;
     Database::Filters::PublicRequest *filter = new Database::Filters::PublicRequestImpl();
@@ -601,7 +602,7 @@ Registry::Invoicing::Detail* ccReg_Session_i::getInvoiceDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing invoice filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
+    std::unique_ptr<Fred::Invoicing::List> tmp_invoice_list(m_invoicing_manager->createList());
 
     Database::Filters::Union union_filter;
     Database::Filters::Invoice *filter = new Database::Filters::InvoiceImpl();
@@ -628,7 +629,7 @@ Registry::Mailing::Detail* ccReg_Session_i::getMailDetail(ccReg::TID _id) {
   else {
     LOGGER(PACKAGE).debug(boost::format("constructing mail filter for object id=%1%' detail")
         % _id);
-    std::auto_ptr<Fred::Mail::List> tmp_mail_list(mail_manager_->createList());
+    std::unique_ptr<Fred::Mail::List> tmp_mail_list(mail_manager_->createList());
 
     Database::Filters::Union union_filter;
     Database::Filters::Mail *filter = new Database::Filters::MailImpl();
@@ -667,7 +668,7 @@ ccReg::Logger::Detail*  ccReg_Session_i::getLoggerDetail(ccReg::TID _id) {
 Registry::Banking::BankItem::Detail *ccReg_Session_i::getPaymentDetail(ccReg::TID _id) {
 	LOGGER(PACKAGE).debug(boost::format("constructing bank item filter for object id=%1% detail") % _id);
 
-	std::auto_ptr<Fred::Banking::PaymentList> item_list(m_banking_manager->createPaymentList());
+	std::unique_ptr<Fred::Banking::PaymentList> item_list(m_banking_manager->createPaymentList());
 
 	Database::Filters::Union union_filter;
 	Database::Filters::BankPayment *filter = new Database::Filters::BankPaymentImpl();

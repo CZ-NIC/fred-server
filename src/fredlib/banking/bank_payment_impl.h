@@ -200,7 +200,7 @@ public:
         return ModelBankPayment::toString(); 
     }
 
-    void save() throw (SQL_ERROR)
+    void save()
     {
         try {
             if (getId() == 0) {
@@ -221,7 +221,7 @@ public:
         }
     }
 
-    void reload() throw (SQL_ERROR, NOT_FOUND)
+    void reload()
     {
         try {
             ModelBankPayment::reload();
@@ -302,7 +302,7 @@ public:
 
 };
 
-typedef std::auto_ptr<PaymentImpl> PaymentImplPtr;
+typedef std::unique_ptr<PaymentImpl> PaymentImplPtr;
 
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, Id);
 COMPARE_CLASS_IMPL_NEW(PaymentImpl, StatementId);

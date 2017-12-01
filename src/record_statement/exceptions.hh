@@ -39,7 +39,7 @@ struct InternalServerError:std::exception
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what()const throw();
+    const char* what()const noexcept;
 };
 
 /**
@@ -52,7 +52,7 @@ struct ObjectNotFound:std::exception
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what()const throw();
+    const char* what()const noexcept;
 };
 
 }//namespace Registry::RecordStatement

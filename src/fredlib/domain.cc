@@ -199,7 +199,6 @@ public:
     return role == 1 ? adminList.size() : tempList.size();
   }//getAdminCount
   virtual TID getAdminIdByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND)
   {
     TRACE(boost::format
         ("[CALL] DomainImpl::getAdminIdByIdx idx: %1% role: %2% ")
@@ -219,7 +218,6 @@ public:
       }//catch(...)
   }//getAdminIdByIdx
   virtual const std::string& getAdminHandleByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND)
   {
       TRACE(boost::format
           ("[CALL] DomainImpl::getAdminHandleByIdx idx: %1% role: %2% ")
@@ -678,7 +676,7 @@ public:
 
     bool at_least_one = false;
     Database::SelectQuery id_query;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       Database::Filters::Domain *df =
           dynamic_cast<Database::Filters::DomainHistoryImpl*>(fit->get());
@@ -1248,7 +1246,7 @@ public:
 class ManagerImpl : virtual public Manager {
   DBSharedPtr db; ///< connection do db
   Zone::Manager *zm; ///< zone management api
-  std::auto_ptr<Blacklist> blacklist; ///< black list manager
+  std::unique_ptr<Blacklist> blacklist; ///< black list manager
 public:
   ManagerImpl(DBSharedPtr _db, Zone::Manager *_zm) :
       db(_db), zm(_zm), blacklist(Blacklist::create(_db)) { }
@@ -1271,7 +1269,7 @@ public:
   CheckAvailType checkAvail(const std::string& _fqdn,
                             NameIdPair& conflictFqdn,
                             bool allowIDN,
-                            bool lock) const throw (SQL_ERROR) {
+                            bool lock) const {
     std::string fqdn = _fqdn;
     boost::algorithm::to_lower(fqdn);
     // clear output

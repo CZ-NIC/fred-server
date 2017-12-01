@@ -17,6 +17,7 @@
  */
 
 #include <algorithm>
+#include <utility>
 #include "sql.h"
 #include "src/fredlib/poll.h"
 #include "src/fredlib/invoicing/invoice.h"
@@ -1085,9 +1086,9 @@ public:
                   " for interval <%1%; %2%)") % p_from % period_to);
 
       DBSharedPtr nodb;
-      std::auto_ptr<Fred::Registrar::Manager> regman(
+      std::unique_ptr<Fred::Registrar::Manager> regman(
                Fred::Registrar::Manager::create(nodb));
-      std::auto_ptr<RequestFeeDataMap> request_fee
+      std::unique_ptr<RequestFeeDataMap> request_fee
           = regman->getRequestFeeDataMap(
                   logger_client,
                   boost::posix_time::ptime(p_from),
@@ -1125,7 +1126,7 @@ public:
   }
 
 
-  virtual std::auto_ptr<MessageRequestFeeInfo> getLastRequestFeeInfoMessage(const std::string &_registrar) const
+  virtual std::unique_ptr<MessageRequestFeeInfo> getLastRequestFeeInfoMessage(const std::string &_registrar) const
   {
       TRACE("[CALL] Poll::Manager::getLastRequestFeeInfoMessage");
 
@@ -1154,10 +1155,10 @@ public:
           LOGGER(PACKAGE).error("Dynamic cast to MessageRequestFeeInfo failed");
           throw NOT_FOUND();
       }
-      return std::auto_ptr<MessageRequestFeeInfo> (rfi);
+      return std::unique_ptr<MessageRequestFeeInfo> (rfi);
   }
 
-  virtual std::auto_ptr<MessageRequestFeeInfo> getRequestFeeInfoMessage(const Database::ID &registrar_id, const ptime &period_to) const
+  virtual std::unique_ptr<MessageRequestFeeInfo> getRequestFeeInfoMessage(const Database::ID &registrar_id, const ptime &period_to) const
   {
      Database::Connection conn = Database::Manager::acquire();
 
@@ -1184,13 +1185,13 @@ public:
          throw std::runtime_error(msg.str());
      }
 
-     std::auto_ptr<MessageRequestFeeInfoImpl> rfi (new MessageRequestFeeInfoImpl(
+     std::unique_ptr<MessageRequestFeeInfoImpl> rfi (new MessageRequestFeeInfoImpl(
              r[0][0], r[0][1], r[0][2], r[0][3], r[0][4], r[0][5])
      );
 
      rfi->setData(r[0][6], r[0][7], r[0][8], r[0][9], r[0][10]);
 
-     return std::auto_ptr<Fred::Poll::MessageRequestFeeInfo>(rfi);
+     return std::unique_ptr<Fred::Poll::MessageRequestFeeInfo>(std::move(rfi));
   }
 
 };

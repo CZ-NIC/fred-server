@@ -128,7 +128,7 @@ namespace Fred
         const GenProcType& _genProc,
         std::ostream* _out, const std::string& _filename, unsigned _filetype,
         const std::string& _lang
-      ) throw (TmpFile::NAME_ERROR,TmpFile::OPEN_ERROR)
+      )
         : path(_path), pathTemplates(_pathTemplates), 
           pathFM(_pathFM), corbaNS(_corbaNS),
           genProc(_genProc), out(NULL),
@@ -276,18 +276,18 @@ namespace Fred
         );
 
       }
-      std::auto_ptr<Fred::Document::Generator> createOutputGenerator(
+      std::unique_ptr<Fred::Document::Generator> createOutputGenerator(
         GenerationType type, std::ostream& output,
         const std::string& lang
       ) const
       {
         GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
-        return std::auto_ptr<Fred::Document::Generator>(new GeneratorImpl(
+        return std::unique_ptr<Fred::Document::Generator>(new GeneratorImpl(
           path,pathTemplates,pathFM,corbaNS,i->second,&output,"",0,lang
         ));
       }
-      std::auto_ptr<Fred::Document::Generator> createSavingGenerator(
+      std::unique_ptr<Fred::Document::Generator> createSavingGenerator(
         GenerationType type, 
         const std::string& filename, unsigned filetype,
         const std::string& lang         
@@ -295,7 +295,7 @@ namespace Fred
       {
         GenerationMapType::const_iterator i = templateMap.find(type);
         if (i == templateMap.end()) throw Generator::ERROR();
-        return std::auto_ptr<Fred::Document::Generator>(new
+        return std::unique_ptr<Fred::Document::Generator>(new
                 GeneratorImpl(path,pathTemplates,pathFM,corbaNS,i->second,NULL
                         ,filename,filetype,lang
         ));
@@ -306,7 +306,7 @@ namespace Fred
         const std::string& lang
       ) const
       {
-        std::auto_ptr<Fred::Document::Generator> g
+        std::unique_ptr<Fred::Document::Generator> g
           = createOutputGenerator(type,output,lang);
         g->getInput() << input.rdbuf();
         g->closeInput();
@@ -317,19 +317,19 @@ namespace Fred
         const std::string& lang
       ) const
       {
-          std::auto_ptr<Fred::Document::Generator> g
+          std::unique_ptr<Fred::Document::Generator> g
               = createSavingGenerator(type,name,filetype,lang);
         g->getInput() << input.rdbuf();
         return g->closeInput();
       }
     };
-    std::auto_ptr<Fred::Document::Manager> Manager::create(
+    std::unique_ptr<Fred::Document::Manager> Manager::create(
       const std::string& path, const std::string& pathTemplates,
       const std::string& pathFM, 
       const std::string& corbaNS
     )
     {
-      return std::auto_ptr<Fred::Document::Manager>(new
+      return std::unique_ptr<Fred::Document::Manager>(new
               ManagerImpl(path,pathTemplates,pathFM,corbaNS));
     }
   }

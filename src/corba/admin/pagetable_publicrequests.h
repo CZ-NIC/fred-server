@@ -6,7 +6,7 @@
 class ccReg_PublicRequests_i : public ccReg_PageTable_i,
                                public PortableServer::RefCountServantBase {
 private:
-  std::auto_ptr<Fred::PublicRequest::List> request_list_;
+  std::unique_ptr<Fred::PublicRequest::List> request_list_;
 
 public:
   ccReg_PublicRequests_i(Fred::PublicRequest::List *_list);

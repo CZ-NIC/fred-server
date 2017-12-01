@@ -15,7 +15,7 @@ namespace Fred
       virtual ~Blacklist() {}
       /// check domain against actual blacklist
       virtual bool checkDomain(const std::string& fqdn) const 
-        throw (SQL_ERROR) = 0;                   
+        = 0;
       /// factory function
       static Blacklist *create(DBSharedPtr db);
     };

@@ -74,8 +74,8 @@ private:
     virtual Fred::Mailer::Manager*   mailer();
     virtual Fred::Messages::Manager* messages();
 
-    std::auto_ptr< Fred::Mailer::Manager > mailer_manager_ptr_;
-    std::auto_ptr< Fred::Document::Manager > document_manager_ptr_;
+    std::unique_ptr< Fred::Mailer::Manager > mailer_manager_ptr_;
+    std::unique_ptr< Fred::Document::Manager > document_manager_ptr_;
     Fred::Messages::ManagerPtr messages_manager_ptr_;
 };
 

@@ -30,43 +30,43 @@ namespace Notification {
 struct ExceptionInterface : std::exception { };
 
 struct ExceptionEventNotImplemented : ExceptionInterface {
-    const char* what() const throw() { return "event not implemented"; }
+    const char* what() const noexcept { return "event not implemented"; }
 };
 
 struct ExceptionObjectTypeNotImplemented : ExceptionInterface {
-    const char* what() const throw() { return "object type not yet implemented"; }
+    const char* what() const noexcept { return "object type not yet implemented"; }
 };
 
 struct ExceptionAddressTypeNotImplemented : ExceptionInterface {
-    const char* what() const throw() { return "address type not yet implemented"; }
+    const char* what() const noexcept { return "address type not yet implemented"; }
 };
 
 struct ExceptionUnknownHistoryId : ExceptionInterface {
-    const char* what() const throw() { return "unknown history id"; }
+    const char* what() const noexcept { return "unknown history id"; }
 };
 
 struct ExceptionInvalidUpdateEvent : ExceptionInterface {
-    const char* what() const throw() { return "invalid update event"; }
+    const char* what() const noexcept { return "invalid update event"; }
 };
 
 struct ExceptionUnknownEmailTemplate : ExceptionInterface {
-    const char* what() const throw() { return "unknown e-mail template"; }
+    const char* what() const noexcept { return "unknown e-mail template"; }
 };
 
 struct ExceptionMissingChangesFlagInUpdateNotificationContent : ExceptionInterface {
-    const char* what() const throw() { return "missing changes flag in update notification content"; }
+    const char* what() const noexcept { return "missing changes flag in update notification content"; }
 };
 
 struct ExceptionInvalidNotificationContent : ExceptionInterface {
-    const char* what() const throw() { return "invalid notification content"; }
+    const char* what() const noexcept { return "invalid notification content"; }
 };
 
 struct ExceptionDataLoss : ExceptionInterface {
-    const char* what() const throw() { return "data loss"; }
+    const char* what() const noexcept { return "data loss"; }
 };
 
 struct ExceptionUnknownSSNType : ExceptionInterface {
-    const char* what() const throw() { return "unknown SSN type"; }
+    const char* what() const noexcept { return "unknown SSN type"; }
 };
 
 }

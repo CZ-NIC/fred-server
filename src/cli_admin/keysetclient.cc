@@ -35,9 +35,9 @@ KeysetClient::runMethod()
 void
 KeysetClient::list()
 {
-    std::auto_ptr<Fred::Keyset::Manager> keyMan(
+    std::unique_ptr<Fred::Keyset::Manager> keyMan(
             Fred::Keyset::Manager::create(m_db, true));
-    std::auto_ptr<Fred::Keyset::List> keyList(
+    std::unique_ptr<Fred::Keyset::List> keyList(
             keyMan->createList());
 
     Database::Filters::KeySet *keyFilter;

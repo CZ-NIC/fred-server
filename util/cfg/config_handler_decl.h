@@ -49,7 +49,7 @@ class CfgArgs : boost::noncopyable
 {
     HandlerPtrVector hpv_; //defines processing order in handle() implementation
     HandlerPtrMap hpm_; //used for looking for handler by type
-    static std::auto_ptr<CfgArgs> instance_ptr;
+    static std::unique_ptr<CfgArgs> instance_ptr;
 public:
     template <class T> HandleArgsPtr get_handler_by_type()
     {
@@ -72,7 +72,7 @@ public:
         snprintf(errmsg, 255, "error: handler %s not found", typeid(T).name());
         throw std::runtime_error(errmsg);
     }
-    friend class std::auto_ptr<CfgArgs>;
+    friend std::unique_ptr<CfgArgs>::deleter_type;
 protected:
     ~CfgArgs(){}
 private:
@@ -82,7 +82,10 @@ private:
         //map init
         for(HandlerPtrVector::const_iterator i = hpv.begin()
                 ; i != hpv.end(); ++i )
-            hpm_[typeid( *((*i).get()) ).name()] = *i;
+        {
+            const HandleArgs *ha_ptr = i->get();
+            hpm_[typeid(*ha_ptr).name()] = *i;
+        }
     }
 
 public:
@@ -110,7 +113,7 @@ public:
 //setter
 template <class HELP> CfgArgs* CfgArgs::init(const HandlerPtrVector& hpv)
 {
-    std::auto_ptr<CfgArgs>
+    std::unique_ptr<CfgArgs>
     tmp_instance(new CfgArgs(hpv));
 
     //gather options_descriptions for help print if present
@@ -125,7 +128,7 @@ template <class HELP> CfgArgs* CfgArgs::init(const HandlerPtrVector& hpv)
                 ; i != hpv.end(); ++i )
             hga->po_description.push_back((*i)->get_options_description());
     }
-    instance_ptr = tmp_instance;
+    instance_ptr = std::move(tmp_instance);
     return instance_ptr.get();
 }
 
@@ -139,7 +142,7 @@ class CfgArgGroups : boost::noncopyable
 {
     HandlerPtrGrid hpg_;
     HandlerGrpPtrMap hpm_;
-    static std::auto_ptr<CfgArgGroups> instance_ptr;
+    static std::unique_ptr<CfgArgGroups> instance_ptr;
 public:
     template <class T> HandleGrpArgsPtr get_handler_by_type()
     {
@@ -162,7 +165,7 @@ public:
         snprintf(errmsg, 255, "error: handler %s not found", typeid(T).name());
         throw std::runtime_error(errmsg);
     }
-    friend class std::auto_ptr<CfgArgGroups>;
+    friend std::unique_ptr<CfgArgGroups>::deleter_type;
 protected:
     ~CfgArgGroups(){}
 private:
@@ -176,7 +179,8 @@ private:
                     ; j != i->end(); ++j )
             {
                 //overwrites instance of the same type used more than once
-                hpm_[typeid( *((*j).get()) ).name()] = *j;
+                const HandleGrpArgs *hga_ptr = j->get();
+                hpm_[typeid(*hga_ptr).name()] = *j;
             }
     }
 
@@ -207,7 +211,7 @@ public:
 //setter
 template <class HELP> CfgArgGroups* CfgArgGroups::init(const HandlerPtrGrid& hpg)
 {
-    std::auto_ptr<CfgArgGroups>
+    std::unique_ptr<CfgArgGroups>
     tmp_instance(new CfgArgGroups(hpg));
 
     //gather options_descriptions for help print if present
@@ -225,7 +229,7 @@ template <class HELP> CfgArgGroups* CfgArgGroups::init(const HandlerPtrGrid& hpg
             {
                 try
                 {
-                    boost::shared_ptr<
+                    std::shared_ptr<
                         boost::program_options::options_description> options
                         = (*j)->get_options_description();//check if there are some options
                     hga->get_po_description().push_back(options);
@@ -234,7 +238,7 @@ template <class HELP> CfgArgGroups* CfgArgGroups::init(const HandlerPtrGrid& hpg
                 {}//ignore when no options decription suplied
             }
     }
-    instance_ptr = tmp_instance;
+    instance_ptr = std::move(tmp_instance);
     return instance_ptr.get();
 }
 

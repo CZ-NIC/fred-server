@@ -82,23 +82,23 @@ namespace Fred
     class MergeContactSelection : public Util::Printable
     {
         std::vector<std::string> contact_handle_;//contact handle vector
-        std::vector<std::pair<std::string, boost::shared_ptr<ContactSelectionFilterBase> > > ff_;//filter functor ptr vector
+        std::vector<std::pair<std::string, std::shared_ptr<ContactSelectionFilterBase> > > ff_;//filter functor ptr vector
     public:
 
         struct NoContactHandles
         : virtual Fred::OperationException
         {
-            const char* what() const throw() {return "no contact handles, nothing to process";}
+            const char* what() const noexcept {return "no contact handles, nothing to process";}
         };
         struct NoContactHandlesLeft
         : virtual Fred::OperationException
         {
-            const char* what() const throw() {return "no contact handles left, selection of contact with given rules failed";}
+            const char* what() const noexcept {return "no contact handles left, selection of contact with given rules failed";}
         };
         struct TooManyContactHandlesLeft
         : virtual Fred::OperationException
         {
-            const char* what() const throw() {return "too many contact handles left, selection of contact with given rules failed";}
+            const char* what() const noexcept {return "too many contact handles left, selection of contact with given rules failed";}
         };
 
         MergeContactSelection(const std::vector<std::string>& contact_handle

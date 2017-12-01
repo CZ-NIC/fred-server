@@ -22,8 +22,8 @@
 *  \brief Container for fields for given model
 */
 
-#ifndef MODEL_FIELD_LIST_H_
-#define MODEL_FIELD_LIST_H
+#ifndef MODEL_FIELD_LIST_H_8216E00AA0974D79AB7F3A27B26DC6DF
+#define MODEL_FIELD_LIST_H_8216E00AA0974D79AB7F3A27B26DC6DF
 
 #include <vector>
 #include <boost/assign/list_of.hpp>
@@ -72,7 +72,7 @@ public:
    * @return  primary key field from list casted to Field::PrimayKey<model_type, T>
    */
   template<class T>
-  Field::PrimaryKey<model_class, T>* getPrimaryKey() const throw (Model::DefinitionError) {
+  Field::PrimaryKey<model_class, T>* getPrimaryKey() const {
     Field::PrimaryKey<model_class, T> *ret   = 0;
     Field::Base_<model_class>         *field = this->getPrimaryKey();
 
@@ -90,7 +90,7 @@ public:
    *
    * @return  primary key field from list without cast to specific type
    */
-  Field::Base_<model_class>* getPrimaryKey() const throw (Model::DefinitionError) {
+  Field::Base_<model_class>* getPrimaryKey() const {
     typename super::value_type field = 0;
     BOOST_FOREACH(field, *this) {
       if (field->getAttrs().isPrimaryKey()) {
@@ -107,5 +107,5 @@ public:
 }
 
 
-#endif /*MODEL_FIELD_LIST_H_*/
+#endif /*MODEL_FIELD_LIST_H_8216E00AA0974D79AB7F3A27B26DC6DF*/
 

@@ -17,6 +17,7 @@
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <utility>
 
 namespace MojeID {  //MojeID
 namespace Messages {//MojeID::Messages
@@ -1082,7 +1083,7 @@ Fred::Document::Manager* DefaultMultimanager::document()
 Fred::Mailer::Manager* DefaultMultimanager::mailer()
 {
     if (mailer_manager_ptr_.get() == NULL) {
-        mailer_manager_ptr_ = std::auto_ptr< Fred::Mailer::Manager >(
+        mailer_manager_ptr_ = std::unique_ptr< Fred::Mailer::Manager >(
                                   new MailerManager(CorbaContainer::get_instance()->getNS()));
     }
     return mailer_manager_ptr_.get();

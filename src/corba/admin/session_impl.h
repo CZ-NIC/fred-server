@@ -99,15 +99,15 @@ private:
   ccReg_Files_i* m_files;
   ccReg_LogSession_i* m_logsession;
 
-  std::auto_ptr<Fred::Manager> m_registry_manager;
-  std::auto_ptr<Fred::PublicRequest::Manager> m_publicrequest_manager;
-  std::auto_ptr<Fred::Document::Manager> m_document_manager;
-  std::auto_ptr<Fred::Invoicing::Manager> m_invoicing_manager;
-  std::auto_ptr<Fred::Mail::Manager> mail_manager_;
-  std::auto_ptr<Fred::File::Manager> file_manager_;
-  std::auto_ptr<Fred::Logger::Manager> m_logger_manager;
-  std::auto_ptr<Fred::Session::Manager> m_logsession_manager;
-  std::auto_ptr<Fred::Banking::Manager> m_banking_manager;
+  std::unique_ptr<Fred::Manager> m_registry_manager;
+  std::unique_ptr<Fred::PublicRequest::Manager> m_publicrequest_manager;
+  std::unique_ptr<Fred::Document::Manager> m_document_manager;
+  std::unique_ptr<Fred::Invoicing::Manager> m_invoicing_manager;
+  std::unique_ptr<Fred::Mail::Manager> mail_manager_;
+  std::unique_ptr<Fred::File::Manager> file_manager_;
+  std::unique_ptr<Fred::Logger::Manager> m_logger_manager;
+  std::unique_ptr<Fred::Session::Manager> m_logsession_manager;
+  std::unique_ptr<Fred::Banking::Manager> m_banking_manager;
   MailerManager m_mailer_manager;
   FileManagerClient m_fm_client;
 

@@ -7,7 +7,7 @@
 class ccReg_LogSession_i : public ccReg_PageTable_i,
 	public PortableServer::RefCountServantBase {
 private: 
-	std::auto_ptr<Fred::Session::List> m_lel;
+	std::unique_ptr<Fred::Session::List> m_lel;
 
 public:
 	//ccReg_Session_i(Fred::Request::List *list, const Settings *_ptr);

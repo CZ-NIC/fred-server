@@ -88,17 +88,17 @@ public:
   
   CommonObject* get(unsigned _idx) const;
   void release(const unsigned long long &_idx);
-  CommonObject* findId(TID _id) const throw (Fred::NOT_FOUND);
+  CommonObject* findId(TID _id) const;
   
   void resetIDSequence();
   CommonObject* findIDSequence(TID _id);
 
   virtual void fillTempTable(Database::InsertQuery& _query);
-  virtual void fillTempTable(bool _limit) const throw (SQL_ERROR);
+  virtual void fillTempTable(bool _limit) const;
   
   unsigned getCount() const;
   virtual unsigned long long getRealCount();
-  virtual void makeRealCount() throw (SQL_ERROR);
+  virtual void makeRealCount();
   virtual unsigned long long getRealCount(Database::Filters::Union &_filter);
   virtual void makeRealCount(Database::Filters::Union &_filter);
 

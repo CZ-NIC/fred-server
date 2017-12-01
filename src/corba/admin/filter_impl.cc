@@ -304,7 +304,7 @@ protected:
 public:
   FilterCompoundImpl(Database::Filters::Compound* f) :
     FilterBaseImpl(f) {
-    std::auto_ptr<Database::Filters::Iterator> cit(f->createIterator());
+    std::unique_ptr<Database::Filters::Iterator> cit(f->createIterator());
     for (; !cit->isDone(); cit->next()) {
       it.addFilter(cit->get());
     }

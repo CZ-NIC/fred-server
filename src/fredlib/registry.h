@@ -105,8 +105,7 @@ public:
   /// return size of country description list
   virtual unsigned getCountryDescSize() const = 0;
   /// return country description by index in list
-  virtual const CountryDesc& getCountryDescByIdx(unsigned idx) const
-      throw (NOT_FOUND) = 0;
+  virtual const CountryDesc& getCountryDescByIdx(unsigned idx) const = 0;
   /// initialize list of states
   virtual void initStates() = 0;
   /// return status description

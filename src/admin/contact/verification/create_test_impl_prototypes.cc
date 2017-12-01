@@ -11,19 +11,18 @@
 
 #include "util/log/context.h"
 
-#include <boost/make_shared.hpp>
 
 namespace  Admin {
 
-    std::map< std::string, boost::shared_ptr<ContactVerification::Test> > create_test_impl_prototypes(
-        boost::shared_ptr<Fred::Mailer::Manager>   _mailer_manager,
-        boost::shared_ptr<Fred::Document::Manager> _document_manager,
-        boost::shared_ptr<Fred::Messages::Manager> _message_manager,
+    std::map< std::string, std::shared_ptr<ContactVerification::Test> > create_test_impl_prototypes(
+        std::shared_ptr<Fred::Mailer::Manager>   _mailer_manager,
+        std::shared_ptr<Fred::Document::Manager> _document_manager,
+        std::shared_ptr<Fred::Messages::Manager> _message_manager,
         const std::string&                         _cz_address_dataset_path
     ) {
         Logging::Context log("create_test_impl_prototypes");
 
-        std::map< std::string, boost::shared_ptr<ContactVerification::Test> > result;
+        std::map< std::string, std::shared_ptr<ContactVerification::Test> > result;
 
         try {
             result[ContactVerification::TestNameSyntax::registration_name()] =

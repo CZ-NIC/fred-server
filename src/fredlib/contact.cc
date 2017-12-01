@@ -519,7 +519,7 @@ public:
     std::map<Database::ID, std::string> registrars_table;
 
     bool at_least_one = false;
-    std::auto_ptr<Database::Filters::Iterator> fit(uf.createIterator());
+    std::unique_ptr<Database::Filters::Iterator> fit(uf.createIterator());
     for (fit->first(); !fit->isDone(); fit->next()) {
       Database::Filters::Contact *cf =
           dynamic_cast<Database::Filters::ContactHistoryImpl* >(fit->get());
@@ -788,7 +788,7 @@ class ManagerImpl : public virtual Manager {
   }
   /// check if object is in database
   bool checkHandleRegistration(const std::string& handle, NameIdPair& conflict,
-                               bool lock) const throw (SQL_ERROR)
+                               bool lock) const
   {
       try {
           std::ostringstream sql;
@@ -823,7 +823,7 @@ class ManagerImpl : public virtual Manager {
   }
   /// check if object handle is in protection period (true=protected)
   bool checkProtection(const std::string& name, unsigned type,
-                       const std::string& monthPeriodSQL) const throw (SQL_ERROR)
+                       const std::string& monthPeriodSQL) const
   {
       try {
           std::stringstream sql;

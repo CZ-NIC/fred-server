@@ -14,6 +14,7 @@
 #include "types/money.h"
 
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 
 // std::string magic_string_to_mime_type(const std::string &_magic_str)
@@ -157,7 +158,7 @@ private:
             unsigned long long zone_id = getZoneByAccountId(_payment->getAccountId());
 
 
-            std::auto_ptr<Fred::Invoicing::Manager>
+            std::unique_ptr<Fred::Invoicing::Manager>
                     invoice_manager(Fred::Invoicing::Manager::create());
 
             //find_unpaid_account_invoices

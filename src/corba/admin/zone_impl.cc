@@ -26,7 +26,7 @@
         ConnectionReleaser releaser;
     	try
     	{
-			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+			std::unique_ptr<Fred::Zone::Manager> zoneMan(
 					Fred::Zone::Manager::create());
 
 			zoneMan->addZone
@@ -66,7 +66,7 @@
         ConnectionReleaser releaser;
     	try
     	{
-			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+			std::unique_ptr<Fred::Zone::Manager> zoneMan(
 					Fred::Zone::Manager::create());
 
 			zoneMan->updateZoneByFqdn
@@ -107,7 +107,7 @@
         ConnectionReleaser releaser;
 		try
 		{
-			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+			std::unique_ptr<Fred::Zone::Manager> zoneMan(
 					Fred::Zone::Manager::create());
 
 			zoneMan->updateZoneById
@@ -141,7 +141,7 @@
         ConnectionReleaser releaser;
 		try
 		{
-			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+			std::unique_ptr<Fred::Zone::Manager> zoneMan(
 					Fred::Zone::Manager::create());
 
 			zoneMan->addZoneNs(zone_fqdn, fqdn, addr);
@@ -166,7 +166,7 @@
         ConnectionReleaser releaser;
 		try
 		{
-			std::auto_ptr<Fred::Zone::Manager> zoneMan(
+			std::unique_ptr<Fred::Zone::Manager> zoneMan(
 					Fred::Zone::Manager::create());
 			zoneMan->updateZoneNsById(id, zone_fqdn, fqdn, addr);
 		}//try

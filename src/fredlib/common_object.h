@@ -85,7 +85,7 @@ public:
   virtual CommonObject *get(unsigned _idx) const = 0;
   virtual void release(const unsigned long long &_idx) = 0;
   /// get detail of object with given ID
-  virtual CommonObject* findId(TID _id) const throw (Fred::NOT_FOUND) = 0;
+  virtual CommonObject* findId(TID _id) const = 0;
   
   
   /// return count of objects in list
@@ -93,14 +93,14 @@ public:
   /// get variable with count of select objects
   virtual unsigned long long getRealCount() = 0;
   /// fill variable with count of select objects
-  virtual void makeRealCount() throw (SQL_ERROR) = 0;
+  virtual void makeRealCount() = 0;
   /// get variable with count of select objects
   virtual unsigned long long getRealCount(Database::Filters::Union &_filter) = 0;
   /// make real count for new filters
   virtual void makeRealCount(Database::Filters::Union &_filter) = 0;
   
   /// fill temporary table with selected ids 
-  virtual void fillTempTable(bool _limit) const throw (SQL_ERROR) = 0;
+  virtual void fillTempTable(bool _limit) const = 0;
   /// get name of temporary table with result of filter
   virtual const char *getTempTableName() const = 0;
 

@@ -69,7 +69,7 @@ namespace Fred
       ): db(_db), mm(_mm), cm(_cm), nm(_nm), km(_km), dm(_dm), docm(_docm), rm(_rm)
           , msgm(_msgm)
       {}
-      std::string getEmailList(const std::stringstream& sql) throw (SQL_ERROR)
+      std::string getEmailList(const std::stringstream& sql)
       {
         std::string mailList;
         if (!db->ExecSelect(sql.str().c_str())) throw SQL_ERROR();
@@ -248,7 +248,7 @@ namespace Fred
         TID domain_id,
         ptime stamp,
         Fred::Mailer::Parameters& params
-      ) throw (SQL_ERROR)
+      )
       {
           try
           {
@@ -331,7 +331,7 @@ namespace Fred
       void fillSimpleObjectParams(
         TID id,
         Fred::Mailer::Parameters& params
-      ) throw (SQL_ERROR)
+      )
       {
         std::stringstream sql;
         sql << "SELECT c.name, c.type FROM object_registry c WHERE c.id=" << id;
@@ -343,7 +343,6 @@ namespace Fred
         );
       }
       void saveNotification(TID state, unsigned notifyType, TID mail)
-        throw (SQL_ERROR)
       {
         std::stringstream sql;
         sql << "INSERT INTO notify_statechange (state_id,type,mail_id) "
@@ -384,7 +383,7 @@ namespace Fred
         const std::string& exceptList,
         unsigned limit,
         std::ostream *debugOutput
-      ) throw (SQL_ERROR)
+      )
       {
         TRACE("[CALL] Fred::Notify::notifyStateChanges()");
         std::ostringstream sql;
@@ -506,7 +505,7 @@ namespace Fred
 #define WARNING_LETTER_FILE_TYPE 5 // from enum_filetype table
       class GenMultipleFiles {
 private:
-              std::auto_ptr<Document::Generator> gPDF;
+              std::unique_ptr<Document::Generator> gPDF;
               // TODO this might as well been a pointer
               std::string exDate;
               Transaction *trans;
@@ -517,7 +516,7 @@ public:
                * to identify which contact id's are contained in the
                * individual file, call addStateId
                */
-            GenMultipleFiles() : gPDF(NULL), trans(NULL) {
+            GenMultipleFiles() : gPDF(nullptr), trans(NULL) {
             }
 
             void addStateId(TID id) {
@@ -754,7 +753,7 @@ public:
 "ORDER BY ed.country='CZ' DESC,distinction,ed.domain_name";
           res = conn.exec(sql.str());
 
-          std::auto_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
+          std::unique_ptr<GenMultipleFiles> gen(new GenMultipleFiles);
           std::string prev_distinction;
           unsigned item_count = 0;
 

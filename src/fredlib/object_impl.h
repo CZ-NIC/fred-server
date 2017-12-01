@@ -145,7 +145,7 @@ namespace Fred {
     virtual void setTrDateIntervalFilter(time_period period);
     virtual void addStateFilter(TID state, bool stateIsOn);
     virtual void clearStateFilter(TID state);
-    void reload(const char *handle = NULL, int type=0) throw (SQL_ERROR);
+    void reload(const char *handle = NULL, int type=0);
     void reload(bool _history = false);
 
     void resetHistoryIDSequence();

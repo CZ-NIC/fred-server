@@ -27,7 +27,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "src/admin/contact/verification/test_impl/test_interface.h"
 
@@ -40,7 +40,7 @@ namespace Admin {
      * @return handles of executed (finalized) check ordered by execution (first in vector - first executed)
      */
     std::vector<std::string> run_all_enqueued_checks(
-        const std::map<std::string, boost::shared_ptr<Admin::ContactVerification::Test> >& _tests,
+        const std::map<std::string, std::shared_ptr<Admin::ContactVerification::Test> >& _tests,
         Optional<unsigned long long> _logd_request_id = Optional<unsigned long long>());
 }
 

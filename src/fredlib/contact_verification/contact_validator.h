@@ -28,7 +28,7 @@ struct DataValidationError : public std::runtime_error
         errors(_e)
     {
     }
-    ~DataValidationError() throw () {}
+    ~DataValidationError() {}
     FieldErrorMap errors;
 };
 

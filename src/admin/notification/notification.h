@@ -37,7 +37,7 @@ namespace Notification {
 
 /// Exception for internal error
 struct InternalError : std::exception {
-    const char* what() const throw () {
+    const char* what() const noexcept {
         return "internal error";
     }
 };
@@ -46,8 +46,8 @@ struct InternalError : std::exception {
 struct DomainEmailValidationError : std::exception {
     std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map;
     DomainEmailValidationError(std::map<unsigned long long, std::set<std::string> > domain_invalid_emails_map) : domain_invalid_emails_map(domain_invalid_emails_map) {}
-    ~DomainEmailValidationError() throw () {}
-    const char* what() const throw () {
+    ~DomainEmailValidationError() {}
+    const char* what() const noexcept {
         return "invalid notification email or emails";
     }
 };

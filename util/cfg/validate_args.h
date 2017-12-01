@@ -31,7 +31,7 @@
 #include <vector>
 
 #include <boost/program_options.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/strong_typedef.hpp>

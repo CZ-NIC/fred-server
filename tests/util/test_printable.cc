@@ -32,7 +32,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/function.hpp>
 #include <boost/format.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
@@ -96,6 +95,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+#include <utility>
 
 BOOST_AUTO_TEST_SUITE(TestPrintable)
 

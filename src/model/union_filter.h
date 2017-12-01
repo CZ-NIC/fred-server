@@ -16,7 +16,7 @@
 
 #include "log/logger.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace Database {
 namespace Filters {
@@ -132,7 +132,7 @@ protected:
 };//class Union
 
 
-typedef boost::shared_ptr<Union> UnionPtr;
+typedef std::shared_ptr<Union> UnionPtr;
 template < typename DELETER >
 class CreateUnionPtrT
 {

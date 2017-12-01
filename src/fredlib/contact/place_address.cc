@@ -71,10 +71,10 @@ PlaceAddress::PlaceAddress(const std::string& _street1,
     , country(_country)
     {}
 
-}//namespace Contact
-}//namespace Fred
-
-std::ostream& operator<<(std::ostream &_out, const Fred::Contact::PlaceAddress &_place)
+std::ostream& operator<<(std::ostream &_out, const PlaceAddress &_place)
 {
     return _out << _place.to_string();
 }
+
+}//namespace Contact
+}//namespace Fred

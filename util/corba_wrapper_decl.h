@@ -43,7 +43,7 @@ struct OrbThread
     void operator()();
 };//struct OrbThread
 
-typedef std::auto_ptr< boost::thread > ThreadPtr;
+typedef std::unique_ptr< boost::thread > ThreadPtr;
 
 /**
  * \class CorbaContainer
@@ -52,14 +52,14 @@ typedef std::auto_ptr< boost::thread > ThreadPtr;
 
 class CorbaContainer : boost::noncopyable
 {
-    typedef std::auto_ptr<CorbaContainer> CorbaContainerPtr;
+    typedef std::unique_ptr<CorbaContainer> CorbaContainerPtr;
 public:
     CORBA::ORB_var orb;
     CORBA::Object_var root_poa_initial_ref;
     PortableServer::POA_var root_poa;
     PortableServer::POAManager_var poa_mgr;
 private:
-    std::auto_ptr<NameService> ns_ptr;
+    std::unique_ptr<NameService> ns_ptr;
 public:
     PortableServer::POA_var poa_persistent;
 private:
@@ -72,7 +72,7 @@ private:
 
     CorbaContainer(int& argc, char ** argv);
 
-friend class std::auto_ptr<CorbaContainer>;
+    friend std::unique_ptr<CorbaContainer>::deleter_type;
 protected:
     ~CorbaContainer();
 private:

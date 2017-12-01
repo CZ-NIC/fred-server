@@ -16,9 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <memory> ///< auto_ptr<>
+#include <memory>
 #include <algorithm>
-#include <boost/shared_ptr.hpp>
 
 #include "src/old_utils/dbsql.h"
 #include "registry.h"
@@ -73,7 +72,7 @@ public:
   }
 
   virtual const std::string& getDesc(const std::string& lang) const
-      throw (BAD_LANG) {
+  {
     std::string lang_upper = lang;
     boost::algorithm::to_upper(lang_upper);
     std::map<std::string,std::string>::const_iterator i = desc.find(lang_upper);
@@ -95,12 +94,12 @@ class ManagerImpl : virtual public Manager {
 
   Messages::ManagerPtr m_message_manager;
   Zone::Manager::ZoneManagerPtr m_zone_manager;
-  std::auto_ptr<Domain::Manager> m_domain_manager;
+  std::unique_ptr<Domain::Manager> m_domain_manager;
   Registrar::Manager::AutoPtr m_registrar_manager;
-  std::auto_ptr<Contact::Manager> m_contact_manager;
-  std::auto_ptr<Nsset::Manager> m_nsset_manager;
-  std::auto_ptr<Keyset::Manager> m_keyset_manager;
-  std::auto_ptr<Filter::Manager> m_filter_manager;
+  std::unique_ptr<Contact::Manager> m_contact_manager;
+  std::unique_ptr<Nsset::Manager> m_nsset_manager;
+  std::unique_ptr<Keyset::Manager> m_keyset_manager;
+  std::unique_ptr<Filter::Manager> m_filter_manager;
 
   std::vector<CountryDesc> m_countries;
   std::vector<StatusDescImpl> statusList;
@@ -300,13 +299,13 @@ public:
   }
 
   virtual const CountryDesc& getCountryDescByIdx(unsigned idx) const
-      throw (NOT_FOUND) {
+  {
     if (idx >= m_countries.size())
       throw NOT_FOUND();
     return m_countries[idx];
   }
 
-  virtual void initStates() throw (SQL_ERROR) {
+  virtual void initStates() {
     TRACE("[CALL] Fred::Manager::initStates()");
 
     statusList.clear();

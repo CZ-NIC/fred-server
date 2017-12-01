@@ -32,7 +32,7 @@ Registry::Table::ColumnHeaders* ccReg_Contacts_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_Contacts_i::getRow(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   const Fred::Contact::Contact *c = cl->getContact(row);
@@ -82,7 +82,7 @@ void ccReg_Contacts_i::sortByColumn(CORBA::Short column, CORBA::Boolean dir) {
 }
 
 ccReg::TID ccReg_Contacts_i::getRowId(CORBA::UShort row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   const Fred::Contact::Contact *c = cl->getContact(row);
@@ -157,7 +157,7 @@ void ccReg_Contacts_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_Contacts_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
   tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->save(Fred::Filter::FT_CONTACT, _name, uf);
 }

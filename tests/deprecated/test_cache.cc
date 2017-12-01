@@ -12,7 +12,7 @@ using namespace Fred::Logger;
 void add_sequence(SessionCache &sc, unsigned count) 
 {
     for (unsigned i=1; i<=count; i++) {
-        boost::shared_ptr<ModelSession> session(new ModelSession);
+        std::shared_ptr<ModelSession> session(new ModelSession);
         session->setUserName("name");
         session->setUserId(i);
 
@@ -32,7 +32,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
 {
     for (unsigned i=1; i<= count; i++) {
         try {
-            boost::shared_ptr<ModelSession> s = sc.get(i);
+            std::shared_ptr<ModelSession> s = sc.get(i);
         } catch(CACHE_MISS) {
             THREAD_BOOST_ERROR("Cache miss occured when not allowed");
         } 
@@ -42,7 +42,7 @@ void verify_items_sequence(SessionCache &sc, unsigned count)
 bool verify_item(SessionCache &sc, Database::ID id)
 {
     try {
-        boost::shared_ptr<ModelSession> s = sc.get(id);
+        std::shared_ptr<ModelSession> s = sc.get(id);
     } catch(CACHE_MISS) {
         return false;
     }
@@ -54,7 +54,7 @@ void verify_items_miss_sequence(SessionCache &sc, unsigned count)
     for (unsigned i=1; i<= count; i++) {
         bool exception = false;
         try {
-            boost::shared_ptr<ModelSession> s = sc.get(i);
+            std::shared_ptr<ModelSession> s = sc.get(i);
         } catch(CACHE_MISS) {
             exception = true;
         }
@@ -150,7 +150,7 @@ public:
     virtual void worker(cache_general_type_tag)
     {
         if (number%3) {
-            boost::shared_ptr<ModelSession> n(new ModelSession());
+            std::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = Random::integer(1, max_id);
             n->setId(id);
@@ -177,7 +177,7 @@ public:
 
 void worker_add(SessionCache &sc, unsigned max_id, seconds ttl)
 {
-    boost::shared_ptr<ModelSession> n(new ModelSession());
+    std::shared_ptr<ModelSession> n(new ModelSession());
 
     unsigned id = Random::integer(1, max_id);
     n->setId(id)
@@ -212,7 +212,7 @@ public:
     virtual void worker(cache_ttl_type_tag)
     {
         if(number%2) {
-            boost::shared_ptr<ModelSession> n(new ModelSession());
+            std::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
             THREAD_BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
@@ -232,7 +232,7 @@ public:
             }
             THREAD_BOOST_CHECK_MESSAGE(verify_item(scache, id), "Check if record is still present just before timeout...");
         } else {
-            boost::shared_ptr<ModelSession> n(new ModelSession());
+            std::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
 
@@ -265,7 +265,7 @@ public:
     virtual void worker(cache_oldrec_type_tag)
     {
         if(number%2) {
-            boost::shared_ptr<ModelSession> n(new ModelSession());
+            std::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
             THREAD_BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
@@ -280,7 +280,7 @@ public:
                 THREAD_BOOST_ERROR("Record not saved in cache.");
             }
         } else {
-            boost::shared_ptr<ModelSession> n(new ModelSession());
+            std::shared_ptr<ModelSession> n(new ModelSession());
 
             unsigned id = ++id_sequence;
             THREAD_BOOST_TEST_MESSAGE( boost::format("Got new id: %1%") % id);
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE( test_garbage_all )
     sleep(4);
 
     // this should trigger garbage collection
-    boost::shared_ptr<ModelSession> session(new ModelSession());
+    std::shared_ptr<ModelSession> session(new ModelSession());
     session->setUserName("garbage trigger");
     session->setUserId(1002);
     sc.add(1002, session);
@@ -380,7 +380,7 @@ BOOST_AUTO_TEST_CASE( test_garbage_some )
     BOOST_CHECK(verify_item(sc, 768));
 
     // this should trigger garbage collection
-    boost::shared_ptr<ModelSession> session(new ModelSession());
+    std::shared_ptr<ModelSession> session(new ModelSession());
     session->setUserName("garbage trigger");
     session->setUserId(1002);
     sc.add(1002, session);

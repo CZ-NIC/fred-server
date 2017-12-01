@@ -36,6 +36,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/crc.hpp>
 #include <boost/assign.hpp>
+#include <utility>
 
 #include "hp.h"
 #include "hpmailbatchstate.h"
@@ -43,7 +44,7 @@
 //class HPMailBatchState implementation
 
 ///static instance init
-std::auto_ptr<HPMailBatchState> HPMailBatchState::instance_ptr(0);
+std::unique_ptr<HPMailBatchState> HPMailBatchState::instance_ptr;
 
 ///required HPMailBatchState configuration init with default values
 ///HPMailBatchState::set is ending values of keys containing "_dir" substring with '/' or '\' for win32
@@ -76,8 +77,8 @@ HPMailBatchState* HPMailBatchState::set(const HPCfgMap& config_changes)
     //config
     HPCfgMap config = hp_create_config_map(HPMailBatchState::required_config, config_changes );
 
-    std::auto_ptr<HPMailBatchState> tmp_instance(new HPMailBatchState(config));
-    instance_ptr = tmp_instance;
+    std::unique_ptr<HPMailBatchState> tmp_instance(new HPMailBatchState(config));
+    instance_ptr = std::move(tmp_instance);
     if (instance_ptr.get() == 0)
         throw std::runtime_error(
                 "HPMailBatchState::set error: instance not set");

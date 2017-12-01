@@ -42,10 +42,10 @@ in UTF main
 
 
 //static instance init
-std::auto_ptr<CfgArgs> CfgArgs::instance_ptr(0);
+std::unique_ptr<CfgArgs> CfgArgs::instance_ptr;
 
 //static instance init
-std::auto_ptr<CfgArgGroups> CfgArgGroups::instance_ptr(0);
+std::unique_ptr<CfgArgGroups> CfgArgGroups::instance_ptr;
 
 //getter
 CfgArgs* CfgArgs::instance()

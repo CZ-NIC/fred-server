@@ -46,7 +46,7 @@ public:
         epp_results_.push_back(_epp_result);
     }
 
-    virtual ~EppResponseFailure() throw()
+    virtual ~EppResponseFailure()
     { }
 
     EppResponseFailure& add(const EppResultFailure& _epp_result)
@@ -73,7 +73,7 @@ public:
      * As for now, we have only one epp_result, so its
      * description is used to describe this exception.
      */
-    const char* what() const throw() {
+    const char* what() const noexcept {
         return epp_result().c_str();
     }
 

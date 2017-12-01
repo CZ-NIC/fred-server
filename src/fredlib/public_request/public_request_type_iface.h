@@ -27,7 +27,7 @@
 #include "src/fredlib/public_request/public_request_status.h"
 
 #include <set>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace Fred {
 
@@ -46,7 +46,7 @@ public:
      * Instance pointer is publicly deletable.
      */
     virtual ~PublicRequestTypeIface() { }
-    typedef boost::shared_ptr< PublicRequestTypeIface > IfacePtr;
+    typedef std::shared_ptr< PublicRequestTypeIface > IfacePtr;
     struct IfaceCompare
     {
         bool operator()(const IfacePtr &_a, const IfacePtr &_b)const

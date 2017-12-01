@@ -26,7 +26,7 @@
 
 #include <string>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/program_options.hpp>
 
 #include "faked_args.h"
@@ -45,10 +45,10 @@ public:
     unsigned int keyset_list_limit;
     unsigned int contact_list_limit;
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> cfg_opts(
+        std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("Domain browser server options")));
 

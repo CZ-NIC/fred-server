@@ -27,6 +27,7 @@
 #include <boost/random/variate_generator.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 
 static const std::string create_ctx_name(const std::string &_name)
@@ -99,7 +100,7 @@ namespace Registry
 
 
             ContactVerificationImpl::ContactVerificationImpl(const std::string &_server_name
-                    , boost::shared_ptr<Fred::Mailer::Manager> _mailer)
+                    , std::shared_ptr<Fred::Mailer::Manager> _mailer)
                 : registry_conf_(CfgArgs::instance()
                     ->get_handler_ptr_by_type<HandleRegistryArgs>())
                 , server_name_(_server_name)

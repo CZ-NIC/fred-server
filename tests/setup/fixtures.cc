@@ -10,6 +10,7 @@
 #include <boost/test/framework.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
+#include <utility>
 
 namespace Test {
 
@@ -18,7 +19,7 @@ namespace Test {
     static const unsigned max_postgresql_database_name_length = 63;
 
     static void disable_connections_add_terminate_persistent_connections(
-            const std::auto_ptr<Database::StandaloneConnection>& conn,
+            const std::unique_ptr<Database::StandaloneConnection>& conn,
             const std::string& database_name_disable_connection)
     {
 
@@ -43,7 +44,7 @@ namespace Test {
         while (conn->exec_params(query, Database::query_param_list(database_name_disable_connection)).size() != 0) {}
     }
 
-    static void enable_connections(const std::auto_ptr<Database::StandaloneConnection>& conn, const std::string& database_name)
+    static void enable_connections(const std::unique_ptr<Database::StandaloneConnection>& conn, const std::string& database_name)
     {
         conn->exec_params("UPDATE pg_database SET datallowconn = true WHERE datname = $1::text"
             , Database::query_param_list (database_name));
@@ -61,7 +62,7 @@ namespace Test {
 
     static void force_drop_db(
         const std::string& db_name,
-        const std::auto_ptr<Database::StandaloneConnection>& conn
+        const std::unique_ptr<Database::StandaloneConnection>& conn
     ) {
         check_dbname_length(db_name);
         disable_connections_add_terminate_persistent_connections(conn, db_name);
@@ -71,7 +72,7 @@ namespace Test {
     static void force_copy_db(
         const std::string& src_name,
         const std::string& dst_name,
-        const std::auto_ptr<Database::StandaloneConnection>& conn
+        const std::unique_ptr<Database::StandaloneConnection>& conn
     ) {
         check_dbname_length(src_name);
         check_dbname_length(dst_name);
@@ -147,7 +148,7 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
     instantiate_db_template::~instantiate_db_template() {
         std::string log_db_name = testcase_db_name();
 
-        const std::auto_ptr<Database::StandaloneConnection> conn =
+        const std::unique_ptr<Database::StandaloneConnection> conn =
             CfgArgs::instance()->get_handler_ptr_by_type<HandleAdminDatabaseArgs>()->get_admin_connection();
 
         disable_connections_add_terminate_persistent_connections(conn, get_original_db_name());
@@ -162,9 +163,9 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
     }
 
 
-    boost::shared_ptr<po::options_description> HandleAdminDatabaseArgs::get_options_description() {
+    std::shared_ptr<po::options_description> HandleAdminDatabaseArgs::get_options_description() {
 
-         boost::shared_ptr<po::options_description> db_opts(
+         std::shared_ptr<po::options_description> db_opts(
              new po::options_description(
                  std::string("Admin database connection configuration"))
          );
@@ -212,9 +213,9 @@ std::string get_unit_test_path(const boost::unit_test::test_unit &tu,
         timeout = boost::lexical_cast<std::string>(vm["admin_database.timeout"].as<unsigned>());
     }
 
-    std::auto_ptr<Database::StandaloneConnection> HandleAdminDatabaseArgs::get_admin_connection() {
+    std::unique_ptr<Database::StandaloneConnection> HandleAdminDatabaseArgs::get_admin_connection() {
         return
-            std::auto_ptr<Database::StandaloneConnection>(
+            std::unique_ptr<Database::StandaloneConnection>(
                 Database::StandaloneManager(
                     new Database::StandaloneConnectionFactory(
                         "host="+host

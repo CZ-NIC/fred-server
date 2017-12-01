@@ -37,7 +37,7 @@ public:
             const EppResponseSuccess& _epp_response,
             Epp::SessionLang::Enum _session_lang);
 
-    virtual ~EppResponseSuccessLocalized() throw()
+    virtual ~EppResponseSuccessLocalized()
     { }
 
     const EppResultSuccessLocalized& epp_result() const {

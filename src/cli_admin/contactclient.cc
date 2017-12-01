@@ -33,9 +33,9 @@ ContactClient::runMethod()
 void
 ContactClient::list()
 {
-    std::auto_ptr<Fred::Contact::Manager> conMan(
+    std::unique_ptr<Fred::Contact::Manager> conMan(
             Fred::Contact::Manager::create(m_db, true));
-    std::auto_ptr<Fred::Contact::List> conList(
+    std::unique_ptr<Fred::Contact::List> conList(
             conMan->createList());
 
     Database::Filters::Contact *conFilter;

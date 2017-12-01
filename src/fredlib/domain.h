@@ -122,11 +122,11 @@ public:
   virtual unsigned getAdminCount(unsigned role=1) const = 0;
   /// return id of admin contact by index
   virtual TID getAdminIdByIdx(unsigned idx, unsigned role=1) const
-      throw (NOT_FOUND) = 0;
+      = 0;
   /// return handle of admin contact by index
   virtual const std::string
       & getAdminHandleByIdx(unsigned idx, unsigned role=1) const
-          throw (NOT_FOUND) = 0;
+          = 0;
   /// remove contact from admin contact list
   virtual void removeAdminId(TID id) = 0;
   /// insert contact into admin contact list
@@ -226,7 +226,7 @@ public:
                                     NameIdPair& conflictFqdn,
                                     bool allowIDN,
                                     bool lock = false
-                                    ) const throw (SQL_ERROR) = 0;
+                                    ) const = 0;
   /// return current count of domains by zone
   virtual unsigned long getDomainCount(const std::string& zone) const = 0;
   /// return current count of signed domains by zone

@@ -48,7 +48,7 @@ struct ObjectNotFound
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "registry object with specified ID does not exist";
     }
@@ -57,7 +57,7 @@ struct ObjectNotFound
 struct NssetIsEmpty
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "current_nsset is empty";
     }
@@ -66,7 +66,7 @@ struct NssetIsEmpty
 struct DomainNssetIsEmpty
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "domain nsset is empty";
     }
@@ -75,7 +75,7 @@ struct DomainNssetIsEmpty
 struct KeysetIsInvalid
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "current_keyset is invalid";
     }
@@ -84,7 +84,7 @@ struct KeysetIsInvalid
 struct NssetIsDifferent
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "current_nsset differs";
     }
@@ -93,7 +93,7 @@ struct NssetIsDifferent
 struct DomainHasKeyset
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "domain has keyset (domain is not insecure)";
     }
@@ -102,7 +102,7 @@ struct DomainHasKeyset
 struct DomainDoesNotHaveKeyset
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "domain does not have a keyset (domain is not secure)";
     }
@@ -111,7 +111,7 @@ struct DomainDoesNotHaveKeyset
 struct DomainAlreadyDoesNotHaveKeyset
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "domain already does not have a keyset";
     }
@@ -120,7 +120,7 @@ struct DomainAlreadyDoesNotHaveKeyset
 struct DomainDoesNotHaveAutomaticallyManagedKeyset
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "domain does not have an automatically managed keyset";
     }
@@ -129,7 +129,7 @@ struct DomainDoesNotHaveAutomaticallyManagedKeyset
 struct DomainAlreadyHasAutomaticallyManagedKeyset
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "domain already has an automatically managed keyset";
     }
@@ -138,7 +138,7 @@ struct DomainAlreadyHasAutomaticallyManagedKeyset
 struct KeysetSameAsDomainKeyset
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "the keyset is the same as the current keyset of the domain";
     }
@@ -147,7 +147,7 @@ struct KeysetSameAsDomainKeyset
 struct DomainStatePolicyError
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "domain state prevents action";
     }
@@ -156,7 +156,7 @@ struct DomainStatePolicyError
 struct KeysetStatePolicyError
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "keyset state prevents action";
     }
@@ -165,7 +165,7 @@ struct KeysetStatePolicyError
 struct ConfigurationError
     : std::exception
 {
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "configuration error";
     }
@@ -182,7 +182,7 @@ struct InternalServerError
      * Returns failure description.
      * @return string with the general cause of the current error.
      */
-    const char* what() const throw ()
+    const char* what() const noexcept
     {
         return "internal server error";
     }

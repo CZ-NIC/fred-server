@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 #include <boost/regex.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "src/fredlib/opcontext.h"
 #include "util/factory.h"
 #include "util/factory_check.h"

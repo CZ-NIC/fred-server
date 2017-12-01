@@ -44,7 +44,7 @@ struct IntegralConversionOutOfRange : std::invalid_argument
 {
     IntegralConversionOutOfRange();
     explicit IntegralConversionOutOfRange(const std::string &msg);
-    virtual ~IntegralConversionOutOfRange() throw() {}
+    virtual ~IntegralConversionOutOfRange() {}
 };
 
 /**

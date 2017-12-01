@@ -29,36 +29,36 @@
 namespace Fred
 {
     struct ExceptionUnknownContactId : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown contact id";}
+        const char* what() const noexcept {return "unknown contact id";}
     };
 
     struct ExceptionUnknownTestsuiteHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown testsuite handle";}
+        const char* what() const noexcept {return "unknown testsuite handle";}
     };
 
     struct ExceptionUnknownCheckHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown check handle";}
+        const char* what() const noexcept {return "unknown check handle";}
     };
 
     struct ExceptionUnknownTestHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown test handle";}
+        const char* what() const noexcept {return "unknown test handle";}
     };
     struct ExceptionTestNotInMyTestsuite : virtual Fred::OperationException {
-        const char* what() const throw() {return "test is not in testsuite of this check";}
+        const char* what() const noexcept {return "test is not in testsuite of this check";}
     };
     struct ExceptionCheckTestPairAlreadyExists : virtual Fred::OperationException {
-        const char* what() const throw() {return "given check test pair already exists";}
+        const char* what() const noexcept {return "given check test pair already exists";}
     };
 
     struct ExceptionUnknownCheckStatusHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown check status handle";}
+        const char* what() const noexcept {return "unknown check status handle";}
     };
 
     struct ExceptionUnknownCheckTestPair : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown check_handle, test_handle pair";}
+        const char* what() const noexcept {return "unknown check_handle, test_handle pair";}
     };
     struct ExceptionUnknownTestStatusHandle : virtual Fred::OperationException {
-        const char* what() const throw() {return "unknown test status handle";}
+        const char* what() const noexcept {return "unknown test status handle";}
     };
 }
 

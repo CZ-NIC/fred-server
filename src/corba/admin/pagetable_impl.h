@@ -59,8 +59,8 @@ using namespace Database;
 
 #define DECL_PAGETABLE_I \
   Registry::Table::ColumnHeaders* getColumnHeaders(); \
-  Registry::TableRow* getRow(CORBA::UShort row) throw (Registry::Table::INVALID_ROW);\
-  ccReg::TID getRowId(CORBA::UShort row) throw (Registry::Table::INVALID_ROW);\
+  Registry::TableRow* getRow(CORBA::UShort row); \
+  ccReg::TID getRowId(CORBA::UShort row); \
   char* outputCSV();\
   CORBA::Short numRows();\
   CORBA::Short numColumns();\
@@ -100,15 +100,15 @@ public:
   CORBA::Short pageSize();
   void pageSize(CORBA::Short _v);
   CORBA::Short page();
-  void setPage(CORBA::Short page) throw (Registry::PageTable::INVALID_PAGE);
+  void setPage(CORBA::Short page);
   virtual void setOffset(CORBA::Long _offset);
   virtual void setLimit(CORBA::Long _limit);
   void setTimeout(CORBA::Long _timeout);
   CORBA::Short start();
   CORBA::Short numPages();
-  Registry::TableRow* getPageRow(CORBA::Short pageRow) throw (Registry::Table::INVALID_ROW);
+  Registry::TableRow* getPageRow(CORBA::Short pageRow);
   CORBA::Short numPageRows();
-  ccReg::TID getPageRowId(CORBA::Short row) throw (Registry::Table::INVALID_ROW);
+  ccReg::TID getPageRowId(CORBA::Short row);
   void reloadF();
   void reload();
   virtual void reload_worker() = 0;

@@ -1081,7 +1081,7 @@ void
 epp_parser_request_cleanup(void *cdata_arg);
 */
 
-std::auto_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id);
+std::unique_ptr<Fred::Logger::RequestProperties> log_epp_command(epp_command_data *cdata, epp_red_command_type cmdtype, int sessionid, epp_action_type *request_type_id);
 
 
 typedef	std::list<void*> pool_subst;

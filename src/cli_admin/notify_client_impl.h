@@ -206,7 +206,7 @@ struct send_object_event_notification_emails_impl {
             ns_args_ptr->get_nameservice_host(), ns_args_ptr->get_nameservice_port(), ns_args_ptr->get_nameservice_context()
         );
 
-        boost::shared_ptr<Fred::Mailer::Manager> mailer_manager( new MailerManager(CorbaContainer::get_instance()->getNS()) );
+        std::shared_ptr<Fred::Mailer::Manager> mailer_manager( new MailerManager(CorbaContainer::get_instance()->getNS()) );
 
         Admin::send_object_event_notification_emails_impl(mailer_manager);
     }

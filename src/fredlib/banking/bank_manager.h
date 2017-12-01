@@ -49,7 +49,7 @@ public:
 
 
 // smart pointer
-typedef std::auto_ptr<Manager> ManagerPtr;
+typedef std::unique_ptr<Manager> ManagerPtr;
 
 
 } // namespace Banking

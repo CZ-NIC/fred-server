@@ -191,7 +191,7 @@ public:
     ///generate some unsigned integer
     unsigned xuint()
     {
-        return static_cast<unsigned>(- std::numeric_limits<int>::min()) + gint();
+        return (1U << std::numeric_limits<int>::digits) + gint();
     }
 
    unsigned long msseed()

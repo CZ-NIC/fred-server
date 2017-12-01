@@ -40,8 +40,9 @@
 
 #define BOOST_TEST_NO_MAIN
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/test/unit_test.hpp>
+#include <utility>
 
 BOOST_AUTO_TEST_SUITE(TestPublicRequest)
 BOOST_AUTO_TEST_SUITE(RegistryEmail)
@@ -59,7 +60,7 @@ public:
             const std::map<std::string,std::string>&,
             const std::vector<std::string>&,
             const std::vector<unsigned long long>&,
-            const std::string&) throw (Fred::Mailer::NOT_SEND)
+            const std::string&)
     {
         return 0;
     }
@@ -99,7 +100,7 @@ struct registry_email_fixture : Test::instantiate_db_template
                 ctx);
         ctx.commit_transaction();
 
-        boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(
+        std::shared_ptr<Fred::Mailer::Manager> mailer_manager(
                 new FakeMailer());
 
         Registry::PublicRequestImpl pr("public-request-test");
@@ -150,7 +151,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
     const Fred::InfoKeysetData keyset = Test::keyset::make(ctx);
     ctx.commit_transaction();
 
-    boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
+    std::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     try
     {
         Registry::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
@@ -198,7 +199,7 @@ BOOST_FIXTURE_TEST_CASE(no_entity_email, Test::instantiate_db_template)
 
 BOOST_FIXTURE_TEST_CASE(no_object, Test::instantiate_db_template)
 {
-    boost::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
+    std::shared_ptr<Fred::Mailer::Manager> mailer_manager(new FakeMailer());
     BOOST_CHECK_THROW(
             Registry::PublicRequestImpl("public-request-test").create_authinfo_request_registry_email(
                 Registry::PublicRequestImpl::ObjectType::contact,

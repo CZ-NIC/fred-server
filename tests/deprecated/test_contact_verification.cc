@@ -59,6 +59,7 @@
 
 #include "cfg/config_handler_decl.h"
 #include <boost/test/unit_test.hpp>
+#include <utility>
 
 #include "src/corba/mailer_manager.h"
 #include "src/fredlib/contact_verification/contact.h"
@@ -302,8 +303,8 @@ BOOST_AUTO_TEST_CASE( test_contact_verification )
             , ns_args_ptr->nameservice_port
             , ns_args_ptr->nameservice_context);
 
-    boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-    const std::auto_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
+    std::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+    const std::unique_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
         new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
 
     std::string registrar_handle = "REG-FRED_A";
@@ -647,8 +648,8 @@ public:
 
         try
         {
-            boost::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
-            const std::auto_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
+            std::shared_ptr<Fred::Mailer::Manager> mm( new MailerManager(CorbaContainer::get_instance()->getNS()));
+            const std::unique_ptr<Registry::Contact::Verification::ContactVerificationImpl> cv(
                 new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
             unsigned long long request_id =0;
             std::string another_request_id;
@@ -971,8 +972,8 @@ BOOST_AUTO_TEST_CASE( test_contact_create_update_info )
         ns_args_ptr->nameservice_port,
         ns_args_ptr->nameservice_context);
 
-    boost::shared_ptr< Fred::Mailer::Manager > mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
-    const std::auto_ptr< Registry::Contact::Verification::ContactVerificationImpl > cv(
+    std::shared_ptr< Fred::Mailer::Manager > mm(new MailerManager(CorbaContainer::get_instance()->getNS()));
+    const std::unique_ptr< Registry::Contact::Verification::ContactVerificationImpl > cv(
         new Registry::Contact::Verification::ContactVerificationImpl(server_name, mm));
 
     //get db connection

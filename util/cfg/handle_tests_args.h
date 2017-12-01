@@ -42,7 +42,7 @@ class HandleTestsArgs : public HandleArgs
 {
     std::string default_config;
     ///options descriptions reference used to print help for all options
-    typedef std::vector<boost::shared_ptr<boost::program_options::options_description> > PoDescs;
+    typedef std::vector<std::shared_ptr<boost::program_options::options_description> > PoDescs;
 
 public:
     PoDescs po_description;
@@ -50,10 +50,10 @@ public:
     HandleTestsArgs(const std::string& def_cfg)
         : default_config(def_cfg) {};
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> gen_opts(
+        std::shared_ptr<boost::program_options::options_description> gen_opts(
                 new boost::program_options::options_description(
                         std::string("General configuration")));
         gen_opts->add_options()

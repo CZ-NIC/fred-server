@@ -401,13 +401,13 @@ std::ostream& operator<<(std::ostream &_os, const ContactAddress &_v);
  */
 std::ostream& operator<<(std::ostream &_os, const ContactAddressType &_v);
 
-}//namespace Fred
-
-inline std::ostream& operator<<(std::ostream &out, const Fred::PersonalIdUnion &personal_id)
+inline std::ostream& operator<<(std::ostream &out, const PersonalIdUnion &personal_id)
 {
     std::ostringstream o;
     o << personal_id.get_type() << ": " << personal_id.get();
     return out << o.str();
 }
+
+}//namespace Fred
 
 #endif//INFO_CONTACT_DATA_H_

@@ -108,8 +108,8 @@ public:
   virtual const std::string& getRawRequest() const = 0;
   virtual const std::string& getRawResponse() const  = 0;
 
-  virtual boost::shared_ptr<RequestPropertiesDetail> getProperties() = 0;
-  virtual boost::shared_ptr<ObjectReferences> getReferences()  = 0;
+  virtual std::shared_ptr<RequestPropertiesDetail> getProperties() = 0;
+  virtual std::shared_ptr<ObjectReferences> getReferences()  = 0;
   virtual const std::pair<int, std::string> getResultCode() const = 0;
   virtual const std::string& getResultCodeName() const = 0;
 

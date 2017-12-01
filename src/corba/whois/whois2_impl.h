@@ -81,7 +81,7 @@ public:
     ObjectStatusDescSeq* get_keyset_status_descriptions(const char* lang);
 
 private:
-    const std::auto_ptr<Registry::WhoisImpl::Server_impl> pimpl_;
+    const std::unique_ptr<Registry::WhoisImpl::Server_impl> pimpl_;
 };
 
 } // namespace Whois

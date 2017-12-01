@@ -51,10 +51,10 @@ public:
                 +":"+boost::lexical_cast<std::string>(nameservice_port);
         }
 
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
     get_options_description()
     {
-        boost::shared_ptr<boost::program_options::options_description> opts_descs(
+        std::shared_ptr<boost::program_options::options_description> opts_descs(
                 new boost::program_options::options_description(
                         std::string("CORBA NameService configuration")));
         opts_descs->add_options()
@@ -90,7 +90,7 @@ class HandleCorbaNameServiceArgsGrp : public HandleGrpArgs
                             , private HandleCorbaNameServiceArgs
 {
 public:
-    boost::shared_ptr<boost::program_options::options_description>
+    std::shared_ptr<boost::program_options::options_description>
         get_options_description()
     {
         return HandleCorbaNameServiceArgs::get_options_description();

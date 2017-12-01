@@ -41,7 +41,7 @@ Registry::Table::ColumnHeaders* ccReg_PublicRequests_i::getColumnHeaders() {
 }
 
 Registry::TableRow* ccReg_PublicRequests_i::getRow(CORBA::UShort _row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   const Fred::PublicRequest::PublicRequest *request = request_list_->get(_row);
@@ -80,7 +80,7 @@ void ccReg_PublicRequests_i::sortByColumn(CORBA::Short _column, CORBA::Boolean _
 }
 
 ccReg::TID ccReg_PublicRequests_i::getRowId(CORBA::UShort _row)
-    throw (Registry::Table::INVALID_ROW) {
+{
   Logging::Context ctx(base_context_);
 
   const Fred::PublicRequest::PublicRequest *request = request_list_->get(_row);
@@ -144,7 +144,7 @@ void ccReg_PublicRequests_i::saveFilter(const char* _name) {
 
   TRACE(boost::format("[CALL] ccReg_PublicRequests_i::saveFilter('%1%')") % _name);
 
-  std::auto_ptr<Fred::Filter::Manager>
+  std::unique_ptr<Fred::Filter::Manager>
       tmp_filter_manager(Fred::Filter::Manager::create());
   tmp_filter_manager->save(Fred::Filter::FT_PUBLICREQUEST, _name, uf);
 }

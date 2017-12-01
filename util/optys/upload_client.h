@@ -50,7 +50,7 @@ public:
     {
         return sent_zip_file_relative_names_;
     }
-    virtual ~ScpUploadException() throw() {};
+    virtual ~ScpUploadException() {};
 };
 
 /**
@@ -66,13 +66,13 @@ class OptysUploadClient
     const std::string password_;
     const std::string zip_tmp_dir_;
     const bool cleanup_zip_tmp_dir_;
-    boost::shared_ptr<Fred::File::Manager> file_manager_;
+    std::shared_ptr<Fred::File::Manager> file_manager_;
     std::vector<std::string > zip_file_names_;
     std::map<std::string, Fred::Messages::LetterProcInfo> failed_letters_by_batch_id_;//failed letters by batch_id
     std::vector<std::pair<Fred::Messages::letter_proc, std::string> > failed_letter_batch_id_pairs_;//failed letters with batch_id
 public:
     OptysUploadClient(const std::string& host, int port, const std::string& user, const std::string& password, const std::string& zip_tmp_dir
-            , bool cleanup_zip_tmp_dir, boost::shared_ptr<Fred::File::Manager> file_manager);
+            , bool cleanup_zip_tmp_dir, std::shared_ptr<Fred::File::Manager> file_manager);
     OptysUploadClient& zip_letters(const std::map<std::string,Fred::Messages::LetterProcInfo>& message_type_letters_map
         , const std::string& zip_filename_before_message_type
         , const std::string& zip_filename_after_message_type);

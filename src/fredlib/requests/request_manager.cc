@@ -18,6 +18,7 @@
 
 #include <pthread.h>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 #include "config.h"
 
@@ -371,7 +372,7 @@ ID ManagerImpl::i_createRequest(const char *sourceIP, ServiceType service, const
     Logging::Context ctx_sess(sess_fmt.str());
 #endif
     TRACE("[CALL] Fred::Logger::ManagerImpl::i_createRequest");
-    std::auto_ptr<Logging::Context> ctx_entry;
+    std::unique_ptr<Logging::Context> ctx_entry;
 
     logd_auto_db db;
 
@@ -464,13 +465,13 @@ void ManagerImpl::getSessionUser(Connection &conn, ID session_id, std::string *u
     }
 
     try {
-        boost::shared_ptr<ModelSession> sess = scache.get(session_id);
+        std::shared_ptr<ModelSession> sess = scache.get(session_id);
 
         *user_name = sess->getUserName();
         *user_id = sess->getUserId();
 
     } catch (CACHE_MISS) {
-        boost::shared_ptr<ModelSession> sess(new ModelSession());
+        std::shared_ptr<ModelSession> sess(new ModelSession());
 
         sess->setId(session_id);
         sess->reload();
@@ -704,7 +705,7 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
     logd_ctx_init ctx;
         TRACE("[CALL] Fred::Logger::ManagerImpl::i_createSession");
 
-        std::auto_ptr<Logging::Context> ctx_sess;
+        std::unique_ptr<Logging::Context> ctx_sess;
 
     ID session_id;
 
@@ -712,7 +713,7 @@ ID ManagerImpl::i_createSession(ID user_id, const char *name)
 
     DateTime time(microsec_clock::universal_time());
 
-    boost::shared_ptr<ModelSession> sess(new ModelSession());
+    std::shared_ptr<ModelSession> sess(new ModelSession());
         sess->setLoginDate(time);
 
     if (name != NULL && *name != '\0') {
@@ -865,7 +866,7 @@ unsigned long long ManagerImpl::i_getRequestCount(
 }
 
 
-std::auto_ptr<RequestCountInfo>
+std::unique_ptr<RequestCountInfo>
 ManagerImpl::i_getRequestCountUsers(
         const boost::posix_time::ptime &datetime_from_local,
         const boost::posix_time::ptime &datetime_to_local,
@@ -876,7 +877,7 @@ ManagerImpl::i_getRequestCountUsers(
 
     Database::Connection conn = Database::Manager::acquire();
 
-    std::auto_ptr<RequestCountInfo> info (new RequestCountInfo());
+    std::unique_ptr<RequestCountInfo> info (new RequestCountInfo());
     Database::ID service_id = getServiceIdForName(service);
 
     ptime datetime_from, datetime_to;

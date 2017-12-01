@@ -34,7 +34,7 @@ namespace Fred
         const Handles &handles,
         const Attachments &attach,
         const std::string& reply_to = std::string("")
-      ) throw (NOT_SEND) = 0;
+      ) = 0;
       virtual bool checkEmailList(std::string &_email_list) const = 0;
     }; // Manager
   }; // Mailer
