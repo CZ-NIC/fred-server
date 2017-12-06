@@ -156,12 +156,13 @@ InfoContactOutputData info_contact(
                  object_state != domain_states_data.end(); ++object_state)
             {
 
-                // XXX HACK: Ticket #10053 - temporary hack until changed xml schemas are released upon poor registrars
+                // XXX HACK: Tickets #10053, #20574 - temporary hack until changed xml schemas are released upon poor registrars
                 if (object_state->state_name == "contactFailedManualVerification" ||
                     object_state->state_name == "contactInManualVerification" ||
-                    object_state->state_name == "contactPassedManualVerification")
+                    object_state->state_name == "contactPassedManualVerification" ||
+                    object_state->state_name == "serverBlocked")
                 {
-                    continue; // do not propagate admin contact verification states
+                    continue; // do not propagate any of these states
                 }
 
                 if (object_state->is_external)
