@@ -25,6 +25,7 @@
 #include "src/epp/epp_response_failure.h"
 #include "src/epp/epp_result_code.h"
 #include "src/fredlib/domain/info_domain.h"
+#include "src/fredlib/nsset/create_nsset.h"
 #include "util/db/nullable.h"
 #include "util/optional_value.h"
 
@@ -232,34 +233,38 @@ BOOST_FIXTURE_TEST_CASE(nsset_change_should_clear_keyset, supply_ctx<HasRegistra
 {
     FullDomain domain(ctx, registrar.data.handle);
 
-    const Optional<Nullable<std::string> > nsset_chg = Optional<Nullable<std::string> >(Nullable<std::string>());
+    const std::string nsset_handle = "NSSET2";
+    Fred::CreateNsset(nsset_handle, registrar.data.handle).exec(ctx);
+    const Optional<Nullable<std::string>> nsset_chg = Nullable<std::string>(nsset_handle);
 
     BOOST_REQUIRE(!domain.data.keyset.isnull());
 
-    ::Epp::Domain::UpdateDomainConfigData update_domain_config_data(
+    const ::Epp::Domain::UpdateDomainConfigData update_domain_config_data(
             false, // rifd_epp_operations_charging
             true); // rifd_epp_update_domain_keyset_clear
 
     ::Epp::Domain::update_domain(
-        ctx,
-        ::Epp::Domain::UpdateDomainInputData(
-            domain.data.fqdn,
-            Optional<std::string>(), // registrant_chg
-            Optional<std::string>(), // authinfopw_chg
-            nsset_chg, // nsset_chg
-            Optional<Nullable<std::string> >(), // keyset_chg
-            std::vector<std::string>(), // admin_contacts_add
-            std::vector<std::string>(), // admin_contacts_rem
-            std::vector<std::string>(), // tmpcontacts_rem
-            boost::optional< ::Epp::Domain::EnumValidationExtension>()), // enum_validation
-        update_domain_config_data,
-        session.data
-    );
-
+            ctx,
+            ::Epp::Domain::UpdateDomainInputData(
+                    domain.data.fqdn,
+                    Optional<std::string>(), // registrant_chg
+                    Optional<std::string>(), // authinfopw_chg
+                    nsset_chg, // nsset_chg
+                    Optional<Nullable<std::string>>(), // keyset_chg
+                    std::vector<std::string>(), // admin_contacts_add
+                    std::vector<std::string>(), // admin_contacts_rem
+                    std::vector<std::string>(), // tmpcontacts_rem
+                    boost::optional< ::Epp::Domain::EnumValidationExtension >()), // enum_validation
+            update_domain_config_data,
+            session.data);
     const Fred::InfoDomainData info_domain_data = Fred::InfoDomainById(domain.data.id).exec(ctx, "UTC").info_domain_data;
 
-    BOOST_CHECK(info_domain_data.nsset.isnull());
-    BOOST_CHECK_EQUAL(info_domain_data.keyset.isnull(), update_domain_config_data.rifd_epp_update_domain_keyset_clear); 
+    BOOST_CHECK(!info_domain_data.nsset.isnull());
+    if (!info_domain_data.nsset.isnull())
+    {
+        BOOST_CHECK_EQUAL(info_domain_data.nsset.get_value().handle, nsset_handle);
+    }
+    BOOST_CHECK(info_domain_data.keyset.isnull());
 }
 
 BOOST_FIXTURE_TEST_CASE(nsset_change_should_not_clear_keyset, supply_ctx<HasRegistrarWithSession>)
