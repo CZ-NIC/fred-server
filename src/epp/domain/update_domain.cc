@@ -384,17 +384,12 @@ unsigned long long update_domain(
              (to_upper(_update_domain_data.nsset_chg.get_value().get_value()) !=
               info_domain_data_before_update.nsset.get_value().handle));
 
-    const bool change_keyset_to_different_handle_requested =
-            _update_domain_data.keyset_chg.isset() &&
-            !_update_domain_data.keyset_chg.get_value().isnull() &&
-            (info_domain_data_before_update.keyset.isnull() ||
-             (to_upper(_update_domain_data.keyset_chg.get_value().get_value()) !=
-              info_domain_data_before_update.keyset.get_value().handle));
+    const bool change_keyset_requested = _update_domain_data.keyset_chg.isset();
 
     const Optional<Nullable<std::string>> keyset_chg =
             (_update_domain_config_data.rifd_epp_update_domain_keyset_clear &&
              change_nsset_to_different_handle_requested &&
-             !change_keyset_to_different_handle_requested)
+             !change_keyset_requested)
                     ? Optional<Nullable<std::string>>(Nullable<std::string>())
                     : _update_domain_data.keyset_chg;
 
