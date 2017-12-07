@@ -35,24 +35,23 @@ struct UpdateDomainInputData
     const std::string fqdn;
     const Optional<std::string> registrant_chg;
     const Optional<std::string> authinfopw_chg;
-    const Optional<Nullable<std::string> > nsset_chg;
-    const Optional<Nullable<std::string> > keyset_chg;
+    const Optional<Nullable<std::string>> nsset_chg;
+    const Optional<Nullable<std::string>> keyset_chg;
     const std::vector<std::string> admin_contacts_add;
     const std::vector<std::string> admin_contacts_rem;
     const std::vector<std::string> tmpcontacts_rem;
-    const boost::optional< ::Epp::Domain::EnumValidationExtension> enum_validation;
-
+    const boost::optional<::Epp::Domain::EnumValidationExtension> enum_validation;
 
     UpdateDomainInputData(
             const std::string& _fqdn,
             const Optional<std::string>& _registrant_chg,
             const Optional<std::string>& _authinfopw_chg,
-            const Optional<Nullable<std::string> >& _nsset_chg,
-            const Optional<Nullable<std::string> >& _keyset_chg,
+            const Optional<Nullable<std::string>>& _nsset_chg,
+            const Optional<Nullable<std::string>>& _keyset_chg,
             const std::vector<std::string>& _admin_contacts_add,
             const std::vector<std::string>& _admin_contacts_rem,
             const std::vector<std::string>& _tmpcontacts_rem,
-            const boost::optional< ::Epp::Domain::EnumValidationExtension>& _enum_validation)
+            const boost::optional<::Epp::Domain::EnumValidationExtension>& _enum_validation)
         : fqdn(_fqdn),
           registrant_chg(_registrant_chg),
           authinfopw_chg(_authinfopw_chg),
@@ -62,10 +61,7 @@ struct UpdateDomainInputData
           admin_contacts_rem(_admin_contacts_rem),
           tmpcontacts_rem(_tmpcontacts_rem),
           enum_validation(_enum_validation)
-    {
-    }
-
-
+    { }
 };
 
 } // namespace Epp::Domain
