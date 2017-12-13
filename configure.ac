@@ -77,6 +77,8 @@ AC_CHECK_LIB([minizip], [rand], [],
 
 AC_CHECK_HEADER([minizip/zip.h],,[AC_MSG_ERROR([Header minizip/zip.h not found])])
 
+AX_CHECK_COMPILE_FLAG([-std=c++14], [
+                      CXXFLAGS="$CXXFLAGS -std=c++14"])
 
 # Check for omniORB (note that 4.1.1 is bugged for us)
 PKG_CHECK_MODULES(OMNIORB4, [omniORB4 > 4.1.1, omniDynamic4, omnithread3])
