@@ -6,6 +6,7 @@ RUN apt-get -y install               \
         autoconf                     \
         automake                     \
         autotools-dev                \
+        autoconf-archive             \
         pkg-config                   \
         libtool                      \
         build-essential              \
