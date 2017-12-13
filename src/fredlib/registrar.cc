@@ -16,6 +16,8 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "util/password_storage.hh"
+
 #include <boost/date_time/posix_time/time_parsers.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/regex.hpp>
@@ -60,80 +62,79 @@ namespace Registrar {
 class RegistrarImpl;
 
 
-class ACLImpl : virtual public ACL,
-				private ModelRegistrarAcl {
-
+class ACLImpl:public ACL, private ModelRegistrarAcl
+{
 public:
   ACLImpl()
 	  : ModelRegistrarAcl()
-  {
-  }
+  { }
   ACLImpl(TID _id,
           const std::string& _certificateMD5,
-          const std::string& _password)
+          const std::string& _plaintext_password)
 	  : ModelRegistrarAcl()
   {
-	  ModelRegistrarAcl::setId(_id);
-	  ModelRegistrarAcl::setCert(_certificateMD5);
-	  ModelRegistrarAcl::setPassword(_password);
+	  this->ModelRegistrarAcl::setId(_id);
+	  this->ModelRegistrarAcl::setCert(_certificateMD5);
+	  this->set_password(_plaintext_password);
   }
-  virtual const TID& getId() const
+  TID getId()const
   {
-      return ModelRegistrarAcl::getId();
+      return this->ModelRegistrarAcl::getId();
   }
-  virtual void setId(const TID &_id)
+  void setId(TID _id)
   {
-	  ModelRegistrarAcl::setId(_id);
+      this->ModelRegistrarAcl::setId(_id);
   }
-  const TID& getRegistarId() const
+  TID getRegistarId()const
   {
-      return ModelRegistrarAcl::getRegistarId();
+      return this->ModelRegistrarAcl::getRegistarId();
   }
-  void setRegistrarId(const TID &_registrar_id)
+  void setRegistrarId(const TID& _registrar_id)override
   {
-    	ModelRegistrarAcl::setRegistrarId(_registrar_id);
+      this->ModelRegistrarAcl::setRegistrarId(_registrar_id);
   }
-  virtual const std::string& getCertificateMD5() const
+  const std::string& getCertificateMD5()const override
   {
-    return ModelRegistrarAcl::getCert();
+      return this->ModelRegistrarAcl::getCert();
   }
-  virtual void setCertificateMD5(const std::string& _certificateMD5)
+  void setCertificateMD5(const std::string& _certificateMD5)override
   {
-	  ModelRegistrarAcl::setCert(_certificateMD5);
+      this->ModelRegistrarAcl::setCert(_certificateMD5);
   }
-  virtual const std::string& getPassword() const
+  void set_password(const std::string& _plaintext_password)override
   {
-    return ModelRegistrarAcl::getPassword();
+      const auto encrypted_password = ::PasswordStorage::encrypt_password_by_preferred_method(_plaintext_password);
+      this->ModelRegistrarAcl::setPassword(encrypted_password.get_value());
   }
-  virtual void setPassword(const std::string& _password)
-  {
-	  ModelRegistrarAcl::setPassword(_password);
-  }
-  bool operator==(const TID _id) const
+  bool operator==(TID _id)const
   {
     return getId() == _id;
   }
-  virtual void save()
+  void save()
   {
-      TRACE("[CALL] ACLImpl::save()");
+    TRACE("[CALL] ACLImpl::save()");
 	try
 	{
 		Database::Connection conn = Database::Manager::acquire();
-		TID id = getId();
+		const TID id = this->getId();
 		LOGGER(PACKAGE).debug(boost::format("ACLImpl::save id: %1% RegistrarId: %2%")
-		% id % getRegistarId());
-		if (id)
-			ModelRegistrarAcl::update();
+		% id % this->getRegistarId());
+		if (id != 0)
+		{
+		    this->ModelRegistrarAcl::update();
+		}
 		else
-			ModelRegistrarAcl::insert();
-	}//try
+		{
+		    this->ModelRegistrarAcl::insert();
+		}
+	}
 	catch (...)
 	{
-	 LOGGER(PACKAGE).error("save: an error has occured");
-	 throw SQL_ERROR();
-	}//catch (...)
-  }//save
-};//class ACLImpl
+        LOGGER(PACKAGE).error("save: an error has occured");
+        throw SQL_ERROR();
+	}
+  }
+};
 
 unsigned long addRegistrarZone(
           const std::string& registrarHandle,
@@ -737,7 +738,7 @@ public:
               const std::string& certificateMD5,
               const std::string& password)
   {
-    acl.push_back(std::make_shared<ACLImpl>(_id,certificateMD5,password));
+    acl.push_back(std::make_shared<ACLImpl>(_id, certificateMD5, password));
   }
 
   void putZoneAccess(TID _id
@@ -1229,31 +1230,34 @@ public:
       }//catch (...)
   }
 
-  virtual void addRegistrarAcl(
-          const std::string &registrarHandle,
-          const std::string &cert,
-          const std::string &pass)
+  void addRegistrarAcl(
+          const std::string& _registrar_handle,
+          const std::string& _cert,
+          const std::string& _plaintext_password)override
   {
       try
       {
     	  Database::Connection conn = Database::Manager::acquire();
+    	  const std::string encrypted_password =
+    	          ::PasswordStorage::encrypt_password_by_preferred_method(_plaintext_password).get_value();
 
-    	  std::stringstream sql;
-		  sql << "INSERT INTO registraracl (registrarid, cert, password) "
-			  << "SELECT r.id, '" << conn.escape(cert) << "','"
-			  << conn.escape(pass) << "' FROM registrar r "
-			  << "WHERE r.handle='" << conn.escape(registrarHandle) << "'";
+    	  std::ostringstream sql;
+		  sql << "INSERT INTO registraracl (registrarid,cert,password) "
+			     "SELECT r.id,'" << conn.escape(_cert) << "',"
+			            "'" << conn.escape(encrypted_password) << "' "
+                 "FROM registrar r "
+			     "WHERE r.handle='" << conn.escape(_registrar_handle) << "'";
 
 		  Database::Transaction tx(conn);
 		  conn.exec(sql.str());
 		  tx.commit();
-      }//try
+      }
       catch (...)
       {
           LOGGER(PACKAGE).error("addRegistrarAcl: an error has occured");
           throw SQL_ERROR();
-      }//catch (...)
-  }//addRegistrarAcl
+      }
+  }
 
   virtual Registrar::AutoPtr createRegistrar()
   {

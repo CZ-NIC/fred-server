@@ -297,6 +297,7 @@ noinst_HEADERS = \
 
 noinst_LIBRARIES = \
 		util/libutil.a \
+		util/libpassword_storage.a \
 		util/log/liblog.a \
 		util/types/libtypes.a \
 		util/db/libdb.a \
@@ -343,7 +344,8 @@ noinst_LIBRARIES = \
 		src/corba/util/libcorbautil.a \
 		src/corba/libcorba_conversion_test.a \
 		src/admin/contact/verification/libadmin_contact_verification.a \
-		src/admin/notification/libadmin_notification.a
+		src/admin/notification/libadmin_notification.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a
 
 
 noinst_PROGRAMS = \
@@ -385,7 +387,8 @@ util_libutil_a_SOURCES = \
 		util/xmlgen.cc \
 		util/subprocess.cc \
 		util/idn_utils.h \
-		util/idn_utils.cc
+		util/idn_utils.cc \
+		util/nonconvertible.hh
 #
 # util/libutil.a
 
@@ -1063,6 +1066,35 @@ src_fredlib_libfred_a_SOURCES = \
 		src/fredlib/notifier/process_one_notification_request.cc
 #
 # src/fredlib/libfred.a
+
+
+# util/libpassword_storage.a
+#
+util_libpassword_storage_a_SOURCES = \
+		util/password_storage.cc \
+		util/password_storage.hh \
+		util/password_storage/base64.cc \
+		util/password_storage/base64.hh \
+		util/password_storage/password_data.hh \
+		util/password_storage/impl/check_result.hh \
+		util/password_storage/impl/generate_salt.hh \
+		util/password_storage/impl/pbkdf2.cc \
+		util/password_storage/impl/pbkdf2.hh \
+		util/password_storage/impl/plaintext.cc \
+		util/password_storage/impl/plaintext.hh \
+		util/password_storage/impl/check_equality.cc \
+		util/password_storage/impl/check_equality.hh
+#
+# util/libpassword_storage.a
+
+
+# src/epp/impl/registraracl/libauthentic_registrar.a
+#
+src_epp_impl_registraracl_libauthentic_registrar_a_SOURCES = \
+		src/epp/impl/registraracl/authentic_registrar.cc \
+		src/epp/impl/registraracl/authentic_registrar.hh
+#
+# src/epp/impl/registraracl/libauthentic_registrar.a
 
 
 # src/fredlib/public_request/libpublic_request.a
@@ -1854,6 +1886,9 @@ src_corba_fred_rifd_SOURCES = \
 
 src_corba_fred_rifd_LDADD = \
 		src/corba/epp/libepp_impl.a \
+		util/libpassword_storage.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
+		util/libpassword_storage.a \
 		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/corba/libcorbaepp.a \
 		src/corba/libcorbatechcheck.a \
@@ -1871,6 +1906,7 @@ src_corba_fred_rifd_LDADD = \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
 		-lmpdec -lm -lrt \
+		$(LIBCRYPTO_LIBS) \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -1995,14 +2031,16 @@ src_corba_fred_adifd_LDADD = \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/banking/libbanking.a \
 		src/fredlib/libfred.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
+		util/libpassword_storage.a \
 		src/model/libmodel.a \
 		util/db/libdb.a \
 		util/types/libtypes.a \
 		util/log/liblog.a \
 		src/old_utils/liboldutils.a \
 		util/libutil.a \
-		-lmpdec -lm -lrt \
-		-lresolv \
+		-lmpdec -lm -lrt -lresolv \
+		$(LIBCRYPTO_LIBS) \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2060,6 +2098,8 @@ src_corba_fred_pifd_LDADD = \
 		src/fredlib/messages/libmessages.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/libfred.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
+		util/libpassword_storage.a \
 		src/model/libmodel.a \
 		util/db/libdb.a \
 		util/types/libtypes.a \
@@ -2067,6 +2107,7 @@ src_corba_fred_pifd_LDADD = \
 		util/log/liblog.a \
 		util/libutil.a \
 		-lmpdec -lm -lrt \
+		$(LIBCRYPTO_LIBS) \
 		$(OMNIORB4_LIBS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -2484,6 +2525,8 @@ src_cli_admin_fred_admin_LDFLAGS = \
 src_cli_admin_fred_admin_LDADD = \
 		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/fredlib/libfred.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
+		util/libpassword_storage.a \
 		src/model/libmodel.a \
 		src/fredlib/banking/libbanking.a \
 		src/corba/libcorba.a \
@@ -2504,6 +2547,7 @@ src_cli_admin_fred_admin_LDADD = \
 		util/libutil.a \
 		util/hp/libhp.a \
 		-lmpdec -lm -lrt \
+		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2511,7 +2555,6 @@ src_cli_admin_fred_admin_LDADD = \
 		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
 		$(XML2_LIBS) \
-		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -2532,8 +2575,7 @@ tools_logd_migration_migrate_log_SOURCES = \
 		tools/logd_migration/m_epp_parser.h
 
 tools_logd_migration_migrate_log_CPPFLAGS = \
-		$(AM_CPPFLAGS) \
-		$(LIBIDN_CFLAGS)
+		$(AM_CPPFLAGS)
 
 tools_logd_migration_migrate_log_LDFLAGS = \
 		$(AM_LDFLAGS)
@@ -2567,8 +2609,7 @@ tools_contact_migration_mojeid_contact_address_import_SOURCES = \
 		tools/contact_migration/mojeid_contact_address_import.cc
 
 tools_contact_migration_mojeid_contact_address_import_CPPFLAGS = \
-		$(AM_CPPFLAGS) \
-		$(LIBIDN_CFLAGS)
+		$(AM_CPPFLAGS)
 
 tools_contact_migration_mojeid_contact_address_import_LDFLAGS = \
 		$(AM_LDFLAGS)
@@ -2591,8 +2632,7 @@ tools_contact_migration_mojeid_contact_ssn_fix_SOURCES = \
 		tools/contact_migration/mojeid_contact_ssn_fix.cc
 
 tools_contact_migration_mojeid_contact_ssn_fix_CPPFLAGS = \
-		$(AM_CPPFLAGS) \
-		$(LIBIDN_CFLAGS)
+		$(AM_CPPFLAGS)
 
 tools_contact_migration_mojeid_contact_ssn_fix_LDFLAGS = \
 		$(AM_LDFLAGS)
@@ -2629,7 +2669,8 @@ SERVER_TESTS = \
 		tests/test-fredlib \
 		tests/test-optys \
 		tests/test-corba-conversion \
-		tests/interfaces/test-record-statement
+		tests/interfaces/test-record-statement \
+		tests/test-password-storage
 
 # tests/interfaces/test-admin-contact-verification
 #
@@ -2738,6 +2779,9 @@ tests_interfaces_test_admin_notification_SOURCES = \
 		tests/setup/fixtures.h \
 		tests/setup/fixtures.cc
 
+tests_interfaces_test_admin_notification_CPPFLAGS = \
+		$(AM_CPPFLAGS)
+
 tests_interfaces_test_admin_notification_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
@@ -2761,7 +2805,6 @@ tests_interfaces_test_admin_notification_LDADD = \
 		$(POSTGRESQL_LIB) \
 		$(BOOST_SYSTEM_LIB) \
 		$(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
-		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS)
 #
 # tests/interfaces/test-admin-notification
@@ -2822,10 +2865,13 @@ tests_interfaces_test_epp_LDADD = \
 		src/corba/epp/libepp_impl.a \
 		src/fredlib/libfred.a \
 		util/tz/libtimezones.a \
+		util/libpassword_storage.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
 		util/types/libtypes.a \
 		util/db/libdb.a \
 		util/log/liblog.a \
 		util/libutil.a \
+		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
@@ -2977,6 +3023,9 @@ tests_test_server_SOURCES = \
 		tests/interfaces/domain_browser/test_domain_browser.cc \
 		tests/setup/fixtures.h
 
+tests_test_server_CPPFLAGS = \
+		$(AM_CPPFLAGS)
+
 tests_test_server_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
@@ -2986,12 +3035,15 @@ tests_test_server_LDADD = \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/epp/libepp_impl.a \
+		util/libpassword_storage.a \
 		src/corba/libcorba.a \
 		src/corba/whois/libwhois_impl.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/admin/contact/verification/libadmin_contact_verification.a \
 		src/admin/notification/libadmin_notification.a \
 		src/fredlib/libfred.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
+		util/libpassword_storage.a \
 		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
 		util/tz/libtimezones.a \
@@ -3019,13 +3071,13 @@ tests_test_server_LDADD = \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libmailer.a \
 		-lmpdec -lm -lrt \
+		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_RANDOM_LIB) \
 		$(BOOST_FILESYSTEM_LIB) \
 		$(OMNIORB4_LIBS) \
-		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -3051,6 +3103,9 @@ tests_interfaces_test_public_request_SOURCES = \
 		tests/setup/fixtures_utils.h \
 		tests/setup/fixtures_utils.cc
 
+tests_interfaces_test_public_request_CPPFLAGS = \
+		$(AM_CPPFLAGS)
+
 tests_interfaces_test_public_request_LDFLAGS = \
 		$(AM_LDFLAGS)
 
@@ -3070,7 +3125,6 @@ tests_interfaces_test_public_request_LDADD = \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_RANDOM_LIB) \
 		$(BOOST_DATE_TIME_LIB)\
-		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -3105,6 +3159,9 @@ tests_test_blocking_SOURCES = \
 		src/fredlib/object_state/get_blocking_status_desc_list.cc \
 		src/fredlib/domain/create_domain_name_blacklist_id.cc
 
+tests_test_blocking_CPPFLAGS = \
+		$(AM_CPPFLAGS)
+
 tests_test_blocking_LDFLAGS = \
 		$(POSTGRESQL_LDFLAGS) \
 		$(BOOST_LDFLAGS) \
@@ -3114,10 +3171,13 @@ tests_test_blocking_LDADD = \
 		src/fredlib/contact_verification/libcontact_verification.a \
 		src/corba/admin/libadmin_impl.a \
 		src/corba/epp/libepp_impl.a \
+		util/libpassword_storage.a \
 		src/corba/libcorba.a \
 		src/corba/whois/libwhois_impl.a \
 		src/fredlib/public_request/libpublic_request.a \
 		src/fredlib/libfred.a \
+		src/epp/impl/registraracl/libauthentic_registrar.a \
+		util/libpassword_storage.a \
 		src/fredlib/messages/libmessages.a \
 		src/model/libmodel.a \
 		util/db/libdb.a \
@@ -3144,12 +3204,12 @@ tests_test_blocking_LDADD = \
 		src/corba/libcorbadatatypes.a \
 		src/corba/libmailer.a \
 		-lmpdec -lm -lrt \
+		$(LIBCRYPTO_LIBS) \
 		$(BOOST_PROGRAM_OPTIONS_LIB) \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_RANDOM_LIB) \
 		$(OMNIORB4_LIBS) \
-		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -3505,10 +3565,51 @@ tests_interfaces_test_record_statement_LDADD = \
 #
 # tests_interfaces_test_record_statement
 
+# tests/test-password-storage
+#
+tests_test_password_storage_SOURCES = \
+		tests/util/test_password_storage.cc \
+		tests/util/test_password_storage_main.cc \
+		src/cli_admin/read_config_file.h \
+		tests/setup/fixtures_utils.h \
+		tests/setup/fixtures_utils.cc \
+		tests/setup/fixtures.h \
+		tests/setup/fixtures.cc
+
+tests_test_password_storage_LDFLAGS = \
+		$(POSTGRESQL_LDFLAGS) \
+		$(BOOST_LDFLAGS) \
+		$(AM_LDFLAGS)
+
+tests_test_password_storage_LDADD = \
+		src/fredlib/libfred.a \
+		util/libpassword_storage.a \
+		util/libutil.a \
+		util/log/liblog.a \
+		-lmpdec -lm -lrt \
+		$(LIBCRYPTO_LIBS) \
+		$(BOOST_PROGRAM_OPTIONS_LIB) \
+		$(BOOST_DATE_TIME_LIB) \
+		$(BOOST_FILESYSTEM_LIB) \
+		$(BOOST_REGEX_LIB) \
+		$(BOOST_RANDOM_LIB) \
+		$(BOOST_THREAD_LIB) \
+		$(BOOST_SERIALIZATION_LIB) \
+		$(BOOST_SYSTEM_LIB) \
+		$(POSTGRESQL_LIB) \
+		$(OMNIORB4_LIBS) \
+		$(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+#
+# tests/test-password-storage
+
+
 # non-corba tests with overloaded global operator new
 #
 tests_test_exception_SOURCES = \
 		tests/util/test_exception.cc
+
+tests_test_exception_CPPFLAGS = \
+		$(AM_CPPFLAGS)
 
 tests_test_exception_LDFLAGS = \
 		$(BOOST_LDFLAGS) \
@@ -3520,7 +3621,6 @@ tests_test_exception_LDADD = \
 		$(BOOST_DATE_TIME_LIB) \
 		$(BOOST_REGEX_LIB) \
 		$(BOOST_RANDOM_LIB) \
-		$(LIBIDN_CFLAGS) \
 		$(LIBIDN_LIBS) \
 		$(BOOST_THREAD_LIB) \
 		$(BOOST_SERIALIZATION_LIB) \
@@ -3528,8 +3628,6 @@ tests_test_exception_LDADD = \
 		$(BOOST_SYSTEM_LIB)
 #
 # non-corba tests with overloaded global operator new
-
-
 
 
 install-tests: $(SERVER_TESTS)
@@ -3541,4 +3639,3 @@ testdatadir = $(docdir)
 dist_testdata_DATA = \
 		tests/deprecated/example_payments.xml \
 		tests/deprecated/test_file.pdf
-

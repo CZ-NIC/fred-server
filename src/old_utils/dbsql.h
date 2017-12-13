@@ -3,40 +3,30 @@
 
 #include "src/fredlib/db_settings.h"
 
-#include "util.h"
-#include "pqsql.h"
+#include "src/old_utils/util.h"
+#include "src/old_utils/pqsql.h"
 #include "src/fredlib/types.h"
-#include <map>
+
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
+#include <string>
 
+#include <boost/shared_ptr.hpp>
 
 #define LANG_EN 0
 #define LANG_CS 1
 #define CMD_OK 1000 // OK command to the commit transaction
-#define CMD_FAILED(x) (x<2000) // all successfull codes
+inline bool is_command_successfully_done(int result) { return result < 2000; } // all successful codes
 #define MAX_SQLBUFFER 4096*25 // maximal lenght od the sqlBuffer
 #define MAX_SVTID 64 // length of the server  ticket  svTRID
 
-class DB;
-
 class DB : public PQ
 {
-    // constructor
-    DB();
 public:
-  //destructor
-  ~DB();
+  DB(Database::Connection &_conn);
 
-  /* HACK! HACK! HACK! */
-  DB(Database::Connection &_conn) : PQ(_conn.__getConn__())
-  {
-      svrTRID = NULL;
-      memHandle=NULL;
-      enum_action=0;
-      loginID = 0;
-  }
+  ~DB();
 
   //----------------------------
   // EPP function for table action and action_xml
@@ -55,12 +45,7 @@ public:
   {
     return svrTRID;
   }
-  ; // return actual generated server ticket  svrTRID
-
-
-  //  test certificate fingerprint in the table registrarACL for registarID
-  bool TestRegistrarACL(
-    int regID, const char * pass, const char * cert);
+  // return actual generated server ticket  svrTRID
 
   int GetEPPAction()
   {
@@ -394,6 +379,7 @@ public:
     const char *table, const char *fname, int id);
 
 private:
+  DB();
   char *memHandle;
   char *svrTRID;
   char *sqlBuffer;

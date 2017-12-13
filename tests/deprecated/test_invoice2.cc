@@ -540,7 +540,7 @@ struct registrar_fixture
         registrar->setVat(vat);
         Fred::Registrar::ACL* registrar_acl = registrar->newACL();
         registrar_acl->setCertificateMD5("");
-        registrar_acl->setPassword("");
+        registrar_acl->set_password("");
         registrar->save();
         return registrar->getId();
     }//create_test_registrar

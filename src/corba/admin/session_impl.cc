@@ -1332,7 +1332,7 @@ Registry::Registrar::Detail* ccReg_Session_i::createRegistrarDetail(Fred::Regist
   detail->access.length(_registrar->getACLSize());
   for (unsigned i = 0; i < _registrar->getACLSize(); i++) {
     detail->access[i].md5Cert = DUPSTRFUN(_registrar->getACL(i)->getCertificateMD5);
-    detail->access[i].password = DUPSTRFUN(_registrar->getACL(i)->getPassword);
+    detail->access[i].password = "no password available";
   }
   detail->zones.length(_registrar->getZoneAccessSize());
   for (unsigned i = 0; i < _registrar->getZoneAccessSize(); i++)
@@ -1411,10 +1411,13 @@ ccReg::TID ccReg_Session_i::updateRegistrar(const ccReg::AdminRegistrar& _regist
     LOGGER(PACKAGE).debug(boost::format
             ("ccReg_Session_i::updateRegistrar : i: %1% setRegistrarId: %2%")
                 % i % update_registrar->getId());
-    if (_registrar.id)  registrar_acl->setRegistrarId(update_registrar->getId());//set id
+    if (_registrar.id != 0)
+    {
+        registrar_acl->setRegistrarId(update_registrar->getId());//set id
+    }
     registrar_acl->setCertificateMD5((const char *)_registrar.access[i].md5Cert);
-    registrar_acl->setPassword((const char *)_registrar.access[i].password);
-  }//for i
+    registrar_acl->set_password(static_cast<const char*>(_registrar.access[i].password));
+  }
 
   update_registrar->clearZoneAccessList();
   for (unsigned i = 0; i < _registrar.zones.length();i++)

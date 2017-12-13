@@ -80,6 +80,11 @@ AC_CHECK_HEADER([minizip/zip.h],,[AC_MSG_ERROR([Header minizip/zip.h not found])
 AX_CHECK_COMPILE_FLAG([-std=c++14], [
                       CXXFLAGS="$CXXFLAGS -std=c++14"])
 
+# check for libcrypto
+PKG_CHECK_MODULES(LIBCRYPTO, [libcrypto])
+
+AC_CHECK_HEADER([openssl/evp.h],,[AC_MSG_ERROR([Header openssl/evp.h not found])])
+
 # Check for omniORB (note that 4.1.1 is bugged for us)
 PKG_CHECK_MODULES(OMNIORB4, [omniORB4 > 4.1.1, omniDynamic4, omnithread3])
 # check for libxml2

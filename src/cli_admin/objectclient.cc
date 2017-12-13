@@ -16,26 +16,80 @@
  *  along with FRED.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//TODO: do not use macros, do not use macros, ...!
 #define RESOLVE_TRY 3
 
-#include <boost/lexical_cast.hpp>
-#include <omniORB4/CORBA.h>
-#include "commonclient.h"
-#include "objectclient.h"
+#include "src/cli_admin/objectclient.h"
+#include "src/cli_admin/commonclient.h"
 #include "src/fredlib/registry.h"
-#include "log/logger.h"
-#include "src/corba/nameservice.h"
-#include <stdexcept>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/optional.hpp>
-
+#include "src/fredlib/object_states.h"
 #include "src/fredlib/object_states.h"
 #include "src/fredlib/poll/create_state_messages.h"
 #include "src/fredlib/poll/create_low_credit_messages.h"
 #include "src/fredlib/poll/message_type_set.h"
 
+#include "util/log/logger.h"
+#include "src/corba/nameservice.h"
+
+#include <omniORB4/CORBA.h>
+
+#include <stdexcept>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
+
 namespace Admin {
+
+ObjectClient::ObjectClient()
+    : restricted_handles(false),
+      docgen_domain_count_limit(0),
+      object_new_state_request_name(false),
+      object_update_states(false),
+      object_regular_procedure(false),
+      object_delete_candidates(false)
+{ }
+
+ObjectClient::ObjectClient(
+        const std::string& _connstring,
+        const std::string& _nsAddr,
+        const std::string& _nameservice_context,
+        const optional_string& _docgen_path,
+        const optional_string& _docgen_template_path,
+        const optional_string& _fileclient_path,
+        bool _restricted_handles,
+        unsigned long long _docgen_domain_count_limit,
+        bool _object_new_state_request_name,
+        const ObjectNewStateRequestNameArgs& _object_new_state_request_name_params,
+        bool _object_update_states,
+        const ObjectUpdateStatesArgs& _object_update_states_params,
+        bool _object_regular_procedure,
+        const ObjectRegularProcedureArgs& _object_regular_procedure_params,
+        bool _object_delete_candidates,
+        const DeleteObjectsArgs& _delete_objects_params)
+    : BaseClient(_connstring, _nsAddr),
+      nameservice_context(_nameservice_context),
+      docgen_path(_docgen_path),
+      docgen_template_path(_docgen_template_path),
+      fileclient_path(_fileclient_path),
+      restricted_handles(_restricted_handles),
+      docgen_domain_count_limit(_docgen_domain_count_limit),
+      object_new_state_request_name(_object_new_state_request_name),
+      object_new_state_request_name_params(_object_new_state_request_name_params),
+      object_update_states(_object_update_states),
+      object_update_states_params(_object_update_states_params),
+      object_regular_procedure(_object_regular_procedure),
+      object_regular_procedure_params(_object_regular_procedure_params),
+      object_delete_candidates(_object_delete_candidates),
+      delete_objects_params(_delete_objects_params)
+{
+    Database::Connection conn = Database::Manager::acquire();
+    m_db.reset(new DB(conn));
+}
+
+ObjectClient::~ObjectClient()
+{ }
 
 void
 ObjectClient::runMethod()
@@ -59,21 +113,12 @@ void
 ObjectClient::new_state_request_name()
 {
     Fred::createObjectStateRequestName(
-        object_new_state_request_name_params.object_name
-        , object_new_state_request_name_params.object_type
-        , object_new_state_request_name_params.object_state_name
-        , object_new_state_request_name_params.valid_from
-        , object_new_state_request_name_params.valid_to
-        , object_new_state_request_name_params.update_object_state
-        );
-
-    return;
-}
-
-void
-ObjectClient::list()
-{
-    std::cout << "not implemented" << std::endl;
+        object_new_state_request_name_params.object_name,
+        object_new_state_request_name_params.object_type,
+        object_new_state_request_name_params.object_state_name,
+        object_new_state_request_name_params.valid_from,
+        object_new_state_request_name_params.valid_to,
+        object_new_state_request_name_params.update_object_state);
 }
 
 void
@@ -105,30 +150,10 @@ ObjectClient::deleteObjects(
         const std::string& typeList, CorbaClient &cc)
 {
     LOGGER("tracer").trace("ObjectClient::deleteObjects");
-    ccReg::EPP_var epp = NULL;
-    // CorbaClient cc(0, NULL, m_nsAddr, m_conf.get<std::string>(NS_CONTEXT_NAME));
-    // temporary done by using EPP corba interface
-    // should be instead somewhere in registry library (object.cc?)
-    // get login information for first system registrar
-    if (!m_db->ExecSelect(
-                "SELECT r.handle,ra.cert,ra.password "
-                "FROM registrar r, registraracl ra "
-                "WHERE r.id=ra.registrarid AND r.system='t' LIMIT 1 ")) {
-        LOG(ERROR_LOG, "deleteObjects(): Error during ExecSelect");
-        return -1;
-    }
-    if (!m_db->GetSelectRows()) {
-        LOG(ERROR_LOG, "deleteObjects(): No rows returned (1)");
-        return -1;
-    }
-    std::string handle = m_db->GetFieldValue(0, 0);
-    std::string cert = m_db->GetFieldValue(0, 1);
-    std::string password = m_db->GetFieldValue(0, 2);
-    m_db->FreeSelect();
 
     // before connection load all objects, zones are needed to
     // put zone id into cltrid (used in statistics - need to fix)
-    std::stringstream sql;
+    std::ostringstream sql;
     sql <<
         "SELECT o.name, o.type, COALESCE(d.zone,0) "
         "FROM object_state s "
@@ -160,108 +185,131 @@ ObjectClient::deleteObjects(
         return 0;
     }
 
-    std::ostream *debug;
-    debug = delete_objects_params.object_delete_debug//m_conf.hasOpt(OBJECT_DEBUG_NAME)
-            ? &std::cout : NULL;
-
     unsigned int totalCount = (unsigned int)m_db->GetSelectRows();
     // limit number of object to just first part from total
     // could be done by COUNT(*) and LIMIT in SQL but this would need to
     // issue another SQL
-    if (parts > 0) totalCount = totalCount/parts;
-
-    if (debug) {
-        *debug << "<objects>\n";
+    if (0 < parts)
+    {
+        totalCount = totalCount / parts;
+    }
+    if (delete_objects_params.object_delete_debug)
+    {
+        std::cout << "<objects>\n";
         for (unsigned int i = 0; i < totalCount; i++) {
-            *debug << "<object name='" << m_db->GetFieldValue(i, 0) << "'/>\n";
+            std::cout << "<object name='" << m_db->GetFieldValue(i, 0) << "'/>\n";
         }
-        *debug << "</objects>\n";
+        std::cout << "</objects>\n";
         m_db->FreeSelect();
         return 0;
     }
-    try {
+    try
+    {
+        ccReg::EPP_var epp = NULL;
         CORBA::ULongLong clientId = 0;
 
-        for (int i = 0; i < RESOLVE_TRY; i++) {
-            try {
+        const int max_attempts = RESOLVE_TRY;
+        for (int attempt = 0; attempt < max_attempts; ++attempt)
+        {
+            try
+            {
                 CORBA::Object_var o = cc.getNS()->resolve("EPP");
-                if ((epp = ccReg::EPP::_narrow(o)) != NULL) {
+                epp = ccReg::EPP::_narrow(o);
+                if (epp != NULL)
+                {
                     break;
                 }
-            } catch (NameService::NOT_RUNNING) {
-                LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching NOT_RUNNING", i + 1, RESOLVE_TRY);
+            }
+            catch (const NameService::NOT_RUNNING&)
+            {
+                LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching NOT_RUNNING", attempt + 1, max_attempts);
                 return -1;
-            } catch (NameService::BAD_CONTEXT) {
-                LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching BAD_CONTEXT", i + 1, RESOLVE_TRY);
+            }
+            catch (const NameService::BAD_CONTEXT&)
+            {
+                LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching BAD_CONTEXT", attempt + 1, max_attempts);
                 return -1;
-	    } catch (std::exception& ex) {
-    	        LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching %s", ex.what());
-		return -1;
-	    } catch (...) {
+            }
+            catch (const std::exception& e)
+            {
+    	        LOG(ERROR_LOG, "deleteObjects(): resolve attempt %d of %d catching %s", attempt + 1, max_attempts, e.what());
+    	        return -1;
+            }
+            catch (...)
+            {
     	        LOG(ERROR_LOG, "deleteObjects(): resolve attempt catching unknown exception");
-		return -1;
-	    }
-
+    	        return -1;
+            }
         }
-
-        ccReg::Response_var r = epp->ClientLogin(
-                handle.c_str(),password.c_str(),"","system_delete_login", "<system_delete_login/>"
-                ,clientId, 0 ,cert.c_str(),ccReg::EN);
-        if (r->code != 1000 || !clientId) {
-            LOG(ERROR_LOG, "Cannot connect: %d", r->code);
-            std::cerr << "Cannot connect: " << r->code << std::endl;
-            throw -3;
+        {
+            const ccReg::Response_var result = epp->ClientLogin(
+                    "",
+                    "",
+                    "",
+                    "system_delete_login",
+                    "<system_delete_login/>",
+                    clientId,
+                    0,
+                    "",
+                    ccReg::EN);
+            if ((result->code != 1000) || (clientId == 0))
+            {
+                LOG(ERROR_LOG, "Cannot connect: %d", result->code);
+                std::cerr << "Cannot connect: " << result->code << std::endl;
+                throw -3;
+            }
         }
-
-        for (unsigned int i = 0; i < totalCount; i++) {
-            std::string name = m_db->GetFieldValue(i, 0);
+        for (unsigned int idx = 0; idx < totalCount; ++idx)
+        {
+            const std::string name = m_db->GetFieldValue(idx, 0);
             /* we don't want to notify delete commands - add configured cltrid prefix */
-            std::string cltrid = disable_epp_notifier_cltrid_prefix;
-            std::string xml;
-            xml = "<name>" + name + "</name>";
+            std::string cltrid = "";
+            const std::string xml = "<name>" + name + "</name>";
 
             ccReg::EppParams params;
-            params.loginID    = clientId;
-            params.requestID    = 0;
-            params.XML          = xml.c_str();
+            params.loginID = clientId;
+            params.requestID = 0;
+            params.XML = xml.c_str();
 
-            try {
-                switch (atoi(m_db->GetFieldValue(i, 1))) {
+            try
+            {
+                const unsigned type_id = boost::lexical_cast<unsigned>(m_db->GetFieldValue(idx, 1));
+                ccReg::Response_var result;
+                switch (type_id)
+                {
                     case 1:
                         cltrid += "_delete_contact";
-                        params.clTRID    = cltrid.c_str();
-                        r = epp->ContactDelete(
-                                name.c_str(), params);
+                        params.clTRID = cltrid.c_str();
+                        result = epp->ContactDelete(name.c_str(), params);
                         break;
                     case 2:
                         cltrid += "_delete_nsset";
-                        params.clTRID    = cltrid.c_str();
-                        r = epp->NSSetDelete(
-                                name.c_str(), params);
+                        params.clTRID = cltrid.c_str();
+                        result = epp->NSSetDelete(name.c_str(), params);
                         break;
                     case 3:
-                        cltrid += "_delete_unpaid_zone_" + std::string(m_db->GetFieldValue(i, 2));
-                        params.clTRID    = cltrid.c_str();
-                        r = epp->DomainDelete(
-                                name.c_str(), params);
+                        cltrid += "_delete_unpaid_zone_" + std::string(m_db->GetFieldValue(idx, 2));
+                        params.clTRID = cltrid.c_str();
+                        result = epp->DomainDelete(name.c_str(), params);
                         break;
                     case 4:
                         cltrid += "_delete_keyset";
-                        params.clTRID    = cltrid.c_str();
-                        r = epp->KeySetDelete(
-                                name.c_str(), params);
+                        params.clTRID = cltrid.c_str();
+                        result = epp->KeySetDelete(name.c_str(), params);
                         break;
                 }
-                if (r->code != 1000) {
+                if (result->code != 1000)
+                {
                     LOG(ERROR_LOG, "deleteObjects(): cannot %s: %s", cltrid.c_str(), name.c_str());
-                    std::cerr << "Cannot " << cltrid << ": " << name << " code: " << r->code;
+                    std::cerr << "Cannot " << cltrid << ": " << name << " code: " << result->code << std::endl;
                 }
-                else {
-                    std::cerr << cltrid << ": " << name;
+                else
+                {
+                    std::cerr << cltrid << ": " << name << std::endl;
                 }
-                std::cerr << std::endl;
             }
-            catch (...) {
+            catch (...)
+            {
                 std::cerr << "Cannot " << cltrid << ": " << name << std::endl;
                 LOG(ERROR_LOG, "deleteObjects(): cannot %s: %s", cltrid.c_str(), name.c_str());
                 // proceed with next domain
