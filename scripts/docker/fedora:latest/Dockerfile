@@ -2,6 +2,7 @@ FROM fedora:latest
 RUN dnf -y upgrade
 RUN dnf -y install       \
         autoconf         \
+        autoconf-archive \
         automake         \
         pkgconf          \
         libtool          \
