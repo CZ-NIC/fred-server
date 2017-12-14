@@ -104,25 +104,24 @@ struct ObjectRegularProcedureArgs
  */
 struct DeleteObjectsArgs
 {
+    DeleteObjectsArgs() : object_delete_debug(false) { }
+    DeleteObjectsArgs(
+            const optional_ulonglong& _object_delete_limit,
+            const optional_string& _object_delete_types,
+            const optional_ulonglong& _object_delete_parts,
+            const optional_ulonglong& _object_delete_spread_during_time,
+            const bool _object_delete_debug)
+    : object_delete_limit(_object_delete_limit),
+      object_delete_types(_object_delete_types),
+      object_delete_parts(_object_delete_parts),
+      object_delete_spread_during_time(_object_delete_spread_during_time),
+      object_delete_debug(_object_delete_debug)
+    { }
     optional_ulonglong object_delete_limit;//OBJECT_DELETE_LIMIT_NAME
     optional_string object_delete_types;//OBJECT_DELETE_TYPES_NAME
     optional_ulonglong object_delete_parts;//OBJECT_DELETE_PARTS_NAME
+    optional_ulonglong object_delete_spread_during_time;
     bool object_delete_debug;//OBJECT_DEBUG_NAME
-
-    DeleteObjectsArgs()
-    : object_delete_debug(false)
-    {}//ctor
-    DeleteObjectsArgs(
-             const optional_ulonglong& _object_delete_limit
-             , const optional_string& _object_delete_types
-             , const optional_ulonglong& _object_delete_parts
-             , const bool _object_delete_debug
-            )
-    : object_delete_limit(_object_delete_limit)
-    , object_delete_types(_object_delete_types)
-    , object_delete_parts(_object_delete_parts)
-    , object_delete_debug(_object_delete_debug)
-    {}//init ctor
-};//struct DeleteObjectsArgs
+};
 
 #endif // OBJECT_PARAMS_H_

@@ -2494,6 +2494,8 @@ src_cli_admin_fred_admin_SOURCES = \
 		src/cli_admin/chargeclient.cc \
 		src/cli_admin/chargeclient.h \
 		src/cli_admin/charge_client_impl.h \
+		src/cli_admin/remove_delete_candidates.cc \
+		src/cli_admin/remove_delete_candidates.hh \
 		src/admin/contact/merge_contact.cc \
 		src/admin/contact/merge_contact.h \
 		src/admin/contact/merge_contact_logger.cc \

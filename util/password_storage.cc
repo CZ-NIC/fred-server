@@ -31,7 +31,7 @@ namespace {
 template <typename A0, typename ...An>
 struct PasswordCorrectness
 {
-    static void check_password(
+    static void check(
             const std::string& plaintext_password,
             const PasswordData& encrypted_password)
     {
@@ -40,7 +40,7 @@ struct PasswordCorrectness
             case Impl::CheckResult::password_is_correct:
                 return;
             case Impl::CheckResult::algorithm_does_not_fit:
-                PasswordCorrectness<An...>::check_password(plaintext_password, encrypted_password);
+                PasswordCorrectness<An...>::check(plaintext_password, encrypted_password);
                 return;
         }
         throw std::logic_error("unexpected CheckResult value");
@@ -50,7 +50,7 @@ struct PasswordCorrectness
 template <typename A0>
 struct PasswordCorrectness<A0>
 {
-    static void check_password(
+    static void check(
             const std::string& plaintext_password,
             const PasswordData& encrypted_password)
     {
@@ -67,9 +67,7 @@ struct PasswordCorrectness<A0>
 
 const int cpu_cost = 16;
 const int number_of_iterations = 0x01 << cpu_cost;
-typedef PasswordStorage::Impl::AlgPbkdf2<
-                PasswordStorage::Impl::Pbkdf2::HashFunction::sha512,
-                number_of_iterations> PreferredHashAlgorithm;
+typedef Impl::AlgPbkdf2<Impl::Pbkdf2::HashFunction::sha512, number_of_iterations> PreferredHashAlgorithm;
 
 }//namespace PasswordStorage::{anonymous}
 
@@ -89,9 +87,8 @@ void check_password(
         const std::string& plaintext_password,
         const PasswordData& encrypted_password_data)
 {
-    PasswordCorrectness<Impl::Pbkdf2, Impl::Plaintext>::check_password(
-            plaintext_password,
-            encrypted_password_data);
+    PasswordCorrectness<Impl::Pbkdf2,
+                        Impl::Plaintext>::check(plaintext_password, encrypted_password_data);
 }
 
 }//namespace PasswordStorage

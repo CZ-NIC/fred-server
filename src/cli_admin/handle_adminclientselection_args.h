@@ -24,34 +24,34 @@
 #ifndef HANDLE_ADMINCLIENTSELECTION_ARGS_H_
 #define HANDLE_ADMINCLIENTSELECTION_ARGS_H_
 
-#include <iostream>
-#include <exception>
-#include <string>
-#include <vector>
-
-#include <boost/program_options.hpp>
-
 #include "util/cfg/faked_args.h"
 #include "util/cfg/handle_args.h"
 #include "util/types/optional.h"
 #include "util/types/optional_from_program_options.h"
 #include "util/cfg/command_selection_args.h"
 #include "util/cfg/validate_args.h"
-#include "domain_params.h"
-#include "keyset_params.h"
-#include "contact_params.h"
-#include "invoice_params.h"
-#include "bank_params.h"
-#include "poll_params.h"
-#include "registrar_params.h"
-#include "notify_params.h"
-#include "enumparam_params.h"
-#include "object_params.h"
-#include "file_params.h"
-#include "regblock_params.h"
-#include "charge_params.h"
-#include "domain_name_validation_params.h"
 
+#include "src/cli_admin/domain_params.h"
+#include "src/cli_admin/keyset_params.h"
+#include "src/cli_admin/contact_params.h"
+#include "src/cli_admin/invoice_params.h"
+#include "src/cli_admin/bank_params.h"
+#include "src/cli_admin/poll_params.h"
+#include "src/cli_admin/registrar_params.h"
+#include "src/cli_admin/notify_params.h"
+#include "src/cli_admin/enumparam_params.h"
+#include "src/cli_admin/object_params.h"
+#include "src/cli_admin/file_params.h"
+#include "src/cli_admin/regblock_params.h"
+#include "src/cli_admin/charge_params.h"
+#include "src/cli_admin/domain_name_validation_params.h"
+
+#include <iostream>
+#include <exception>
+#include <string>
+#include <vector>
+
+#include <boost/program_options.hpp>
 
 /**
  * \class HandleAdminClientDomainListArgsGrp
@@ -2150,101 +2150,119 @@ public:
  * \class HandleAdminClientObjectDeleteCandidatesArgsGrp
  * \brief admin client object_delete_candidates options handler
  */
-class HandleAdminClientObjectDeleteCandidatesArgsGrp : public HandleCommandGrpArgs
+struct HandleAdminClientObjectDeleteCandidatesArgsGrp:HandleCommandGrpArgs
 {
-public:
-    DeleteObjectsArgs delete_objects_params;
-
-    CommandDescription get_command_option()
+    CommandDescription get_command_option()override
     {
         return CommandDescription("object_delete_candidates");
     }
+
     std::shared_ptr<boost::program_options::options_description>
-    get_options_description()
+    get_options_description()override
     {
         std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("object_delete_candidates options")));
         cfg_opts->add_options()
-            ("object_delete_candidates"
-                    ,"delete all objects with state delete_candidate")
-            ("object_delete_types",boost::program_options
-                 ::value<Checked::string>()->notifier(save_optional_string(delete_objects_params.object_delete_types))
-                  ,"only this type of object will be delete during mass delete")
-            ("object_delete_limit", boost::program_options
-                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(delete_objects_params.object_delete_limit))
-                , "limit for object deleting")
-            ("object_delete_parts", boost::program_options
-                    ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(delete_objects_params.object_delete_parts))
-                    , "limit for object deleting set to (total count/parts) - just one part of total count will be processed")
-            ("object_delete_debug", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(delete_objects_params.object_delete_debug))
-                , "object delete debug")
-                ;
+            ("object_delete_candidates", "delete objects of given types with state delete_candidate")
+            ("object_delete_types",
+             boost::program_options::value<Checked::string>()->notifier(
+                     save_optional_string(delete_objects_params.object_delete_types)),
+             "only this type of object will be delete during mass delete")
+            ("object_delete_limit",
+             boost::program_options::value<Checked::ulonglong>()->notifier(
+                     save_optional_ulonglong(delete_objects_params.object_delete_limit)),
+             "limit for object deleting")
+            ("object_delete_parts",
+             boost::program_options::value<Checked::ulonglong>()->notifier(
+                     save_optional_ulonglong(delete_objects_params.object_delete_parts)),
+             "limit for object deleting set to (total count/parts) - just one part of total count will be processed")
+             ("object_delete_spread_during_time",
+              boost::program_options::value<Checked::ulonglong>()->notifier(
+                      save_optional_ulonglong(delete_objects_params.object_delete_spread_during_time)),
+              "spread the deletion into time specified in seconds")
+            ("object_delete_debug",
+             boost::program_options::value<bool>()->zero_tokens()->notifier(
+                     save_arg<bool>(delete_objects_params.object_delete_debug)),
+             "object delete debug on/off");
         return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
+    }
+
+    std::size_t handle(
+            int argc,
+            char* argv[],
+            FakedArgs& fa,
+            std::size_t option_group_index)override
     {
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
-    }//handle
-};//class HandleAdminClientObjectDeleteCandidatesArgsGrp
-
+    }
+    DeleteObjectsArgs delete_objects_params;
+};
 
 
 /**
  * \class HandleAdminClientObjectRegularProcedureArgsGrp
  * \brief admin client object_regular_procedure options handler
  */
-class HandleAdminClientObjectRegularProcedureArgsGrp : public HandleCommandGrpArgs
+struct HandleAdminClientObjectRegularProcedureArgsGrp:HandleCommandGrpArgs
 {
-public:
-    ObjectRegularProcedureArgs regular_procedure_params;
-    DeleteObjectsArgs delete_objects_params;
-
-    CommandDescription get_command_option()
+    CommandDescription get_command_option()override
     {
         return CommandDescription("object_regular_procedure");
     }
+
     std::shared_ptr<boost::program_options::options_description>
-    get_options_description()
+    get_options_description()override
     {
         std::shared_ptr<boost::program_options::options_description> cfg_opts(
                 new boost::program_options::options_description(
                         std::string("object_regular_procedure options")));
         cfg_opts->add_options()
-            ("object_regular_procedure"
-                    ,"shortcut for 2x update_object_states, notify_state changes, "
-                    "poll_create_statechanges, object_delete_candidates, poll_create_low_credit, notify_letters_create"
-                    )
-            ("poll_except_types",boost::program_options
-                    ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.poll_except_types))
-                     ,"list of poll message types ignored in creation (only states now)")
-            ("object_delete_types",boost::program_options
-                 ::value<Checked::string>()->notifier(save_optional_string(delete_objects_params.object_delete_types))
-                  ,"only this type of object will be delete during mass delete")
-            ("notify_except_types",boost::program_options
-               ::value<Checked::string>()->notifier(save_optional_string(regular_procedure_params.notify_except_types))
-                ,"list of notification types ignored in notification")
-            ("object_delete_limit", boost::program_options
-                ::value<Checked::ulonglong>()->notifier(save_optional_ulonglong(delete_objects_params.object_delete_limit))
-                , "limit for object deleting")
-            ("object_delete_debug", boost::program_options
-                ::value<bool>()->zero_tokens()->notifier(save_arg<bool>(delete_objects_params.object_delete_debug))
-                , "object delete debug")
-                ;
+            ("object_regular_procedure",
+             "shortcut for 2x update_object_states, "
+             "notify_state changes, "
+             "poll_create_statechanges, "
+             "object_delete_candidates, "
+             "poll_create_low_credit, "
+             "notify_letters_create")
+            ("poll_except_types",
+             boost::program_options::value<Checked::string>()->notifier(
+                     save_optional_string(regular_procedure_params.poll_except_types)),
+             "list of poll message types ignored in creation (only states now)")
+            ("object_delete_types",
+             boost::program_options::value<Checked::string>()->notifier(
+                     save_optional_string(delete_objects_params.object_delete_types)),
+             "only this type of object will be delete during mass delete")
+            ("notify_except_types",
+             boost::program_options::value<Checked::string>()->notifier(
+                     save_optional_string(regular_procedure_params.notify_except_types)),
+             "list of notification types ignored in notification")
+            ("object_delete_limit",
+             boost::program_options::value<Checked::ulonglong>()->notifier(
+                     save_optional_ulonglong(delete_objects_params.object_delete_limit)),
+             "limit for object deleting")
+            ("object_delete_debug",
+             boost::program_options::value<bool>()->zero_tokens()->notifier(
+                     save_arg<bool>(delete_objects_params.object_delete_debug)),
+             "object delete debug on/off");
         return cfg_opts;
-    }//get_options_description
-    std::size_t handle( int argc, char* argv[],  FakedArgs &fa
-            , std::size_t option_group_index)
+    }
+
+    std::size_t handle(
+            int argc,
+            char* argv[],
+            FakedArgs& fa,
+            std::size_t option_group_index)override
     {
         boost::program_options::variables_map vm;
         handler_parse_args()(get_options_description(), vm, argc, argv, fa);
         return option_group_index;
-    }//handle
-};//class HandleAdminClientObjectRegularProcedureArgsGrp
+    }
+    ObjectRegularProcedureArgs regular_procedure_params;
+    DeleteObjectsArgs delete_objects_params;
+};
 
 
 /**
